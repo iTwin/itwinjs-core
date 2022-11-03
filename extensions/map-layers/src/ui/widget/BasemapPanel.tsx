@@ -27,17 +27,39 @@ function getBaseMapFromStyle(displayStyle: DisplayStyleState | undefined) {
   return undefined;
 }
 
+interface BasemapPanelProps {
+  disabled?: boolean;
+}
+
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function BasemapPanel() {
+export function BasemapPanel(props: BasemapPanelProps) {
   const [useColorLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Basemap.ColorFill"));
   const { activeViewport, bases } = useSourceMapContext();
-
+  const [selectedBaseMap, setSelectedBaseMap] = React.useState<MapLayerProps | number | undefined>(getBaseMapFromStyle(activeViewport?.displayStyle));
   const [baseMapTransparencyValue, setBaseMapTransparencyValue] = React.useState(() => {
     if (activeViewport)
       return activeViewport.displayStyle.baseMapTransparency;
     return 0;
   });
+  const [baseMapVisible, setBaseMapVisible] = React.useState(() => {
+    if (activeViewport && activeViewport.displayStyle.backgroundMapBase instanceof ImageMapLayerSettings) {
+      return activeViewport.displayStyle.backgroundMapBase.visible;
+    }
+    return false;
+  });
+
+  // Monitor viewport updates, and refresh the widget accordingly.
+  // Note: This is needed for multiple viewport applications.
+  React.useEffect(() => {
+    if (activeViewport) {
+      setBaseMapTransparencyValue(activeViewport.displayStyle.baseMapTransparency);
+      setSelectedBaseMap(getBaseMapFromStyle(activeViewport.displayStyle));
+      if (activeViewport.displayStyle.backgroundMapBase instanceof ImageMapLayerSettings) {
+        setBaseMapVisible(activeViewport.displayStyle.backgroundMapBase.visible);
+      }
+    }
+  }, [activeViewport]);
 
   const handleBasemapTransparencyChange = React.useCallback((transparency: number) => {
     if (activeViewport) {
@@ -68,7 +90,6 @@ export function BasemapPanel() {
     ColorDef.create(ColorByName.darkBrown),
   ]);
 
-  const [selectedBaseMap, setSelectedBaseMap] = React.useState<MapLayerProps | number | undefined>(getBaseMapFromStyle(activeViewport?.displayStyle));
   const baseIsColor = React.useMemo(() => typeof selectedBaseMap === "number", [selectedBaseMap]);
   const baseIsMap = React.useMemo(() => !baseIsColor && (selectedBaseMap !== undefined), [baseIsColor, selectedBaseMap]);
   const bgColor = React.useMemo(() => baseIsColor ? selectedBaseMap as number : presetColors[0].toJSON(), [baseIsColor, selectedBaseMap, presetColors]);
@@ -126,13 +147,6 @@ export function BasemapPanel() {
     }
   }, [bases, activeViewport, bgColor]);
 
-  const [baseMapVisible, setBaseMapVisible] = React.useState(() => {
-    if (activeViewport && activeViewport.displayStyle.backgroundMapBase instanceof ImageMapLayerSettings) {
-      return activeViewport.displayStyle.backgroundMapBase.visible;
-    }
-    return false;
-  });
-
   const handleVisibilityChange = React.useCallback(() => {
     if (activeViewport) {
       const newState = !baseMapVisible;
@@ -152,16 +166,22 @@ export function BasemapPanel() {
   return (
     <>
       <div className="map-manager-base-item" >
-        <Button size="small" styleType="borderless"  title={toggleVisibility} onClick={handleVisibilityChange}>
+        <Button size="small" styleType="borderless"  title={toggleVisibility} onClick={handleVisibilityChange} disabled={props.disabled || !activeViewport || !(activeViewport.displayStyle.backgroundMapBase instanceof ImageMapLayerSettings)}>
           <WebFontIcon iconName={baseMapVisible ? "icon-visibility" : "icon-visibility-hide-2"} />
         </Button>
         <span className="map-manager-base-label">{baseLayerLabel}</span>
-        <Select className="map-manager-base-item-select" options={baseMapOptions} placeholder={selectBaseMapLabel} value={selectedBaseMapValue.value} onChange={handleBaseMapSelection} size="small" />
+        <Select className="map-manager-base-item-select"
+          options={baseMapOptions}
+          placeholder={selectBaseMapLabel}
+          value={selectedBaseMapValue.value}
+          onChange={handleBaseMapSelection} size="small"
+          disabled={props.disabled}
+        />
         {
           baseIsColor &&
           <ColorSwatch className="map-manager-base-item-color" colorDef={ColorDef.fromJSON(bgColor)} round={false} onColorPick={handleBgColorClick} />
         }
-        <TransparencyPopupButton transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange} />
+        <TransparencyPopupButton disabled={props.disabled} transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange}/>
       </div>
     </>
   );

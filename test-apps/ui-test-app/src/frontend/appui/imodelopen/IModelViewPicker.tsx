@@ -47,6 +47,7 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
       name = name.substring(lastIndex + 1);
     const cardClassName = classnames("view-card", this.state.isSelected && "isActive");
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <div className={cardClassName} onClick={this._onClicked}>
         <div className="view-card-content">
           <img className="view-card-thumbnail" src="https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg" alt="" />
@@ -139,6 +140,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
       );
     } else if (this.state.views && this.state.views.length > 0) {
       return (
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
         <div className="views-list" tabIndex={0}>
           {this.state.views.map((view: ViewDefinitionProps, i: number) => (
             <ViewCard key={i} view={view} onClick={this._onViewClick.bind(this, view)} />
@@ -166,6 +168,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
         <div className="views animate">
           <div className="views-header">
             <h3>Select Views - {iModelName}</h3>
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
             <span onClick={this._onClose} className="close icon icon-close" title="Close" />
           </div>
           {this.renderViews()}

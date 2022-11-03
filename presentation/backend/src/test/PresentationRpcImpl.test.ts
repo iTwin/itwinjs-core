@@ -57,6 +57,12 @@ describe("PresentationRpcImpl", () => {
     });
   });
 
+  it("doesn't cancel requests if request timeout is 0", () => {
+    using(new PresentationRpcImpl({ requestTimeout: 0 }), (impl) => {
+      expect(impl.pendingRequests.props.unusedValueLifetime).to.be.undefined;
+    });
+  });
+
   it("returns all diagnostics when `PresentationManager` calls diagnostics handler multiple times", async () => {
     const rulesetsMock = moq.Mock.ofType<RulesetManager>();
     const variablesMock = moq.Mock.ofType<RulesetVariablesManager>();
@@ -457,7 +463,13 @@ describe("PresentationRpcImpl", () => {
           cancelEvent: new BeEvent<() => void>(),
         };
 
-        presentationManagerMock.setup(async (x) => x.getNodes(managerOptions))
+        const presentationManagerDetailStub = {
+          getNodes: sinon.spy(async () => getRootNodesResult),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
           .returns(async () => getRootNodesResult)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
@@ -488,7 +500,13 @@ describe("PresentationRpcImpl", () => {
           cancelEvent: new BeEvent<() => void>(),
         };
 
-        presentationManagerMock.setup(async (x) => x.getNodes(managerOptions))
+        const presentationManagerDetailStub = {
+          getNodes: sinon.spy(async () => getChildNodesResult),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
           .returns(async () => getChildNodesResult)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
@@ -516,7 +534,14 @@ describe("PresentationRpcImpl", () => {
           parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getNodes(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getNodes: sinon.spy(async () => getRootNodesResult),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
           .returns(async () => getRootNodesResult)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
@@ -540,8 +565,15 @@ describe("PresentationRpcImpl", () => {
           paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE },
           parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
+
         };
-        presentationManagerMock.setup(async (x) => x.getNodes(managerOptions))
+        const presentationManagerDetailStub = {
+          getNodes: sinon.spy(async () => getRootNodesResult),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
           .returns(async () => getRootNodesResult)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
@@ -565,7 +597,14 @@ describe("PresentationRpcImpl", () => {
           parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getNodes(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getNodes: sinon.spy(async () => getRootNodesResult),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
           .returns(async () => getRootNodesResult)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
@@ -821,7 +860,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -859,7 +905,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => undefined),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => undefined)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -889,7 +942,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -925,7 +985,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -961,7 +1028,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -1001,7 +1075,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -1036,7 +1117,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => undefined),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => undefined)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -1066,7 +1154,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -1099,7 +1194,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -1132,7 +1234,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -1339,8 +1448,15 @@ describe("PresentationRpcImpl", () => {
           elementId: "0x123",
         };
         const expectedRpcResponse = testElementProperties;
+
+        const presentationManagerDetailStub = {
+          getElementProperties: sinon.spy(async () => managerResponse),
+        };
         presentationManagerMock
-          .setup(async (x) => x.getElementProperties(managerOptions))
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock
+          .setup(async (x) => x.getDetail().getElementProperties(managerOptions))
           .returns(async () => managerResponse)
           .verifiable();
         const actualResult = await impl.getElementProperties(testData.imodelToken, rpcOptions);
@@ -1375,7 +1491,13 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -1408,7 +1530,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => undefined),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => undefined)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -1445,7 +1574,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -1482,7 +1618,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -1518,7 +1661,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => content),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getContent(managerOptions))
           .returns(async () => content)
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
@@ -1550,7 +1700,14 @@ describe("PresentationRpcImpl", () => {
           key,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getDisplayLabelDefinition(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getDisplayLabelDefinition: sinon.spy(async () => result),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getDisplayLabelDefinition(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getDisplayLabelDefinition(testData.imodelToken, rpcOptions);
@@ -1574,7 +1731,14 @@ describe("PresentationRpcImpl", () => {
           keys,
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getDisplayLabelDefinitions(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getDisplayLabelDefinitions: sinon.spy(async () => result),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getDisplayLabelDefinitions(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getPagedDisplayLabelDefinitions(testData.imodelToken, rpcOptions);
@@ -1594,7 +1758,14 @@ describe("PresentationRpcImpl", () => {
           keys: keys.slice(0, MAX_ALLOWED_PAGE_SIZE),
           cancelEvent: new BeEvent<() => void>(),
         };
-        presentationManagerMock.setup(async (x) => x.getDisplayLabelDefinitions(managerOptions))
+
+        const presentationManagerDetailStub = {
+          getDisplayLabelDefinitions: sinon.spy(async () => result),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        presentationManagerMock.setup(async (x) => x.getDetail().getDisplayLabelDefinitions(managerOptions))
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getPagedDisplayLabelDefinitions(testData.imodelToken, rpcOptions);

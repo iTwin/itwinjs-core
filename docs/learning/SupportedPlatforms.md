@@ -4,7 +4,7 @@
 
 iTwin.js **backends** are built and tested on the following:
 
-- Debian 9 "Stretch" and Debian 10 "Buster"
+- Debian 10 "Buster" and Debian 11 "Bullseye"
 - Windows 10 version 1803 (or greater)
 - MacOS 10.15 (or greater)
 
@@ -52,4 +52,7 @@ iTwin.js strives to support as many modern browsers as possible, though it requi
 
 ## Mobile Native
 
-- Not yet supported
+The following minimum versions of mobile operating systems are supported:
+
+- iOS 13: Minimum supported [iPhones](https://support.apple.com/guide/iphone/supported-iphone-models-iphe3fa5df43/13.0/ios/13.0) and [iPads](https://support.apple.com/guide/ipad/supported-models-ipad213a25b2/13.0/ipados/13.0)
+- Android 7.0 (API Level 24)

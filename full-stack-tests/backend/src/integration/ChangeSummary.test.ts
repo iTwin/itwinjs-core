@@ -24,6 +24,13 @@ function setupTest(iModelId: string): void {
     IModelJsFs.removeSync(cacheFilePath);
 }
 
+async function purgeAcquiredBriefcases(accessToken: string, iModelId: GuidString) {
+  await HubWrappers.purgeAcquiredBriefcasesById(accessToken, iModelId);
+  // Purge briefcases that are close to reaching the acquire limit
+  const managerRequestContext = await HubUtility.getAccessToken(TestUserType.Manager);
+  await HubWrappers.purgeAcquiredBriefcasesById(managerRequestContext, iModelId);
+}
+
 function getChangeSummaryAsJson(iModel: BriefcaseDb, changeSummaryId: string) {
   const changeSummary: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, changeSummaryId);
   const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<any>() };
@@ -78,11 +85,7 @@ describe("ChangeSummary", () => {
     iTwinId = await HubUtility.getTestITwinId(accessToken);
     iModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
 
-    await HubWrappers.purgeAcquiredBriefcasesById(accessToken, iModelId);
-
-    // Purge briefcases that are close to reaching the acquire limit
-    const managerRequestContext = await HubUtility.getAccessToken(TestUserType.Manager);
-    await HubWrappers.purgeAcquiredBriefcasesById(managerRequestContext, iModelId);
+    await purgeAcquiredBriefcases(accessToken, iModelId);
   });
 
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
@@ -132,6 +135,32 @@ describe("ChangeSummary", () => {
         assert.isAtLeast(rowCount, 3);
       });
 
+    } finally {
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
+    }
+  });
+
+  it("Extract ChangeSummary for a model with no changesets", async () => {
+    const emptyIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.noVersions);
+    setupTest(emptyIModelId);
+    await purgeAcquiredBriefcases(accessToken, emptyIModelId);
+
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: emptyIModelId });
+    assert.equal(changeSets.length, 0);
+
+    const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: emptyIModelId });
+    assert.exists(iModel);
+    try {
+      // now extract change summary on that no changesets iModel
+      const summaryIds = await ChangeSummaryManager.createChangeSummaries({ accessToken, iTwinId, iModelId: emptyIModelId, range: { first: 0 } });
+      assert.isTrue(summaryIds.every((id) => Id64.isValidId64(id)));
+      assert.isFalse(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(emptyIModelId)));
+      ChangeSummaryManager.attachChangeCache(iModel);
+      assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
+
+      iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
+        assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
+      });
     } finally {
       await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
     }
@@ -365,6 +394,7 @@ describe("ChangeSummary", () => {
     }
   });
 
+  // FIXME: "Must use HubMock for tests that modify iModels".
   it.skip("Create ChangeSummaries for changes to parent elements", async () => {
     // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
     const iModelName = IModelTestUtils.generateUniqueName("ParentElementChangeTest");
@@ -443,6 +473,7 @@ describe("ChangeSummary", () => {
     await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
   });
 
+  // FIXME: Failed OIDC signin for TestUserType.SuperManager.
   it.skip("should be able to extract the last change summary right after applying a change set", async () => {
     const userContext1 = await HubUtility.getAccessToken(TestUserType.Manager);
     const userContext2 = await HubUtility.getAccessToken(TestUserType.SuperManager);

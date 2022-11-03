@@ -7,13 +7,13 @@
  */
 
 import { AccessToken, assert, CompressedId64Set, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
-import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECVersion, Schema, SchemaKey, SchemaLoader } from "@itwin/ecschema-metadata";
 import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import {
-  BisCoreSchema, BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
+  BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
   ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, GeometricElement, IModelDb,
-  IModelHost, IModelJsNative, IModelSchemaLoader, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
+  IModelHost, IModelJsNative, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
 } from "@itwin/core-backend";
 
 const loggerCategory = TransformerLoggerCategory.IModelExporter;
@@ -169,7 +169,10 @@ export class IModelExporter {
   private _handler: IModelExportHandler | undefined;
   /** The handler called by this IModelExporter. */
   protected get handler(): IModelExportHandler {
-    if (undefined === this._handler) { throw new Error("IModelExportHandler not registered"); }
+    if (undefined === this._handler) {
+      throw new Error("IModelExportHandler not registered");
+    }
+
     return this._handler;
   }
 
@@ -265,24 +268,27 @@ export class IModelExporter {
     await this.exportModelContents(IModel.repositoryModelId);
     await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
-    const deletedSubModels = new Set<Id64String>();
     // handle deletes
     if (this.visitElements) {
-      for (const elementId of this._sourceDbChanges.element.deleteIds) {
-        const subModelAlsoDeleted = this._sourceDbChanges.model.deleteIds.has(elementId);
-        // must delete submodels first since they have a constraint on the element
-        if (subModelAlsoDeleted) {
-          this.handler.onDeleteModel(elementId);
-          deletedSubModels.add(elementId);
-        }
-        this.handler.onDeleteElement(elementId);
+      // must delete models first since they have a constraint on the submodeling element which may also be deleted
+      for (const modelId of this._sourceDbChanges.model.deleteIds) {
+        this.handler.onDeleteModel(modelId);
       }
-    }
-    // WIP: handle ElementAspects?
-    for (const modelId of this._sourceDbChanges.model.deleteIds) {
-      const alreadyDeletedSubModel = deletedSubModels.has(modelId);
-      if (alreadyDeletedSubModel) continue;
-      this.handler.onDeleteModel(modelId);
+      for (const elementId of this._sourceDbChanges.element.deleteIds) {
+        // We don't know how the handler wants to handle deletions, and we don't have enough information
+        // to know if deleted entities were related, so when processing changes, ignore errors from deletion.
+        // Technically, to keep the ignored error scope small, we ignore only the error of looking up a missing element,
+        // that approach works at least for the IModelTransformer.
+        // In the future, the handler may be responsible for doing the work of finding out which elements were cascade deleted,
+        // and returning them for the exporter to use to avoid double-deleting with error ignoring
+        try {
+          this.handler.onDeleteElement(elementId);
+        } catch (err: unknown) {
+          const isMissingErr = err instanceof IModelError && err.errorNumber === IModelStatus.NotFound;
+          if (!isMissingErr)
+            throw err;
+        }
+      }
     }
     if (this.visitRelationships) {
       for (const relInstanceId of this._sourceDbChanges.relationship.deleteIds) {
@@ -295,8 +301,25 @@ export class IModelExporter {
    * @note This must be called separately from [[exportAll]] or [[exportChanges]].
    */
   public async exportSchemas(): Promise<void> {
-    const sql = "SELECT Name, VersionMajor, VersionWrite, VersionMinor FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId"; // ensure schema dependency order
-    let readyToExport: boolean = this.wantSystemSchemas ? true : false;
+    const sql = this.wantSystemSchemas ? `
+      SELECT s.Name, s.VersionMajor, s.VersionWrite, s.VersionMinor
+      FROM ECDbMeta.ECSchemaDef s
+      -- ensure schema dependency order
+      ORDER BY ECInstanceId
+    ` : `
+      WITH RECURSIVE refs(SchemaId) AS (
+        SELECT ECInstanceId FROM ECDbMeta.ECSchemaDef WHERE Name='BisCore'
+        UNION ALL
+        SELECT sr.SourceECInstanceId
+        FROM ECDbMeta.SchemaHasSchemaReferences sr
+        JOIN refs ON sr.TargetECInstanceId = refs.SchemaId
+      )
+      SELECT s.Name, s.VersionMajor, s.VersionWrite, s.VersionMinor
+      FROM refs
+      JOIN ECDbMeta.ECSchemaDef s ON refs.SchemaId=s.ECInstanceId
+      -- ensure schema dependency order
+      ORDER BY ECInstanceId
+    `;
     const schemaNamesToExport: string[] = [];
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -304,11 +327,8 @@ export class IModelExporter {
         const versionMajor = statement.getValue(1).getInteger();
         const versionWrite = statement.getValue(2).getInteger();
         const versionMinor = statement.getValue(3).getInteger();
-        if (!readyToExport) {
-          readyToExport = schemaName === BisCoreSchema.schemaName; // schemas prior to BisCore are considered *system* schemas
-        }
         const schemaKey = new SchemaKey(schemaName, new ECVersion(versionMajor, versionWrite, versionMinor));
-        if (readyToExport && this.handler.shouldExportSchema(schemaKey)) {
+        if (this.handler.shouldExportSchema(schemaKey)) {
           schemaNamesToExport.push(schemaName);
         }
       }
@@ -317,7 +337,7 @@ export class IModelExporter {
     if (schemaNamesToExport.length === 0)
       return;
 
-    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+    const schemaLoader = new SchemaLoader((name: string) => this.sourceDb.getSchemaProps(name));
     await Promise.all(schemaNamesToExport.map(async (schemaName) => {
       const schema = schemaLoader.getSchema(schemaName);
       Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
@@ -799,9 +819,14 @@ class ChangedInstanceOps {
   public deleteIds = new Set<Id64String>();
   public addFromJson(val: IModelJsNative.ChangedInstanceOpsProps | undefined): void {
     if (undefined !== val) {
-      if ((undefined !== val.insert) && (Array.isArray(val.insert))) { val.insert.forEach((id: Id64String) => this.insertIds.add(id)); }
-      if ((undefined !== val.update) && (Array.isArray(val.update))) { val.update.forEach((id: Id64String) => this.updateIds.add(id)); }
-      if ((undefined !== val.delete) && (Array.isArray(val.delete))) { val.delete.forEach((id: Id64String) => this.deleteIds.add(id)); }
+      if ((undefined !== val.insert) && (Array.isArray(val.insert)))
+        val.insert.forEach((id: Id64String) => this.insertIds.add(id));
+
+      if ((undefined !== val.update) && (Array.isArray(val.update)))
+        val.update.forEach((id: Id64String) => this.updateIds.add(id));
+
+      if ((undefined !== val.delete) && (Array.isArray(val.delete)))
+        val.delete.forEach((id: Id64String) => this.deleteIds.add(id));
     }
   }
 }

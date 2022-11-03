@@ -1,6 +1,6 @@
 {
   "name": "@itwin/components-react",
-  "version": "3.4.0-dev.21",
+  "version": "3.5.0-dev.35",
   "description": "iTwin.js UI complex components",
   "main": "lib/cjs/components-react.js",
   "module": "lib/esm/components-react.js",
@@ -37,9 +37,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.4.0-dev.21",
-    "@itwin/core-bentley": "workspace:^3.4.0-dev.21",
-    "@itwin/core-react": "workspace:^3.4.0-dev.21",
+    "@itwin/appui-abstract": "workspace:^3.5.0-dev.35",
+    "@itwin/core-bentley": "workspace:^3.5.0-dev.35",
+    "@itwin/core-react": "workspace:^3.5.0-dev.35",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -70,7 +70,7 @@
     "@types/linkify-it": "~2.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.7",
+    "@types/node": "16.11.59",
     "@types/react": "^17.0.37",
     "@types/react-data-grid": "4.0.2",
     "@types/react-dom": "^17.0.0",
@@ -147,10 +147,10 @@
       "ts-node/register"
     ],
     "check-coverage": true,
-    "statements": 99.9,
-    "branches": 99.9,
+    "statements": 100,
+    "branches": 100,
     "functions": 100,
-    "lines": 99.9
+    "lines": 100
   },
   "eslintConfig": {
     "plugins": [

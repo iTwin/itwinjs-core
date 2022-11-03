@@ -1,6 +1,68 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 18 Aug 2022 19:08:02 GMT and should not be manually modified.
+This log was last generated on Fri, 28 Oct 2022 13:34:57 GMT and should not be manually modified.
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:57 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
+
+## 3.4.1
+Mon, 17 Oct 2022 20:06:51 GMT
+
+### Updates
+
+- update RenderScheduleScript.discloseIds to use EntityReferences
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Improve ambient occlusion effect by decreasing the size of shadows for more distant geometry, increasing the default maximum distance of the effect to 10,000 meters, and fading the effect as it approaches maximum distance.
+- Deprecated CloudStorage in favor of TileStorage + iTwin/object-storage
+- added "onlyBaseProperties" to ElementLoadOptions to limit properties to only those in ElementProps, not subclasses
+- Remove renderer-specific logic in Gradient.Symb.getImage
+- Rename LocalizationOptions interface to TranslationOptions and export it
+- lock down @types/semver to 7.3.10
+- deprecate categoryIds from the hydrateViewState request and response props
+- add 408,429, and consider 408,429, and 500 transient fault
+- Updated Node types declaration to support latest v16
+- Reject an iModel's EcefLocation with an origin at the center of the Earth.
+- Add types and utilies for working with buffers of quantized points.
+- ModelProps.parentModel doc change
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+### Updates
+
+- add 408,429, and consider 408,429, and 500 transient fault
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+_Version update only_
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+_Version update only_
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
 
 ## 3.3.0
 Thu, 18 Aug 2022 19:08:02 GMT
@@ -18,6 +80,11 @@ Thu, 18 Aug 2022 19:08:02 GMT
 - Add option to quantize positions in GraphicsRequestProps.
 - FeatureOverrides now merges element overrides with script overrides and allows callers to specify criteria under which script overrides should be ignored.
 - DisplayStyleSettings.scheduleScriptProps is no longer deprecated. Add comparison methods for types in the RenderSchedule namespace.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
 
 ## 3.2.8
 Tue, 09 Aug 2022 15:52:41 GMT

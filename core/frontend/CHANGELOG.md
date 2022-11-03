@@ -1,6 +1,70 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 18 Aug 2022 19:08:02 GMT and should not be manually modified.
+This log was last generated on Fri, 28 Oct 2022 13:34:58 GMT and should not be manually modified.
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:58 GMT
+
+### Updates
+
+- ArcGIS tilemap requests were missing oauth2 token if available.
+- Reproject reality tiles to the surface of the Earth.
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+### Updates
+
+- Add functions to obtain the extents of geometric models asynchronously on the backend.
+- Fall back to requesting a tile from the backend when a request to cloud storage throws a 404 error.
+
+## 3.4.1
+Mon, 17 Oct 2022 20:06:51 GMT
+
+_Version update only_
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Improve ambient occlusion effect by decreasing the size of shadows for more distant geometry, increasing the default maximum distance of the effect to 10,000 meters, and fading the effect as it approaches maximum distance.
+- Deprecated CloudStorage in favor of TileStorage + iTwin/object-storage
+- Fix display issue with ArcGIS server of 'Geologic Map of North America'
+- Use createImageBitmap when creating textures for reality models (currently enabled for Chromium only)
+- Add waitForSceneCompletion API to Viewport.
+- lock down @types/semver to 7.3.10
+- add querySubCategories to imodelconnection
+- Updated Node types declaration to support latest v16
+- Improve support for display transforms in AccuSnap and ViewClipByElementTool.
+- Fix pan tool failing to work when zoomed out with planar globe mode.
+- Limit the shadow-casting range for tile trees that span the entire globe, like the OpenStreetMap buildings.
+- Add support for custom terrain providers.
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+_Version update only_
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+_Version update only_
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+_Version update only_
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
 
 ## 3.3.0
 Thu, 18 Aug 2022 19:08:02 GMT
@@ -22,6 +86,11 @@ Thu, 18 Aug 2022 19:08:02 GMT
 - Promote Tool Settings APIs to public.
 - Add support for applying schedule scripts without requiring the script to be hosted by a persistent element.
 - Fixes for updateDynamics to supply ajusted point.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
 
 ## 3.2.8
 Tue, 09 Aug 2022 15:52:41 GMT

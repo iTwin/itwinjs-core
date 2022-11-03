@@ -123,6 +123,10 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return this._doRequest(tileUrl, "json");
   }
 
+  public getTileContentType(url: string): "tile" | "tileset" {
+    return url.endsWith("json") ? "tileset" : "tile";
+  }
+
   /**
    * Gets spatial location and extents of this reality data source
    * @returns spatial location and extents

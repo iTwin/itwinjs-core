@@ -183,7 +183,7 @@ function LocalFilePage(props: LocalFilePageProps) {
         { name: "iModels", extensions: ["ibim", "bim"] },
       ],
     };
-    const val = await ElectronApp.callDialog("showOpenDialog", opts);
+    const val = await ElectronApp.dialogIpc.showOpenDialog( opts);
     if (val.canceled)
       return;
 

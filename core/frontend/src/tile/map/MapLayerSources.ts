@@ -80,7 +80,7 @@ export class MapLayerSource {
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
+    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.userName, this.password, ignoreCache);
   }
 
   /** @internal*/
@@ -135,13 +135,21 @@ export class MapLayerSources {
   }
   public get layers(): MapLayerSource[] {
     const layers = new Array<MapLayerSource>();
-    this._sources.forEach((source) => { if (!source.baseMap) layers.push(source); });
+    this._sources.forEach((source) => {
+      if (!source.baseMap)
+        layers.push(source);
+    });
+
     return layers;
   }
   public get allSource() { return this._sources; }
   public get bases(): MapLayerSource[] {
     const layers = new Array<MapLayerSource>();
-    this._sources.forEach((source) => { if (source.baseMap) layers.push(source); });
+    this._sources.forEach((source) => {
+      if (source.baseMap)
+        layers.push(source);
+    });
+
     return layers;
   }
 
@@ -168,13 +176,13 @@ export class MapLayerSources {
     if (!iModel)
       iModel = IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.iModel : undefined;
 
-    let sourceRange = MapCartoRectangle.create();
+    let sourceRange = MapCartoRectangle.createMaximum();
     if (iModel) {
       const projectCenter = iModel.projectExtents.localXYZToWorld(.5, .5, .5)!;
       const cartoCenter = iModel.spatialToCartographicFromEcef(projectCenter);
-      const globeRange = MapCartoRectangle.create();
+      const globeRange = MapCartoRectangle.createMaximum();
       const nearDelta = Point2d.create(globeRange.xLength() / 100, globeRange.yLength() / 100);
-      sourceRange = MapCartoRectangle.create(cartoCenter.longitude - nearDelta.x, cartoCenter.latitude - nearDelta.y, cartoCenter.longitude + nearDelta.x, cartoCenter.latitude + nearDelta.y);
+      sourceRange = MapCartoRectangle.fromRadians(cartoCenter.longitude - nearDelta.x, cartoCenter.latitude - nearDelta.y, cartoCenter.longitude + nearDelta.x, cartoCenter.latitude + nearDelta.y);
     }
 
     const sources = new Array<MapLayerSource>();

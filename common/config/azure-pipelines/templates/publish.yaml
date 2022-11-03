@@ -4,10 +4,22 @@ parameters:
     default: $(System.DefaultWorkingDirectory)
 
 steps:
+- powershell: |
+    $commitMsg = '$(Build.SourceVersionMessage)'
+    if ($commitMsg -match '^(\d+.\d+.\d+)(-dev.\d+)?$') {
+      Write-Host `'$commitMsg`'` is a version bump
+      Write-Host '##vso[task.setvariable variable=ShouldPublish;]True'
+    } else {
+      Write-Host `'$commitMsg`'` is not a version bump
+      Write-Host '##vso[task.setvariable variable=ShouldPublish;]False'
+    }
+  displayName: Publish if version bump
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
+
 - script: node common/scripts/install-run-rush.js publish --publish --pack --include-all
   displayName: rush publish pack
   workingDirectory: ${{ parameters.workingDir }}
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
 
 - task: PythonScript@0
   displayName: Gather packages for release
@@ -16,12 +28,11 @@ steps:
     scriptSource: filepath
     scriptPath: common/scripts/gather_packages.py
     arguments: '$(Build.ArtifactStagingDirectory) $(Build.SourcesDirectory) $(Build.SourceBranch)'
-    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
+    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: packages'
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)/imodeljs/packages'
     ArtifactName: packages
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
-
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))

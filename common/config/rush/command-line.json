@@ -42,7 +42,8 @@
       "enableParallelism": true,
       "ignoreMissingScript": false,
       "ignoreDependencyOrder": false,
-      "allowWarningsInSuccessfulBuild": true
+      "allowWarningsInSuccessfulBuild": true,
+      "incremental": true
     },
     {
       "name": "cover",
@@ -71,7 +72,7 @@
       "description": "Iterates through each package in the monorepo and runs the 'extract-api' script",
       "enableParallelism": true,
       "ignoreMissingScript": true,
-      "ignoreDependencyOrder": true
+      "ignoreDependencyOrder": false
     },
     {
       "name": "extract-extension-api",

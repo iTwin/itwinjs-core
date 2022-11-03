@@ -8,17 +8,22 @@ import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  ContentDescriptorRequestOptions, ContentFlags, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized, Ruleset,
+  Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
+  DescriptorOverrides, DiagnosticsOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
+  ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Key,
+  KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset,
+  RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
+import { buildElementsProperties } from "./ElementPropertiesHelper";
 import {
-  createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
+  createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
 } from "./NativePlatform";
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, DiagnosticsCallback, getElementKey, getLocalesDirectory } from "./Utils";
+import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
 
 /** @internal */
 export class PresentationManagerDetail implements IDisposable {
@@ -26,10 +31,9 @@ export class PresentationManagerDetail implements IDisposable {
   private _nativePlatform: NativePlatformDefinition | undefined;
   private _updatesTracker: UpdatesTracker | undefined;
   private _onManagerUsed: (() => void) | undefined;
-  private _diagnosticsCallback: DiagnosticsCallback | undefined;
+  private _diagnosticsOptions: BackendDiagnosticsOptions | undefined;
 
   public rulesets: RulesetManager;
-  public activeLocale: string | undefined;
   public activeUnitSystem: UnitSystemKey | undefined;
 
   constructor(params: PresentationManagerProps) {
@@ -43,8 +47,6 @@ export class PresentationManagerDetail implements IDisposable {
     const changeTrackingEnabled = mode === PresentationManagerMode.ReadWrite && !!params.updatesPollInterval;
     this._nativePlatform = params.addon ?? createNativePlatform(
       params.id ?? "",
-      typeof presentationAssetsRoot === "string" ? presentationAssetsRoot : presentationAssetsRoot.common,
-      params.localeDirectories ?? [],
       params.workerThreadsCount ?? 2,
       mode,
       changeTrackingEnabled,
@@ -69,12 +71,11 @@ export class PresentationManagerDetail implements IDisposable {
       params.supplementalRulesetDirectories ?? [],
       params.rulesetDirectories ?? [],
     );
-    this.activeLocale = params.defaultLocale;
     this.activeUnitSystem = params.defaultUnitSystem;
 
     this._onManagerUsed = undefined;
     this.rulesets = new RulesetManagerImpl(getNativePlatform);
-    this._diagnosticsCallback = params.diagnosticsCallback;
+    this._diagnosticsOptions = params.diagnostics;
   }
 
   public dispose(): void {
@@ -106,7 +107,50 @@ export class PresentationManagerDetail implements IDisposable {
     this._onManagerUsed = handler;
   }
 
-  public async getContentDescriptor(requestOptions: Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<string> {
+  public async getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node[]> {
+    const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
+    const params = {
+      requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
+      rulesetId: this.registerRuleset(rulesetOrId),
+      ...strippedOptions,
+      nodeKey: parentKey,
+    };
+    return JSON.parse(await this.request(params), Node.listReviver);
+  }
+
+  public async getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
+    const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
+    const params = {
+      requestId: parentKey ? NativePlatformRequestTypes.GetChildrenCount : NativePlatformRequestTypes.GetRootNodesCount,
+      rulesetId: this.registerRuleset(rulesetOrId),
+      ...strippedOptions,
+      nodeKey: parentKey,
+    };
+    return JSON.parse(await this.request(params));
+  }
+
+  public async getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
+    const { rulesetOrId, instancePaths, ...strippedOptions } = requestOptions;
+    const params = {
+      requestId: NativePlatformRequestTypes.GetNodePaths,
+      rulesetId: this.registerRuleset(rulesetOrId),
+      ...strippedOptions,
+      paths: instancePaths.map((p) => p.map((s) => InstanceKey.toJSON(s))),
+    };
+    return JSON.parse(await this.request(params), NodePathElement.listReviver);
+  }
+
+  public async getFilteredNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
+    const { rulesetOrId, ...strippedOptions } = requestOptions;
+    const params = {
+      requestId: NativePlatformRequestTypes.GetFilteredNodePaths,
+      rulesetId: this.registerRuleset(rulesetOrId),
+      ...strippedOptions,
+    };
+    return JSON.parse(await this.request(params), NodePathElement.listReviver);
+  }
+
+  public async getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>>): Promise<string> {
     const { rulesetOrId, ...strippedOptions } = requestOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetContentDescriptor,
@@ -116,6 +160,109 @@ export class PresentationManagerDetail implements IDisposable {
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
     };
     return this.request(params);
+  }
+
+  public async getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]> {
+    const params = {
+      requestId: NativePlatformRequestTypes.GetContentSources,
+      rulesetId: "ElementProperties",
+      ...requestOptions,
+    };
+    const reviver = (key: string, value: any) => {
+      return key === "" ? SelectClassInfo.listFromCompressedJSON(value.sources, value.classesMap) : value;
+    };
+    return JSON.parse(await this.request(params), reviver);
+  }
+
+  public async getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
+    const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
+    const params = {
+      requestId: NativePlatformRequestTypes.GetContentSetSize,
+      rulesetId: this.registerRuleset(rulesetOrId),
+      ...strippedOptions,
+      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
+      descriptorOverrides: createContentDescriptorOverrides(descriptor),
+    };
+    return JSON.parse(await this.request(params));
+  }
+
+  public async getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined> {
+    const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
+    const params = {
+      requestId: NativePlatformRequestTypes.GetContent,
+      rulesetId: this.registerRuleset(rulesetOrId),
+      ...strippedOptions,
+      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
+      descriptorOverrides: createContentDescriptorOverrides(descriptor),
+    };
+    return JSON.parse(await this.request(params), Content.reviver);
+  }
+
+  public async getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>> {
+    const { rulesetOrId, ...strippedOptions } = requestOptions;
+    const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
+    const params = {
+      requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
+      rulesetId: this.registerRuleset(rulesetOrId),
+      ...strippedOptionsNoDescriptorAndKeys,
+      keys: getKeysForContentRequest(keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
+      descriptorOverrides: createContentDescriptorOverrides(descriptor),
+    };
+    const reviver = (key: string, value: any) => {
+      return key === "" ? {
+        total: value.total,
+        items: value.items.map(DisplayValueGroup.fromJSON),
+      } : value;
+    };
+    return JSON.parse(await this.request(params), reviver);
+  }
+
+  public async getDisplayLabelDefinition(requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition> {
+    const params = {
+      requestId: NativePlatformRequestTypes.GetDisplayLabel,
+      ...requestOptions,
+      key: InstanceKey.toJSON(requestOptions.key),
+    };
+    return JSON.parse(await this.request(params), LabelDefinition.reviver);
+  }
+
+  public async getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]> {
+    const concreteKeys = requestOptions.keys.map((k) => {
+      if (k.className === "BisCore:Element")
+        return getElementKey(requestOptions.imodel, k.id);
+      return k;
+    }).filter<InstanceKey>((k): k is InstanceKey => !!k);
+    const contentRequestOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
+      ...requestOptions,
+      rulesetOrId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+      descriptor: {
+        displayType: DefaultContentDisplayTypes.List,
+        contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
+      },
+      keys: new KeySet(concreteKeys),
+    };
+    const content = await this.getContent(contentRequestOptions);
+    return concreteKeys.map((key) => {
+      const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
+      if (!item)
+        return { displayValue: "", rawValue: "", typeName: "" };
+      return item.label;
+    });
+  }
+
+  public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined> {
+    const { elementId, ...optionsNoElementId } = requestOptions;
+    const content = await this.getContent({
+      ...optionsNoElementId,
+      descriptor: {
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        contentFlags: ContentFlags.ShowLabels,
+      },
+      rulesetOrId: "ElementProperties",
+      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+    });
+    const properties = buildElementsProperties(content);
+    return properties[0];
   }
 
   /** Registers given ruleset and replaces the ruleset with its ID in the resulting object */
@@ -134,42 +281,47 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async request(params: RequestParams): Promise<string> {
-    const { requestId, imodel, locale, unitSystem, diagnostics, cancelEvent, ...strippedParams } = params;
     this._onManagerUsed?.();
-
+    const { requestId, imodel, unitSystem, diagnostics: requestDiagnostics, cancelEvent, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    const nativeRequestParams: any = {
-      requestId,
-      params: {
-        locale: (locale ?? this.activeLocale)?.toLocaleLowerCase(),
-        unitSystem: toOptionalNativeUnitSystem(unitSystem ?? this.activeUnitSystem),
-        ...strippedParams,
+    const response = await withOptionalDiagnostics(
+      [this._diagnosticsOptions, requestDiagnostics],
+      async (diagnosticsOptions) => {
+        const nativeRequestParams: any = {
+          requestId,
+          params: {
+            unitSystem: toOptionalNativeUnitSystem(unitSystem ?? this.activeUnitSystem),
+            ...strippedParams,
+            ...(diagnosticsOptions ? { diagnostics: diagnosticsOptions } : undefined),
+          },
+        };
+        return this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
       },
-    };
-
-    let diagnosticsListener: BackendDiagnosticsHandler | undefined;
-    if (diagnostics) {
-      const { handler: tempDiagnosticsListener, ...diagnosticsOptions } = diagnostics;
-      diagnosticsListener = tempDiagnosticsListener;
-      nativeRequestParams.params.diagnostics = diagnosticsOptions;
-    }
-
-    const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
-    if (response.diagnostics) {
-      const logs = { logs: [response.diagnostics] };
-      diagnosticsListener && diagnosticsListener(logs);
-      this._diagnosticsCallback && this._diagnosticsCallback(logs);
-    }
-
+    );
     return response.result;
   }
+}
+
+async function withOptionalDiagnostics(
+  diagnosticsOptions: Array<BackendDiagnosticsOptions | undefined>,
+  nativePlatformRequestHandler: (combinedDiagnosticsOptions: DiagnosticsOptions | undefined) => Promise<NativePlatformResponse<string>>,
+): Promise<NativePlatformResponse<string>> {
+  const contexts = diagnosticsOptions.map((d) => d?.requestContextSupplier?.());
+  const combinedOptions = combineDiagnosticsOptions(...diagnosticsOptions);
+  const response = await nativePlatformRequestHandler(combinedOptions);
+  if (response.diagnostics) {
+    const diagnostics = { logs: [response.diagnostics] };
+    diagnosticsOptions.forEach((options, i) => {
+      options && reportDiagnostics(diagnostics, options, contexts[i]);
+    });
+  }
+  return response;
 }
 
 interface RequestParams {
   diagnostics?: BackendDiagnosticsOptions;
   requestId: string;
   imodel: IModelDb;
-  locale?: string;
   unitSystem?: UnitSystemKey;
   cancelEvent?: BeEvent<() => void>;
 }
@@ -294,8 +446,6 @@ interface UnitFormatMap {
 
 function createNativePlatform(
   id: string,
-  presentationAssetsRoot: string,
-  localeDirectories: string[],
   workerThreadsCount: number,
   mode: PresentationManagerMode,
   changeTrackingEnabled: boolean,
@@ -303,18 +453,14 @@ function createNativePlatform(
   defaultFormats: UnitFormatMap | undefined,
   useMmap: boolean | number | undefined,
 ): NativePlatformDefinition {
-  const collatedLocaleDirectories = collateAssetDirectories(
-    getLocalesDirectory(presentationAssetsRoot),
-    localeDirectories,
-  );
   return new (createDefaultNativePlatform({
     id,
-    localeDirectories: collatedLocaleDirectories,
     taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: workerThreadsCount },
     mode,
     isChangeTrackingEnabled: changeTrackingEnabled,
     cacheConfig: createCacheConfig(caching?.hierarchies),
     contentCacheSize: caching?.content?.size,
+    workerConnectionCacheSize: caching?.workerConnectionCacheSize,
     defaultFormats: toNativeUnitFormatsMap(defaultFormats),
     useMmap,
   }))();
@@ -375,3 +521,9 @@ function toNativeUnitSystem(unitSystem: UnitSystemKey): NativePresentationUnitSy
 function collateAssetDirectories(mainDirectory: string, additionalDirectories: string[]): string[] {
   return [...new Set([mainDirectory, ...additionalDirectories])];
 }
+
+const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
+  if (descriptorOrOverrides instanceof Descriptor)
+    return descriptorOrOverrides.createDescriptorOverrides();
+  return descriptorOrOverrides;
+};

@@ -8,6 +8,7 @@
 $divider-color: $buic-background-toolbutton-stroke;
 $hovered-icon-color: $buic-foreground-primary;
 $default-icon-height: 20px;
+
 .map-manager-layer-host {
   margin: 0 6px;
   height: 100%;
@@ -71,6 +72,7 @@ $default-icon-height: 20px;
   .map-manager-overlays {
     display: flex;
     align-content: center;
+
     .map-manager-attach-layer-button {
       margin-left: auto;
     }
@@ -188,6 +190,8 @@ $default-icon-height: 20px;
       background-color: $buic-background-5;
     }
   }
+
+
 }
 
 .map-manager-source-header {
@@ -205,6 +209,7 @@ $default-icon-height: 20px;
     width: 465px;
     min-width: 3em;
   }
+
   .map-manager-item-transparency {
     max-width: 160px;
     width: 160px;
@@ -233,6 +238,12 @@ $default-icon-height: 20px;
     overflow: hidden;
     margin-left: 2px;
   }
+
+  .map-manager-item-label-disabled {
+    @extend .map-manager-item-label;
+    color: $buic-foreground-muted;
+  }
+
   .map-manager-item-transparency {
     margin-right: 6px;
   }
@@ -243,6 +254,22 @@ $default-icon-height: 20px;
 
   .map-layer-settings {
     margin-left: 2px;
+  }
+
+  .map-layer-source-item-warnMessage-icon {
+    background-color: transparent;
+    border: none;
+    color: $buic-foreground-warning;
+    background-color: transparent;
+
+    &:hover {
+      color: $hovered-icon-color;
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: $uicore-button-focus-boxshadow;
+    }
   }
 }
 

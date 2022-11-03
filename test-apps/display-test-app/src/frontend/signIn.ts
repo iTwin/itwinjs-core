@@ -6,6 +6,7 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib
 import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
+import { getConfigurationString } from "./DisplayTestApp";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
@@ -17,7 +18,7 @@ export async function signIn(): Promise<boolean> {
     }
 
     return new Promise<boolean>((resolve, reject) => {
-      existingAuthClient.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
+      existingAuthClient.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(!!token));
       existingAuthClient.signIn().catch((err) => reject(err));
     });
   }
@@ -25,14 +26,20 @@ export async function signIn(): Promise<boolean> {
   let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient | undefined;
   if (ProcessDetector.isElectronAppFrontend) {
     authClient = new ElectronRendererAuthorization();
-  } else if (ProcessDetector.isMobileAppFrontend){
-    // not implemented
+  } else if (ProcessDetector.isMobileAppFrontend) {
+    // The default auth client works on mobile
+    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
+    return !!accessToken;
   } else {
+    const clientId = getConfigurationString("oidcClientId") ?? "imodeljs-spa-test";
+    const redirectUri = getConfigurationString("oidcRedirectUri") ?? "http://localhost:3000/signin-callback";
+    const scope = getConfigurationString("oidcScope") ?? "projects:read realitydata:read imodels:read imodels:modify imodelaccess:read";
+    const responseType = "code";
     authClient = new BrowserAuthorizationClient({
-      clientId: "imodeljs-spa-test",
-      redirectUri: "http://localhost:3000/signin-callback",
-      scope: "openid email profile organization itwinjs",
-      responseType: "code",
+      clientId,
+      redirectUri,
+      scope,
+      responseType,
     });
     try {
       await authClient.signInSilent();
@@ -47,7 +54,7 @@ export async function signIn(): Promise<boolean> {
       return true;
 
     return new Promise<boolean>((resolve, reject) => {
-      authClient!.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
+      authClient!.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(!!token));
       authClient!.signIn().catch((err) => reject(err));
     });
   }

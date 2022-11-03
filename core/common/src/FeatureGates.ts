@@ -49,5 +49,10 @@ export class FeatureGates {
    * @returns A function that may be called to remove the listener.
    * @note Use [[onChanged]] to listen to changes for *all* gates.
    */
-  public addMonitor(feature: string, monitor: (val: GateValue) => void): () => void { return this.onChanged.addListener((changed, val) => { if (changed === feature) monitor(val); }); }
+  public addMonitor(feature: string, monitor: (val: GateValue) => void): () => void {
+    return this.onChanged.addListener((changed, val) => {
+      if (changed === feature)
+        monitor(val);
+    });
+  }
 }

@@ -44,7 +44,9 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    if (imodel)
+      await imodel.close();
+
     await MockRender.App.shutdown();
   });
 

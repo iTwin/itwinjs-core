@@ -75,10 +75,10 @@ export class PerformanceMetrics {
     // Use double buffering here to ensure that we grab a COMPLETE set of timings from a SINGLE run when grabbing timing data while continuously rendering
     this._updateallTimePoints1 = !this._updateallTimePoints1; // Switch to other allTimePoints buffer
     if (this._updateallTimePoints1) { // Get data from the old buffer that was just completed
-      this._allTimePoints2.forEach((record: AllTimePoints) => { this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds); });
+      this._allTimePoints2.forEach((record: AllTimePoints) => this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds));
       this._allTimePoints2 = []; // Reset to empty
     } else {
-      this._allTimePoints1.forEach((record: AllTimePoints) => { this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds); });
+      this._allTimePoints1.forEach((record: AllTimePoints) => this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds));
       this._allTimePoints1 = []; // Reset to empty
     }
     this._beginTimePoints = []; // This should be back to [] at this point

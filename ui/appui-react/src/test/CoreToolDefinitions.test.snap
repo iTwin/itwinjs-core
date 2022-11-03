@@ -229,7 +229,15 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 },
                 "_description": "",
                 "_isActive": false,
-                "_label": "",
+                "_label": ConditionalStringValue {
+                  "_value": "tools.View.ToggleCamera.turnOnFlyover",
+                  "stringGetter": [Function],
+                  "syncEventIds": Array [
+                    "activecontentchanged",
+                    "activeviewportchanged",
+                    "viewstatechanged",
+                  ],
+                },
                 "_onItemExecuted": undefined,
                 "_tooltip": "",
                 "badgeType": undefined,
@@ -237,7 +245,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
                 "iconSpec": ConditionalStringValue {
-                  "_value": "icon-camera-animation-disabled",
+                  "_value": "webSvg:undefined",
                   "stringGetter": [Function],
                   "syncEventIds": Array [
                     "activecontentchanged",
@@ -410,6 +418,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
   }
   toolWidgetDef={
     ToolWidgetDef {
+      "_allowedPanelTargets": undefined,
       "_appButton": undefined,
       "_backstageLabel": "buttons.openBackstageMenu",
       "_canPopout": undefined,
@@ -417,6 +426,12 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "_defaultFloatingPosition": undefined,
       "_defaultFloatingSize": undefined,
       "_defaultState": 4,
+      "_defaultTabLocation": Object {
+        "side": "left",
+        "tabIndex": 0,
+        "widgetId": "",
+        "widgetIndex": 0,
+      },
       "_fillZone": false,
       "_floatingContainerId": undefined,
       "_handleSyncUiEvent": [Function],
@@ -649,7 +664,15 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                     },
                     "_description": "",
                     "_isActive": false,
-                    "_label": "",
+                    "_label": ConditionalStringValue {
+                      "_value": "tools.View.ToggleCamera.turnOnFlyover",
+                      "stringGetter": [Function],
+                      "syncEventIds": Array [
+                        "activecontentchanged",
+                        "activeviewportchanged",
+                        "viewstatechanged",
+                      ],
+                    },
                     "_onItemExecuted": undefined,
                     "_tooltip": "",
                     "badgeType": undefined,
@@ -657,7 +680,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                     "getKey": [Function],
                     "handleSizeKnown": [Function],
                     "iconSpec": ConditionalStringValue {
-                      "_value": "icon-camera-animation-disabled",
+                      "_value": "webSvg:undefined",
                       "stringGetter": [Function],
                       "syncEventIds": Array [
                         "activecontentchanged",
@@ -843,12 +866,6 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "_state": 4,
       "_stateChanged": false,
       "_syncEventIds": Array [],
-      "_tabLocation": Object {
-        "side": "left",
-        "tabIndex": 0,
-        "widgetId": "",
-        "widgetIndex": 0,
-      },
       "_toolbarBaseName": "[]ToolWidget",
       "_tooltip": "",
       "_widgetType": 0,
@@ -1003,7 +1020,7 @@ exports[`CoreToolDefinitions ToolWidgetComposer should render correctly with Cor
               "badgeType": undefined,
               "execute": [Function],
               "icon": ConditionalStringValue {
-                "_value": "icon-camera-animation-disabled",
+                "_value": "webSvg:undefined",
                 "stringGetter": [Function],
                 "syncEventIds": Array [
                   "activecontentchanged",
@@ -1025,7 +1042,15 @@ exports[`CoreToolDefinitions ToolWidgetComposer should render correctly with Cor
                 "testFunc": [Function],
               },
               "itemPriority": 90,
-              "label": "",
+              "label": ConditionalStringValue {
+                "_value": "tools.View.ToggleCamera.turnOnFlyover",
+                "stringGetter": [Function],
+                "syncEventIds": Array [
+                  "activecontentchanged",
+                  "activeviewportchanged",
+                  "viewstatechanged",
+                ],
+              },
             },
             Object {
               "badgeType": undefined,

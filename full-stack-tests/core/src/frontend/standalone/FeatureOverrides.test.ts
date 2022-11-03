@@ -35,7 +35,7 @@ describe("FeatureOverrides", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -59,7 +59,8 @@ describe("FeatureOverrides", () => {
 
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
-    const hls = new HiliteSet(imodel); hls.setHilite("0x1", true);
+    const hls = new HiliteSet(imodel);
+    hls.setHilite("0x1", true);
     vp.target.setHiliteSet(hls);
     ovr.update(table);
     expect(ovr.anyHilited).to.be.true;
@@ -85,7 +86,8 @@ describe("FeatureOverrides", () => {
 
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
-    const hls = new HiliteSet(imodel); hls.setHilite("0x1", true);
+    const hls = new HiliteSet(imodel);
+    hls.setHilite("0x1", true);
     vp.target.setHiliteSet(hls);
     ovr.update(table);
     expect(ovr.anyHilited).to.be.true;

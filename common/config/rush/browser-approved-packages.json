@@ -67,10 +67,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/imodelbank-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend", "internal" ]
     },
@@ -132,7 +128,11 @@
     },
     {
       "name": "@itwin/certa",
-      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/cloud-agnostic-core",
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@itwin/components-react",
@@ -140,7 +140,7 @@
     },
     {
       "name": "@itwin/core-backend",
-      "allowedCategories": [ "backend", "common", "edit", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/core-bentley",
@@ -201,6 +201,10 @@
     {
       "name": "@itwin/core-webpack-tools",
       "allowedCategories": [ "backend", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/ecschema-editing",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/ecschema-locaters",
@@ -279,6 +283,14 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@itwin/itwinui-icons",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@itwin/itwinui-icons-color-react",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "@itwin/itwinui-icons-react",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -299,8 +311,20 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/map-layers-formats",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/node-cli-authorization",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/object-storage-azure",
+      "allowedCategories": [ "backend", "frontend" ]
+    },
+    {
+      "name": "@itwin/object-storage-core",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "@itwin/oidc-signin-tool",
@@ -332,7 +356,7 @@
     },
     {
       "name": "@itwin/projects-client",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/reality-data-client",
@@ -412,7 +436,7 @@
     },
     {
       "name": "@typescript-eslint/eslint-plugin",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@typescript-eslint/parser",
@@ -428,11 +452,7 @@
     },
     {
       "name": "@xmldom/xmldom",
-      "allowedCategories": [ "backend", "common", "tools" ]
-    },
-    {
-      "name": "agentkeepalive",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
       "name": "almost-equal",
@@ -543,12 +563,16 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "crypto-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "debug",
       "allowedCategories": [ "common" ]
     },
     {
       "name": "deep-assign",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "deep-equal",
@@ -600,11 +624,11 @@
     },
     {
       "name": "eslint-plugin-deprecation",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "eslint-plugin-import",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "eslint-plugin-jam3",
@@ -620,15 +644,19 @@
     },
     {
       "name": "eslint-plugin-prefer-arrow",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "eslint-plugin-react",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "eslint-plugin-react-hooks",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
+    },
+    {
+      "name": "eslint-plugin-testing-library",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "eventemitter2",
@@ -676,11 +704,7 @@
     },
     {
       "name": "fs-extra",
-      "allowedCategories": [ "backend", "common", "internal", "tools" ]
-    },
-    {
-      "name": "fs-write-stream-atomic",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "fuse.js",
@@ -691,8 +715,8 @@
       "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
-      "name": "got",
-      "allowedCategories": [ "common" ]
+      "name": "google-protobuf",
+      "allowedCategories": [ "extensions" ]
     },
     {
       "name": "https-browserify",
@@ -708,10 +732,6 @@
     },
     {
       "name": "i18next-http-backend",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "i18next-xhr-backend",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -733,6 +753,10 @@
     {
       "name": "internal-tools",
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
+    },
+    {
+      "name": "inversify",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
@@ -768,7 +792,7 @@
     },
     {
       "name": "lodash",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "tools" ]
     },
     {
       "name": "lolex",
@@ -808,10 +832,14 @@
     },
     {
       "name": "nock",
-      "allowedCategories": [ "common", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "node-fetch",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "node-simctl",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -855,16 +883,12 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "proper-lockfile",
-      "allowedCategories": [ "common" ]
-    },
-    {
       "name": "puppeteer",
       "allowedCategories": [ "integration-testing", "tools" ]
     },
     {
       "name": "qs",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "raf",
@@ -927,6 +951,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "react-select-async-paginate",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-select-event",
       "allowedCategories": [ "frontend" ]
     },
@@ -947,12 +975,12 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "recursive-readdir",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "redux",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "reflect-metadata",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "require-dir",
@@ -1016,7 +1044,7 @@
     },
     {
       "name": "superagent",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "supertest",
@@ -1036,7 +1064,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "typedoc",

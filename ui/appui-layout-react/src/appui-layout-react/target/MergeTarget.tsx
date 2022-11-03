@@ -12,7 +12,9 @@ import * as React from "react";
 import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { WidgetDropTargetState, WidgetState } from "../base/NineZoneState";
+import { WidgetState } from "../state/WidgetState";
+import { WidgetDropTargetState } from "../state/DropTargetState";
+import { useAllowedWidgetTarget } from "./useAllowedWidgetTarget";
 
 /** @internal */
 export interface MergeTargetProps {
@@ -26,8 +28,9 @@ export function MergeTarget(props: MergeTargetProps) {
   const draggedTab = React.useContext(DraggedTabContext);
   const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
   const [ref, targeted] = useTarget<HTMLDivElement>(useTargetArgs(widgetId));
+  const allowedTarget = useAllowedWidgetTarget(widgetId);
   // istanbul ignore next
-  const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
+  const hidden = !allowedTarget || ((!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId);
   const className = classnames(
     "nz-target-mergeTarget",
     // istanbul ignore next

@@ -247,7 +247,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Entity to be successful");
 
       const [, , itemElement] = findResult;
-      expect(() => { parser.parseEntityClass(itemElement); }).to.throw("No valid schema found for alias invalid");
+      expect(() => parser.parseEntityClass(itemElement)).to.throw("No valid schema found for alias invalid");
     });
   });
 

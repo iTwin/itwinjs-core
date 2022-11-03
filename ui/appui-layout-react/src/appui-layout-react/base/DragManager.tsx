@@ -12,16 +12,14 @@ import { Point, SizeProps } from "@itwin/core-react";
 import { PanelSide } from "../widget-panels/Panel";
 import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { Event, EventEmitter } from "./Event";
-import { DropTargetState, isTabDragDropTargetState, isWidgetDragDropTargetState, PanelDropTargetState, TabDragDropTargetState, TabDropTargetState, TabState, WidgetDragDropTargetState, WidgetState } from "./NineZoneState";
+import { WidgetState } from "../state/WidgetState";
+import { TabState } from "../state/TabState";
 import { getUniqueId } from "./NineZone";
+import { DropTargetState, isTabDragDropTargetState, isWidgetDragDropTargetState, PanelDropTargetState, TabDragDropTargetState, TabDropTargetState, WidgetDragDropTargetState } from "../state/DropTargetState";
 
 /** @internal */
 export interface DragStartArgs {
   initialPointerPosition: Point;
-}
-
-/** @internal */
-export interface WidgetDragStartArgs extends DragStartArgs {
   pointerPosition: Point;
 }
 
@@ -75,10 +73,10 @@ export function useDragTab(args: UseDragTabArgs) {
     onDrag: handleDrag,
     onDragEnd: handleDragEnd,
   });
-  const handleDragStart = React.useCallback(({ initialPointerPosition, widgetSize }: TabDragStartArgs) => {
+  const handleDragStart = React.useCallback(({ initialPointerPosition, pointerPosition, widgetSize }: TabDragStartArgs) => {
     onDragStart({
       initialPointerPosition,
-      pointerPosition: initialPointerPosition,
+      pointerPosition,
       lastPointerPosition: initialPointerPosition,
       widgetSize,
     });
@@ -140,7 +138,7 @@ export function useDragWidget(args: UseDragWidgetArgs) {
     onDrag: handleDrag,
     onDragEnd: handleDragEnd,
   });
-  const handleWidgetDragStart = React.useCallback(({ initialPointerPosition, pointerPosition }: WidgetDragStartArgs) => {
+  const handleWidgetDragStart = React.useCallback(({ initialPointerPosition, pointerPosition }: DragStartArgs) => {
     onItemDragStart({
       initialPointerPosition,
       pointerPosition,
@@ -378,67 +376,48 @@ export function useDragItem<T extends DragItem>(args: UseDragItemArgs<T>) {
 }
 
 /** @internal */
-export function useIsDragged(callback: () => boolean) {
+export function useDraggedItem() {
   const dragManager = React.useContext(DragManagerContext);
-  const [dragged, setDragged] = React.useState<boolean>(() => callback());
+  const [draggedItem, setDraggedItem] = React.useState<DragItem | undefined>(dragManager.draggedItem?.item);
   React.useEffect(() => {
-    return dragManager.onDragStart.add(() => {
-      setDragged(callback());
+    return dragManager.onDragStart.add((item) => {
+      setDraggedItem(item);
     });
-  }, [callback, dragManager]);
+  }, [dragManager]);
+  React.useEffect(() => {
+    return dragManager.onDragUpdate.add((item) => {
+      setDraggedItem(item);
+    });
+  }, [dragManager]);
   React.useEffect(() => {
     return dragManager.onDragEnd.add(() => {
-      setDragged(callback());
+      setDraggedItem(undefined);
+
     });
-  }, [callback, dragManager]);
-  React.useEffect(() => {
-    return dragManager.onDragUpdate.add(() => {
-      setDragged(callback());
-    });
-  }, [callback, dragManager]);
-  return dragged;
+  }, [dragManager]);
+  return draggedItem;
 }
 
 /** @internal */
 export function useIsDraggedItem(item: DragItem) {
-  const dragManager = React.useContext(DragManagerContext);
-  const handleCallback = React.useCallback(() => {
-    return dragManager.isDragged(item);
-  }, [dragManager, item]);
-  return useIsDragged(handleCallback);
+  const draggedItem = useDraggedItem();
+  return !!draggedItem && draggedItem.id === item.id && draggedItem.type === item.type;
 }
 
 /** @internal */
 export function useIsDraggedType(type: DragItem["type"]) {
-  const dragManager = React.useContext(DragManagerContext);
-  const handleCallback = React.useCallback(() => {
-    return dragManager.isDraggedType(type);
-  }, [dragManager, type]);
-  return useIsDragged(handleCallback);
+  const draggedItem = useDraggedItem();
+  return !!draggedItem && draggedItem.type === type;
 }
 
 /** @internal */
 export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] | undefined {
-  const dragManager = React.useContext(DragManagerContext);
-  const [dragged, setDragged] = React.useState<T["id"] | undefined>(() => {
-    return dragManager.getDraggedIdOfType(type);
-  });
-  React.useEffect(() => {
-    return dragManager.onDragStart.add(() => {
-      setDragged(dragManager.getDraggedIdOfType(type));
-    });
-  }, [dragManager, type]);
-  React.useEffect(() => {
-    return dragManager.onDragEnd.add(() => {
-      setDragged(dragManager.getDraggedIdOfType(type));
-    });
-  }, [dragManager, type]);
-  React.useEffect(() => {
-    return dragManager.onDragUpdate.add(() => {
-      setDragged(dragManager.getDraggedIdOfType(type));
-    });
-  }, [dragManager, type]);
-  return dragged;
+  const draggedItem = useDraggedItem();
+
+  if (draggedItem && draggedItem.type === type) {
+    return draggedItem.id;
+  }
+  return undefined;
 }
 
 /** @internal */
@@ -528,7 +507,8 @@ interface ResizeHandleDragItem {
   widgetId: WidgetState["id"];
 }
 
-type DragItem = TabDragItem | WidgetDragItem | PanelGripDragItem | ResizeHandleDragItem;
+/** @internal */
+export type DragItem = TabDragItem | WidgetDragItem | PanelGripDragItem | ResizeHandleDragItem;
 
 function isResizeHandleDragItem(item: DragItem): item is ResizeHandleDragItem {
   return item.type === "resizeHandle";
@@ -573,10 +553,6 @@ export class DragManager {
     return this._dragged;
   }
 
-  public isDragged(item: DragItem) {
-    return !!this._dragged && this._dragged.item.id === item.id && this._dragged.item.type === item.type;
-  }
-
   public isTargeted(target: DropTargetState) {
     if (!this._dragged)
       return false;
@@ -585,17 +561,6 @@ export class DragManager {
       return false;
 
     return _.isEqual(this._dragged.target, target);
-  }
-
-  public isDraggedType(type: DragItem["type"]) {
-    return !!this._dragged && this._dragged.item.type === type;
-  }
-
-  public getDraggedIdOfType<T extends DragItem>(type: T["type"]): T["id"] | undefined {
-    if (this._dragged && this._dragged.item.type === type) {
-      return this._dragged.item.id;
-    }
-    return undefined;
   }
 
   public get onDragStart(): Event<DragEventHandler> {

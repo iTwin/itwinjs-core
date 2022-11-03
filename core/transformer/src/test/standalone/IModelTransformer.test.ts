@@ -9,30 +9,56 @@ import * as Semver from "semver";
 import * as sinon from "sinon";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
-  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
-  ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, GeometricElement, IModelCloneContext, IModelDb, IModelHost, IModelJsFs,
-  IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector, OrthographicViewDefinition,
+  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
+  ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, GeometricElement, IModelDb, IModelElementCloneContext, IModelHost, IModelJsFs,
+  InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector, OrthographicViewDefinition,
   PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb, SpatialCategory, StandaloneDb,
   SubCategory, Subject,
 } from "@itwin/core-backend";
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
+  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementAspectProps, ElementProps,
   ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelExportHandler, IModelTransformer, IModelTransformOptions, TransformerLoggerCategory } from "../../core-transformer";
 import {
-  assertIdentityTransformation, ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils,
-  PhysicalModelConsolidator, RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
+  AspectTrackingImporter,
+  AspectTrackingTransformer,
+  assertIdentityTransformation, AssertOrderTransformer,
+  ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
+  RecordingIModelImporter, runWithCpuProfiler, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
+import { SchemaLoader } from "@itwin/ecschema-metadata";
 
 describe("IModelTransformer", () => {
   const outputDir = path.join(KnownTestLocations.outputDir, "IModelTransformer");
+
+  /** Instead creating empty snapshots and populating them via routines for new tests incurring a wait,
+   * if it's going to be reused, store it here as a getter and a promise that `SnapshotDb.createFrom` can be called on
+   */
+  class ReusedSnapshots {
+    private static _extensiveTestScenario: Promise<SnapshotDb> | undefined;
+
+    public static get extensiveTestScenario(): Promise<SnapshotDb> {
+      return this._extensiveTestScenario ??= (async () => {
+        const dbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ReusedExtensiveTestScenario.bim");
+        const db = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "ReusedExtensiveTestScenario" }, createClassViews: true });
+        await TransformerExtensiveTestScenario.prepareDb(db);
+        TransformerExtensiveTestScenario.populateDb(db);
+        db.saveChanges();
+        return db;
+      })();
+    }
+
+    public static async cleanup() {
+      (await this._extensiveTestScenario)?.close();
+    }
+  }
 
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) {
@@ -42,7 +68,7 @@ describe("IModelTransformer", () => {
       IModelJsFs.mkdirSync(outputDir);
     }
     // initialize logging
-    if (false) {
+    if (process.env.LOG_TRANSFORMER_IN_TESTS) {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
       Logger.setLevel(TransformerLoggerCategory.IModelExporter, LogLevel.Trace);
@@ -51,13 +77,14 @@ describe("IModelTransformer", () => {
     }
   });
 
+  after(async () => {
+    await ReusedSnapshots.cleanup();
+  });
+
   it("should transform changes from source to target", async () => {
     // Source IModelDb
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
-    await BackendTestUtils.ExtensiveTestScenario.prepareDb(sourceDb);
-    BackendTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
-    sourceDb.saveChanges();
+    const sourceDb = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, sourceDbFile);
     // Target IModelDb
     const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
@@ -151,7 +178,7 @@ describe("IModelTransformer", () => {
     }
 
     if (true) { // update source db, then import again
-      BackendTestUtils.ExtensiveTestScenario.updateDb(sourceDb);
+      TransformerExtensiveTestScenario.updateDb(sourceDb);
       sourceDb.saveChanges();
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "");
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "===============================");
@@ -171,7 +198,7 @@ describe("IModelTransformer", () => {
       assert.equal(targetImporter.numRelationshipsUpdated, 1);
       assert.equal(targetImporter.numRelationshipsDeleted, 1);
       targetDb.saveChanges();
-      BackendTestUtils.ExtensiveTestScenario.assertUpdatesInDb(targetDb);
+      TransformerExtensiveTestScenario.assertUpdatesInDb(targetDb);
       assert.equal(numTargetRelationships + targetImporter.numRelationshipsInserted - targetImporter.numRelationshipsDeleted, count(targetDb, ElementRefersToElements.classFullName));
       assert.equal(2, count(targetDb, "ExtensiveTestScenarioTarget:TargetInformationRecord"));
       transformer.dispose();
@@ -186,10 +213,7 @@ describe("IModelTransformer", () => {
   it("should synchronize changes from master to branch and back", async () => {
     // Simulate branching workflow by initializing branchDb to be a copy of the populated masterDb
     const masterDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Master.bim");
-    const masterDb = SnapshotDb.createEmpty(masterDbFile, { rootSubject: { name: "Branching Workflow" }, createClassViews: true });
-    await BackendTestUtils.ExtensiveTestScenario.prepareDb(masterDb);
-    BackendTestUtils.ExtensiveTestScenario.populateDb(masterDb);
-    masterDb.saveChanges();
+    const masterDb = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, masterDbFile);
     const branchDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Branch.bim");
     const branchDb = SnapshotDb.createFrom(masterDb, branchDbFile, { createClassViews: true });
 
@@ -222,8 +246,8 @@ describe("IModelTransformer", () => {
     });
 
     // Make changes to simulate working on the branch
-    BackendTestUtils.ExtensiveTestScenario.updateDb(branchDb);
-    BackendTestUtils.ExtensiveTestScenario.assertUpdatesInDb(branchDb);
+    TransformerExtensiveTestScenario.updateDb(branchDb);
+    TransformerExtensiveTestScenario.assertUpdatesInDb(branchDb);
     branchDb.saveChanges();
 
     const numBranchElements = count(branchDb, Element.classFullName);
@@ -236,7 +260,7 @@ describe("IModelTransformer", () => {
     await branchToMasterTransformer.processAll();
     branchToMasterTransformer.dispose();
     masterDb.saveChanges();
-    BackendTestUtils.ExtensiveTestScenario.assertUpdatesInDb(masterDb, false);
+    TransformerExtensiveTestScenario.assertUpdatesInDb(masterDb, false);
     assert.equal(numBranchElements, count(masterDb, Element.classFullName) - 2); // processAll cannot detect deletes when isReverseSynchronization=true
     assert.equal(numBranchRelationships, count(masterDb, ElementRefersToElements.classFullName) - 1); // processAll cannot detect deletes when isReverseSynchronization=true
     assert.equal(0, count(masterDb, ExternalSourceAspect.classFullName));
@@ -254,9 +278,7 @@ describe("IModelTransformer", () => {
   it("should import everything below a Subject", async () => {
     // Source IModelDb
     const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "SourceImportSubject" } });
-    await BackendTestUtils.ExtensiveTestScenario.prepareDb(sourceDb);
-    BackendTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
+    const sourceDb = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, sourceDbFile);
     const sourceSubjectId = sourceDb.elements.queryElementIdByCode(Subject.createCode(sourceDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(sourceSubjectId));
     sourceDb.saveChanges();
@@ -280,25 +302,6 @@ describe("IModelTransformer", () => {
     // Close
     sourceDb.close();
     targetDb.close();
-  });
-
-  it.skip("should clone Model within same iModel", async () => {
-    // Set up the IModelDb with a populated source Subject and an "empty" target Subject
-    const iModelFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CloneModel.bim");
-    const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "CloneModel" } });
-    await BackendTestUtils.ExtensiveTestScenario.prepareDb(iModelDb);
-    BackendTestUtils.ExtensiveTestScenario.populateDb(iModelDb);
-    const sourceSubjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
-    assert.isTrue(Id64.isValidId64(sourceSubjectId));
-    const targetSubjectId = Subject.insert(iModelDb, IModel.rootSubjectId, "Target Subject");
-    assert.isTrue(Id64.isValidId64(targetSubjectId));
-    iModelDb.saveChanges();
-    // Import from beneath source Subject into target Subject
-    const transformer = new IModelTransformer(iModelDb, iModelDb);
-    await transformer.processSubject(sourceSubjectId, targetSubjectId);
-    transformer.dispose();
-    iModelDb.saveChanges();
-    iModelDb.close();
   });
 
   /** @note For debugging/testing purposes, you can use `it.only` and hard-code `sourceFileName` to test cloning of a particular iModel. */
@@ -662,9 +665,9 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it("IModelCloneContext remap tests", async () => {
+  it("IModelElementCloneContext remap tests", async () => {
     const iModelDb: SnapshotDb = IModelTransformerTestUtils.createTeamIModel(outputDir, "Test", Point3d.create(0, 0, 0), ColorDef.green);
-    const cloneContext = new IModelCloneContext(iModelDb);
+    const cloneContext = new IModelElementCloneContext(iModelDb);
     const sourceId: Id64String = Id64.fromLocalAndBriefcaseIds(1, 1);
     const targetId: Id64String = Id64.fromLocalAndBriefcaseIds(1, 2);
     cloneContext.remapElement(sourceId, targetId);
@@ -838,67 +841,6 @@ describe("IModelTransformer", () => {
     sourceDb.close();
   });
 
-  // WIP: Included as skipped until test file management strategy can be refined.
-  it.skip("Merge test", async () => {
-    const mergedIModelFileName: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "MergeTest.bim");
-    const mergedDb = SnapshotDb.createEmpty(mergedIModelFileName, { rootSubject: { name: "Merge Test" } });
-    const campusSubjectId: Id64String = Subject.insert(mergedDb, IModel.rootSubjectId, "Campus");
-    assert.isTrue(Id64.isValidId64(campusSubjectId));
-    const garageSubjectId: Id64String = Subject.insert(mergedDb, IModel.rootSubjectId, "Garage");
-    assert.isTrue(Id64.isValidId64(garageSubjectId));
-    const buildingSubjectId: Id64String = Subject.insert(mergedDb, IModel.rootSubjectId, "Building");
-    assert.isTrue(Id64.isValidId64(buildingSubjectId));
-    mergedDb.saveChanges("Create Subject hierarchy");
-    IModelTransformerTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
-
-    // Import campus
-    if (true) {
-      const campusIModelFileName = "D:/data/bim/MergeTest/Campus.bim";
-      const campusDb = SnapshotDb.openFile(campusIModelFileName);
-      IModelTransformerTestUtils.dumpIModelInfo(campusDb);
-      const transformer = new IModelTransformer(campusDb, mergedDb, { targetScopeElementId: campusSubjectId });
-      await transformer.processSchemas();
-      transformer.context.remapElement(IModel.rootSubjectId, campusSubjectId);
-      await transformer.processAll();
-      transformer.dispose();
-      mergedDb.saveChanges("Imported Campus");
-      IModelTransformerTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
-      campusDb.close();
-    }
-
-    // Import garage
-    if (true) {
-      const garageIModelFileName = "D:/data/bim/MergeTest/Garage.bim";
-      const garageDb = SnapshotDb.openFile(garageIModelFileName);
-      IModelTransformerTestUtils.dumpIModelInfo(garageDb);
-      const transformer = new IModelTransformer(garageDb, mergedDb, { targetScopeElementId: garageSubjectId });
-      transformer.context.remapElement(IModel.rootSubjectId, garageSubjectId);
-      await transformer.processAll();
-      transformer.dispose();
-      mergedDb.saveChanges("Imported Garage");
-      IModelTransformerTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
-      garageDb.close();
-    }
-
-    // Import building
-    if (true) {
-      const buildingIModelFileName = "D:/data/bim/MergeTest/Building.bim";
-      const buildingDb = SnapshotDb.openFile(buildingIModelFileName);
-      IModelTransformerTestUtils.dumpIModelInfo(buildingDb);
-      const transformer = new IModelTransformer(buildingDb, mergedDb, { targetScopeElementId: buildingSubjectId });
-      await transformer.processSchemas();
-      transformer.context.remapElement(IModel.rootSubjectId, buildingSubjectId);
-      await transformer.processAll();
-      transformer.dispose();
-      mergedDb.saveChanges("Imported Building");
-      IModelTransformerTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
-      buildingDb.close();
-    }
-
-    IModelTransformerTestUtils.dumpIModelInfo(mergedDb);
-    mergedDb.close();
-  });
-
   it("processSchemas should handle out-of-order exported schemas", async () => {
     const testSchema1Path = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
     IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
@@ -931,7 +873,7 @@ describe("IModelTransformer", () => {
 
     class OrderedExporter extends IModelExporter {
       public override async exportSchemas() {
-        const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+        const schemaLoader = new SchemaLoader((name: string) => this.sourceDb.getSchemaProps(name));
         const schema1 = schemaLoader.getSchema("TestSchema1");
         const schema2 = schemaLoader.getSchema("TestSchema2");
         // by importing schema2 (which references schema1) first, we
@@ -954,7 +896,7 @@ describe("IModelTransformer", () => {
     assert.isUndefined(error);
 
     targetDb.saveChanges();
-    const targetImportedSchemasLoader = new IModelSchemaLoader(targetDb);
+    const targetImportedSchemasLoader = new SchemaLoader((name: string) =>  targetDb.getSchemaProps(name));
     const schema1InTarget = targetImportedSchemasLoader.getSchema("TestSchema1");
     assert.isDefined(schema1InTarget);
     const schema2InTarget = targetImportedSchemasLoader.getSchema("TestSchema2");
@@ -1871,6 +1813,152 @@ describe("IModelTransformer", () => {
 
     await assertIdentityTransformation(sourceDb, targetDb, transformer);
 
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("handle out-of-order references in aspects during consolidations", async () => {
+    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectCyclicRefs.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "aspect-cyclic-refs" }});
+
+    // as a member of the repository model hierarchy, and not the root subject hierarchy, it will be exported after the element which is inserted later
+    const sourceRepositoryId = IModelTransformerTestUtils.insertRepositoryLink(sourceDb, "anything.dgn", "https://test.bentley.com/folder/anything.dgn", "DGN");
+
+    const elem1Id = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "phys-model-in-target");
+    const extSrcAspect1: ExternalSourceAspectProps = {
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: elem1Id },
+      kind: ExternalSourceAspect.Kind.Element,
+      identifier: Guid.empty, // doesn't matter, any identifier in the hypothetical source
+      scope: { id: sourceRepositoryId },
+    };
+    const _extSrcAspect1Id = sourceDb.elements.insertAspect(extSrcAspect1);
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectCyclicRefsTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const transformer = new AssertOrderTransformer([elem1Id, sourceRepositoryId], sourceDb, targetDb, { includeSourceProvenance: true });
+
+    await expect(transformer.processSchemas()).to.eventually.be.fulfilled;
+    await expect(transformer.processAll()).to.eventually.be.fulfilled;
+
+    const elem1InTargetId = transformer.context.findTargetElementId(elem1Id);
+    const elem1AspectsInTarget = targetDb.elements.getAspects(elem1InTargetId);
+    expect(elem1AspectsInTarget).to.have.lengthOf(2);
+
+    const extSrcAspect1InTarget = elem1AspectsInTarget[1];
+    assert(extSrcAspect1InTarget instanceof ExternalSourceAspect);
+    expect(extSrcAspect1InTarget.identifier).to.equal(extSrcAspect1.identifier);
+
+    const sourceRepositoryInTargetId = transformer.context.findTargetElementId(sourceRepositoryId);
+    expect(extSrcAspect1InTarget?.scope?.id).to.equal(sourceRepositoryInTargetId);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("returns ids in order when exporting multiple ElementMultiAspect of multiple classes", async () => {
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectIdOrderSrc.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "AspectIdOrderSource" } });
+    await TransformerExtensiveTestScenario.prepareDb(sourceDb);
+
+    const spatialCategoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
+    const physicalModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "phys-model");
+    const physicalObj1InSourceId = sourceDb.elements.insertElement({
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject1",
+      geom: BackendTestUtils.IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId),
+      placement: {
+        origin: Point3d.create(1, 1, 1),
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    } as PhysicalElementProps);
+
+    sourceDb.elements.insertAspect({
+      classFullName: "ExtensiveTestScenario:AdditionalMultiAspect",
+      element: new ElementOwnsMultiAspects(physicalObj1InSourceId),
+      value: "1",
+    } as ElementAspectProps);
+    sourceDb.elements.insertAspect({
+      classFullName: "ExtensiveTestScenario:SourceMultiAspect",
+      element: new ElementOwnsMultiAspects(physicalObj1InSourceId),
+      commonDouble: 2.2,
+      commonString: "2",
+      commonLong: physicalObj1InSourceId,
+      sourceDouble: 22.2,
+      sourceString: "2",
+      sourceLong: physicalObj1InSourceId,
+      sourceGuid: Guid.createValue(),
+      extraString: "2",
+    } as ElementAspectProps);
+    sourceDb.elements.insertAspect({
+      classFullName: "ExtensiveTestScenario:AdditionalMultiAspect",
+      element: new ElementOwnsMultiAspects(physicalObj1InSourceId),
+      value: "3",
+    } as ElementAspectProps);
+    sourceDb.saveChanges();
+
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectIdOrderTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "AspectIdOrderTarget" } });
+    await TransformerExtensiveTestScenario.prepareDb(targetDb);
+    targetDb.saveChanges();
+
+    const importer = new AspectTrackingImporter(targetDb);
+    const transformer = new AspectTrackingTransformer(sourceDb, importer);
+    assert.isTrue(transformer.context.isBetweenIModels);
+    await transformer.processAll();
+    transformer.dispose();
+
+    const physicalObj1InTargetId = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject1");
+    assert(physicalObj1InSourceId !== Id64.invalid);
+    assert(physicalObj1InTargetId !== Id64.invalid);
+
+    const exportedAspectSources = transformer.exportedAspectIdsByElement.get(physicalObj1InSourceId);
+    const importedAspectTargetIds = importer.importedAspectIdsByElement.get(physicalObj1InTargetId);
+    assert(exportedAspectSources !== undefined);
+    assert(importedAspectTargetIds !== undefined);
+    assert(exportedAspectSources.length === importedAspectTargetIds.length);
+
+    // confirm the assumption that there are multiple aspect classes and their instances are not consecutive
+    expect(
+      exportedAspectSources[0].classFullName !== exportedAspectSources[1].classFullName
+      && exportedAspectSources[1].classFullName !== exportedAspectSources[2].classFullName
+      && exportedAspectSources[0].classFullName === exportedAspectSources[2].classFullName
+    );
+
+    for (let i = 0; i < exportedAspectSources.length; ++i) {
+      const sourceId = exportedAspectSources[i].id;
+      const targetId = importedAspectTargetIds[i];
+      const mappedTarget = transformer.context.findTargetAspectId(sourceId);
+      assert(mappedTarget !== Id64.invalid);
+      const indexInResult = importedAspectTargetIds.findIndex((id) => id === mappedTarget);
+      assert(mappedTarget === targetId, `aspect ${i} (${sourceId} in source, ${mappedTarget} in target) but got ${targetId} and the expected id was at index ${indexInResult}`);
+    }
+  });
+
+  /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
+  it.skip("should profile an IModel transformation", async function () {
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformation.bim");
+    const sourceDb = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, sourceDbFile);
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformationTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "ProfileTransformationTarget"}});
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    // force initialize to not profile the schema reference cache hydration that will happen the first time an IModelCloneContext is created
+    await transformer.initialize();
+    await transformer.processSchemas();
+    await runWithCpuProfiler(async () => {
+      await transformer.processAll();
+    }, {
+      profileName: `newbranch_${this.test?.title.replace(/ /g, "_")}`,
+      timestamp: true,
+      sampleIntervalMicroSec: 30, // this is a quick transformation, let's get more resolution
+    });
+    transformer.dispose();
     sourceDb.close();
     targetDb.close();
   });

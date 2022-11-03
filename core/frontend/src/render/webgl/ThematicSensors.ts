@@ -110,8 +110,15 @@ export abstract class ThematicSensors implements WebGLDisposable {
 
   protected abstract append(value: number): void;
 
-  protected appendFloat(value: number): void { this._view.setFloat32(this._curPos, value, true); this.advance(4); }
-  protected appendUint8(value: number): void { this._view.setUint8(this._curPos, value); this.advance(1); }
+  protected appendFloat(value: number): void {
+    this._view.setFloat32(this._curPos, value, true);
+    this.advance(4);
+  }
+
+  protected appendUint8(value: number): void {
+    this._view.setUint8(this._curPos, value);
+    this.advance(1);
+  }
 
   private advance(numBytes: number): void { this._curPos += numBytes; }
   private reset(): void { this._curPos = 0; }

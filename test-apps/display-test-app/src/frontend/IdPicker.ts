@@ -126,7 +126,10 @@ export abstract class IdPicker extends ToolBarDropDown {
   protected _close(): void { this._element.style.display = "none"; }
   public override get onViewChanged(): Promise<void> { return this.populate(); }
 
-  protected showOrHide(element: HTMLElement, show: boolean) { if (element) element.style.display = show ? "block" : "none"; }
+  protected showOrHide(element: HTMLElement, show: boolean) {
+    if (element)
+      element.style.display = show ? "block" : "none";
+  }
 
   protected addCheckbox(name: string, id: string, isChecked: boolean): CheckBox {
     this._availableIds.add(id);
@@ -406,7 +409,11 @@ export class ModelPicker extends IdPicker {
 
     const query = { from: GeometricModel3dState.classFullName, wantPrivate: true };
     const props = await view.iModel.models.queryProps(query);
-    props.forEach((prop) => { if (prop.isPrivate) prop.name = `~${prop.name}`; });
+    props.forEach((prop) => {
+      if (prop.isPrivate)
+        prop.name = `~${prop.name}`;
+    });
+
     props.sort((lhs, rhs) => compareStringsOrUndefined(lhs.name, rhs.name));
 
     const selector = view.modelSelector;

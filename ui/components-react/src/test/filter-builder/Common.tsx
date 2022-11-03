@@ -17,7 +17,7 @@ export function renderWithContext(
   component: JSX.Element,
   builderContextProps: Partial<PropertyFilterBuilderContextProps> = {},
   rendererContextProps: Partial<PropertyFilterBuilderRuleRenderingContextProps> = {},
-  activeGroupContextProps: Partial<ActiveRuleGroupContextProps> ={},
+  activeGroupContextProps: Partial<ActiveRuleGroupContextProps> = {},
 ): ReturnType<typeof render> {
   const builderContextValue: PropertyFilterBuilderContextProps = {
     actions: builderContextProps.actions ?? new PropertyFilterBuilderActions(sinon.fake()),
@@ -29,6 +29,7 @@ export function renderWithContext(
   const rendererContextValue: PropertyFilterBuilderRuleRenderingContextProps = {
     ruleOperatorRenderer: rendererContextProps.ruleOperatorRenderer,
     ruleValueRenderer: rendererContextProps.ruleValueRenderer,
+    propertyRenderer: rendererContextProps.propertyRenderer,
   };
 
   const activeGroupContextValue: ActiveRuleGroupContextProps = {

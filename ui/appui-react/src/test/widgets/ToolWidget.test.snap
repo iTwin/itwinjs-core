@@ -102,6 +102,7 @@ exports[`ToolWidget Not Extension-compatible ToolWidget should render correctly 
   }
   toolWidgetDef={
     ToolWidgetDef {
+      "_allowedPanelTargets": undefined,
       "_appButton": CommandItemDef {
         "_commandHandler": Object {
           "execute": [Function],
@@ -132,6 +133,12 @@ exports[`ToolWidget Not Extension-compatible ToolWidget should render correctly 
       "_defaultFloatingPosition": undefined,
       "_defaultFloatingSize": undefined,
       "_defaultState": 4,
+      "_defaultTabLocation": Object {
+        "side": "left",
+        "tabIndex": 0,
+        "widgetId": "",
+        "widgetIndex": 0,
+      },
       "_fillZone": false,
       "_floatingContainerId": undefined,
       "_handleSyncUiEvent": [Function],
@@ -352,12 +359,6 @@ exports[`ToolWidget Not Extension-compatible ToolWidget should render correctly 
       "_state": 4,
       "_stateChanged": false,
       "_syncEventIds": Array [],
-      "_tabLocation": Object {
-        "side": "left",
-        "tabIndex": 0,
-        "widgetId": "",
-        "widgetIndex": 0,
-      },
       "_toolbarBaseName": "[]ToolWidget",
       "_tooltip": "",
       "_widgetType": 0,

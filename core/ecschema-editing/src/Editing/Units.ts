@@ -20,39 +20,50 @@ export class Units {
 
   public async create(schemaKey: SchemaKey, name: string, definition: string, phenomenon: SchemaItemKey, unitSystem: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     const newUnit = (await schema.createUnit(name)) as MutableUnit;
-    if (newUnit === undefined) {
+    if (newUnit === undefined)
       return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
-    }
 
     const phenomenonItem = await schema.lookupItem<Phenomenon>(phenomenon);
-    if (phenomenonItem === undefined) return { errorMessage: `Unable to locate phenomenon ${phenomenon.fullName} in schema ${schema.fullName}.` };
-    if (phenomenonItem.schemaItemType !== SchemaItemType.Phenomenon) return { errorMessage: `${phenomenon.fullName} is not of type Phenomenon.` };
+    if (phenomenonItem === undefined)
+      return { errorMessage: `Unable to locate phenomenon ${phenomenon.fullName} in schema ${schema.fullName}.` };
+
+    if (phenomenonItem.schemaItemType !== SchemaItemType.Phenomenon)
+      return { errorMessage: `${phenomenon.fullName} is not of type Phenomenon.` };
+
     await newUnit.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenon, async () => phenomenonItem));
 
     const unitSystemItem = await schema.lookupItem<UnitSystem>(unitSystem);
-    if (unitSystemItem === undefined) return { errorMessage: `Unable to locate unit system ${unitSystem.fullName} in schema ${schema.fullName}.` };
-    if (unitSystemItem.schemaItemType !== SchemaItemType.UnitSystem) return { errorMessage: `${unitSystem.fullName} is not of type UnitSystem.` };
+    if (unitSystemItem === undefined)
+      return { errorMessage: `Unable to locate unit system ${unitSystem.fullName} in schema ${schema.fullName}.` };
+
+    if (unitSystemItem.schemaItemType !== SchemaItemType.UnitSystem)
+      return { errorMessage: `${unitSystem.fullName} is not of type UnitSystem.` };
+
     await newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystem, async () => unitSystemItem));
 
     await newUnit.setDefinition(definition);
 
-    if (displayLabel) { newUnit.setDisplayLabel(displayLabel); }
+    if (displayLabel)
+      newUnit.setDisplayLabel(displayLabel);
 
     return { itemKey: newUnit.key };
   }
 
   public async createFromProps(schemaKey: SchemaKey, unitProps: UnitProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
-    if (unitProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+    if (unitProps.name === undefined)
+      return { errorMessage: `No name was supplied within props.` };
+
     const newUnit = (await schema.createUnit(unitProps.name));
-    if (newUnit === undefined) {
+    if (newUnit === undefined)
       return { errorMessage: `Failed to create class ${unitProps.name} in schema ${schemaKey.toString(true)}.` };
-    }
 
     await newUnit.fromJSON(unitProps);
     return { itemKey: newUnit.key };

@@ -339,7 +339,8 @@ describe("GeometryStream", () => {
       params.styleInfo = Id64.isValidId64(styleId) ? new LineStyle.Info(styleId) : undefined;
       builder.appendGeometryParamsChange(params);
       builder.appendGeometry(LineSegment3d.create(pointS, pointE));
-      pointS.y += 0.5; pointE.y += 0.5;
+      pointS.y += 0.5;
+      pointE.y += 0.5;
     });
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
@@ -987,7 +988,7 @@ describe("GeometryStream", () => {
 
     builder.setLocalToWorld3d(testOrigin, testAngles);
     builder.appendGeometry(Loop.create(LineString3d.create(shapePts)));
-    shapePts.forEach((pt) => { builder.appendGeometryPart3d(partId, pt, undefined, 0.25); }); // Position part (arc center) at each vertex...
+    shapePts.forEach((pt) => builder.appendGeometryPart3d(partId, pt, undefined, 0.25)); // Position part (arc center) at each vertex...
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
@@ -2674,7 +2675,7 @@ describe("Geometry Containment", () => {
     assert.isTrue(2 === result.numInside);
     assert.isTrue(2 === result.numOutside);
     assert.isTrue(2 === result.numOverlap);
-    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+    result.candidatesContainment!.forEach((val, index) => assert.isTrue(val === expectedContainment[index]));
 
     requestProps.allowOverlaps = false; // test inside mode...
     result = await imodel.getGeometryContainment(requestProps);
@@ -2720,7 +2721,7 @@ describe("Geometry Containment", () => {
     assert.isTrue(2 === result.numInside);
     assert.isTrue(2 === result.numOutside);
     assert.isTrue(2 === result.numOverlap);
-    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+    result.candidatesContainment!.forEach((val, index) => assert.isTrue(val === expectedContainment[index]));
 
     requestProps.allowOverlaps = false; // test inside mode...
     result = await imodel.getGeometryContainment(requestProps);
@@ -2780,7 +2781,7 @@ describe("Geometry Containment", () => {
     assert.isTrue(4 === result.numInside);
     assert.isTrue(4 === result.numOutside);
     assert.isTrue(4 === result.numOverlap);
-    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+    result.candidatesContainment!.forEach((val, index) => assert.isTrue(val === expectedContainment[index]));
 
     requestProps.allowOverlaps = false; // test inside mode...
     result = await imodel.getGeometryContainment(requestProps);
@@ -2821,7 +2822,7 @@ describe("Geometry Containment", () => {
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainmentDef.length);
-    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainmentDef[index]); });
+    result.candidatesContainment!.forEach((val, index) => assert.isTrue(val === expectedContainmentDef[index]));
     assert.isTrue(1 === result.numInside);
     assert.isTrue(0 === result.numOutside);
     assert.isTrue(3 === result.numOverlap);
@@ -2833,7 +2834,7 @@ describe("Geometry Containment", () => {
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainmentSubCat.length);
-    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainmentSubCat[index]); });
+    result.candidatesContainment!.forEach((val, index) => assert.isTrue(val === expectedContainmentSubCat[index]));
     assert.isTrue(0 === result.numInside);
     assert.isTrue(4 === result.numOutside);
     assert.isTrue(0 === result.numOverlap);
@@ -2847,7 +2848,7 @@ describe("Geometry Containment", () => {
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainmentViewFlags.length);
-    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainmentViewFlags[index]); });
+    result.candidatesContainment!.forEach((val, index) => assert.isTrue(val === expectedContainmentViewFlags[index]));
     assert.isTrue(2 === result.numInside);
     assert.isTrue(1 === result.numOutside);
     assert.isTrue(1 === result.numOverlap);
@@ -2892,7 +2893,7 @@ describe("Geometry Containment", () => {
     assert.isTrue(3 === result.numInside);
     assert.isTrue(1 === result.numOutside);
     assert.isTrue(1 === result.numOverlap);
-    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+    result.candidatesContainment!.forEach((val, index) => assert.isTrue(val === expectedContainment[index]));
   });
 
   it("clip L shape volume mesh containment", async () => {
@@ -2934,7 +2935,7 @@ describe("Geometry Containment", () => {
     assert.isTrue(3 === result.numInside);
     assert.isTrue(1 === result.numOutside);
     assert.isTrue(1 === result.numOverlap);
-    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+    result.candidatesContainment!.forEach((val, index) => assert.isTrue(val === expectedContainment[index]));
   });
 
   it("clip plane curve containment", async () => {
@@ -2970,7 +2971,7 @@ describe("Geometry Containment", () => {
     assert.isTrue(1 === result.numInside);
     assert.isTrue(1 === result.numOutside);
     assert.isTrue(1 === result.numOverlap);
-    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+    result.candidatesContainment!.forEach((val, index) => assert.isTrue(val === expectedContainment[index]));
   });
 
   it("clip plane mesh containment", async () => {
@@ -3006,7 +3007,7 @@ describe("Geometry Containment", () => {
     assert.isTrue(1 === result.numInside);
     assert.isTrue(1 === result.numOutside);
     assert.isTrue(1 === result.numOverlap);
-    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+    result.candidatesContainment!.forEach((val, index) => assert.isTrue(val === expectedContainment[index]));
   });
 
 });

@@ -150,14 +150,14 @@ export class IndexedEdgeMatcher {
    * * caller must allocate all result arrays of interest.
    * * Any combination of the result arrays may be `undefined`, indicating that category is to be ignored.
    * * Any combination of the result arrays may be aliased as the same target, in which case those to categories are merged into the target.
-   * * For instance, to ignore manifold pairs and collect all others (singleton and other) as a single array `allOther`, create `const allOther = []` as an empty array and call
-   * `sortAndCollectClusters (undefined, allOther, allOther);`
+   * * For instance, to ignore manifold pairs and collect all others (singleton, null, and other) as a single array `allOther`, create `const allOther = []` as an empty array and call
+   * `sortAndCollectClusters (undefined, allOther, allOther, allOther);`
    * @param manifoldPairs optional array to receive pairs of properly mated SortableEdgePairs, i.e. simple interior edges adjacent to two facets in opposing directions.
    * @param singletons optional array to receive edges that are simple boundary edges.
-   * @param nullEdges clusters with null edges (same start and end vertex)
+   * @param nullEdges optional array to receive arrays of null edges (same start and end vertex)
    * @param allOtherClusters optional array to receive arrays in which all the edges are partners in an undirected sense but not a simple directed pair.
    */
-  public sortAndCollectClusters(manifoldPairs: SortableEdgeCluster[] | undefined, singletons: SortableEdgeCluster[] | undefined, nullEdges: SortableEdgeCluster[] | undefined, allOtherClusters: SortableEdgeCluster[] | undefined) {
+  public sortAndCollectClusters(manifoldPairs: SortableEdgeCluster[] | undefined, singletons?: SortableEdgeCluster[], nullEdges?: SortableEdgeCluster[], allOtherClusters?: SortableEdgeCluster[]) {
     this.sort();
     if (manifoldPairs) manifoldPairs.length = 0;
     if (singletons) singletons.length = 0;

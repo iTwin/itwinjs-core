@@ -7,8 +7,8 @@
  */
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
+import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
-import { SQLiteDb } from "./SQLiteDb";
 import { Settings } from "./workspace/Settings";
 import { WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
 
@@ -25,7 +25,7 @@ interface GcsDbProps extends WorkspaceDb.Props, WorkspaceContainer.Alias {
  */
 export class GeoCoordConfig {
   /** array of cloud prefetch tasks that may be awaited to permit offline usage */
-  public static readonly prefetches: SQLiteDb.CloudPrefetch[] = [];
+  public static readonly prefetches: CloudSqlite.CloudPrefetch[] = [];
 
   private static addGcsWorkspace(gcsDbAlias: string) {
     // override to disable loading GCS data from workspaces
@@ -36,7 +36,6 @@ export class GeoCoordConfig {
     const dbProps = ws.resolveDatabase(gcsDbAlias) as GcsDbProps;
     const containerProps = ws.resolveContainer(dbProps.containerName);
     const account = ws.resolveAccount(containerProps.accountName);
-    containerProps.syncOnConnect = true;
     try {
       const container = ws.getContainer(containerProps, account);
       const cloudContainer = container.cloudContainer;
@@ -59,7 +58,7 @@ export class GeoCoordConfig {
       Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${account.accessName}/${containerProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
       if (true === dbProps.prefetch)
-        this.prefetches.push(SQLiteDb.startCloudPrefetch(cloudContainer, gcsDbName));
+        this.prefetches.push(CloudSqlite.startCloudPrefetch(cloudContainer, gcsDbName));
 
     } catch (e: any) {
       Logger.logError(loggerCat, `Cannot load GCS workspace (${e.errorNumber}): ${BentleyError.getErrorMessage(e)},`

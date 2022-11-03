@@ -1,5 +1,6 @@
 {
   "name": "export-gltf",
+  "version": "0.0.0",
   "private": true,
   "license": "MIT",
   "description": "Example of exporting graphics from an iModel",
@@ -23,7 +24,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/node": "16.11.7",
+    "@types/node": "16.11.59",
     "@types/yargs": "^17.0.10",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
