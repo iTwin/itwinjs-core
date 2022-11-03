@@ -5,7 +5,7 @@ Table of contents:
 
 - [Electron 17 support](#electron-17-support)
 - [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
-- [Improved link table selection](improved-link-table-selection)
+- [Improved link table selection](#improved-link-table-selection)
 - [Cloud storage changes](#cloud-storage-changes)
 - [Display](#display)
   - [Custom terrain providers](#custom-terrain-providers)
