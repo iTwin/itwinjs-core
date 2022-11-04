@@ -13,7 +13,6 @@ import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
 import { AuxCoordSystemProps } from '@itwin/core-common';
 import { AxisAlignedBox3d } from '@itwin/core-common';
-import { BackendBuffer } from '@itwin/core-common';
 import { Base64EncodedString } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
@@ -160,7 +159,6 @@ import { PhysicalElementProps } from '@itwin/core-common';
 import { PhysicalTypeProps } from '@itwin/core-common';
 import { Placement2d } from '@itwin/core-common';
 import { Placement3d } from '@itwin/core-common';
-import { PlatformUtilities } from '@itwin/core-common';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
 import { Polyface } from '@itwin/core-geometry';
@@ -4142,18 +4140,6 @@ export class Platform {
     // @internal (undocumented)
     static load(): typeof IModelJsNative;
     static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp";
-}
-
-// @internal (undocumented)
-export class PlatformUtilitiesBackend extends PlatformUtilities {
-    // (undocumented)
-    getHostname(): string;
-    // (undocumented)
-    static initialize(): void;
-    // (undocumented)
-    isBackendBuffer(value: any): value is BackendBuffer;
-    // (undocumented)
-    toBase64(value: Uint8Array | string): string;
 }
 
 // @internal

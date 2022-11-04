@@ -384,7 +384,7 @@ export class B3dmHeader extends TileHeader {
     readonly length: number;
 }
 
-// @internal (undocumented)
+// @internal @deprecated (undocumented)
 export type BackendBuffer = Buffer_2;
 
 // @public (undocumented)
@@ -392,10 +392,10 @@ export class BackendError extends IModelError {
     constructor(errorNumber: number, name: string, message: string, getMetaData?: GetMetaDataFunction);
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type BackendReadable = Readable;
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type BackendWritable = Writable;
 
 // @public
@@ -6256,22 +6256,6 @@ export interface PlanProjectionSettingsProps {
     transparency?: number;
 }
 
-// @internal (undocumented)
-export abstract class PlatformUtilities {
-    // (undocumented)
-    abstract getHostname(): string;
-    // (undocumented)
-    static get initialized(): boolean;
-    // (undocumented)
-    abstract isBackendBuffer(value: any): value is BackendBuffer;
-    // (undocumented)
-    protected static supplyUtilities(utilities: PlatformUtilities): void;
-    // (undocumented)
-    abstract toBase64(value: Uint8Array | string): string;
-    // (undocumented)
-    static get utilities(): PlatformUtilities;
-}
-
 // @internal
 export class PntsHeader extends TileHeader {
     constructor(stream: ByteStream);
@@ -9942,9 +9926,30 @@ export const WEB_RPC_CONSTANTS: {
 };
 
 // @internal (undocumented)
-export class WebAppRpcLogging {
+export abstract class WebAppRpcLogging {
+    // (undocumented)
+    protected buildOperationDescriptor(operation: RpcOperation | SerializedRpcOperation): string;
+    // (undocumented)
+    protected findPathIds(path: string): {
+        iTwinId: string;
+        iModelId: string;
+    };
+    // (undocumented)
+    protected abstract getHostname(): string;
+    // (undocumented)
+    protected getRpcInterfaceName(g: string | RpcInterfaceDefinition): string;
+    // (undocumented)
+    static initializeBackend(instance: WebAppRpcLogging): void;
+    // (undocumented)
+    static initializeFrontend(instance: WebAppRpcLogging): void;
     // (undocumented)
     static logProtocolEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): Promise<void>;
+    // (undocumented)
+    protected abstract logProtocolEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): Promise<void>;
+    // (undocumented)
+    protected logRequest(loggerCategory: string, message: string, object: WebAppRpcRequest | SerializedRpcRequest): void;
+    // (undocumented)
+    protected logResponse(loggerCategory: string, message: string, object: WebAppRpcRequest | SerializedRpcRequest, status: number, elapsed: number): void;
 }
 
 // @internal

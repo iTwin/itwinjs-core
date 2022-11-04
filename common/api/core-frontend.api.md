@@ -22,7 +22,6 @@ import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
 import { AuxCoordSystemProps } from '@itwin/core-common';
 import { AxisAlignedBox3d } from '@itwin/core-common';
-import { BackendBuffer } from '@itwin/core-common';
 import { BackgroundMapProps } from '@itwin/core-common';
 import { BackgroundMapProviderProps } from '@itwin/core-common';
 import { BackgroundMapSettings } from '@itwin/core-common';
@@ -214,7 +213,6 @@ import { PlacementProps } from '@itwin/core-common';
 import { PlanarClipMaskProps } from '@itwin/core-common';
 import { PlanarClipMaskSettings } from '@itwin/core-common';
 import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
-import { PlatformUtilities } from '@itwin/core-common';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
 import { Point4d } from '@itwin/core-geometry';
@@ -7802,18 +7800,6 @@ export class PlanarTilePatch {
     getRangeCorners(heightRange: Range1d, result: Point3d[]): Point3d[];
     // (undocumented)
     normal: Vector3d;
-}
-
-// @internal (undocumented)
-export class PlatformUtilitiesFrontend extends PlatformUtilities {
-    // (undocumented)
-    getHostname(): string;
-    // (undocumented)
-    static initialize(): void;
-    // (undocumented)
-    isBackendBuffer(_value: any): _value is BackendBuffer;
-    // (undocumented)
-    toBase64(value: Uint8Array | string): string;
 }
 
 // @beta
