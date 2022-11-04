@@ -2139,11 +2139,20 @@ class MRTCompositor extends Compositor {
     let pcs: PointCloudDisplaySettings | undefined;
     const cmds = commands.getCommands(RenderPass.PointClouds);
     let curPC: SinglePointCloudData | undefined;
+    let pushDepth = 0;
     for (const cmd of cmds) {
       if ("pushBranch" === cmd.opcode) { // should be first command
-        pcs = cmd.branch.branch.realityModelDisplaySettings?.pointCloud;
-        pointClouds.push(curPC = { pcs, cmds: [cmd] });
+        ++pushDepth;
+        if (pushDepth === 1) {
+          pcs = cmd.branch.branch.realityModelDisplaySettings?.pointCloud;
+          pointClouds.push(curPC = { pcs, cmds: [cmd] });
+        } else {
+          assert (undefined !== curPC);
+          curPC.cmds.push(cmd);
+        }
       } else {
+        if ("popBranch" === cmd.opcode)
+          --pushDepth;
         assert (undefined !== curPC);
         curPC.cmds.push(cmd);
       }
