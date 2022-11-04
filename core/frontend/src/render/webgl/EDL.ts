@@ -121,8 +121,10 @@ class Bundle implements WebGLDisposable {
   }
 }
 
+/** @internal */
 export enum EDLMode { Simple, Enhanced, Full }
 
+/** @internal */
 export interface EDLDrawParams {
   inputTex: TextureHandle;  // input to calc EDL from
   outputTex: TextureHandle; // output to put EDL result in (using fbo from it)
@@ -193,7 +195,9 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
     this.dispose();
   }
 
-  // Calculate EyeDomeLighting with screen space shaders at specified quality
+  /** calculate EyeDomeLighting at specified quality using screen space shaders
+   * returns true if succeeds
+   */
   public draw(edlParams: EDLDrawParams): boolean {
     if (undefined === edlParams.inputTex || undefined === this._depth || undefined === edlParams.outputTex)
       return false;

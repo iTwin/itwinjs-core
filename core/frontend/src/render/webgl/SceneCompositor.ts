@@ -744,7 +744,7 @@ abstract class Compositor extends SceneCompositor {
   protected abstract clearOpaque(_needComposite: boolean): void;
   protected abstract renderLayers(_commands: RenderCommands, _needComposite: boolean, pass: RenderPass): void;
   protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
-  protected abstract renderPointClouds(_commands: RenderCommands, _compositeFlags: CompositeFlags): void; // ###TODO probably needs _renderForReadPixels? compositeFlags?
+  protected abstract renderPointClouds(_commands: RenderCommands, _compositeFlags: CompositeFlags): void;
   protected abstract renderForVolumeClassification(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderIndexedClassifierForReadPixels(_commands: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, _needComposite: boolean): void;
   protected abstract clearTranslucent(): void;
@@ -1007,7 +1007,7 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     // Render point cloud geometry with possible EDL (WebGL2 only)
-    // ###TODO might be cleaner to add a new explicit capability to the Capabilities class (`edlCapable`)
+    // ###TODO might be cleaner to add a new explicit capability to the Capabilities class (`edlCapable`)?
     // ###TODO do we need separate frameStats for this?
     // ###TODO is this the correct location in sequence?
     if (System.instance.capabilities.isWebGL2) {
@@ -2027,8 +2027,13 @@ class MRTFrameBuffers extends FrameBuffers {
     this.idsAndAltZ = dispose(this.idsAndAltZ);
     this.idsAndZComposite = dispose(this.idsAndZComposite);
     this.idsAndAltZComposite = dispose(this.idsAndAltZComposite);
-    this.edlDrawCol = dispose (this.edlDrawCol);
+    this.edlDrawCol = dispose(this.edlDrawCol);
   }
+}
+
+interface SinglePointCloudData {
+  pcs?: PointCloudDisplaySettings;
+  cmds: DrawCommands;
 }
 
 class MRTGeometry extends Geometry {
@@ -2129,68 +2134,74 @@ class MRTCompositor extends Compositor {
   }
 
   protected renderPointClouds(commands: RenderCommands, compositeFlags: CompositeFlags) {
-    const needComposite = CompositeFlags.None !== compositeFlags; // ###TODO what about composite flags?
-    const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
-    const fbStack = System.instance.frameBufferStack;
-    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
-    // ###TODO figure out RenderState
-    // System.instance.applyRenderState(RenderState.defaults);
-
-    // ### Could we filter the commands by pointclouds earlier and iterate over them in order to do this per-point-cloud?
-    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
-    // WIP
-    // ###TODO figure out how to get setting for these, kludge for now
-    const cmds = commands.getCommands(RenderPass.PointClouds);
-    let _primCnt = 0;
-    let _psCnt = 0;
+    // separate individual point clouds and get their point cloud settings
+    const pointClouds: Array<SinglePointCloudData> = [];
     let pcs: PointCloudDisplaySettings | undefined;
-    if (cmds.length > 0) {
-      for (const command of cmds) {
-        if (command.opcode === "drawPrimitive")
-          ++_primCnt;
-        else if (command.opcode === "pushBranch")
-          pcs = command.branch.branch.realityModelDisplaySettings?.pointCloud;
-        else if (command.opcode === "pushState")
-          ++_psCnt;
+    const cmds = commands.getCommands(RenderPass.PointClouds);
+    let curPC: SinglePointCloudData | undefined;
+    for (const cmd of cmds) {
+      if ("pushBranch" === cmd.opcode) { // should be first command
+        pcs = cmd.branch.branch.realityModelDisplaySettings?.pointCloud;
+        pointClouds.push(curPC = { pcs, cmds: [cmd] });
+      } else {
+        assert (undefined !== curPC);
+        curPC.cmds.push(cmd);
       }
     }
 
-    let edlOff = !pcs?.edlStrength;
-    if (!edlOff) {
-      // draw pointcloud to borrowed hilite texture and regular depth buffer as first step
-      if (undefined === this._textures.hilite)
-        edlOff = true;
-      else {
-        if (undefined === this._fbos.edlDrawCol)
-          this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth);
-        if (undefined === this._fbos.edlDrawCol)
+    // ###TODO figure out RenderState and pingPong
+    const needComposite = CompositeFlags.None !== compositeFlags; // ###TODO what about composite flags?
+    const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
+    const system = System.instance;
+    const fbStack = system.frameBufferStack;
+
+    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
+
+    for (const pc of pointClouds) {
+      pcs = pc.pcs;
+      let edlOff = !pcs?.edlStrength;
+      if (!edlOff) {
+        if (undefined === this._textures.hilite)
           edlOff = true;
         else {
-          fbStack.execute(this._fbos.edlDrawCol, true, useMsBuffers, () => {
-            const system = System.instance;
-            system.context.clearColor(0, 0, 0, 0);
-            system.context.clear(GL.BufferBit.Color);
-            this.drawPass(commands, RenderPass.PointClouds);
-          });
-
-          if (!this.eyeDomeLighting.draw ({
-            edlStrength: pcs!.edlStrength,
-            edlMode: !pcs?.edlAdvanced && !pcs?.edlDbg1 ? EDLMode.Simple : (!pcs?.edlAdvanced && !!pcs?.edlDbg1 ? EDLMode.Enhanced : EDLMode.Full),
-            edlFilter: !!pcs?.edlFilter,
-            useMsBuffers,
-            inputTex: this._textures.hilite,
-            outputTex: fbo.getColor(0),
-          })) {
+          // create fbo on fly if not present
+          if (undefined === this._fbos.edlDrawCol)
+            this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth);
+          if (undefined === this._fbos.edlDrawCol)
             edlOff = true;
+          else {
+            // can draw EDL, first draw pointcloud to borrowed hilite texture and regular depth buffer
+            fbStack.execute(this._fbos.edlDrawCol, true, useMsBuffers, () => {
+              system.context.clearColor(0, 0, 0, 0);
+              system.context.clear(GL.BufferBit.Color);
+              system.applyRenderState(this.getRenderState(RenderPass.PointClouds));
+              this.target.techniques.execute(this.target, pc.cmds, RenderPass.PointClouds);
+            });
+            // then process buffers to generate EDL (depth buffer is passed during init)
+            this.target.beginPerfMetricRecord("Calc EDL");
+            const sts = this.eyeDomeLighting.draw ({
+              edlStrength: pc.pcs!.edlStrength,
+              edlMode: !pc.pcs?.edlAdvanced && !pcs?.edlDbg1 ? EDLMode.Simple : (!pcs?.edlAdvanced && !!pcs?.edlDbg1 ? EDLMode.Enhanced : EDLMode.Full),
+              edlFilter: !!pcs?.edlFilter,
+              useMsBuffers,
+              inputTex: this._textures.hilite,
+              outputTex: fbo.getColor(0),
+            });
+            this.target.endPerfMetricRecord();
+            if (!sts) {
+              edlOff = true;
+            }
           }
         }
       }
-    }
-    if (edlOff) {
-    // draw the regular way
-      fbStack.execute(fbo, true, useMsBuffers, () => {
-        this.drawPass(commands, RenderPass.PointClouds);
-      });
+      if (edlOff) {
+        // draw the regular way
+        fbStack.execute(fbo, true, useMsBuffers, () => {
+          system.applyRenderState(this.getRenderState(RenderPass.PointClouds));
+          this.target.techniques.execute(this.target, pc.cmds, RenderPass.PointClouds);
+        });
+      }
     }
     this._readPickDataFromPingPong = false;
   }

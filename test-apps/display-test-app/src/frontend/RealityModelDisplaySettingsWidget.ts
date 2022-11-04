@@ -6,12 +6,13 @@ import {
   DisplayStyleSettings, FeatureAppearance, FeatureAppearanceProps, PointCloudDisplayProps, RealityModelDisplayProps, RealityModelDisplaySettings,
 } from "@itwin/core-common";
 import {
-  ContextRealityModelState, IModelApp, SpatialModelState, Tool, Viewport,
+  ContextRealityModelState, IModelApp, ScreenViewport, SpatialModelState, Tool, Viewport,
 } from "@itwin/core-frontend";
 import {
   convertHexToRgb, createCheckBox, createColorInput, createRadioBox, createSlider,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
+import { ToolBarDropDown } from "./ToolBar";
 import { Window } from "./Window";
 
 interface RealityModel {
@@ -59,7 +60,7 @@ class PersistentModel implements RealityModel {
   }
 }
 
-function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElement) {
+function createRealityModelSettingsPanel(model: RealityModel, element: HTMLElement) {
   const updateSettings = (props: RealityModelDisplayProps) => model.settings = model.settings.clone(props);
   const updateAppearance = (props: FeatureAppearanceProps | undefined) => {
     if (!props)
@@ -70,14 +71,14 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
       model.appearance = model.appearance.clone(props);
   };
 
-  const element = document.createElement("div");
-  element.className = "debugPanel";
-  element.style.height = "96%";
-  element.style.width = "98%";
-  element.style.top = "0px";
-  element.style.left = "0px";
-  element.style.zIndex = "inherit";
-  parent.appendChild(element);
+  // const element = document.createElement("div");
+  // element.className = "debugPanel";
+  // element.style.height = "96%";
+  // element.style.width = "98%";
+  // element.style.top = "0px";
+  // element.style.left = "0px";
+  // element.style.zIndex = "inherit";
+  // parent.appendChild(element);
 
   // Color
   const colorDiv = document.createElement("div");
@@ -287,20 +288,31 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
 
 const viewportIdsWithOpenWidgets = new Set<number>();
 
+// size of widget or panel
+const winSize = { top: 0, left: 0, width: 408, height: 300 };
+
 class RealityModelSettingsWidget extends Window {
   private readonly _windowId: string;
   private readonly _viewport: Viewport;
   private readonly _dispose: () => void;
 
   public constructor(viewport: Viewport, model: RealityModel) {
-    super(Surface.instance, { top: 0, left: 0, width: 408, height: 300 });
+    super(Surface.instance, winSize);
     this._viewport = viewport;
 
     this._windowId = `realityModelSettings-${viewport.viewportId}-${model.name}`;
     this.isPinned = true;
     this.title = model.name;
 
-    createRealityModelSettingsPanel(model, this.contentDiv);
+    const element = document.createElement("div");
+    element.className = "debugPanel";
+    element.style.height = "96%";
+    element.style.width = "98%";
+    element.style.top = "0px";
+    element.style.left = "0px";
+    element.style.zIndex = "inherit";
+    this.contentDiv.appendChild(element);
+    createRealityModelSettingsPanel(model, element);
     this.container.style.display = "flex";
 
     const removals = [
@@ -367,4 +379,52 @@ export class OpenRealityModelSettingsTool extends Tool {
 
     return realityModel ? this.run(vp, realityModel) : false;
   }
+}
+
+export class RealityModelSettingsPanel extends ToolBarDropDown {
+  private readonly _viewport: ScreenViewport;
+  private readonly _parent: HTMLElement;
+  private readonly _element: HTMLElement;
+  private _model?: RealityModel;
+
+  public constructor(vp: ScreenViewport, parent: HTMLElement) {
+    super();
+    this._viewport = vp;
+    this._parent = parent;
+    // this._element = IModelApp.makeHTMLElement("div", { className: "toolMenu", parent });
+    this._element = document.createElement("div");
+
+    if (!vp || !vp.view.isSpatialView())
+      return;
+    let realityModel: RealityModel | undefined;
+    vp.view.displayStyle.forEachRealityModel((x) => {
+      realityModel = realityModel ?? new ContextModel(x);
+    });
+    if (!realityModel) {
+      for (const modelId of vp.view.modelSelector.models) {
+        const model = vp.iModel.models.getLoaded(modelId);
+        if (model instanceof SpatialModelState && model.isRealityModel) {
+          realityModel = new PersistentModel(model, vp.view.displayStyle.settings);
+          break;
+        }
+      }
+    }
+    if (undefined === this._model)
+      return;
+
+    this._element.className = "debugPanel";
+    // this._element.style.display = "block";
+    // this._element.style.cssFloat = "left";
+    // this._element.style.top = `${winSize.top}px`;
+    // this._element.style.left = `${winSize.left}px`;
+    this._element.style.width = `${winSize.width}px`;
+    this._element.style.height = `${winSize.height}px`;
+    parent.appendChild(this._element);
+    createRealityModelSettingsPanel(this._model, this._element);
+    this.open();
+  }
+
+  protected _open(): void { this._element.style.display = "block"; }
+  protected _close(): void { this._element.style.display = "none"; }
+  public get isOpen(): boolean { return "none" !== this._element.style.display; }
 }

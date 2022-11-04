@@ -27,6 +27,7 @@ import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
+import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -359,6 +360,12 @@ export class Viewer extends Window {
       iconUnicode: "\ue90a", // "isolate"
       createDropDown: async (container: HTMLElement) => new FeatureOverridesPanel(this.viewport, container),
       tooltip: "Override feature symbology",
+    });
+
+    this.toolBar.addDropDown({
+      iconUnicode: "\ue923", // "EDL"  ###TODO where to get real icon?
+      createDropDown: async (container: HTMLElement) => new RealityModelSettingsPanel(this.viewport, container),
+      tooltip: "EDL settings",
     });
 
     this.updateTitle();
