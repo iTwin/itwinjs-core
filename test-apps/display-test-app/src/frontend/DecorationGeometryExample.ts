@@ -86,14 +86,20 @@ class GeometryDecorator {
   }
 
   private addPolyface(cx: number): void {
-    const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx + 1, 1, 1), 1, 0.5, true)!;
-    assert(undefined !== cone);
-
     const opts = StrokeOptions.createForFacets()
     opts.shouldTriangulate = true;
-    const coneBuilder = PolyfaceBuilder.create(opts);
-    coneBuilder.addCone(cone);
-    const polyface = coneBuilder.claimPolyface();
+    const pfb = PolyfaceBuilder.create(opts);
+
+    const doBox = false;
+    if (doBox) {
+      pfb.addBox(Box.createRange(new Range3d(cx, 0, 0, cx + 1, 1, 1), true)!);
+    } else {
+      const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx, 0, 1), 1, 1, false)!;
+      assert(undefined !== cone);
+      pfb.addCone(cone);
+    }
+
+    const polyface = pfb.claimPolyface();
 
     const hulls = this._decomposer.computeConvexHulls({
       indices: new Uint32Array(polyface.data.pointIndex),
@@ -110,7 +116,9 @@ class GeometryDecorator {
     for (const hull of hulls) {
       const hullBuilder = PolyfaceBuilder.create(opts);
       for (let i = 0; i < hull.indices.length; i += 3) {
-        const i0 = i * 3, i1 = (i + 1) * 3, i2 = (i + 2) * 3;
+        const i0 = hull.indices[i + 0] * 3;
+        const i1 = hull.indices[i + 1] * 3;
+        const i2 = hull.indices[i + 2] * 3;
         hullBuilder.addTriangleFacet([
           new Point3d(hull.positions[i0], hull.positions[i0 + 1], hull.positions[i0 + 2]),
           new Point3d(hull.positions[i1], hull.positions[i1 + 1], hull.positions[i1 + 2]),
