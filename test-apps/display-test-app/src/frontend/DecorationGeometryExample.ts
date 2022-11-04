@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
-import { Box, Cone, Point3d, Range3d, Sphere, Transform } from "@itwin/core-geometry";
+import { Box, Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, Transform } from "@itwin/core-geometry";
 import { ColorDef, Feature, GeometryClass, RenderMode, SkyBox } from "@itwin/core-common";
 import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
+import { ConvexMeshDecomposition } from "vhacd-js";
 
 class GeometryDecorator {
   public readonly useCachedDecorations = true;
@@ -22,6 +23,7 @@ class GeometryDecorator {
     this.addBox(2);
     this.addCone(4);
     this.addShape(6);
+    this.addPolyface(8);
 
     this.addMultiFeatureDecoration();
   }
@@ -79,6 +81,15 @@ class GeometryDecorator {
     const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx, 0, 1), 0.5, 0.25, true);
     if (cone)
       this.addDecorator((builder) => builder.addSolidPrimitive(cone));
+  }
+
+  private addPolyface(cx: number): void {
+    const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx + 1, 1, 1), 1, 0.5, true)!;
+    assert(undefined !== cone);
+    const builder = PolyfaceBuilder.create();
+    builder.addCone(cone);
+    const polyface = builder.claimPolyface();
+    this.addDecorator((builder) => builder.addPolyface(polyface, false));
   }
 
   private addMultiFeatureDecoration(): void {
