@@ -790,7 +790,9 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
 
-  /** @beta */
+  /** @beta
+   * Fully reset a map-layer tile tree; by doing call this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
+   */
   public resetMapLayer(index: number, isOverlay: boolean) { this._mapTiledGraphicsProvider?.resetMapLayer(index, isOverlay); }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
