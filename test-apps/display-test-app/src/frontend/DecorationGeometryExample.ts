@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
 import {
-  Angle, Box, Cone, IndexedPolyface, Matrix3d, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, TorusPipe, Transform,
+  Angle, Box, Cone, IndexedPolyface, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, TorusPipe, Transform,
 } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, Feature, GeometryClass, RenderMode, SkyBox } from "@itwin/core-common";
 import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@itwin/core-frontend";
@@ -16,7 +16,7 @@ class GeometryDecorator {
   private readonly _iModel: IModelConnection;
   private readonly _decorators = new Map<string, (builder: GraphicBuilder) => void>();
   private readonly _viewIndependentOrigin?: Point3d;
-  private readonly _decomposer: ConvexMeshDecomposition;
+  private readonly _decomposer?: ConvexMeshDecomposition;
   private _colorIndex = 0;
   private readonly _colors = [
     ColorByName.blue, ColorByName.red, ColorByName.green,
@@ -40,16 +40,16 @@ class GeometryDecorator {
     builder.setSymbology(color, color, 1);
   }
 
-  public constructor(viewport: Viewport, viewIndependentOrigin: Point3d | undefined, decomposer: ConvexMeshDecomposition) {
+  public constructor(viewport: Viewport, viewIndependentOrigin?: Point3d, decomposer?: ConvexMeshDecomposition) {
     this._iModel = viewport.iModel;
     this._viewIndependentOrigin = viewIndependentOrigin;
     this._decomposer = decomposer;
 
-    this.addSphere(0);
-    this.addBox(2);
-    this.addCone(4);
-    this.addShape(6);
-    this.addPolyface(8);
+    this.addTorus();
+    this.addSphere(2);
+    this.addBox(4);
+    this.addCone(6);
+    this.addShape(8);
 
     this.addMultiFeatureDecoration();
   }
@@ -88,43 +88,46 @@ class GeometryDecorator {
   }
 
   private addBox(cx: number): void {
-    const box = Box.createRange(new Range3d(cx, 0, 0, cx + 1, 1, 1), true);
-    if (box)
+    const box = Box.createRange(new Range3d(cx, 0, 0, cx + 1, 1, 1), true)!;
+    if (this._decomposer)
+      this.addHulls((pfb) => pfb.addBox(box));
+    else
       this.addDecorator((builder) => builder.addSolidPrimitive(box));
   }
 
   private addSphere(cx: number): void {
     const sphere = Sphere.createCenterRadius(new Point3d(cx + 0.5, 0.5, 0.5), 0.5);
-    this.addDecorator((builder) => builder.addSolidPrimitive(sphere));
+    if (this._decomposer)
+      this.addHulls((pfb) => pfb.addSphere(sphere));
+    else
+      this.addDecorator((builder) => builder.addSolidPrimitive(sphere));
   }
 
   private addCone(cx: number): void {
-    const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx, 0, 1), 0.5, 0.25, true);
-    if (cone)
+    const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx, 0, 1), 0.5, 0.25, true)!;
+    if (this._decomposer)
+      this.addHulls((pfb) => pfb.addCone(cone));
+    else
       this.addDecorator((builder) => builder.addSolidPrimitive(cone));
   }
 
-  private addPolyface(cx: number): void {
-    const opts = StrokeOptions.createForFacets()
+  private addTorus(): void {
+    const torus = TorusPipe.createInFrame(Transform.createIdentity(), 0.5, 0.25, Angle.createDegrees(360), true)!;
+    if (this._decomposer)
+      this.addHulls((pfb) => pfb.addTorusPipe(torus));
+    else
+      this.addDecorator((builder) => builder.addSolidPrimitive(torus));
+  }
+
+  private addHulls(addGeometry: (pfb: PolyfaceBuilder) => void): void {
+    const opts = StrokeOptions.createForFacets();
     opts.shouldTriangulate = true;
     const pfb = PolyfaceBuilder.create(opts);
-
-    const doBox = false;
-    const doTorus = true;
-    if (doBox) {
-      // pfb.addBox(Box.createRange(new Range3d(cx, 0, 0, cx + 1, 1, 1), true)!);
-      pfb.addBox(Box.createDgnBoxWithAxes(new Point3d(cx, 0, 0), Matrix3d.identity, new Point3d(cx + 1, 1, 1), 1, 1, 1, 1, true)!)
-    } else if (doTorus) {
-      const torus = TorusPipe.createInFrame(Transform.createIdentity(), 0.5, 0.25, Angle.createDegrees(360), true)!;
-      pfb.addTorusPipe(torus);
-    } else {
-      const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx, 0, 1), 1, 1, true)!;
-      assert(undefined !== cone);
-      pfb.addCone(cone);
-    }
+    addGeometry(pfb);
 
     const polyface = pfb.claimPolyface();
 
+    assert(undefined !== this._decomposer);
     const hulls = this._decomposer.computeConvexHulls({
       indices: new Uint32Array(polyface.data.pointIndex),
       positions: polyface.data.point.float64Data().subarray(0, polyface.data.point.float64Length),
