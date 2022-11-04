@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
 import {
-  Box, Cone, IndexedPolyface, Matrix3d, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
+  Angle, Box, Cone, IndexedPolyface, Matrix3d, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, TorusPipe, Transform,
 } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, Feature, GeometryClass, RenderMode, SkyBox } from "@itwin/core-common";
 import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@itwin/core-frontend";
@@ -110,9 +110,13 @@ class GeometryDecorator {
     const pfb = PolyfaceBuilder.create(opts);
 
     const doBox = false;
+    const doTorus = true;
     if (doBox) {
       // pfb.addBox(Box.createRange(new Range3d(cx, 0, 0, cx + 1, 1, 1), true)!);
       pfb.addBox(Box.createDgnBoxWithAxes(new Point3d(cx, 0, 0), Matrix3d.identity, new Point3d(cx + 1, 1, 1), 1, 1, 1, 1, true)!)
+    } else if (doTorus) {
+      const torus = TorusPipe.createInFrame(Transform.createIdentity(), 0.5, 0.25, Angle.createDegrees(360), true)!;
+      pfb.addTorusPipe(torus);
     } else {
       const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx, 0, 1), 1, 1, true)!;
       assert(undefined !== cone);
@@ -125,7 +129,7 @@ class GeometryDecorator {
       indices: new Uint32Array(polyface.data.pointIndex),
       positions: polyface.data.point.float64Data().subarray(0, polyface.data.point.float64Length),
     }, {
-      maxHulls: 16,
+      maxHulls: 8,
       // fillMode: "surface",
       shrinkWrap: false,
     });
