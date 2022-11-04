@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
-import { Box, Cone, IndexedPolyface, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform } from "@itwin/core-geometry";
-import { ColorDef, Feature, GeometryClass, RenderMode, SkyBox } from "@itwin/core-common";
+import {
+  Box, Cone, IndexedPolyface, Matrix3d, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
+} from "@itwin/core-geometry";
+import { ColorByName, ColorDef, Feature, GeometryClass, RenderMode, SkyBox } from "@itwin/core-common";
 import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
 import { ConvexMeshDecomposition } from "vhacd-js";
@@ -15,6 +17,28 @@ class GeometryDecorator {
   private readonly _decorators = new Map<string, (builder: GraphicBuilder) => void>();
   private readonly _viewIndependentOrigin?: Point3d;
   private readonly _decomposer: ConvexMeshDecomposition;
+  private _colorIndex = 0;
+  private readonly _colors = [
+    ColorByName.blue, ColorByName.red, ColorByName.green,
+    ColorByName.orange, ColorByName.purple, ColorByName.yellow,
+    ColorByName.brown, ColorByName.beige, ColorByName.cyan,
+    ColorByName.darkBrown, ColorByName.darkRed, ColorByName.darkGreen,
+    ColorByName.lightBlue, ColorByName.lightGrey, ColorByName.lightGreen,
+    ColorByName.lightyellow, ColorByName.lightCyan, ColorByName.lightPink,
+  ];
+
+  private get nextColor(): ColorDef {
+    const color = this._colors[this._colorIndex++];
+    if (this._colorIndex >= this._colors.length)
+      this._colorIndex = 0;
+
+    return ColorDef.create(color);
+  }
+
+  private setNextColor(builder: GraphicBuilder): void {
+    const color = this.nextColor;
+    builder.setSymbology(color, color, 1);
+  }
 
   public constructor(viewport: Viewport, viewIndependentOrigin: Point3d | undefined, decomposer: ConvexMeshDecomposition) {
     this._iModel = viewport.iModel;
@@ -34,8 +58,7 @@ class GeometryDecorator {
     if (context.viewport.iModel !== this._iModel)
       return;
 
-    const colors = [ColorDef.blue, ColorDef.red, ColorDef.green];
-    let colorIndex = 0;
+    this._colorIndex = 0;
     const branch = new GraphicBranch();
     for (const [key, value] of this._decorators) {
       const builder = context.createGraphic({
@@ -44,11 +67,7 @@ class GeometryDecorator {
         viewIndependentOrigin: this._viewIndependentOrigin,
       });
 
-      const color = colors[colorIndex++];
-      if (colorIndex >= colors.length)
-        colorIndex = 0;
-
-      builder.setSymbology(color, color, 1);
+      this.setNextColor(builder);
       value(builder);
       branch.add(builder.finish());
     }
@@ -92,9 +111,10 @@ class GeometryDecorator {
 
     const doBox = false;
     if (doBox) {
-      pfb.addBox(Box.createRange(new Range3d(cx, 0, 0, cx + 1, 1, 1), true)!);
+      // pfb.addBox(Box.createRange(new Range3d(cx, 0, 0, cx + 1, 1, 1), true)!);
+      pfb.addBox(Box.createDgnBoxWithAxes(new Point3d(cx, 0, 0), Matrix3d.identity, new Point3d(cx + 1, 1, 1), 1, 1, 1, 1, true)!)
     } else {
-      const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx, 0, 1), 1, 1, false)!;
+      const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx, 0, 1), 1, 1, true)!;
       assert(undefined !== cone);
       pfb.addCone(cone);
     }
@@ -105,8 +125,9 @@ class GeometryDecorator {
       indices: new Uint32Array(polyface.data.pointIndex),
       positions: polyface.data.point.float64Data().subarray(0, polyface.data.point.float64Length),
     }, {
-      // maxHulls: 8,
-      fillMode: "surface",
+      maxHulls: 16,
+      // fillMode: "surface",
+      shrinkWrap: false,
     });
 
     assert(hulls.length > 0);
@@ -130,8 +151,10 @@ class GeometryDecorator {
     }
 
     this.addDecorator((builder) => {
-      for (const polyface of polyfaces)
+      for (const polyface of polyfaces) {
         builder.addPolyface(polyface, false);
+        this.setNextColor(builder);
+      }
     });
   }
 
@@ -145,15 +168,18 @@ class GeometryDecorator {
       builder.addShape([ new Point3d(0, y, 0), new Point3d(1, y, 0), new Point3d(1, y + 1, 1), new Point3d(0, y + 1, 1), new Point3d(0, y, 0) ]);
 
       builder.activatePickableId(boxId);
+      this.setNextColor(builder);
       const box = Box.createRange(new Range3d(2, y, 0, 3, y + 1, 1), true);
       assert(undefined !== box);
       builder.addSolidPrimitive(box);
 
       builder.activateFeature(new Feature(sphereId, undefined, GeometryClass.Construction));
+      this.setNextColor(builder);
       const sphere = Sphere.createCenterRadius(new Point3d(4.5, y + 0.5, 0.5), 0.5);
       builder.addSolidPrimitive(sphere);
 
       builder.activatePickableId(coneId);
+      this.setNextColor(builder);
       const cone = Cone.createAxisPoints(new Point3d(6, y, 0), new Point3d(6, y, 1), 0.5, 0.25, true);
       assert(undefined !== cone);
       builder.addSolidPrimitive(cone);
