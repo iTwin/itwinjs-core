@@ -132,9 +132,9 @@ class GeometryDecorator {
       indices: new Uint32Array(polyface.data.pointIndex),
       positions: polyface.data.point.float64Data().subarray(0, polyface.data.point.float64Length),
     }, {
-      maxHulls: 8,
-      // fillMode: "surface",
-      shrinkWrap: false,
+      maxHulls: 1,
+      maxVerticesPerHull: 32,
+      // fillMode: "raycast",
     });
 
     assert(hulls.length > 0);
@@ -195,7 +195,8 @@ class GeometryDecorator {
 }
 
 export async function openDecorationGeometryExample(viewer: Viewer): Promise<void> {
-  const decomposer = await ConvexMeshDecomposition.create();
+  const doHulls = false;
+  const decomposer = doHulls ? await ConvexMeshDecomposition.create() : undefined;
   const viewIndependentOrigin = undefined; // new Point3d(4, 0, 0) -- uncomment for testing.
   IModelApp.viewManager.addDecorator(new GeometryDecorator(viewer.viewport, viewIndependentOrigin, decomposer));
 
