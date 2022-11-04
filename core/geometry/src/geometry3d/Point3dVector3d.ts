@@ -397,8 +397,12 @@ export class Point3d extends XYZ {
    * @param json json value.
    */
   public static fromJSON(json?: XYZProps): Point3d {
+<<<<<<< HEAD
     const val = new Point3d(); val.setFromJSON(json);
     return val;
+=======
+    const val = new Point3d(); val.setFromJSON(json); return val;
+>>>>>>> 61d37080519aedfdc6de03081d24ac2c35110e4d
   }
   /** Return a new Point3d with the same coordinates */
   public clone(result?: Point3d): Point3d {
