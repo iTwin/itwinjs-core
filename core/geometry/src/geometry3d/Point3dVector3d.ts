@@ -33,15 +33,21 @@ export class XYZ implements XYAndZ {
    * @param z (optional) z part
    */
   public set(x: number = 0, y: number = 0, z: number = 0) {
-    this.x = x; this.y = y; this.z = z;
+    this.x = x;
+    this.y = y;
+    this.z = z;
   }
 
   /** Set the x,y,z parts to zero. */
   public setZero() {
-    this.x = 0; this.y = 0; this.z = 0;
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
   }
   protected constructor(x: number = 0, y: number = 0, z: number = 0) {
-    this.x = x; this.y = y; this.z = z;
+    this.x = x;
+    this.y = y;
+    this.z = z;
   }
   /** Type guard for XAndY.
    * @note this will return true for an XYAndZ. If you wish to distinguish between the two, call isXYAndZ first.
@@ -304,11 +310,15 @@ export class XYZ implements XYAndZ {
   }
   /** add x,y,z from other in place. */
   public addInPlace(other: XYAndZ): void {
-    this.x += other.x; this.y += other.y; this.z += other.z;
+    this.x += other.x;
+    this.y += other.y;
+    this.z += other.z;
   }
   /** add x,y,z from other in place. */
   public subtractInPlace(other: XYAndZ): void {
-    this.x -= other.x; this.y -= other.y; this.z -= other.z;
+    this.x -= other.x;
+    this.y -= other.y;
+    this.z -= other.z;
   }
   /** add (in place) the scaled x,y,z of other */
   public addScaledInPlace(other: XYAndZ, scale: number): void {
@@ -318,11 +328,15 @@ export class XYZ implements XYAndZ {
   }
   /** Multiply the x, y, z parts by scale. */
   public scaleInPlace(scale: number) {
-    this.x *= scale; this.y *= scale; this.z *= scale;
+    this.x *= scale;
+    this.y *= scale;
+    this.z *= scale;
   }
   /** add to x, y, z parts */
   public addXYZInPlace(dx: number = 0.0, dy: number = 0.0, dz: number = 0.0) {
-    this.x += dx; this.y += dy; this.z += dz;
+    this.x += dx;
+    this.y += dy;
+    this.z += dz;
   }
   /** Clone strongly typed as Point3d */
   public cloneAsPoint3d(): Point3d {
@@ -397,7 +411,8 @@ export class Point3d extends XYZ {
    * @param json json value.
    */
   public static fromJSON(json?: XYZProps): Point3d {
-    const val = new Point3d(); val.setFromJSON(json);
+    const val = new Point3d();
+    val.setFromJSON(json);
     return val;
   }
   /** Return a new Point3d with the same coordinates */
