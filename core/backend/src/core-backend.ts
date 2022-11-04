@@ -34,7 +34,6 @@ export * from "./BackendLoggerCategory";
 export * from "./Material";
 export * from "./Model";
 export * from "./NavigationRelationship";
-export * from "./PlatformUtilitiesBackend";
 export * from "./RpcBackend";
 export * from "./Schema";
 export * from "./SqliteStatement";

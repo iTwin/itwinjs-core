@@ -10,7 +10,7 @@ import type * as ElectronModule from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
-import { IpcHandler, IpcHost, NativeHost, NativeHostOpts, PlatformUtilitiesBackend } from "@itwin/core-backend";
+import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { dialogChannel, DialogModuleMethod } from "../common/ElectronIpcInterface";
@@ -268,7 +268,6 @@ export class ElectronHost {
       this.webResourcesPath = eopt?.webResourcesPath ?? "";
       this.frontendURL = eopt?.frontendURL ?? (this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`);
       this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
-      PlatformUtilitiesBackend.initialize();
       this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
     }
 

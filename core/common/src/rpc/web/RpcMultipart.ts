@@ -7,7 +7,7 @@
  */
 
 import { BentleyStatus, IModelError } from "../../IModelError";
-import { BackendBuffer, BackendReadable } from "../../PlatformUtilities";
+import { BackendBuffer, BackendReadable } from "../../BackendTypes";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { HttpServerRequest } from "../web/WebAppRpcProtocol";
 

@@ -35,7 +35,6 @@ import { TileStorage } from "./TileStorage";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
-import { PlatformUtilitiesBackend } from "./PlatformUtilitiesBackend";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -408,8 +407,6 @@ export class IModelHost {
     if (this._isValid)
       return; // we're already initialized
     this._isValid = true;
-
-    PlatformUtilitiesBackend.initialize();
 
     options = options ?? {};
     if (IModelHost.sessionId === "")

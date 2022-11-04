@@ -6,8 +6,8 @@
  * @module RpcInterface
  */
 
+import { Base64 } from "js-base64";
 import { IModelRpcProps } from "../../IModel";
-import { PlatformUtilities } from "../../PlatformUtilities";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcInterfaceEndpoints, RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "./RpcConfiguration";
@@ -115,7 +115,7 @@ export class RpcControlChannel {
     this._configuration.interfaces().forEach((definition) => interfaces.push(`${definition.interfaceName}@${definition.interfaceVersion}`));
     const id = interfaces.sort().join(",");
 
-    return PlatformUtilities.utilities.toBase64(id);
+    return Base64.encode(id);
   }
 
   private activateClient() {

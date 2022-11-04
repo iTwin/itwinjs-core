@@ -88,7 +88,7 @@ export * from "./ECSqlReader";
 export * from "./PlanarClipMask";
 export * from "./ModelGeometryChanges";
 export * from "./PlanProjectionSettings";
-export * from "./PlatformUtilities";
+export * from "./BackendTypes";
 export * from "./QPoint";
 export * from "./RealityDataAccessProps";
 export * from "./RealityModelDisplaySettings";

@@ -6,9 +6,10 @@
  * @module RpcInterface
  */
 
-import { RpcMultipart, WebAppRpcRequest } from "@itwin/core-common";
+import { RpcMultipart, WebAppRpcLogging, WebAppRpcRequest } from "@itwin/core-common";
 import { appendToMultipartForm, createMultipartStream, parseMultipartRequest } from "./rpc/multipart";
 import { initializeTracing } from "./rpc/tracing";
+import { WebAppRpcLoggingBackend } from "./rpc/web/logging";
 import { parseRequest } from "./rpc/web/request";
 import { sendResponse } from "./rpc/web/response";
 
@@ -30,4 +31,6 @@ export function initializeRpcBackend(enableOpenTelemetry: boolean = false) {
 
   WebAppRpcRequest.backend.sendResponse = sendResponse;
   WebAppRpcRequest.backend.parseRequest = parseRequest;
+
+  WebAppRpcLogging.initializeBackend(new WebAppRpcLoggingBackend());
 }

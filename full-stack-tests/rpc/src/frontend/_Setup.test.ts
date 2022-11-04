@@ -7,12 +7,10 @@ import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { IModelApp, LocalhostIpcApp, PlatformUtilitiesFrontend } from "@itwin/core-frontend";
+import { IModelApp, LocalhostIpcApp } from "@itwin/core-frontend";
 import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
-
-PlatformUtilitiesFrontend.initialize(); // necessary since many existing RPC tests do not call IModelApp.startup
 
 Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Warning);

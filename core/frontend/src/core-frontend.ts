@@ -49,7 +49,6 @@ export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
-export * from "./PlatformUtilitiesFrontend";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialViewState";

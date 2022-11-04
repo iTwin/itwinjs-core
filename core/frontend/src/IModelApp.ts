@@ -52,7 +52,6 @@ import * as viewTool from "./tools/ViewTool";
 import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
-import { PlatformUtilitiesFrontend } from "./PlatformUtilitiesFrontend";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require("./IModeljs-css");
@@ -355,8 +354,6 @@ export class IModelApp {
     if (this._initialized)
       return; // we're already initialized, do nothing.
     this._initialized = true;
-
-    PlatformUtilitiesFrontend.initialize();
 
     opts = opts ?? {};
     this._securityOptions = opts.security ?? {};

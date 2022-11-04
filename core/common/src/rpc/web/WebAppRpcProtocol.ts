@@ -8,7 +8,7 @@
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
-import { BackendReadable, BackendWritable } from "../../PlatformUtilities";
+import { BackendReadable, BackendWritable } from "../../BackendTypes";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
