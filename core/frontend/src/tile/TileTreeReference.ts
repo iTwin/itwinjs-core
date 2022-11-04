@@ -47,6 +47,9 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** The owner of the currently-referenced [[TileTree]]. Do not store a direct reference to it, because it may change or become disposed at any time. */
   public abstract get treeOwner(): TileTreeOwner;
 
+  // Force a new tree owner / tile tree to be created for the current tile tree reference
+  public resetTreeOwner() {}
+
   /** Disclose *all* TileTrees use by this reference. This may include things like map tiles used for draping on terrain.
    * Override this and call super if you have such auxiliary trees.
    * @note Any tree *NOT* disclosed becomes a candidate for *purging* (being unloaded from memory along with all of its tiles and graphics).

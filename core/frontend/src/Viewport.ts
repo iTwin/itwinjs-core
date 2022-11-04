@@ -790,6 +790,9 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
 
+  /** @beta */
+  public resetMapLayer(index: number, isOverlay: boolean) { this._mapTiledGraphicsProvider?.resetMapLayer(index, isOverlay); }
+
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
 
