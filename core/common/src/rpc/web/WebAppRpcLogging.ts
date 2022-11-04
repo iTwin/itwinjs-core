@@ -20,20 +20,19 @@ import { WebAppRpcRequest } from "./WebAppRpcRequest";
 /** @internal */
 const BACKEND = Symbol.for("@itwin.WebAppRpcLogging.Backend");
 const FRONTEND = Symbol.for("@itwin.WebAppRpcLogging.Frontend");
-const globalObj: any = typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};
 
 /** @internal */
 export abstract class WebAppRpcLogging {
   public static initializeBackend(instance: WebAppRpcLogging) {
-    globalObj[BACKEND] = instance;
+    (globalThis as any)[BACKEND] = instance;
   }
 
   public static initializeFrontend(instance: WebAppRpcLogging) {
-    globalObj[FRONTEND] = instance;
+    (globalThis as any)[FRONTEND] = instance;
   }
 
   private static get backend(): WebAppRpcLogging {
-    const instance = globalObj[BACKEND];
+    const instance = (globalThis as any)[BACKEND];
     if (typeof (instance) === "undefined") {
       throw new IModelError(BentleyStatus.ERROR, "Backend logging is not initialized.");
     }
@@ -42,7 +41,7 @@ export abstract class WebAppRpcLogging {
   }
 
   private static get frontend(): WebAppRpcLogging {
-    const instance = globalObj[FRONTEND];
+    const instance = (globalThis as any)[FRONTEND];
     if (typeof (instance) === "undefined") {
       throw new IModelError(BentleyStatus.ERROR, "Frontend logging is not initialized.");
     }
