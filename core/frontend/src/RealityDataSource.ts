@@ -12,6 +12,7 @@ import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from 
 import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
 import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
 import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
+import { IModelApp } from "./IModelApp";
 import { Range3d } from "@itwin/core-geometry";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
@@ -70,6 +71,21 @@ export interface RealityDataSource {
    * @returns string containing the URL to reality data.
    */
   getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+  /** If true, the geometricError property of the tiles will be used to compute screen-space error.
+   * @alpha
+   */
+  readonly usesGeometricError?: boolean;
+  /** If [[usesGeometricError]] is `true`, optionally specifies the maximum error, in pixels, to permit for a tile before requiring refinement of that tile.
+   * Default: 16
+   * @alpha
+   */
+  readonly maximumScreenSpaceError?: number;
+  /** Given the URL of a tile's content, return the type of that content.
+   * "tileset" indicates the content points to a JSON tileset describing the structure of the tile tree below the tile.
+   * "tile" indicates the content points to a binary representation of the tile's graphics.
+   * @alpha
+   */
+  getTileContentType(url: string): "tile" | "tileset";
 
   /** Gets a reality data root document json
    * @returns tile data json
@@ -183,20 +199,64 @@ export namespace RealityDataSource {
    * There will aways be only one reality data RealityDataSource for a corresponding reality data source key.
    * @alpha
    */
-  export async function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    switch(rdSourceKey.provider) {
-      case RealityDataProvider.CesiumIonAsset:
-        return RealityDataSourceCesiumIonAssetImpl.createFromKey(rdSourceKey, iTwinId);
-      case RealityDataProvider.TilesetUrl:
-        return RealityDataSourceTilesetUrlImpl.createFromKey(rdSourceKey, iTwinId);
-      case RealityDataProvider.ContextShare:
-        return RealityDataSourceContextShareImpl.createFromKey(rdSourceKey, iTwinId);
-      case RealityDataProvider.OrbitGtBlob:
-        return RealityDataSourceTilesetUrlImpl.createFromKey(rdSourceKey, iTwinId);
-      default:
-        Logger.logError(loggerCategory, `Error realityModelFromJson - region undefined`);
+  export async function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
+    const provider = IModelApp.realityDataSourceProviders.find(key.provider);
+    if (!provider) {
+      Logger.logWarning(loggerCategory, `RealityDataSourceProvider "${key.provider}" is not registered`);
+      return undefined;
     }
-    return undefined;
+
+    return provider.createRealityDataSource(key, iTwinId);
   }
 }
 
+/** A named supplier of [RealityDataSource]]s.
+ * The provider's name is stored in a [RealityDataSourceKey]($common). When the [[RealityDataSource]] is requested from the key,
+ * the provider is looked up in [[IModelApp.realityDataSourceProviders]] by its name and, if found, its [[createRealityDataSource]] method
+ * is invoked to produce the reality data source.
+ * @alpha
+ */
+export interface RealityDataSourceProvider {
+  /** Produce a RealityDataSource for the specified `key`.
+   * @param key Identifies the reality data source.
+   * @param iTwinId A default iTwinId to use.
+   * @returns the requested reality data source, or `undefined` if it could not be produced.
+   */
+  createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+}
+
+/** A registry of [[RealityDataSourceProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.realityDataSourceProviders]].
+ * It includes a handful of built-in providers for sources like Cesium ION, ContextShare, OrbitGT, and arbitrary public-accessible URLs.
+ * Any number of additional providers can be registered. They should typically be registered just after [[IModelAp.startup]].
+ * @alpha
+ */
+export class RealityDataSourceProviderRegistry {
+  private readonly _providers = new Map<string, RealityDataSourceProvider>();
+
+  /** @internal */
+  public constructor() {
+    this.register(RealityDataProvider.CesiumIonAsset, {
+      createRealityDataSource: async (key, iTwinId) => RealityDataSourceCesiumIonAssetImpl.createFromKey(key, iTwinId),
+    });
+    this.register(RealityDataProvider.TilesetUrl, {
+      createRealityDataSource: async (key, iTwinId) => RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
+    });
+    this.register(RealityDataProvider.ContextShare, {
+      createRealityDataSource: async (key, iTwinId) => RealityDataSourceContextShareImpl.createFromKey(key, iTwinId),
+    });
+    this.register(RealityDataProvider.OrbitGtBlob, {
+      // ###TODO separate TilesetUrlImpl
+      createRealityDataSource: async (key, iTwinId) => RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
+    });
+  }
+
+  /** Register `provider` to produce [[RealityDataSource]]s for the specified provider `name`. */
+  public register(name: string, provider: RealityDataSourceProvider): void {
+    this._providers.set(name, provider);
+  }
+
+  /** Look up the provider registered by the specified `name`. */
+  public find(name: string): RealityDataSourceProvider | undefined {
+    return this._providers.get(name);
+  }
+}
