@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
-import { Box, Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, Transform } from "@itwin/core-geometry";
+import { Box, Cone, IndexedPolyface, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform } from "@itwin/core-geometry";
 import { ColorDef, Feature, GeometryClass, RenderMode, SkyBox } from "@itwin/core-common";
 import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
@@ -14,10 +14,12 @@ class GeometryDecorator {
   private readonly _iModel: IModelConnection;
   private readonly _decorators = new Map<string, (builder: GraphicBuilder) => void>();
   private readonly _viewIndependentOrigin?: Point3d;
+  private readonly _decomposer: ConvexMeshDecomposition;
 
-  public constructor(viewport: Viewport, viewIndependentOrigin?: Point3d) {
+  public constructor(viewport: Viewport, viewIndependentOrigin: Point3d | undefined, decomposer: ConvexMeshDecomposition) {
     this._iModel = viewport.iModel;
     this._viewIndependentOrigin = viewIndependentOrigin;
+    this._decomposer = decomposer;
 
     this.addSphere(0);
     this.addBox(2);
@@ -86,10 +88,43 @@ class GeometryDecorator {
   private addPolyface(cx: number): void {
     const cone = Cone.createAxisPoints(new Point3d(cx, 0, 0), new Point3d(cx + 1, 1, 1), 1, 0.5, true)!;
     assert(undefined !== cone);
-    const builder = PolyfaceBuilder.create();
-    builder.addCone(cone);
-    const polyface = builder.claimPolyface();
-    this.addDecorator((builder) => builder.addPolyface(polyface, false));
+
+    const opts = StrokeOptions.createForFacets()
+    opts.shouldTriangulate = true;
+    const coneBuilder = PolyfaceBuilder.create(opts);
+    coneBuilder.addCone(cone);
+    const polyface = coneBuilder.claimPolyface();
+
+    const hulls = this._decomposer.computeConvexHulls({
+      indices: new Uint32Array(polyface.data.pointIndex),
+      positions: polyface.data.point.float64Data().subarray(0, polyface.data.point.float64Length),
+    }, {
+      // maxHulls: 8,
+      fillMode: "surface",
+    });
+
+    assert(hulls.length > 0);
+
+    opts.needNormals = true;
+    const polyfaces: IndexedPolyface[] = [];
+    for (const hull of hulls) {
+      const hullBuilder = PolyfaceBuilder.create(opts);
+      for (let i = 0; i < hull.indices.length; i += 3) {
+        const i0 = i * 3, i1 = (i + 1) * 3, i2 = (i + 2) * 3;
+        hullBuilder.addTriangleFacet([
+          new Point3d(hull.positions[i0], hull.positions[i0 + 1], hull.positions[i0 + 2]),
+          new Point3d(hull.positions[i1], hull.positions[i1 + 1], hull.positions[i1 + 2]),
+          new Point3d(hull.positions[i2], hull.positions[i2 + 1], hull.positions[i2 + 2]),
+        ]);
+      }
+
+      polyfaces.push(hullBuilder.claimPolyface());
+    }
+
+    this.addDecorator((builder) => {
+      for (const polyface of polyfaces)
+        builder.addPolyface(polyface, false);
+    });
   }
 
   private addMultiFeatureDecoration(): void {
@@ -118,9 +153,10 @@ class GeometryDecorator {
   }
 }
 
-export function openDecorationGeometryExample(viewer: Viewer): void {
+export async function openDecorationGeometryExample(viewer: Viewer): Promise<void> {
+  const decomposer = await ConvexMeshDecomposition.create();
   const viewIndependentOrigin = undefined; // new Point3d(4, 0, 0) -- uncomment for testing.
-  IModelApp.viewManager.addDecorator(new GeometryDecorator(viewer.viewport, viewIndependentOrigin));
+  IModelApp.viewManager.addDecorator(new GeometryDecorator(viewer.viewport, viewIndependentOrigin, decomposer));
 
   assert(viewer.viewport.view.is3d());
   viewer.viewport.setStandardRotation(StandardViewId.Iso);
