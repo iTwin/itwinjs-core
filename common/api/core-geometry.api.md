@@ -1445,7 +1445,7 @@ export class CoordinateXYZ extends GeometryQuery {
 // @public
 export abstract class CurveChain extends CurveCollection {
     protected constructor();
-    childIndex(target: CurvePrimitive | undefined): number | undefined;
+    childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined;
     get children(): CurvePrimitive[];
     abstract cloneStroked(options?: StrokeOptions): AnyCurve;
     protected _curves: CurvePrimitive[];
@@ -1472,7 +1472,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     protected chainDistanceToFragment(distance: number, allowExtrapolation?: boolean): PathFragment | undefined;
     protected chainDistanceToFragmentIndex(distance: number, allowExtrapolation?: boolean): number | undefined;
     clone(): CurveChainWithDistanceIndex;
-    clonePartialCurve(_fractionA: number, _fractionB: number): CurveChainWithDistanceIndex | undefined;
+    clonePartialCurve(fractionA: number, fractionB: number): CurveChainWithDistanceIndex | undefined;
     cloneTransformed(transform: Transform): CurveChainWithDistanceIndex | undefined;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): void;
@@ -3935,12 +3935,14 @@ export class PathFragment {
     a: number;
     chainDistance0: number;
     chainDistance1: number;
-    chainDistanceToAccurateChildFraction(chainDistance: number): number;
+    chainDistanceToAccurateChildFraction(chainDistance: number, allowExtrapolation?: boolean): number;
     chainDistanceToInterpolatedChildFraction(distance: number): number;
     childCurve: CurvePrimitive;
     childFraction0: number;
     childFraction1: number;
+    // @deprecated (undocumented)
     childFractionTChainDistance(fraction: number): number;
+    childFractionToChainDistance(fraction: number): number;
     // (undocumented)
     static collectSortedQuickMinDistances(fragments: PathFragment[], spacePoint: Point3d): PathFragment[];
     containsChainDistance(distance: number): boolean;

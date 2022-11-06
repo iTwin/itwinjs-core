@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { assert } from "@itwin/core-bentley";
 import type { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { Clipper } from "../clipping/ClipUtils";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
@@ -326,9 +327,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * (Attempt to) find a position on the curve at a signed distance from start fraction.
    * * Return the position as a CurveLocationDetail.
    * * In the `CurveLocationDetail`, record:
-   *   * `fractional` position
-   *   * `fraction` = coordinates of the point
-   *   * `search
+   *   * `fraction` = fractional position
+   *   * `point` = coordinates of the point
    *   * `a` = (signed!) distance moved.   If `allowExtension` is false and the move reached the start or end of the curve, this distance is smaller than the requested signedDistance.
    *   * `curveSearchStatus` indicates one of:
    *     * `error` (unusual) computation failed not supported for this curve.
@@ -390,13 +390,41 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param result
    */
   protected moveSignedDistanceFromFractionGeneric(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail {
-    const limitFraction = signedDistance > 0.0 ? 1.0 : 0.0;
+    let limitFraction: number;
+    const slackFraction = 0.1;
+    if (signedDistance === 0.0)
+      return CurveLocationDetail.createCurveEvaluatedFraction(this, startFraction, result); // no movement, just evaluate at startFraction
+    if (signedDistance > 0.0) {
+      limitFraction = 1.0;
+      if (startFraction >= limitFraction) {
+        const newStartFraction = limitFraction - slackFraction;
+        signedDistance += this.curveLengthBetweenFractions(newStartFraction, startFraction);
+        startFraction = newStartFraction;
+      }
+    } else { // signedDistance < 0.0
+      limitFraction = 0.0;
+      if (startFraction <= limitFraction) {
+        const newStartFraction = limitFraction + slackFraction;
+        signedDistance -= this.curveLengthBetweenFractions(startFraction, newStartFraction);
+        startFraction = newStartFraction;
+      }
+    }
+
+    const availableLength = this.curveLengthBetweenFractions(startFraction, limitFraction);
+    assert(availableLength > 0.0);
     const absDistance = Math.abs(signedDistance);
-    const directionFactor = signedDistance < 0.0 ? -1.0 : 1.0;
-    const availableLength = this.curveLengthBetweenFractions(startFraction, limitFraction);    // that is always positive
     if (availableLength < absDistance && !allowExtension)
       return CurveLocationDetail.createConditionalMoveSignedDistance(allowExtension, this, startFraction, limitFraction, signedDistance, result);
-    const fractionStep = absDistance / availableLength;
+
+    const fractionStep = Geometry.conditionalDivideCoordinate(absDistance, availableLength);
+    if (undefined === fractionStep) {
+      // no available length!
+      result = CurveLocationDetail.createCurveEvaluatedFraction(this, startFraction, result);
+      result.curveSearchStatus = CurveSearchStatus.error;
+      return result;
+    }
+
+    const directionFactor = signedDistance < 0.0 ? -1.0 : 1.0;
     let fractionB = Geometry.interpolate(startFraction, fractionStep, limitFraction);
     let fractionA = startFraction;
     let distanceA = 0.0;
@@ -430,10 +458,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
       distanceA = distance0B;
     }
     if (numConverged > 1)
-      return CurveLocationDetail.createConditionalMoveSignedDistance(false, this, startFraction, fractionB, signedDistance, result);
+      return CurveLocationDetail.createConditionalMoveSignedDistance(allowExtension, this, startFraction, fractionB, signedDistance, result);
 
     result = CurveLocationDetail.createCurveEvaluatedFraction(this, startFraction, result);
-    result.a = 0.0;
     result.curveSearchStatus = CurveSearchStatus.error;
     return result;
   }
@@ -497,7 +524,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return undefined;
   }
   /**
-   * * If the curve primitive has distance-along-curve strictly proportional to curve fraction, return true
+   * * If the curve primitive has distance-along-curve strictly proportional to curve fraction, return the scale factor.
    * * If distance-along-the-curve is not proportional, return undefined.
    * * When defined, the scale factor is always the length of the curve.
    * * This scale factor is typically available for these curve types:

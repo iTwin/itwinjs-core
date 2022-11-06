@@ -13,13 +13,14 @@ Table of contents:
   - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
 - [Element aspect ids](#element-aspect-ids)
 - [AppUi](#appui)
+- [New packages](#new-packages)
+  - [@itwin/map-layers-formats](#map-layers-formats)
 - [Geometry](#geometry)
   - [Polyface](#polyface)
 - [Deprecations](#deprecations)
   - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
-- [New packages](#new-packages)
-  - [@itwin/map-layers-formats](#map-layers-formats)
 
 ## Display system
 
@@ -150,6 +151,10 @@ The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated 
 
 The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
  The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
+
+### @itwin/core-geometry
+
+The method [PathFragment.childFractionTChainDistance] has been deprecated in favor of [PathFragment.childFractionToChainDistance], with the correct spelling.
 
 ### @itwin/core-transformer
 
