@@ -13,6 +13,11 @@ import { BeJSONFunctions, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
 import { XAndY, XYProps } from "./XYZProps";
 
+interface PerpParallelOptions {
+  radianSquaredTol?: number;
+  distanceSquaredTol?: number;
+}
+
 /** Minimal object containing x,y and operations that are meaningful without change in both point and vector.
  *  * `XY` is not instantiable.
  *  * The derived (instantiable) classes are
@@ -518,11 +523,12 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * Test if this vector is parallel to other.
    * @param other second vector for comparison.
    * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel.
-   * @param radianSquaredTol radian squared tolerance.
-   * @param distanceSquaredTol distance squared tolerance.
+   * @param options optional radian and distance tolerances.
    */
-  public isParallelTo(other: Vector2d, oppositeIsParallel: boolean = false, returnValueIfAnInputIsZeroLength: boolean = false,
-    radianSquaredTol: number = Geometry.smallAngleRadiansSquared, distanceSquaredTol: number = Geometry.smallMetricDistanceSquared): boolean {
+  public isParallelTo(other: Vector2d, oppositeIsParallel: boolean = false,
+    returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+    const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
+    const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const a2 = this.magnitudeSquared();
     const b2 = other.magnitudeSquared();
     if (a2 < distanceSquaredTol || b2 < distanceSquaredTol)
@@ -540,11 +546,11 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * Test if this vector is perpendicular to other.
    * @param other second vector in comparison.
    * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
-   * @param radianSquaredTol radian squared tolerance.
-   * @param distanceSquaredTol distance squared tolerance.
+   * @param options optional radian and distance tolerances.
    */
-  public isPerpendicularTo(other: Vector2d, returnValueIfAnInputIsZeroLength: boolean = false,
-    radianSquaredTol: number = Geometry.smallAngleRadiansSquared, distanceSquaredTol: number = Geometry.smallMetricDistanceSquared): boolean {
+  public isPerpendicularTo(other: Vector2d, returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+    const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
+    const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const aa = this.magnitudeSquared();
     const bb = other.magnitudeSquared();
     if (aa < distanceSquaredTol || bb < distanceSquaredTol)
