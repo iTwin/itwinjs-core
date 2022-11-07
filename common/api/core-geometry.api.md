@@ -5919,8 +5919,8 @@ export class Vector2d extends XY implements BeJSONFunctions {
     fractionOfProjectionToVector(target: Vector2d, defaultFraction?: number): number;
     static fromJSON(json?: XYProps): Vector2d;
     interpolate(fraction: number, right: Vector2d, result?: Vector2d): Vector2d;
-    isParallelTo(other: Vector2d, oppositeIsParallel?: boolean): boolean;
-    isPerpendicularTo(other: Vector2d): boolean;
+    isParallelTo(other: Vector2d, oppositeIsParallel?: boolean, radianSquaredTol?: number, distanceSquaredTol?: number): boolean;
+    isPerpendicularTo(other: Vector2d, returnValueIfAnInputIsZeroLength?: boolean, radianSquaredTol?: number, distanceSquaredTol?: number): boolean;
     minus(vector: XAndY, result?: Vector2d): Vector2d;
     negate(result?: Vector2d): Vector2d;
     normalize(result?: Vector2d): Vector2d | undefined;
@@ -5928,6 +5928,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     plus2Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number, result?: Vector2d): Vector2d;
     plus3Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number, vectorC: XAndY, scalarC: number, result?: Vector2d): Vector2d;
     plusScaled(vector: XAndY, scaleFactor: number, result?: Vector2d): Vector2d;
+    radiansTo(vectorB: XAndY): number;
     rotate90CCWXY(result?: Vector2d): Vector2d;
     rotate90CWXY(result?: Vector2d): Vector2d;
     rotateXY(angle: Angle, result?: Vector2d): Vector2d;
@@ -5980,8 +5981,8 @@ export class Vector3d extends XYZ {
     fractionOfProjectionToVector(target: Vector3d, defaultFraction?: number): number;
     static fromJSON(json?: XYZProps): Vector3d;
     interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d;
-    isParallelTo(other: Vector3d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean): boolean;
-    isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength?: boolean): boolean;
+    isParallelTo(other: Vector3d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean, radianSquaredTol?: number, distanceSquaredTol?: number): boolean;
+    isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength?: boolean, radianSquaredTol?: number, distanceSquaredTol?: number): boolean;
     minus(vector: XYAndZ, result?: Vector3d): Vector3d;
     negate(result?: Vector3d): Vector3d;
     normalize(result?: Vector3d): Vector3d | undefined;
@@ -5997,6 +5998,7 @@ export class Vector3d extends XYZ {
     plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, result?: Vector3d): Vector3d;
     plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Vector3d): Vector3d;
     plusScaled(vector: XYAndZ, scaleFactor: number, result?: Vector3d): Vector3d;
+    radiansTo(vectorB: Vector3d): number;
     rotate90Around(axis: Vector3d, result?: Vector3d): Vector3d | undefined;
     rotate90CCWXY(result?: Vector3d): Vector3d;
     rotate90Towards(target: Vector3d, result?: Vector3d): Vector3d | undefined;
