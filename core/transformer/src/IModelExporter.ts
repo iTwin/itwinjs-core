@@ -147,10 +147,10 @@ export class IModelExporter {
    * @see [Model.isTemplate]($backend)
    */
   public wantTemplateModels: boolean = true;
-  /** A flag that indicates whether *system* schemas should be exported or not. The default is `true` but was previously false.
-   * This can be set to false for the legacy default behavior, which can be useful to prevent a profile upgrade
+  /** A flag that indicates whether *system* schemas should be exported or not. The default is `true` (previously false).
+   * This can be set to false for the legacy default behavior, which can prevent certain things such as a profile upgrade,
+   * but if upgrading is necessary the transformation will fail.
    * @see [[exportSchemas]]
-   * @deprecated
    */
   public wantSystemSchemas: boolean = true;
   /** A flag that determines whether this IModelExporter should visit Elements or not. The default is `true`.

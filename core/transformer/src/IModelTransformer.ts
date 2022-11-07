@@ -398,7 +398,7 @@ export class IModelTransformer extends IModelExportHandler {
       const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE Element.Id=:elementId AND Scope.Id=:scopeId AND Kind=:kind LIMIT 1`;
       const hasConflictingScope = this.provenanceDb.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
         statement.bindId("elementId", aspectProps.element.id);
-        statement.bindId("scopeId", aspectProps.scope.id);
+        statement.bindId("scopeId", aspectProps.scope.id); // this scope.id can never be invalid, we create it above
         statement.bindString("kind", aspectProps.kind);
         return DbResult.BE_SQLITE_ROW === statement.step();
       });
@@ -416,7 +416,7 @@ export class IModelTransformer extends IModelExportHandler {
     const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE Element.Id=:elementId AND Scope.Id=:scopeId AND Kind=:kind AND Identifier=:identifier LIMIT 1`;
     return this.provenanceDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
       statement.bindId("elementId", aspectProps.element.id);
-      statement.bindId("scopeId", aspectProps.scope.id);
+      statement.bindId("scopeId", aspectProps.scope?.id ?? Id64.invalid);
       statement.bindString("kind", aspectProps.kind);
       statement.bindString("identifier", aspectProps.identifier);
       return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
@@ -585,9 +585,13 @@ export class IModelTransformer extends IModelExportHandler {
     const aspects: ElementAspect[] = this.targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
     for (const aspect of aspects) {
       const sourceAspect = aspect as ExternalSourceAspect;
-      if ((sourceAspect.identifier === sourceElement.id) && (sourceAspect.scope.id === this.targetScopeElementId) && (sourceAspect.kind === ExternalSourceAspect.Kind.Element)) {
-        const lastModifiedTime: string = sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id);
-        return (lastModifiedTime !== sourceAspect.version);
+      if (
+        sourceAspect.identifier === sourceElement.id &&
+        sourceAspect.scope?.id === this.targetScopeElementId &&
+        sourceAspect.kind === ExternalSourceAspect.Kind.Element
+      ) {
+        const lastModifiedTime = sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id);
+        return lastModifiedTime !== sourceAspect.version;
       }
     }
     return true;
@@ -1085,7 +1089,7 @@ export class IModelTransformer extends IModelExportHandler {
     sourceAspects.forEach((a) => this.collectUnmappedReferences(a));
     // const targetAspectsToImport = targetAspectPropsArray.filter((targetAspect, i) => hasEntityChanged(sourceAspects[i], targetAspect));
     const targetIds = this.importer.importElementMultiAspects(targetAspectPropsArray, (a) => {
-      const isExternalSourceAspectFromTransformer = a instanceof ExternalSourceAspect && a.scope.id === this.targetScopeElementId;
+      const isExternalSourceAspectFromTransformer = a instanceof ExternalSourceAspect && a.scope?.id === this.targetScopeElementId;
       return !this._options.includeSourceProvenance || !isExternalSourceAspectFromTransformer;
     });
     for (let i = 0; i < targetIds.length; ++i) {
