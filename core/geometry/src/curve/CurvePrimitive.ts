@@ -34,7 +34,7 @@ import type { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
 import type { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
-import { Range3d } from "../geometry3d/Range";
+import { Range1d, Range3d } from "../geometry3d/Range";
 
 /** Describes the concrete type of a [[CurvePrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.
  *  - "arc" => [[Arc3d]]
@@ -391,20 +391,20 @@ export abstract class CurvePrimitive extends GeometryQuery {
    */
   protected moveSignedDistanceFromFractionGeneric(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail {
     let limitFraction: number;
-    const slackFraction = 0.1;
+    const slackFraction = 0.1;  // slack to use when integration would otherwise have no room to work
     if (signedDistance === 0.0)
       return CurveLocationDetail.createCurveEvaluatedFraction(this, startFraction, result); // no movement, just evaluate at startFraction
     if (signedDistance > 0.0) {
       limitFraction = 1.0;
-      if (startFraction >= limitFraction) {
-        const newStartFraction = limitFraction - slackFraction;
+      if (startFraction >= 1.0) {
+        const newStartFraction = 1.0 - slackFraction;
         signedDistance += this.curveLengthBetweenFractions(newStartFraction, startFraction);
         startFraction = newStartFraction;
       }
     } else { // signedDistance < 0.0
       limitFraction = 0.0;
-      if (startFraction <= limitFraction) {
-        const newStartFraction = limitFraction + slackFraction;
+      if (startFraction <= 0.0) {
+        const newStartFraction = 0.0 + slackFraction;
         signedDistance -= this.curveLengthBetweenFractions(startFraction, newStartFraction);
         startFraction = newStartFraction;
       }
@@ -891,7 +891,7 @@ class AppendPlaneIntersectionStrokeHandler extends NewtonRotRStrokeHandler imple
   }
 }
 
-class CurveLengthContext implements IStrokeHandler {
+export class CurveLengthContext implements IStrokeHandler {
   private _curve: CurvePrimitive | undefined;
   private _summedLength: number;
   private _ray: Ray3d;
@@ -903,6 +903,17 @@ class CurveLengthContext implements IStrokeHandler {
     this._ray = (this._curve as CurvePrimitive).fractionToPointAndDerivative(fraction, this._ray);
     return this._ray.direction.magnitude();
   }
+
+  /** Return the fraction0 installed at construction time. */
+  public get getFraction0(): number {
+    return this._fraction0;
+  }
+
+  /** Return the fraction1 installed at construction time. */
+  public get getFraction1(): number {
+    return this._fraction1;
+  }
+
   public getSum() { return this._summedLength; }
 
   public constructor(fraction0: number = 0.0, fraction1: number = 1.0, numGaussPoints: number = 5) {
@@ -925,20 +936,16 @@ class CurveLengthContext implements IStrokeHandler {
   public endParentCurvePrimitive(_curve: CurvePrimitive) { }
 
   public endCurvePrimitive() { }
-  public announceIntervalForUniformStepStrokes(
-    cp: CurvePrimitive,
-    numStrokes: number,
-    fraction0: number,
-    fraction1: number): void {
-    if (fraction0 < this._fraction0) fraction0 = this._fraction0;
-    if (fraction1 > this._fraction1) fraction1 = this._fraction1;
-    if (fraction1 > fraction0) {
+  public announceIntervalForUniformStepStrokes(cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number): void {
+    const range = Range1d.createXX(fraction0, fraction1);
+    range.intersectRangeXXInPlace(this._fraction0, this._fraction1);
+    if (!range.isNull) {
       this.startCurvePrimitive(cp);
       if (numStrokes < 1) numStrokes = 1;
       const df = 1.0 / numStrokes;
       for (let i = 1; i <= numStrokes; i++) {
-        const fractionA = Geometry.interpolate(fraction0, (i - 1) * df, fraction1);
-        const fractionB = i === numStrokes ? fraction1 : Geometry.interpolate(fraction0, (i) * df, fraction1);
+        const fractionA = range.fractionToPoint((i - 1) * df);
+        const fractionB = i === numStrokes ? range.high : range.fractionToPoint(i * df);
         const numGauss = this._gaussMapper.mapXAndW(fractionA, fractionB);
         for (let k = 0; k < numGauss; k++) {
           this._summedLength += this._gaussMapper.gaussW[k] * this.tangentMagnitude(this._gaussMapper.gaussX[k]);
@@ -946,26 +953,18 @@ class CurveLengthContext implements IStrokeHandler {
       }
     }
   }
-  public announceSegmentInterval(
-    _cp: CurvePrimitive,
-    point0: Point3d,
-    point1: Point3d,
-    _numStrokes: number,
-    fraction0: number,
-    fraction1: number): void {
+  public announceSegmentInterval(_cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number): void {
     const segmentLength = point0.distance(point1);
     if (this._fraction0 <= fraction0 && fraction1 <= this._fraction1)
       this._summedLength += segmentLength;
     else {
-      let g0 = fraction0;
-      let g1 = fraction1;
-      if (g0 < this._fraction0) g0 = this._fraction0;
-      if (g1 > this._fraction1) g1 = this._fraction1;
-      if (g1 > g0) {
-        this._summedLength += segmentLength * (g1 - g0) / (fraction1 - fraction0);
-      }
+      const range = Range1d.createXX(fraction0, fraction1);
+      range.intersectRangeXXInPlace(this._fraction0, this._fraction1);
+      if (!range.isNull)
+        this._summedLength += segmentLength * range.length() / (fraction1 - fraction0);
     }
   }
+
   public announcePointTangent(_xyz: Point3d, _fraction: number, _tangent: Vector3d): void {
     // uh oh -- need to retain point for next interval
   }
