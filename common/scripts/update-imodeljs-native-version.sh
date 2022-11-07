@@ -53,7 +53,16 @@ PbxProj2="$RepoRoot/test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-te
 
 for PbxProj in $PbxProj1 $PbxProj2
 do
-  sed -i "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
+  # Note: the '' seems to be required on MacOS to get around a strange "undefined label" error
+  sed -i '' "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
+done
+
+# Update Android projects.
+BuildGradle1="$RepoRoot/test-apps/display-test-app/android/imodeljs-test-app/app/build.gradle"
+for BuildGradle in $BuildGradle1
+do
+  # Note: the '' seems to be required on MacOS to get around a strange "undefined label" error
+  sed -i '' "s/com.github.itwin:mobile-native-android:.*'/com.github.itwin:mobile-native-android:$AddonVersion'/" "$BuildGradle"
 done
 
 # Purge node_modules
