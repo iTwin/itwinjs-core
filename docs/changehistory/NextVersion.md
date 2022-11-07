@@ -154,7 +154,7 @@ The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renam
 
 ### @itwin/core-geometry
 
-The method [PathFragment.childFractionTChainDistance] has been deprecated in favor of [PathFragment.childFractionToChainDistance], with the correct spelling.
+The method [PathFragment.childFractionTChainDistance] has been deprecated in favor of misspelled [PathFragment.childFractionToChainDistance].
 
 ### @itwin/core-transformer
 

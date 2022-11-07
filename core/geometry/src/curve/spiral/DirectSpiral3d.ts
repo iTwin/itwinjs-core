@@ -6,6 +6,7 @@
  * @module Curve
  */
 import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
@@ -13,19 +14,19 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
+import { CurveLengthContext } from "../internalContexts/CurveLengthContext";
 import { LineString3d } from "../LineString3d";
 import { StrokeOptions } from "../StrokeOptions";
-import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
+import { AustralianRailCorpXYEvaluator } from "./AustralianRailCorpXYEvaluator";
 import { ClothoidSeriesRLEvaluator } from "./ClothoidSeries";
 import { CzechSpiralEvaluator, ItalianSpiralEvaluator } from "./CzechSpiralEvaluator";
 import { DirectHalfCosineSpiralEvaluator } from "./DirectHalfCosineSpiralEvaluator";
-import { AustralianRailCorpXYEvaluator } from "./AustralianRailCorpXYEvaluator";
-import { XYCurveEvaluator } from "./XYCurveEvaluator";
-import { TransitionSpiral3d } from "./TransitionSpiral3d";
-import { Angle } from "../../geometry3d/Angle";
 import { MXCubicAlongArcEvaluator } from "./MXCubicAlongArcSpiralEvaluator";
 import { PolishCubicEvaluator } from "./PolishCubicSpiralEvaluator";
-import { CurveLengthContext } from "../CurvePrimitive";
+import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
+import { TransitionSpiral3d } from "./TransitionSpiral3d";
+import { XYCurveEvaluator } from "./XYCurveEvaluator";
+
 /**
 * DirectSpiral3d acts like a TransitionSpiral3d for serialization purposes, but implements spiral types that have "direct" xy calculations without the integrations required
 * for IntegratedSpiral3d.
