@@ -17,6 +17,8 @@ import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI"
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
+/* eslint-disable deprecation/deprecation */
+
 /** An HTTP server request object.
  * @public
  */

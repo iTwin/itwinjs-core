@@ -25,9 +25,9 @@ export function initializeRpcBackend(enableOpenTelemetry: boolean = false) {
 
   initializeTracing(enableOpenTelemetry);
 
-  RpcMultipart.backend.createStream = createMultipartStream;
-  RpcMultipart.backend.parseRequest = parseMultipartRequest;
-  RpcMultipart.backend.appendToForm = appendToMultipartForm;
+  RpcMultipart.platform.createStream = createMultipartStream;
+  RpcMultipart.platform.parseRequest = parseMultipartRequest;
+  RpcMultipart.platform.appendToForm = appendToMultipartForm;
 
   WebAppRpcRequest.backend.sendResponse = sendResponse;
   WebAppRpcRequest.backend.parseRequest = parseRequest;

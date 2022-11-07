@@ -11,6 +11,8 @@ import { BackendBuffer, BackendReadable } from "../../BackendTypes";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { HttpServerRequest } from "../web/WebAppRpcProtocol";
 
+/* eslint-disable deprecation/deprecation */
+
 /** @internal */
 export interface FormDataCommon {
   append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
@@ -34,12 +36,12 @@ export class RpcMultipart {
 
   /** Creates a multipart stream for an RPC value. */
   public static createStream(value: RpcSerializedValue): ReadableFormData {
-    return this.backend.createStream(value);
+    return this.platform.createStream(value);
   }
 
   /** Obtains the RPC value from a multipart HTTP request. */
   public static async parseRequest(req: HttpServerRequest): Promise<RpcSerializedValue> {
-    return this.backend.parseRequest(req);
+    return this.platform.parseRequest(req);
   }
 
   /** @internal */
@@ -47,25 +49,20 @@ export class RpcMultipart {
     form.append("objects", value.objects);
 
     for (let i = 0; i !== value.data.length; ++i) {
-      if (typeof (Blob) !== "undefined") {
-        form.append(`data-${i}`, new Blob([value.data[i]], { type: "application/octet-stream" }));
-      } else {
-        const buf = value.data[i];
-        this.backend.appendToForm(form, i, buf);
-      }
+      this.platform.appendToForm(i, form, value);
     }
   }
 
   /** @internal */
-  public static backend = {
+  public static platform = {
     createStream(_value: RpcSerializedValue): ReadableFormData {
       throw new IModelError(BentleyStatus.ERROR, "Not bound.");
     },
     async parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue> {
       throw new IModelError(BentleyStatus.ERROR, "Not bound.");
     },
-    appendToForm(_form: FormDataCommon, _i: number, _buf: Uint8Array): void {
-      throw new IModelError(BentleyStatus.ERROR, "Not bound.");
+    appendToForm(i: number, form: FormDataCommon, value: RpcSerializedValue): void {
+      form.append(`data-${i}`, new Blob([value.data[i]], { type: "application/octet-stream" }));
     },
   };
 }

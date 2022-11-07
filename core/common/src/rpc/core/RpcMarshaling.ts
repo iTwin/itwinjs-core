@@ -11,7 +11,7 @@ import { BackendReadable } from "../../BackendTypes";
 import { RpcProtocol } from "./RpcProtocol";
 
 // cspell:ignore unmarshal
-// eslint-disable-next-line deprecation/deprecation
+/* eslint-disable deprecation/deprecation */
 
 function isBuffer(val: any): boolean {
   return val && typeof (val.constructor) !== "undefined" && typeof (val.constructor.isBuffer) === "function" && val.constructor.isBuffer(val);

@@ -67,6 +67,7 @@ export async function parseMultipartRequest(req: HttpServerRequest) {
 }
 
 /** @internal */
-export function appendToMultipartForm(form: FormDataCommon, i: number, buf: Uint8Array) {
+export function appendToMultipartForm(i: number, form: FormDataCommon, value: RpcSerializedValue) {
+  const buf = value.data[i];
   form.append(`data-${i}`, Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength));
 }
