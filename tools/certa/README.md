@@ -224,7 +224,12 @@ function createConfig(shouldInstrument) {
       test: /\.(jsx?|tsx?)$/,
       include: path.resolve(__dirname, "lib"),
       exclude: path.resolve(__dirname, "lib/test"),
-      loader: "istanbul-instrumenter-loader",
+      use: {
+            loader: "babel-loader",
+            options: {
+              plugins: ["babel-plugin-istanbul"],
+            },
+          },
       enforce: "post",
     });
   }

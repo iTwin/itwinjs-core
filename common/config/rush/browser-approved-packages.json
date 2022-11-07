@@ -471,6 +471,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "babel-loader",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "babel-plugin-istanbul",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "benchmark",
       "allowedCategories": [ "backend", "common" ]
     },

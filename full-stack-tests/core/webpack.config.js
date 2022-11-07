@@ -121,9 +121,11 @@ function createConfig(shouldInstrument) {
         path.join(__dirname, "../../core/backend"),
         path.join(__dirname, "../../core/frontend"),
       ],
-      loader: require.resolve("istanbul-instrumenter-loader"),
-      options: {
-        debug: true
+      use: {
+        loader: "babel-loader",
+        options: {
+          plugins: ["babel-plugin-istanbul"],
+        },
       },
       enforce: "post",
     });
@@ -137,5 +139,5 @@ module.exports = [
   // FIXME: Temporarily disabling instrumented bundle, because this webpack run is taking too long.
   // Also hoping this fixes our source-map-loader out of memory issue for now...
   // createConfig(true),
-  createConfig(false)
+  createConfig(true)
 ]
