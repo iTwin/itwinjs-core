@@ -472,7 +472,7 @@
     },
     {
       "name": "babel-loader",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "babel-plugin-istanbul",
