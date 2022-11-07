@@ -12,9 +12,11 @@ import { HorizontalAlignment, SortDirection } from "@itwin/core-react";
 import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
 import { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering";
 
+/* eslint-disable deprecation/deprecation */
 // cSpell:ignore columnfiltering
 
 /** Filter Renderer for a Table column
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
  * @public
  */
 export enum FilterRenderer {
@@ -27,6 +29,7 @@ export enum FilterRenderer {
 
 /**
  * Column definition provided to Table.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
  * @public
  */
 export interface ColumnDescription {
@@ -73,6 +76,7 @@ export interface ColumnDescription {
 
 /**
  * Cell definition provided to Table.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
  * @public
  */
 export interface CellItem {
@@ -99,6 +103,7 @@ export interface CellItem {
 
 /**
  * Row definition provided to Table.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
  * @public
  */
 export interface RowItem {
@@ -125,11 +130,13 @@ export interface RowItem {
 }
 
 /** An interface table data change listeners
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this type.
  * @public
  */
 export declare type TableDataChangesListener = () => void;
 
 /** An event broadcasted on table data changes
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this class.
  * @public
  */
 export class TableDataChangeEvent extends BeEvent<TableDataChangesListener> { }
@@ -137,6 +144,7 @@ export class TableDataChangeEvent extends BeEvent<TableDataChangesListener> { }
 /**
  * TableDataProvider provides data to the Table.
  * It also provides support for data Sorting & Filtering.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
  * @public
  */
 export interface TableDataProvider {
@@ -174,6 +182,7 @@ export interface TableDataProvider {
 /**
  * MutableTableDataProvider provides mutation methods for data in the Table.
  * Useful for Drag & Drop processing.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
  * @public
  */
 export interface MutableTableDataProvider extends TableDataProvider {

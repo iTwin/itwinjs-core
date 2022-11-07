@@ -20,7 +20,8 @@ import { CellItem } from "../TableDataProvider";
 
 /**
  * Properties of the [[TableCell]] React component
- * @public @deprecated
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
+ * @public
  */
 export interface TableCellProps extends CommonProps {
   /** Additional class name for the cell container */
@@ -41,7 +42,8 @@ export interface TableCellProps extends CommonProps {
 
 /**
  * A React component that renders a table cell
- * @public @deprecated
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this class.
+ * @public
  */
 export class TableCell extends React.PureComponent<TableCellProps> {
   /** @internal */
@@ -78,7 +80,8 @@ export class TableCell extends React.PureComponent<TableCellProps> {
 }
 
 /** Properties of the [[TableCellContent]] React component
- * @public @deprecated
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
+ * @public
  */
 export interface TableCellContentProps extends CommonProps {
   /** Indicates, whether container cell is selected or not */
@@ -102,7 +105,8 @@ interface TableCellContentState {
 }
 
 /** A React component that renders table cell content
- * @public @deprecated
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this class.
+ * @public
  */
 export class TableCellContent extends React.PureComponent<TableCellContentProps, TableCellContentState> {
   /** @internal */
@@ -179,6 +183,7 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
 }
 
 /** Properties for the [[TableIconCellContent]] React component
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
  * @public
  */
 export interface TableIconCellContentProps {
@@ -188,6 +193,7 @@ export interface TableIconCellContentProps {
 
 /**
  * A React component that renders table cell content as a Bentley icon
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
  * @public
  */
 export class TableIconCellContent extends React.PureComponent<TableIconCellContentProps> {

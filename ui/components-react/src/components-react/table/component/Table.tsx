@@ -48,7 +48,8 @@ const TABLE_FILTER_ROW_HEIGHT = 32;
 
 /**
  * Specifies table selection target.
- * @public @deprecated
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this enum.
+ * @public
  */
 export enum TableSelectionTarget {
   Row,
@@ -83,7 +84,8 @@ interface ScrollState {
 }
 
 /** Properties for the Table React component
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
+ * @public
  */
 export interface TableProps extends CommonProps {
   /** Data provider for the Table */
@@ -157,7 +159,8 @@ export interface TableProps extends CommonProps {
 }
 
 /** Properties for a Table cell
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
+ * @public
  */
 export interface CellProps {
   item: CellItem;
@@ -166,7 +169,8 @@ export interface CellProps {
 }
 
 /** Properties for a Table row
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
+ * @public
  */
 export interface RowProps {
   index: number;
@@ -189,7 +193,8 @@ interface ReactDataGridColumnEventArgs {
 }
 
 /** Cell/Property Editor state
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
+ * @public
  */
 export interface TableCellEditorState {
   active: boolean;
@@ -199,7 +204,8 @@ export interface TableCellEditorState {
 }
 
 /** Cell/Property Updated Args
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
+ * @public
  */
 export interface TableCellUpdatedArgs {
   rowIndex: number;
@@ -208,7 +214,8 @@ export interface TableCellUpdatedArgs {
 }
 
 /** Arguments for `TableProps.onCellContextMenu` callback
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this interface.
+ * @public
  */
 export interface TableCellContextMenuArgs {
   /** Index of the row clicked */
@@ -283,7 +290,8 @@ const enum UpdateStatus { // eslint-disable-line no-restricted-syntax
 
 /**
  * Table React component that displays rows and columns in a grid along with a header
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this class.
+ * @public
  */
 export class Table extends React.Component<TableProps, TableState> {
   private _pageAmount = 100;

@@ -13,10 +13,12 @@ import { UiComponents } from "../UiComponents";
 import { CompositeFilterDescriptorCollection, DistinctValueCollection, TableDistinctValue } from "./columnfiltering/ColumnFiltering";
 import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEvent } from "./TableDataProvider";
 
+/* eslint-disable deprecation/deprecation */
 // cSpell:ignore columnfiltering
 
 /**
  * A Table Data Provider using an array of items.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this class.
  * @public
  */
 export class SimpleTableDataProvider implements MutableTableDataProvider {
