@@ -20,7 +20,7 @@ import {
   FillCentered, Icon, LocalStateStorage, UiCore, UiStateEntry, UiStateStorage, UiStateStorageResult, UiStateStorageStatus,
 } from "@itwin/core-react";
 import {
-  FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog,
+  FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, ToolAssistance, ToolAssistanceDialog,
   ToolAssistanceItem,
   ToolAssistanceSeparator,
 } from "@itwin/appui-layout-react";
