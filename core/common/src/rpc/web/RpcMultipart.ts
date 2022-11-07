@@ -48,8 +48,27 @@ export class RpcMultipart {
     form.append("objects", value.objects);
 
     for (let i = 0; i !== value.data.length; ++i) {
-      const buf = value.data[i];
-      form.append(`data-${i}`, Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength));
+      if (typeof (Blob) !== "undefined" && this.isSpecCompliant(form)) {
+        form.append(`data-${i}`, new Blob([value.data[i]], { type: "application/octet-stream" }));
+      } else {
+        const buf = value.data[i];
+        form.append(`data-${i}`, Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength));
+      }
     }
   }
+
+  /** Node >= v17 compatibility - workaround via https://github.com/axios/axios/issues/4727 */
+  private static isFunction(val: any) {
+    return toString.call(val) === "[object Function]";
+  }
+
+  private static isSpecCompliant(thing: any) {
+    return (
+      thing &&
+      this.isFunction(thing.append) &&
+      thing[Symbol.toStringTag] === "FormData" &&
+      thing[Symbol.iterator]
+    );
+  }
 }
+
