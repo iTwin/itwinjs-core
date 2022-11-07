@@ -928,6 +928,7 @@ export class AccuSnap implements Decorator {
     get isSnapEnabledByUser(): boolean;
     get keypointDivisor(): number;
     readonly needFlash: Set<Viewport>;
+    neverFlash(ids?: Id64Arg): void;
     // @internal
     onEnabledStateChange(_isEnabled: boolean, _wasEnabled: boolean): void;
     // @internal (undocumented)
@@ -1001,6 +1002,8 @@ export namespace AccuSnap {
         enabled: boolean;
         // (undocumented)
         locate: boolean;
+        // (undocumented)
+        neverFlash?: Id64Set;
         // (undocumented)
         setFrom(other: ToolState): void;
         // (undocumented)

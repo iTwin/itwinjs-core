@@ -51,6 +51,8 @@ alpha;class LocateSubEntityTool
 alpha;LoftProfilesTool 
 alpha;makeEditToolIpc
 alpha;class ModifyCurveTool 
+alpha;class ModifyElementTool 
+alpha;class ModifyElementWithDynamicsTool 
 alpha;MoveElementsTool 
 alpha;OffsetCurveTool 
 alpha;OffsetFacesTool 
