@@ -1445,8 +1445,7 @@ export class Vector3d extends XYZ {
    * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
    * @param options optional radian and distance tolerances.
    */
-  public isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength: boolean = false,
-    options?: PerpParallelOptions): boolean {
+  public isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
     const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
     const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const aa = this.magnitudeSquared();
