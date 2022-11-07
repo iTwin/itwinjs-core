@@ -521,12 +521,12 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * @param radianSquaredTol radian squared tolerance.
    * @param distanceSquaredTol distance squared tolerance.
    */
-  public isParallelTo(other: Vector2d, oppositeIsParallel: boolean = false,
+  public isParallelTo(other: Vector2d, oppositeIsParallel: boolean = false, returnValueIfAnInputIsZeroLength: boolean = false,
     radianSquaredTol: number = Geometry.smallAngleRadiansSquared, distanceSquaredTol: number = Geometry.smallMetricDistanceSquared): boolean {
     const a2 = this.magnitudeSquared();
     const b2 = other.magnitudeSquared();
     if (a2 < distanceSquaredTol || b2 < distanceSquaredTol)
-      return false;
+      return returnValueIfAnInputIsZeroLength;
     const dot = this.dotProduct(other);
     if (dot < 0.0 && !oppositeIsParallel)
       return false;
