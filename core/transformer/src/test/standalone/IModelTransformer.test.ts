@@ -1941,7 +1941,7 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it.only("handles nested schema references during schema export", async () => {
+  it("handles nested schema references during schema export", async () => {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NestedSchemaOrderSrc.bim");
     const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "NestedSchemaOrderSrc" } });
 
