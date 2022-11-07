@@ -3949,6 +3949,14 @@ export class PathFragment {
 }
 
 // @public
+export interface PerpParallelOptions {
+    // (undocumented)
+    distanceSquaredTol?: number;
+    // (undocumented)
+    radianSquaredTol?: number;
+}
+
+// @public
 export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltitudeEvaluator {
     altitude(spacePoint: Point3d): number;
     altitudeToPoint(altitude: number, result?: Point3d): Point3d;
@@ -5919,8 +5927,8 @@ export class Vector2d extends XY implements BeJSONFunctions {
     fractionOfProjectionToVector(target: Vector2d, defaultFraction?: number): number;
     static fromJSON(json?: XYProps): Vector2d;
     interpolate(fraction: number, right: Vector2d, result?: Vector2d): Vector2d;
-    isParallelTo(other: Vector2d, oppositeIsParallel?: boolean, radianSquaredTol?: number, distanceSquaredTol?: number): boolean;
-    isPerpendicularTo(other: Vector2d, returnValueIfAnInputIsZeroLength?: boolean, radianSquaredTol?: number, distanceSquaredTol?: number): boolean;
+    isParallelTo(other: Vector2d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
+    isPerpendicularTo(other: Vector2d, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
     minus(vector: XAndY, result?: Vector2d): Vector2d;
     negate(result?: Vector2d): Vector2d;
     normalize(result?: Vector2d): Vector2d | undefined;
@@ -5981,8 +5989,8 @@ export class Vector3d extends XYZ {
     fractionOfProjectionToVector(target: Vector3d, defaultFraction?: number): number;
     static fromJSON(json?: XYZProps): Vector3d;
     interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d;
-    isParallelTo(other: Vector3d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean, radianSquaredTol?: number, distanceSquaredTol?: number): boolean;
-    isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength?: boolean, radianSquaredTol?: number, distanceSquaredTol?: number): boolean;
+    isParallelTo(other: Vector3d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
+    isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
     minus(vector: XYAndZ, result?: Vector3d): Vector3d;
     negate(result?: Vector3d): Vector3d;
     normalize(result?: Vector3d): Vector3d | undefined;

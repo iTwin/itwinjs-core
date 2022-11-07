@@ -6,7 +6,7 @@
  * @module CartesianGeometry
  */
 
-import { Geometry } from "../Geometry";
+import { Geometry, PerpParallelOptions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
@@ -37,7 +37,6 @@ export class XYZ implements XYAndZ {
     this.y = y;
     this.z = z;
   }
-
   /** Set the x,y,z parts to zero. */
   public setZero() {
     this.x = 0;
@@ -1421,11 +1420,12 @@ export class Vector3d extends XYZ {
    * @param other second vector in comparison
    * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel
    * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
-   * @param radianSquaredTol radian squared tolerance.
-   * @param distanceSquaredTol distance squared tolerance.
+   * @param options optional radian and distance tolerances.
    */
-  public isParallelTo(other: Vector3d, oppositeIsParallel: boolean = false, returnValueIfAnInputIsZeroLength: boolean = false,
-    radianSquaredTol: number = Geometry.smallAngleRadiansSquared, distanceSquaredTol: number = Geometry.smallMetricDistanceSquared): boolean {
+  public isParallelTo(other: Vector3d, oppositeIsParallel: boolean = false,
+    returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+    const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
+    const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const a2 = this.magnitudeSquared();
     const b2 = other.magnitudeSquared();
     if (a2 < distanceSquaredTol || b2 < distanceSquaredTol)
@@ -1443,11 +1443,12 @@ export class Vector3d extends XYZ {
    * Test if this vector is perpendicular to other.
    * @param other second vector in comparison
    * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
-   * @param radianSquaredTol radian squared tolerance.
-   * @param distanceSquaredTol distance squared tolerance.
+   * @param options optional radian and distance tolerances.
    */
   public isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength: boolean = false,
-    radianSquaredTol: number = Geometry.smallAngleRadiansSquared, distanceSquaredTol: number = Geometry.smallMetricDistanceSquared): boolean {
+    options?: PerpParallelOptions): boolean {
+    const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
+    const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const aa = this.magnitudeSquared();
     const bb = other.magnitudeSquared();
     if (aa < distanceSquaredTol || bb < distanceSquaredTol)
