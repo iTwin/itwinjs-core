@@ -49,7 +49,7 @@ import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg";
 import mouseWheelClickIcon from "./mouse-click-wheel.svg";
 import touchCursorDragIcon from "./touch-cursor-pan.svg";
 import touchCursorTapIcon from "./touch-cursor-point.svg";
-import { SvgPin, SvgPinHollow } from "@itwin/itwinui-icons-react";
+import { SvgClose, SvgPinHollow } from "@itwin/itwinui-icons-react";
 
 // cSpell:ignore cursorprompt
 
@@ -419,7 +419,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
                       : UiFramework.translate("toolAssistance.pin")
                   }
                 >
-                  {this.state.isPinned ? <SvgPin /> : <SvgPinHollow />}
+                  {this.state.isPinned ? <SvgClose /> : <SvgPinHollow />}
                 </IconButton>
               </>
             }
