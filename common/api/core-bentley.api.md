@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import type { SpanAttributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
@@ -1145,6 +1143,8 @@ export class Logger {
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logInfo: LogFunction | undefined;
+    // @internal (undocumented)
+    static logLevelChangedFn?: VoidFunction;
     static logTrace(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logTrace: LogFunction | undefined;
