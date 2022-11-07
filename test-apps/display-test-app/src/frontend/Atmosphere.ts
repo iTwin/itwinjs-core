@@ -5,13 +5,12 @@
 
 import { assert } from "@itwin/core-bentley";
 import { createButton, createCheckBox, createLabeledNumericInput, LabeledNumericInput } from "@itwin/frontend-devtools";
-import { Atmosphere, ViewFlags } from "@itwin/core-common";
+import { Atmosphere } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 
 export class AtmosphereEditor {
 
   private readonly _vp: Viewport;
-  private readonly _scratchViewFlags = new ViewFlags();
   private readonly _update: (view: ViewState) => void;
 
   private readonly _inScatteringIntensity: LabeledNumericInput;
@@ -44,7 +43,7 @@ export class AtmosphereEditor {
 
     const enableAtmosphere = (enabled: boolean) => {
       const displaySettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings;
-      displaySettings.environment = displaySettings.environment.clone({ displayAtmosphere: true });
+      displaySettings.environment = displaySettings.environment.clone({ displayAtmosphere: enabled });
       showHideControls(enabled);
       this.sync();
     };
@@ -324,6 +323,7 @@ export class AtmosphereEditor {
     this._wavelengthB.input.value = settings.wavelengths.b.toString();
     this._numInScatteringPoints.input.value = settings.numInScatteringPoints.toString();
     this._numOpticalDepthPoints.input.value = settings.numOpticalDepthPoints.toString();
+    this._brightnessAdaptationStrength.input.value = settings.brightnessAdaptationStrength.toString();
   }
 
   private updateAtmosphere(updateFunction: (view: ViewState) => Atmosphere.Props) {
