@@ -476,7 +476,7 @@
     },
     {
       "name": "babel-plugin-istanbul",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "benchmark",

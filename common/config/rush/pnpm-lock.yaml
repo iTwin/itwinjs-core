@@ -528,6 +528,7 @@ importers:
       '@types/sinon': ^9.0.0
       '@types/superagent': ^4.1.14
       babel-loader: ~8.2.5
+      babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -588,6 +589,7 @@ importers:
       '@types/sinon': 9.0.11
       '@types/superagent': 4.1.15
       babel-loader: 8.2.5_webpack@5.74.0
+      babel-plugin-istanbul: 6.1.1
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       cpx2: 3.0.2
@@ -683,6 +685,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
       babel-loader: ~8.2.5
+      babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
       cpx2: ^3.0.0
       eslint: ^7.11.0
@@ -707,6 +710,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 16.11.59
       babel-loader: 8.2.5_webpack@5.74.0
+      babel-plugin-istanbul: 6.1.1
       chai: 4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
@@ -731,6 +735,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
       babel-loader: ~8.2.5
+      babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
       eslint: ^7.11.0
       i18next: ^21.9.1
@@ -756,6 +761,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 16.11.59
       babel-loader: 8.2.5_webpack@5.74.0
+      babel-plugin-istanbul: 6.1.1
       chai: 4.3.6
       eslint: 7.32.0
       rimraf: 3.0.2
@@ -777,6 +783,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
       babel-loader: ~8.2.5
+      babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
       cpx2: ^3.0.0
       eslint: ^7.11.0
@@ -801,6 +808,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 16.11.59
       babel-loader: 8.2.5_webpack@5.74.0
+      babel-plugin-istanbul: 6.1.1
       chai: 4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
@@ -1047,6 +1055,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
       babel-loader: ~8.2.5
+      babel-plugin-istanbul: ~6.1.1
       chai: ^4.1.2
       eslint: ^7.11.0
       glob: ^7.1.2
@@ -1065,6 +1074,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 16.11.59
       babel-loader: 8.2.5_webpack@5.74.0
+      babel-plugin-istanbul: 6.1.1
       chai: 4.3.6
       eslint: 7.32.0
       glob: 7.2.3

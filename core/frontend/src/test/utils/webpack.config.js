@@ -78,6 +78,7 @@ function createConfig(shouldInstrument) {
   return config;
 }
 
+// Runs webpack once for each config in the export array
 module.exports = [
   createConfig(false),
   createConfig(true)
