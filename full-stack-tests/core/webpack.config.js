@@ -134,10 +134,6 @@ function createConfig(shouldInstrument) {
   return config;
 }
 
-// Exporting two configs in a array like this actually tells webpack to run twice - once for each config.
 module.exports = [
-  // FIXME: Temporarily disabling instrumented bundle, because this webpack run is taking too long.
-  // Also hoping this fixes our source-map-loader out of memory issue for now...
-  // createConfig(true),
   createConfig(true)
 ]
