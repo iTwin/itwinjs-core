@@ -13,7 +13,7 @@ import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 import { EntityReferences } from "./EntityReferences";
 import * as assert from "assert";
-import type { RelationshipClassProps } from "@itwin/ecschema-metadata";
+import type { MixinProps, RelationshipClassProps } from "@itwin/ecschema-metadata";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
@@ -61,17 +61,30 @@ export class ClassRegistry {
     return schemaClass;
   }
 
+  /** Gets the "root" base class for a class, by traversing base classes and mixin targets (AppliesTo) */
   private static getRootMetaData(iModel: IModelDb, entityMetaData: EntityMetaData): EntityMetaData {
     let rootClassMetaData = entityMetaData;
     while (true) {
-      if (rootClassMetaData.baseClasses.length === 0)
-        break;
+      if (rootClassMetaData.baseClasses.length === 0) {
+        const mixinCustomAttr = rootClassMetaData.customAttributes?.find((ca) => ca.ecclass === "CoreCustomAttributes:IsMixin");
+        if (!mixinCustomAttr)
+          break;
+        // This is workaround for a bug in the native code where primitive ca properties do not get serialized
+        // in a future version when that is fixed, this will be removed
+        if (!mixinCustomAttr.properties?.AppliesToEntityClass) {
+          if (!mixinCustomAttr.properties)
+            mixinCustomAttr.properties = {};
+          const mixinResult = iModel.nativeDb.getSchemaItem(...rootClassMetaData.ecclass.split(":") as [string, string]);
+          if (mixinResult.error)
+            throw new IModelError(mixinResult.error, `failed to get schema item '${rootClassMetaData.ecclass}'`);
+          const mixin = JSON.parse(mixinResult.result as string) as MixinProps;
+          mixinCustomAttr.properties.AppliesToEntityClass = mixin.appliesTo.replace(".", ":");
+        }
+        const appliesToClass = iModel.getMetaData(mixinCustomAttr.properties.AppliesToEntityClass);
+        rootClassMetaData =  this.getRootMetaData(iModel, appliesToClass);
+      }
       const firstBase = iModel.getMetaData(rootClassMetaData.baseClasses[0]);
-      const firstBaseIsMixin = firstBase.customAttributes?.some((ca) => ca.ecclass === "IsMixin");
-      if (firstBaseIsMixin)
-        break;
-      else
-        rootClassMetaData = firstBase;
+      rootClassMetaData = firstBase;
     }
     return rootClassMetaData;
   }
