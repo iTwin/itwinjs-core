@@ -2729,7 +2729,7 @@ export namespace IModelJson {
         capped?: boolean;
         center: XYZProps;
         majorRadius: number;
-        minorRadius?: number;
+        minorRadius: number;
         sweepAngle?: AngleProps;
     }
     export interface TransitionSpiralProps extends AxesProps {
@@ -3443,6 +3443,7 @@ export class Matrix3d implements BeJSONFunctions {
     dotRowYXYZ(x: number, y: number, z: number): number;
     dotRowZ(vector: XYZ): number;
     dotRowZXYZ(x: number, y: number, z: number): number;
+    factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean;
     factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean;
     factorRigidWithSignedScale(): {
         rigidAxes: Matrix3d;
@@ -3479,6 +3480,7 @@ export class Matrix3d implements BeJSONFunctions {
     isSingular(): boolean;
     get isUpperTriangular(): boolean;
     get isXY(): boolean;
+    makeRigid(axisOrder?: AxisOrder): boolean;
     markSingular(): void;
     maxAbs(): number;
     maxDiff(other: Matrix3d): number;
@@ -5609,9 +5611,11 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     protected constructor(map: Transform, radiusA: number, radiusB: number, sweep: Angle, capped: boolean);
     clone(): TorusPipe;
     cloneCenter(): Point3d;
+    cloneLocalToWorld(): Transform;
     cloneTransformed(transform: Transform): TorusPipe | undefined;
     cloneVectorX(): Vector3d;
     cloneVectorY(): Vector3d;
+    cloneVectorZ(): Vector3d;
     constantUSection(uFraction: number): CurveCollection | undefined;
     constantVSection(v: number): CurveCollection | undefined;
     static createAlongArc(arc: Arc3d, minorRadius: number, capped: boolean): TorusPipe | undefined;
