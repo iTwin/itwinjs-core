@@ -931,11 +931,11 @@ export interface Cloneable<T> {
  * @public
  */
 export interface PerpParallelOptions {
-  /** Tolerance used for comparing angles between vectors.
+  /** Squared radian tolerance for comparing the angle between two vectors.
    * Default: [[Geometry.smallAngleRadiansSquared]].
    */
   radianSquaredTol?: number;
-  /** Tolerance used for comparing vector magnitudes.
+  /** Squared distance tolerance for detecting a zero-length vector.
    * Default: [[Geometry.smallMetricDistanceSquared]].
    */
   distanceSquaredTol?: number;

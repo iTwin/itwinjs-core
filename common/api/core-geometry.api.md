@@ -3950,9 +3950,7 @@ export class PathFragment {
 
 // @public
 export interface PerpParallelOptions {
-    // (undocumented)
     distanceSquaredTol?: number;
-    // (undocumented)
     radianSquaredTol?: number;
 }
 
