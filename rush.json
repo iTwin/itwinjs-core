@@ -530,6 +530,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "node-imodelconnection",
+      "projectFolder": "full-stack-tests/node-imodelconnection",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "presentation-full-stack-tests",
       "projectFolder": "full-stack-tests/presentation",
       "reviewCategory": "internal",

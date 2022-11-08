@@ -835,6 +835,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "node-fetch",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "node-simctl",
       "allowedCategories": [ "internal" ]
     },
