@@ -68,7 +68,6 @@ object FileHelper {
      */
     fun copyToExternalFiles(context: Context, uri: Uri, destDir: String, displayName: String): String? {
         var result: String? = null
-//        context.filesDir.let { filesDir ->
         context.getExternalFilesDir(null)?.let { filesDir ->
             context.contentResolver.openInputStream(uri)?.let { inputStream ->
                 result = copyFile(inputStream, File(filesDir, destDir), displayName)
@@ -76,28 +75,5 @@ object FileHelper {
             }
         }
         return result
-    }
-
-    /**
-     * Gets the external files in the input directory name.
-     * @param context The context.
-     * @param dirName The directory name.
-     * @return A list of external files, possibly empty.
-     */
-    fun getExternalFiles(context: Context, dirName: String): List<String> {
-        return context.getExternalFilesDir(dirName)?.listFiles()?.map { it.toString() } ?: emptyList()
-    }
-
-    /**
-     * Gets the external files in the input directory name that end with the input extension.
-     * @param context The context.
-     * @param dirName The directory name.
-     * @param extension The file extension to filter with.
-     * @return A list of external files, possibly empty.
-     */
-    fun getExternalFiles(context: Context, dirName: String, extension: String): List<String> {
-        return getExternalFiles(context, dirName).filter { name ->
-            extension.isEmpty() || name.endsWith(extension, true)
-        }
     }
 }
