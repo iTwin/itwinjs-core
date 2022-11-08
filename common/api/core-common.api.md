@@ -7834,15 +7834,15 @@ export class RpcMarshaling {
 
 // @internal
 export class RpcMultipart {
-    // (undocumented)
-    static backend: {
-        createStream(_value: RpcSerializedValue): ReadableFormData;
-        parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue>;
-        appendToForm(_form: FormDataCommon, _i: number, _buf: Uint8Array): void;
-    };
     static createForm(value: RpcSerializedValue): FormData;
     static createStream(value: RpcSerializedValue): ReadableFormData;
     static parseRequest(req: HttpServerRequest): Promise<RpcSerializedValue>;
+    // (undocumented)
+    static platform: {
+        createStream(_value: RpcSerializedValue): ReadableFormData;
+        parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue>;
+        appendToForm(i: number, form: FormDataCommon, value: RpcSerializedValue): void;
+    };
     // (undocumented)
     static writeValueToForm(form: FormDataCommon, value: RpcSerializedValue): void;
 }

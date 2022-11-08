@@ -3247,7 +3247,7 @@ export abstract class InformationReferenceElement extends InformationContentElem
 }
 
 // @internal (undocumented)
-export function initializeRpcBackend(enableOpenTelemetry?: boolean): void;
+export function initializeTracing(enableOpenTelemetry?: boolean): void;
 
 // @beta
 export interface InstanceChange {
