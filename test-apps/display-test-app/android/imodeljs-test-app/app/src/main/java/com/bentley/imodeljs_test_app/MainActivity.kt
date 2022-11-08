@@ -1,3 +1,7 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 package com.bentley.imodeljs_test_app
 
 import android.app.Activity
@@ -134,8 +138,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Intentionally commented out until we can resolve why pausing and resuming the host causes the backend to apparently shutdown or possibly crash.
-    // This doesn't happen on the iTwin sample (https://github.com/iTwin/mobile-samples/tree/main/Android/iTwinStarter)
-    
+    // This doesn't happen on the iTwin MobileSDK sample (https://github.com/iTwin/mobile-samples/tree/main/Android/iTwinStarter)
+
 //    override fun onResume() {
 //        host.onResume()
 //        super.onResume()
