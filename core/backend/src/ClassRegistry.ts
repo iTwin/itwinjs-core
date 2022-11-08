@@ -61,16 +61,19 @@ export class ClassRegistry {
     return schemaClass;
   }
 
-  /** Gets the "root" base class for a class, by traversing base classes and mixin targets (AppliesTo) */
-  private static getRootMetaData(iModel: IModelDb, entityMetaData: EntityMetaData): EntityMetaData {
+  /** Gets the "root" base class for a class, by traversing base classes and mixin targets (AppliesTo)
+   * @internal for testing only
+   */
+  public static getRootMetaData(iModel: IModelDb, entityMetaData: EntityMetaData): EntityMetaData {
     let rootClassMetaData = entityMetaData;
     while (true) {
       if (rootClassMetaData.baseClasses.length === 0) {
         const mixinCustomAttr = rootClassMetaData.customAttributes?.find((ca) => ca.ecclass === "CoreCustomAttributes:IsMixin");
         if (!mixinCustomAttr)
           break;
-        // This is workaround for a bug in the native code where primitive ca properties do not get serialized
-        // in a future version when that is fixed, this will be removed
+        // NOTE: This is workaround for a bug in the native code where primitive ca properties do not get serialized
+        // by IModelDb.nativeDb.getECClassMetaData (called by IModelDb.getMetaData).
+        // In a future version when that is fixed, this will be removed
         if (!mixinCustomAttr.properties?.AppliesToEntityClass) {
           if (!mixinCustomAttr.properties)
             mixinCustomAttr.properties = {};
