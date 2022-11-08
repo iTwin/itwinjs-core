@@ -135,5 +135,6 @@ function createConfig(shouldInstrument) {
 }
 
 module.exports = [
+  createConfig(false),
   createConfig(true)
 ]
