@@ -7,7 +7,9 @@ import type { Buffer } from "buffer"; // Must be "import type" to avoid webpack 
 
 /*
 IMPORTANT:
-All types in this file will be removed in 4.0
+This is a temporary source file for backwards compatibility only.
+Do not add any new types to this file.
+All types here will be removed in 4.0
 */
 
 /** @public @deprecated */

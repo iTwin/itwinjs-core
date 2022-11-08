@@ -13,8 +13,6 @@ import { WebAppRpcLoggingBackend } from "./rpc/web/logging";
 import { parseRequest } from "./rpc/web/request";
 import { sendResponse } from "./rpc/web/response";
 
-export { RpcTrace } from "./rpc/tracing";
-
 let initialized = false;
 /** @internal */
 export function initializeRpcBackend(enableOpenTelemetry: boolean = false) {
