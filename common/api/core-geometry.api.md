@@ -5949,7 +5949,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
 export class Vector3d extends XYZ {
     constructor(x?: number, y?: number, z?: number);
     addCrossProductToTargetsInPlace(ax: number, ay: number, az: number, bx: number, by: number, bz: number, cx: number, cy: number, cz: number): void;
-    angleFromPerpendicular(vectorB: Vector3d): Angle;
+    angleFromPerpendicular(planeNormal: Vector3d): Angle;
     angleTo(vectorB: Vector3d): Angle;
     angleToXY(vectorB: Vector3d): Angle;
     clone(result?: Vector3d): Vector3d;
@@ -5980,7 +5980,7 @@ export class Vector3d extends XYZ {
     dotProductStartEnd(pointA: XYAndZ, pointB: XYAndZ): number;
     dotProductStartEndXY(pointA: Point3d, pointB: Point3d): number;
     dotProductStartEndXYZ(pointA: Point3d, x: number, y: number, z: number): number;
-    dotProductStartEndXYZW(pointA: Point3d, x: number, y: number, z: number, w: number): number;
+    dotProductStartEndXYZW(pointA: Point3d, wx: number, wy: number, wz: number, w: number): number;
     dotProductXY(vectorB: Vector3d): number;
     dotProductXYZ(x: number, y: number, z?: number): number;
     fractionOfProjectionToVector(target: Vector3d, defaultFraction?: number): number;
@@ -5997,8 +5997,8 @@ export class Vector3d extends XYZ {
         v: Vector3d | undefined;
         mag: number;
     };
-    planarAngleTo(vector: Vector3d, planeNormal: Vector3d): Angle;
-    planarRadiansTo(vector: Vector3d, planeNormal: Vector3d): number;
+    planarAngleTo(vectorB: Vector3d, planeNormal: Vector3d): Angle;
+    planarRadiansTo(vectorB: Vector3d, planeNormal: Vector3d): number;
     plus(vector: XYAndZ, result?: Vector3d): Vector3d;
     plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, result?: Vector3d): Vector3d;
     plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Vector3d): Vector3d;
@@ -6011,8 +6011,8 @@ export class Vector3d extends XYZ {
     scale(scale: number, result?: Vector3d): Vector3d;
     scaleToLength(length: number, result?: Vector3d): Vector3d | undefined;
     setStartEnd(point0: XYAndZ, point1: XYAndZ): void;
-    signedAngleTo(vector1: Vector3d, vectorW: Vector3d): Angle;
-    signedRadiansTo(vector1: Vector3d, vectorW: Vector3d): number;
+    signedAngleTo(vectorB: Vector3d, vectorW: Vector3d): Angle;
+    signedRadiansTo(vectorB: Vector3d, vectorW: Vector3d): number;
     sizedCrossProduct(vectorB: Vector3d, productLength: number, result?: Vector3d): Vector3d | undefined;
     smallerUnorientedAngleTo(vectorB: Vector3d): Angle;
     smallerUnorientedRadiansTo(vectorB: Vector3d): number;
@@ -6152,7 +6152,7 @@ export class XYZ implements XYAndZ {
     setFrom(other: Float64Array | XAndY | XYAndZ | undefined): void;
     setFromJSON(json?: XYZProps): void;
     setFromPoint3d(other?: XYAndZ): void;
-    setFromVector3d(other: Vector3d): void;
+    setFromVector3d(other?: Vector3d): void;
     setZero(): void;
     subtractInPlace(other: XYAndZ): void;
     toArray(): number[];
