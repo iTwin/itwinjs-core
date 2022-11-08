@@ -5,9 +5,12 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
+import { UnionRegion } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
+import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveFactory } from "../../curve/CurveFactory";
+import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -15,32 +18,30 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop, SignedLoops } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { PointStreamXYZHandlerBase, VariantPointDataStream } from "../../geometry3d/PointStreaming";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
+import { Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
+import { PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { HalfEdgeGraph } from "../../topology/Graph";
+import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/Merging";
+import { MultiLineStringDataVariant } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GraphChecker } from "../topology/Graph.test";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Range3d } from "../../geometry3d/Range";
-import { PolyfaceVisitor } from "../../polyface/Polyface";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { CurveCurve } from "../../curve/CurveCurve";
-import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { PointStreamXYZHandlerBase, VariantPointDataStream } from "../../geometry3d/PointStreaming";
-import { MultiLineStringDataVariant } from "../../topology/Triangulation";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/Merging";
 
 /* eslint-disable no-console */
 
@@ -646,6 +647,39 @@ describe("RegionBoolean", () => {
     testSelectedTangencySubsets(true, [1,2,3,4,1], [2,3,4,7,8], [], "UpperSymmetricQuad");
     testSelectedTangencySubsets(false, [4,5,6,7,4], [-1], [], "LowerRightLobeQuadA");
     testSelectedTangencySubsets(false, [3,5,6,8,3], [-1], [], "LowerRightLobeQuadB");
+  });
+
+  // cspell:word laurynas
+  it.only("DegenerateLoops", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const inputs0 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/laurynasRegion0.imjs", "utf8"))) as Loop[];
+    if (ck.testDefined(inputs0, "inputs successfully parsed")) {
+      const merged = RegionOps.regionBooleanXY(inputs0, undefined, RegionBinaryOpType.Union);
+      if (ck.testDefined(merged, "regionBooleanXY succeeded") && merged) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0);
+        x0 += merged.range().xLength();
+        if (ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion")) {
+          if (ck.testExactNumber(2, merged.children.length, "UnionRegion has 2 children")) {
+          }
+        }
+      }
+    }
+    const inputs1 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/laurynasRegion1.imjs", "utf8"))) as Loop[];
+    if (ck.testDefined(inputs1, "inputs successfully parsed")) {
+      const merged1 = RegionOps.regionBooleanXY(inputs1, undefined, RegionBinaryOpType.Union);
+      if (ck.testDefined(merged1, "regionBooleanXY succeeded")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged1, x0);
+        if (ck.testType(merged1, UnionRegion, "regionBooleanXY produced a UnionRegion")) {
+          if (ck.testExactNumber(2, merged1.children.length, "UnionRegion has 2 children")) {
+          }
+        }
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "DegenerateLoops");
+    expect(ck.getNumErrors()).equals(0);
   });
 });
 
