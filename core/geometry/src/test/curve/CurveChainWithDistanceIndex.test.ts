@@ -12,6 +12,7 @@ import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceI
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Sample } from "../../serialization/GeometrySamples";
 
 /* eslint-disable no-console */
 const closestPointProblemFileFile = "./src/test/testInputs/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
@@ -93,6 +94,40 @@ describe("CurveChainWithDistanceIndex", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "PathWithBsplineLength");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ClonePartialFromExtendedClosestPointDetailFraction", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const paths = Sample.createCurveChainWithDistanceIndex();
+    let x0 = 0;
+
+    const offsetDist = 1;
+    for (const path of paths) {
+      const ray0 = path.fractionToPointAndUnitTangent(0);
+      const ray1 = path.fractionToPointAndUnitTangent(1);
+      ray0.direction.scaleInPlace(-offsetDist);
+      ray1.direction.scaleInPlace(offsetDist);
+      const detail0 = path.closestPoint(ray0.fractionToPoint(1), true)!;
+      const detail1 = path.closestPoint(ray1.fractionToPoint(1), true)!;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, [detail0.point, detail1.point], 0.1, x0);
+
+      const path0 = path.clonePartialCurve(detail0.fraction, 1)!;
+      const path1 = path.clonePartialCurve(0, detail1.fraction)!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [path, path0, path1], x0);
+
+      ck.testLE(detail0.fraction, 1, "Point off path start has projection fraction <= 0");
+      ck.testLE(1, detail1.fraction, "Point off path end has projection fraction >= 1");
+      ck.testPoint3d(detail0.point, path0.startPoint(), "Point projected off path start equals start of clonedPartialCurve at projection fraction");
+      ck.testPoint3d(detail0.point, path.fractionToPoint(detail0.fraction), "Point projected off path start equals fractionToPoint at projection fraction");
+      ck.testPoint3d(detail1.point, path1.endPoint(), "Point projected off path end equals end of clonedPartialCurve at projection fraction");
+      ck.testPoint3d(detail1.point, path.fractionToPoint(detail1.fraction), "Point projected off path end equals fractionToPoint at projection fraction");
+
+      x0 += path.range().xLength() + 1;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "ClonePartialFromExtendedClosestPointDetailFraction");
     expect(ck.getNumErrors()).equals(0);
   });
 });
