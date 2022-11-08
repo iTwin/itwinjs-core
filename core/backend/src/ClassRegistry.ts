@@ -82,9 +82,10 @@ export class ClassRegistry {
         }
         const appliesToClass = iModel.getMetaData(mixinCustomAttr.properties.AppliesToEntityClass);
         rootClassMetaData =  this.getRootMetaData(iModel, appliesToClass);
+      } else {
+        const firstBase = iModel.getMetaData(rootClassMetaData.baseClasses[0]);
+        rootClassMetaData = firstBase;
       }
-      const firstBase = iModel.getMetaData(rootClassMetaData.baseClasses[0]);
-      rootClassMetaData = firstBase;
     }
     return rootClassMetaData;
   }
