@@ -133,13 +133,16 @@ class MainActivity : AppCompatActivity() {
         frontend.loadEntryPoint()
     }
 
-    override fun onResume() {
+    // Intentionally commented out until we can resolve why pausing and resuming the host causes the backend to apparently shutdown or possibly crash.
+    // This doesn't happen on the iTwin sample (https://github.com/iTwin/mobile-samples/tree/main/Android/iTwinStarter)
+    
+//    override fun onResume() {
 //        host.onResume()
-        super.onResume()
-    }
+//        super.onResume()
+//    }
 
-    override fun onPause() {
+//    override fun onPause() {
 //        host.onPause()
-        super.onPause()
-    }
+//        super.onPause()
+//    }
 }
