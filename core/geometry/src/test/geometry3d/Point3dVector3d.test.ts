@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { AxisOrder } from "../../Geometry";
+import { AxisOrder, PerpParallelOptions } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -405,12 +405,49 @@ describe("Vector3d.planarRadiansTo", () => {
 });
 
 describe("Vector3d.isParallelTo", () => {
-  it("Vector3d.isParallelTo", () => {
+  it("Vector3d.isParallelToWithZeroVector", () => {
     const thisVector: Vector3d = Vector3d.create(1, 2, 3);
     const other: Vector3d = Vector3d.create(0, 0, 0);
     const output: boolean = thisVector.isParallelTo(other);
     expect(output).equal(false);
-  });
+  }),
+    it("Vector3d.isParallelToTrueWithGivenTolerances", () => {
+      const thisVector: Vector3d = Vector3d.create(1, 2, 3);
+      const other: Vector3d = Vector3d.create(1.01, 2.01, 3.01);
+      const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
+      const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
+      expect(output).equal(true);
+    }),
+    it("Vector3d.isParallelToFalseWithGivenTolerances", () => {
+      const thisVector: Vector3d = Vector3d.create(1, 2, 3);
+      const other: Vector3d = Vector3d.create(1.01, 2.01, 3.01);
+      const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
+      const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
+      expect(output).equal(false);
+    });
+});
+
+describe("Vector3d.isPerpendicularTo", () => {
+  it("Vector3d.isPerpendicularToWithZeroVector", () => {
+    const thisVector: Vector3d = Vector3d.create(1, 2, 3);
+    const other: Vector3d = Vector3d.create(0, 0, 0);
+    const output: boolean = thisVector.isPerpendicularTo(other);
+    expect(output).equal(false);
+  }),
+    it("Vector3d.isPerpendicularToTrueWithGivenTolerances", () => {
+      const thisVector: Vector3d = Vector3d.create(1, 2, 3);
+      const other: Vector3d = Vector3d.create(-2.01, 1.01, 3.01);
+      const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
+      const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
+      expect(output).equal(true);
+    }),
+    it("Vector3d.isPerpendicularToFalseWithGivenTolerances", () => {
+      const thisVector: Vector3d = Vector3d.create(1, 2, 3);
+      const other: Vector3d = Vector3d.create(-2.01, 1.01, 3.01);
+      const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
+      const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
+      expect(output).equal(false);
+    });
 });
 
 describe("Matrix3d.Construction", () => {

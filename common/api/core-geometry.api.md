@@ -91,11 +91,11 @@ export class Angle implements BeJSONFunctions {
     static dotProductsToHalfAngleTrigValues(dotUU: number, dotVV: number, dotUV: number, favorZero?: boolean): TrigValues;
     freeze(): Readonly<this>;
     static fromJSON(json?: AngleProps, defaultValRadians?: number): Angle;
-    isAlmostEqual(other: Angle): boolean;
-    isAlmostEqualAllowPeriodShift(other: Angle): boolean;
-    isAlmostEqualNoPeriodShift(other: Angle): boolean;
-    static isAlmostEqualRadiansAllowPeriodShift(radiansA: number, radiansB: number): boolean;
-    static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number): boolean;
+    isAlmostEqual(other: Angle, radianTol?: number): boolean;
+    isAlmostEqualAllowPeriodShift(other: Angle, radianTol?: number): boolean;
+    isAlmostEqualNoPeriodShift(other: Angle, radianTol?: number): boolean;
+    static isAlmostEqualRadiansAllowPeriodShift(radiansA: number, radiansB: number, radianTol?: number): boolean;
+    static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number, radianTol?: number): boolean;
     get isAlmostNorthOrSouthPole(): boolean;
     get isAlmostZero(): boolean;
     get isExactZero(): boolean;

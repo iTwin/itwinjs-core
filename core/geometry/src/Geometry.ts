@@ -929,6 +929,9 @@ export interface Cloneable<T> {
 
 /**
  * interface for Vector2d/3d isPerpendicularTo and isParallelTo functions
+ * the default values are:
+ * radianSquaredTol = Geometry.smallAngleRadiansSquared
+ * distanceSquaredTol = Geometry.smallMetricDistanceSquared
  * @public
  */
 export interface PerpParallelOptions {

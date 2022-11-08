@@ -516,6 +516,8 @@ export class Vector2d extends XY implements BeJSONFunctions {
     */
   /**
    * Test if this vector is parallel to other.
+   * * The input tolerances in `options`, if given, are considered to be squared for efficiency's sake,
+   * so if you have a distance or angle tolerance t, you should pass in t * t.
    * @param other second vector for comparison.
    * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel.
    * @param options optional radian and distance tolerances.
@@ -539,6 +541,8 @@ export class Vector2d extends XY implements BeJSONFunctions {
   }
   /**
    * Test if this vector is perpendicular to other.
+   * * The input tolerances in `options`, if given, are considered to be squared for efficiency's sake,
+   * so if you have a distance or angle tolerance t, you should pass in t * t.
    * @param other second vector in comparison.
    * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
    * @param options optional radian and distance tolerances.
