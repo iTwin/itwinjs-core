@@ -1445,7 +1445,7 @@ export class CoordinateXYZ extends GeometryQuery {
 // @public
 export abstract class CurveChain extends CurveCollection {
     protected constructor();
-    childIndex(target: CurvePrimitive | undefined): number | undefined;
+    childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined;
     get children(): CurvePrimitive[];
     abstract cloneStroked(options?: StrokeOptions): AnyCurve;
     protected _curves: CurvePrimitive[];
@@ -1472,7 +1472,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     protected chainDistanceToFragment(distance: number, allowExtrapolation?: boolean): PathFragment | undefined;
     protected chainDistanceToFragmentIndex(distance: number, allowExtrapolation?: boolean): number | undefined;
     clone(): CurveChainWithDistanceIndex;
-    clonePartialCurve(_fractionA: number, _fractionB: number): CurveChainWithDistanceIndex | undefined;
+    clonePartialCurve(fractionA: number, fractionB: number): CurveChainWithDistanceIndex | undefined;
     cloneTransformed(transform: Transform): CurveChainWithDistanceIndex | undefined;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): void;
@@ -2729,7 +2729,7 @@ export namespace IModelJson {
         capped?: boolean;
         center: XYZProps;
         majorRadius: number;
-        minorRadius?: number;
+        minorRadius: number;
         sweepAngle?: AngleProps;
     }
     export interface TransitionSpiralProps extends AxesProps {
@@ -3266,6 +3266,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     static fromJSON(json?: any): LineString3d;
     getIndexedSegment(index: number): LineSegment3d | undefined;
+    globalFractionToSegmentIndexAndLocalFraction(globalFraction: number): {
+        index: number;
+        fraction: number;
+    };
     isAlmostEqual(other: GeometryQuery): boolean;
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
@@ -3439,6 +3443,7 @@ export class Matrix3d implements BeJSONFunctions {
     dotRowYXYZ(x: number, y: number, z: number): number;
     dotRowZ(vector: XYZ): number;
     dotRowZXYZ(x: number, y: number, z: number): number;
+    factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean;
     factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean;
     factorRigidWithSignedScale(): {
         rigidAxes: Matrix3d;
@@ -3475,6 +3480,7 @@ export class Matrix3d implements BeJSONFunctions {
     isSingular(): boolean;
     get isUpperTriangular(): boolean;
     get isXY(): boolean;
+    makeRigid(axisOrder?: AxisOrder): boolean;
     markSingular(): void;
     maxAbs(): number;
     maxDiff(other: Matrix3d): number;
@@ -3931,12 +3937,14 @@ export class PathFragment {
     a: number;
     chainDistance0: number;
     chainDistance1: number;
-    chainDistanceToAccurateChildFraction(chainDistance: number): number;
+    chainDistanceToAccurateChildFraction(chainDistance: number, allowExtrapolation?: boolean): number;
     chainDistanceToInterpolatedChildFraction(distance: number): number;
     childCurve: CurvePrimitive;
     childFraction0: number;
     childFraction1: number;
+    // @deprecated (undocumented)
     childFractionTChainDistance(fraction: number): number;
+    childFractionToChainDistance(fraction: number): number;
     // (undocumented)
     static collectSortedQuickMinDistances(fragments: PathFragment[], spacePoint: Point3d): PathFragment[];
     containsChainDistance(distance: number): boolean;
@@ -5609,9 +5617,11 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     protected constructor(map: Transform, radiusA: number, radiusB: number, sweep: Angle, capped: boolean);
     clone(): TorusPipe;
     cloneCenter(): Point3d;
+    cloneLocalToWorld(): Transform;
     cloneTransformed(transform: Transform): TorusPipe | undefined;
     cloneVectorX(): Vector3d;
     cloneVectorY(): Vector3d;
+    cloneVectorZ(): Vector3d;
     constantUSection(uFraction: number): CurveCollection | undefined;
     constantVSection(v: number): CurveCollection | undefined;
     static createAlongArc(arc: Arc3d, minorRadius: number, capped: boolean): TorusPipe | undefined;
