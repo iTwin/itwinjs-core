@@ -12,7 +12,7 @@ export interface BrowserFileSelector {
   directory: string;
 }
 
-export class Messenger {
+export class MobileMessenger {
   private static _anyWindow: any = window;
 
   public static getHandler(handlerName: string): ((data: string) => any) | undefined {
@@ -38,7 +38,7 @@ export class Messenger {
     }
   }
 
-  public static postMessageToMobile(handlerName: string, data: string): boolean {
+  public static postMessage(handlerName: string, data: string): boolean {
     const handler = this.getHandler(handlerName);
     if (!handler)
       return false;
@@ -46,7 +46,7 @@ export class Messenger {
     return true;
   }
 
-  public static async sendMessageToMobile(handlerName: string): Promise<string | undefined> {
+  public static async sendMessage(handlerName: string): Promise<string | undefined> {
     const handler = this.getHandler(handlerName);
     if (!handler)
       return undefined;
@@ -80,7 +80,7 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
 
   if (ProcessDetector.isMobileAppFrontend) {
     // send message to native code to open a model
-    const filename = await Messenger.sendMessageToMobile("openModel");
+    const filename = await MobileMessenger.sendMessage("openModel");
     return filename;
   }
 

@@ -9,7 +9,7 @@ import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
-import { Messenger } from "./FileOpen";
+import { MobileMessenger } from "./FileOpen";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { signIn } from "./signIn";
 import { Surface } from "./Surface";
@@ -193,7 +193,7 @@ const dtaFrontendMain = async () => {
       iModel = await openFile({ fileName: iModelName, writable });
       if (ProcessDetector.isMobileAppFrontend) {
         // attempt to send message to mobile that the model was opened
-        Messenger.postMessageToMobile("modelOpened", iModelName);
+        MobileMessenger.postMessage("modelOpened", iModelName);
       }
       setTitle(iModel);
     } else {
