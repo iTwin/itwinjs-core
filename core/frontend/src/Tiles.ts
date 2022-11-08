@@ -185,8 +185,12 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
       return;  // nothing found, cant be reset.
     }
 
+    const tree = trees.get(id);
+    if (undefined !== tree) {
+      tree.dispose();
+    }
+
     trees.delete(id);
-    // call dispose?
   }
 
   /** Disposes of all [[TileTree]]s belonging to `supplier` and removes `supplier` from the set of known tile tree suppliers. */
