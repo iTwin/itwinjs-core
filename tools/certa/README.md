@@ -224,7 +224,12 @@ function createConfig(shouldInstrument) {
       test: /\.(jsx?|tsx?)$/,
       include: path.resolve(__dirname, "lib"),
       exclude: path.resolve(__dirname, "lib/test"),
-      loader: "istanbul-instrumenter-loader",
+      use: {
+            loader: "babel-loader",
+            options: {
+              plugins: ["babel-plugin-istanbul"],
+            },
+          },
       enforce: "post",
     });
   }
@@ -232,8 +237,7 @@ function createConfig(shouldInstrument) {
   return config;
 }
 
-// Exporting two configs in a array like this actually
-// tells webpack to run twice - once for each config.
+// Runs webpack once for each config in the export array
 module.exports = [
   createConfig(true),
   createConfig(false)

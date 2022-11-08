@@ -478,6 +478,26 @@ describe("Matrix3d.factorPerpendicularColumns", () => {
         ck.testBoolean(true, matrixBTB.isDiagonal, "BTB diagonal");
         ck.testCoordinate(0, matrixA.maxDiff(matrixBU), "factorPerpendicularColumns");
         ck.testBoolean(true, matrixU.isRigid());
+
+        // test full SVD
+        const matrixV = Matrix3d.createZero();
+        const matrixW = Matrix3d.createZero();
+        const scaleFactors = Point3d.createZero();
+        if (ck.testTrue(matrixA.factorOrthogonalScaleOrthogonal(matrixV, scaleFactors, matrixW), "SVD = V*S*W succeeds")) {
+          ck.testTrue(scaleFactors.x >= scaleFactors.y && scaleFactors.y >= scaleFactors.z, "Singular values are decreasing");
+          const matrixS = Matrix3d.createScale(scaleFactors.x, scaleFactors.y, scaleFactors.z);
+          const matrixVS = matrixV.multiplyMatrixMatrix(matrixS);
+          ck.testCoordinate(0, matrixU.maxDiff(matrixW), "W === U");
+          if (ck.testCoordinate(0, matrixA.maxDiff(matrixVS.multiplyMatrixMatrix(matrixW)), "V*S*W === A"))
+            ck.testCoordinate(0, matrixB.maxDiff(matrixVS), "V*S === B");
+          else  // recompute for debugging
+            matrixA.maxDiff(matrixVS.multiplyMatrixMatrix(matrixW));
+          if (ck.testTrue(matrixV.isRigid(true), "V is orthogonal")) {
+            const matrixVW = matrixV.multiplyMatrixMatrix(matrixW);
+            ck.testTrue(matrixVW.isRigid(true), "VW is orthogonal");
+          } else  // recompute for debugging
+            matrixV.isRigid(true);
+        }
       }
     }
     ck.checkpoint("Matrix3d.Columns");
