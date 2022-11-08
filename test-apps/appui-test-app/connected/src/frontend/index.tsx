@@ -48,6 +48,7 @@ import {
   AbstractUiItemsProvider, AppUiTestProviders, ContentLayoutStage, CustomContentFrontstage,
   FloatingWidgetsUiItemsProvider, InspectUiItemInfoToolProvider, WidgetApiStage,
 } from "@itwin/appui-test-providers";
+import { MapLayersFormats } from "@itwin/map-layers-formats";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -246,6 +247,8 @@ export class SampleAppIModelApp {
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
     IModelApp.uiAdmin.updateFeatureFlags({ allowKeyinPalette: true });
+
+    MapLayersFormats.initialize();
 
     // store name of this registered control in Redux store so it can be access by extensions
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);

@@ -128,7 +128,7 @@
     },
     {
       "name": "@itwin/certa",
-      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/cloud-agnostic-core",
@@ -287,6 +287,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@itwin/itwinui-icons-color-react",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "@itwin/itwinui-icons-react",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -304,6 +308,10 @@
     },
     {
       "name": "@itwin/map-layers-auth",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/map-layers-formats",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -555,6 +563,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "crypto-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "debug",
       "allowedCategories": [ "common" ]
     },
@@ -701,6 +713,10 @@
     {
       "name": "glob",
       "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "google-protobuf",
+      "allowedCategories": [ "extensions" ]
     },
     {
       "name": "https-browserify",
@@ -953,10 +969,6 @@
     {
       "name": "react-window",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "recursive-readdir",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "redux",

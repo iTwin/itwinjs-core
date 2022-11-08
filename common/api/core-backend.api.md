@@ -529,7 +529,7 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static logUsage(imodel: IModelDb, activity?: RpcActivity): void;
     // @internal (undocumented)
-    static pullAndApplyChangesets(db: IModelDb, arg: ToChangesetArgs): Promise<void>;
+    static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
@@ -4226,7 +4226,9 @@ export namespace PropertyStore {
 }
 
 // @public
-export type PullChangesArgs = ToChangesetArgs;
+export type PullChangesArgs = ToChangesetArgs & {
+    onProgress?: ProgressFunction;
+};
 
 // @public
 export interface PushChangesArgs extends TokenArg {
@@ -5104,6 +5106,9 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
     // (undocumented)
     data: Base64EncodedString | Uint8Array;
 }
+
+// @internal
+export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction;
 
 // @public
 export class TitleText extends DetailingSymbol {

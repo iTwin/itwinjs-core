@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add asynchronous functions to obtain the extents of geometric models.",
+      "comment": "Expose Progress API for changeset(s) download in higher levels (BriefcaseManager, IpcAppHandler, etc.)",
       "type": "none"
     }
   ],
