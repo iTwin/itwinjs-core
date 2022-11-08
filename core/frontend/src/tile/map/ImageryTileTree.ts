@@ -18,6 +18,7 @@ import {
   MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
   TileTreeSupplier,
+  TraversalSelectionContext,
 } from "../internal";
 
 /** @internal */
@@ -44,11 +45,20 @@ export class ImageryMapTile extends RealityTile {
     this.setIsReady();
   }
 
-  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
+  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs, context: TraversalSelectionContext): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     if (this.isLeaf || (this.rectangle.xLength() / this.maximumSize) < drapePixelSize || this._anyChildNotFound) {
-      if (this.isDisplayable && !this.isNotFound)
-        drapeTiles.push(this);
+      if (this.isDisplayable
+        && !this.isNotFound
+      ) {
+        if (this.isOutOfLodRange) {
+          context.outOfLodRange.push(this);
+        } else {
+          drapeTiles.push(this);
+        }
+
+      }
+
       return TileTreeLoadStatus.Loaded;
     }
 
@@ -60,7 +70,7 @@ export class ImageryMapTile extends RealityTile {
         for (const child of this.children) {
           const mapChild = child as ImageryMapTile;
           if (mapChild.rectangle.intersectsRange(rectangleToDrape))
-            status = mapChild.selectCartoDrapeTiles(drapeTiles, rectangleToDrape, drapePixelSize, args);
+            status = mapChild.selectCartoDrapeTiles(drapeTiles, rectangleToDrape, drapePixelSize, args, context);
           if (TileTreeLoadStatus.Loaded !== status)
             break;
         }
@@ -94,13 +104,14 @@ export class ImageryMapTile extends RealityTile {
       // If children depth is lower than min LOD, mark them as disabled.
       // This is important: if those tiles are requested and the server refuse to serve them,
       // they will be marked as not found and their descendant will never be displayed.
-      const childrenAreDisabled = (this.depth + 1) < imageryTree.minDepth;
+      const outOfLodRange = (this.depth + 1) < imageryTree.minDepth;
 
       childIds.forEach((quadId) => {
         const rectangle = imageryTree.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
         const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
-        const maximumSize = (childrenAreDisabled ?  0 : imageryTree.imageryLoader.maximumScreenSize);
-        children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
+        const maximumSize = imageryTree.imageryLoader.maximumScreenSize;
+        const tile = new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize, outOfLodRange }, imageryTree, quadId, rectangle);
+        children.push(tile);
       });
 
       resolve(children);
@@ -172,12 +183,12 @@ export class ImageryMapTileTree extends RealityTileTree {
   private static _scratchDrapeRectangle = MapCartoRectangle.createZero();
   private static _drapeIntersectionScale = 1.0 - 1.0E-5;
 
-  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus {
+  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs, context: TraversalSelectionContext): TileTreeLoadStatus {
     const drapeRectangle = tileToDrape.rectangle.clone(ImageryMapTileTree._scratchDrapeRectangle);
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     const drapePixelSize = 1.05 * tileToDrape.rectangle.xLength() / tileToDrape.maximumSize;
     drapeRectangle.scaleAboutCenterInPlace(ImageryMapTileTree._drapeIntersectionScale);    // Contract slightly to avoid draping adjacent or slivers.
-    return (this.rootTile as ImageryMapTile).selectCartoDrapeTiles(drapeTiles, drapeRectangle, drapePixelSize, args);
+    return (this.rootTile as ImageryMapTile).selectCartoDrapeTiles(drapeTiles, drapeRectangle, drapePixelSize, args, context);
   }
   public cartoRectangleFromQuadId(quadId: QuadId): MapCartoRectangle { return this.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level); }
 }

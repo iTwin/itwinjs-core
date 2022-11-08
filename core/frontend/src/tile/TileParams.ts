@@ -31,4 +31,10 @@ export interface TileParams {
    * An undisplayable tile may have displayable child tiles.
    */
   maximumSize: number;
+
+  /** True if the tile is outside the valid range of LOD : some tile trees, such as ImageryTileTree might not be fully defined (i.e. TileTree might start at level 10+).
+   * This flag is needed because we can't assume this is tile is a leaf, or start drilling down the tile tree for available higher resolutions tiles.  If a tile
+   * matches the current display screen size but is out of range, simply render blank data (i.e We want user to adjust level of the view to see available data.)
+  */
+  outOfLodRange?: boolean;
 }

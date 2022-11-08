@@ -131,6 +131,7 @@ const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.crea
 export class MapTile extends RealityTile {
   private static _maxParentHeightDepth = 4;
   private _imageryTiles?: ImageryMapTile[];
+  private _outOfRangeImageryTiles?: ImageryMapTile[];
   /** @internal */
   public everLoaded = false;                    // If the tile is only required for availability metadata, load it once and then allow it to be unloaded.
   /** @internal */
@@ -159,6 +160,7 @@ export class MapTile extends RealityTile {
   public get isPlanar(): boolean { return this._patch instanceof PlanarTilePatch; }
   /** @internal */
   public get imageryTiles(): ImageryMapTile[] | undefined { return this._imageryTiles; }
+  public get outOfLodRangeTiles(): ImageryMapTile[] | undefined { return this._outOfRangeImageryTiles; }
   /** The [[MapTileTree]] to which this tile belongs. */
   public readonly mapTree: MapTileTree;
   /** Uniquely identifies this tile within its [[mapTree]]. */
@@ -611,7 +613,7 @@ export class MapTile extends RealityTile {
     this.clearImageryTiles();
     this._imageryTiles = new Array<ImageryMapTile>();
     for (const imageryTree of this.mapTree.imageryTrees) {
-      if (TileTreeLoadStatus.Loaded !== imageryTree.selectCartoDrapeTiles(this._imageryTiles, this, args)) {
+      if (TileTreeLoadStatus.Loaded !== imageryTree.selectCartoDrapeTiles(this._imageryTiles, this, args, context)) {
         this._imageryTiles = undefined;
         return;
       }
