@@ -6,7 +6,7 @@
  * @module CartesianGeometry
  */
 
-import { Geometry } from "../Geometry";
+import { Geometry, PerpParallelOptions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
@@ -37,7 +37,6 @@ export class XYZ implements XYAndZ {
     this.y = y;
     this.z = z;
   }
-
   /** Set the x,y,z parts to zero. */
   public setZero() {
     this.x = 0;
@@ -1305,19 +1304,29 @@ export class Vector3d extends XYZ {
     return Vector3d.createCrossProduct(this.x, this.y, this.z, x, y, z, result);
   }
   /**
-   * Return the (Strongly typed) angle from this vector to vectorB.
+ * Return the (radians as a simple number, not strongly typed Angle) angle from this vector to vectorB.
+ * * The returned angle is always positive and no larger than 180 degrees (PI radians)
+ * * The returned angle is "in the plane containing the two vectors"
+ * * Use `planarRadiansTo` and `signedRadiansTo` to take have angle measured in specific plane.
+ * @param vectorB target vector of rotation.
+ */
+  public radiansTo(vectorB: Vector3d): number {
+    // ||axb|| = ||a|| ||b|| |sin(t)| and a.b = ||a|| ||b|| cos(t) ==>
+    // ||axb|| / a.b = sin(t)/cos(t) = tan(t) ==> t = arctan(||axb|| / a.b).
+    return Math.atan2(this.crossProductMagnitude(vectorB), this.dotProduct(vectorB));
+  }
+  /**
+   * Return the (strongly typed) angle from this vector to vectorB.
    * * The returned angle is always positive and no larger than 180 degrees (PI radians)
    * * The returned angle is "in the plane containing the two vectors"
-   * * Use `planarAngleTo`, `signedAngleTo`, `angleToXY` to take have angle measured in specific plane.
+   * * Use `planarAngleTo` and `signedAngleTo` to take have angle measured in specific plane.
    * @param vectorB target vector of rotation.
    */
   public angleTo(vectorB: Vector3d): Angle {
-    // ||axb|| = ||a|| ||b|| |sin(t)| and a.b = ||a|| ||b|| cos(t) ==>
-    // ||axb|| / a.b = sin(t)/cos(t) = tan(t) ==> t = arctan(||axb|| / a.b).
-    return Angle.createAtan2(this.crossProductMagnitude(vectorB), this.dotProduct(vectorB));
+    return Angle.createRadians(this.radiansTo(vectorB));
   }
   /**
-   * Return the (Strongly typed) angle from this vector to the plane perpendicular to planeNormal.
+   * Return the (strongly typed) angle from this vector to the plane perpendicular to planeNormal.
    * * The returned vector is signed
    * * The returned vector is (as degrees) always between -90 and 90 degrees.
    * * The function returns "PI/2 - angleTo(planeNormal)"
@@ -1330,7 +1339,7 @@ export class Vector3d extends XYZ {
    * Return the (Strongly typed) angle from this vector to vectorB, using only the xy parts.
    * * The returned angle can range from negative 180 degrees (negative PI radians) to positive 180
    * * degrees (positive PI radians), not closed on the negative side.
-   * * Use `planarAngleTo`, `signedAngleTo`, `angleToXY` to take have angle measured in other planes.
+   * * Use `planarAngleTo` and `signedAngleTo` to take have angle measured in other planes.
    * @param vectorB target vector of rotation.
    */
   public angleToXY(vectorB: Vector3d): Angle {
@@ -1408,37 +1417,46 @@ export class Vector3d extends XYZ {
   }
   /**
    * Test if this vector is parallel to other.
+   * * The input tolerances in `options`, if given, are considered to be squared for efficiency's sake,
+   * so if you have a distance or angle tolerance t, you should pass in t * t.
    * @param other second vector in comparison
-   * @param oppositeIsParallel if the vectors are on the same line but in opposite directions, return this value.
+   * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel
    * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
+   * @param options optional radian and distance tolerances.
    */
-  public isParallelTo(other: Vector3d, oppositeIsParallel: boolean = false, returnValueIfAnInputIsZeroLength: boolean = false): boolean {
+  public isParallelTo(other: Vector3d, oppositeIsParallel: boolean = false,
+    returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+    const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
+    const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const a2 = this.magnitudeSquared();
     const b2 = other.magnitudeSquared();
-    if (a2 < Geometry.smallMetricDistanceSquared || b2 < Geometry.smallMetricDistanceSquared)
+    if (a2 < distanceSquaredTol || b2 < distanceSquaredTol)
       return returnValueIfAnInputIsZeroLength;
     const dot = this.dotProduct(other);
     if (dot < 0.0 && !oppositeIsParallel)
-      return returnValueIfAnInputIsZeroLength;
+      return false;
     const cross2 = this.crossProductMagnitudeSquared(other);
     /* a2,b2,cross2 are squared lengths of respective vectors */
     /* cross2 = sin^2(theta) * a2 * b2 */
     /* For small theta, sin^2(theta)~~theta^2 */
-    return cross2 <= Geometry.smallAngleRadiansSquared * a2 * b2;
+    return cross2 <= radianSquaredTol * a2 * b2;
   }
   /**
    * Test if this vector is perpendicular to other.
+   * * The input tolerances in `options`, if given, are considered to be squared for efficiency's sake,
+   * so if you have a distance or angle tolerance t, you should pass in t * t.
    * @param other second vector in comparison
    * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
+   * @param options optional radian and distance tolerances.
    */
-  public isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength: boolean = false): boolean {
+  public isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+    const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
+    const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const aa = this.magnitudeSquared();
-    if (aa < Geometry.smallMetricDistanceSquared)
-      return returnValueIfAnInputIsZeroLength;
     const bb = other.magnitudeSquared();
-    if (bb < Geometry.smallMetricDistanceSquared)
+    if (aa < distanceSquaredTol || bb < distanceSquaredTol)
       return returnValueIfAnInputIsZeroLength;
     const ab = this.dotProduct(other);
-    return ab * ab <= Geometry.smallAngleRadiansSquared * aa * bb;
+    return ab * ab <= radianSquaredTol * aa * bb;
   }
 }
