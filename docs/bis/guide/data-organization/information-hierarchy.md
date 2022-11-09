@@ -64,15 +64,13 @@ For more details about Physical Systems in BIS, please refer to the [Modeling Sy
 
 ### Element Is From Source
 
-An Element's provenance, captured by `bis:ExternalSourceAspect`s attached to it, can refer to the External Source it came from.
-External Sources can be organized in a hierarchical manner, reflecting how they are laid out in the external repository.
-These External Source hierarchies can co-exist with the other organization mechanisms listed above.
+An Element's provenance, captured by `bis:ExternalSourceAspect`s attached to it, can refer to the External Source it came from. External Sources can be organized in a hierarchical manner, reflecting how they are laid out in the external repository. These External Source hierarchies can co-exist with the other organization mechanisms listed above.
 
 For example, an iModel Connector synchronizes data from a Road dataset containing 4 dgn files. The model-attachments among those dgn files are represented in the iModel by a hierarchy composed of `ExternalSource` instances, which act as the *sources* for the elements in the iModel that were synchronized from the external dgn files. The following instance-diagram depicts such situation. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
 ![External Sources Example](../media/external-sources.png)
 
-For more details about External Sources in BIS, please refer to the [BisCore](../../domains/biscore.ecschema/#externalsource) documentation.
+For more details about External Sources in BIS, please refer to [Provenance in BIS](../../domains/Provenance-in-BIS.md).
 
 ## Top of the World
 
