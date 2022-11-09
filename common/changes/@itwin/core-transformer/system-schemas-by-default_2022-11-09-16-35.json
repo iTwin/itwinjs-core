@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "handle null ExternalSourceAspect.scope, process system schemas by default",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}
