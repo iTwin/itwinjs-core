@@ -416,7 +416,9 @@ export class IModelTransformer extends IModelExportHandler {
     const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE Element.Id=:elementId AND Scope.Id=:scopeId AND Kind=:kind AND Identifier=:identifier LIMIT 1`;
     return this.provenanceDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
       statement.bindId("elementId", aspectProps.element.id);
-      statement.bindId("scopeId", aspectProps.scope?.id ?? Id64.invalid);
+      if (aspectProps.scope === undefined)
+        return undefined; // return undefined instead of binding an invalid id
+      statement.bindId("scopeId", aspectProps.scope.id);
       statement.bindString("kind", aspectProps.kind);
       statement.bindString("identifier", aspectProps.identifier);
       return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
