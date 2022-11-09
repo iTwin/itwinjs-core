@@ -6,7 +6,7 @@
  * @module iModels
  */
 import * as assert from "assert";
-import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
   ConcreteEntityTypes, ElementAspectProps, EntityReference, IModelError,
   PrimitiveTypeCode, RelatedElementProps,
