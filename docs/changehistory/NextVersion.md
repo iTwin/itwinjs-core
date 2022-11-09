@@ -13,13 +13,14 @@ Table of contents:
   - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
 - [Element aspect ids](#element-aspect-ids)
 - [AppUi](#appui)
+- [New packages](#new-packages)
+  - [@itwin/map-layers-formats](#itwinmap-layers-formats)
 - [Geometry](#geometry)
   - [Polyface](#polyface)
 - [Deprecations](#deprecations)
+  - [@itwin/components-react](#itwincomponents-react)
   - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-transformer](#itwincore-transformer)
-- [New packages](#new-packages)
-  - [@itwin/map-layers-formats](#map-layers-formats)
 
 ## Display system
 
@@ -127,7 +128,6 @@ the ids returned are not unique from all element ids and may collide.
 
 When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
 
-
 ## New packages
 
 ### @itwin/map-layers-formats
@@ -143,6 +143,10 @@ To use this package, you must initialize it by calling [MapLayersFormats.initial
 The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
 
 ## Deprecations
+
+### @itwin/components-react
+
+All the components that were only used by or with the deprecated [Table]($components-react) are now marked as deprecated as well and will be removed in an upcoming version. The Table was deprecated a year ago in favor of the Table component provided in the `@itwin/itwinui-react` package, which do not use any of these parts.
 
 ### @itwin/core-backend
 

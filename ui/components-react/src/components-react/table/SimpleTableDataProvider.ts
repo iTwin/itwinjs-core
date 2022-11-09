@@ -18,7 +18,7 @@ import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEv
 
 /**
  * A Table Data Provider using an array of items.
- * @deprecated Use the Table component in @itwin/itwinui-react instead, which do not use this class.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this class.
  * @public
  */
 export class SimpleTableDataProvider implements MutableTableDataProvider {
