@@ -58,12 +58,12 @@ export interface CrashReportingConfig {
   enableCrashDumps?: boolean;
   /** If enableCrashDumps is true, do you want a full-memory dump? Defaults to false. */
   wantFullMemoryDumps?: boolean;
-  /** Enable node-report? If so, node-report files will be generated in the event of an unhandled exception or fatal error and written to crashDir. The default is false. */
+  /** Enable Node.js crash reporting? If so, report files will be generated in the event of an unhandled exception or fatal error and written to crashDir. The default is false. */
   enableNodeReport?: boolean;
   /** Additional name, value pairs to write to iModelJsNativeCrash*.properties.txt file in the event of a crash. */
   params?: CrashReportingConfigNameValuePair[];
-  /** Run this .js file to process .dmp and node-report files in the event of a crash.
-   * This script will be executed with a single command-line parameter: the name of the dump or node-report file.
+  /** Run this .js file to process .dmp and Node.js crash reporting .json files in the event of a crash.
+   * This script will be executed with a single command-line parameter: the name of the dump or Node.js report file.
    * In the case of a dump file, there will be a second file with the same basename and the extension ".properties.txt".
    * Since it runs in a separate process, this script will have no access to the Javascript
    * context of the exiting backend. No default.
@@ -127,6 +127,13 @@ export interface IModelHostOptions {
    */
   tileCacheStorage?: ServerStorage;
 
+  /** The maximum size in bytes to which a local sqlite database used for caching tiles can grow before it is purged of least-recently-used tiles.
+   * The local cache is used only if an external cache has not been configured via [[tileCacheService]], [[tileCacheStorage]], and [[tileCacheAzureCredentials]].
+   * Defaults to 1 GB. Must be an unsigned integer. A value of zero disables the local cache entirely.
+   * @beta
+   */
+  maxTileCacheDbSize?: number;
+
   /** Whether to restrict tile cache URLs by client IP address (if available).
    * @beta
    */
@@ -181,6 +188,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultTileRequestTimeout = 20 * 1000;
   public static defaultLogTileLoadTimeThreshold = 40;
   public static defaultLogTileSizeThreshold = 20 * 1000000;
+  /** @internal */
+  public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
 
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
@@ -330,6 +339,9 @@ export class IModelHost {
     const platform = Platform.load();
     this.registerPlatform(platform);
   }
+  private static syncNativeLogLevels() {
+    this.platform.clearLogLevelCache();
+  }
 
   private static registerPlatform(platform: typeof IModelJsNative): void {
     this._platform = platform;
@@ -337,6 +349,7 @@ export class IModelHost {
       return;
 
     platform.logger = Logger;
+    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels();
   }
 
   /**
@@ -430,15 +443,13 @@ export class IModelHost {
       });
 
       if (options.crashReportingConfig.enableNodeReport) {
-        try {
-          // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
-          const nodereport = require("node-report/api"); // eslint-disable-line @typescript-eslint/no-var-requires
-          nodereport.setEvents("exception+fatalerror+apicall");
-          nodereport.setDirectory(options.crashReportingConfig.crashDir);
-          nodereport.setVerbose("yes");
-          Logger.logTrace(loggerCategory, "Configured native crash reporting (node-report)");
-        } catch (err) {
-          Logger.logWarning(loggerCategory, "node-report is not installed.");
+        if (process.report !== undefined) {
+          process.report.reportOnFatalError = true;
+          process.report.reportOnUncaughtException = true;
+          process.report.directory = options.crashReportingConfig.crashDir;
+          Logger.logTrace(loggerCategory, "Configured Node.js crash reporting");
+        } else {
+          Logger.logWarning(loggerCategory, "Unable to configure Node.js crash reporting");
         }
       }
     }
@@ -604,10 +615,11 @@ export class IModelHost {
     const credentials = config.tileCacheAzureCredentials;
 
     if (!service && !storage && !credentials) {
-      this.platform.setUseTileCache(true);
+      this.platform.setMaxTileCacheSize(config.maxTileCacheDbSize ?? IModelHostConfiguration.defaultMaxTileCacheDbSize);
       return;
     }
-    this.platform.setUseTileCache(false);
+
+    this.platform.setMaxTileCacheSize(0);
     // eslint-disable-next-line deprecation/deprecation
     IModelHost.tileUploader = new CloudStorageTileUploader();
     if (credentials) {

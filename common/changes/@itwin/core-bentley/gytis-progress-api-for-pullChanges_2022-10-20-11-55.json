@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Add new ChangeSetStatus.DownloadCancelled error code.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

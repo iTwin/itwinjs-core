@@ -1,212 +1,161 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
 Table of contents:
 
-- [Electron 17 support](#electron-17-support)
-- [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
-- [Improved link table selection](improved-link-table-selection)
-- [Cloud storage changes](#cloud-storage-changes)
-- [Display](#display)
-  - [Custom terrain providers](#custom-terrain-providers)
-  - [Ambient occlusion improvements](#ambient-occlusion-improvements)
-  - [Improved display transform support](#improved-display-transform-support)
-  - [Wait for scene completion](#wait-for-scene-completion)
+- [Display system](#display-system)
+  - [Reality model display customization](#reality-model-display-customization)
+  - [View padding](#view-padding)
 - [Presentation](#presentation)
-  - [Restoring presentation tree state](#restoring-presentation-tree-state)
-  - [Diagnostics improvements and OpenTelemetry](#diagnostics-improvements-and-opentelemetry)
-  - [Localization changes](#localization-changes)
-  - [Content sources](#content-sources)
+  - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
+  - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
+- [Element aspect ids](#element-aspect-ids)
+- [AppUi](#appui)
+- [New packages](#new-packages)
+  - [@itwin/map-layers-formats](#map-layers-formats)
 - [Geometry](#geometry)
-  - [Coplanar facet consolidation](#coplanar-facet-consolidation)
-  - [Filling mesh holes](#filling-mesh-holes)
+  - [Polyface](#polyface)
 - [Deprecations](#deprecations)
+  - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
 
-## Electron 17 support
+## Display system
 
-In addition to the already supported Electron 14, iTwin.js now supports Electron versions [15](https://www.electronjs.org/blog/electron-15-0), [16](https://www.electronjs.org/blog/electron-16-0), and [17](https://www.electronjs.org/blog/electron-17-0). At the moment, support for Electron 18 and 19 is blocked due to a [bug in the V8 javascript engine](https://github.com/electron/electron/issues/35043).
+### Reality model display customization
 
-## IModelSchemaLoader replaced
+You can now customize various aspects of how a reality model is displayed within a [Viewport]($frontend) by applying your own [RealityModelDisplaySettings]($common) to the model. For contextual reality models, use [ContextRealityModel.displaySettings]($common); for persistent reality [Model]($backend)s, use [DisplayStyleSettings.setRealityModelDisplaySettings]($common).
 
-The `IModelSchemaLoader` class has been replaced with [SchemaLoader]($ecschema-metadata) for obtaining schemas from an iModel. This allows us to remove the @itwin/ecschema-metadata dependency from @itwin/core-backend.
+For all types of reality models, you can customize how the model's color is mixed with a color override applied by a [FeatureAppearance]($common) or a [SpatialClassifier]($common). [RealityModelDisplaySettings.overrideColorRatio]($common) defaults to 0.5, mixing the two colors equally, but you can adjust it to any value between 0.0 (use only the model's color) and 1.0 (use only the override color).
 
-```typescript
-// Old
-import { IModelSchemaLoader } from "@itwin/core-backend";
-const loader = new IModelSchemaLoader(iModel);
-const schema = loader.getSchema("BisCore");
+Point clouds provide the following additional customizations:
 
-// New
-import { SchemaLoader } from "@itwin/ecschema-metadata";
-const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
-const schema = loader.getSchema("BisCore");
+- [PointCloudDisplaySettings.sizeMode]($common) controls how the size of each point in the cloud is computed - either as a specific radius in pixels via [PointCloudDisplaySettings.pixelSize]($common), or based on the [Tile]($frontend)'s voxel size in meters.
+- When using voxel size mode, points can be scaled using [PointCloudDisplaySettings.voxelScale]($common) and clamped to a range of pixel sizes using [PointCloudDisplaySettings.minPixelsPerVoxel]($common) and [PointCloudDisplaySettings.maxPixelsPerVoxel]($common).
+- [PointCloudDisplaySettings.shape]($common) specifies whether to draw rounded points or square points.
+
+### View padding
+
+Functions like [ViewState.lookAtVolume]($frontend) and [Viewport.zoomToElements]($frontend) fit a view to a specified volume. They accept a [MarginOptions]($frontend) that allows the caller to customize how tightly the view fits to the volume, via [MarginPercent]($frontend). However, the amount by which the volume is enlarged to add extra space can yield surprising results. For example, a [MarginPercent]($frontend) that specifies a margin of 25% on each side - `{left: .25, right: .25, top: .25, bottom: .25}` - actually *doubles* the width and height of the volume, adding 50% of the original volume's size to each side. Moreover, [MarginPercent]($frontend)'s constructor clamps the margin values to a minimum of zero and maximum of 0.25.
+
+Now, [MarginOptions]($frontend) has an alternative way to specify how to adjust the size of the viewed volume, using [MarginOptions.paddingPercent]($frontend). Like [MarginPercent]($frontend), a [PaddingPercent]($frontend) specifies the extra space as a percentage of the original volume's space on each side - though it may also specify a single padding to be applied to all four sides, or omit any side that should have no padding applied. For example,
+```
+{paddingPercent: {{left: .2, right: .2, top: .2, bottom: .2}}
+// is equivalent to
+{paddingPercent: .2}
+```
+and
+```
+{paddingPercent: {left: 0, top: 0, right: .5, bottom: .5}}
+// is equivalent to
+{paddingPercent: {right: .5, bottom: .5}
 ```
 
-[SchemaLoader]($ecschema-metadata) can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
+Moreover, [PaddingPercent]($frontend) imposes no constraints on the padding values. They can even be negative, which causes the volume to shrink instead of expand by **subtracting** a percentage of the original volume's size from one or more sides.
 
-## Improved link table selection
+The padding computations are more straightforward than those used for margins. For example, `{paddingPercent: 0.25}` adds 25% of the original volume's size to each side, whereas the equivalent `marginPercent` adds 50% to each side.
 
-Previously when we did `SELECT *` on a link table, it would only return `ECInstanceId`, `ECClassId`, `SourceECInstanceId` and `TargetECInstanceId`. It would omit `SourceECClassId` and `TargetECClassId`. Those two omitted columns are now included in the query result rows.
-
-## Cloud storage changes
-
-The existing beta implementations of cloud storage tile cache ([CloudStorageService]($backend) - [AzureBlobStorage]($backend), [AliCloudStorageService]($backend)) have been deprecated in favor of the [iTwin/object-storage](https://github.com/iTwin/object-storage) project, which exposes a unified cloud-agnostic object storage interface in turn simplifying the setup of Microsoft Azure or S3 based (OSS, MinIO) cloud storage providers.
-
-[CloudStorageService]($backend) remains to support older frontends, however the new implementation of cloud storage still has to be setup. This is done automatically if [IModelHostOptions.tileCacheAzureCredentials]($backend) are used.
-
-A different cloud provider may be set in [IModelHostOptions.tileCacheStorage]($backend) and `IModelAppOptions.tileAdmin.tileStorage`, which could be any of [the implementations iTwin/object-storage](https://github.com/iTwin/object-storage/tree/main/storage) provides.
-
-## Display
-
-### Custom terrain providers
-
-Previously, 3d terrain required access to [Cesium World Terrain](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/), a paid service. Now, applications can use their own sources of 3d terrain by registering a [TerrainProvider]($frontend) and implementing a [TerrainMeshProvider]($frontend) to produce 3d terrain meshes.
-
-The name of the provider is stored in [TerrainSettings.providerName]($common). The default is "CesiumWorldTerrain".
-
-See [BingTerrainProvider](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/BingTerrainProvider.ts) for an example of a custom terrain provider.
-
-### Ambient occlusion improvements
-
-The ambient occlusion effect has undergone some quality improvements.
-
-Changes:
-
-- The shadows cast by ambient occlusion will decrease in size the more distant the geometry is.
-- The maximum distance for applying ambient occlusion now defaults to 10,000 meters instead of 100 meters.
-- The effect will now fade as it approaches the maximum distance.
-
-Old effect, as shown below:
-
-![AO effect is the same strength in the near distance and far distance](./assets/AOOldDistance.png)
-
-New effect, shown below:
-
-![AO effect fades in the distance; shadows decrease in size](./assets/AONewDistance.png)
-
-For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
-
-### Improved display transform support
-
-In some cases, geometry is displayed within a [Viewport]($frontend) at a different location, orientation, and/or scale than that with which it is persisted in the iModel. For example:
-
-- A [DisplayStyle]($backend) may use [PlanProjectionSettings.elevation]($common) to adjust a plan projection model's position on the Z axis.
-- A [ModelDisplayTransformProvider]($frontend) may supply [Transform]($core-geometry)s to be applied to specific models.
-- A [RenderSchedule.Script]($common) may apply [Transform]($core-geometry)s to groups of elements belonging to a [RenderSchedule.ElementTimeline]($common).
-
-Tools that interact both with a [Viewport]($frontend) and with persistent geometry sometimes need to account for such display transforms. Such tools can now use [ViewState.computeDisplayTransform]($frontend) to compute the transform applied to a model or element for display. For example, [AccuSnap]($frontend) applies the display transform to the snap points and curves received from the backend to display them correctly in the viewport; and [ViewClipByElementTool]($frontend) applies it to the element's bounding box to orient the clip with the element as displayed in the viewport.
-
-### Wait for scene completion
-
-As you navigate inside a [Viewport]($frontend), [Tile]($frontend)s, texture images, and other resources are streamed in asynchronously to display the contents of the view. Sometimes, you may want to wait until the scene has been fully rendered - for example, so that you can capture a complete image of the viewport's contents. [Viewport.waitForSceneCompletion]($frontend) provides a `Promise` that resolves when the scene has been fully rendered. Here's an example that captures an image of the fully-rendered scene:
-
-```ts
-async function captureImage(vp: Viewport): Promise<ImageBuffer | undefined> {
-  await vp.waitForSceneCompletion();
-  return vp.readImageBuffer();
-}
-```
+Note that both margins and padding apply only to 2d views, or to 3d views with the camera turned off; and that additional extra space will be allocated on either the top and bottom or left and right to preserve the viewport's aspect ratio.
 
 ## Presentation
 
-### Restoring presentation tree state
+### Controlling in-memory cache sizes
 
-It is now possible to restore previously saved Presentation tree state on component mount.
+The presentation library uses a number of SQLite connections, each of which have an associated in-memory page cache. Ability to control the size of these caches on the backend has been added to allow consumers fine-tune their configuration based on their memory restrictions and use cases.
+
+The configuration is done when initializing [Presentation]($presentation-backend) or creating a [PresentationManager]($presentation-backend):
 
 ```ts
-// Save current tree state
-const { nodeLoader } = usePresentationTreeNodeLoader(args);
-useEffect(() => exampleStoreTreeModel(nodeLoader.modelSource.getModel()), []);
-
-// Restore tree state on component mount
-const seedTreeModel = exampleRetrieveStoredTreeModel();
-const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
+Presentation.initialize({
+  caching: {
+    // use 8 megabytes page cache for worker connections to iModels
+    workerConnectionCacheSize: 8 * 1024 * 1024,
+    // use a disk-based hierarchy cache with a 4 megabytes in-memory page cache
+    hierarchies: {
+      mode: HierarchyCacheMode.Disk,
+      memoryCacheSize: 4 * 1024 * 1024,
+    },
+  },
+});
 ```
 
-### Diagnostics improvements and OpenTelemetry
+See the [Caching documentation page](../presentation/advanced/Caching.md) for more details on various caches used by presentation system.
 
-The Presentation [Diagnostics API](../presentation/advanced/Diagnostics.md) has been upgraded from `@alpha` to `@beta`. Several new features have also been added:
+### Changes to infinite hierarchy prevention
 
-- Ability to retrieve backend version when sending a request from the frontend. See [Getting request diagnostics on the frontend](../presentation/advanced/Diagnostics.md#getting-request-diagnostics-on-the-frontend) section for an example.
-- Ability to request diagnostics on the backend at the [PresentationManager]($presentation-backend) level. See [Getting diagnostics for all requests](../presentation/advanced/Diagnostics.md#getting-diagnostics-for-all-requests) section for an example.
-- Introduced a new `@itwin/presentation-opentelemetry` package that provides an easy way to convert Presentation Diagnostics objects to OpenTelemetry objects. See [Diagnostics and OpenTelemetry](../presentation/advanced/Diagnostics.md#diagnostics-and-opentelemetry) section for an example.
+The idea of infinite hierarchy prevention is to stop producing hierarchy when we notice duplicate ancestor nodes. See more details about that in the [Infinite hierarchy prevention page](../presentation/hierarchies/InfiniteHierarchiesPrevention.md).
 
-### Localization changes
+Previously, when a duplicate node was detected, our approach to handle the situation was to just hide the duplicate node altogether. However, in some situations that turned out to be causing mismatches between what we get through a nodes count request and what we get through a nodes request (e.g. the count request returns `2`, but the nodes request returns only 1 node). There was no way to keep the count request efficient with this approach of handling infinite hierarchies.
 
-Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed.
+The new approach, instead of hiding the duplicate node, shows it, but without any children. This still "breaks" the hierarchy when we want that, but keeps the count and nodes in sync.
 
-In case of a backend-only application, localization may be setup by providing a [localization function when initializing the Presentation backend](../presentation/advanced/Localization.md).  By default the library localizes known strings to English.
+#### Example
 
-**Deprecated APIs:**
+Say, we have two instances A and B and they point to each other through a relationship:
 
-- PresentationManagerProps.localeDirectories
-- PresentationManagerProps.defaultLocale
-- PresentationManager.activeLocale
-
-### Content sources
-
-Presentation API provides the [PresentationManager.getContentSources]($presentation-backend) function to retrieve a list of classes that are used to build content for a given class of elements. It used to create this list based on actual instances in the given iModel, which made the call very expensive on large iModels. Requesting this for `bis.Element` would result in a response like the following:
-
-```json
-[
-  {
-    selectClassInfo: { name: "ConcreteElementClassA" },
-    relatedPropertyPaths: [
-      [{
-        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
-        targetClassInfo: { name: "ConcreteAspectX" },
-      }], [{
-        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
-        targetClassInfo: { name: "ConcreteAspectY" },
-      }],
-      // ... and so on for every different concrete related property class
-    ],
-  },
-  {
-    selectClassInfo: { name: "ConcreteElementClassB" },
-  },
-  // ... and so on for every different element class that has instances
-]
+```
+A -> refers to -> B
+B -> refers to -> A
 ```
 
-It turns out that for purposes this function is intended for, it's not necessary to get concrete classes and their base classes can be used instead. So now, when requesting this for `bis.Element`, the response is like the following:
+With presentation rules we can set up a hierarchy where root node is A, its child is B, whose child is again A, and so on.
 
-```json
-[
-  {
-    selectClassInfo: { name: "bis.Element" },
-    relatedPropertyPaths: [
-      [{
-        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
-        targetClassInfo: { name: "bis.ElementMultiAspect" },
-      }],
-    ],
-  },
-]
+With previous approach the produced hierarchy "breaks" at the B node and looks like this:
+
+```
++ A
++--+ B
 ```
 
-This allows the result to be created purely by looking at ECSchemas in the iModel instead of querying actual instances and relationships, which provides an orders of magnitude performance improvement over the previous approach.
+With the new approach we "break" at the duplicate A node:
+
+```
++ A
++--+ B
+   +--+ A
+```
+
+## Element aspect ids
+
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
+the ids returned are not unique from all element ids and may collide.
+
+## AppUi
+
+### Setting allowed panel zones for widgets
+
+When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
+
+
+## New packages
+
+### @itwin/map-layers-formats
+
+A new `@itwin/map-layers-formats` package has been introduced to provide additional [MapLayerFormat]($frontend)s not delivered as part of `@itwin/core-frontend`. The initial release contains the new `ArgGISFeature` format which allows vector data published by [ArcGIS Feature services](https://enterprise.arcgis.com/en/server/latest/publish-services/windows/what-is-a-feature-service-.htm) to be displayed in a [Viewport]($frontend).
+
+To use this package, you must initialize it by calling [MapLayersFormats.initialize]($map-layers-formats) to register the additional formats. This should be done only **after** [IModelApp.startup]($frontend) has been called.
 
 ## Geometry
 
-### Coplanar facet consolidation
+### Polyface
 
-A new method, [PolyfaceQuery.cloneWithMaximalPlanarFacets]($core-geometry), can identify groups of adjacent coplanar facets in a mesh and produce a new mesh in which each group is consolidated into a single facet. The consolidated facets are necessarily not triangular and various bridge edges will be present in non-convex facets.
-
-![maximalPlanarFacets](assets/Geometry-maximalPlanarFacets.png "Mesh with many coplanar facets; new mesh with consolidation of coplanar facets")
-
-### Filling mesh holes
-
-A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify holes in a mesh and produce a new mesh in which some or all of the holes are replaced with facets. Which holes are filled can be controlled using [HoleFillOptions]($core-geometry) to specify constraints such as maximum hole perimeter, number of edges, and/or loop direction.
-
-![fillHoles](assets/Geometry-fillHoles.png "Mesh with holes; All boundaries extracted from surface, including outer boundary; Mesh with holes filled")
+The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
 
 ## Deprecations
 
+### @itwin/core-backend
+
+The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated in favor of [IModelDb.Views.getViewStateProps]($backend), which accepts the same inputs and returns the same output, but performs some potentially-expensive work on a background thread to avoid blocking the JavaScript event loop.
+
+The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
+ The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
+
+### @itwin/core-geometry
+
+The method [PathFragment.childFractionTChainDistance]($core-geometry) has been deprecated in favor of the correctly spelled method [PathFragment.childFractionToChainDistance]($core-geometry).
+
 ### @itwin/core-transformer
 
-The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.
+[IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).

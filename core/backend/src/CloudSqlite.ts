@@ -144,6 +144,22 @@ export namespace CloudSqlite {
     busyHandler?: WriteLockBusyHandler;
   }
 
+  /** Logging categories for `CloudCache.setLogMask` */
+  export enum LoggingMask {
+    /** log all HTTP requests and responses */
+    HTTP = 0x01,
+    /** log as blocks become dirty and must be uploaded */
+    DirtyBlocks = 0x02,
+    /** log as blocks are added to the delete list */
+    AddToDelete = 0x04,
+    /** log container lifecycle events (e.g. authorization requests, disconnects, and state transitions) */
+    LifecycleEvents = 0x08,
+    /** Turn on all logging categories */
+    All = 0xff,
+    /** Disable logging */
+    None = 0,
+  }
+
   /**
    * A cache for storing data from CloudSqlite databases. This object refers to a directory on a local filesystem
    * and is used to **connect** CloudContainers so they may be accessed. The contents of the cache directory are entirely
@@ -159,6 +175,12 @@ export namespace CloudSqlite {
     get rootDir(): LocalDirName;
     /** The guid for this CloudCache. Used for acquiring write lock. */
     get guid(): GuidString;
+    /** Configure logging for this CloudCache.
+     * @param mask A bitmask of `LoggingMask` values
+     * @note this method does nothing if [[isDaemon]] is true. Daemon logging is configured when the daemon is started.
+     * @note HTTP logging can be happen on multiple threads and may be buffered. To see buffered log messages, periodically call
+     * `IModelHost.flushLog`
+     */
     setLogMask(mask: number): void;
     /** destroy this CloudCache. All CloudContainers should be detached before calling this. */
     destroy(): void;
@@ -421,6 +443,7 @@ export namespace CloudSqlite {
     * @param container the CloudContainer for which the lock is to be acquired
     * @param operation an asynchronous operation performed with the write lock held.
     * @param busyHandler if present, function called when the write lock is currently held by another user.
+    * @returns a Promise with the result of `operation`
     */
   export async function withWriteLock<T>(user: string, container: CloudContainer, operation: () => T, busyHandler?: WriteLockBusyHandler) {
     if (container.hasWriteLock)

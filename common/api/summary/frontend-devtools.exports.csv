@@ -6,6 +6,7 @@ alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
 beta;ApplyRenderingStyleTool 
 beta;ApplyViewByIdTool 
 beta;ApplyViewTool 
+beta;AttachArcGISFeatureMapLayerByUrlTool 
 beta;AttachArcGISMapLayerByUrlTool 
 beta;AttachCesiumAssetTool 
 beta;AttachMapLayerTool 

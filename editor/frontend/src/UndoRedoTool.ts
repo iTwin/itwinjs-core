@@ -13,7 +13,7 @@ export class UndoAllTool extends Tool {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
       return true;
 
-    await IpcApp.callIpcHost("reverseAllTxn", imodel.key);
+    await IpcApp.appFunctionIpc.reverseAllTxn(imodel.key);
 
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== IModelApp.toolAdmin.primitiveTool)

@@ -19,6 +19,7 @@ import { ClipShape } from '@itwin/core-geometry';
 import { ClipVector } from '@itwin/core-geometry';
 import { CoordinateLockOverrides } from '@itwin/core-frontend';
 import { CurveCollection } from '@itwin/core-geometry';
+import { CurveLocationDetail } from '@itwin/core-geometry';
 import { CurvePrimitive } from '@itwin/core-geometry';
 import { DecorateContext } from '@itwin/core-frontend';
 import { DialogItem } from '@itwin/appui-abstract';
@@ -27,6 +28,7 @@ import { DialogPropertySyncItem } from '@itwin/appui-abstract';
 import { DynamicsContext } from '@itwin/core-frontend';
 import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
+import { EditCommandIpc } from '@itwin/editor-common';
 import { EditManipulator } from '@itwin/core-frontend';
 import { ElementGeometryBuilderParams } from '@itwin/core-common';
 import { ElementGeometryCacheFilter } from '@itwin/editor-common';
@@ -53,6 +55,7 @@ import { JsonGeometryStream } from '@itwin/core-common';
 import { LocateResponse } from '@itwin/core-frontend';
 import { Matrix3d } from '@itwin/core-geometry';
 import { Path } from '@itwin/core-geometry';
+import { PickAsyncMethods } from '@itwin/core-bentley';
 import { Placement } from '@itwin/core-common';
 import { PlacementProps } from '@itwin/core-common';
 import { Point3d } from '@itwin/core-geometry';
@@ -93,6 +96,9 @@ export enum ArcMethod {
     // (undocumented)
     StartMidEnd = 2
 }
+
+// @alpha
+export const basicManipulationIpc: PickAsyncMethods<BasicManipulationCommandIpc>;
 
 // @alpha (undocumented)
 export enum BCurveMethod {
@@ -178,7 +184,7 @@ export class BreakCurveTool extends ModifyCurveTool {
     // (undocumented)
     static toolId: string;
     // (undocumented)
-    protected get wantAccuSnap(): boolean;
+    protected get wantDynamics(): boolean;
     // (undocumented)
     protected get wantModifyOriginal(): boolean;
 }
@@ -243,7 +249,7 @@ export class CopyElementsTool extends MoveElementsTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
-    protected doTranformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined>;
+    protected doTransformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined>;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
@@ -330,7 +336,7 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     set useSweep(value: boolean);
     // (undocumented)
     get useSweepProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export class CreateBCurveTool extends CreateOrContinuePathTool {
@@ -464,7 +470,7 @@ export class CreateBoxTool extends SolidPrimitiveTool {
     set width(value: number);
     // (undocumented)
     get widthProperty(): DialogProperty<number>;
-    }
+}
 
 // @alpha
 export class CreateCircleTool extends CreateOrContinuePathTool {
@@ -518,7 +524,7 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export enum CreateConePhase {
@@ -593,7 +599,7 @@ export class CreateConeTool extends SolidPrimitiveTool {
     set useTopRadius(value: boolean);
     // (undocumented)
     get useTopRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export enum CreateCurvePhase {
@@ -664,7 +670,7 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export abstract class CreateElementTool extends PrimitiveTool {
@@ -791,8 +797,6 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     protected get allowJoin(): boolean;
     // (undocumented)
     protected get allowSimplify(): boolean;
-    // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)
     protected continuationData?: {
         props: GeometricElementProps;
@@ -952,7 +956,7 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export class CreateSphereTool extends SolidPrimitiveTool {
@@ -991,7 +995,7 @@ export class CreateSphereTool extends SolidPrimitiveTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export enum CreateTorusPhase {
@@ -1061,7 +1065,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
     set useSecondaryRadius(value: boolean);
     // (undocumented)
     get useSecondaryRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha (undocumented)
 export class CurveData {
@@ -1128,7 +1132,7 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
     set useDepth(value: boolean);
     // (undocumented)
     get useDepthProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export class DeleteElementsTool extends ElementSetTool {
@@ -1138,8 +1142,6 @@ export class DeleteElementsTool extends ElementSetTool {
     protected get allowGroups(): boolean;
     // (undocumented)
     protected get allowSelectionSet(): boolean;
-    // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
     // (undocumented)
@@ -1205,8 +1207,6 @@ export interface EditorOptions {
 
 // @alpha
 export class EditTools {
-    // (undocumented)
-    static callCommand(methodName: string, ...args: any[]): Promise<any>;
     static initialize(options?: EditorOptions): Promise<void>;
     // (undocumented)
     static namespace: string;
@@ -1232,8 +1232,6 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     protected _agendaAppearanceDynamic?: FeatureAppearance;
     // (undocumented)
     protected allowView(vp: Viewport): boolean;
-    // (undocumented)
-    static callCommand<T extends keyof SolidModelingCommandIpc>(method: T, ...args: Parameters<SolidModelingCommandIpc[T]>): ReturnType<SolidModelingCommandIpc[T]>;
     // (undocumented)
     protected readonly _checkedIds: Map<string, boolean>;
     // (undocumented)
@@ -1338,9 +1336,19 @@ export class ExtendCurveTool extends ModifyCurveTool {
     // (undocumented)
     protected acceptCurve(curve: CurveCollection | CurvePrimitive): boolean;
     // (undocumented)
+    protected extendCurve(geom: CurvePrimitive, pickPoint: Point3d, spacePoint: Point3d): CurvePrimitive | undefined;
+    // (undocumented)
+    protected extendPath(geom: Path, pickPoint: Point3d, spacePoint: Point3d): Path | CurvePrimitive | undefined;
+    // (undocumented)
+    protected extendPathEnd(geom: Path, closeDetail: CurveLocationDetail, isStart: boolean): Path | undefined;
+    // (undocumented)
     static iconSpec: string;
     // (undocumented)
     protected modifyCurve(ev: BeButtonEvent, _isAccept: boolean): CurveCollection | CurvePrimitive | undefined;
+    // (undocumented)
+    protected modifyingEnd?: CurvePrimitive;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
     // (undocumented)
     onRestartTool(): Promise<void>;
     // (undocumented)
@@ -1350,11 +1358,7 @@ export class ExtendCurveTool extends ModifyCurveTool {
     // (undocumented)
     static toolId: string;
     // (undocumented)
-    protected get wantAccuSnap(): boolean;
-    // (undocumented)
     protected get wantAgendaAppearanceOverride(): boolean;
-    // (undocumented)
-    protected get wantDynamics(): boolean;
 }
 
 // @alpha (undocumented)
@@ -1633,47 +1637,24 @@ export class LoftProfilesTool extends ElementGeometryCacheTool {
 }
 
 // @alpha
-export abstract class ModifyCurveTool extends ElementSetTool implements FeatureOverrideProvider {
+export function makeEditToolIpc<K extends EditCommandIpc>(): PickAsyncMethods<K>;
+
+// @alpha
+export abstract class ModifyCurveTool extends ModifyElementWithDynamicsTool {
     // (undocumented)
     protected acceptCurve(_curve: CurveCollection | CurvePrimitive): boolean;
     // (undocumented)
-    protected acceptElementForOperation(id: Id64String): Promise<boolean>;
-    // (undocumented)
-    addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void;
-    // (undocumented)
-    protected agendaAppearance(isDynamics: boolean): FeatureAppearance;
-    // (undocumented)
-    protected _agendaAppearanceDefault?: FeatureAppearance;
-    // (undocumented)
-    protected _agendaAppearanceDynamic?: FeatureAppearance;
-    // (undocumented)
-    protected allowView(_vp: Viewport): boolean;
-    // (undocumented)
-    protected applyAgendaOperation(ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
-    // (undocumented)
-    protected readonly _checkedIds: Map<string, boolean>;
-    // (undocumented)
-    protected clearGraphics(): void;
-    // (undocumented)
-    protected createGraphics(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
     protected curveData?: CurveData;
     // (undocumented)
-    protected _firstResult: boolean;
+    protected doAcceptElementForOperation(id: Id64String): Promise<boolean>;
+    // (undocumented)
+    protected doUpdateElement(elemProps: GeometricElementProps): Promise<boolean>;
     // (undocumented)
     protected getCurveData(id: Id64String): Promise<CurveData | undefined>;
     // (undocumented)
     protected getElementProps(ev: BeButtonEvent): GeometricElementProps | undefined;
     // (undocumented)
     protected getGeometryProps(ev: BeButtonEvent, isAccept: boolean): JsonGeometryStream | FlatBufferGeometryStream | undefined;
-    // (undocumented)
-    protected _graphicsProvider?: DynamicGraphicsProvider;
-    // (undocumented)
-    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
-    // (undocumented)
-    protected isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean>;
     // (undocumented)
     static isSingleCurve(info: ElementGeometryInfo): {
         curve: CurveCollection | CurvePrimitive;
@@ -1684,39 +1665,89 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     // (undocumented)
     protected onAgendaModified(): Promise<void>;
     // (undocumented)
-    onCleanup(): Promise<void>;
-    // (undocumented)
-    onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
-    // (undocumented)
-    protected onGeometryFilterChanged(): void;
-    // (undocumented)
-    onMouseMotion(ev: BeButtonEvent): Promise<void>;
-    // (undocumented)
-    onPostInstall(): Promise<void>;
-    // (undocumented)
     onProcessComplete(): Promise<void>;
     // (undocumented)
-    onSuspend(): Promise<void>;
+    protected setupAccuDraw(): void;
     // (undocumented)
-    onUnsuspend(): Promise<void>;
+    protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected _startedCmd?: string;
+    // (undocumented)
+    protected get wantContinueWithPreviousResult(): boolean;
+    // (undocumented)
+    protected get wantModifyOriginal(): boolean;
+}
+
+// @alpha
+export abstract class ModifyElementTool extends ElementSetTool {
+    // (undocumented)
+    protected acceptElementForOperation(id: Id64String): Promise<boolean>;
+    // (undocumented)
+    protected allowView(_vp: Viewport): boolean;
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected readonly _checkedIds: Map<string, boolean>;
+    // (undocumented)
+    protected doAcceptElementForOperation(_id: Id64String): Promise<boolean>;
+    // (undocumented)
+    protected doUpdateElement(_props: GeometricElementProps): Promise<boolean>;
+    // (undocumented)
+    protected abstract getElementProps(ev: BeButtonEvent): GeometricElementProps | undefined;
+    // (undocumented)
+    protected abstract getGeometryProps(ev: BeButtonEvent, isAccept: boolean): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    protected isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean>;
+    // (undocumented)
+    protected onGeometryFilterChanged(): void;
     // (undocumented)
     processAgenda(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     protected setupAccuDraw(): void;
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
+}
+
+// @alpha
+export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool implements FeatureOverrideProvider {
     // (undocumented)
-    protected startCommand(): Promise<string>;
+    addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void;
     // (undocumented)
-    protected _startedCmd?: string;
+    protected agendaAppearance(isDynamics: boolean): FeatureAppearance;
+    // (undocumented)
+    protected _agendaAppearanceDefault?: FeatureAppearance;
+    // (undocumented)
+    protected _agendaAppearanceDynamic?: FeatureAppearance;
+    // (undocumented)
+    protected clearGraphics(): void;
+    // (undocumented)
+    protected createGraphics(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected _firstResult: boolean;
+    // (undocumented)
+    protected _graphicsProvider?: DynamicGraphicsProvider;
+    // (undocumented)
+    onCleanup(): Promise<void>;
+    // (undocumented)
+    onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onPostInstall(): Promise<void>;
+    // (undocumented)
+    onSuspend(): Promise<void>;
+    // (undocumented)
+    onUnsuspend(): Promise<void>;
     // (undocumented)
     protected updateAgendaAppearanceProvider(drop?: true): void;
     // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
     protected get wantAgendaAppearanceOverride(): boolean;
     // (undocumented)
-    protected get wantContinueWithPreviousResult(): boolean;
-    // (undocumented)
-    protected get wantModifyOriginal(): boolean;
+    protected get wantDynamics(): boolean;
 }
 
 // @alpha
@@ -1771,11 +1802,7 @@ export class OffsetCurveTool extends ModifyCurveTool {
     // (undocumented)
     get useDistanceProperty(): DialogProperty<boolean>;
     // (undocumented)
-    protected get wantAccuSnap(): boolean;
-    // (undocumented)
     protected get wantContinueWithPreviousResult(): boolean;
-    // (undocumented)
-    protected get wantDynamics(): boolean;
     // (undocumented)
     protected get wantModifyOriginal(): boolean;
 }
@@ -2000,7 +2027,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     static startTool(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class ProjectGeolocationNorthTool extends PrimitiveTool {
@@ -2044,7 +2071,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     static startTool(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class ProjectGeolocationPointTool extends PrimitiveTool {
@@ -2129,7 +2156,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class ProjectLocationCancelTool extends Tool {
@@ -2162,8 +2189,6 @@ export class ProjectLocationHideTool extends Tool {
 export class ProjectLocationSaveTool extends Tool {
     // (undocumented)
     protected allowRestartTxnSession(iModel: BriefcaseConnection): Promise<boolean>;
-    // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)
     run(): Promise<boolean>;
     // (undocumented)
@@ -2312,6 +2337,9 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
 }
 
 // @alpha
+export const solidModelingIpc: PickAsyncMethods<SolidModelingCommandIpc>;
+
+// @alpha
 export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     // (undocumented)
     protected readonly accepted: Point3d[];
@@ -2319,8 +2347,6 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     protected allowView(vp: Viewport): boolean;
     // (undocumented)
     protected baseRotation?: Matrix3d;
-    // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)
     protected current?: GeometryQuery;
     // (undocumented)
@@ -2515,8 +2541,6 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected abstract calculateTransform(ev: BeButtonEvent): Transform | undefined;
     // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
-    // (undocumented)
     protected clearAgendaGraphics(): Promise<void>;
     // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
@@ -2618,6 +2642,5 @@ export class UniteSolidElementsTool extends BooleanOperationTool {
     // (undocumented)
     static toolId: string;
 }
-
 
 ```

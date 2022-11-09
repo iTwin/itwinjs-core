@@ -1,6 +1,53 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+This log was last generated on Fri, 28 Oct 2022 13:34:57 GMT and should not be manually modified.
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:57 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
+
+## 3.4.1
+Mon, 17 Oct 2022 20:06:51 GMT
+
+_Version update only_
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Fixed private categories being displayed in ModelsTree and CategoriesTree components.
+- Fix an issue where maxWidgetCount of a panel is exceeded when adding a widget.
+- Persist WidgetDef configuration in a separate structure.
+- Ability to float a widget that is hidden by default.
+- Dock removed widget tool settings.
+- Updated Node types declaration to support latest v16
+- Restore floating widgets after a reload.
+- Adding setup walk tool to standard navigation tools
+- Move the management of zIndex for modal and modeless dialogs to DialogManagerBase to allow modal dialogs (MessageBox) to use the topZIndex so that they open on top of any modeless dialogs that are open. ContentDialog still maintains its own zIndex at a much lower elevation.
+- Models Tree: Do not recreate subject model ids cache unless iModel changes
+- Make sure FloatingViewportContent specifies controlId to FloatingViewport. Make sure FloatingViewportContent updates whenever the ViewState changes.
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+_Version update only_
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+_Version update only_
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+_Version update only_
 
 ## 3.3.2
 Thu, 01 Sep 2022 14:37:22 GMT

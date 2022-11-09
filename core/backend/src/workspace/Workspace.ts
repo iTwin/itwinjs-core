@@ -10,7 +10,7 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import * as semver from "semver";
-import { BeEvent, DbResult, OpenMode, Optional } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, DbResult, OpenMode, Optional } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../CloudSqlite";
 import { IModelHost, KnownLocations } from "../IModelHost";
@@ -21,7 +21,7 @@ import { Settings, SettingsPriority } from "./Settings";
 import { SettingsSchemas } from "./SettingsSchemas";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-// cspell:ignore rowid primarykey
+// cspell:ignore rowid primarykey julianday
 
 /** The Settings used by Workspace api
  * @beta
@@ -67,9 +67,16 @@ export namespace WorkspaceContainer {
   export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
     /** true if the container is public (doesn't require authentication) */
     isPublic?: boolean;
-    /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. */
+    /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true */
     syncOnConnect?: boolean;
   }
+
+  /** A function to supply an [AccessToken]($bentley) for a `WorkspaceContainer`.
+   * @param props The properties of the WorkspaceContainer necessary to obtain the access token
+   * @param account The properties of the account for the container
+   * @returns a Promise that resolves to the AccessToken for the container.
+   */
+  export type TokenFunc = (props: Props, account: WorkspaceAccount.Props) => Promise<AccessToken>;
 }
 
 /** @beta */
@@ -167,8 +174,10 @@ export interface WorkspaceDb {
    * Ensure that the contents of a `WorkspaceDb` are downloaded into the local cache so that it may be accessed offline.
    * Until the promise is resolved, the `WorkspaceDb` is not fully downloaded, but it *may* be safely accessed during the download.
    * To determine the progress of the download, use the `localBlocks` and `totalBlocks` values returned by `CloudContainer.queryDatabase`.
+   * @returns a `CloudSqlite.CloudPrefetch` object that can be used to await and/or cancel the prefetch.
+   * @throws if this WorkspaceDb is not from a `CloudContainer`.
    */
-  prefetch(): void;
+  prefetch(): CloudSqlite.CloudPrefetch;
 }
 
 /** The properties of the CloudCache used for Workspaces.
@@ -240,11 +249,12 @@ export interface Workspace {
    */
   getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
 
-  /** Get an opened [[WorkspaceDb]] from a WorkspaceDb name.
-   * @param databaseName the database name, resolved via [[resolveDatabase]].
-   * @see [[getWorkspaceDbFromProps]]
+  /** Get an opened [[WorkspaceDb]] from a WorkspaceDb alias.
+   * @param dbAlias the database alias, resolved via [[resolveDatabase]].
+   * @param tokenFunc optional function to obtain an AccessToken for the resolved WorkspaceContainer. This function will only be called the first
+   * time a container is used.
    */
-  getWorkspaceDb(databaseName: WorkspaceDb.Name,): WorkspaceDb;
+  getWorkspaceDb(dbAlias: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
 
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
@@ -343,12 +353,14 @@ export class ITwinWorkspace implements Workspace {
     return this.getContainer(containerProps, account).getWorkspaceDb(dbProps);
   }
 
-  public getWorkspaceDb(dbAlias: string,) {
+  public async getWorkspaceDb(dbAlias: string, tokenFunc?: WorkspaceContainer.TokenFunc) {
     const dbProps = this.resolveDatabase(dbAlias);
     const containerProps = this.resolveContainer(dbProps.containerName);
     const account = containerProps.accountName !== "" ? this.resolveAccount(containerProps.accountName) : undefined;
     let container: WorkspaceContainer | undefined = this.findContainer(containerProps.containerId);
     if (undefined === container) {
+      if (tokenFunc && account)
+        containerProps.accessToken = await tokenFunc(containerProps, account);
       container = this.getContainer(containerProps, account);
     }
     return container?.getWorkspaceDb(dbProps);
@@ -466,7 +478,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
       return;
 
     cloudContainer.connect(this.workspace.cloudCache);
-    if (props.syncOnConnect) {
+    if (false !== props.syncOnConnect) {
       try {
         cloudContainer.checkForChanges();
       } catch (e: unknown) {
@@ -692,9 +704,11 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     return localFileName;
   }
 
-  public prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch | undefined {
+  public prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch {
     const cloudContainer = this.container.cloudContainer;
-    return (cloudContainer !== undefined) ? CloudSqlite.startCloudPrefetch(cloudContainer, this.dbFileName, opts) : undefined;
+    if (cloudContainer === undefined)
+      throw new Error("no cloud container to prefetch");
+    return CloudSqlite.startCloudPrefetch(cloudContainer, this.dbFileName, opts);
   }
 }
 

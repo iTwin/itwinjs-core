@@ -15,6 +15,23 @@ import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, StandaloneOpenOptions } from "./IModel";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
+/** Options for pulling changes into iModel.
+ * @internal
+ */
+export interface PullChangesOptions {
+  /** Enables progress reporting. */
+  reportProgress?: boolean;
+  /** Interval for reporting progress (in milliseconds). */
+  progressInterval?: number;
+  /** Enables checks for abort. */
+  enableCancellation?: boolean;
+}
+
+/** Get IPC channel name used for reporting progress of pulling changes into iModel.
+ * @internal
+ */
+export const getPullChangesIpcChannel = (iModelId: string) => `${IpcAppChannel.Functions}.pullChanges-progress-${iModelId}`;
+
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal
  */
@@ -119,7 +136,9 @@ export interface IpcAppFunctions {
   getRedoString: (key: string) => Promise<string>;
 
   /** see BriefcaseConnection.pullChanges */
-  pullChanges: (key: string, toIndex?: ChangesetIndex) => Promise<ChangesetIndexAndId>;
+  pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
+  /** Cancels pull of changes. */
+  cancelPullChangesRequest: (key: string) => Promise<void>;
   /** see BriefcaseConnection.pushChanges */
   pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
   /** Cancels currently pending or active generation of tile content.  */

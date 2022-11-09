@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Replace inline type definitions in CreateRenderMaterialArgs with named and documented interfaces.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

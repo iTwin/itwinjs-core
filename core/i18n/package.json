@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-i18n",
-  "version": "3.4.0-dev.55",
+  "version": "3.5.0-dev.41",
   "description": "iTwin.js localization code",
   "main": "lib/cjs/core-i18n.js",
   "module": "lib/esm/core-i18n.js",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build:ci": "npm run -s build && npm run -s build:esm && npm run -s webpack:test",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -35,7 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.4.0-dev.55"
+    "@itwin/core-bentley": "workspace:^3.5.0-dev.41"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -52,6 +52,8 @@
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/mocha": "^8.2.2",
     "@types/node": "16.11.59",
+    "babel-loader": "~8.2.5",
+    "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",

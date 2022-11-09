@@ -10,7 +10,7 @@ import {
   ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
 import { ToolbarHelper } from "@itwin/appui-react";
-import { getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
+import { getShowHideFloatingWidgetCommandItemDef, getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { SetWidgetStateTool } from "../../tools/UiLayoutTools";
@@ -48,6 +48,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         defaultState: WidgetState.Open,
         getWidgetContent: () => <h2>Left WL-A</h2>,
         hideWithUiWhenFloating: true,
+        allowedPanelTargets: ["left", "right"],
       });
     } else if (section === StagePanelSection.End) {
       widgets.push({
@@ -64,6 +65,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         defaultState: WidgetState.Open,
         canPopout: true,
         getWidgetContent: () => <h2>Left WL-2</h2>,
+        allowedPanelTargets: ["left"],
       });
       widgets.push({
         id: "WL-3",
@@ -87,6 +89,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         canPopout: true,
         defaultState: WidgetState.Open,
         getWidgetContent: () => <h2>Right WR-A</h2>,
+        allowedPanelTargets: ["left", "right"],
       });
       widgets.push({
         id: "WR-B",
@@ -111,6 +114,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         defaultState: WidgetState.Open,
         canPopout: true,
         getWidgetContent: () => <h2>Right WR-2</h2>,
+        allowedPanelTargets: ["right"],
       });
       widgets.push({
         id: "WR-3",
@@ -149,6 +153,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         label: "WT-B",
         canPopout: true,
         getWidgetContent: () => <h2>Top WT-B</h2>,
+        allowedPanelTargets: ["top", "bottom"],
       });
     } else if (section === StagePanelSection.End) {
       widgets.push({
@@ -163,6 +168,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         canPopout: true,
         defaultState: WidgetState.Open,
         getWidgetContent: () => <h2>Top WT-2</h2>,
+        allowedPanelTargets: ["top"],
       });
     }
     return widgets;
@@ -178,12 +184,14 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         canPopout: true,
         defaultState: WidgetState.Open,
         getWidgetContent: () => <FloatingLayoutInfo />,
+        allowedPanelTargets: ["top", "bottom"],
       });
       widgets.push({
         id: "widget-layout-info",
         label: "Layout Info",
         canPopout: true,
         getWidgetContent: () => <LayoutInfo />,
+        allowedPanelTargets: ["bottom"],
       });
     } else if (section === StagePanelSection.End) {
       widgets.push({
@@ -221,6 +229,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
       if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
         const items: CommonToolbarItem[] = [];
         items.push(ToolbarHelper.createToolbarItemFromItemDef(17, getToggleCustomOverlayCommandItemDef(), { groupPriority: 3000 }));
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(18, getShowHideFloatingWidgetCommandItemDef(), { groupPriority: 3000 }));
         return items;
       }
     }

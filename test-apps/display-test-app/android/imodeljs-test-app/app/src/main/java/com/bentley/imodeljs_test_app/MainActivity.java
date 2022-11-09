@@ -1,8 +1,10 @@
 package com.bentley.imodeljs_test_app;
 
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.webkit.WebView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.bentley.itwin.IModelJsHost;
 import com.bentley.itwin.MobileFrontend;
 
@@ -20,7 +22,13 @@ public class MainActivity extends AppCompatActivity {
         m_host.startup();
 
         String files = getFilesDir().getPath();
-        MobileFrontend frontend = new MobileFrontend(m_host, "&standalone=true&iModelName=" + files + "/apx.bim");
+        MobileFrontend frontend = new MobileFrontend(m_host, "&standalone=true&iModelName=" + files + "/JoesHouse.bim") {
+            @Override
+            protected String supplyEntryPoint() {
+                // If you want to connect to a local dev server instead of the built-in frontend, return something like: "192.168.86.20:3000"
+                return super.supplyEntryPoint();
+            }
+        };
         m_host.setFrontend(frontend);
         setContentView(frontend);
         frontend.loadEntryPoint();
