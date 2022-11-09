@@ -148,8 +148,7 @@ export class IModelExporter {
    */
   public wantTemplateModels: boolean = true;
   /** A flag that indicates whether *system* schemas should be exported or not. The default is `true` (previously false).
-   * This can be set to false for the legacy default behavior, which can prevent certain things such as a profile upgrade,
-   * but if upgrading is necessary the transformation will fail.
+   * This can be set to false for the legacy default behavior, but it may cause errors during schema processing in some cases.
    * @see [[exportSchemas]]
    */
   public wantSystemSchemas: boolean = true;
