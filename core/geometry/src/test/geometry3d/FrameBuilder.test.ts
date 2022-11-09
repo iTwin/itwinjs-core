@@ -25,7 +25,7 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
-import { MatrixTests } from "./Point3dVector3d.test";
+import { MatrixTests } from "./Matrix3d.test";
 
 /* eslint-disable no-console */
 describe("FrameBuilder", () => {
@@ -140,7 +140,7 @@ describe("FrameBuilder", () => {
     ]) {
       builder.clear();
       const linestring = LineString3d.create(points);
-      const curve = InterpolationCurve3d.create(InterpolationCurve3dOptions.create({fitPoints: points}));
+      const curve = InterpolationCurve3d.create(InterpolationCurve3dOptions.create({ fitPoints: points }));
       builder.clear();
       builder.announce(linestring);
       const frameA = builder.getValidatedFrame();
