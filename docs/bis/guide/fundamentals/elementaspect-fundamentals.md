@@ -6,15 +6,13 @@
 
 ElementAspects have a special relationship with Elements. Every ElementAspect instance is associated (through an EC relationship) to exactly one Element instance. ElementAspect instances are never shared among Element instances. An Element *owns* its ElementAspects; if the Element is deleted its ElementAspects are also deleted.
 
-<!-- TODO: add figure -->
+![ElementAspects](../media/elementaspect-fundamentals.png)
 
 ## Core ElementAspect Types
 
 There are three core ElementAspect classes in this class hierarchy:
 
-- `ElementAspect`
-  - `ElementUniqueAspect`
-  - `ElementMultiAspect`
+![ElementAspect core classes](../media/elementaspect-base-classes.png)
 
 All three of these classes are abstract and therefore never instantiated.
 ElementAspect is not expected to ever have more than the two subclasses shown here.
@@ -38,8 +36,13 @@ ElementAspects primarily derive their identities from the Element which owns the
 
 For an ElementUniqueAspect, the combination of subclass and the Element identity uniquely identifies the ElementUniqueAspect.
 
-For an ElementMultiAspect, the combination of subclass and the Element identity identifies a list of ElementMultiAspects.
-Every ElementMultiAspect also has a *private* Id if an individual ElementMultiAspect instance has to be referenced.
+For an ElementMultiAspect, the combination of subclass and the Element identity identifies a list of ElementMultiAspects. Every ElementMultiAspect also has a *private* Id if an individual ElementMultiAspect instance has to be referenced.
+
+ElementAspects can also be used to separate groups of properties according to their applicability.  Consider the need to capture the Shape and related dimension properties from a set of objects. The list of dimension properties applicable to each object depends on its general shape. This situation can be modeled via an ElementAspect class-hierarchy that captures all the Shapes to be supported as well as their respective properties.
+
+![](../media/elementaspect-shapeaspect-hierarchy.png)
+
+In this case, the `ShapeAspect` base-class should be used as the key-class to uniquely identify instances of the concrete aspects of this class-hierarchy. That is needed in this case in order to ensure an object only owns one aspect of any of the three concrete classes in the `ShapeAspect` hierarchy.
 
 ## ElementAspects and Relationships
 
