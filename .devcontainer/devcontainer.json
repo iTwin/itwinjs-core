@@ -1,10 +1,10 @@
 // See https://aka.ms/vscode-remote/devcontainer.json for format details.
 {
-  "name": "imodeljs-linux",
+  "name": "itwinjs-core-linux",
   "dockerFile": "./Dockerfile",
   "context": ".",
   "workspaceMount": "",
-  "workspaceFolder": "/workspace/imodeljs",
+  "workspaceFolder": "/workspace/itwinjs-core",
   "extensions": [
     "streetsidesoftware.code-spell-checker",
     "dbaeumer.vscode-eslint",
