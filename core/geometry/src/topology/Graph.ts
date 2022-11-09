@@ -290,6 +290,7 @@ export class HalfEdge {
     this.sortAngle = undefined;
     this.sortData = undefined;
     this.edgeTag = undefined;
+    this.faceTag = undefined;
     // Always created in pairs, init here to make TS compiler and JS runtime happy
     this._facePredecessor = this;
     this._faceSuccessor = this;
@@ -1327,6 +1328,26 @@ export class HalfEdgeGraph {
         break;
     }
   }
+/**
+   * * Visit each edge of the graph once.
+   * * Call the announceEdge function.
+   * * the edge mate will NOT appear in an announceEdge call.
+   * * continue search if announceEdge(graph, node) returns true
+   * * terminate search if announceEdge (graph, node) returns false
+   * @param  announceEdge function to apply at one node of each edge.
+   */
+ public announceEdges(announceEdge: GraphNodeFunction) {
+  this.clearMask(HalfEdgeMask.VISITED);
+  for (const node of this.allHalfEdges) {
+    if (node.getMask(HalfEdgeMask.VISITED))
+      continue;
+    const mate = node.edgeMate;
+    node.setMask (HalfEdgeMask.VISITED);
+    mate.setMask (HalfEdgeMask.VISITED);
+    if (!announceEdge(this, node))
+      break;
+  }
+}
 
   /**
    * * Visit each vertex loop of the graph once.

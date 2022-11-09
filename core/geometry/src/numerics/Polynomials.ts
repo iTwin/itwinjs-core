@@ -1677,6 +1677,19 @@ export class SmallSystem {
     }
     return undefined;
   }
+  public static intersect3Planes(
+    xyzA: Point3d, normalA: Vector3d,
+    xyzB: Point3d, normalB: Vector3d,
+    xyzC: Point3d, normalC: Vector3d, result?: Vector3d): Vector3d | undefined {
+      return this.linearSystem3d (
+        normalA.x, normalA.y, normalA.z,
+        normalB.x, normalB.y, normalB.z,
+        normalC.x, normalC.y, normalC.z,
+        Geometry.dotProductXYZXYZ (xyzA.x, xyzA.y, xyzA.z, normalA.x, normalA.y, normalA.z),
+        Geometry.dotProductXYZXYZ (xyzB.x, xyzB.y, xyzB.z, normalB.x, normalB.y, normalB.z),
+        Geometry.dotProductXYZXYZ (xyzC.x, xyzC.y, xyzC.z, normalC.x, normalC.y, normalC.z), result);
+    }
+
   /**
    * * in rowB, replace `rowB[j] += a * rowB[pivot] * rowA[j] / rowA[pivot]` for `j>pivot`
    * @param rowA row that does not change

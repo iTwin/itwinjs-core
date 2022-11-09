@@ -29,7 +29,7 @@ import { Matrix4d } from "../geometry4d/Matrix4d";
 import { MomentData } from "../geometry4d/MomentData";
 import { UnionFindContext } from "../numerics/UnionFind";
 import { ChainMergeContext } from "../topology/ChainMerge";
-import { HalfEdge, HalfEdgeMask } from "../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { FacetOrientationFixup } from "./FacetOrientation";
@@ -1169,10 +1169,11 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
       }
     const graph = builder.graph;
     const xyz = Point3d.create ();
-    graph.announceNodes ((halfEdge: HalfEdge)=>{
+    graph.announceNodes ((_graph: HalfEdgeGraph, halfEdge: HalfEdge)=>{
       const vertexIndex = halfEdge.i;
       mesh.data.getPoint (vertexIndex, xyz);
       halfEdge.setXYZ (xyz);
+      return true;
     }
     );
     return graph;

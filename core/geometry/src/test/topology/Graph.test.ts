@@ -105,7 +105,11 @@ export class GraphChecker {
       data[i].tryTransformInPlace(transform);
   }
   public static printToConsole = true;
-  public static dumpGraph(graph: HalfEdgeGraph, formatNode: NodeFunction = HalfEdge.nodeToIdXYString) {
+  public static dumpGraph(graph: HalfEdgeGraph | undefined, formatNode: NodeFunction = HalfEdge.nodeToIdXYString) {
+    if (graph === undefined){
+      console.log ("   **** EMPTY GRAPH ****");
+      return;
+    }
     const faces = graph.collectFaceLoops();
     const vertices = graph.collectVertexLoops();
     const faceData = [];

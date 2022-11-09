@@ -48,7 +48,7 @@ export class HalfEdgeGraphFromIndexedLoopsContext {
    * @param announceMatedHalfEdges optional function to be called as mated pairs are created. At the call,
    *     the given HalfEdge and its mate will have a pair of successive indices from the array.
    */
-  public insertLoop(indices: number[], announceMatedHalfEdges?: (halfEdge: HalfEdge) => void){
+  public insertLoop(indices: number[], announceMatedHalfEdges?: (halfEdge: HalfEdge) => void): HalfEdge | undefined{
     const n = indices.length;
     if (n > 1){
       let index0 = indices[indices.length - 1];
@@ -71,13 +71,14 @@ export class HalfEdgeGraphFromIndexedLoopsContext {
         }
         index0 = index1;
       }
-
       let halfEdgeA = this._halfEdgesAroundCurrentLoop[this._halfEdgesAroundCurrentLoop.length - 1];
       for (const halfEdgeB of this._halfEdgesAroundCurrentLoop){
         const halfEdgeC = halfEdgeA.faceSuccessor;
         HalfEdge.pinch (halfEdgeB, halfEdgeC);
         halfEdgeA = halfEdgeB;
       }
+      return this._halfEdgesAroundCurrentLoop[0];
     }
+    return undefined;
   }
 }
