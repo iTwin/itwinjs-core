@@ -29,7 +29,9 @@ export class MobileMessenger {
     }
 
     if (ProcessDetector.isIOSAppFrontend) {
-      return handler.postMessage;
+      return (data: string) => {
+        handler.postMessage(data);
+      };
     } else {
       return (data: string) => {
         // Calling handler(data) here doesn't work for some reason, gives this error: "Java bridge method can't be invoked on a non-injected object"
