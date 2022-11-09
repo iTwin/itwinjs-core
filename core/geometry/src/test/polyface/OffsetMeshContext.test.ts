@@ -24,7 +24,7 @@ import { Angle } from "../../geometry3d/Angle";
 // import { GraphChecker } from "../topology/Graph.test";
 describe("OffsetMeshContext", () => {
 
-  it.only("OffsetPyramids", () => {
+  it("OffsetPyramids", () => {
     const ck = new Checker();
 
     const allGeometry: GeometryQuery[] = [];
@@ -51,7 +51,7 @@ describe("OffsetMeshContext", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("OffsetsFromFan", () => {
+  it("OffsetsFromFan", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const options = StrokeOptions.createForFacets();
@@ -75,7 +75,7 @@ describe("OffsetMeshContext", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-it.only("OffsetsFanToLine", () => {
+it("OffsetsFanToLine", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const options = StrokeOptions.createForFacets();
@@ -103,7 +103,7 @@ it.only("OffsetsFanToLine", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it.only("OffsetDTM", () => {
+it("OffsetDTM", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   let x0 = 0.0;
@@ -133,6 +133,23 @@ it.only("OffsetDTM", () => {
   GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetDTM");
   expect(ck.getNumErrors()).equals(0);
 });
+it.only("OffsetSampler", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  let x0 = 0.0;
+  const closedSweeps = Sample.createClosedSolidSampler(true);
+  for (const s of closedSweeps) {
+    const builder = PolyfaceBuilder.create();
+    builder.addGeometryQuery(s);
+    const mesh = builder.claimPolyface();
+    const range = mesh.range ();
+
+    x0 = testOffsets (ck, allGeometry, mesh, [0.05 * range.xLength()], x0);
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetSampler");
+  expect(ck.getNumErrors()).equals(0);
+});
+
 });
 
 function testOffsets(_ck: Checker, allGeometry: GeometryQuery[], polyface: IndexedPolyface, offsets: number[], xStart: number){
