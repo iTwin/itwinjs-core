@@ -7,7 +7,7 @@
  */
 
 import { DbResult, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
-import { ECSqlValueType, EntityMetaData, EntityReferenceSet, IModelError, RelatedElement } from "@itwin/core-common";
+import { EntityMetaData, EntityReferenceSet, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
