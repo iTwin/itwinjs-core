@@ -6,7 +6,7 @@
  * @module iModels
  */
 import * as assert from "assert";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
 import {
   ConcreteEntityTypes, ElementAspectProps, EntityReference, IModelError,
   PrimitiveTypeCode, RelatedElementProps,
@@ -53,89 +53,94 @@ export class IModelCloneContext extends IModelElementCloneContext {
    */
   public findTargetEntityId(sourceEntityId: EntityReference): EntityReference {
     const [type, rawId] = EntityReferences.split(sourceEntityId);
-    switch (type) {
-      case ConcreteEntityTypes.Model: {
-        const targetId = `m${this.findTargetElementId(rawId)}` as const;
-        // Check if the model exists, `findTargetElementId` may have worked because the element exists when the model doesn't.
-        // That can occur in the transformer since a submodeled element is imported before its submodel.
-        return EntityReferences.isValid(targetId) && EntityUnifier.exists(this.targetDb, { entityReference: targetId })
-          ? targetId
-          : EntityReferences.makeInvalid(ConcreteEntityTypes.Model);
-      }
-      case ConcreteEntityTypes.Element:
-        return `e${this.findTargetElementId(rawId)}`;
-      case ConcreteEntityTypes.ElementAspect:
-        return `a${this.findTargetAspectId(rawId)}`;
-      case ConcreteEntityTypes.Relationship: {
-        const makeGetConcreteEntityTypeSql = (property: string) => `
-          CASE
-            WHEN [${property}] IS (BisCore.ElementUniqueAspect) OR [${property}] IS (BisCore.ElementMultiAspect)
-              THEN 'a'
-            WHEN [${property}] IS (BisCore.Element)
-              THEN 'e'
-            WHEN [${property}] IS (BisCore.Model)
-              THEN 'm'
-            WHEN [${property}] IS (BisCore.CodeSpec)
-              THEN 'c'
-            WHEN [${property}] IS (BisCore.ElementRefersToElements) -- TODO: ElementDrivesElement still not handled by the transformer
-              THEN 'r'
-            ELSE 'error'
-          END
-        `;
-        const relInSource = this.sourceDb.withPreparedStatement(
-          `
-          SELECT
-            SourceECInstanceId,
-            TargetECInstanceId,
-            (${makeGetConcreteEntityTypeSql("SourceECClassId")}) AS SourceType,
-            (${makeGetConcreteEntityTypeSql("TargetECClassId")}) AS TargetType
-          FROM BisCore:ElementRefersToElements
-          WHERE ECInstanceId=?
-          `, (stmt) => {
-            stmt.bindId(1, rawId);
-            let status: DbResult;
-            while ((status = stmt.step()) === DbResult.BE_SQLITE_ROW) {
-              const sourceId = stmt.getValue(0).getId();
-              const targetId = stmt.getValue(1).getId();
-              const sourceType = stmt.getValue(2).getString() as ConcreteEntityTypes | "error";
-              const targetType = stmt.getValue(3).getString() as ConcreteEntityTypes | "error";
-              if (sourceType === "error" || targetType === "error")
-                throw Error("relationship end had unknown root class");
-              return {
-                sourceId: `${sourceType}${sourceId}`,
-                targetId: `${targetType}${targetId}`,
-              } as const;
-            }
-            if (status !== DbResult.BE_SQLITE_DONE)
-              throw new IModelError(status, "unexpected query failure");
-            return undefined;
-          });
-        if (relInSource === undefined)
+    if (Id64.isValid(rawId)) {
+      switch (type) {
+        case ConcreteEntityTypes.Model: {
+          const targetId = `m${this.findTargetElementId(rawId)}` as const;
+          // Check if the model exists, `findTargetElementId` may have worked because the element exists when the model doesn't.
+          // That can occur in the transformer since a submodeled element is imported before its submodel.
+          if (EntityUnifier.exists(this.targetDb, { entityReference: targetId }))
+            return targetId;
           break;
-        // just in case prevent recursion
-        if (relInSource.sourceId === sourceEntityId || relInSource.targetId === sourceEntityId)
-          throw Error("link table relationship end was resolved to itself. This should be impossible");
-        const relInTarget = {
-          sourceId: this.findTargetEntityId(relInSource.sourceId),
-          targetId: this.findTargetEntityId(relInSource.targetId),
-        };
-        const relInTargetId = this.sourceDb.withPreparedStatement(
-          `
-          SELECT ECInstanceId
-          FROM BisCore:ElementRefersToElements
-          WHERE SourceECInstanceId=?
-            AND TargetECInstanceId=?
-          `, (stmt) => {
-            stmt.bindId(1, EntityReferences.toId64(relInTarget.sourceId));
-            stmt.bindId(2, EntityReferences.toId64(relInTarget.targetId));
-            let status: DbResult;
-            if ((status = stmt.step()) === DbResult.BE_SQLITE_ROW)
-              return stmt.getValue(0).getId();
-            if (status !== DbResult.BE_SQLITE_DONE)
-              throw new IModelError(status, "unexpected query failure");
-            return Id64.invalid;
-          });
-        return `r${relInTargetId}`;
+        }
+        case ConcreteEntityTypes.Element:
+          return `e${this.findTargetElementId(rawId)}`;
+        case ConcreteEntityTypes.ElementAspect:
+          return `a${this.findTargetAspectId(rawId)}`;
+        case ConcreteEntityTypes.Relationship: {
+          const makeGetConcreteEntityTypeSql = (property: string) => `
+            CASE
+              WHEN [${property}] IS (BisCore.ElementUniqueAspect) OR [${property}] IS (BisCore.ElementMultiAspect)
+                THEN 'a'
+              WHEN [${property}] IS (BisCore.Element)
+                THEN 'e'
+              WHEN [${property}] IS (BisCore.Model)
+                THEN 'm'
+              WHEN [${property}] IS (BisCore.CodeSpec)
+                THEN 'c'
+              WHEN [${property}] IS (BisCore.ElementRefersToElements) -- TODO: ElementDrivesElement still not handled by the transformer
+                THEN 'r'
+              ELSE 'error'
+            END
+          `;
+          const relInSource = this.sourceDb.withPreparedStatement(
+            `
+            SELECT
+              SourceECInstanceId,
+              TargetECInstanceId,
+              (${makeGetConcreteEntityTypeSql("SourceECClassId")}) AS SourceType,
+              (${makeGetConcreteEntityTypeSql("TargetECClassId")}) AS TargetType
+            FROM BisCore:ElementRefersToElements
+            WHERE ECInstanceId=?
+            `, (stmt) => {
+              stmt.bindId(1, rawId);
+              let status: DbResult;
+              while ((status = stmt.step()) === DbResult.BE_SQLITE_ROW) {
+                const sourceId = stmt.getValue(0).getId();
+                const targetId = stmt.getValue(1).getId();
+                const sourceType = stmt.getValue(2).getString() as ConcreteEntityTypes | "error";
+                const targetType = stmt.getValue(3).getString() as ConcreteEntityTypes | "error";
+                if (sourceType === "error" || targetType === "error")
+                  throw Error("relationship end had unknown root class");
+                return {
+                  sourceId: `${sourceType}${sourceId}`,
+                  targetId: `${targetType}${targetId}`,
+                } as const;
+              }
+              if (status !== DbResult.BE_SQLITE_DONE)
+                throw new IModelError(status, "unexpected query failure");
+              return undefined;
+            });
+          if (relInSource === undefined)
+            break;
+          // just in case prevent recursion
+          if (relInSource.sourceId === sourceEntityId || relInSource.targetId === sourceEntityId)
+            throw Error("link table relationship end was resolved to itself. This should be impossible");
+          const relInTarget = {
+            sourceId: this.findTargetEntityId(relInSource.sourceId),
+            targetId: this.findTargetEntityId(relInSource.targetId),
+          };
+          // return a null
+          if (Id64.isInvalid(relInTarget.sourceId) || Id64.isInvalid(relInTarget.targetId))
+            break;
+          const relInTargetId = this.sourceDb.withPreparedStatement(
+            `
+            SELECT ECInstanceId
+            FROM BisCore:ElementRefersToElements
+            WHERE SourceECInstanceId=?
+              AND TargetECInstanceId=?
+            `, (stmt) => {
+              stmt.bindId(1, EntityReferences.toId64(relInTarget.sourceId));
+              stmt.bindId(2, EntityReferences.toId64(relInTarget.targetId));
+              let status: DbResult;
+              if ((status = stmt.step()) === DbResult.BE_SQLITE_ROW)
+                return stmt.getValue(0).getId();
+              if (status !== DbResult.BE_SQLITE_DONE)
+                throw new IModelError(status, "unexpected query failure");
+              return Id64.invalid;
+            });
+          return `r${relInTargetId}`;
+        }
       }
     }
     return `${type}${Id64.invalid}`;
