@@ -65,7 +65,6 @@ export class ClassRegistry {
    * @internal public for testing only
    */
   public static getRootMetaData(iModel: IModelDb, entityQualifier: string): EntityClassProps | MixinProps {
-
     const [classSchema, className] = entityQualifier.split(".");
     const schemaItemJson = iModel.nativeDb.getSchemaItem(classSchema, className);
     if (schemaItemJson.error)

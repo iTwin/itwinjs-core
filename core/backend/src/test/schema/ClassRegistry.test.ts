@@ -166,12 +166,12 @@ describe("Class Registry - getRootMetaData", () => {
 
   it("should get the root metadata", async () => {
     for (const [testClass, expectedRoot] of [
-      ["ts1:TestBase", "BisCore:Element"],
-      ["ts1:TestDerived", "BisCore:Element"],
-      ["ts1:ITestMixinForAspectsBase", "BisCore:ElementAspect"],
-      ["ts1:ITestMixinForAspectsDerived", "BisCore:ElementAspect"],
-      ["ts1:ITestMixinForElements", "BisCore:Element"],
-      ["ts1:TestMixedInAndDerived", "BisCore:Element"],
+      ["TestSchema1.TestBase", "BisCore:Element"],
+      ["TestSchema1.TestDerived", "BisCore:Element"],
+      ["TestSchema1.ITestMixinForAspectsBase", "BisCore:ElementAspect"],
+      ["TestSchema1.ITestMixinForAspectsDerived", "BisCore:ElementAspect"],
+      ["TestSchema1.ITestMixinForElements", "BisCore:Element"],
+      ["TestSchema1.TestMixedInAndDerived", "BisCore:Element"],
     ] as const) {
       const rootMetaData = ClassRegistry.getRootMetaData(imodel, testClass);
       expect(`${rootMetaData.schema}:${rootMetaData.name}`).to.equal(expectedRoot);
