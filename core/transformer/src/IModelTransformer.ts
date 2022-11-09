@@ -582,12 +582,13 @@ export class IModelTransformer extends IModelExportHandler {
    * @note A subclass can override this method to provide custom change detection behavior.
    */
   protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean {
-    const aspects: ElementAspect[] = this.targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
-    for (const aspect of aspects) {
-      const sourceAspect = aspect as ExternalSourceAspect;
+    const sourceAspects = this.targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName) as ExternalSourceAspect[];
+    for (const sourceAspect of sourceAspects) {
+      if (sourceAspect.scope === undefined) // if the scope was lost, we can't correlate so assume it changed
+        return true;
       if (
         sourceAspect.identifier === sourceElement.id &&
-        sourceAspect.scope?.id === this.targetScopeElementId &&
+        sourceAspect.scope.id === this.targetScopeElementId &&
         sourceAspect.kind === ExternalSourceAspect.Kind.Element
       ) {
         const lastModifiedTime = sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id);
