@@ -306,11 +306,11 @@ export class UiFramework {
     return UiFramework._widgetManager;
   }
 
-  /** Calls localization.getLocalizedStringWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
+  /** Calls localization.getLocalizedString with the "UiFramework" namespace. Do NOT include the namespace in the key.
    * @internal
    */
   public static translate(key: string | string[]): string {
-    return IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
+    return IModelApp.localization.getLocalizedString(key, { ns: UiFramework.localizationNamespace });
   }
 
   /** @internal */
