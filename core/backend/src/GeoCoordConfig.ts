@@ -68,15 +68,19 @@ export class GeoCoordConfig {
   }
 
   private static loadAll(settings: Settings, settingName: string) {
-    settings.resolveSetting(settingName, (val) => {
-      if (Array.isArray(val)) {
-        for (const entry of val) {
-          if (typeof entry === "string")
-            this.addGcsWorkspace(entry);
+    try {
+      settings.resolveSetting(settingName, (val) => {
+        if (Array.isArray(val)) {
+          for (const entry of val) {
+            if (typeof entry === "string")
+              this.addGcsWorkspace(entry);
+          }
         }
-      }
-      return undefined; // keep going through all dictionaries
-    });
+        return undefined; // keep going through all dictionaries
+      });
+    } catch (e: any) {
+      Logger.logError(loggerCat, `Unable to resolve gcs setting for "${settingName}" (${e.errorNumber}): ${BentleyError.getErrorMessage(e)}`);
+    }
   }
 
   private static _defaultDbsLoaded = false;
