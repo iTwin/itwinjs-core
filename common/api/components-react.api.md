@@ -439,7 +439,7 @@ export interface CategoryRecordsDict {
     [categoryName: string]: PropertyRecord[];
 }
 
-// @public
+// @public @deprecated
 export interface CellItem {
     alignment?: HorizontalAlignment;
     isDisabled?: boolean;
@@ -480,7 +480,7 @@ export interface CheckboxStateChange {
     nodeItem: TreeNodeItem;
 }
 
-// @public
+// @public @deprecated
 export interface ColumnDescription {
     editable?: boolean;
     filterable?: boolean;
@@ -500,7 +500,7 @@ export interface ColumnDescription {
     width?: number;
 }
 
-// @public
+// @public @deprecated
 export interface ColumnFilterDescriptor extends FilterDescriptor {
     distinctFilter: DistinctValuesFilterDescriptor;
     fieldFilter: FieldFilterDescriptor;
@@ -543,13 +543,13 @@ export interface CompletionObserver<T> {
     next?: (value: T) => void;
 }
 
-// @public
+// @public @deprecated
 export interface CompositeFilterDescriptor extends FilterDescriptor {
     filterDescriptorCollection: FilterDescriptorCollection;
     logicalOperator: FilterCompositionLogicalOperator;
 }
 
-// @public
+// @public @deprecated
 export interface CompositeFilterDescriptorCollection {
     add(item: FilterDescriptor): void;
     clear(): void;
@@ -876,7 +876,7 @@ export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFilterer
     recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult>;
 }
 
-// @public
+// @public @deprecated
 export class DistinctValueCollection {
     constructor();
     // (undocumented)
@@ -884,7 +884,7 @@ export class DistinctValueCollection {
     set values(values: TableDistinctValue[]);
 }
 
-// @public
+// @public @deprecated
 export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
     addDistinctValue(distinctValue: any): void;
     distinctValues: DistinctValueCollection;
@@ -1028,7 +1028,7 @@ export interface FavoritePropertyListProps {
     propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
-// @public
+// @public @deprecated
 export interface FieldFilterDescriptor extends FilterDescriptor {
     addFieldValue(fieldValue: any, operator: FilterOperator, isCaseSensitive?: boolean): void;
     filterDescriptorCollection: OperatorValueFilterDescriptorCollection;
@@ -1037,7 +1037,7 @@ export interface FieldFilterDescriptor extends FilterDescriptor {
     tryFindDescriptor(fieldValue: any, operator: FilterOperator): FilterDescriptor | undefined;
 }
 
-// @public
+// @public @deprecated
 export interface FilterableColumn {
     columnFilterDescriptor: ColumnFilterDescriptor;
     createSimpleFilterDescriptor(value: any, filterOperator: FilterOperator): OperatorValueFilterDescriptor;
@@ -1051,13 +1051,13 @@ export interface FilterableColumn {
     showFieldFilters: boolean;
 }
 
-// @public
+// @public @deprecated
 export interface FilterableTable {
     filterDescriptors: CompositeFilterDescriptorCollection;
     getPropertyDisplayValueExpression(property: string): string;
 }
 
-// @public
+// @public @deprecated
 export enum FilterCompositionLogicalOperator {
     // (undocumented)
     And = 0,
@@ -1065,7 +1065,7 @@ export enum FilterCompositionLogicalOperator {
     Or = 1
 }
 
-// @public
+// @public @deprecated
 export interface FilterDescriptor {
     clear(): void;
     evaluateRow(row: RowItem): boolean;
@@ -1075,11 +1075,11 @@ export interface FilterDescriptor {
     isFilterForColumn(columnKey: string): boolean;
 }
 
-// @public
+// @public @deprecated
 export class FilterDescriptorCollection extends FilterDescriptorCollectionBase<FilterDescriptor> {
 }
 
-// @public
+// @public @deprecated
 export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterDescriptor> {
     constructor();
     add(item: TDescriptor): void;
@@ -1145,7 +1145,7 @@ export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDi
     onDataChanged: PropertyDataChangeEvent;
 }
 
-// @public
+// @public @deprecated
 export enum FilterOperator {
     // (undocumented)
     Contains = 9,
@@ -1183,7 +1183,7 @@ export enum FilterOperator {
     StartsWith = 7
 }
 
-// @public
+// @public @deprecated
 export enum FilterRenderer {
     // (undocumented)
     MultiSelect = 2,
@@ -2007,7 +2007,7 @@ export class MutablePropertyGridModel implements IPropertyGridModel, IMutablePro
     getVisibleFlatGrid(): IMutableFlatGridItem[];
 }
 
-// @public
+// @public @deprecated
 export interface MutableTableDataProvider extends TableDataProvider {
     addRow(rowItem: RowItem): number;
     deleteRow(rowItem: RowItem): void;
@@ -2206,7 +2206,7 @@ export interface OperatorProcessor {
     isNotEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
-// @public
+// @public @deprecated
 export interface OperatorValueFilterDescriptor extends FilterDescriptor {
     isCaseSensitive: boolean;
     memberKey: string;
@@ -2215,7 +2215,7 @@ export interface OperatorValueFilterDescriptor extends FilterDescriptor {
     value: any;
 }
 
-// @public
+// @public @deprecated
 export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCollectionBase<OperatorValueFilterDescriptor> {
 }
 
@@ -3062,7 +3062,7 @@ export interface ResultSelectorProps extends CommonProps {
     resultCount: number;
 }
 
-// @public
+// @public @deprecated
 export interface RowItem {
     cells: CellItem[];
     colorOverrides?: ItemColorOverrides;
@@ -3273,7 +3273,7 @@ export class SimplePropertyDataProvider implements IPropertyDataProvider, Proper
     replaceProperty(propertyRecord: PropertyRecord, categoryIdx: number, newRecord: PropertyRecord): boolean;
 }
 
-// @public
+// @public @deprecated
 export class SimpleTableDataProvider implements MutableTableDataProvider {
     constructor(columns: ColumnDescription[]);
     addRow(rowItem: RowItem): number;
@@ -3575,14 +3575,14 @@ export class TableColumn extends FilterableColumnBase {
     readonly reactDataGridColumn: ReactDataGridColumn;
 }
 
-// @public
+// @public @deprecated
 export class TableDataChangeEvent extends BeEvent<TableDataChangesListener> {
 }
 
-// @public
+// @public @deprecated
 export type TableDataChangesListener = () => void;
 
-// @public
+// @public @deprecated
 export interface TableDataProvider {
     applyFilterDescriptors?: (filterDescriptors: CompositeFilterDescriptorCollection) => Promise<void>;
     getColumns(): Promise<ColumnDescription[]>;
@@ -3596,7 +3596,7 @@ export interface TableDataProvider {
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
 }
 
-// @public
+// @public @deprecated
 export interface TableDistinctValue {
     // (undocumented)
     label: string;
@@ -3617,13 +3617,13 @@ export class TableFilterDescriptorCollection extends FilterDescriptorCollection 
     set logicalOperator(value: FilterCompositionLogicalOperator);
 }
 
-// @public
+// @public @deprecated
 export class TableIconCellContent extends React_2.PureComponent<TableIconCellContentProps> {
     // @internal (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface TableIconCellContentProps {
     iconName: string;
 }
