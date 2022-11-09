@@ -177,57 +177,6 @@ export class IModelTransformerTestUtils extends BackendTestUtils.IModelTestUtils
     assert.throws(() => this.querySubjectId(iModelDb, "A"), Error);
     assert.throws(() => this.querySubjectId(iModelDb, "B"), Error);
   }
-
-  /** returns an object record of per-namespace SchemaVersions like:
-   * ```
-   * { be_Db: { major: 0, minor: 0, sub1: 0, sub2: 0}, ec_Db: {...}}
-   * ```
-   */
-  public static getProfileVersion(db: IModelDb): Record<string, ProfileVersion> {
-    const result: Record<string, any> = {};
-    db.withSqliteStatement(`
-      SELECT Namespace, StrData FROM be_Prop WHERE Name='SchemaVersion'
-    `, (stmt) => {
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        const namespace = stmt.getValueString(0);
-        const data = stmt.getValueString(1);
-        const json = JSON.parse(data);
-        result[namespace] = json;
-      }
-    });
-    return result;
-  }
-
-  /** compare two profile versions, returning >0 if greater, 0 if equal, <0 if lesser */
-  public static compareProfileVersion(a: ProfileVersion, b: ProfileVersion): number {
-    for (const subVersion of ["major", "minor", "sub1", "sub2"] as const) {
-      const cmpResult = a[subVersion] - b[subVersion];
-      if (cmpResult !== 0)
-        return cmpResult;
-    }
-    return 0;
-  }
-
-  /** compare two profile version objects, returning >0 if greater, 0 if equal, <0 if lesser */
-  public static provileVersionsGte(a: Record<string, ProfileVersion>, b: Record<string, ProfileVersion>): boolean {
-    if (Object.keys(a).length !== Object.keys(b).length)
-      return false;
-    // eslint-disable-next-line guard-for-in
-    for (const profNamespace in a) {
-      const aProf = a[profNamespace];
-      const bProf = b[profNamespace];
-      if (this.compareProfileVersion(bProf, aProf) < 0)
-        return false;
-    }
-    return true;
-  }
-}
-
-interface ProfileVersion {
-  major: number;
-  minor: number;
-  sub1: number;
-  sub2: number;
 }
 
 /** map of properties in class's EC definition to their name in the JS implementation if different */

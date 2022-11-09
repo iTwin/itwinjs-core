@@ -277,13 +277,10 @@ describe("IModelTransformerHub", () => {
     try {
       // open/upgrade sourceDb
       const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceIModelId });
-      const seedProfiles = IModelTransformerTestUtils.getProfileVersion(sourceDb);
       const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
       await sourceDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       const updatedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
-      const upgradedProfiles = IModelTransformerTestUtils.getProfileVersion(sourceDb);
-      expect(IModelTransformerTestUtils.provileVersionsGte(upgradedProfiles, seedProfiles)).to.be.true;
       assert.isTrue(semver.satisfies(updatedBisCoreVersion, ">= 1.0.10"));
       assert.isTrue(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
       const expectedHasPendingTxns: boolean = seedBisCoreVersion !== updatedBisCoreVersion;
