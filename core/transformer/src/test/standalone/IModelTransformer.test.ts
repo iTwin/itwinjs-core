@@ -1965,8 +1965,8 @@ describe("IModelTransformer", () => {
     await sourceDb.importSchemaStrings([testSchema1, testSchema2]);
     sourceDb.saveChanges();
 
-    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectIdOrderTarget.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "AspectIdOrderTarget" } });
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NestedSchemaRefs.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "NestedSchemaRefsTarget" } });
 
     const transformer = new IModelTransformer(sourceDb, targetDb);
     assert.isTrue(transformer.context.isBetweenIModels);
