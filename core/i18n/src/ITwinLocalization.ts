@@ -152,11 +152,17 @@ export class ITwinLocalization implements Localization {
    * @internal
    */
   public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TOptionsBase): string {
-    options = {
-      ...options,
-      ns: namespace,
-    };
-    return this.getLocalizedString(key, options);
+    let fullKey: string | string[] = "";
+
+    if (typeof key === "string") {
+      fullKey = `${namespace}:${key}`;
+    } else {
+      fullKey = key.map((subKey: string) => {
+        return `${namespace}:${subKey}`;
+      });
+    }
+
+    return this.getLocalizedString(fullKey, options);
   }
 
   /** Gets the English translation.
