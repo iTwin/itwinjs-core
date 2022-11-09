@@ -1976,6 +1976,50 @@ describe("IModelTransformer", () => {
     transformer.dispose();
   });
 
+  it("handles unknown new schema references in biscore", async () => {
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRef.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRef" } });
+
+    const biscoreVersion = sourceDb.querySchemaVersion("BisCore");
+    assert(biscoreVersion !== undefined);
+    const fakeSchemaVersion =  "1.0.99";
+    expect(Semver.lt(biscoreVersion,fakeSchemaVersion)).to.be.true;
+    const biscoreText = sourceDb.nativeDb.schemaToXmlString("BisCore");
+    assert(biscoreText !== undefined);
+    const fakeBisCoreUpdateText = biscoreText
+      .replace(/(<ECSchema .*?>)/, '$1 <ECSchemaReference name="NewRef" version="01.00.00" alias="nr"/>')
+      .replace(/(?<=alias="bis" version=")[^"]*(?=")/,fakeSchemaVersion);
+    // console.log(fakeBisCoreUpdateText.slice(0, 2000));
+
+    const newReffedSchema = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="NewRef" alias="nr" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="units" version="01.00" alias="u"/>
+      </ECSchema>
+    `;
+
+    await sourceDb.importSchemaStrings([newReffedSchema, fakeBisCoreUpdateText]);
+    sourceDb.saveChanges();
+
+    const targetDb1File = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRefTarget1.bim");
+    const targetDb1 = SnapshotDb.createEmpty(targetDb1File, { rootSubject: { name: "UnknownBisCoreNewSchemaRefTarget1" } });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb1);
+    expect(transformer.exporter.wantSystemSchemas).to.be.true;
+    await transformer.processSchemas();
+    transformer.dispose();
+
+    const targetDb2File = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRefTarget2.bim");
+    const targetDb2 = SnapshotDb.createEmpty(targetDb2File, { rootSubject: { name: "UnknownBisCoreNewSchemaRefTarget2" } });
+
+    const noSystemSchemasExporter = new IModelExporter(sourceDb);
+    noSystemSchemasExporter.wantSystemSchemas = false;
+    const noSystemSchemasTransformer = new IModelTransformer(noSystemSchemasExporter, targetDb2);
+    expect(noSystemSchemasExporter.wantSystemSchemas).to.be.false;
+    expect(noSystemSchemasTransformer.exporter.wantSystemSchemas).to.be.false;
+    await noSystemSchemasTransformer.processSchemas();
+    noSystemSchemasTransformer.dispose();
+  });
+
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
   it.skip("should profile an IModel transformation", async function () {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformation.bim");
