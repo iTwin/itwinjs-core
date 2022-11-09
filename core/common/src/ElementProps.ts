@@ -409,7 +409,7 @@ export interface ElementAspectProps extends EntityProps {
  */
 export interface ExternalSourceAspectProps extends ElementAspectProps {
   /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source.
-   * @note Warning: in iTwin.js 5.x, the `scope` property will be optional, since the scope is intended to be potentially invalid.
+   * @note Warning: in a future major release the `scope` property will be optional, since the scope is intended to be potentially invalid.
    *       all references should treat it as potentially undefined, but we cannot change the type yet since that is a breaking change.
    */
   scope: RelatedElementProps;
