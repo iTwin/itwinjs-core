@@ -9,7 +9,7 @@
 // cspell:word JSONXY
 // cspell:word CWXY
 
-import { BeJSONFunctions, Geometry } from "../Geometry";
+import { BeJSONFunctions, Geometry, PerpParallelOptions } from "../Geometry";
 import { Angle } from "./Angle";
 import { XAndY, XYProps } from "./XYZProps";
 
@@ -490,9 +490,21 @@ export class Vector2d extends XY implements BeJSONFunctions {
 
   /** vector cross product {this CROSS vectorB} */
   public crossProduct(vectorB: XAndY): number { return this.x * vectorB.y - this.y * vectorB.x; }
-  /** return the (signed) angle from this to vectorB.   This is positive if the shortest turn is counterclockwise, negative if clockwise. */
+
+  /**
+   * return the (radians as a simple number, not strongly typed Angle) signed angle from this to vectorB.
+   * This is positive if the shortest turn is counterclockwise, negative if clockwise.
+   */
+  public radiansTo(vectorB: XAndY): number {
+    return Math.atan2(this.crossProduct(vectorB), this.dotProduct(vectorB));
+  }
+
+  /**
+   * return the (strongly typed) signed angle from this to vectorB.
+   * This is positive if the shortest turn is counterclockwise, negative if clockwise.
+   */
   public angleTo(vectorB: XAndY): Angle {
-    return Angle.createAtan2(this.crossProduct(vectorB), this.dotProduct(vectorB));
+    return Angle.createRadians(this.radiansTo(vectorB));
   }
 
   /*  smallerUnorientedAngleTo(vectorB: Vector2d): Angle { }
@@ -503,33 +515,46 @@ export class Vector2d extends XY implements BeJSONFunctions {
     isInCCWSector(vectorA: Vector2d, vectorB: Vector2d, upVector: Vector2d): boolean { }
     */
   /**
-   * Test if `this` and `other` area parallel, with angle tolerance `Geometry.smallAngleRadiansSquared`.
+   * Test if this vector is parallel to other.
+   * * The input tolerances in `options`, if given, are considered to be squared for efficiency's sake,
+   * so if you have a distance or angle tolerance t, you should pass in t * t.
    * @param other second vector for comparison.
-   * @param oppositeIsParallel if true, treat vectors 180 opposite as parallel.  If false, treat those as non-parallel.
+   * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel.
+   * @param options optional radian and distance tolerances.
    */
-  public isParallelTo(other: Vector2d, oppositeIsParallel: boolean = false): boolean {
+  public isParallelTo(other: Vector2d, oppositeIsParallel: boolean = false,
+    returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+    const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
+    const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const a2 = this.magnitudeSquared();
     const b2 = other.magnitudeSquared();
-    // we know both are 0 or positive -- no need for
-    if (a2 < Geometry.smallMetricDistanceSquared || b2 < Geometry.smallMetricDistanceSquared)
-      return false;
-
+    if (a2 < distanceSquaredTol || b2 < distanceSquaredTol)
+      return returnValueIfAnInputIsZeroLength;
     const dot = this.dotProduct(other);
     if (dot < 0.0 && !oppositeIsParallel)
       return false;
-
     const cross = this.crossProduct(other);
-
     /* a2,b2,cross2 are squared lengths of respective vectors */
     /* cross2 = sin^2(theta) * a2 * b2 */
     /* For small theta, sin^2(theta)~~theta^2 */
-    return cross * cross <= Geometry.smallAngleRadiansSquared * a2 * b2;
+    return cross * cross <= radianSquaredTol * a2 * b2;
   }
   /**
-   * Returns `true` if `this` vector is perpendicular to `other`.
-   * @param other second vector.
+   * Test if this vector is perpendicular to other.
+   * * The input tolerances in `options`, if given, are considered to be squared for efficiency's sake,
+   * so if you have a distance or angle tolerance t, you should pass in t * t.
+   * @param other second vector in comparison.
+   * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
+   * @param options optional radian and distance tolerances.
    */
-  public isPerpendicularTo(other: Vector2d): boolean {
-    return Angle.isPerpendicularDotSet(this.magnitudeSquared(), other.magnitudeSquared(), this.dotProduct(other));
+  public isPerpendicularTo(other: Vector2d, returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+    const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
+    const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
+    const aa = this.magnitudeSquared();
+    const bb = other.magnitudeSquared();
+    if (aa < distanceSquaredTol || bb < distanceSquaredTol)
+      return returnValueIfAnInputIsZeroLength;
+    const ab = this.dotProduct(other);
+    return ab * ab <= radianSquaredTol * aa * bb;
   }
 }
