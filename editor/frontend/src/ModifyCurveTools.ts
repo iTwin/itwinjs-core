@@ -559,11 +559,6 @@ export class ExtendCurveTool extends ModifyCurveTool {
     return ("path" === curve.curveCollectionType);
   }
 
-  private correctLineStringFraction(curve: LineString3d, fraction: number, isStart: boolean): number {
-    // TODO: Workaround to correct linestring fraction from closestPoint for clonePartialCurve...
-    return isStart ? (fraction * (curve.points.length - 1)) : ((fraction - 1.0) * (curve.points.length - 1)) + 1.0;
-  }
-
   protected extendCurve(geom: CurvePrimitive, pickPoint: Point3d, spacePoint: Point3d): CurvePrimitive | undefined {
     const pickDetail = geom.closestPoint(pickPoint, false);
     if (undefined === pickDetail?.curve)
@@ -587,12 +582,6 @@ export class ExtendCurveTool extends ModifyCurveTool {
         fullArc.sweep = AngleSweep.create360();
         return fullArc;
       }
-    } else if (closeDetail.curve instanceof LineString3d) {
-      if (closeDetail.fraction < 0.0) {
-        closeDetail.fraction = this.correctLineStringFraction(closeDetail.curve, closeDetail.fraction, true);
-      } else if (closeDetail.fraction > 1.0) {
-        closeDetail.fraction = this.correctLineStringFraction(closeDetail.curve, closeDetail.fraction, false);
-      }
     }
 
     return geom.clonePartialCurve(pickDetail.fraction > 0.5 ? 0.0 : 1.0, closeDetail.fraction);
@@ -601,9 +590,6 @@ export class ExtendCurveTool extends ModifyCurveTool {
   protected extendPathEnd(geom: Path, closeDetail: CurveLocationDetail, isStart: boolean): Path | undefined {
     if (undefined === closeDetail.curve)
       return undefined;
-
-    if (closeDetail.curve instanceof LineString3d)
-      closeDetail.fraction = this.correctLineStringFraction(closeDetail.curve, closeDetail.fraction, isStart);
 
     const curve = closeDetail.curve.clonePartialCurve(isStart ? closeDetail.fraction : 0.0, isStart ? 1.0 : closeDetail.fraction);
     if (undefined === curve)
@@ -638,7 +624,7 @@ export class ExtendCurveTool extends ModifyCurveTool {
       }
     }
 
-    // NOTE: CurveChainWithDistanceIndex doesn't currently support extending path using clonePartialCurve...
+    // NOTE: Special case extend instead of using CurveChainWithDistanceIndex.clonePartialCurve...
     if (closeDetail.fraction < 0.0) {
       this.modifyingEnd = closeDetail.childDetail.curve;
       return this.extendPathEnd(geom, closeDetail.childDetail, true);

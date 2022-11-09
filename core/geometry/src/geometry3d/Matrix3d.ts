@@ -1109,7 +1109,7 @@ export class Matrix3d implements BeJSONFunctions {
    * Factor this as a product C * U where C has mutually perpendicular columns and
    * U is orthogonal.
    * @param matrixC (allocate by caller, computed here)
-   * @param factor  (allocate by caller, computed here)
+   * @param matrixU (allocate by caller, computed here)
    */
   public factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean {
     matrixC.setFrom(this);
@@ -1128,6 +1128,48 @@ export class Matrix3d implements BeJSONFunctions {
     }
     return false;
   }
+  /**
+   * Factor this matrix M as a product M = V * D * U where V and U are orthogonal, and D is diagonal (scale matrix).
+   * @param matrixV left orthogonal factor (allocate by caller, computed here)
+   * @param scale diagonal entries of D (allocate by caller, computed here)
+   * @param matrixU right orthogonal factor (allocate by caller, computed here)
+   */
+  public factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean {
+    const matrixVD = Matrix3d.createZero();
+    if (!this.factorPerpendicularColumns(matrixVD, matrixU))
+      return false;
+
+    const column: Vector3d[] = [];
+    column.push(matrixVD.getColumn(0));
+    column.push(matrixVD.getColumn(1));
+    column.push(matrixVD.getColumn(2));
+    scale.set(column[0].magnitude(), column[1].magnitude(), column[2].magnitude());
+
+    const det = matrixVD.determinant();
+    if (det < 0)
+        scale.z = - scale.z;
+
+    const almostZero = 1.0e-15;
+    const scaleXIsZero = Math.abs(scale.x) < almostZero;
+    const scaleYIsZero = Math.abs(scale.y) < almostZero;
+    const scaleZIsZero = Math.abs(scale.z) < almostZero;
+
+    // ASSUME: any zero-magnitude column(s) of matrixVD are last
+    if (!scaleXIsZero && !scaleYIsZero && !scaleZIsZero) { // full rank
+      matrixV = matrixVD.scaleColumns(1 / scale.x, 1 / scale.y, 1 / scale.z, matrixV);
+    } else if (!scaleXIsZero && !scaleYIsZero) { // rank 2
+      column[0].scaleInPlace(1 / scale.x);
+      column[1].scaleInPlace(1 / scale.y);
+      column[2] = column[0].unitCrossProduct(column[1], column[2])!;
+      matrixV.setColumns(column[0], column[1], column[2]);
+    } else if (!scaleXIsZero) { // rank 1
+      matrixV = Matrix3d.createRigidHeadsUp(column[0], AxisOrder.XYZ, matrixV); // preserve column0
+    } else { // rank 0
+      matrixV.setIdentity();
+    }
+    return true;
+  }
+
   /** Apply a jacobi step to lambda which evolves towards diagonal. */
   private applySymmetricJacobi(i: number, j: number, lambda: Matrix3d): number {
     const uDotU = lambda.at(i, i);
@@ -2137,7 +2179,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /** create a Matrix3d whose columns are scaled copies of this Matrix3d.
-   * @param scaleX scale factor for columns x
+   * @param scaleX scale factor for column x
    * @param scaleY scale factor for column y
    * @param scaleZ scale factor for column z
    * @param result optional result.
@@ -2151,11 +2193,10 @@ export class Matrix3d implements BeJSONFunctions {
         result);
   }
 
-  /** create a Matrix3d whose columns are scaled copies of this Matrix3d.
-   * @param scaleX scale factor for columns x
+  /** Scale the columns of this Matrix3d.
+   * @param scaleX scale factor for column x
    * @param scaleY scale factor for column y
    * @param scaleZ scale factor for column z
-   * @param result optional result.
    */
   public scaleColumnsInPlace(scaleX: number, scaleY: number, scaleZ: number) {
 
@@ -2350,7 +2391,9 @@ export class Matrix3d implements BeJSONFunctions {
       this.coffs[5] - this.coffs[7]);
   }
 
-  /** Test if the matrix is a pure rotation. */
+  /** Test if the matrix is a pure rotation.
+   * @param allowMirror whether to widen the test to return true if the matrix is orthogonal (a pure rotation or a mirror)
+  */
   public isRigid(allowMirror: boolean = false): boolean {
     return this.testPerpendicularUnitRowsAndColumns() && (allowMirror || this.determinant() > 0);
   }
@@ -2423,22 +2466,29 @@ export class Matrix3d implements BeJSONFunctions {
     }
     return undefined;
   }
-
-  /** create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
-   * columns are taken from the source Matrix3d in order indicated by the axis order.
+  /** Adjust the matrix in place so that:
+   * * columns are perpendicular and have unit length
+   * * transpose equals inverse
+   * * mirroring is removed
+   * @param axisOrder how to reorder the matrix columns
+   * @return whether the instance is rigid on return
    */
-  public static createRigidFromMatrix3d(
-    source: Matrix3d,
-    axisOrder: AxisOrder = AxisOrder.XYZ,
-    result?: Matrix3d): Matrix3d | undefined {
-    result = source.clone(result);
-    const maxAbs = result.maxAbs();
+  public makeRigid(axisOrder: AxisOrder = AxisOrder.XYZ): boolean {
+    const maxAbs = this.maxAbs();
     if (Geometry.isSmallMetricDistance(maxAbs))
-      return undefined;
+      return false;
     const scale = 1.0 / maxAbs;
-    result.scaleColumnsInPlace(scale, scale, scale);
-    result.axisOrderCrossProductsInPlace(axisOrder);
-    if (result.normalizeColumnsInPlace())
+    this.scaleColumnsInPlace(scale, scale, scale);
+    this.axisOrderCrossProductsInPlace(axisOrder);
+    return this.normalizeColumnsInPlace();
+  }
+  /** Create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
+   * * Columns are taken from the source Matrix3d in order indicated by the axis order.
+   * * Mirroring in the matrix is removed.
+   */
+  public static createRigidFromMatrix3d(source: Matrix3d, axisOrder: AxisOrder = AxisOrder.XYZ, result?: Matrix3d): Matrix3d | undefined {
+    result = source.clone(result);
+    if (result.makeRigid(axisOrder))
       return result;
     return undefined;
   }

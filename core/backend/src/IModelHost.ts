@@ -339,6 +339,9 @@ export class IModelHost {
     const platform = Platform.load();
     this.registerPlatform(platform);
   }
+  private static syncNativeLogLevels() {
+    this.platform.clearLogLevelCache();
+  }
 
   private static registerPlatform(platform: typeof IModelJsNative): void {
     this._platform = platform;
@@ -346,6 +349,7 @@ export class IModelHost {
       return;
 
     platform.logger = Logger;
+    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels();
   }
 
   /**
