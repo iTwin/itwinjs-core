@@ -12,8 +12,8 @@ import { DragLayerProps } from "./dragdrop/DragDropDef";
 
 /**
  * React component used to portray a column being dragged during Table column reordering.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this class.
  * @public
- * @deprecated
  */
 export class ColumnDragLayer extends React.Component<DragLayerProps> { // eslint-disable-line deprecation/deprecation
   constructor(props: DragLayerProps) { // eslint-disable-line deprecation/deprecation
