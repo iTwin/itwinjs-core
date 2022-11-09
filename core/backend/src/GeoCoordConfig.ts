@@ -10,7 +10,7 @@ import { BentleyError, Logger } from "@itwin/core-bentley";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { Settings } from "./workspace/Settings";
-import { WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
+import { WorkspaceAccount, WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
 
 const loggerCat = "GeoCoord";
 
@@ -32,11 +32,13 @@ export class GeoCoordConfig {
     if (IModelHost.appWorkspace.settings.getBoolean("gcs/disableWorkspaces", false))
       return;
 
-    const ws = IModelHost.appWorkspace;
-    const dbProps = ws.resolveDatabase(gcsDbAlias) as GcsDbProps;
-    const containerProps = ws.resolveContainer(dbProps.containerName);
-    const account = ws.resolveAccount(containerProps.accountName);
+    let account: CloudSqlite.AccountAccessProps | undefined;
+    let containerProps: WorkspaceContainer.Props & WorkspaceAccount.Alias | undefined;
     try {
+      const ws = IModelHost.appWorkspace;
+      const dbProps = ws.resolveDatabase(gcsDbAlias) as GcsDbProps;
+      containerProps = ws.resolveContainer(dbProps.containerName);
+      account = ws.resolveAccount(containerProps.accountName);
       const container = ws.getContainer(containerProps, account);
       const cloudContainer = container.cloudContainer;
       if (!cloudContainer?.isConnected) {
@@ -61,26 +63,23 @@ export class GeoCoordConfig {
         this.prefetches.push(CloudSqlite.startCloudPrefetch(cloudContainer, gcsDbName));
 
     } catch (e: any) {
-      Logger.logError(loggerCat, `Cannot load GCS workspace (${e.errorNumber}): ${BentleyError.getErrorMessage(e)},`
-        + `container=${account.accessName}/${containerProps.containerId}, storage=${account.storageType}, public=${containerProps.isPublic}, cacheDir=${IModelHost.cacheDir}`
-      );
+      let msg = `Cannot load GCS workspace (${e.errorNumber}): ${BentleyError.getErrorMessage(e)}`;
+      if (account && containerProps)
+        msg += `,container=${account.accessName}/${containerProps.containerId}, storage=${account.storageType}, public=${containerProps.isPublic}, cacheDir=${IModelHost.cacheDir}`;
+      Logger.logError(loggerCat, msg);
     }
   }
 
   private static loadAll(settings: Settings, settingName: string) {
-    try {
-      settings.resolveSetting(settingName, (val) => {
-        if (Array.isArray(val)) {
-          for (const entry of val) {
-            if (typeof entry === "string")
-              this.addGcsWorkspace(entry);
-          }
+    settings.resolveSetting(settingName, (val) => {
+      if (Array.isArray(val)) {
+        for (const entry of val) {
+          if (typeof entry === "string")
+            this.addGcsWorkspace(entry);
         }
-        return undefined; // keep going through all dictionaries
-      });
-    } catch (e: any) {
-      Logger.logError(loggerCat, `Unable to resolve gcs setting for "${settingName}" (${e.errorNumber}): ${BentleyError.getErrorMessage(e)}`);
-    }
+      }
+      return undefined; // keep going through all dictionaries
+    });
   }
 
   private static _defaultDbsLoaded = false;
