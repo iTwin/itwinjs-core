@@ -13,7 +13,7 @@ import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 import { EntityReferences } from "./EntityReferences";
 import * as assert from "assert";
-import type { MixinProps, RelationshipClassProps } from "@itwin/ecschema-metadata";
+import type { EntityClassProps, MixinProps, RelationshipClassProps } from "@itwin/ecschema-metadata";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
@@ -62,35 +62,22 @@ export class ClassRegistry {
   }
 
   /** Gets the "root" base class for a class, by traversing base classes and mixin targets (AppliesTo)
-   * @internal for testing only
+   * @internal public for testing only
    */
-  public static getRootMetaData(iModel: IModelDb, entityMetaData: EntityMetaData): EntityMetaData {
-    let rootClassMetaData = entityMetaData;
-    while (true) {
-      if (rootClassMetaData.baseClasses.length === 0) {
-        const mixinCustomAttr = rootClassMetaData.customAttributes?.find((ca) => ca.ecclass === "CoreCustomAttributes:IsMixin");
-        if (!mixinCustomAttr)
-          break;
-        // NOTE: This is workaround for a bug in the native code where primitive ca properties do not get serialized
-        // by IModelDb.nativeDb.getECClassMetaData (called by IModelDb.getMetaData).
-        // In a future version when that is fixed, this will be removed
-        if (!mixinCustomAttr.properties?.AppliesToEntityClass) {
-          if (!mixinCustomAttr.properties)
-            mixinCustomAttr.properties = {};
-          const mixinResult = iModel.nativeDb.getSchemaItem(...rootClassMetaData.ecclass.split(":") as [string, string]);
-          if (mixinResult.error)
-            throw new IModelError(mixinResult.error, `failed to get schema item '${rootClassMetaData.ecclass}'`);
-          const mixin = JSON.parse(mixinResult.result as string) as MixinProps;
-          mixinCustomAttr.properties.AppliesToEntityClass = mixin.appliesTo.replace(".", ":");
-        }
-        const appliesToClass = iModel.getMetaData(mixinCustomAttr.properties.AppliesToEntityClass);
-        rootClassMetaData =  this.getRootMetaData(iModel, appliesToClass);
-      } else {
-        const firstBase = iModel.getMetaData(rootClassMetaData.baseClasses[0]);
-        rootClassMetaData = firstBase;
-      }
+  public static getRootMetaData(iModel: IModelDb, entityQualifier: string): EntityClassProps | MixinProps {
+
+    const [classSchema, className] = entityQualifier.split(".");
+    const schemaItemJson = iModel.nativeDb.getSchemaItem(classSchema, className);
+    if (schemaItemJson.error)
+      throw new IModelError(schemaItemJson.error, `failed to get schema item '${entityQualifier}'`);
+    const schemaItem = JSON.parse(schemaItemJson.result as string) as EntityClassProps | MixinProps;
+    if (!("appliesTo" in schemaItem) && schemaItem.baseClass === undefined) {
+      return schemaItem;
     }
-    return rootClassMetaData;
+    // typescript doesn't understand that the inverse of the above condition is
+    // ("appliesTo" in rootclassMetaData || rootClassMetaData.baseClass !== undefined)
+    const parentItemQualifier = (schemaItem as MixinProps).appliesTo ?? schemaItem.baseClass as string;
+    return this.getRootMetaData(iModel, parentItemQualifier);
   }
 
   /** Generate a JavaScript class from Entity metadata.
@@ -156,12 +143,10 @@ export class ClassRegistry {
           const maybeMetaData = iModel.nativeDb.getSchemaItem(...prop.relationshipClass.split(":") as [string, string]);
           assert(maybeMetaData.result !== undefined, "The nav props relationship metadata was not found");
           const relMetaData: RelationshipClassProps = JSON.parse(maybeMetaData.result);
-          const normalizeClassName = (clsName: string) => clsName.replace(".", ":");
-          const ecClassMetaData = iModel.getMetaData(normalizeClassName(relMetaData.target.constraintClasses[0]));
-          const rootClassMetaData = ClassRegistry.getRootMetaData(iModel, ecClassMetaData);
+          const rootClassMetaData = ClassRegistry.getRootMetaData(iModel, relMetaData.target.constraintClasses[0]);
           // root class must be in BisCore so should be loaded since biscore classes will never get this
           // generated implementation
-          const rootClass = ClassRegistry.findRegisteredClass(rootClassMetaData.ecclass);
+          const rootClass = ClassRegistry.findRegisteredClass(`${rootClassMetaData.schema}:${rootClassMetaData.name}`);
           assert(rootClass, `The root class for ${prop.relationshipClass} was not in BisCore.`);
           return { name, concreteEntityType: EntityReferences.typeFromClass(rootClass) };
         });

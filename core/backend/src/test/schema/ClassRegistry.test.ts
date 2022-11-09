@@ -173,9 +173,8 @@ describe("Class Registry - getRootMetaData", () => {
       ["ts1:ITestMixinForElements", "BisCore:Element"],
       ["ts1:TestMixedInAndDerived", "BisCore:Element"],
     ] as const) {
-      expect(
-        ClassRegistry.getRootMetaData(imodel, imodel.getMetaData(testClass)).ecclass
-      ).to.equal(expectedRoot);
+      const rootMetaData = ClassRegistry.getRootMetaData(imodel, testClass);
+      expect(`${rootMetaData.schema}:${rootMetaData.name}`).to.equal(expectedRoot);
     }
   });
 });
