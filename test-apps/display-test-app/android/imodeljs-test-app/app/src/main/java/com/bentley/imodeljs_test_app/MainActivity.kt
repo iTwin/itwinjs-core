@@ -5,11 +5,13 @@
 package com.bentley.imodeljs_test_app
 
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.res.AssetManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -25,6 +27,43 @@ import java.io.InputStream
 import java.net.URLConnection
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import java.io.File
+
+/**
+ * Determines the display name for the uri.
+ * @param uri The input content Uri.
+ * @return The display name or null if it wasn't found.
+ */
+fun ContentResolver.getFileDisplayName(uri: Uri): String? {
+    // Query the content resolver only if we have a content Uri
+    return uri.takeIf { uri.scheme == ContentResolver.SCHEME_CONTENT }?.let {
+        query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null, null)?.use { cursor ->
+            cursor.takeIf { cursor.moveToFirst() }?.getString(0)
+        }
+    }
+}
+
+/**
+ * Copies the input uri to the destination directory.
+ * @param uri The input content Uri to copy.
+ * @param destDir The destination directory.
+ * @return The full path of the copied file, null if it failed.
+ */
+fun Context.copyToExternalFiles(uri: Uri, destDir: String): String? {
+    return contentResolver.getFileDisplayName(uri)?.let { displayName ->
+        getExternalFilesDir(null)?.let { filesDir ->
+            contentResolver.openInputStream(uri)?.use { input ->
+                val outDir = File(filesDir.path, destDir)
+                outDir.mkdirs()
+                val outputFile = File(outDir, displayName)
+                outputFile.outputStream().use {
+                    input.copyTo(it)
+                }
+                outputFile.path
+            }
+        }
+    }
+}
 
 typealias PickUriContractType = ActivityResultContract<Nothing?, Uri?>
 
@@ -39,15 +78,11 @@ class PickUriContract : PickUriContractType() {
             .addCategory(Intent.CATEGORY_OPENABLE)
     }
 
-    private fun getDisplayName(uri: Uri): String {
-        return FileHelper.getFileDisplayName(uri, context.contentResolver) ?: "unknownDisplayName"
-    }
-
     override fun parseResult(resultCode: Int, intent: Intent?): Uri? {
         val uri = intent?.takeIf { resultCode == Activity.RESULT_OK }?.data
         if (uri != null) {
             val destDir = "bim_cache"
-            FileHelper.copyToExternalFiles(context, uri, destDir, getDisplayName(uri))?.let { result ->
+            context.copyToExternalFiles(uri, destDir)?.let { result ->
                 return Uri.parse(result)
             }
         }
@@ -90,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         val alwaysExtractAssets = true // for debugging, otherwise the host will only extract when app version changes
         host = IModelJsHost(this, alwaysExtractAssets, true)
         host.startup()
-        val frontend: MobileFrontend = object : MobileFrontend(host, "&standalone=true") {
+        val frontend = object : MobileFrontend(host, "&standalone=true") {
             override fun supplyEntryPoint(): String {
                 // If you want to connect to a local dev server instead of the built-in frontend, return something like: "192.168.86.20:3000"
                 return "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/frontend/index.html"
