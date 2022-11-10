@@ -24,9 +24,10 @@ jobs:
       secretTokens: AlgoliaApiKey:$(AlgoliaApiKey)
 
   - task: NodeTool@0
-    displayName: Use node 12.15.x
+    displayName: Use Node 16
     inputs:
-      versionSpec: 12.15.x
+      versionSpec: 16.13.0
+      checkLatest: true
 
   - task: Npm@1
     displayName: npm install
