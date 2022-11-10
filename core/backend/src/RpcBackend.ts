@@ -19,8 +19,6 @@ export function initializeRpcBackend(enableOpenTelemetry: boolean = false) {
   if (initialized)
     return;
 
-  initialized = true;
-
   initializeTracing(enableOpenTelemetry);
 
   RpcMultipart.platform.createStream = createMultipartStream;
@@ -31,4 +29,6 @@ export function initializeRpcBackend(enableOpenTelemetry: boolean = false) {
   WebAppRpcRequest.backend.parseRequest = parseRequest;
 
   WebAppRpcLogging.initializeBackend(new WebAppRpcLoggingBackend());
+
+  initialized = true;
 }
