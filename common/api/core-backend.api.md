@@ -707,6 +707,8 @@ export interface CheckpointProps extends TokenArg {
 export class ClassRegistry {
     static findRegisteredClass(classFullName: string): typeof Entity | undefined;
     static getClass(classFullName: string, iModel: IModelDb): typeof Entity;
+    // @internal
+    static getRootEntity(iModel: IModelDb, ecTypeQualifier: string): string;
     // @internal (undocumented)
     static isNotFoundError(err: any): boolean;
     // @internal (undocumented)
