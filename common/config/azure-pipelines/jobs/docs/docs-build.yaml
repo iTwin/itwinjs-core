@@ -46,6 +46,10 @@ jobs:
         displayName: rush install
         workingDirectory: ${{ parameters.workingDir }}
 
+      - script: node common/scripts/install-run-rush.js audit
+        displayName: rush audit
+        workingDirectory: ${{ parameters.workingDir }}
+
       - script: node common/scripts/install-run-rush.js build:ci
         displayName: rush build
         workingDirectory: ${{ parameters.workingDir }}
@@ -78,7 +82,7 @@ jobs:
 
       - bash: |
           currentVersion=`node -p "require('./core/backend/package.json').version"`
-          echo ##vso[build.addbuildtag]$currentVersion
+          echo ##vso[build.addbuildtag]%currentVersion%
         displayName: Tag build with version
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
