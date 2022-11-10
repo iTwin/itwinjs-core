@@ -32,11 +32,11 @@ jobs:
       gprId: $(GprId)
       shortCode: $(ShortCode)
       isBackendOrAgent: false
-      appInsightsService: $(AppInsightsService)
+      appInsightsService: BentleyConnect QA
       octopusProjectId: $(OctopusProjectId)
       sloSqlServerName: $(SloSqlServerName)
       sloSqlDatabaseName: $(SloSqlDatabaseName)
-      sloSqlDatabaseCredentials: $(SloSqlDatabaseCredentials)
+      sloSqlDatabaseCredentials: SLO Database Credentials-iModelTechnologies
   - template : templates/scorecard/scorecard-gates.yaml@build-pipeline-scripts
 
 - job: ScorecardReport
