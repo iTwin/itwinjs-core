@@ -38,11 +38,11 @@ For an ElementUniqueAspect, the combination of subclass and the Element identity
 
 For an ElementMultiAspect, the combination of subclass and the Element identity identifies a list of ElementMultiAspects. Every ElementMultiAspect also has a *private* Id if an individual ElementMultiAspect instance has to be referenced.
 
-ElementAspects can also be used to separate groups of properties according to their applicability.  Consider the need to capture the Shape and related dimension properties from a set of objects. The list of dimension properties applicable to each object depends on its general shape. This situation can be modeled via an ElementAspect class-hierarchy that captures all the Shapes to be supported as well as their respective properties.
+ElementAspects can also be used to separate groups of properties according to their applicability.  Consider the need to capture the `Shape` and related dimension properties from a set of objects. The list of dimension properties applicable to each object depends on its specific `Shape`. This situation can be modeled via an ElementAspect class-hierarchy that captures all the `Shape`s to be supported by such a system as well as their respective properties.
 
-![](../media/elementaspect-shapeaspect-hierarchy.png)
+![ElementAspect hierarchy example](../media/elementaspect-shapeaspect-hierarchy.png)
 
-In this case, the `ShapeAspect` base-class should be used as the key-class to uniquely identify instances of the concrete aspects of this class-hierarchy. That is needed in this case in order to ensure an object only owns one aspect of any of the three concrete classes in the `ShapeAspect` hierarchy.
+In this case, the `ShapeAspect` base-class should be used as the *key-class* to uniquely identify instances of the concrete aspects of this class-hierarchy. That is needed in this case in order to ensure an object only owns one aspect of any of the three concrete classes in the `ShapeAspect` hierarchy at any given time.
 
 ## ElementAspects and Relationships
 
