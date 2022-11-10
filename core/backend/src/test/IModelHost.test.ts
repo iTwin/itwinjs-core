@@ -16,6 +16,7 @@ import { AzureServerStorage } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
 import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: path.join(__dirname, ".cache") };
@@ -45,6 +46,14 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("BisCore")).to.exist;
     expect(Schemas.getRegisteredSchema("Generic")).to.exist;
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
+  });
+
+  it("should call logger sync function", async () => {
+    const logChanged = sinon.spy(IModelHost as any, "syncNativeLogLevels");
+    await IModelHost.startup(opts);
+    expect(logChanged.callCount).eq(0);
+    Logger.setLevel("test-cat", LogLevel.Warning);
+    expect(logChanged.callCount).eq(1);
   });
 
   it("should raise onAfterStartup events", async () => {

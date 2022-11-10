@@ -9,6 +9,7 @@ import { SortDirection } from "@itwin/core-react";
 import { ColumnDescription, RowItem, SimpleTableDataProvider } from "../../components-react";
 import { TableFilterDescriptorCollection } from "../../components-react/table/columnfiltering/TableFilterDescriptorCollection";
 import { TestUtils } from "../TestUtils";
+/* eslint-disable deprecation/deprecation */
 
 const columns: ColumnDescription[] = [
   {
