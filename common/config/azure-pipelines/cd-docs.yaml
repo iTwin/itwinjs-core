@@ -37,126 +37,126 @@ stages:
         workingDir: $(Pipeline.Workspace)/itwinjs-core
         outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
         shouldPublish: true
-    - template: templates/appsec/scanners/source-scans.yaml@build-pipeline-scripts
-      parameters:
-        shortCode: $(ShortCode)
-        gprId: $(GprId)
-        suppressionFilePath: $(Build.SourcesDirectory)/common/config/azure-pipelines/credscan/credscan-supressions.json
+  #   - template: templates/appsec/scanners/source-scans.yaml@build-pipeline-scripts
+  #     parameters:
+  #       shortCode: $(ShortCode)
+  #       gprId: $(GprId)
+  #       suppressionFilePath: $(Build.SourcesDirectory)/common/config/azure-pipelines/credscan/credscan-supressions.json
 
-  - stage: CreateRelease
-    displayName: Create release
-    dependsOn: Build
-    jobs:
-    - template: ./jobs/docs/package-docs.yaml
+  # - stage: CreateRelease
+  #   displayName: Create release
+  #   dependsOn: Build
+  #   jobs:
+  #   - template: ./jobs/docs/package-docs.yaml
 
-  - stage: DEV
-    displayName: Deployment (DEV)
-    dependsOn: CreateRelease
-    jobs:
-    - template: ./jobs/docs/deploy-docs.yaml
-      parameters:
-        variableGroup: iTwin.js Docs - DEV
+  # - stage: DEV
+  #   displayName: Deployment (DEV)
+  #   dependsOn: CreateRelease
+  #   jobs:
+  #   - template: ./jobs/docs/deploy-docs.yaml
+  #     parameters:
+  #       variableGroup: iTwin.js Docs - DEV
 
-  - stage: ProductTestsDEV
-    displayName: Product Tests (DEV)
-    dependsOn: DEV
-    jobs:
-    - job: ProductTests_Dev
-      pool:
-        name: SecurityScans
-        demands: Agent.OS -equals Windows_NT
-      variables:
-      - group: Selenium Test Variables
-      - name: env
-        value: Development
-      - name: SeleniumTestUrl
-        value: https://dev.imodeljs.org
-      steps:
-        - template: ./templates/docs-product-test-steps.yaml
+  # - stage: ProductTestsDEV
+  #   displayName: Product Tests (DEV)
+  #   dependsOn: DEV
+  #   jobs:
+  #   - job: ProductTests_Dev
+  #     pool:
+  #       name: SecurityScans
+  #       demands: Agent.OS -equals Windows_NT
+  #     variables:
+  #     - group: Selenium Test Variables
+  #     - name: env
+  #       value: Development
+  #     - name: SeleniumTestUrl
+  #       value: https://dev.imodeljs.org
+  #     steps:
+  #       - template: ./templates/docs-product-test-steps.yaml
 
-  - stage: QA
-    displayName: Deployment (QA)
-    dependsOn: ProductTestsDEV
-    jobs:
-    - template: ./jobs/docs/deploy-docs.yaml
-      parameters:
-        variableGroup: iTwin.js Docs - QA
+  # - stage: QA
+  #   displayName: Deployment (QA)
+  #   dependsOn: ProductTestsDEV
+  #   jobs:
+  #   - template: ./jobs/docs/deploy-docs.yaml
+  #     parameters:
+  #       variableGroup: iTwin.js Docs - QA
 
-  - stage: ProductTestsQA
-    displayName: Product Tests (QA)
-    dependsOn: QA
-    jobs:
-    - template: templates/appsec/security-scans.yaml@build-pipeline-scripts
-      parameters:
-        gprId: $(GprId)
-        shortCode: $(ShortCode)
-        targetUrl: https://qa.imodeljs.org
-        steps:
-          - template: ./templates/docs-product-test-steps.yaml
-        variables:
-        - group: ZapSecurityScan
-        - group: Selenium Test Variables
-        - name: env
-          value: QA
-        - name: SeleniumTestUrl
-          value: https://qa.imodeljs.org
-        pssFolderName: $(ShortCode)_$(Build.BuildNumber)
-        skipCheckout: true
+  # - stage: ProductTestsQA
+  #   displayName: Product Tests (QA)
+  #   dependsOn: QA
+  #   jobs:
+  #   - template: templates/appsec/security-scans.yaml@build-pipeline-scripts
+  #     parameters:
+  #       gprId: $(GprId)
+  #       shortCode: $(ShortCode)
+  #       targetUrl: https://qa.imodeljs.org
+  #       steps:
+  #         - template: ./templates/docs-product-test-steps.yaml
+  #       variables:
+  #       - group: ZapSecurityScan
+  #       - group: Selenium Test Variables
+  #       - name: env
+  #         value: QA
+  #       - name: SeleniumTestUrl
+  #         value: https://qa.imodeljs.org
+  #       pssFolderName: $(ShortCode)_$(Build.BuildNumber)
+  #       skipCheckout: true
 
-  - stage: LinkValidatorQA
-    displayName: Link Validator (QA)
-    dependsOn: QA
-    jobs:
-    - template: ./jobs/docs/validate-links.yaml
-      parameters:
-        env: QA
+  # - stage: LinkValidatorQA
+  #   displayName: Link Validator (QA)
+  #   dependsOn: QA
+  #   jobs:
+  #   - template: ./jobs/docs/validate-links.yaml
+  #     parameters:
+  #       env: QA
 
-  - stage: UpdateDocumentationIndexQA
-    displayName: Update Documentation Index (QA)
-    dependsOn: QA
-    jobs:
-    - template: ./jobs/docs/update-docs-index.yaml
-      parameters:
-        variableGroup: iTwin.js Docs - Algolia - QA
+  # - stage: UpdateDocumentationIndexQA
+  #   displayName: Update Documentation Index (QA)
+  #   dependsOn: QA
+  #   jobs:
+  #   - template: ./jobs/docs/update-docs-index.yaml
+  #     parameters:
+  #       variableGroup: iTwin.js Docs - Algolia - QA
 
-  - stage: Scorecard
-    displayName: Scorecard
-    dependsOn: ProductTestsQA
-    jobs:
-    - template: templates/scorecard/docs-scorecard.yaml@build-pipeline-scripts
-      parameters:
-        variableGroup: iTwin.js Docs - Scorecard
-        artifactName: DocsBuild
+  # - stage: Scorecard
+  #   displayName: Scorecard
+  #   dependsOn: ProductTestsQA
+  #   jobs:
+  #   - template: templates/scorecard/docs-scorecard.yaml@build-pipeline-scripts
+  #     parameters:
+  #       variableGroup: iTwin.js Docs - Scorecard
+  #       artifactName: DocsBuild
 
-  - stage: PROD
-    displayName: Deployment (PROD)
-    dependsOn: Scorecard
-    jobs:
-    - template: ./jobs/docs/deploy-docs.yaml
-      parameters:
-        variableGroup: iTwin.js Docs - PROD
+  # - stage: PROD
+  #   displayName: Deployment (PROD)
+  #   dependsOn: Scorecard
+  #   jobs:
+  #   - template: ./jobs/docs/deploy-docs.yaml
+  #     parameters:
+  #       variableGroup: iTwin.js Docs - PROD
 
-  - stage: ProductTestsPROD
-    displayName: Product Tests (PROD)
-    dependsOn: PROD
-    jobs:
-    - job: ProductTests_Prod
-      pool:
-        name: SecurityScans
-        demands: Agent.OS -equals Windows_NT
-      variables:
-      - group: Selenium Test Variables
-      - name: env
-        value: Production
-      - name: SeleniumTestUrl
-        value: https://itwinjs.org
-      steps:
-        - template: ./templates/docs-product-test-steps.yaml
+  # - stage: ProductTestsPROD
+  #   displayName: Product Tests (PROD)
+  #   dependsOn: PROD
+  #   jobs:
+  #   - job: ProductTests_Prod
+  #     pool:
+  #       name: SecurityScans
+  #       demands: Agent.OS -equals Windows_NT
+  #     variables:
+  #     - group: Selenium Test Variables
+  #     - name: env
+  #       value: Production
+  #     - name: SeleniumTestUrl
+  #       value: https://itwinjs.org
+  #     steps:
+  #       - template: ./templates/docs-product-test-steps.yaml
 
-  - stage: UpdateDocumentationIndexPROD
-    displayName: Update Documentation Index (PROD)
-    dependsOn: PROD
-    jobs:
-    - template: ./jobs/docs/update-docs-index.yaml
-      parameters:
-        variableGroup: iTwin.js Docs - Algolia - PROD
+  # - stage: UpdateDocumentationIndexPROD
+  #   displayName: Update Documentation Index (PROD)
+  #   dependsOn: PROD
+  #   jobs:
+  #   - template: ./jobs/docs/update-docs-index.yaml
+  #     parameters:
+  #       variableGroup: iTwin.js Docs - Algolia - PROD

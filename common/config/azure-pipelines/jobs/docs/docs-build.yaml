@@ -81,8 +81,11 @@ jobs:
       #   condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
 
       - script: |
-          currentVersion=`node -p "require('./core/backend/package.json').version"`
-          echo ##vso[build.addbuildtag]%currentVersion%
+          node -p "require('./core/backend/package.json').version" > tmpFile
+          set /p ver= < tmpFile
+          del tmpFile
+          echo ##vso[build.addbuildtag]%ver%
+
         displayName: Tag build with version
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
