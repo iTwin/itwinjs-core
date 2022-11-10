@@ -33,8 +33,6 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-import { Buffer } from "buffer";
-import { StringDecoder } from "string_decoder";
 import { RpcSerializedValue } from "../../core/RpcMarshaling";
 
 const START = 0;
@@ -67,18 +65,18 @@ export class RpcMultipartParser {
   private _headerValueMark: number | null;
   private _partDataMark: number | null;
   private _partBoundaryFlag: boolean;
-  private _headerFieldDecoder: StringDecoder | null;
-  private _headerValueDecoder: StringDecoder | null;
+  private _headerFieldDecoder: TextDecoder | null;
+  private _headerValueDecoder: TextDecoder | null;
   private _headerField: string;
   private _partHeaders: { [index: string]: string };
   private _partName: string | null;
-  private _partChunks: Buffer[];
+  private _partChunks: Uint8Array[];
   private _headerValue: string;
   private _boundary: string;
-  private _buffer: Buffer;
+  private _buffer: Uint8Array;
   private _value: RpcSerializedValue;
 
-  public constructor(contentType: string, buffer: Buffer) {
+  public constructor(contentType: string, buffer: Uint8Array) {
     let m = CONTENT_TYPE_RE.exec(contentType);
     if (!m) {
       throw new Error("unsupported content-type");
@@ -123,9 +121,10 @@ export class RpcMultipartParser {
     let index = 0;
     let state = START;
 
-    const boundary = Buffer.alloc(this._boundary.length + 4);
-    boundary.write("\r\n--", 0, this._boundary.length + 4, "ascii");
-    boundary.write(this._boundary, 4, this._boundary.length, "ascii");
+    const boundary = new Uint8Array(this._boundary.length + 4);
+    const boundaryEncoder = new TextEncoder(); // encodes utf8 only
+    boundaryEncoder.encodeInto("\r\n--", boundary.subarray(0));
+    boundaryEncoder.encodeInto(this._boundary, boundary.subarray(4));
 
     const boundaryChars: { [index: number]: boolean } = {};
     for (const char of boundary) {
@@ -135,7 +134,7 @@ export class RpcMultipartParser {
     const boundaryLength = boundary.length;
     const boundaryEnd = boundaryLength - 1;
     const bufferLength = this._buffer.length;
-    const lookbehind = Buffer.alloc(boundaryLength + 8);
+    const lookbehind = new Uint8Array(boundaryLength + 8);
 
     let c;
     let cl;
@@ -353,18 +352,18 @@ export class RpcMultipartParser {
     this._partName = null;
     this._partChunks.length = 0;
 
-    this._headerFieldDecoder = new StringDecoder("utf8");
+    this._headerFieldDecoder = new TextDecoder("utf8");
     this._headerField = "";
-    this._headerValueDecoder = new StringDecoder("utf8");
+    this._headerValueDecoder = new TextDecoder("utf8");
     this._headerValue = "";
   }
 
-  private _onParseHeaderField(b: Buffer) {
-    this._headerField += this._headerFieldDecoder!.write(b);
+  private _onParseHeaderField(b: Uint8Array) {
+    this._headerField += this._headerFieldDecoder!.decode(b);
   }
 
-  private _onParseHeaderValue(b: Buffer) {
-    this._headerValue += this._headerValueDecoder!.write(b);
+  private _onParseHeaderValue(b: Uint8Array) {
+    this._headerValue += this._headerValueDecoder!.decode(b);
   }
 
   private _onParseHeaderEnd() {
@@ -381,21 +380,39 @@ export class RpcMultipartParser {
       // this._partTransferEncoding = this._headerValue.toLowerCase();
     }
 
-    this._headerFieldDecoder = new StringDecoder("utf8");
+    this._headerFieldDecoder = new TextDecoder("utf8");
     this._headerField = "";
-    this._headerValueDecoder = new StringDecoder("utf8");
+    this._headerValueDecoder = new TextDecoder("utf8");
     this._headerValue = "";
   }
 
-  private _onParsePartData(b: Buffer) {
+  private _onParsePartData(b: Uint8Array) {
     this._partChunks.push(b);
   }
 
+  private _concatParts() {
+    let totalSize = 0;
+    for (const chunk of this._partChunks) {
+      totalSize += chunk.length;
+    }
+
+    const combined = new Uint8Array(totalSize);
+
+    let offset = 0;
+    for (const chunk of this._partChunks) {
+      combined.set(chunk, offset);
+      offset += chunk.length;
+    }
+
+    return combined;
+  }
+
   private _onParsePartEnd() {
-    const partValue = this._partChunks.length === 1 ? this._partChunks[0] : Buffer.concat(this._partChunks);
+    const partValue = this._partChunks.length === 1 ? this._partChunks[0] : this._concatParts();
 
     if (this._partName === "objects") {
-      this._value.objects = partValue.toString();
+      const partDecoder = new TextDecoder();
+      this._value.objects = partDecoder.decode(partValue);
     } else {
       this._value.data.push(partValue);
     }

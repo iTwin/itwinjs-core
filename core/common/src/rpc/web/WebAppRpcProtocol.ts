@@ -7,8 +7,8 @@
  */
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { Readable, Writable } from "stream";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { BackendReadable, BackendWritable } from "../../BackendTypes";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
@@ -17,10 +17,12 @@ import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI"
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
+/* eslint-disable deprecation/deprecation */
+
 /** An HTTP server request object.
  * @public
  */
-export interface HttpServerRequest extends Readable {
+export interface HttpServerRequest extends BackendReadable {
   aborted: boolean;
   httpVersion: string;
   httpVersionMajor: number;
@@ -48,7 +50,7 @@ export interface HttpServerRequest extends Readable {
 /** An HTTP server response object.
  * @public
  */
-export interface HttpServerResponse extends Writable {
+export interface HttpServerResponse extends BackendWritable {
   send(body?: any): HttpServerResponse;
   status(code: number): HttpServerResponse;
   set(field: string, value: string): void;

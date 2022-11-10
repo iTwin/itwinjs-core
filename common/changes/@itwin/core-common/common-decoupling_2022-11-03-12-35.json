@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "handle null ExternalSourceAspect.scope",
+      "comment": "Removing node (runtime) dependencies from core-common",
       "type": "none"
     }
   ],

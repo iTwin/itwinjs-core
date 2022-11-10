@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "fix ClassRegistry.getRootMetaData mixin handling, handle null ExternalSourceAspect.scope",
+      "comment": "Added node-dependent RPC function implementations (that previously contaminated common).",
       "type": "none"
     }
   ],

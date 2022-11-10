@@ -24,7 +24,7 @@ import { ConcurrentQuery } from "../ConcurrentQuery";
 import { generateGeometrySummaries } from "../GeometrySummary";
 import { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
-import { RpcTrace } from "../RpcBackend";
+import { RpcTrace } from "../rpc/tracing";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
 import { ViewStateHydrator } from "../ViewStateHydrator";
