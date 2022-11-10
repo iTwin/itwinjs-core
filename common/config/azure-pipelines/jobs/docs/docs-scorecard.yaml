@@ -38,7 +38,7 @@ jobs:
       sloSqlServerName: $(SloSqlServerName)
       sloSqlDatabaseName: $(SloSqlDatabaseName)
       sloSqlDatabaseCredentials: $(SloSqlDatabaseCredentials)
-  - template : ./scorecard-gates.yaml
+  - template : templates/scorecard/scorecard-gates.yaml@build-pipeline-scripts
 
 - job: ScorecardReport
   dependsOn: Scorecard

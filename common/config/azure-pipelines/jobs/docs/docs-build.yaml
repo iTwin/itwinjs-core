@@ -85,7 +85,6 @@ jobs:
           set /p ver= < tmpFile
           del tmpFile
           echo ##vso[build.addbuildtag]%ver%
-
         displayName: Tag build with version
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
