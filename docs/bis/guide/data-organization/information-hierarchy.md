@@ -14,8 +14,8 @@ There are several mechanisms available in BIS that domain authors can take advan
 * A Model can contain Elements.
 * An Element can be sub-modeled by a Model.
 * An Element can own child Elements.
-* A *Spatial Organizer* can hold an Element as part of the spatial structure of a *Facility*, from the perspective of a specific discipline.
-* A *Physical System* can group member Elements.
+* A *Spatial Organizer* can hold an Element as part of a hierarchical spatial decomposition of a *Facility*, from the perspective of a specific discipline.
+* A *Physical System* can group member Elements as part of a hierarchical organization by sub-systems, from the perspective of a specific discipline.
 * The provenance of an Element can be traced back to an *External Source*, whose organization may be hierarchical.
 
 Each of these mechanism is intended to be used in specific circumstances which are explained in this chapter.
@@ -40,7 +40,7 @@ For example, a `DrawingModel` sub-models a `Drawing` Element and contains the `D
 
 ### Element Owns Child Elements
 
-An Element can own child Elements. This is useful for modeling *assembly* relationships or for modeling cases where one Element exclusively controls the lifetime of other Elements. An Element can have 0 or 1 parent Elements as defined by the `ElementOwnsChildElements` relationship. An Element without a parent is considered a *top-level* Element. An Element with a parent is considered a *child* Element. These hierarchies can go N levels deep, which means that an Element can be both a parent and a child.
+An Element can own child Elements. This is useful for modeling *assembly* relationships or for modeling cases where one Element exclusively controls the lifetime of other Elements. An Element can have 0 or 1 parent Elements as defined by the `ElementOwnsChildElements` relationship. An Element without a parent is considered a *top-level* Element. An Element with a parent is considered a *child* Element. These hierarchies can go N levels deep, which means that an Element can be both a parent and a child. A parent Element and all its children are required to be contained in the same model.
 
 ### Element Held by Spatial Organizer
 
@@ -58,8 +58,10 @@ For more details about Spatial Composition in BIS, please refer to the [Spatial 
 
 ### Physical System Groups Members
 
-A Physical System can group member-Elements which, together, provide a specific function.
-These Physical System hierarchies can co-exist with the other organization mechanisms listed above.
+A Physical System can group member-Elements which, together, provide a specific function. Physical Systems can be organized in a hierarchical manner by using the `bis:PhysicalSystemAggregatesSubSystems` relationship. Physical System hierarchies can co-exist with the other organization mechanisms listed above.
+
+![Physical Systems](../media/physical-systems.png)
+
 For more details about Physical Systems in BIS, please refer to the [Modeling Systems](./modeling-systems.md) topic later in this chapter.
 
 ### Element Is From Source
