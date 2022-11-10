@@ -253,4 +253,95 @@ describe("ElementAspect", () => {
     assert.equal(foundAspect.elementId, aspect.element.id);
 
   });
+
+  it("should be able to insert multiple ExternalSourceAspects", () => {
+    const fileName = IModelTestUtils.prepareOutputFile("MultipleElementAspects", "ExternalSourceAspect.bim");
+    let iModelDb = SnapshotDb.createEmpty(fileName, { rootSubject: { name: "MultipleExternalSourceAspects" } });
+    const e1: Id64String = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category1", new SubCategoryAppearance());
+    const e2: Id64String = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category2", new SubCategoryAppearance());
+
+    const scopeId1 = IModel.rootSubjectId;
+    const scopeId2 = e1;
+    const kind = "Letter";
+    const kind2 = "Kind2";
+
+    const aspectProps: ExternalSourceAspectProps = {
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: "" },
+      scope: { id: "" },
+      identifier: "",
+      kind,
+    };
+    const a: ExternalSourceAspectProps = { ...aspectProps, identifier: "A", scope: { id: scopeId1 } };
+    const a2: ExternalSourceAspectProps = { ...aspectProps, identifier: "A", scope: { id: scopeId2 } };
+    const b: ExternalSourceAspectProps = { ...aspectProps, identifier: "B", scope: { id: scopeId1 } };
+    const c: ExternalSourceAspectProps = { ...aspectProps, identifier: "C", scope: { id: scopeId1 } };
+    const ck2: ExternalSourceAspectProps = { ...aspectProps, identifier: "C", scope: { id: scopeId1 }, kind: kind2 };
+
+    const e1AspectProps: Array<ExternalSourceAspectProps> = [
+      { ...a, element: { id: e1 } },
+      { ...a, element: { id: e1 } }, // add a second aspect "A" in scope1
+      { ...a2, element: { id: e1 } }, // add "A" in scope2
+      { ...b, element: { id: e1 } },
+      { ...ck2, element: { id: e1 } },
+    ];
+    const e2AspectProps: Array<ExternalSourceAspectProps> = [
+      { ...a, element: { id: e2 } }, // element2 also has an "A" in scope1
+      { ...c, element: { id: e2 } },
+    ];
+    e1AspectProps.forEach((aspect) => iModelDb.elements.insertAspect(aspect));
+    e2AspectProps.forEach((aspect) => iModelDb.elements.insertAspect(aspect));
+    iModelDb.saveChanges();
+    iModelDb.close();
+    iModelDb = SnapshotDb.openFile(fileName);
+
+    const equalProps = (aspect: ElementAspect, wantProps: ExternalSourceAspectProps): boolean => {
+      return (aspect.element.id === wantProps.element.id)
+        && (aspect.asAny.scope.id === wantProps.scope.id)
+        && (aspect.asAny.scope.relClassName.endsWith("ElementScopesExternalSourceIdentifier"))
+        && (aspect.asAny.identifier === wantProps.identifier)
+        && (aspect.asAny.kind === wantProps.kind)
+        && (aspect.asAny.checksum === wantProps.checksum)
+        && (aspect.asAny.version === wantProps.version);
+    };
+    const findInProps = (have: ElementAspect, wantArray: Array<ExternalSourceAspectProps>): boolean => {
+      return wantArray.find((want) => equalProps(have, want)) !== undefined;
+    };
+
+    const e1Aspects: ElementAspect[] = iModelDb.elements.getAspects(e1, aspectProps.classFullName);
+    assert.equal(e1Aspects.length, e1AspectProps.length);
+    e1Aspects.forEach((x) => {
+      assert.isTrue(findInProps(x, e1AspectProps));
+    });
+
+    const e2Aspects: ElementAspect[] = iModelDb.elements.getAspects(e2, aspectProps.classFullName);
+    assert.equal(e2Aspects.length, e2AspectProps.length);
+    e2Aspects.forEach((x) => {
+      assert.isTrue(findInProps(x, e2AspectProps));
+    });
+
+    const allA = ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind, "A");
+    assert.equal(allA.filter((x) => x.elementId === e1).length, 2, "there are two A's in scope 1 on e1");
+    assert.equal(allA.filter((x) => x.elementId === e2).length, 1, "there is one A in scope 1 on e2");
+    assert.equal(allA.length, 3);
+
+    const allA2 = ExternalSourceAspect.findAllBySource(iModelDb, scopeId2, kind, "A");
+    assert.equal(allA2.length, 1);
+    assert.equal(allA2[0].elementId, e1, "there is one A in scope 2 on e1");
+
+    const allB = ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind, "B");
+    assert.equal(allB.length, 1);
+    assert.equal(allB[0].elementId, e1, "there is one B on e1");
+
+    const allC = ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind, "C");
+    assert.equal(allC.length, 1);
+    assert.equal(allC[0].elementId, e2, "there is one C of kind1 on e2");
+
+    const allCK2 = ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind2, "C");
+    assert.equal(allCK2.length, 1);
+    assert.equal(allCK2[0].elementId, e1, "there is one C of kind 2 on e1");
+
+    assert.equal(ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind, "<notfound>").length, 0);
+  });
+
 });
