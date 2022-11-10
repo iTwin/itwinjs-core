@@ -151,7 +151,7 @@ export class IModelExporter {
    * This can be set to false for the legacy default behavior, but it may cause errors during schema processing in some cases.
    * @see [[exportSchemas]]
    */
-  public wantSystemSchemas: boolean = true;
+  public wantSystemSchemas: boolean = false;
   /** A flag that determines whether this IModelExporter should visit Elements or not. The default is `true`.
    * @note This flag is available as an optimization when the exporter doesn't need to visit elements, so can skip loading them.
    */

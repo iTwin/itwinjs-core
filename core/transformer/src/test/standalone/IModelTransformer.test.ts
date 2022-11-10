@@ -2004,7 +2004,7 @@ describe("IModelTransformer", () => {
     const targetDb1 = SnapshotDb.createEmpty(targetDb1File, { rootSubject: { name: "UnknownBisCoreNewSchemaRefTarget1" } });
 
     const transformer = new IModelTransformer(sourceDb, targetDb1);
-    expect(transformer.exporter.wantSystemSchemas).to.be.true;
+    expect(transformer.exporter.wantSystemSchemas).to.be.false;
     await transformer.processSchemas();
     transformer.dispose();
 
@@ -2012,10 +2012,10 @@ describe("IModelTransformer", () => {
     const targetDb2 = SnapshotDb.createEmpty(targetDb2File, { rootSubject: { name: "UnknownBisCoreNewSchemaRefTarget2" } });
 
     const noSystemSchemasExporter = new IModelExporter(sourceDb);
-    noSystemSchemasExporter.wantSystemSchemas = false;
+    noSystemSchemasExporter.wantSystemSchemas = true;
     const noSystemSchemasTransformer = new IModelTransformer(noSystemSchemasExporter, targetDb2);
-    expect(noSystemSchemasExporter.wantSystemSchemas).to.be.false;
-    expect(noSystemSchemasTransformer.exporter.wantSystemSchemas).to.be.false;
+    expect(noSystemSchemasExporter.wantSystemSchemas).to.be.true;
+    expect(noSystemSchemasTransformer.exporter.wantSystemSchemas).to.be.true;
     await noSystemSchemasTransformer.processSchemas();
     noSystemSchemasTransformer.dispose();
   });
