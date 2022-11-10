@@ -248,7 +248,9 @@ describe("ElementAspect", () => {
     assert.equal(aspectJson.checksum, aspectProps.checksum);
     assert.equal(aspectJson.version, aspectProps.version);
 
-    const foundAspect = ExternalSourceAspect.findBySource(iModelDb, aspectProps.scope.id, aspectProps.kind, aspectProps.identifier);
+    const foundAspects = ExternalSourceAspect.findAllBySource(iModelDb, aspectProps.scope.id, aspectProps.kind, aspectProps.identifier);
+    assert.equal(foundAspects.length, 1);
+    const foundAspect = foundAspects[0];
     assert.equal(foundAspect.aspectId, aspects[0].id);
     assert.equal(foundAspect.elementId, aspect.element.id);
 
