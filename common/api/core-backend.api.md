@@ -2194,6 +2194,11 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     static get className(): string;
     // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    static findAllBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): Array<{
+        elementId: Id64String;
+        aspectId: Id64String;
+    }>;
+    // @deprecated (undocumented)
     static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): {
         elementId?: Id64String;
         aspectId?: Id64String;
