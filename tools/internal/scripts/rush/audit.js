@@ -40,6 +40,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   // "GHSA-xxxx-xxxx-xxxx", // https://github.com/advisories/GHSA-xxxx-xxxx-xxxx pkgName>subDepA>subDepB
   const excludedAdvisories = [
     "GHSA-f8q6-p94x-37v3", // https://github.com/advisories/GHSA-f8q6-p94x-37v3 react-dev-utils>recursive-readdir>minimatch
+    "GHSA-76p3-8jx3-jpfq", // https://github.com/advisories/GHSA-76p3-8jx3-jpfq @bentley/react-scripts>loader-utils
   ];
 
   let shouldFailBuild = false;
