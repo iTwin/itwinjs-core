@@ -147,8 +147,7 @@ export class IModelExporter {
    * @see [Model.isTemplate]($backend)
    */
   public wantTemplateModels: boolean = true;
-  /** A flag that indicates whether *system* schemas should be exported or not. The default is `true` (previously false).
-   * This can be set to false for the legacy default behavior, but it may cause errors during schema processing in some cases.
+  /** A flag that indicates whether *system* schemas should be exported or not. The default is `false`.
    * @see [[exportSchemas]]
    */
   public wantSystemSchemas: boolean = false;
