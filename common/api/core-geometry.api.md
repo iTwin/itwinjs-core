@@ -91,11 +91,11 @@ export class Angle implements BeJSONFunctions {
     static dotProductsToHalfAngleTrigValues(dotUU: number, dotVV: number, dotUV: number, favorZero?: boolean): TrigValues;
     freeze(): Readonly<this>;
     static fromJSON(json?: AngleProps, defaultValRadians?: number): Angle;
-    isAlmostEqual(other: Angle): boolean;
-    isAlmostEqualAllowPeriodShift(other: Angle): boolean;
-    isAlmostEqualNoPeriodShift(other: Angle): boolean;
-    static isAlmostEqualRadiansAllowPeriodShift(radiansA: number, radiansB: number): boolean;
-    static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number): boolean;
+    isAlmostEqual(other: Angle, radianTol?: number): boolean;
+    isAlmostEqualAllowPeriodShift(other: Angle, radianTol?: number): boolean;
+    isAlmostEqualNoPeriodShift(other: Angle, radianTol?: number): boolean;
+    static isAlmostEqualRadiansAllowPeriodShift(radiansA: number, radiansB: number, radianTol?: number): boolean;
+    static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number, radianTol?: number): boolean;
     get isAlmostNorthOrSouthPole(): boolean;
     get isAlmostZero(): boolean;
     get isExactZero(): boolean;
@@ -1445,7 +1445,7 @@ export class CoordinateXYZ extends GeometryQuery {
 // @public
 export abstract class CurveChain extends CurveCollection {
     protected constructor();
-    childIndex(target: CurvePrimitive | undefined): number | undefined;
+    childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined;
     get children(): CurvePrimitive[];
     abstract cloneStroked(options?: StrokeOptions): AnyCurve;
     protected _curves: CurvePrimitive[];
@@ -1472,7 +1472,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     protected chainDistanceToFragment(distance: number, allowExtrapolation?: boolean): PathFragment | undefined;
     protected chainDistanceToFragmentIndex(distance: number, allowExtrapolation?: boolean): number | undefined;
     clone(): CurveChainWithDistanceIndex;
-    clonePartialCurve(_fractionA: number, _fractionB: number): CurveChainWithDistanceIndex | undefined;
+    clonePartialCurve(fractionA: number, fractionB: number): CurveChainWithDistanceIndex | undefined;
     cloneTransformed(transform: Transform): CurveChainWithDistanceIndex | undefined;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): void;
@@ -2729,7 +2729,7 @@ export namespace IModelJson {
         capped?: boolean;
         center: XYZProps;
         majorRadius: number;
-        minorRadius?: number;
+        minorRadius: number;
         sweepAngle?: AngleProps;
     }
     export interface TransitionSpiralProps extends AxesProps {
@@ -3266,6 +3266,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     static fromJSON(json?: any): LineString3d;
     getIndexedSegment(index: number): LineSegment3d | undefined;
+    globalFractionToSegmentIndexAndLocalFraction(globalFraction: number): {
+        index: number;
+        fraction: number;
+    };
     isAlmostEqual(other: GeometryQuery): boolean;
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
@@ -3439,6 +3443,7 @@ export class Matrix3d implements BeJSONFunctions {
     dotRowYXYZ(x: number, y: number, z: number): number;
     dotRowZ(vector: XYZ): number;
     dotRowZXYZ(x: number, y: number, z: number): number;
+    factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean;
     factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean;
     factorRigidWithSignedScale(): {
         rigidAxes: Matrix3d;
@@ -3475,6 +3480,7 @@ export class Matrix3d implements BeJSONFunctions {
     isSingular(): boolean;
     get isUpperTriangular(): boolean;
     get isXY(): boolean;
+    makeRigid(axisOrder?: AxisOrder): boolean;
     markSingular(): void;
     maxAbs(): number;
     maxDiff(other: Matrix3d): number;
@@ -3931,12 +3937,14 @@ export class PathFragment {
     a: number;
     chainDistance0: number;
     chainDistance1: number;
-    chainDistanceToAccurateChildFraction(chainDistance: number): number;
+    chainDistanceToAccurateChildFraction(chainDistance: number, allowExtrapolation?: boolean): number;
     chainDistanceToInterpolatedChildFraction(distance: number): number;
     childCurve: CurvePrimitive;
     childFraction0: number;
     childFraction1: number;
+    // @deprecated (undocumented)
     childFractionTChainDistance(fraction: number): number;
+    childFractionToChainDistance(fraction: number): number;
     // (undocumented)
     static collectSortedQuickMinDistances(fragments: PathFragment[], spacePoint: Point3d): PathFragment[];
     containsChainDistance(distance: number): boolean;
@@ -3946,6 +3954,12 @@ export class PathFragment {
     quickMinDistanceToChildCurve(spacePoint: Point3d): number;
     range?: Range3d;
     reverseFractionsAndDistances(totalDistance: number): void;
+}
+
+// @public
+export interface PerpParallelOptions {
+    distanceSquaredTol?: number;
+    radianSquaredTol?: number;
 }
 
 // @public
@@ -5603,9 +5617,11 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     protected constructor(map: Transform, radiusA: number, radiusB: number, sweep: Angle, capped: boolean);
     clone(): TorusPipe;
     cloneCenter(): Point3d;
+    cloneLocalToWorld(): Transform;
     cloneTransformed(transform: Transform): TorusPipe | undefined;
     cloneVectorX(): Vector3d;
     cloneVectorY(): Vector3d;
+    cloneVectorZ(): Vector3d;
     constantUSection(uFraction: number): CurveCollection | undefined;
     constantVSection(v: number): CurveCollection | undefined;
     static createAlongArc(arc: Arc3d, minorRadius: number, capped: boolean): TorusPipe | undefined;
@@ -5919,8 +5935,8 @@ export class Vector2d extends XY implements BeJSONFunctions {
     fractionOfProjectionToVector(target: Vector2d, defaultFraction?: number): number;
     static fromJSON(json?: XYProps): Vector2d;
     interpolate(fraction: number, right: Vector2d, result?: Vector2d): Vector2d;
-    isParallelTo(other: Vector2d, oppositeIsParallel?: boolean): boolean;
-    isPerpendicularTo(other: Vector2d): boolean;
+    isParallelTo(other: Vector2d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
+    isPerpendicularTo(other: Vector2d, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
     minus(vector: XAndY, result?: Vector2d): Vector2d;
     negate(result?: Vector2d): Vector2d;
     normalize(result?: Vector2d): Vector2d | undefined;
@@ -5928,6 +5944,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     plus2Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number, result?: Vector2d): Vector2d;
     plus3Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number, vectorC: XAndY, scalarC: number, result?: Vector2d): Vector2d;
     plusScaled(vector: XAndY, scaleFactor: number, result?: Vector2d): Vector2d;
+    radiansTo(vectorB: XAndY): number;
     rotate90CCWXY(result?: Vector2d): Vector2d;
     rotate90CWXY(result?: Vector2d): Vector2d;
     rotateXY(angle: Angle, result?: Vector2d): Vector2d;
@@ -5980,8 +5997,8 @@ export class Vector3d extends XYZ {
     fractionOfProjectionToVector(target: Vector3d, defaultFraction?: number): number;
     static fromJSON(json?: XYZProps): Vector3d;
     interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d;
-    isParallelTo(other: Vector3d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean): boolean;
-    isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength?: boolean): boolean;
+    isParallelTo(other: Vector3d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
+    isPerpendicularTo(other: Vector3d, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
     minus(vector: XYAndZ, result?: Vector3d): Vector3d;
     negate(result?: Vector3d): Vector3d;
     normalize(result?: Vector3d): Vector3d | undefined;
@@ -5997,6 +6014,7 @@ export class Vector3d extends XYZ {
     plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, result?: Vector3d): Vector3d;
     plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Vector3d): Vector3d;
     plusScaled(vector: XYAndZ, scaleFactor: number, result?: Vector3d): Vector3d;
+    radiansTo(vectorB: Vector3d): number;
     rotate90Around(axis: Vector3d, result?: Vector3d): Vector3d | undefined;
     rotate90CCWXY(result?: Vector3d): Vector3d;
     rotate90Towards(target: Vector3d, result?: Vector3d): Vector3d | undefined;

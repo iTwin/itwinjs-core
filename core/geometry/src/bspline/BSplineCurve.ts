@@ -214,7 +214,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    * * If the space point is exactly on the curve, this is the reverse of fractionToPoint.
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always succeed
    * @param spacePoint point in space
-   * @param extend true to extend the curve (if possible)
+   * @param _extend ignored. A BSplineCurve3dBase cannot be extended.
    * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
    */
   public override closestPoint(spacePoint: Point3d, _extend: boolean): CurveLocationDetail | undefined {

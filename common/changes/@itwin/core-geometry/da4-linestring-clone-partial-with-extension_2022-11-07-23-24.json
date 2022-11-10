@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "extended clonePartial for LineString3d, CurveChainWithDistanceIndex",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
