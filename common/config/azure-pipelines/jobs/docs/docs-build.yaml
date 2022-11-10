@@ -23,9 +23,8 @@ jobs:
     workspace:
       clean: all
     pool:
-      # name: iModelTechCI
-      # demands: Agent.OS -equals Windows_NT
-      vmImage: ubuntu-latest
+      name: iModelTechCI
+      demands: Agent.OS -equals Windows_NT
 
     steps:
       - checkout: self
