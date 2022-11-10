@@ -14,9 +14,9 @@ jobs:
 
     steps:
       - task: NodeTool@0
-        displayName: Use Node 16
+        displayName: Use Node 14
         inputs:
-          versionSpec: 16.13.0
+          versionSpec: 14.17.4
           checkLatest: true
 
       - download: current
