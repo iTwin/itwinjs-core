@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Utils
+ */
+
 import type { Readable, Writable } from "stream"; // Must be "import type" to avoid webpack polyfill errors
 import type { Buffer } from "buffer"; // Must be "import type" to avoid webpack polyfill errors
 
@@ -20,4 +24,3 @@ export type BackendWritable = Writable;
 
 /** @internal @deprecated */
 export type BackendBuffer = Buffer;
-
