@@ -4567,7 +4567,7 @@ export class ImageryMapTile extends RealityTile {
     // (undocumented)
     releaseMapTileUsage(): void;
     // (undocumented)
-    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus;
+    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs, context: TraversalSelectionContext): TileTreeLoadStatus;
     // (undocumented)
     setContent(content: ImageryTileContent): void;
     // (undocumented)
@@ -4596,7 +4596,7 @@ export class ImageryMapTileTree extends RealityTileTree {
     // (undocumented)
     get isContentUnbounded(): boolean;
     // (undocumented)
-    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus;
+    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs, context: TraversalSelectionContext): TileTreeLoadStatus;
     // (undocumented)
     protected _selectTiles(_args: TileDrawArgs): Tile[];
     // (undocumented)
@@ -6073,6 +6073,8 @@ export class MapTile extends RealityTile {
     get mesh(): RealityMeshParams | undefined;
     // @internal (undocumented)
     protected _mesh?: RealityMeshParams;
+    // @internal (undocumented)
+    get outOfLodRangeTiles(): ImageryMapTile[] | undefined;
     // @internal (undocumented)
     produceGraphics(): RenderGraphic | undefined;
     readonly quadId: QuadId;
@@ -10869,6 +10871,8 @@ export abstract class Tile {
     protected _isLeaf: boolean;
     get isLoading(): boolean;
     get isNotFound(): boolean;
+    // (undocumented)
+    get isOutOfLodRange(): boolean;
     // @internal (undocumented)
     get isParentDisplayable(): boolean;
     get isQueued(): boolean;
@@ -10883,6 +10887,8 @@ export abstract class Tile {
     protected _maximumSize: number;
     // @internal
     next?: LRUTileListNode;
+    // (undocumented)
+    protected _outOfLodRange?: boolean;
     readonly parent: Tile | undefined;
     // @internal
     previous?: LRUTileListNode;
@@ -11318,6 +11324,7 @@ export interface TileParams {
     contentRange?: ElementAlignedBox3d;
     isLeaf?: boolean;
     maximumSize: number;
+    outOfLodRange?: boolean;
     parent?: Tile;
     range: ElementAlignedBox3d;
 }
@@ -12144,6 +12151,8 @@ export class TraversalSelectionContext {
     displayedDescendants: Tile[][];
     // (undocumented)
     missing: RealityTile[];
+    // (undocumented)
+    outOfLodRange: RealityTile[];
     // (undocumented)
     preload(tile: RealityTile, args: TileDrawArgs): void;
     // (undocumented)
