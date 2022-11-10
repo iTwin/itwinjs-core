@@ -121,10 +121,21 @@ With the new approach we "break" at the duplicate A node:
    +--+ A
 ```
 
-## Element aspect ids
+## Element aspects
 
-[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
-the ids returned are not unique from all element ids and may collide.
+### Aspect Ids
+
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so the ids returned are not unique from all element ids and may collide.
+
+### ExternalSourceAspect find methods
+
+[ExternalSourceAspect.findBySource]($core-backend) is deprecated. Use [ExternalSourceAspect.findAllBySource]($core-backend) instead.
+
+An [Element]($core-backend) can have more than one ExternalSourceAspect with the same scope, kind, and identifier. Also, many elements could have ExternalSourceAspects with the same scope, kind, and identifier. Therefore, `ExternalSourceAspect.findAllBySource` returns an *array*.
+
+If an app expects there to be only one [ExternalSourceAspect]($core-backend) with a given scope, kind, and identifier in the iModel, it must check that the array returned by ExternalSourceAspect.findAllBySource contains only one item.
+
+To narrow the search to just the `ExternalSourceAspect`s on a single element, use an ECSql query, such as `select ecinstanceid from Bis.ExternalSourceAspect where scope.id=? and kind=? and identifier=? and element.id=?`. If only one such aspect is expected, verify that only one row is found.
 
 ## AppUi
 
