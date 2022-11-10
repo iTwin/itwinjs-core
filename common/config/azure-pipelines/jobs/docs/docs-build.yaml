@@ -37,48 +37,48 @@ jobs:
           versionSpec: 14.17.4
           checkLatest: true
 
-      # - script: |
-      #     git config --local user.email imodeljs-admin@users.noreply.github.com
-      #     git config --local user.name imodeljs-admin
-      #   displayName: Setup git config
+      - script: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+        displayName: Setup git config
 
-      # - script: node common/scripts/install-run-rush.js install
-      #   displayName: rush install
-      #   workingDirectory: ${{ parameters.workingDir }}
+      - script: node common/scripts/install-run-rush.js install
+        displayName: rush install
+        workingDirectory: ${{ parameters.workingDir }}
 
-      # - script: node common/scripts/install-run-rush.js audit
-      #   displayName: rush audit
-      #   workingDirectory: ${{ parameters.workingDir }}
+      - script: node common/scripts/install-run-rush.js audit
+        displayName: rush audit
+        workingDirectory: ${{ parameters.workingDir }}
 
-      # - script: node common/scripts/install-run-rush.js build:ci
-      #   displayName: rush build
-      #   workingDirectory: ${{ parameters.workingDir }}
+      - script: node common/scripts/install-run-rush.js build:ci
+        displayName: rush build
+        workingDirectory: ${{ parameters.workingDir }}
 
-      # - script: node common/scripts/install-run-rush.js docs
-      #   displayName: rush docs
-      #   workingDirectory: ${{ parameters.workingDir }}
+      - script: node common/scripts/install-run-rush.js docs
+        displayName: rush docs
+        workingDirectory: ${{ parameters.workingDir }}
 
-      # # Gathers all the pieces to run BeMetalsmith
-      # - template: ../../templates/gather-docs.yaml
-      #   parameters:
-      #     workingDir: ${{ parameters.workingDir }}
-      #     stagingDir: ${{ parameters.stagingDir }}
-      #     downloadCurrentBuildArtifacts: ${{ parameters.downloadCurrentBuildArtifacts }}
+      # Gathers all the pieces to run BeMetalsmith
+      - template: ../../templates/gather-docs.yaml
+        parameters:
+          workingDir: ${{ parameters.workingDir }}
+          stagingDir: ${{ parameters.stagingDir }}
+          downloadCurrentBuildArtifacts: ${{ parameters.downloadCurrentBuildArtifacts }}
 
-      # # Currently BeMetalsmith is an internal only tool
-      # - script: npm install @bentley/bemetalsmith@4.x
-      #   displayName: Install BeMetalsmith
-      #   workingDirectory: ${{ parameters.workingDir }}
+      # Currently BeMetalsmith is an internal only tool
+      - script: npm install @bentley/bemetalsmith@4.x
+        displayName: Install BeMetalsmith
+        workingDirectory: ${{ parameters.workingDir }}
 
-      # - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js"
-      #   displayName: Run bmsBuild
-      #   workingDirectory: ${{ parameters.workingDir }}
+      - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js"
+        displayName: Run bmsBuild
+        workingDirectory: ${{ parameters.workingDir }}
 
-      # # Update the .updated.json file after the bmsBuild
-      # - publish: ${{ parameters.stagingDir }}/config/.updated.json
-      #   artifact: .updated.json
-      #   displayName: Publish Pipeline Artifact - .updated.json
-      #   condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
+      # Update the .updated.json file after the bmsBuild
+      - publish: ${{ parameters.stagingDir }}/config/.updated.json
+        artifact: .updated.json
+        displayName: Publish Pipeline Artifact - .updated.json
+        condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
 
       - script: |
           node -p "require('./core/backend/package.json').version" > tmpFile
@@ -89,7 +89,7 @@ jobs:
         displayName: Tag build with version
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
-      # - publish: ${{ parameters.outputDir }}
-      #   artifact: DocsBuild
-      #   displayName: Publish Pipeline Artifact - DocsBuild
-      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+      - publish: ${{ parameters.outputDir }}
+        artifact: DocsBuild
+        displayName: Publish Pipeline Artifact - DocsBuild
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
