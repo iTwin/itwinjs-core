@@ -231,14 +231,8 @@ describe("ElementAspect", () => {
     const aspectJson = aspect.toJSON();
     expect(aspectJson).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
 
-<<<<<<< HEAD
-    const foundAspect = ExternalSourceAspect.findBySource(iModelDb, aspectProps.scope.id, aspectProps.kind, aspectProps.identifier);
-=======
     assert(aspectProps.scope !== undefined);
-    const foundAspects = ExternalSourceAspect.findAllBySource(iModelDb, aspectProps.scope.id, aspectProps.kind, aspectProps.identifier);
-    assert.equal(foundAspects.length, 1);
-    const foundAspect = foundAspects[0];
->>>>>>> ee3c479ef1 (transformer: export system schemas by default, handle lost ExternalSourceAspect scope (#4625))
+    const foundAspect = ExternalSourceAspect.findBySource(iModelDb, aspectProps.scope.id, aspectProps.kind, aspectProps.identifier);
     assert.equal(foundAspect.aspectId, aspects[0].id);
     assert.equal(foundAspect.elementId, aspect.element.id);
   });

@@ -1941,9 +1941,6 @@ describe("IModelTransformer", () => {
     }
   });
 
-<<<<<<< HEAD
-  /** unskip to generate a javascript CPU profile on just the processAll portion of a test iModel */
-=======
   it("handles nested schema references during schema export", async () => {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NestedSchemaOrderSrc.bim");
     const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "NestedSchemaOrderSrc" } });
@@ -2024,7 +2021,6 @@ describe("IModelTransformer", () => {
   });
 
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
->>>>>>> ee3c479ef1 (transformer: export system schemas by default, handle lost ExternalSourceAspect scope (#4625))
   it.skip("should profile an IModel transformation", async function () {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformation.bim");
     const sourceDb = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, sourceDbFile);
