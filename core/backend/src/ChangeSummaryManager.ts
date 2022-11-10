@@ -582,5 +582,4 @@ export class ChangeSummaryManager {
       IModelJsFs.removeSync(fileName);
     }
   }
-
 }

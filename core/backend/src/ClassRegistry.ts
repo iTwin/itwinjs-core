@@ -13,7 +13,7 @@ import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 import { EntityReferences } from "./EntityReferences";
 import * as assert from "assert";
-import type { RelationshipClassProps } from "@itwin/ecschema-metadata";
+import type { EntityClassProps, MixinProps, RelationshipClassProps } from "@itwin/ecschema-metadata";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
@@ -61,19 +61,26 @@ export class ClassRegistry {
     return schemaClass;
   }
 
-  private static getRootMetaData(iModel: IModelDb, entityMetaData: EntityMetaData): EntityMetaData {
-    let rootClassMetaData = entityMetaData;
-    while (true) {
-      if (rootClassMetaData.baseClasses.length === 0)
-        break;
-      const firstBase = iModel.getMetaData(rootClassMetaData.baseClasses[0]);
-      const firstBaseIsMixin = firstBase.customAttributes?.some((ca) => ca.ecclass === "IsMixin");
-      if (firstBaseIsMixin)
-        break;
-      else
-        rootClassMetaData = firstBase;
+  /** First, finds the root BisCore entity class for an entity, by traversing base classes and mixin targets (AppliesTo).
+   * Then, gets its metadata and returns that.
+   * @param iModel - iModel containing the metadata for this type
+   * @param ecTypeQualifier - a full name of an ECEntityClass to find the root of
+   * @returns the qualified full name of an ECEntityClass
+   * @internal public for testing only
+   */
+  public static getRootEntity(iModel: IModelDb, ecTypeQualifier: string): string {
+    const [classSchema, className] = ecTypeQualifier.split(".");
+    const schemaItemJson = iModel.nativeDb.getSchemaItem(classSchema, className);
+    if (schemaItemJson.error)
+      throw new IModelError(schemaItemJson.error, `failed to get schema item '${ecTypeQualifier}'`);
+    const schemaItem = JSON.parse(schemaItemJson.result as string) as EntityClassProps | MixinProps;
+    if (!("appliesTo" in schemaItem) && schemaItem.baseClass === undefined) {
+      return ecTypeQualifier;
     }
-    return rootClassMetaData;
+    // typescript doesn't understand that the inverse of the above condition is
+    // ("appliesTo" in rootclassMetaData || rootClassMetaData.baseClass !== undefined)
+    const parentItemQualifier = (schemaItem as MixinProps).appliesTo ?? schemaItem.baseClass as string;
+    return this.getRootEntity(iModel, parentItemQualifier);
   }
 
   /** Generate a JavaScript class from Entity metadata.
@@ -139,12 +146,11 @@ export class ClassRegistry {
           const maybeMetaData = iModel.nativeDb.getSchemaItem(...prop.relationshipClass.split(":") as [string, string]);
           assert(maybeMetaData.result !== undefined, "The nav props relationship metadata was not found");
           const relMetaData: RelationshipClassProps = JSON.parse(maybeMetaData.result);
-          const normalizeClassName = (clsName: string) => clsName.replace(".", ":");
-          const ecClassMetaData = iModel.getMetaData(normalizeClassName(relMetaData.target.constraintClasses[0]));
-          const rootClassMetaData = ClassRegistry.getRootMetaData(iModel, ecClassMetaData);
+          const rootClassMetaData = ClassRegistry.getRootEntity(iModel, relMetaData.target.constraintClasses[0]);
           // root class must be in BisCore so should be loaded since biscore classes will never get this
           // generated implementation
-          const rootClass = ClassRegistry.findRegisteredClass(rootClassMetaData.ecclass);
+          const normalizeClassName = (clsName: string) => clsName.replace(".", ":");
+          const rootClass = ClassRegistry.findRegisteredClass(normalizeClassName(rootClassMetaData));
           assert(rootClass, `The root class for ${prop.relationshipClass} was not in BisCore.`);
           return { name, concreteEntityType: EntityReferences.typeFromClass(rootClass) };
         });

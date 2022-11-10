@@ -156,7 +156,10 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   /** @internal */
   public static override get className(): string { return "ExternalSourceAspect"; }
 
-  /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source. */
+  /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source.
+   * @note Warning: in a future major release the `scope` property will be optional, since the scope is intended to be potentially invalid.
+   *       all references should treat it as potentially undefined, but we cannot change the type yet since that is a breaking change.
+   */
   public scope: RelatedElement;
   /** The identifier of the object in the source repository. */
   public identifier: string;
@@ -220,7 +223,8 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   /** @internal */
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    referenceIds.addElement(this.scope.id);
+    if (this.scope)
+      referenceIds.addElement(this.scope.id);
     referenceIds.addElement(this.element.id);
     if (this.source)
       referenceIds.addElement(this.source.id);

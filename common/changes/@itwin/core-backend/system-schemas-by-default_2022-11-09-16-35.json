@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "fix ClassRegistry.getRootMetaData mixin handling, handle null ExternalSourceAspect.scope",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

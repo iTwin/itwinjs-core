@@ -301,25 +301,16 @@ export class IModelExporter {
    * @note This must be called separately from [[exportAll]] or [[exportChanges]].
    */
   public async exportSchemas(): Promise<void> {
-    const sql = this.wantSystemSchemas ? `
+    /* eslint-disable @typescript-eslint/indent */
+    const sql = `
       SELECT s.Name, s.VersionMajor, s.VersionWrite, s.VersionMinor
       FROM ECDbMeta.ECSchemaDef s
-      -- ensure schema dependency order
-      ORDER BY ECInstanceId
-    ` : `
-      WITH RECURSIVE refs(SchemaId) AS (
-        SELECT ECInstanceId FROM ECDbMeta.ECSchemaDef WHERE Name='BisCore'
-        UNION ALL
-        SELECT sr.SourceECInstanceId
-        FROM ECDbMeta.SchemaHasSchemaReferences sr
-        JOIN refs ON sr.TargetECInstanceId = refs.SchemaId
-      )
-      SELECT s.Name, s.VersionMajor, s.VersionWrite, s.VersionMinor
-      FROM refs
-      JOIN ECDbMeta.ECSchemaDef s ON refs.SchemaId=s.ECInstanceId
-      -- ensure schema dependency order
+      ${this.wantSystemSchemas ? "" : `
+      WHERE ECInstanceId >= (SELECT ECInstanceId FROM ECDbMeta.ECSchemaDef WHERE Name='BisCore')
+      `}
       ORDER BY ECInstanceId
     `;
+    /* eslint-enable @typescript-eslint/indent */
     const schemaNamesToExport: string[] = [];
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
