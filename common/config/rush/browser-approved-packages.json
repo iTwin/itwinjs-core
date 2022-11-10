@@ -767,10 +767,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "istanbul-instrumenter-loader",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "js-base64",
       "allowedCategories": [ "backend", "common" ]
     },
