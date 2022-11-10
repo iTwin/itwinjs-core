@@ -53,10 +53,10 @@ export async function certa(environment: string, config: CertaConfig): Promise<v
   // Source map any errors in this backend process
   require("source-map-support").install();
 
-  /*
-   * undefined if backendInitModule not specified
-   * callback if a cleanup function is returned by the backendInitModule export
-   * empty object if nothing is exported
+  /**
+   * undefined if backendInitModule not specified;
+   * callback if a cleanup function is returned by the backendInitModule export;
+   * empty object if nothing is exported by the backendInitModule
    */
   let cleanUpCallback: undefined | (() => Promise<void>) | {};
   if (config.backendInitModule)
