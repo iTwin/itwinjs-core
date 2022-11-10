@@ -1,17 +1,12 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
-const {
-  logBuildError,
-  logBuildWarning,
-  failBuild,
-  throwAfterTimeout,
-} = require("./utils");
+const { logBuildError, logBuildWarning, failBuild, throwAfterTimeout } = require("./utils");
 
 const rushCommonDir = path.join(__dirname, "../../../../common/");
 
@@ -23,10 +18,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   let jsonOut = {};
   try {
     console.time("Audit time");
-    jsonOut = await Promise.race([
-      runPnpmAuditAsync(commonTempDir),
-      throwAfterTimeout(180000, "Timed out contacting npm registry."),
-    ]);
+    jsonOut = await Promise.race([runPnpmAuditAsync(commonTempDir), throwAfterTimeout(180000, "Timed out contacting npm registry.")]);
     console.timeEnd("Audit time");
     console.log();
   } catch (error) {
@@ -37,9 +29,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
 
   if (jsonOut.error) {
     console.error(jsonOut.error.summary);
-    logBuildWarning(
-      "Rush audit failed. This may be caused by a problem with the npm audit server."
-    );
+    logBuildWarning("Rush audit failed. This may be caused by a problem with the npm audit server.");
   }
 
   // A list of temporary advisories excluded from the High and Critical list.
@@ -49,8 +39,8 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   // every entry should look like:
   // "GHSA-xxxx-xxxx-xxxx", // https://github.com/advisories/GHSA-xxxx-xxxx-xxxx pkgName>subDepA>subDepB
   const excludedAdvisories = [
-    "GHSA-f8q6-p94x-37v3", //https://github.com/advisories/GHSA-f8q6-p94x-37v3 minimatch ReDoS
-    "GHSA-76p3-8jx3-jpfq", // https://github.com/advisories/GHSA-76p3-8jx3-jpfq appui>@bentley/react-scripts>loader-utils
+    "GHSA-f8q6-p94x-37v3", // https://github.com/advisories/GHSA-f8q6-p94x-37v3 react-dev-utils>recursive-readdir>minimatch
+    "GHSA-76p3-8jx3-jpfq", // https://github.com/advisories/GHSA-76p3-8jx3-jpfq @bentley/react-scripts>loader-utils
   ];
 
   let shouldFailBuild = false;
@@ -65,17 +55,10 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
       const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
 
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
-      if (
-        !excludedAdvisories.includes(advisory.github_advisory_id) &&
-        (severity === "HIGH" || severity === "CRITICAL")
-      ) {
+      if (!excludedAdvisories.includes(advisory.github_advisory_id) && (severity === "HIGH" || severity === "CRITICAL")) {
         logBuildError(message);
         shouldFailBuild = true;
-      } else if (
-        excludedAdvisories.includes(advisory.github_advisory_id) ||
-        severity === "MODERATE"
-      )
-        // Only warn on MODERATE severity items
+      } else if (excludedAdvisories.includes(advisory.github_advisory_id) || severity === "MODERATE") // Only warn on MODERATE severity items
         logBuildWarning(message);
     }
   }
@@ -91,28 +74,22 @@ function runPnpmAuditAsync(cwd) {
   return new Promise((resolve, reject) => {
     // pnpm audit requires a package.json file so we temporarily create one and
     // then delete it later
-    fs.writeFileSync(
-      path.join(rushCommonDir, "config/rush/package.json"),
-      JSON.stringify("{}", null, 2)
-    );
+    fs.writeFileSync(path.join(rushCommonDir, "config/rush/package.json"), JSON.stringify("{}", null, 2));
 
     console.log("Running audit");
-    const pnpmPath = path.join(
-      rushCommonDir,
-      "temp/pnpm-local/node_modules/.bin/pnpm"
-    );
+    const pnpmPath = path.join(rushCommonDir, "temp/pnpm-local/node_modules/.bin/pnpm");
     const child = spawn(pnpmPath, ["audit", "--json"], { cwd, shell: true });
 
     let stdout = "";
-    child.stdout.on("data", (data) => {
+    child.stdout.on('data', (data) => {
       stdout += data;
     });
 
-    child.on("error", (data) => {
+    child.on('error', (data) => {
       fs.unlinkSync(path.join(rushCommonDir, "config/rush/package.json"));
-      reject(data);
+      reject(data)
     });
-    child.on("close", () => {
+    child.on('close', () => {
       fs.unlinkSync(path.join(rushCommonDir, "config/rush/package.json"));
       resolve(JSON.parse(stdout.trim()));
     });
