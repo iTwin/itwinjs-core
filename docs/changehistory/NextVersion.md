@@ -129,7 +129,7 @@ With the new approach we "break" at the duplicate A node:
 
 ### ExternalSourceAspect find methods
 
-[ExternalSourceAspect.findBySource] is deprecated. Use [ExternalSourceAspect.findAllBySource] instead.
+[ExternalSourceAspect.findBySource]($backend) is deprecated. Use [ExternalSourceAspect.findAllBySource]($backend) instead.
 
 An element can have more than one ExternalSourceAspect with the same scope, kind, and identifier. Also, many elements could have ExternalSourceAspects with the same scope, kind, and identifier. Therefore, ExternalSourceAspect.findAllBySource returns an *array*.
 
