@@ -76,7 +76,7 @@ jobs:
         displayName: Publish Pipeline Artifact - .updated.json
         condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
 
-      - script: |
+      - bash: |
           currentVersion=`node -p "require('./core/backend/package.json').version"`
           echo ##vso[build.addbuildtag]$currentVersion
         displayName: Tag build with version
