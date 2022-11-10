@@ -125,7 +125,6 @@ stages:
     jobs:
     - template: ./jobs/docs/docs-scorecard.yaml
       parameters:
-        variableGroup: iTwin.js Docs - Scorecard
         artifactName: DocsBuild
 
   - stage: PROD

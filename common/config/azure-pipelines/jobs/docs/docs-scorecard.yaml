@@ -1,12 +1,11 @@
 parameters:
-- name: variableGroup
 - name: artifactName
 
 jobs:
 - job: RunAudit
   pool: PRG
   variables:
-    - group: ${{ parameters.variableGroup }}
+    - group: iTwin.js Docs - Scorecard
   steps:
   - script: echo $(ShortCode)
   - template: templates/scorecard/audit-tool.yaml@build-pipeline-scripts
@@ -26,7 +25,7 @@ jobs:
   pool:
     vmImage: "windows-latest"
   variables:
-    - group: ${{ parameters.variableGroup }}
+    - group: iTwin.js Docs - Scorecard
   steps:
   - template: templates/scorecard/scorecard-common-validators.yaml@build-pipeline-scripts
     parameters:
