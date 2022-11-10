@@ -162,6 +162,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       this.displaySelection(evt.level);
     };
 
+    // eslint-disable-next-line deprecation/deprecation
     private async getRowKeys(rows: AsyncIterableIterator<RowItem>): Promise<InstanceKey[]> {
       const keys = new Array<InstanceKey>();
       for await (const row of rows)
@@ -169,7 +170,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       return keys;
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
     private isRowSelected = (row: RowItem): boolean => {
       // give consumers a chance to tell if row is selected
       if (this.baseProps.isRowSelected)
@@ -182,7 +183,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       return selection.has(this.props.dataProvider.getRowKey(row));
     };
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
     private onRowsSelected = async (rows: AsyncIterableIterator<RowItem>, replace: boolean): Promise<boolean> => {
       // give consumers a chance to handle selection changes and either
       // continue default handling (by returning `true`) or abort (by
@@ -200,7 +201,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       return true;
     };
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
     private onRowsDeselected = async (rows: AsyncIterableIterator<RowItem>): Promise<boolean> => {
       // give consumers a chance to handle selection changes and either
       // continue default handling (by returning `true`) or abort (by

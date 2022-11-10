@@ -189,8 +189,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     this.jsonProperties = props.jsonProperties;
   }
 
-  /**  Look up the ElementId of the element that contains an aspect with the specified Scope, Kind, and Identifier
-   */
+  /** @deprecated findAllBySource */
   public static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): { elementId?: Id64String, aspectId?: Id64String } {
     const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
     let elementId: Id64String | undefined;
@@ -205,6 +204,32 @@ export class ExternalSourceAspect extends ElementMultiAspect {
       }
     });
     return { elementId, aspectId };
+  }
+
+  /** Look up the elements that contain one or more ExternalSourceAspect with the specified Scope, Kind, and Identifier.
+   * The result of this function is an array of all of the ExternalSourceAspects that were found, each associated with the owning element.
+   * A given element could have more than one ExternalSourceAspect with the given scope, kind, and identifier.
+   * Also, many elements could have ExternalSourceAspect with the same scope, kind, and identifier.
+   * Therefore, the result array could have more than one entry with the same elementId.
+   * Aspects are never shared. Each aspect has its own unique ECInstanceId.
+   * @param iModelDb The iModel to query
+   * @param scope    The scope of the ExternalSourceAspects to find
+   * @param kind     The kind of the ExternalSourceAspects to find
+   * @param identifier The identifier of the ExternalSourceAspects to find
+   * @returns the query results
+  */
+  public static findAllBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): Array<{ elementId: Id64String, aspectId: Id64String }> {
+    const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
+    const found: Array<{ elementId: Id64String, aspectId: Id64String }> = [];
+    iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+      statement.bindId("scope", scope);
+      statement.bindString("kind", kind);
+      statement.bindString("identifier", identifier);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        found.push({ elementId: statement.getValue(0).getId(), aspectId: statement.getValue(1).getId() });
+      }
+    });
+    return found;
   }
 
   /** @internal */

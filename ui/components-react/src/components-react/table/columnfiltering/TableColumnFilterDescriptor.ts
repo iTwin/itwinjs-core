@@ -12,6 +12,7 @@ import {
   FilterCompositionLogicalOperator, FilterDescriptorCollection, FilterOperator, OperatorValueFilterDescriptor,
   OperatorValueFilterDescriptorCollection,
 } from "./ColumnFiltering";
+/* eslint-disable deprecation/deprecation */
 
 /** A ColumnFilterDescriptor for TableColumn.
  * @internal
