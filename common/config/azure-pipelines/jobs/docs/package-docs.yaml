@@ -23,18 +23,6 @@ jobs:
         artifact: DocsBuild
         displayName: Download itwinjs-docs artifact
 
-      - script: |
-          SET /p version=<$(tempDocsLocation)\version.txt
-          ECHO Releasing docs for %version%
-          ECHO ##vso[build.addbuildtag]%version%
-        displayName: Add build tag
-
-      - task: DeleteFiles@1
-        displayName: Delete version.txt
-        inputs:
-          SourceFolder: $(tempDocsLocation)
-          Contents: version.txt
-
       - task: DownloadPipelineArtifact@2
         displayName: Download Pipeline Artifact - Nuget Spec
         inputs:
@@ -48,9 +36,6 @@ jobs:
         displayName: Replace tokens in NugetPackage.nuspec
         inputs:
           targetFiles: $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec
-
-      - script: type $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec
-        displayName: Debug nuspec
 
       - task: DeleteFiles@1
         displayName: Delete landing page

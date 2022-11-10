@@ -128,18 +128,35 @@ stages:
         variableGroup: iTwin.js Docs - Scorecard
         artifactName: DocsBuild
 
-  # - stage: PROD
-  #   displayName: Deployment (PROD)
-  #   dependsOn: Scorecard
-  #   jobs:
-  #   - template: ./jobs/docs/deploy-docs.yaml
-  #     parameters:
-  #       variableGroup: iTwin.js Docs - PROD
+  - stage: PROD
+    displayName: Deployment (PROD)
+    dependsOn: Scorecard
+    jobs:
+    - template: ./jobs/docs/deploy-docs.yaml
+      parameters:
+        variableGroup: iTwin.js Docs - PROD
 
-  # - stage: UpdateDocumentationIndexPROD
-  #   displayName: Update Documentation Index (PROD)
-  #   dependsOn: PROD
-  #   jobs:
-  #   - template: ./jobs/docs/update-docs-index.yaml
-  #     parameters:
-  #       variableGroup: iTwin.js Docs - Algolia - PROD
+  - stage: ProductTestsPROD
+    displayName: Product Tests (PROD)
+    dependsOn: PROD
+    jobs:
+    - job: ProductTests_Prod
+      pool:
+        name: SecurityScans
+        demands: Agent.OS -equals Windows_NT
+      variables:
+      - group: Selenium Test Variables
+      - name: env
+        value: Production
+      - name: SeleniumTestUrl
+        value: https://itwinjs.org
+      steps:
+        - template: ./templates/docs-product-test-steps.yaml
+
+  - stage: UpdateDocumentationIndexPROD
+    displayName: Update Documentation Index (PROD)
+    dependsOn: PROD
+    jobs:
+    - template: ./jobs/docs/update-docs-index.yaml
+      parameters:
+        variableGroup: iTwin.js Docs - Algolia - PROD

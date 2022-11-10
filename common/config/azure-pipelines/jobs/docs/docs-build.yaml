@@ -76,57 +76,10 @@ jobs:
         displayName: Publish Pipeline Artifact - .updated.json
         condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
 
-      - task: PythonScript@0
-        inputs:
-          scriptSource: inline
-          script: |
-            import os, subprocess, sys
-
-            # Validate arguments
-            if len(sys.argv) != 2:
-              sys.exit("Invalid number of arguments to script provided.\nExpected: 1\nReceived: {0}".format(len(sys.argv) - 1))
-            outputDir = os.path.realpath(sys.argv[1])
-
-            # Get local version from @itwin/core-backend
-            cmd = ["node", "-p", "require('./core/backend/package.json').version"]
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            try:
-              out, err = process.communicate()
-            except:
-              process.kill()
-              out, err = process.communicate()
-
-            if process.returncode > 0:
-              print(err.decode())
-            else:
-              package_version = out.decode().strip()
-
-              # # Check npm to see if local version of @itwin/core-backend has been published
-              # cmd = ["npm", "view", "@itwin/core-backend@" + package_version]
-              # process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-              # try:
-              #   out, err = process.communicate()
-              # except:
-              #   process.kill()
-              #   out, err = process.communicate()
-
-              # if process.returncode > 0:
-              #   err = err.decode()
-              #   if err.find("code E404"):
-              print("Releasing version " + package_version)
-              f = open(os.path.join(outputDir, "version.txt"), "w")
-              f.write(package_version)
-              f.close()
-
-              print("##vso[build.addbuildtag]" + package_version)
-              print("##vso[build.addbuildtag]iTwinJsDocsRelease")
-                # else:
-                #   print(err)
-              # else:
-              #   print("Version " + package_version + " already exists")
-          arguments: ${{ parameters.outputDir }}
-          workingDirectory: ${{ parameters.workingDir }}
-        displayName: Tag if new release
+      - script: |
+          currentVersion=`node -p "require('./core/backend/package.json').version"`
+          echo ##vso[build.addbuildtag]$currentVersion
+        displayName: Tag build with version
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
       - publish: ${{ parameters.outputDir }}
