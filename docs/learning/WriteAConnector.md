@@ -304,7 +304,7 @@ A Connector must also relate each physical model that it creates to the source d
 [[include:Synchronizer-recordDocument.example-code]]
 ```
 
-Also refer to [Provenence in iModels](./Provenence-in-iModels) for more information about ExternalSource and related classes.
+Also refer to [Provenance in BIS](../bis/domains/Provenance-in-BIS.md) for more information about ExternalSource and related classes.
 
 ###### Case 2 : Id mapping
 
