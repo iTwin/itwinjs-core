@@ -72,6 +72,6 @@ steps:
       definition: 8467
       allowPartiallySucceededBuilds: true
       buildVersionToDownload: latestFromBranch
-      runBranch: refs/heads/master
+      runBranch: refs/heads/release/3.4.x
       artifactName: .updated.json
       targetPath: ${{ parameters.stagingDir }}/config/
