@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/linear-referencing-common",
-      "comment": "Remove engine field from common pkg",
+      "comment": "",
       "type": "none"
     }
   ],
