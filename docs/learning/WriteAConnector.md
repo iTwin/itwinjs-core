@@ -358,9 +358,7 @@ The framework will automatically detect and delete elements and models if the co
 
 ### Getting started
 
-You'll need Node.js version ">=14.17.0 <17.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
-
-#### Node Packages
+You'll need Node.js version ">=12.22.0 <19.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
 
 The node packages you'll need can be installed using
 

@@ -740,7 +740,7 @@
     },
     {
       "name": "i18next-http-backend",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "ignore-styles",
@@ -977,6 +977,10 @@
     {
       "name": "react-window",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "recursive-readdir",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "redux",
