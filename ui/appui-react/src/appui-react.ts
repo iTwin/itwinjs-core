@@ -170,6 +170,8 @@ export * from "./appui-react/stagepanels/StagePanel";
 export * from "./appui-react/stagepanels/StagePanelDef";
 export * from "./appui-react/stagepanels/StagePanelHeader";
 
+export * from "./appui-react/statusbar/dialog/Dialog";
+
 export * from "./appui-react/statusbar/StatusBar";
 export * from "./appui-react/statusbar/StatusBarWidgetControl";
 export * from "./appui-react/statusbar/StatusBarComposer";
