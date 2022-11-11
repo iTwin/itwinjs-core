@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added node-dependent RPC function implementations (that previously contaminated common).",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
