@@ -28,7 +28,8 @@ import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStr
 
 /**
  * Presentation manager working mode.
- * @public @deprecated
+ * @public
+ * @deprecated The attribute is not used by [[PresentationManager]] anymore
  */
 export enum PresentationManagerMode {
   /**
@@ -307,7 +308,7 @@ export interface PresentationManagerProps {
    *
    * Defaults to [[PresentationManagerMode.ReadWrite]].
    *
-   * @deprecated
+   * @deprecated The attribute is not used by [[PresentationManager]] anymore
    */
   mode?: PresentationManagerMode; // eslint-disable-line deprecation/deprecation
 
