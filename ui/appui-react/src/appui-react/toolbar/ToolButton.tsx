@@ -20,11 +20,13 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Properties for the [[ToolButton]] React Component.
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface ToolButtonProps extends ToolItemProps, CommonProps { }
 
 /** Tool Button React Component.
+ * @deprecated Use [CommonToolbarItem]($appui-abstract) instead.
  * @public
  */
 export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> {

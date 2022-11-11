@@ -11,15 +11,24 @@ import { useSelector } from "react-redux";
 import { FrameworkRootState } from "../redux/StateManager";
 import { FrameworkVersionId, UiFramework } from "../UiFramework";
 
-/** @public */
+/**
+ * @deprecated Used to toggle between UI1.0 and UI2.0.
+ * @public
+ */
 export function useFrameworkVersion(): FrameworkVersionId {
   return React.useContext(FrameworkVersionContext);
 }
 
-/** @public */
+/**
+ * @deprecated Used to toggle between UI1.0 and UI2.0.
+ * @public
+ */
 export const FrameworkVersionContext = React.createContext<FrameworkVersionId>("2"); // eslint-disable-line @typescript-eslint/naming-convention
 
-/** @public */
+/**
+ * @deprecated Used to toggle between UI1.0 and UI2.0.
+ * @public
+ */
 export interface FrameworkVersionProps {
   children?: React.ReactNode;
 }
@@ -28,6 +37,7 @@ export interface FrameworkVersionProps {
  * component uses the property frameworkState.configurableUiState.frameworkVersion from the redux store
  * to determine the ui version. This version will default to "2" and should only be set to "1" for older
  * iModelApp applications.
+ * @deprecated Used to toggle between UI1.0 and UI2.0.
  * @public
  */
 export function FrameworkVersion(props: FrameworkVersionProps) { // eslint-disable-line @typescript-eslint/no-redeclare

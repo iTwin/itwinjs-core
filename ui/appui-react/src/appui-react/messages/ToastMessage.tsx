@@ -20,6 +20,7 @@ import { HollowIcon } from "./HollowIcon";
 import { MessageContainer } from "@itwin/core-react";
 
 /** Properties for a [[ToastMessage]]
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface ToastMessageProps {

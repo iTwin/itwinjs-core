@@ -96,6 +96,7 @@ export interface NavigationWidgetProps extends ToolbarWidgetProps {
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
 /** Prototype for WidgetDef StateFunc (UI 1.0 only deprecate ???)
+ * @deprecated Used in UI1.0 only.
  * @public
  */
 export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;

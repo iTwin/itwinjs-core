@@ -24,6 +24,7 @@ import { HollowIcon } from "./HollowIcon";
 import { ToasterSettings } from "@itwin/itwinui-react/cjs/core/Toast/Toaster";
 
 /** Properties for a [[ActivityMessage]]
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface ActivityMessageProps {

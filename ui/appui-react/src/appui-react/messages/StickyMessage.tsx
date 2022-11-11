@@ -22,6 +22,7 @@ import { HollowIcon } from "./HollowIcon";
 import { Icon, MessageContainer } from "@itwin/core-react";
 
 /** Properties for a [[StickyMessage]]
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface StickyMessageProps {

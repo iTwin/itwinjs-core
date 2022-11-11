@@ -38,6 +38,7 @@ import { FrontstageManager } from "./frontstage/FrontstageManager";
 // cSpell:ignore Mobi
 
 /** Defined that available UI Versions. It is recommended to always use the latest version available.
+ * @deprecated Used to toggle between UI1.0 and UI2.0.
  * @public
  */
 export type FrameworkVersionId = "1" | "2";

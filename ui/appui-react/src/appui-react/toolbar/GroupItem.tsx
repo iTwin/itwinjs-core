@@ -650,11 +650,13 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 }
 
 /** Properties for the [[GroupButton]] React component
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface GroupButtonProps extends GroupItemProps, CommonProps { }
 
 /** Group Button React component
+ * @deprecated Use [GroupButton]($appui-abstract) instead.
  * @public
  */
 export function GroupButton(props: GroupButtonProps) {
