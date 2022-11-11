@@ -340,8 +340,8 @@ export class Ray3d implements BeJSONFunctions {
   }
 
   /**
-   * Return a ray whose `ray.origin` is an interpolated on the line passing pt1 and pt2 specified by the fraction
-   * and `ray.direction` is the vector from pt1 rto pt2 with a tangent scale factor applied.
+   * Return a ray with `ray.origin` interpolated between pt1 and pt2 at the given fraction
+   * and `ray.direction` set to the vector from pt1 to pt2 multiplied by the given scale factor.
    * @param pt1 start point of interpolation.
    * @param fraction fractional position between points.
    * @param pt2 endpoint of interpolation.
