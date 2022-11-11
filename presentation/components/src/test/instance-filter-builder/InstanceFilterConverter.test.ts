@@ -305,9 +305,9 @@ describe("convertToInstanceFilterDefinition", () => {
       expect(expression).to.be.eq(`${createAlias("C")}.${propertyInfo.name} IS NULL`);
       expect(relatedInstances).to.be.lengthOf(1).and.containSubset([{
         pathFromSelectToPropertyClass: [{
-          sourceClassInfo: classBInfo,
-          targetClassInfo: classCInfo,
-          relationshipInfo: classBToCInfo,
+          sourceClassName: classBInfo.name,
+          targetClassName: classCInfo.name,
+          relationshipName: classBToCInfo.name,
           isForwardRelationship: true,
         }],
         alias: createAlias("C"),
@@ -330,9 +330,9 @@ describe("convertToInstanceFilterDefinition", () => {
       expect(expression).to.be.eq(`(${createAlias("C")}.${propertyInfo.name} IS NULL AND ${createAlias("C")}.${propertyInfo.name} IS NOT NULL)`);
       expect(relatedInstances).to.be.lengthOf(1).and.containSubset([{
         pathFromSelectToPropertyClass: [{
-          sourceClassInfo: classBInfo,
-          targetClassInfo: classCInfo,
-          relationshipInfo: classBToCInfo,
+          sourceClassName: classBInfo.name,
+          targetClassName: classCInfo.name,
+          relationshipName: classBToCInfo.name,
           isForwardRelationship: true,
         }],
         alias: createAlias("C"),
@@ -349,14 +349,14 @@ describe("convertToInstanceFilterDefinition", () => {
       expect(expression).to.be.eq(`${createAlias("C")}.${propertyInfo.name} IS NULL`);
       expect(relatedInstances).to.be.lengthOf(1).and.containSubset([{
         pathFromSelectToPropertyClass: [{
-          sourceClassInfo: classAInfo,
-          targetClassInfo: classBInfo,
-          relationshipInfo: classAToBInfo,
+          sourceClassName: classAInfo.name,
+          targetClassName: classBInfo.name,
+          relationshipName: classAToBInfo.name,
           isForwardRelationship: true,
         }, {
-          sourceClassInfo: classBInfo,
-          targetClassInfo: classCInfo,
-          relationshipInfo: classBToCInfo,
+          sourceClassName: classBInfo.name,
+          targetClassName: classCInfo.name,
+          relationshipName: classBToCInfo.name,
           isForwardRelationship: true,
         }],
         alias: createAlias("C"),

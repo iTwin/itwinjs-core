@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Renamed content descriptor property 'filterExpression' to 'fieldsFilterExpression'",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
