@@ -190,6 +190,10 @@ export abstract class Tile {
   /** True if this tile's content has been loaded and is ready to be drawn. */
   public get isReady(): boolean { return TileLoadStatus.Ready === this.loadStatus; }
 
+  /** Indicates the tile should not be selected for display because it is out of the range of LODs supported by the tile provider.
+   * @see [[ImageryMapTile.isOutOfLodRange]].
+   * @alpha
+   */
   public get isOutOfLodRange(): boolean { return false;}
 
   /** @public */
