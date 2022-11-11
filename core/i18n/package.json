@@ -48,10 +48,10 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "4.3.1",
+    "@types/node": "18.11.5",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.59",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.1.2",
@@ -69,7 +69,7 @@
   "dependencies": {
     "i18next": "^21.9.1",
     "i18next-browser-languagedetector": "^6.1.2",
-    "i18next-http-backend": "^1.4.1"
+    "i18next-http-backend": "^1.4.4"
   },
   "eslintConfig": {
     "plugins": [

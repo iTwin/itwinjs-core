@@ -70,7 +70,7 @@
     "@types/linkify-it": "~2.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.59",
+    "@types/node": "18.11.5",
     "@types/react": "^17.0.37",
     "@types/react-data-grid": "4.0.2",
     "@types/react-dom": "^17.0.0",
