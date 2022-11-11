@@ -57,15 +57,15 @@ async function onExitElectronApp(child: ChildProcess): Promise<number> {
  * Returns a promise that will be resolved with the exit code of the child process, once it terminates.
  */
 export async function relaunchInElectron(): Promise<number> {
-  const arg = process.argv.slice(1);
+  const args = process.argv.slice(1);
 
   // '--debug' is not allowed in Electron and '--inspect' will automatically start a debugger,
   // so we use custom parameter to indicate what we want to start debugger ourselves.
-  const debugIdx = arg.indexOf("--debug");
+  const debugIdx = args.indexOf("--debug");
   if (debugIdx >= 0)
-    arg[debugIdx] = "--debug-electron";
+    args[debugIdx] = "--debug-electron";
 
-  const child = spawnChildProcess(require("electron/index.js"), arg, undefined, true);
+  const child = spawnChildProcess(require("electron/index.js"), args, undefined, true);
   return onExitElectronApp(child);
 }
 
