@@ -66,8 +66,6 @@ export class TraversalChildrenDetails {
 export class TraversalSelectionContext {
   public preloaded = new Set<RealityTile>();
   public missing = new Array<RealityTile>();
-  public outOfLodRange = new Array<RealityTile>();
-
   public get selectionCountExceeded() { return this._maxSelectionCount === undefined ? false : (this.missing.length + this.selected.length) > this._maxSelectionCount; }   // Avoid selecting excessive number of tiles.
   constructor(public selected: Tile[], public displayedDescendants: Tile[][], public preloadDebugBuilder?: GraphicBuilder, private _maxSelectionCount?: number) { }
 

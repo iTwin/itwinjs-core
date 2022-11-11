@@ -18,7 +18,6 @@ import {
   MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
   TileTreeSupplier,
-  TraversalSelectionContext,
 } from "../internal";
 
 /** @internal */
@@ -30,12 +29,23 @@ export interface ImageryTileContent extends TileContent {
 export class ImageryMapTile extends RealityTile {
   private _texture?: RenderTexture;
   private _mapTileUsageCount = 0;
+
+  /** True if the tile is outside the valid range of LOD : some tile tree might not be fully defined (i.e. TileTree might start at level 10+).
+   * This flag is needed because we can't assume this is tile is a leaf, or start drilling down the tile tree for available higher resolutions tiles.  If a tile
+   * matches the current display screen size but is out of range, simply render blank data (i.e We want user to adjust level of the view to see available data.)
+  */
+  private _outOfLodRange: boolean;
+
   constructor(params: TileParams, public imageryTree: ImageryMapTileTree, public quadId: QuadId, public rectangle: MapCartoRectangle) {
     super(params, imageryTree);
+
+    this._outOfLodRange = this.depth < imageryTree.minDepth;
   }
+
   public get texture() { return this._texture; }
   public get tilingScheme() { return this.imageryTree.tilingScheme; }
   public override get isDisplayable() { return (this.depth > 1) && super.isDisplayable; }
+  public override get isOutOfLodRange(): boolean { return this._outOfLodRange;}
 
   public override setContent(content: ImageryTileContent): void {
     this._texture = content.imageryTexture;        // No dispose - textures may be shared by terrain tiles so let garbage collector dispose them.
@@ -45,20 +55,11 @@ export class ImageryMapTile extends RealityTile {
     this.setIsReady();
   }
 
-  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs, context: TraversalSelectionContext): TileTreeLoadStatus {
+  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     if (this.isLeaf || (this.rectangle.xLength() / this.maximumSize) < drapePixelSize || this._anyChildNotFound) {
-      if (this.isDisplayable
-        && !this.isNotFound
-      ) {
-        if (this.isOutOfLodRange) {
-          context.outOfLodRange.push(this);
-        } else {
-          drapeTiles.push(this);
-        }
-
-      }
-
+      if (this.isDisplayable && !this.isNotFound && !this.isOutOfLodRange)
+        drapeTiles.push(this);
       return TileTreeLoadStatus.Loaded;
     }
 
@@ -70,7 +71,7 @@ export class ImageryMapTile extends RealityTile {
         for (const child of this.children) {
           const mapChild = child as ImageryMapTile;
           if (mapChild.rectangle.intersectsRange(rectangleToDrape))
-            status = mapChild.selectCartoDrapeTiles(drapeTiles, rectangleToDrape, drapePixelSize, args, context);
+            status = mapChild.selectCartoDrapeTiles(drapeTiles, rectangleToDrape, drapePixelSize, args);
           if (TileTreeLoadStatus.Loaded !== status)
             break;
         }
@@ -104,13 +105,12 @@ export class ImageryMapTile extends RealityTile {
       // If children depth is lower than min LOD, mark them as disabled.
       // This is important: if those tiles are requested and the server refuse to serve them,
       // they will be marked as not found and their descendant will never be displayed.
-      const outOfLodRange = (this.depth + 1) < imageryTree.minDepth;
 
       childIds.forEach((quadId) => {
         const rectangle = imageryTree.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
         const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
         const maximumSize = imageryTree.imageryLoader.maximumScreenSize;
-        const tile = new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize, outOfLodRange }, imageryTree, quadId, rectangle);
+        const tile = new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize}, imageryTree, quadId, rectangle);
         children.push(tile);
       });
 
@@ -183,12 +183,12 @@ export class ImageryMapTileTree extends RealityTileTree {
   private static _scratchDrapeRectangle = MapCartoRectangle.createZero();
   private static _drapeIntersectionScale = 1.0 - 1.0E-5;
 
-  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs, context: TraversalSelectionContext): TileTreeLoadStatus {
+  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus {
     const drapeRectangle = tileToDrape.rectangle.clone(ImageryMapTileTree._scratchDrapeRectangle);
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     const drapePixelSize = 1.05 * tileToDrape.rectangle.xLength() / tileToDrape.maximumSize;
     drapeRectangle.scaleAboutCenterInPlace(ImageryMapTileTree._drapeIntersectionScale);    // Contract slightly to avoid draping adjacent or slivers.
-    return (this.rootTile as ImageryMapTile).selectCartoDrapeTiles(drapeTiles, drapeRectangle, drapePixelSize, args, context);
+    return (this.rootTile as ImageryMapTile).selectCartoDrapeTiles(drapeTiles, drapeRectangle, drapePixelSize, args);
   }
   public cartoRectangleFromQuadId(quadId: QuadId): MapCartoRectangle { return this.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level); }
 }

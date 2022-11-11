@@ -83,7 +83,6 @@ export abstract class Tile {
   protected _contentRange?: ElementAlignedBox3d;
   /** The maximum size in pixels this tile can be drawn. If the size of the tile on screen exceeds this maximum, a higher-resolution tile should be drawn in its place. */
   protected _maximumSize: number;
-  protected _outOfLodRange?: boolean;
   /** The [[TileTree]] to which this tile belongs. */
   public readonly tree: TileTree;
   /** The volume of space occupied by this tile. Its children are guaranteed to also be contained within this volume. */
@@ -136,7 +135,6 @@ export abstract class Tile {
     this._maximumSize = params.maximumSize;
     this._contentRange = params.contentRange;
     this._contentId = params.contentId;
-    this._outOfLodRange = params.outOfLodRange;
 
     const center = this.range.low.interpolate(0.5, this.range.high);
     const radius = 0.5 * this.range.low.distance(this.range.high);
@@ -192,7 +190,7 @@ export abstract class Tile {
   /** True if this tile's content has been loaded and is ready to be drawn. */
   public get isReady(): boolean { return TileLoadStatus.Ready === this.loadStatus; }
 
-  public get isOutOfLodRange(): boolean { return (true === this._outOfLodRange); }
+  public get isOutOfLodRange(): boolean { return false;}
 
   /** @public */
   public setNotFound(): void {
