@@ -4,9 +4,6 @@
   "main": "lib/cjs/linear-referencing-common.js",
   "typings": "lib/cjs/linear-referencing-common",
   "license": "MIT",
-  "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
-  },
   "scripts": {
     "build": "npm run -s build:cjs",
     "build:ci": "npm run -s build",
