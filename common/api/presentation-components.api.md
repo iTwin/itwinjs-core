@@ -212,7 +212,9 @@ export interface DiagnosticsProps {
     // @internal
     devDiagnostics?: {
         severity?: DiagnosticsLoggerSeverity;
-        perf?: boolean;
+        perf?: boolean | {
+            minimumDuration: number;
+        };
         backendVersion?: boolean;
         handler: ClientDiagnosticsHandler;
     };
