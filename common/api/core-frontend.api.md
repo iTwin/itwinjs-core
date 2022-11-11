@@ -10871,7 +10871,7 @@ export abstract class Tile {
     protected _isLeaf: boolean;
     get isLoading(): boolean;
     get isNotFound(): boolean;
-    // (undocumented)
+    // @alpha
     get isOutOfLodRange(): boolean;
     // @internal (undocumented)
     get isParentDisplayable(): boolean;
