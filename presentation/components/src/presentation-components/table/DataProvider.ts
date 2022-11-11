@@ -193,8 +193,9 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
         direction: (this._sortDirection === UiSortDirection.Descending) ? SortDirection.Descending : SortDirection.Ascending,
       };
     }
-    if (this._filterExpression)
-      overrides.filterExpression = this._filterExpression;
+    if (this._filterExpression) {
+      overrides.fieldsFilterExpression = this._filterExpression;
+    }
     return overrides;
   }
 
