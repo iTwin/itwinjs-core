@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Fix certa test failures when no cleanup fn is defined by checking typeof `cleanUpCallback`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}
