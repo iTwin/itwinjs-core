@@ -75,8 +75,9 @@ steps:
     inputs:
       buildType: specific
       project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
-      definition: 1734 #TODO: Should be this pipeline's definition
+      definition: 8467
       allowPartiallySucceededBuilds: true
       buildVersionToDownload: latestFromBranch
+      runBranch: refs/heads/master
       artifactName: .updated.json
       targetPath: ${{ parameters.stagingDir }}/config/
