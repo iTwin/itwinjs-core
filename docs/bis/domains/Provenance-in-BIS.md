@@ -10,7 +10,7 @@ The following class diagrams depict the main classes from the BisCore schema inv
 
 ![Core Classes](../guide/media/external-sources-classes.png)
 
-![SynchronizationConfigLink](../guide/media/external-sources-classes-1.png)
+![SynchronizationConfigLink](../guide/media/external-sources-classes-synclink.png)
 
 ### RepositoryLink
 
@@ -68,7 +68,7 @@ When the associated `ExternalSource` is the root of a synchronization job, which
 
 The following instance diagram shows an example of a hierarchy of `ExternalSource`s, starting at an instance specified by a `SynchronizationConfigLink`. See [Instance-diagram Conventions](../guide/references/instance-diagram-conventions.md) for details about the conventions used.
 
-![ExternalSources tree](../guide/media/external-sources-1.png)
+![ExternalSources tree](../guide/media/external-sources-synclink.png)
 
 ---
 | Back to: [Core domains](./core-domains.md)
