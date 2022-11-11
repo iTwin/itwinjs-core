@@ -17,7 +17,7 @@ import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
-import { RpcTrace } from "../RpcBackend";
+import { RpcTrace } from "../rpc/tracing";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
 interface TileRequestProps {
