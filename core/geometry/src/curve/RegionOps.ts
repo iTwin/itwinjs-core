@@ -249,13 +249,17 @@ export class RegionOps {
    * @alpha
    */
   public static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType): AnyRegion | undefined {
-    // create and load a context . . .
     const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph();
+    const range = context.groupA.range().union(context.groupB.range());
+    const areaTol = Geometry.smallMetricDistanceSquared * range.xLength() * range.yLength();
     context.runClassificationSweep(operation, (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
-      if (face.countEdgesAroundFace() < 3 && Geometry.isSameCoordinate(area, 0)) // NEED BETTER TOLERANCE
+      // ignore danglers and null faces, but not 2-edge "banana" faces with nonzero area
+      if (face.countEdgesAroundFace() < 2)
+        return;
+      if (Math.abs(area) < areaTol)
         return;
       if (faceType === 1) {
         const loop = PlanarSubdivision.createLoopInFace(face);

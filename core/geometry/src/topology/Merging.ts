@@ -385,7 +385,15 @@ export class HalfEdgeGraphMerge {
       if (clusterTableIndex !== ClusterableArray.clusterTerminator) {
         const nodeA = allNodes[clusterTableIndex];
         const nodeB = nodeA.faceSuccessor;
-        let radians = outboundRadiansFunction ? outboundRadiansFunction(nodeA) : Math.atan2(nodeB.y - nodeA.y, nodeB.x - nodeA.x);
+        let getPrecomputedRadians = outboundRadiansFunction;
+        if (getPrecomputedRadians) {
+          // Recompute theta when edge geometry is completely determined by the vertices,
+          // since precomputed theta has possibly been perturbed by vertex clustering!
+          const detail = nodeA.edgeTag as CurveLocationDetail;
+          if (undefined === detail || undefined === detail.curve || detail.curve instanceof LineSegment3d)
+            getPrecomputedRadians = undefined;
+        }
+        let radians = getPrecomputedRadians ? getPrecomputedRadians(nodeA) : Math.atan2(nodeB.y - nodeA.y, nodeB.x - nodeA.x);
         if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, -Math.PI))
           radians = Math.PI;
         clusters.setExtraData(clusterTableIndex, 0, radians);

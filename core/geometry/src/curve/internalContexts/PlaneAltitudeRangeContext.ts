@@ -98,11 +98,17 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
     this.announcePoint((this._workPoint = g.startPoint(this._workPoint)));
     this.announcePoint((this._workPoint = g.endPoint(this._workPoint)));
   }
-  public static findExtremePointsInDirection(geometry: GeometryQuery, direction: Vector3d): Point3d[] | undefined {
+
+  public static findExtremePointsInDirection(geometry: GeometryQuery | Point3d[], direction: Vector3d): Point3d[] | undefined {
     const plane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, 0), direction);
     if (plane) {
       const context = new PlaneAltitudeRangeContext(plane);
-      geometry.dispatchToGeometryHandler(context);
+      if (geometry instanceof GeometryQuery) {
+        geometry.dispatchToGeometryHandler(context);
+      } else {
+        for (const pt of geometry)
+          context.announcePoint(pt);
+      }
       if (context.highPoint && context.lowPoint)
         return [context.lowPoint, context.highPoint];
     }

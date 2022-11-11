@@ -654,30 +654,37 @@ describe("RegionBoolean", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
-    const inputs0 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/laurynasRegion0.imjs", "utf8"))) as Loop[];
-    if (ck.testDefined(inputs0, "inputs successfully parsed")) {
-      const merged = RegionOps.regionBooleanXY(inputs0, undefined, RegionBinaryOpType.Union);
-      if (ck.testDefined(merged, "regionBooleanXY succeeded") && merged) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0);
-        x0 += merged.range().xLength();
-        if (ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion")) {
-          if (ck.testExactNumber(2, merged.children.length, "UnionRegion has 2 children")) {
+    let xDelta = 0;
+    for (const jsonFilePath of ["./src/test/testInputs/curve/laurynasRegion0.imjs",     // START HERE: step thru. This is the minimal error configuration!!
+                                // "./src/test/testInputs/curve/laurynasRegion1.imjs",
+                                // "./src/test/testInputs/curve/laurynasRegion2.imjs",
+                                // "./src/test/testInputs/curve/laurynasRegion3.imjs",
+                                // "./src/test/testInputs/curve/laurynasRegion4.imjs",
+                                // "./src/test/testInputs/curve/laurynasRegion5.imjs",
+                                // "./src/test/testInputs/curve/laurynasRegion6.imjs",
+                                // "./src/test/testInputs/curve/laurynasRegion7.imjs",
+                                // "./src/test/testInputs/curve/laurynasRegion8.imjs",
+                                // "./src/test/testInputs/curve/disconnectedRegions.imjs",
+                               ]) {
+      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(jsonFilePath, "utf8"))) as Loop[];
+      if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+        x0 += xDelta;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0);
+        const merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union);
+        if (ck.testDefined(merged, "regionBooleanXY succeeded") && merged) {
+          x0 += (xDelta = 1.1 * merged.range().xLength());
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0);
+          if (ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion")) {
+            const signedLoops = RegionOps.constructAllXYRegionLoops(merged);
+            if (ck.testExactNumber(2, signedLoops.length, "UnionRegion has two connected components.")) {
+              ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "UnionRegion has one outer loop.");
+              x0 += xDelta;
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].negativeAreaLoops, x0);
+            }
           }
         }
       }
     }
-    const inputs1 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/laurynasRegion1.imjs", "utf8"))) as Loop[];
-    if (ck.testDefined(inputs1, "inputs successfully parsed")) {
-      const merged1 = RegionOps.regionBooleanXY(inputs1, undefined, RegionBinaryOpType.Union);
-      if (ck.testDefined(merged1, "regionBooleanXY succeeded")) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged1, x0);
-        if (ck.testType(merged1, UnionRegion, "regionBooleanXY produced a UnionRegion")) {
-          if (ck.testExactNumber(2, merged1.children.length, "UnionRegion has 2 children")) {
-          }
-        }
-      }
-    }
-
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "DegenerateLoops");
     expect(ck.getNumErrors()).equals(0);
   });
