@@ -10,5 +10,5 @@
     "Test1": "Substitute {{varA}} and {{varB}} (default)",
     "Test2": "Reverse substitute {{varB}} and {{varA}} (default)"
   },
-  "OnlyEnglish": "Hello"
+  "OnlyEnglishUS": "HelloUS"
 }
