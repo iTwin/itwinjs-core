@@ -1,0 +1,9 @@
+{
+  "tool": "Credential Scanner",
+  "suppressions": [
+    {
+      "file": "core\\frontend\\src\\test\\RealityDataSource.test.ts",
+      "_justification": "False positives in RealityDataSource"
+    }
+  ]
+}

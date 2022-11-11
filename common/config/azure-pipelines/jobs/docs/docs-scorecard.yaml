@@ -1,0 +1,49 @@
+parameters:
+- name: artifactName
+
+jobs:
+- job: RunAudit
+  pool: PRG
+  variables:
+    - group: iTwin.js Docs - Scorecard
+  steps:
+  - script: echo $(ShortCode)
+  - template: templates/scorecard/audit-tool.yaml@build-pipeline-scripts
+    parameters:
+      auditToolsPath: $(PrgBuildsPath)\Tools\AuditTools\
+      legalReleaseType: Commercial
+      projectName: $(ShortCode)
+      prgId: $(PrgId)
+      rsLogPath: $(PrgBuildsPath)\RSLogs\Azure\$(Build.DefinitionName)\$(Build.BuildId)\
+      shortCode: $(ShortCode)
+      versionNumber: $(Build.BuildNumber)
+      artifactName: ${{ parameters.artifactName }}
+
+- job: Scorecard
+  dependsOn:
+    - RunAudit
+  pool:
+    vmImage: "windows-latest"
+  variables:
+    - group: iTwin.js Docs - Scorecard
+  steps:
+  - template: templates/scorecard/scorecard-common-validators.yaml@build-pipeline-scripts
+    parameters:
+      gprId: $(GprId)
+      shortCode: $(ShortCode)
+      isBackendOrAgent: false
+      appInsightsService: BentleyConnect QA
+      octopusProjectId: $(OctopusProjectId)
+      sloSqlServerName: $(SloSqlServerName)
+      sloSqlDatabaseName: $(SloSqlDatabaseName)
+      sloSqlDatabaseCredentials: SLO Database Credentials-iModelTechnologies
+  - template : templates/scorecard/scorecard-gates.yaml@build-pipeline-scripts
+
+- job: ScorecardReport
+  dependsOn: Scorecard
+  condition: succeededOrFailed()
+  displayName: "Scorecard Results"
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+    - template: templates/scorecard/scorecard-report.yaml@build-pipeline-scripts

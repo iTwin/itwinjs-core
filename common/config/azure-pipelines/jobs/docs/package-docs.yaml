@@ -1,0 +1,73 @@
+# The template defines the primary steps for creating the TypeDoc API files, gathering other md files,
+# and running a step to combine everything.
+
+jobs:
+  - job: Package_Docs
+    workspace:
+      clean: all
+    pool:
+      name: iModelTechCI
+      demands: Agent.OS -equals Windows_NT
+
+    variables:
+      tempDocsLocation: $(Pipeline.Workspace)\DocsBuild
+
+    steps:
+      - task: NodeTool@0
+        displayName: Use Node 14
+        inputs:
+          versionSpec: 14.17.4
+          checkLatest: true
+
+      - download: current
+        artifact: DocsBuild
+        displayName: Download itwinjs-docs artifact
+
+      - task: DownloadPipelineArtifact@2
+        displayName: Download Pipeline Artifact - Nuget Spec
+        inputs:
+          buildType: specific
+          project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
+          definition: 1830
+          buildVersionToDownload: specific
+          pipelineId: 1234689
+
+      - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+        displayName: Replace tokens in NugetPackage.nuspec
+        inputs:
+          targetFiles: $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec
+
+      - task: DeleteFiles@1
+        displayName: Delete landing page
+        inputs:
+          SourceFolder: $(tempDocsLocation)\public_build
+          Contents: index.html
+
+      - task: NuGetToolInstaller@1
+        inputs:
+          versionSpec: 4.9.2
+
+      - task: NuGetCommand@2
+        displayName: NuGet pack
+        inputs:
+          command: pack
+          packagesToPack: $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec
+          versioningScheme: byEnvVar
+          versionEnvVar: Build.BuildNumber
+          configuration: Release
+          packDestination: $(Build.ArtifactStagingDirectory)
+
+      - task: octopusdeploy.octopus-deploy-build-release-tasks.octopus-push.OctopusPush@3
+        displayName: Push package to Octopus
+        inputs:
+          OctoConnectedServiceName: Prod Octopus
+          Package: $(Build.ArtifactStagingDirectory)\iModeljs.Documentation.$(Build.BuildNumber).nupkg
+          Replace: false
+
+      - task: octopusdeploy.octopus-deploy-build-release-tasks.octopus-create-release.OctopusCreateRelease@3
+        displayName: Create Octopus Release
+        inputs:
+          OctoConnectedServiceName: Prod Octopus
+          ProjectName: $(octopusProjectName)
+          ReleaseNumber: $(Build.BuildNumber)
+          AdditionalArguments: --deploymenttimeout=01:00:00 --packageversion $(Build.BuildNumber)

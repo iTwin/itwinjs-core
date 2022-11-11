@@ -1,0 +1,28 @@
+parameters:
+- name: env
+  type: string
+  values:
+  - Development
+  - QA
+  - Production
+
+jobs:
+- job: ValidateLinks_${{ parameters.env }}
+  pool:
+    vmImage: ubuntu-latest
+
+  variables:
+    ${{ if eq(parameters.env, 'Development') }}:
+      DocsUrl: https://dev.imodeljs.org
+    ${{ if eq(parameters.env, 'QA') }}:
+      DocsUrl: https://qa.imodeljs.org
+    ${{ if eq(parameters.env, 'Production') }}:
+      DocsUrl: https://imodeljs.org
+
+  steps:
+  - task: Docker@2
+    displayName: 'Link Validator'
+    inputs:
+      command: run
+      arguments: --rm ghcr.io/linkchecker/linkchecker:latest --no-robots --check-extern --no-status --ignore-url=/v1 --ignore-url=/v2 $(DocsUrl)
+      addPipelineData: false
