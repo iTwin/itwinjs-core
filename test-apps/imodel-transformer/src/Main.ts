@@ -183,6 +183,11 @@ void (async () => {
           type: "boolean",
           default: false,
         },
+        danglingReferencesBehavior: {
+          desc: "sets danglingReferencesBehavior in the transformer options",
+          default: "reject" as const,
+          choices: ["reject", "ignore"] as const,
+        },
       })
       .parseSync();
 
