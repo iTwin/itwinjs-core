@@ -47,7 +47,9 @@ describe("Find Similar", () => {
     return undefined;
   };
 
+  // eslint-disable-next-line deprecation/deprecation
   const getAllRows = async (provider: IPresentationTableDataProvider): Promise<RowItem[]> => {
+    // eslint-disable-next-line deprecation/deprecation
     const rows: RowItem[] = [];
     const count = await provider.getRowsCount();
     for (let i = 0; i < count; ++i) {

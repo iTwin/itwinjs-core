@@ -189,7 +189,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileLoadTimeThreshold = 40;
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
-  public  static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
+  public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
 
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
@@ -339,6 +339,9 @@ export class IModelHost {
     const platform = Platform.load();
     this.registerPlatform(platform);
   }
+  private static syncNativeLogLevels() {
+    this.platform.clearLogLevelCache();
+  }
 
   private static registerPlatform(platform: typeof IModelJsNative): void {
     this._platform = platform;
@@ -346,6 +349,7 @@ export class IModelHost {
       return;
 
     platform.logger = Logger;
+    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels();
   }
 
   /**

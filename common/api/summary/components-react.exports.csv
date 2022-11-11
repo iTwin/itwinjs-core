@@ -52,16 +52,21 @@ beta;CategorizedPropertyItem
 beta;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
 beta;CategoryRecordsDict
 public;CellItem
+deprecated;CellItem
 public;CellProps
 deprecated;CellProps
 public;CheckBoxInfo
 public;CheckboxStateChange
 public;ColumnDescription
+deprecated;ColumnDescription
 public;ColumnFilterDescriptor 
+deprecated;ColumnFilterDescriptor 
 public;CommonPropertyGridProps 
 public;CompletionObserver
 public;CompositeFilterDescriptor 
+deprecated;CompositeFilterDescriptor 
 public;CompositeFilterDescriptorCollection
+deprecated;CompositeFilterDescriptorCollection
 public;CompositeFilterType
 public;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
@@ -96,7 +101,9 @@ public;Direction
 internal;DirectionHelpers
 public;DisplayValuePropertyDataFilterer 
 public;DistinctValueCollection
+deprecated;DistinctValueCollection
 public;DistinctValuesFilterDescriptor 
+deprecated;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
 internal;DragAction
 public;EditableTreeDataProvider 
@@ -112,12 +119,19 @@ public;FavoritePropertiesRenderer
 alpha;FavoritePropertyList(props: FavoritePropertyListProps): JSX.Element | null
 alpha;FavoritePropertyListProps
 public;FieldFilterDescriptor 
+deprecated;FieldFilterDescriptor 
 public;FilterableColumn
+deprecated;FilterableColumn
 public;FilterableTable
+deprecated;FilterableTable
 public;FilterCompositionLogicalOperator
+deprecated;FilterCompositionLogicalOperator
 public;FilterDescriptor
+deprecated;FilterDescriptor
 public;FilterDescriptorCollection 
+deprecated;FilterDescriptorCollection 
 public;class FilterDescriptorCollectionBase
+deprecated;class FilterDescriptorCollectionBase
 public;FilteredPropertyData 
 public;FilteredType
 public;FilteringInput 
@@ -125,7 +139,9 @@ public;FilteringInputProps
 public;FilteringInputStatus
 public;FilteringPropertyDataProvider 
 public;FilterOperator
+deprecated;FilterOperator
 public;FilterRenderer
+deprecated;FilterRenderer
 beta;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
 beta;FlatGridItemBase
 beta;FlatGridItemType
@@ -219,6 +235,7 @@ beta;MutableGridCategory
 beta;MutableGridItemFactory 
 beta;MutablePropertyGridModel 
 public;MutableTableDataProvider 
+deprecated;MutableTableDataProvider 
 beta;MutableTreeDataProvider 
 deprecated;MutableTreeDataProvider 
 public;MutableTreeModel 
@@ -241,7 +258,9 @@ public;OnItemsSelectedCallback
 public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
 public;OperatorProcessor
 public;OperatorValueFilterDescriptor 
+deprecated;OperatorValueFilterDescriptor 
 public;OperatorValueFilterDescriptorCollection 
+deprecated;OperatorValueFilterDescriptorCollection 
 alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 public;PagedTreeNodeLoader
@@ -344,6 +363,7 @@ public;renderLinks: (text: string, links: LinkElementsInfo, highlight?: ((text: 
 public;ResultSelector 
 public;ResultSelectorProps 
 public;RowItem
+deprecated;RowItem
 public;RowProps
 deprecated;RowProps
 public;SelectableContent(props: SelectableContentProps): JSX.Element
@@ -369,6 +389,7 @@ public;ShowHideMenuProps
 deprecated;ShowHideMenuProps
 public;SimplePropertyDataProvider 
 public;SimpleTableDataProvider 
+deprecated;SimpleTableDataProvider 
 public;SimpleTreeDataProvider 
 public;SimpleTreeDataProviderHierarchy = Map
 internal;SingleSelectionHandler
@@ -401,12 +422,18 @@ public;TableCellUpdatedArgs
 deprecated;TableCellUpdatedArgs
 internal;TableColumn 
 public;TableDataChangeEvent 
+deprecated;TableDataChangeEvent 
 public;TableDataChangesListener = () => void
+deprecated;TableDataChangesListener = () => void
 public;TableDataProvider
+deprecated;TableDataProvider
 public;TableDistinctValue
+deprecated;TableDistinctValue
 internal;TableFilterDescriptorCollection 
 public;TableIconCellContent 
+deprecated;TableIconCellContent 
 public;TableIconCellContentProps
+deprecated;TableIconCellContentProps
 public;TableNonPrimitiveValueRenderer 
 public;TableNonPrimitiveValueRendererProps 
 public;TableProps 

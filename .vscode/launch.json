@@ -46,7 +46,7 @@
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/{backend,common,geometry}/lib/**/*.js"
+        "${workspaceFolder}/core/*/lib/**/*.js"
       ]
     },
     {
@@ -223,6 +223,23 @@
       ],
       "outFiles": [
         "${workspaceFolder}/extensions/map-layers-auth/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "MapLayers Formats Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/extensions/map-layers-formats/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/extensions/map-layers-formats/lib/**/*.js"
       ]
     },
     { /* PARTIAL */
@@ -1138,7 +1155,7 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/test-apps/display-test-app/",
-      "type": "pwa-node",
+      "type": "node",
       "request": "launch",
       "runtimeExecutable": "${workspaceFolder}/test-apps/display-test-app/node_modules/.bin/electron",
       "runtimeArgs": [
@@ -1150,6 +1167,7 @@
         "IMJS_NO_DEV_TOOLS": "1",
         "NODE_ENV": "development"
       },
+      "envFile": "${workspaceFolder}/test-apps/display-test-app/.env",
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/backend/**/*.js",
         "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
@@ -1164,7 +1182,7 @@
       "presentation": {
         "hidden": true
       },
-      "type": "pwa-chrome",
+      "type": "chrome",
       "request": "attach",
       "port": 9223,
       "outFiles": [
