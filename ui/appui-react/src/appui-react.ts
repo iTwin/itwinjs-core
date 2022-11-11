@@ -141,6 +141,7 @@ export * from "./appui-react/redux/ReducerRegistry";
 export * from "./appui-react/redux/redux-ts";
 
 export * from "./appui-react/safearea/SafeAreaContext";
+export * from "./appui-react/safearea/SafeAreaInsets";
 
 export * from "./appui-react/selection/SelectionContextItemDef";
 export * from "./appui-react/selection/HideIsolateEmphasizeManager";
