@@ -75,7 +75,7 @@ steps:
     inputs:
       buildType: specific
       project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
-      definition: 8467
+      definition: 7436 # iTwin.js/Docs/iTwin.js Docs - YAML
       allowPartiallySucceededBuilds: true
       buildVersionToDownload: latestFromBranch
       runBranch: refs/heads/master
