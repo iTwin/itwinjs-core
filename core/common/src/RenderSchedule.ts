@@ -1383,7 +1383,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Assembles the JSON representation for a new [[RenderSchedule.Script]]. As an extremely simple example, the following code produces a script that changes the color of a single element:
+  /** Assembles the JSON representation for a new [[RenderSchedule.Script]]. Ensure that entries on any given element timeline are added chronologically. As an extremely simple example, the following code produces a script that changes the color of a single element:
    * ```ts
    *  const script = new ScriptBuilder();
    *  const model = script.addModelTimeline("0x123");
