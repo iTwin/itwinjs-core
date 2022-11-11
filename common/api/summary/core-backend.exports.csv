@@ -234,7 +234,7 @@ public;class InformationRecordElement
 public;InformationRecordModel 
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
-internal;initializeRpcBackend(enableOpenTelemetry?: boolean): void
+internal;initializeTracing(enableOpenTelemetry?: boolean): void
 beta;InstanceChange
 public;class IpcHandler
 public;IpcHost

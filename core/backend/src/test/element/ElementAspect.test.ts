@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, ExternalSourceAspectProps, IModel, IModelError, SubCategoryAppearance } from "@itwin/core-common";
 import {
@@ -218,12 +218,7 @@ describe("ElementAspect", () => {
       version: "1.0",
     };
     const aspect = new ExternalSourceAspect(aspectProps, iModelDb);
-    assert.equal(aspect.element.id, aspectProps.element.id);
-    assert.equal(aspect.scope.id, aspectProps.scope.id);
-    assert.equal(aspect.identifier, aspectProps.identifier);
-    assert.equal(aspect.kind, aspectProps.kind);
-    assert.equal(aspect.checksum, aspectProps.checksum);
-    assert.equal(aspect.version, aspectProps.version);
+    expect(aspect).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
     iModelDb.elements.insertAspect(aspectProps);
     iModelDb.saveChanges();
     iModelDb.close();
@@ -231,29 +226,17 @@ describe("ElementAspect", () => {
 
     const aspects: ElementAspect[] = iModelDb.elements.getAspects(elementId, aspectProps.classFullName);
     assert.equal(aspects.length, 1);
-    assert.equal(aspects[0].element.id, aspectProps.element.id);
-    assert.equal(aspects[0].asAny.scope.id, aspectProps.scope.id);
-    assert.isTrue(aspects[0].asAny.scope.relClassName.endsWith("ElementScopesExternalSourceIdentifier"));
-    assert.equal(aspects[0].asAny.identifier, aspectProps.identifier);
-    assert.equal(aspects[0].asAny.kind, aspectProps.kind);
-    assert.equal(aspects[0].asAny.checksum, aspectProps.checksum);
-    assert.equal(aspects[0].asAny.version, aspectProps.version);
+    expect(aspects[0]).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
 
     const aspectJson = aspect.toJSON();
-    assert.equal(aspectJson.classFullName, aspectProps.classFullName);
-    assert.equal(aspectJson.element.id, aspectProps.element.id);
-    assert.equal(aspectJson.scope.id, aspectProps.scope.id);
-    assert.equal(aspectJson.identifier, aspectProps.identifier);
-    assert.equal(aspectJson.kind, aspectProps.kind);
-    assert.equal(aspectJson.checksum, aspectProps.checksum);
-    assert.equal(aspectJson.version, aspectProps.version);
+    expect(aspectJson).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
 
+    assert(aspectProps.scope !== undefined);
     const foundAspects = ExternalSourceAspect.findAllBySource(iModelDb, aspectProps.scope.id, aspectProps.kind, aspectProps.identifier);
     assert.equal(foundAspects.length, 1);
     const foundAspect = foundAspects[0];
     assert.equal(foundAspect.aspectId, aspects[0].id);
     assert.equal(foundAspect.elementId, aspect.element.id);
-
   });
 
   it("should be able to insert multiple ExternalSourceAspects", () => {
