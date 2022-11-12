@@ -122,7 +122,7 @@ class Bundle implements WebGLDisposable {
 }
 
 /** @internal */
-export enum EDLMode { Simple, Enhanced, Full }
+export enum EDLMode { Off, On, Full }
 
 /** @internal */
 export interface EDLDrawParams {
@@ -217,17 +217,7 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
     const useMsBuffers = edlParams.useMsBuffers;
     // ###TODO figure out RenderState and multisampling
     // ###TODO: should radius be (optionally?) voxel based instead of pixel here?
-
-    // NB: expects strength to be > 0 if calling draw
-    if (edlParams.edlMode === EDLMode.Simple) {
-      // Simple method just samples 4 neighbors
-      fbStack.execute(this._edlFinalFbo, true, useMsBuffers, () => {
-        if (this._bundle?.edlSimpleGeom === undefined)
-          bundle.edlSimpleGeom = EDLSimpleGeometry.createGeometry(edlParams.inputTex.getHandle()!, this._depth!.getHandle()!);
-        const params = getDrawParams(this._target, bundle.edlSimpleGeom!);
-        this._target.techniques.draw(params);
-      });
-    } else if (edlParams.edlMode === EDLMode.Enhanced) {
+    if (edlParams.edlMode === EDLMode.On) {
       // draw using enhanced version of simple (8 samples, still single draw)
       fbStack.execute(this._edlFinalFbo, true, edlParams.useMsBuffers, () => {
         if (bundle.edlCalcEnhGeom === undefined) {
@@ -238,7 +228,7 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
         const params = getDrawParams(this._target, bundle.edlCalcEnhGeom!);
         this._target.techniques.draw(params);
       });
-    } else {
+    } else { // EDLMode.Full
       // draw with full method based on original paper using full, 1/2, and 1/4 sizes
       const edlCalc2FB: FrameBuffer[] = [bundle.edlCalcFbo1!, bundle.edlCalcFbo2!, bundle.edlCalcFbo4!];
       if (bundle.edlCalcFullGeom === undefined) {

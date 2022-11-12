@@ -177,37 +177,41 @@ function createRealityModelSettingsPanel(model: RealityModel, element: HTMLEleme
   setSizeMode(model.settings.pointCloud.sizeMode);
 
   //  ----------------- EDL -----------------
-  const tdiv = document.createElement("div");
-  const hr = document.createElement("hr");
-  hr.style.borderColor = "grey";
-  tdiv.appendChild(hr);
-  const label1 = document.createElement("label");
-  label1.innerText = "EDL  (enabled if Strength > 0)";
-  tdiv.appendChild(label1);
-  element.appendChild(tdiv);
-
   const setEDLMode = (mode: string) => {
-    // const isSimple = mode === "simple";
-    const isAdv1 = mode === "adv1";
-    const isAdv2 = mode === "adv2";
-    updatePointCloud({ edlAdvanced: isAdv2 ? 1 : 0, edlDbg1: isAdv1 ? 1 : 0 }),
-    edlFilter.style.display = isAdv2 ? "" : "none";
-    edlMixWt1Slider.style.display = isAdv2 ? "" : "none";
-    edlMixWt2Slider.style.display = isAdv2 ? "" : "none";
-    edlMixWt4Slider.style.display = isAdv2 ? "" : "none";
+    const isOn = mode !== "off";
+    const isFull = mode === "full";
+    updatePointCloud({ edlMode: isOn ? (isFull ? "full" : "on") : "off" }),
+    edlFilter.style.display = isFull ? "" : "none";
+    edlMixWt1Slider.style.display = isFull ? "" : "none";
+    edlMixWt2Slider.style.display = isFull ? "" : "none";
+    edlMixWt4Slider.style.display = isFull ? "" : "none";
   };
 
-  createRadioBox({
+  const hr = document.createElement("hr");
+  hr.style.borderColor = "grey";
+  element.appendChild(hr);
+
+  const edlDiv = document.createElement("div");
+  element.appendChild(edlDiv);
+  edlDiv.style.display = "inline";
+
+  const label1 = document.createElement("label");
+  label1.innerText = "EDL ";
+  label1.style.display = "inline";
+  edlDiv.appendChild(label1);
+
+  const edlMode = createRadioBox({
     id: "pcs_edlMode",
-    defaultValue: model.settings.pointCloud.edlAdvanced ? "adv2" : (model.settings.pointCloud.edlDbg1 ? "adv1" : "simple"),
+    defaultValue: model.settings.pointCloud.edlMode,
     entries: [
-      { value: "simple", label: "Simple " },
-      { value: "adv1", label: "Advanced " },
-      { value: "adv2", label: "Advanced Full " },
+      { value: "off", label: "Off " },
+      { value: "on", label: "On " },
+      { value: "full", label: "Full " },
     ],
-    parent: element,
+    parent: edlDiv,
     handler: (value) => setEDLMode(value),
   });
+  edlMode.div.style.display = edlMode.form.style.display = "inline";
 
   // EDL strength
   const edlStrengthSlider = createSlider({
@@ -283,7 +287,7 @@ function createRealityModelSettingsPanel(model: RealityModel, element: HTMLEleme
   }).div;
   edlMixWt4Slider.style.display = "";
 
-  setEDLMode(model.settings.pointCloud.edlAdvanced ? "adv2" : (model.settings.pointCloud.edlDbg1 ? "adv1" : "simple"));
+  setEDLMode(model.settings.pointCloud.edlMode);
 }
 
 const viewportIdsWithOpenWidgets = new Set<number>();

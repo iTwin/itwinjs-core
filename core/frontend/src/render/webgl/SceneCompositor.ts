@@ -2169,16 +2169,16 @@ class MRTCompositor extends Compositor {
 
     for (const pc of pointClouds) {
       pcs = pc.pcs;
-      let edlOff = !pcs?.edlStrength;
-      if (!edlOff) {
+      let edlOn = pcs?.edlMode !== "off";
+      if (edlOn) {
         if (undefined === this._textures.hilite)
-          edlOff = true;
+          edlOn = false;
         else {
           // create fbo on fly if not present
           if (undefined === this._fbos.edlDrawCol)
             this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth);
           if (undefined === this._fbos.edlDrawCol)
-            edlOff = true;
+            edlOn = false;
           else {
             // can draw EDL, first draw pointcloud to borrowed hilite texture and regular depth buffer
             fbStack.execute(this._fbos.edlDrawCol, true, useMsBuffers, () => {
@@ -2191,7 +2191,7 @@ class MRTCompositor extends Compositor {
             this.target.beginPerfMetricRecord("Calc EDL");
             const sts = this.eyeDomeLighting.draw ({
               edlStrength: pc.pcs!.edlStrength,
-              edlMode: !pc.pcs?.edlAdvanced && !pcs?.edlDbg1 ? EDLMode.Simple : (!pcs?.edlAdvanced && !!pcs?.edlDbg1 ? EDLMode.Enhanced : EDLMode.Full),
+              edlMode: pc.pcs?.edlMode === "full" ? EDLMode.Full : EDLMode.On,
               edlFilter: !!pcs?.edlFilter,
               useMsBuffers,
               inputTex: this._textures.hilite,
@@ -2199,12 +2199,12 @@ class MRTCompositor extends Compositor {
             });
             this.target.endPerfMetricRecord();
             if (!sts) {
-              edlOff = true;
+              edlOn = false;
             }
           }
         }
       }
-      if (edlOff) {
+      if (!edlOn) {
         // draw the regular way
         fbStack.execute(fbo, true, useMsBuffers, () => {
           system.applyRenderState(this.getRenderState(RenderPass.PointClouds));

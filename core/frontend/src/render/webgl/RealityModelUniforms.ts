@@ -35,7 +35,6 @@ export class PointCloudUniforms {
   // w =
   private readonly _edl1 = new Float32Array(4);
   private readonly _edl2 = new Float32Array(4);
-  private readonly _edl3 = new Float32Array(4);
 
   public constructor() {
     this.initialize(this._settings);
@@ -65,11 +64,6 @@ export class PointCloudUniforms {
       uniform.setUniform4fv(this._edl2);
   }
 
-  public bindEDL3(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setUniform4fv(this._edl3);
-  }
-
   private initialize(settings: PointCloudDisplaySettings): void {
     this._vec4[0] = "pixel" === settings.sizeMode ? settings.pixelSize : -settings.voxelScale;
     this._vec4[1] = settings.minPixelsPerVoxel;
@@ -85,11 +79,6 @@ export class PointCloudUniforms {
     this._edl2[1] = settings?.edlMixWts2 ?? 0.5;
     this._edl2[2] = settings?.edlMixWts4 ?? 0.25;
     this._edl2[3] = 0;
-
-    this._edl3[0] = settings?.edlLightDirX ?? 0;
-    this._edl3[1] = settings?.edlLightDirY ?? 0;
-    this._edl3[2] = settings?.edlLightDirZ ?? -1.0;
-    this._edl3[3] = 0;
   }
 }
 
