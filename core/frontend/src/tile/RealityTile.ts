@@ -152,7 +152,7 @@ export class RealityTile extends Tile {
 
   /** @internal */
   private useAdditiveRefinementStepchildren() {
-    // Create additive stepchildren only if we are this tile is additive and we are repojecting and the radius exceeds the additiveRefinementThreshold.
+    // Create additive stepchildren only if we are this tile is additive and we are re-projecting and the radius exceeds the additiveRefinementThreshold.
     // This criteria is currently only met by the Cesium OSM tileset.
     const rangeDiagonal = this.rangeCorners ? this.rangeCorners[0].distance(this.rangeCorners[3]) : 0;
     return this.additiveRefinement && this.isDisplayable && rangeDiagonal > additiveRefinementThreshold && this.depth < additiveRefinementDepthLimit && this.realityRoot.doReprojectChildren(this);
@@ -162,13 +162,13 @@ export class RealityTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
     this.realityRoot.loader.loadChildren(this).then((children: Tile[] | undefined) => {
 
-      /* If this is a large tile is to be included additively, but we are reprojecting (Cesium OSM) then we must add step-children to display the geometry as an overly large
+      /* If this is a large tile is to be included additively, but we are re-projecting (Cesium OSM) then we must add step-children to display the geometry as an overly large
          tile cannot be reprojected accurately.  */
       if (this.useAdditiveRefinementStepchildren())
         this.loadAdditiveRefinementChildren((stepChildren: Tile[]) => { children = children ? children?.concat(stepChildren) : stepChildren; });
 
       if (children)
-        this.realityRoot.reprojectAndResolveChildren(this, children, resolve);   /* Potentially reprojecect and resolve these children */
+        this.realityRoot.reprojectAndResolveChildren(this, children, resolve);   /* Potentially reproject and resolve these children */
 
     }).catch((err) => {
       reject(err);
