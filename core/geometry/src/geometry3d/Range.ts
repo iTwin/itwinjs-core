@@ -1181,7 +1181,6 @@ export class Range1d extends RangeBase {
   }
 
   /** Return the union of ranges. */
-  /** Return the intersection of ranges. */
   public union(other: Range1d, result?: Range1d): Range1d {
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range1d.createXX

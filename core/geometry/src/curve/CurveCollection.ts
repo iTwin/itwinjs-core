@@ -24,6 +24,7 @@ import { GapSearchContext } from "./internalContexts/GapSearchContext";
 import { SumLengthsContext } from "./internalContexts/SumLengthsContext";
 import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext";
 import { LineString3d } from "./LineString3d";
+import { ProxyCurve } from "./ProxyCurve";
 import { StrokeOptions } from "./StrokeOptions";
 
 /** Describes the concrete type of a [[CurveCollection]]. Each type name maps to a specific subclass and can be used in conditional statements for type-switching.
@@ -283,11 +284,22 @@ export abstract class CurveChain extends CurveCollection {
       curve.reverseInPlace();
     this._curves.reverse();
   }
-  /** Return the index where target is found in the array of children */
-  public childIndex(target: CurvePrimitive | undefined): number | undefined {
+  /** Return the index where target is found in the array of children
+   * @param alsoSearchProxies whether to also check proxy curves of the children
+  */
+  public childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined {
     for (let i = 0; i < this._curves.length; i++){
       if (this._curves[i] === target)
-      return i;
+        return i;
+    }
+    if (alsoSearchProxies ?? false) {
+      for (let i = 0; i < this._curves.length; i++) {
+        const childCurve = this._curves[i];
+        if (childCurve instanceof ProxyCurve) {
+          if (childCurve.proxyCurve === target)
+            return i;
+        }
+      }
     }
     return undefined;
   }

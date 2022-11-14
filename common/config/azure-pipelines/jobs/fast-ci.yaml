@@ -66,10 +66,10 @@ jobs:
     clean: true
   - template: ../templates/core-build.yaml
     parameters:
-      nodeVersion: 16.13.0
+      nodeVersion: 18.12.x
   # Will run if even there is a failure somewhere else in the pipeline.
   - template: ../templates/publish-test-results.yaml
     parameters:
-      NodeVersion: 16.13.0
+      NodeVersion: 18.12.x
   # The publish script identifies any new packages not previously published and tags the build
   - template: ../templates/publish.yaml

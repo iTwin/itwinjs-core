@@ -28,6 +28,22 @@ jobs:
 
   strategy:
     matrix:
+      "Windows_Node_18":
+        OS: windows-latest
+        platform: Windows_NT
+        name: $(win_pool)
+        node_version: 18.x
+      "Linux_Node_18":
+        OS: ubuntu-latest
+        platform: Linux
+        name: $(linux_pool)
+        node_version: 18.x
+      "MacOS_Node_18":
+        OS: macOS-latest
+        platform: Darwin
+        name: $(mac_pool)
+        node_version: 18.x
+
       "Windows_Node_16":
         OS: windows-latest
         platform: Windows_NT

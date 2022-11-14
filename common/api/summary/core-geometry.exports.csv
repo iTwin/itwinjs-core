@@ -199,6 +199,7 @@ public;ParityRegion
 internal;PascalCoefficients
 public;Path 
 public;PathFragment
+public;PerpParallelOptions
 public;Plane3dByOriginAndUnitNormal 
 public;Plane3dByOriginAndVectors 
 public;PlaneAltitudeEvaluator
