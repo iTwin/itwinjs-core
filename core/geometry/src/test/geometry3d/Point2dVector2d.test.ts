@@ -57,7 +57,7 @@ describe("Point2d", () => {
     pointA3d.z = 32.9;
     pointB3d.z = 29.1;
     const vectorMax = vectorAB.maxAbs();
-    ck.testCoordinate(pointDiff, vectorMax, "maxdiff, maxabs");
+    ck.testCoordinate(pointDiff, vectorMax, "maxDiff, maxAbs");
     ck.testCoordinate(vectorAB.magnitude(), pointA.distance(pointB), "distance and magnitude");
     ck.testCoordinate(vectorAB.magnitudeSquared(), pointA.distanceSquared(pointB), "distance and magnitude");
     const d3 = pointA3d.distanceXY(pointB3d);
@@ -82,7 +82,7 @@ describe("Point2d", () => {
     pointA3d.z = 32.9;
     pointB3d.z = 29.1;
     const vectorMax = vectorAB.maxAbs();
-    ck.testCoordinate(pointDiff, vectorMax, "maxdiff, maxabs");
+    ck.testCoordinate(pointDiff, vectorMax, "maxDiff, maxAbs");
 
     /* TODO add indexOfMaxAbs to 2d
     const symmetricLattice3 = Sample.createPoint2dLattice(-3, 1, 3);
@@ -232,7 +232,7 @@ describe("Point2d", () => {
     const fPerp = 0.1;
     const pointD = pointA.addForwardLeft(fTangent, fPerp, vectorU);
     const gTangent = pointD.fractionOfProjectionToLine(pointA, pointB);
-    ck.testCoordinate(fTangent, gTangent, "proejct to 2d line");
+    ck.testCoordinate(fTangent, gTangent, "project to 2d line");
     ck.checkpoint("Point2d.Misc");
     expect(ck.getNumErrors()).equals(0);
   });

@@ -304,7 +304,7 @@ A Connector must also relate each physical model that it creates to the source d
 [[include:Synchronizer-recordDocument.example-code]]
 ```
 
-Also refer to [Provenence in iModels](./Provenence-in-iModels) for more information about ExternalSource and related classes.
+Also refer to [Provenance in BIS](../bis/domains/Provenance-in-BIS.md) for more information about ExternalSource and related classes.
 
 ###### Case 2 : Id mapping
 
@@ -358,9 +358,7 @@ The framework will automatically detect and delete elements and models if the co
 
 ### Getting started
 
-You'll need Node.js version ">=14.17.0 <17.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
-
-#### Node Packages
+You'll need Node.js version ">=12.22.0 <19.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
 
 The node packages you'll need can be installed using
 

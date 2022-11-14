@@ -29,8 +29,8 @@ pr:
 jobs:
   - template: ci-core.yaml
     parameters:
-      name: Node_16
-      nodeVersion: 16.13.0
+      name: Node_18
+      nodeVersion: 18.12.x
       buildIos: true
       pool:
         name: $(name)
