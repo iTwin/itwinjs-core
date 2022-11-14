@@ -94,7 +94,14 @@ export class RegionOps {
     }
     return undefined;
   }
-
+  /** Return an area tolerance for a given xy-range and optional distance tolerance.
+   * @param range range of planar region to tolerance
+   * @param distanceTolerance optional absolute distance tolerance
+  */
+  public static computeXYAreaTolerance(range: Range3d, distanceTolerance: number=Geometry.smallMetricDistance): number {
+    // if A = bh and e is distance tolerance, then A' := (b+e)(h+e) = A + e(b+h+e), so A'-A = e(b+h+e).
+    return distanceTolerance * (range.xLength() + range.yLength() + distanceTolerance);
+  }
   /**
    * Return an xy area for a loop, parity region, or union region.
    * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
@@ -254,7 +261,7 @@ export class RegionOps {
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph();
     const range = context.groupA.range().union(context.groupB.range());
-    const areaTol = Geometry.smallMetricDistanceSquared * range.xLength() * range.yLength();
+    const areaTol = this.computeXYAreaTolerance(range);
     context.runClassificationSweep(operation, (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
       // ignore danglers and null faces, but not 2-edge "banana" faces with nonzero area
       if (face.countEdgesAroundFace() < 2)
@@ -595,9 +602,10 @@ export class RegionOps {
     const primitivesA = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true);
     const primitivesB = this.expandLineStrings(primitivesA);
     const range = this.curveArrayRange(primitivesB);
+    const areaTol = this.computeXYAreaTolerance(range);
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitivesB);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitivesB, intersections);
-    return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, 1.0e-12 * range.xLength() * range.yLength());
+    return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, areaTol);
   }
 
   /**
