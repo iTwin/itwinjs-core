@@ -7,6 +7,7 @@ import { Capabilities } from "../Capabilities";
 import {
   queryRenderCompatibility, WebGLContext, WebGLFeature, WebGLRenderCompatibilityStatus,
 } from "../RenderCompatibility";
+import { ProcessDetector } from "@itwin/core-bentley";
 
 let createContext = (canvas: HTMLCanvasElement, useWebGL2: boolean, contextAttributes?: WebGLContextAttributes): WebGLContext | undefined => {
   let context = useWebGL2 ? canvas.getContext("webgl2", contextAttributes) : canvas.getContext("webgl", contextAttributes);
@@ -137,6 +138,22 @@ describe("Render Compatibility", () => {
     const compatibility = caps.init(context, ["OES_standard_derivatives"]);
     expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
     expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.StandardDerivatives)).to.not.equal(-1);
+  });
+
+  it.only("should query proper render compatibility info assuming lack of float rendering support with webgl1", () => {
+    const context = makeTestContext(false);
+    const caps = new Capabilities();
+    const compatibility = caps.init(context, ["OES_texture_float", "OES_texture_half_float"]);
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
+    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.FloatRendering)).to.not.equal(-1);
+  });
+
+  it.only("should query proper render compatibility info assuming lack of float rendering support with webgl2", () => {
+    const context = makeTestContext(true);
+    const caps = new Capabilities();
+    const compatibility = caps.init(context, ["OES_texture_float", "OES_texture_half_float"]);
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.AllOkay);
+    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.FloatRendering)).to.equal(-1);
   });
 
   it("detects early Z culling driver bug", () => {
