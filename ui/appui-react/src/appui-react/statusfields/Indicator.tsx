@@ -44,6 +44,7 @@ interface IndicatorProps extends CommonProps {
 }
 
 /** General-purpose [[Footer]] indicator. Shows an icon and supports an optional popup dialog.
+ * @deprecated Use [StatusBarIndicator] or [StatusBarLabelIndicator] instead.
  * @beta
  */
 export function Indicator(props: IndicatorProps) {
@@ -68,7 +69,6 @@ export function Indicator(props: IndicatorProps) {
     labelSide === StatusBarLabelSide.Right && "uifw-footer-label-reversed",
     className);
   return (
-
     <>
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
       <div ref={target}
