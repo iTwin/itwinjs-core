@@ -464,23 +464,23 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    * If input loops are non-overlapping, there may be disconnected islands not reachable.
    * This method:
    * * finds the total range
-   * * creates a parallel line from an extreme point in each loop to a point beyond the overall range
+   * * creates parallel rays from the extreme point of each loop and extending beyond the overall range
    * * places those lines in the extraGeometry group
    */
   public addConnectives() {
     const rangeA = this.groupA.range();
     const rangeB = this.groupB.range();
     const rangeAB = rangeA.union(rangeB);
+    const areaTol = RegionOps.computeXYAreaTolerance(rangeAB);
     const direction = Vector3d.create(1.0, -0.12328974132467);
     let margin = 0.1;
     const lowHigh = PlaneAltitudeRangeContext.findExtremePointsInDirection(rangeAB.corners(), direction);
     if (lowHigh && lowHigh.length === 2)
-      margin *= lowHigh[0].distanceXY(lowHigh[1]);
+      margin *= lowHigh[0].distanceXY(lowHigh[1]);  // how much further to extend each bridge ray
 
-    const areaTol = 1.0e-12;
     const findExtremePointsInLoop = (region: Loop) => {
       const area = RegionOps.computeXYArea(region);
-      if (area === undefined || Math.abs(area) < areaTol * rangeAB.xLength() * rangeAB.yLength())
+      if (area === undefined || Math.abs(area) < areaTol)
         return;   // avoid bridging trivial faces
       const extremes = PlaneAltitudeRangeContext.findExtremePointsInDirection(region, direction);
       if (extremes && extremes.length === 2)
@@ -511,8 +511,8 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       //  2) avoid crossing any containing loop at a vertex. (with high probability, but not absolutely always)
       const bridgeLength = margin + Ray3d.create(p, direction, ray).intersectionWithRange3d(rangeAB).high;
       const outside = Point3d.createAdd2Scaled(p, 1.0, direction, bridgeLength);
-      const line = LineSegment3d.createXYXY(p.x, p.y, outside.x, outside.y);
-      this.extraGeometry.addMember(line, true);
+      const bridgeLine = LineSegment3d.createXYXY(p.x, p.y, outside.x, outside.y);
+      this.extraGeometry.addMember(bridgeLine, true);
     }
   }
 
@@ -628,10 +628,11 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       }
       return member;
     };
+
     const data = node.edgeTag;
-    if (data instanceof RegionGroupMember) {
+    if (data instanceof RegionGroupMember)
       return updateRegionGroupMemberState(data);
-    }
+
     if (data instanceof CurveLocationDetail) {
       // We trust that the caller has linked from the graph node to a curve which has a RegionGroupMember as its parent.
       const member = data.curve!.parent;

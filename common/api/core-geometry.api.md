@@ -5094,6 +5094,7 @@ export class RegionOps {
     };
     static computeXYArea(root: AnyRegion): number | undefined;
     static computeXYAreaMoments(root: AnyRegion): MomentData | undefined;
+    static computeXYAreaTolerance(range: Range3d, distanceTolerance?: number): number;
     static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;
     static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
     // @alpha

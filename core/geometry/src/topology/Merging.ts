@@ -387,8 +387,7 @@ export class HalfEdgeGraphMerge {
         const nodeB = nodeA.faceSuccessor;
         let getPrecomputedRadians = outboundRadiansFunction;
         if (getPrecomputedRadians) {
-          // Recompute theta when edge geometry is completely determined by the vertices,
-          // since precomputed theta has possibly been perturbed by vertex clustering!
+          // Recompute theta when edge geometry is completely determined by the vertices, which may have been perturbed by clustering.
           const detail = nodeA.edgeTag as CurveLocationDetail;
           if (undefined === detail || undefined === detail.curve || detail.curve instanceof LineSegment3d)
             getPrecomputedRadians = undefined;
