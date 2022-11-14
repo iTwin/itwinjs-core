@@ -6,19 +6,18 @@
  * @module Core
  */
 
-import { RelationshipPath } from "./EC";
+import { StrippedRelationshipPath } from "./EC";
 
 /** @alpha */
 export interface InstanceFilterDefinition {
   /**
-   * Select class filter that may be used to select only instances of specific class.
-   *
-   * If specified, the [[relatedInstances]] attribute should specify paths from this
-   * class. Also, the [[expression]] attribute's `this` symbol points to instances of this class.
+   * Select class filter that used to select only instances of specific class.
+   * The [[relatedInstances]] attribute should specify paths from this class.
+   * Also, the [[expression]] attribute's `this` symbol points to instances of this class.
    *
    * It should by full class name: `SchemaName:ClassName`.
    */
-  selectClassName?: string;
+  selectClassName: string;
 
   /**
    * Relationship paths pointing to related instances used in the [[expression]] attribute.
@@ -47,7 +46,7 @@ export interface InstanceFilterRelatedInstancePath {
    * A relationship path from select class (either specified through [[InstanceFilterDefinition.selectClassName]] or taken from context)
    * to the target related instance containing the properties used in [[InstanceFilterDefinition.expression]].
    */
-  pathFromSelectToPropertyClass: RelationshipPath;
+  pathFromSelectToPropertyClass: StrippedRelationshipPath;
   /**
    * An optional flag indicating that the target instance must exist. Setting this allows to filter out all
    * select instances that don't have a related instance by following the [[pathFromSelectToPropertyClass]] path.

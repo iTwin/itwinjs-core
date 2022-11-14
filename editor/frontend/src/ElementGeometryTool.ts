@@ -7,12 +7,21 @@
  */
 
 import { Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
-import { BRepEntityType, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, LocateSubEntityProps, SolidModelingCommandIpc, SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@itwin/editor-common";
 import { FeatureAppearance, FeatureAppearanceProvider, RgbColor } from "@itwin/core-common";
+import {
+  AccuDrawHintBuilder, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, CoordSource, CoreTools, DecorateContext, DynamicsContext,
+  ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp,
+  IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, SelectionMethod, SelectionSet, ToolAssistance,
+  ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport,
+} from "@itwin/core-frontend";
 import { Point3d, Range3d, Ray3d, Transform } from "@itwin/core-geometry";
-import { AccuDrawHintBuilder, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, CoordSource, CoreTools, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, SelectionMethod, SelectionSet, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
+import {
+  BRepEntityType, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, LocateSubEntityProps,
+  SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType,
+} from "@itwin/editor-common";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
+import { solidModelingIpc } from "./EditToolIpc";
 
 /** @alpha */
 export class ElementGeometryGraphicsProvider {
@@ -189,8 +198,6 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdSolidModeling, this.iModel.key);
   }
 
-  protected commandConnection = EditTools.connect<SolidModelingCommandIpc>();
-
   protected agendaAppearance(isDynamics: boolean): FeatureAppearance {
     if (isDynamics) {
       if (undefined === this._agendaAppearanceDynamic)
@@ -237,7 +244,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // NOTE: Creates cache if it doesn't already exist then test new or existing cache against filter...
     try {
       this._startedCmd = await this.startCommand();
-      return await this.commandConnection.createElementGeometryCache(id, this.geometryCacheFilter);
+      return await solidModelingIpc.createElementGeometryCache(id, this.geometryCacheFilter);
     } catch (err) {
       return false;
     }
@@ -347,7 +354,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   protected async clearElementGeometryCache(): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      await this.commandConnection.clearElementGeometryCache();
+      await solidModelingIpc.clearElementGeometryCache();
     } catch (err) { }
   }
 
@@ -392,7 +399,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
       const vertexKey = this.wantSubEntityType(SubEntityType.Vertex) ? "Vertex" : "";
       const subEntityKey: string = `${faceKey}${edgeKey}${vertexKey}`;
 
-      if(0 === subEntityKey.length) {
+      if (0 === subEntityKey.length) {
         super.provideToolAssistance(mainInstrText, additionalInstr);
         return;
       }
@@ -476,7 +483,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
 
       try {
         this._startedCmd = await this.startCommand();
-        if (undefined === (summary = await this.commandConnection.summarizeElementGeometryCache(id)))
+        if (undefined === (summary = await solidModelingIpc.summarizeElementGeometryCache(id)))
           return false;
       } catch (err) {
         return false;
@@ -591,7 +598,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
         hiddenEdgesVisible,
         filter,
       };
-      return await this.commandConnection.locateSubEntities(id, boresite.origin, boresite.direction, opts);
+      return await solidModelingIpc.locateSubEntities(id, boresite.origin, boresite.direction, opts);
     } catch (err) {
       return undefined;
     }
@@ -814,7 +821,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
       };
 
       data.chordTolerance = chordTolerance;
-      data.geometry = await this.commandConnection.getSubEntityGeometry(id, data.props, opts);
+      data.geometry = await solidModelingIpc.getSubEntityGeometry(id, data.props, opts);
 
       return await data.createGraphic(this.iModel);
     } catch (err) {

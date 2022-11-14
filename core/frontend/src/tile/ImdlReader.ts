@@ -1086,7 +1086,6 @@ export class ImdlReader {
       indices,
       fillFlags: displayParams.fillFlags,
       hasBakedLighting: false,
-      hasFixedNormals: false,
       material,
       textureMapping,
     };

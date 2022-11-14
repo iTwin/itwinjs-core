@@ -163,6 +163,9 @@
     },
     "OpenRealityModelSettings": {
       "keyin": "dta reality model settings"
+    },
+    "AttachCustomRealityData": {
+      "keyin": "dta attach reality"
     }
   }
 }

@@ -29,6 +29,7 @@ import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStr
 /**
  * Presentation manager working mode.
  * @public
+ * @deprecated The attribute is not used by [[PresentationManager]] anymore
  */
 export enum PresentationManagerMode {
   /**
@@ -306,8 +307,10 @@ export interface PresentationManagerProps {
    * use `ReadWrite`, others might want to set to `ReadOnly` for better performance.
    *
    * Defaults to [[PresentationManagerMode.ReadWrite]].
+   *
+   * @deprecated The attribute is not used by [[PresentationManager]] anymore
    */
-  mode?: PresentationManagerMode;
+  mode?: PresentationManagerMode; // eslint-disable-line deprecation/deprecation
 
   /**
    * The interval (in milliseconds) used to poll for presentation data changes. Only has
