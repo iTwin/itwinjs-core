@@ -656,11 +656,17 @@ describe("RegionBoolean", () => {
     let x0 = 0;
     let y0 = 0;
     let xDelta = 0;
-
     interface TestInput {
       jsonFilePath: string;
       expectedNumComponents: number;
     }
+    // try various combinations of the loops in the original test case, which contains:
+    // * null faces,
+    // * duplicate geometry,
+    // * multiple connected components,
+    // * almost-equal vertices,
+    // * holes, and
+    // * polygons with vertices of degree > 2
     const testCases: TestInput[] = [{jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2},
                                     {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion1.imjs", expectedNumComponents: 1},
                                     {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion2.imjs", expectedNumComponents: 2},
