@@ -1219,7 +1219,7 @@ export namespace RenderSchedule {
     /** Timeline controlling clipping. */
     public cuttingPlane?: CuttingPlaneEntryProps[];
 
-    /** Append a new [[RenderSchedule.VisibilityEntry]] to the timeline. Ensure that entries on any given element's visibility timeline are added chronologically. */
+    /** Append a new [[RenderSchedule.VisibilityEntry]] to the timeline. `time` must be more recent than any previously-appended visibility entries. */
     public addVisibility(time: number, visibility: number | undefined, interpolation = Interpolation.Linear): void {
       if (!this.visibility)
         this.visibility = [];
@@ -1227,7 +1227,7 @@ export namespace RenderSchedule {
       this.visibility.push({ time, value: visibility, interpolation });
     }
 
-    /** Append a new [[RenderSchedule.ColorEntry]] to the timeline. Ensure that entries on any given element's color timeline are added chronologically. */
+    /** Append a new [[RenderSchedule.ColorEntry]] to the timeline. `time` must be more recent than any previously-appended color entries. */
     public addColor(time: number, color: RgbColor | { red: number, green: number, blue: number } | undefined, interpolation = Interpolation.Linear): void {
       if (!this.color)
         this.color = [];
@@ -1236,7 +1236,7 @@ export namespace RenderSchedule {
       this.color.push({ time, value, interpolation });
     }
 
-    /** Append a new [[RenderSchedule.CuttingPlaneEntry]] to the timeline. Ensure that entries on any given element's cutting plane timeline are added chronologically. */
+    /** Append a new [[RenderSchedule.CuttingPlaneEntry]] to the timeline.  `time` must be more recent than any previously-appended cutting plane entries. */
     public addCuttingPlane(time: number, plane: { position: XYAndZ, direction: XYAndZ, visible?: boolean, hidden?: boolean } | undefined, interpolation = Interpolation.Linear): void {
       if (!this.cuttingPlane)
         this.cuttingPlane = [];
@@ -1258,7 +1258,7 @@ export namespace RenderSchedule {
       this.cuttingPlane.push({ time, value, interpolation });
     }
 
-    /** Append a new [[RenderSchedule.TransformEntry]] to the timeline. Ensure that entries on any given element's transform timeline are added chronologically. */
+    /** Append a new [[RenderSchedule.TransformEntry]] to the timeline.  `time` must be more recent than any previously-appended transform entries. */
     public addTransform(time: number, transform: Readonly<Transform> | undefined, components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ }, interpolation = Interpolation.Linear): void {
       if (!this.transform)
         this.transform = [];
