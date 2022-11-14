@@ -110,7 +110,7 @@ function createRealityModelSettingsPanel(model: RealityModel, element: HTMLEleme
     parent: colorDiv, id: "rms_ratio", name: " Ratio ",
     min: "0", max: "1", step: "0.05",
     value: model.settings.overrideColorRatio.toString(),
-    verticalAlign: false, textAlign: false,
+    readout: "right", verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const overrideColorRatio = Number.parseFloat(slider.value);
       if (!Number.isNaN(overrideColorRatio))
