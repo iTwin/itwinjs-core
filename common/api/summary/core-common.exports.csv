@@ -24,7 +24,13 @@ public;AuxCoordSystemProps
 public;AxisAlignedBox3d = Range3d
 public;AxisAlignedBox3dProps = Range3dProps
 internal;B3dmHeader 
+internal;BackendBuffer = Buffer_2
+deprecated;BackendBuffer = Buffer_2
 public;BackendError 
+public;BackendReadable = Readable
+deprecated;BackendReadable = Readable
+public;BackendWritable = Writable
+deprecated;BackendWritable = Writable
 public;BackgroundFill
 public;BackgroundMapProps
 public;BackgroundMapProvider
@@ -318,6 +324,7 @@ public;GeometrySummaryOptions
 public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+internal;getPullChangesIpcChannel: (iModelId: string) => string
 internal;getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference
 internal;GlbHeader 
 public;GlobeMode
@@ -554,6 +561,7 @@ beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
 beta;PropertyMetaDataMap 
 beta;PropertyMetaDataProps
+internal;PullChangesOptions
 public;QParams2d
 public;QParams3d
 public;QPoint2d
@@ -816,6 +824,7 @@ public;ViewQueryParams
 public;ViewStateLoadProps
 public;ViewStateProps
 internal;WEB_RPC_CONSTANTS:
+internal;class WebAppRpcLogging
 internal;class WebAppRpcProtocol 
 internal;WebAppRpcRequest 
 public;WhiteOnWhiteReversalProps

@@ -287,6 +287,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@itwin/itwinui-icons-color-react",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "@itwin/itwinui-icons-react",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -304,6 +308,10 @@
     },
     {
       "name": "@itwin/map-layers-auth",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/map-layers-formats",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -461,6 +469,14 @@
     {
       "name": "azurite",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "babel-loader",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "babel-plugin-istanbul",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "benchmark",
@@ -707,6 +723,10 @@
       "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
+      "name": "google-protobuf",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "https-browserify",
       "allowedCategories": [ "internal" ]
     },
@@ -720,7 +740,7 @@
     },
     {
       "name": "i18next-http-backend",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "ignore-styles",

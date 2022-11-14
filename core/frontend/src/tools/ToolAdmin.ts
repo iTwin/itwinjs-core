@@ -1254,6 +1254,8 @@ export class ToolAdmin {
     if (IModelApp.accuDraw.onPreButtonEvent(ev))
       return;
 
+    let updateDynamics = false;
+
     switch (ev.button) {
       case BeButton.Data: {
         if (undefined === tool) {
@@ -1273,11 +1275,7 @@ export class ToolAdmin {
         if (tool instanceof PrimitiveTool)
           tool.autoLockTarget();
 
-        // Process the active tool's pending hints from onDataButtonDown before calling updateDynamics...
-        IModelApp.accuDraw.processHints();
-
-        // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event
-        this.updateDynamics(undefined, true, true);
+        updateDynamics = true; // AccuDraw.onPostButtonEvent needs to process the active tool's pending hints from onDataButtonDown before calling updateDynamics...
         break;
       }
 
@@ -1310,6 +1308,12 @@ export class ToolAdmin {
 
     IModelApp.tentativePoint.onButtonEvent(ev);
     IModelApp.accuDraw.onPostButtonEvent(ev);
+
+    if (!updateDynamics)
+      return;
+
+    // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event
+    this.updateDynamics(undefined, true, true);
   }
 
   private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {

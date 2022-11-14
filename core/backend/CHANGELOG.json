@@ -2,6 +2,39 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.4.4",
+      "tag": "@itwin/core-backend_v3.4.4",
+      "date": "Thu, 10 Nov 2022 19:32:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix ClassRegistry.getRootMetaData mixin handling, handle null ExternalSourceAspect.scope"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.3",
+      "tag": "@itwin/core-backend_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:57 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.2",
+      "tag": "@itwin/core-backend_v3.4.2",
+      "date": "Mon, 24 Oct 2022 13:23:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add asynchronous functions to obtain the extents of geometric models."
+          },
+          {
+            "comment": "Return a pending response from calls to IModelReadRpcInterface.getCustomViewState3dData if they take too long."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.1",
       "tag": "@itwin/core-backend_v3.4.1",
       "date": "Mon, 17 Oct 2022 20:06:51 GMT",
