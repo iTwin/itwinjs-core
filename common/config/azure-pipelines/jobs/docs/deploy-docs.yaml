@@ -11,6 +11,8 @@ jobs:
     - group: ${{ parameters.variableGroup }}
 
   steps:
+    - checkout: none
+
     - script: |
         echo * * * * * * * * * *
         echo * * * * * * * * * * Definition: $(Build.DefinitionName)($(System.DefinitionId))

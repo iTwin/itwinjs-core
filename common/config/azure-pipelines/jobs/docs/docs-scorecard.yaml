@@ -7,7 +7,6 @@ jobs:
   variables:
     - group: iTwin.js Docs - Scorecard
   steps:
-  - script: echo $(ShortCode)
   - template: templates/scorecard/audit-tool.yaml@build-pipeline-scripts
     parameters:
       auditToolsPath: $(PrgBuildsPath)\Tools\AuditTools\
@@ -27,6 +26,7 @@ jobs:
   variables:
     - group: iTwin.js Docs - Scorecard
   steps:
+  - checkout: none
   - template: templates/scorecard/scorecard-common-validators.yaml@build-pipeline-scripts
     parameters:
       gprId: $(GprId)
