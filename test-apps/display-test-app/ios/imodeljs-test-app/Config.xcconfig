@@ -8,7 +8,5 @@
 
 // Configuration settings file format documentation can be found at:
 // https://help.apple.com/xcode/#/dev745c5c974
-FrontEndPath = $(PROJECT_DIR)/../../build/
-BackEndPath = $(PROJECT_DIR)/../../lib/mobile/
 BuildArchitecture = iOSARM64
 IOSARCH = arm64
