@@ -45,7 +45,9 @@ internal;CssProperties
 internal;CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing"
 internal;CursorTypeContext: React_2.Context
 beta;Dialog 
+deprecated;Dialog 
 beta;DialogProps 
+deprecated;DialogProps 
 beta;Direction
 deprecated;Direction
 internal;DirectionHelpers
@@ -114,16 +116,24 @@ internal;FloatingWidgetState
 internal;floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState
 internal;Footer 
 deprecated;Footer 
-beta;FooterIndicator(props: FooterIndicatorProps): JSX.Element
+beta;FooterIndicator: React_2.ForwardRefExoticComponent
+deprecated;FooterIndicator: React_2.ForwardRefExoticComponent
 beta;FooterIndicatorProps 
+deprecated;FooterIndicatorProps 
 beta;FooterPopup 
+deprecated;FooterPopup 
 beta;FooterPopupContentType
+deprecated;FooterPopupContentType
 beta;FooterPopupDefaultProps = Pick
+deprecated;FooterPopupDefaultProps = Pick
 beta;FooterPopupProps 
+deprecated;FooterPopupProps 
 internal;FooterProps 
 deprecated;FooterProps 
 public;FooterSeparator 
+deprecated;FooterSeparator 
 public;FooterSeparatorProps 
+deprecated;FooterSeparatorProps 
 internal;getChildKey(child: React_2.ReactNode, index: number): string
 internal;getClosedWidgetTabIndex: (tabIndex: number) => number
 internal;getColumnZones: (id: WidgetZoneId) => WidgetZoneId[]
@@ -324,6 +334,7 @@ internal;ResizeStrategy
 internal;restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): SizeProps
 internal;RightPanelSide = "right"
 beta;SafeAreaInsets
+deprecated;SafeAreaInsets
 internal;SafeAreaInsetsHelpers
 internal;ScrollableWidgetContent: React_2.NamedExoticComponent
 internal;ScrollableWidgetContentProps
@@ -391,9 +402,11 @@ internal;TabState
 internal;TabStateContext: React_2.Context
 internal;Title 
 beta;TitleBar 
+deprecated;TitleBar 
 internal;TitleBarButton 
 internal;TitleBarButtonProps 
 beta;TitleBarProps 
+deprecated;TitleBarProps 
 internal;TitleProps 
 internal;Toast 
 deprecated;Toast 
