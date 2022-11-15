@@ -313,7 +313,7 @@ export class TileAdmin {
     this._tileStoragePromise = (async () => {
       await import("reflect-metadata");
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = await import("@itwin/object-storage-azure/lib/frontend");
+      const { AzureFrontendStorage, FrontendBlockBlobClientWrapperFactory } = await import(/* webpackChunkName: "object-storage" */ "@itwin/object-storage-azure/lib/frontend");
       const azureStorage = new AzureFrontendStorage(new FrontendBlockBlobClientWrapperFactory());
       this._tileStorage = new TileStorage(azureStorage);
       return this._tileStorage;
