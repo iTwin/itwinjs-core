@@ -97,6 +97,9 @@ if (ProcessDetector.isElectronAppFrontend) {
         assert.isDefined(progress.total);
         lastProgressReport = { ...progress, total: progress.total! };
 
+        // eslint-disable-next-line no-console
+        console.log(`Changeset download progress: ${progress.loaded} / ${progress.total}`);
+
         if (progress.loaded > progress.total! / 2)
           abortSignal.abort();
       };
