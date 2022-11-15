@@ -29,6 +29,16 @@ describe("IModelConnection", () => {
       expect(imodel.displayedExtents.isAlmostEqual(new Range3d(-100, -1, 0, 2, 1, 100))).to.be.true;
     });
 
+    it("onDisplayedExtentsExpansion event triggers upon expansion", () => {
+      let listenerCalled = false;
+      const removeMe = imodel.onDisplayedExtentsExpansion.addListener(() => {
+        listenerCalled = true;
+      });
+      imodel.expandDisplayedExtents(new Range3d(0, -4, 4, 8, 0, 4));
+      removeMe();
+      expect(listenerCalled).to.be.true;
+    });
+
     it("doesn't contract", () => {
       imodel.expandDisplayedExtents(new Range3d(0, 0.5, 1, 1, 0.5, 0));
       expect(imodel.displayedExtents.isAlmostEqual(imodel.projectExtents)).to.be.true;
