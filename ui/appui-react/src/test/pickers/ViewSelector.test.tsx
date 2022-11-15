@@ -33,7 +33,8 @@ describe("ViewSelector", () => {
   it("should render correctly", () => {
     const wrapper = shallow(
       <Provider store={TestUtils.store}>
-        <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
+        {/* eslint-disable-next-line deprecation/deprecation */}
+        <FrameworkVersion>
           <ViewSelector imodel={imodelMock.object} />
         </FrameworkVersion>
       </Provider>
@@ -44,7 +45,8 @@ describe("ViewSelector", () => {
   it("should set Show settings by ViewSelector.updateShowSettings", () => {
     const wrapper = mount(
       <Provider store={TestUtils.store}>
-        <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
+        {/* eslint-disable-next-line deprecation/deprecation */}
+        <FrameworkVersion>
           <ViewSelector imodel={imodelMock.object} listenForShowUpdates={true} />
         </FrameworkVersion>
       </Provider>

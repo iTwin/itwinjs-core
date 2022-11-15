@@ -6,7 +6,6 @@
  * @module StatusBar
  */
 
-import "./Separator.scss";
 import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 import { FooterSeparator } from "@itwin/appui-layout-react";

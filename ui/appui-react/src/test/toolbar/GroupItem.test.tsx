@@ -236,7 +236,8 @@ describe("GroupItem", () => {
       it("should include a GroupToolExpander when a GroupItemDef is included", () => {
         const wrapper = mount(
           <ToolbarDragInteractionContext.Provider value={true}>
-            <GroupButton items={[tool1, tool2, group1]} /> {/* eslint-disable-line deprecation/deprecation */}
+            {/* eslint-disable-next-line deprecation/deprecation */}
+            <GroupButton items={[tool1, tool2, group1]} />
           </ToolbarDragInteractionContext.Provider>,
         );
 
