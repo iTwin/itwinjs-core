@@ -334,7 +334,6 @@ export class SampleAppIModelApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await MapLayersUI.initialize({ iTwinConfig: new MichelTestPrefs(), featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
     MapLayersFormats.initialize();
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
