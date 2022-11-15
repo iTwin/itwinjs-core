@@ -8,7 +8,6 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { IndexedPolyface } from "@itwin/core-geometry";
-import { JsonGeometryStream, FlatBufferGeometryStream } from "./tile/ElementGraphics";
 
 export interface ElementMeshOptions {
   chordTolerance?: number;
@@ -17,20 +16,8 @@ export interface ElementMeshOptions {
   minBRepFeatureSize?: number;
 }
 
-export interface PersistentElementMeshSource {
-  elementId: Id64String;
-  geometry?: never;
-  categoryId?: never;
-}
-
-export interface DynamicElementMeshSource {
-  geometry: JsonGeometryStream | FlatBufferGeometryStream;
-  categoryId: Id64String;
-  elementId?: never;
-}
-
 export interface ElementMeshRequestProps extends ElementMeshOptions {
-  source: PersistentElementMeshSource | DynamicElementMeshSource;
+  source: Id64String;
 }
 
 export function readElementMeshes(_data: Uint8Array): IndexedPolyface[] {
