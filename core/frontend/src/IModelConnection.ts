@@ -161,7 +161,7 @@ export abstract class IModelConnection extends IModel {
    * @note This event is called only for this IModelConnection.
    * @internal
    */
-  public readonly onDisplayedExtentsExpansion = new BeEvent<(_imodel: IModelConnection) => void>();
+  public readonly onDisplayedExtentsExpansion = new BeEvent<() => void>();
 
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
   public fontMap?: FontMap;
@@ -491,7 +491,7 @@ export abstract class IModelConnection extends IModel {
     this.displayedExtents.setFrom(this.projectExtents);
     this.displayedExtents.extendRange(this._extentsExpansion);
 
-    this.onDisplayedExtentsExpansion.raiseEvent(this);
+    this.onDisplayedExtentsExpansion.raiseEvent();
   }
 
   /** @internal */

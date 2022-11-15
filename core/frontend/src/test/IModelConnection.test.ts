@@ -31,7 +31,7 @@ describe("IModelConnection", () => {
 
     it("onDisplayedExtentsExpansion event triggers upon expansion", () => {
       let listenerCalled = false;
-      const removeMe = imodel.onDisplayedExtentsExpansion.addListener((_imodel: IModelConnection) => {
+      const removeMe = imodel.onDisplayedExtentsExpansion.addListener(() => {
         listenerCalled = true;
       });
       imodel.expandDisplayedExtents(new Range3d(0, -4, 4, 8, 0, 4));

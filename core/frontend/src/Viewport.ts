@@ -1599,7 +1599,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     if (undefined !== this._removeExtentsListener)
       this._removeExtentsListener();
-    this._removeExtentsListener = this.view.iModel.onDisplayedExtentsExpansion.addListener((_imodel: IModelConnection) => {
+    this._removeExtentsListener = this.view.iModel.onDisplayedExtentsExpansion.addListener(() => {
       this.invalidateController();
     });
 
