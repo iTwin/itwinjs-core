@@ -998,8 +998,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (this.isDisposed)
       return;
 
-    if (undefined !== this._removeExtentsListener)
-      this._removeExtentsListener();
     this._target = dispose(this._target);
     this.subcategories.dispose();
     IModelApp.tileAdmin.forgetUser(this);
@@ -1069,6 +1067,10 @@ export abstract class Viewport implements IDisposable, TileUser {
       // frustum depth is recalculated correctly.  Register this for removal when the view is detached.
       removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
         this.synchWithView();
+      }));
+
+      removals.push(this.iModel.onDisplayedExtentsExpansion.addListener(() => {
+        this.invalidateController();
       }));
     }
   }
@@ -1583,8 +1585,6 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public fromViewOrientation(from: XYZ, to?: XYZ) { this._viewingSpace.fromViewOrientation(from, to); }
 
-  private _removeExtentsListener?: () => void;
-
   /** Change the ViewState of this Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    * @param _opts options for how the view change operation should work
@@ -1596,12 +1596,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.doSetupFromView(view);
     this.invalidateController();
     this.target.reset();
-
-    if (undefined !== this._removeExtentsListener)
-      this._removeExtentsListener();
-    this._removeExtentsListener = this.view.iModel.onDisplayedExtentsExpansion.addListener(() => {
-      this.invalidateController();
-    });
 
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);
