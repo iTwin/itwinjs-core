@@ -1,6 +1,6 @@
 {
   "name": "@itwin/eslint-plugin",
-  "version": "3.5.0-dev.42",
+  "version": "3.5.0-dev.49",
   "description": "ESLint plugin with default configuration and custom rules for iTwin.js projects",
   "license": "MIT",
   "keywords": [
@@ -48,7 +48,7 @@
   "devDependencies": {
     "@types/eslint": "~7.2.13",
     "@types/estree": "~0.0.48",
-    "@types/node": "16.11.59",
+    "@types/node": "18.11.5",
     "@typescript-eslint/typescript-estree": "~4.31.0",
     "eslint": "^7.11.0",
     "mocha": "^10.0.0",
