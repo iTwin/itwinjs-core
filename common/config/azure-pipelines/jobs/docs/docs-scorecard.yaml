@@ -27,6 +27,7 @@ jobs:
   variables:
     - group: iTwin.js Docs - Scorecard
   steps:
+  - checkout: none
   - template: templates/scorecard/scorecard-common-validators.yaml@build-pipeline-scripts
     parameters:
       gprId: $(GprId)
