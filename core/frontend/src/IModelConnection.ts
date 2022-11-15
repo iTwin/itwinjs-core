@@ -159,7 +159,7 @@ export abstract class IModelConnection extends IModel {
 
   /** Event called immediately after *this* IModelConnection has its displayed extents expanded.
    * @note This event is called only for this IModelConnection.
-   * @beta
+   * @internal
    */
   public readonly onDisplayedExtentsExpansion = new BeEvent<(_imodel: IModelConnection) => void>();
 
