@@ -83,7 +83,6 @@
   },
   "homepage": "http://localhost:3000/",
   "browserslist": [
-    "electron 6.0.0",
     "last 4 chrome version",
     "last 4 firefox version",
     "last 4 safari version",
