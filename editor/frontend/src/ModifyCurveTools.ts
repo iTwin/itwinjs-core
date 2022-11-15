@@ -14,7 +14,7 @@ import {
   LengthDescription, NotifyMessageDetails, OutputMessagePriority, ToolAssistanceInstruction,
 } from "@itwin/core-frontend";
 import {
-  AngleSweep, Arc3d, AxisOrder, CurveChainWithDistanceIndex, CurveCollection, CurveLocationDetail, CurvePrimitive, FrameBuilder, Geometry, JointOptions, LineSegment3d, LineString3d, Loop, Matrix3d,
+  AngleSweep, Arc3d, AxisOrder, CurveChainWithDistanceIndex, CurveCollection, CurveLocationDetail, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, JointOptions, LineSegment3d, LineString3d, Loop, Matrix3d,
   Path, Point3d, RegionOps, Vector3d,
 } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
@@ -68,7 +68,7 @@ export abstract class ModifyCurveTool extends ModifyElementWithDynamicsTool {
   }
 
   protected acceptCurve(_curve: CurveCollection | CurvePrimitive): boolean { return true; }
-  protected modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): CurveCollection | CurvePrimitive | undefined { return undefined; }
+  protected modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): GeometryQuery | undefined { return undefined; }
 
   protected async getCurveData(id: Id64String): Promise<CurveData | undefined> {
     try {
@@ -120,8 +120,8 @@ export abstract class ModifyCurveTool extends ModifyElementWithDynamicsTool {
     if (undefined === this.curveData)
       return;
 
-    const offset = this.modifyCurve(ev, isAccept);
-    if (undefined === offset)
+    const geom = this.modifyCurve(ev, isAccept);
+    if (undefined === geom)
       return;
 
     const builder = new ElementGeometry.Builder();
@@ -130,7 +130,7 @@ export abstract class ModifyCurveTool extends ModifyElementWithDynamicsTool {
     if (!builder.appendGeometryParamsChange(this.curveData.params))
       return;
 
-    if (!builder.appendGeometryQuery(offset))
+    if (!builder.appendGeometryQuery(geom))
       return;
 
     return { format: "flatbuffer", data: builder.entries };
@@ -254,7 +254,7 @@ export class OffsetCurveTool extends ModifyCurveTool {
     }
   }
 
-  protected override modifyCurve(ev: BeButtonEvent, isAccept: boolean): CurveCollection | CurvePrimitive | undefined {
+  protected override modifyCurve(ev: BeButtonEvent, isAccept: boolean): GeometryQuery | undefined {
     if (undefined === ev.viewport)
       return undefined;
 
@@ -512,7 +512,7 @@ export class BreakCurveTool extends ModifyCurveTool {
     }
   }
 
-  protected override modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): CurveCollection | CurvePrimitive | undefined {
+  protected override modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): GeometryQuery | undefined {
     return (this.wantModifyOriginal ? this.resultA : this.resultB);
   }
 
@@ -644,7 +644,7 @@ export class ExtendCurveTool extends ModifyCurveTool {
     return Path.create(...result.path.children);
   }
 
-  protected override modifyCurve(ev: BeButtonEvent, _isAccept: boolean): CurveCollection | CurvePrimitive | undefined {
+  protected override modifyCurve(ev: BeButtonEvent, _isAccept: boolean): GeometryQuery | undefined {
     if (undefined === ev.viewport || undefined === this.anchorPoint)
       return undefined;
 
