@@ -97,7 +97,7 @@ if (ProcessDetector.isElectronAppFrontend) {
         assert.isDefined(progress.total);
         lastProgressReport = { ...progress, total: progress.total! };
 
-        if (progress.loaded > progress.total! / 3)
+        if (progress.loaded > progress.total! / 4)
           abortSignal.abort();
       };
 
