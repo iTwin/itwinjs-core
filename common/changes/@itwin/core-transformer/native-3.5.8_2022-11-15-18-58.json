@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "allow for profile to be upgraded in biscore valid update test",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}
