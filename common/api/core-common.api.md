@@ -520,6 +520,7 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
 
 // @public
 export interface BaseReaderOptions {
+    // @internal
     delay?: number;
     priority?: number;
     quota?: QueryQuota;
@@ -639,6 +640,9 @@ export class BlobOptionsBuilder {
     constructor(_options?: BlobOptions);
     // (undocumented)
     getOptions(): BlobOptions;
+    // @internal
+    setDelay(val: number): this;
+    // @internal
     setPriority(val: number): this;
     setQuota(val: QueryQuota): this;
     setRange(val: BlobRange): this;
@@ -6846,8 +6850,10 @@ export class QueryOptionsBuilder {
     getOptions(): QueryOptions;
     setAbbreviateBlobs(val: boolean): this;
     setConvertClassIdsToNames(val: boolean): this;
+    // @internal
     setDelay(val: number): this;
     setLimit(val: QueryLimit): this;
+    // @internal
     setPriority(val: number): this;
     setQuota(val: QueryQuota): this;
     setRestartToken(val: string): this;

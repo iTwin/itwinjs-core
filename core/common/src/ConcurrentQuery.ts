@@ -87,6 +87,7 @@ export interface BaseReaderOptions {
   /** Restrict time or memory for query but use as hint and may be changed base on backend settings */
   quota?: QueryQuota;
   /**
+   * @internal
    * Allow query to be be deferred by milliseconds specified. This parameter is ignore by default unless
    * concurrent query is configure to honour it.
    */
@@ -135,6 +136,7 @@ export class QueryOptionsBuilder {
   public constructor(private _options: QueryOptions = {}) { }
   public getOptions(): QueryOptions { return this._options; }
   /**
+   * @internal
    * Allow to set priority of query. Query will be inserted int queue base on priority value. This value will be ignored if concurrent query is configured with ignored priority is true.
    * @param val integer value which can be negative as well. By default its zero.
    * @returns @type QueryOptionsBuilder for fluent interface.
@@ -217,6 +219,7 @@ export class QueryOptionsBuilder {
     return this;
   }
   /**
+   * @internal
    * Defers execution of query in queue by specified milliseconds. This parameter is ignored by default unless concurrent query is configure to not ignore it.
    * @param val Number of milliseconds.
    * @returns @type QueryOptionsBuilder for fluent interface.
@@ -231,6 +234,7 @@ export class BlobOptionsBuilder {
   public constructor(private _options: BlobOptions = {}) { }
   public getOptions(): BlobOptions { return this._options; }
   /**
+   * @internal
    * Allow to set priority of blob request. Blob request will be inserted int queue base on priority value. This value will be ignored if concurrent query is configured with ignored priority is true.
    * @param val integer value which can be negative as well. By default its zero.
    * @returns @type BlobOptionsBuilder for fluent interface.
@@ -273,6 +277,16 @@ export class BlobOptionsBuilder {
    */
   public setRange(val: BlobRange) {
     this._options.range = val;
+    return this;
+  }
+  /**
+   * @internal
+   * Defers execution of blob request in queue by specified milliseconds. This parameter is ignored by default unless concurrent query is configure to not ignore it.
+   * @param val Number of milliseconds.
+   * @returns @type BlobOptionsBuilder for fluent interface.
+   */
+  public setDelay(val: number) {
+    this._options.delay = val;
     return this;
   }
 }
