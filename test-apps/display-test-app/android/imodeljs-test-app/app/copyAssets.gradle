@@ -1,0 +1,50 @@
+//file:noinspection GroovyGStringKey
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
+
+static def copyDirectory(srcDir, destDir) {
+    Files.walk(srcDir).forEach(srcPath -> {
+        def destinationPath = Paths.get(destDir.toString(), srcDir.relativize(srcPath).toString())
+        // skip copying directories that already exist
+        if (!Files.exists(destinationPath) || !Files.isDirectory(destinationPath))
+            Files.copy(srcPath, destinationPath, StandardCopyOption.REPLACE_EXISTING)
+    })
+}
+
+static def copyFile(srcFile, destDir) {
+    def destFile = Paths.get(destDir.toString(), srcFile.getFileName().toString())
+    Files.copy(srcFile, destFile, StandardCopyOption.REPLACE_EXISTING)
+}
+
+task copyAssets {
+    doLast {
+        def dtaDir = "${rootDir}/../.."
+        println "dtaDir ${new File(dtaDir).canonicalPath}"
+        def assetsDir = "${rootDir}/app/src/main/assets"
+        println "assetsDir ${new File(assetsDir).canonicalPath}"
+
+        Map foldersToCopy = [
+                "${dtaDir}/lib/mobile/main.js": "${assetsDir}/backend",
+                "${dtaDir}/lib/mobile/assets": "${assetsDir}/backend/Assets",
+                "${dtaDir}/build": "${assetsDir}/frontend",
+                "${assetsDir}/frontend/locales/en": "${assetsDir}/frontend/locales/en-US"
+        ]
+
+        for (def entry in foldersToCopy) {
+            def srcPath = Paths.get(entry.key)
+            def destDir = Paths.get(entry.value)
+
+            if (!Files.exists(srcPath))
+                throw new IOException("${srcPath.toAbsolutePath()} does not exist. Make sure the front and back ends have been built prior to building the Android project.")
+
+            if (!Files.exists(destDir))
+                Files.createDirectories(destDir)
+
+            if (Files.isDirectory(srcPath))
+                copyDirectory(srcPath, destDir)
+            else
+                copyFile(srcPath, destDir)
+        }
+    }
+}
