@@ -4557,6 +4557,8 @@ export class ImageryMapTile extends RealityTile {
     // (undocumented)
     get isDisplayable(): boolean;
     // (undocumented)
+    get isOutOfLodRange(): boolean;
+    // (undocumented)
     protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void;
     // (undocumented)
     markMapTileUsage(): void;
@@ -10869,6 +10871,8 @@ export abstract class Tile {
     protected _isLeaf: boolean;
     get isLoading(): boolean;
     get isNotFound(): boolean;
+    // @alpha
+    get isOutOfLodRange(): boolean;
     // @internal (undocumented)
     get isParentDisplayable(): boolean;
     get isQueued(): boolean;
