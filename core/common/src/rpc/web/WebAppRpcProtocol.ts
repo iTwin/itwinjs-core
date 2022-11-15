@@ -33,6 +33,7 @@ export interface HttpServerRequest extends BackendReadable {
   rawHeaders: string[];
   trailers: { [key: string]: string | undefined };
   rawTrailers: string[];
+  setTimeout(msecs: number, callback: () => void): void;
   setTimeout(msecs: number, callback: () => void): this;
   url?: string;
   statusCode?: number;
