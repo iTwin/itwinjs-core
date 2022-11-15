@@ -15,15 +15,15 @@ import { FrameworkVersionId, UiFramework } from "../UiFramework";
  * @deprecated Used to toggle between UI1.0 and UI2.0.
  * @public
  */
-export function useFrameworkVersion(): FrameworkVersionId {
-  return React.useContext(FrameworkVersionContext);
+export function useFrameworkVersion(): FrameworkVersionId { // eslint-disable-line deprecation/deprecation
+  return React.useContext(FrameworkVersionContext); // eslint-disable-line deprecation/deprecation
 }
 
 /**
  * @deprecated Used to toggle between UI1.0 and UI2.0.
  * @public
  */
-export const FrameworkVersionContext = React.createContext<FrameworkVersionId>("2"); // eslint-disable-line @typescript-eslint/naming-convention
+export const FrameworkVersionContext = React.createContext<FrameworkVersionId>("2"); // eslint-disable-line @typescript-eslint/naming-convention, deprecation/deprecation
 
 /**
  * @deprecated Used to toggle between UI1.0 and UI2.0.
@@ -40,12 +40,12 @@ export interface FrameworkVersionProps {
  * @deprecated Used to toggle between UI1.0 and UI2.0.
  * @public
  */
-export function FrameworkVersion(props: FrameworkVersionProps) { // eslint-disable-line @typescript-eslint/no-redeclare
+export function FrameworkVersion(props: FrameworkVersionProps) { // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation
   const uiVersion = useSelector((state: FrameworkRootState) => {
     const frameworkState = (state as any)[UiFramework.frameworkStateKey];
-    return frameworkState ? frameworkState.configurableUiState.frameworkVersion as FrameworkVersionId : "2";
+    return frameworkState ? frameworkState.configurableUiState.frameworkVersion as FrameworkVersionId : "2"; // eslint-disable-line deprecation/deprecation
   });
-  return <FrameworkVersionContext.Provider
+  return <FrameworkVersionContext.Provider // eslint-disable-line deprecation/deprecation
     children={props.children} // eslint-disable-line react/no-children-prop
     value={uiVersion}
   />;
@@ -59,7 +59,7 @@ export interface FrameworkVersionSwitchProps {
 
 /** @internal */
 export function FrameworkVersionSwitch(props: FrameworkVersionSwitchProps) {
-  const version = useFrameworkVersion();
+  const version = useFrameworkVersion(); // eslint-disable-line deprecation/deprecation
   switch (version) {
     case "1": {
       return <>{props.v1}</>;

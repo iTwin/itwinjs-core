@@ -26,19 +26,19 @@ describe("CoreToolDefinitions", () => {
         expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={
           <>
-            <ActionItemButton actionItem={CoreTools.selectElementCommand} />
-            <ActionItemButton actionItem={CoreTools.fitViewCommand} />
-            <ActionItemButton actionItem={CoreTools.windowAreaCommand} />
-            <ActionItemButton actionItem={CoreTools.zoomViewCommand} />
-            <ActionItemButton actionItem={CoreTools.panViewCommand} />
-            <ActionItemButton actionItem={CoreTools.rotateViewCommand} />
-            <ActionItemButton actionItem={CoreTools.walkViewCommand} />
-            <ActionItemButton actionItem={CoreTools.toggleCameraViewCommand} />
-            <ActionItemButton actionItem={CoreTools.flyViewCommand} />
-            <ActionItemButton actionItem={CoreTools.sectionByPlaneCommandItemDef} />
-            <ActionItemButton actionItem={CoreTools.sectionByElementCommandItemDef} />
-            <ActionItemButton actionItem={CoreTools.sectionByShapeCommandItemDef} />
-            <ActionItemButton actionItem={CoreTools.sectionByRangeCommandItemDef} />
+            <ActionItemButton actionItem={CoreTools.selectElementCommand} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.fitViewCommand} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.windowAreaCommand} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.zoomViewCommand} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.panViewCommand} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.rotateViewCommand} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.walkViewCommand} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.toggleCameraViewCommand} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.flyViewCommand} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.sectionByPlaneCommandItemDef} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.sectionByElementCommandItemDef} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.sectionByShapeCommandItemDef} /> {/* eslint-disable-line deprecation/deprecation */}
+            <ActionItemButton actionItem={CoreTools.sectionByRangeCommandItemDef} /> {/* eslint-disable-line deprecation/deprecation */}
           </>
         }
       />;

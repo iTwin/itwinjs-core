@@ -333,7 +333,7 @@ export class SampleAppIModelApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await MapLayersUI.initialize({ iTwinConfig: new MichelTestPrefs(), featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
+    await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
     MapLayersFormats.initialize();
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
@@ -673,7 +673,7 @@ function AppDragInteractionComponent(props: { dragInteraction: boolean, children
 
 function AppFrameworkVersionComponent(props: { frameworkVersion: string, children: React.ReactNode }) {
   return (
-    <FrameworkVersion>
+    <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
       {props.children}
     </FrameworkVersion>
   );

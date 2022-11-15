@@ -53,7 +53,7 @@ interface BackstageState {
  */
 export class Backstage extends React.Component<BackstageProps, BackstageState> { // eslint-disable-line deprecation/deprecation
 
-  public static readonly onBackstageEvent = new BackstageEvent();
+  public static readonly onBackstageEvent = new BackstageEvent(); // eslint-disable-line deprecation/deprecation
   public static isBackstageVisible: boolean;
 
   /** Shows the Backstage */

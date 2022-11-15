@@ -380,7 +380,7 @@ function AppDragInteractionComponent(props: { dragInteraction: boolean, children
 
 function AppFrameworkVersionComponent(props: { frameworkVersion: string, children: React.ReactNode }) {
   return (
-    <FrameworkVersion>
+    <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
       {props.children}
     </FrameworkVersion>
   );

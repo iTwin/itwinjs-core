@@ -40,7 +40,7 @@ interface IndicatorProps extends CommonProps {
   /** Tooltip text if not specified label is used */
   toolTip?: string;
   /** ContentType is used to determine color of popup arrow. If not set defaults to FooterPopupContentType.Dialog */
-  contentType?: FooterPopupContentType;
+  contentType?: FooterPopupContentType; // eslint-disable-line deprecation/deprecation
 }
 
 /** General-purpose [[Footer]] indicator. Shows an icon and supports an optional popup dialog.
@@ -81,7 +81,7 @@ export function Indicator(props: IndicatorProps) {
         {isLabelVisible && label && <span className="nz-label">{ConditionalStringValue.getValue(label)}</span>}
         {icon && <div className="uifw-indicator-icon"><Icon iconSpec={icon} /></div>}
       </div>
-      {dialog && <FooterPopup contentType={contentType}
+      {dialog && <FooterPopup contentType={contentType} // eslint-disable-line deprecation/deprecation
         target={target.current}
         onClose={() => setIsOpen(false)}
         isOpen={isOpen}>

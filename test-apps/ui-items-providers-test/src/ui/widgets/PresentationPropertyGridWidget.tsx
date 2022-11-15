@@ -96,7 +96,7 @@ export function PresentationPropertyGridWidget() {
   const [contextMenu, setContextMenu] = React.useState<PropertyGridContextMenuArgs | undefined>(undefined);
   const [contextMenuItemInfos, setContextMenuItemInfos] = React.useState<ContextMenuItemInfo[] | undefined>(undefined);
 
-  const version = useFrameworkVersion();
+  const version = useFrameworkVersion(); // eslint-disable-line deprecation/deprecation
   const componentId = ("2" === version) ? "uifw-v2-container" : "uifw-v1-container";
   const style: React.CSSProperties = ("2" === version) ? { height: "100%", width: "100%", position: "absolute" } : { height: "100%" };
 

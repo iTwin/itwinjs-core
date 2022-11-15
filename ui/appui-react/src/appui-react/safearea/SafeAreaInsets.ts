@@ -13,9 +13,9 @@ import { SafeAreaInsets as LayoutSafeAreaInsets } from "@itwin/appui-layout-reac
 /** Describes available safe area insets.
  * @beta
  */
-export type SafeAreaInsets = LayoutSafeAreaInsets;
+export type SafeAreaInsets = LayoutSafeAreaInsets; // eslint-disable-line deprecation/deprecation
 
 /** Describes available safe area insets.
  * @beta
  */
-export const SafeAreaInsets = LayoutSafeAreaInsets;
+export const SafeAreaInsets = LayoutSafeAreaInsets; // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation

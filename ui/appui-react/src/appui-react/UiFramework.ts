@@ -69,8 +69,8 @@ export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
  * @internal
  */
 export interface FrameworkVersionChangedEventArgs {
-  oldVersion: FrameworkVersionId;
-  version: FrameworkVersionId;
+  oldVersion: FrameworkVersionId; // eslint-disable-line deprecation/deprecation
+  version: FrameworkVersionId; // eslint-disable-line deprecation/deprecation
 }
 
 /** FrameworkVersion Changed Event class.
@@ -97,7 +97,7 @@ export class UiFramework {
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
   private static _widgetManager?: WidgetManager;
-  private static _uiVersion: FrameworkVersionId = "2";
+  private static _uiVersion: FrameworkVersionId = "2"; // eslint-disable-line deprecation/deprecation
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
   /** this provides a default state storage handler */
   private static _uiStateStorage: UiStateStorage = new LocalStateStorage();
@@ -503,11 +503,11 @@ export class UiFramework {
   /** Returns the Ui Version.
    * @public
    */
-  public static get uiVersion(): FrameworkVersionId {
+  public static get uiVersion(): FrameworkVersionId { // eslint-disable-line deprecation/deprecation
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion;
   }
 
-  public static setUiVersion(version: FrameworkVersionId) {
+  public static setUiVersion(version: FrameworkVersionId) { // eslint-disable-line deprecation/deprecation
     if (UiFramework.uiVersion === version)
       return;
 

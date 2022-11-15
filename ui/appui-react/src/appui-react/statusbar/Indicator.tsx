@@ -46,7 +46,7 @@ export function StatusBarIndicator(props: StatusBarIndicatorProps) {
   );
   return (
     <>
-      <FooterIndicator
+      <FooterIndicator // eslint-disable-line deprecation/deprecation
         ref={target}
         className={classNames}
         title={props.title}
@@ -59,7 +59,7 @@ export function StatusBarIndicator(props: StatusBarIndicatorProps) {
       >
         {props.children}
       </FooterIndicator>
-      {props.popup && <FooterPopup
+      {props.popup && <FooterPopup // eslint-disable-line deprecation/deprecation
         target={target.current}
         onClose={() => setIsOpen(false)}
         isOpen={isOpen}

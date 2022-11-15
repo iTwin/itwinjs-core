@@ -35,7 +35,7 @@ export interface ToastMessageProps {
  * @public
  * @deprecated
  */
-export function ToastMessage(props: ToastMessageProps) {
+export function ToastMessage(props: ToastMessageProps) { // eslint-disable-line deprecation/deprecation
   const { id, messageDetails, severity, toastTarget, closeMessage } = props;
 
   return (

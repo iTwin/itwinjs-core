@@ -25,7 +25,7 @@ export interface ActivityMessagePopupProps extends CommonProps {
  * @deprecated Activity messages are set-up automatically in a StatusBar.
  * @public
  */
-export function ActivityMessagePopup(props: ActivityMessagePopupProps) {
+export function ActivityMessagePopup(props: ActivityMessagePopupProps) { // eslint-disable-line deprecation/deprecation
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);
 
   React.useEffect(() => {

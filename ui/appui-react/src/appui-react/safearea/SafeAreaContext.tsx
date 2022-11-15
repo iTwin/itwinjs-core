@@ -15,10 +15,10 @@ import { SafeAreaInsets } from "@itwin/appui-layout-react";
  * @public
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const SafeAreaContext = React.createContext<SafeAreaInsets>(SafeAreaInsets.None);
+export const SafeAreaContext = React.createContext<SafeAreaInsets>(SafeAreaInsets.None); // eslint-disable-line deprecation/deprecation
 
 interface InjectedWithSafeAreaProps {
-  readonly safeAreaInsets?: SafeAreaInsets;
+  readonly safeAreaInsets?: SafeAreaInsets; // eslint-disable-line deprecation/deprecation
 }
 
 /** HOC that injects SafeAreaInsets.

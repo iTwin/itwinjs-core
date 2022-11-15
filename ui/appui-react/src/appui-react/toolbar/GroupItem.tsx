@@ -659,7 +659,7 @@ export interface GroupButtonProps extends GroupItemProps, CommonProps { }
  * @deprecated Use [GroupButton]($appui-abstract) instead.
  * @public
  */
-export function GroupButton(props: GroupButtonProps) {
+export function GroupButton(props: GroupButtonProps) { // eslint-disable-line deprecation/deprecation
   const groupItemDef = new GroupItemDef(props);
   groupItemDef.resolveItems();
   return (

@@ -81,8 +81,8 @@ describe("NavigationWidget localStorage Wrapper", () => {
         expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={
           <>
-            <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-            <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" /> {/* eslint-disable-line deprecation/deprecation */}
+            <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" /> {/* eslint-disable-line deprecation/deprecation */}
           </>
         }
       />;
@@ -92,8 +92,8 @@ describe("NavigationWidget localStorage Wrapper", () => {
         expandsTo={Direction.Left} // eslint-disable-line deprecation/deprecation
         items={
           <>
-            <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-            <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" /> {/* eslint-disable-line deprecation/deprecation */}
+            <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" /> {/* eslint-disable-line deprecation/deprecation */}
           </>
         }
       />;
@@ -101,7 +101,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
     it("NavigationWidget should render", async () => {
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <NavigationWidget // eslint-disable-line deprecation/deprecation
               horizontalToolbar={horizontalToolbar}
               verticalToolbar={verticalToolbar}
@@ -114,7 +114,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
     it("NavigationWidget should render correctly", async () => {
       shallow(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <NavigationWidget // eslint-disable-line deprecation/deprecation
               id="navigationWidget"
               horizontalToolbar={horizontalToolbar}
@@ -130,7 +130,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
       const vItemList = new ItemList([CoreTools.fitViewCommand]);
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <NavigationWidget // eslint-disable-line deprecation/deprecation
               horizontalItems={hItemList}
               verticalItems={vItemList}
@@ -147,11 +147,11 @@ describe("NavigationWidget localStorage Wrapper", () => {
           verticalToolbar={verticalToolbar}
         />,
       );
-      expect(wrapper.find(ToolButton).length).to.eq(4);
+      expect(wrapper.find(ToolButton).length).to.eq(4); {/* eslint-disable-line deprecation/deprecation */}
 
       wrapper.setProps({ verticalToolbar: undefined });
       wrapper.update();
-      expect(wrapper.find(ToolButton).length).to.eq(2);
+      expect(wrapper.find(ToolButton).length).to.eq(2); {/* eslint-disable-line deprecation/deprecation */}
     });
 
     class TestContentControl extends ContentControl {
@@ -204,7 +204,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
 
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <NavigationAidHost />
           </FrameworkVersion>
         </Provider>);
@@ -214,7 +214,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
       UiShowHideManager.snapWidgetOpacity = true;
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <NavigationAidHost />
           </FrameworkVersion>
         </Provider>);

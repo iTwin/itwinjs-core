@@ -16,6 +16,6 @@ import { FooterSeparator } from "@itwin/appui-layout-react";
  */
 export function StatusBarSeparator(props: CommonProps) {
   return (
-    <FooterSeparator {...props} />
+    <FooterSeparator {...props} /> // eslint-disable-line deprecation/deprecation
   );
 }

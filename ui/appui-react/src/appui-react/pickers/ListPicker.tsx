@@ -60,7 +60,7 @@ interface ListPickerState {
   expanded: boolean;
 }
 
-let lastOpenedPicker: ListPickerBase | undefined;
+let lastOpenedPicker: ListPickerBase | undefined; // eslint-disable-line deprecation/deprecation
 
 /** Properties for the [[ListPickerItem]] component
  * @beta
@@ -523,7 +523,7 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
     return (
       <FrameworkVersionSwitch
         v1={
-          <ListPickerBase
+          <ListPickerBase // eslint-disable-line deprecation/deprecation
             {...this.props}
             title={this.props.title}
             setEnabled={this._setEnabled}

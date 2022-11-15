@@ -24,5 +24,5 @@ export interface StatusBarDialogTitleBarProps extends CommonProps {
 * @beta
 */
 export function StatusBarDialogTitleBar(props: StatusBarDialogTitleBarProps) {
-  return <TitleBar {...props} />;
+  return <TitleBar {...props} />; // eslint-disable-line deprecation/deprecation
 }

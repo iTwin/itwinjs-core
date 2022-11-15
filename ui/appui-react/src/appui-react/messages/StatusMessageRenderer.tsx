@@ -39,7 +39,7 @@ export function StatusMessageRenderer({
   closeMessage,
   cancelActivityMessage: cancelActivityMessageProp,
   dismissActivityMessage,
-}: StatusMessageRendererProps) {
+}: StatusMessageRendererProps) { // eslint-disable-line deprecation/deprecation
   const messages = React.useRef<StatusMessageRendererrMessage[]>([]);
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);
 

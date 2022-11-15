@@ -26,7 +26,7 @@ export interface StatusBarDialogProps extends CommonProps {
  * @beta
  */
 export function StatusBarDialog(props: StatusBarDialogProps) {
-  return <Dialog {...props} />;
+  return <Dialog {...props} />; // eslint-disable-line deprecation/deprecation
 }
 
 /** Components used in a [[StatusBarDialog]].

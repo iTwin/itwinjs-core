@@ -36,7 +36,7 @@ export interface StickyMessageProps {
  * @public
  * @deprecated
  */
-export function StickyMessage(props: StickyMessageProps) {
+export function StickyMessage(props: StickyMessageProps) { // eslint-disable-line deprecation/deprecation
   const { id, messageDetails, severity, closeMessage } = props;
   const [closing, setClosing] = React.useState(false);
 
