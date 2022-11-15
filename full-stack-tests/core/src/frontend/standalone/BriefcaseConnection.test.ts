@@ -100,18 +100,18 @@ if (ProcessDetector.isElectronAppFrontend) {
         // eslint-disable-next-line no-console
         console.log(`Changeset download progress: ${progress.loaded} / ${progress.total}`);
 
-        if (progress.loaded > progress.total! / 2)
+        if (progress.loaded > progress.total! / 3)
           abortSignal.abort();
       };
 
-      const pullPromise = connection.pullChanges(20, { progressCallback, abortSignal, progressInterval: 50 });
+      const pullPromise = connection.pullChanges(50, { progressCallback, abortSignal, progressInterval: 50 });
 
       try {
         await expect(pullPromise).to.eventually.be.rejectedWith(/cancelled|aborted/i);
         // Use following assert when BackendIModelsAccess returns IModelError with ChangeSetStatus.DownloadCancelled.
         // await expect(pullPromise).to.eventually.be.rejected.and.have.property("errorNumber", ChangeSetStatus.DownloadCancelled);
       } finally {
-        await connection.pullChanges(20); // Finish pulling changes so that the changesets files would be deleted.
+        await connection.pullChanges(51); // Finish pulling changes so that the changesets files would be deleted.
         await connection.close();
         await NativeApp.deleteBriefcase(fileName);
       }
