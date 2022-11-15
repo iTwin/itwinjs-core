@@ -4872,6 +4872,8 @@ export abstract class IModelConnection extends IModel {
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     // @internal
+    readonly onDisplayedExtentsExpansion: BeEvent<() => void>;
+    // @internal
     readonly onMapElevationLoaded: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
     // @internal
