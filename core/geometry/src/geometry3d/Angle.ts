@@ -257,38 +257,55 @@ export class Angle implements BeJSONFunctions {
    * Test if two radians values are equivalent, allowing shift by full circle (i.e. by a multiple of `2*PI`)
    * @param radiansA first radians value
    * @param radiansB second radians value
+   * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public static isAlmostEqualRadiansAllowPeriodShift(radiansA: number, radiansB: number): boolean {
-    // try to get simple conclusions with un-shifted radians ...
+  public static isAlmostEqualRadiansAllowPeriodShift(radiansA: number, radiansB: number,
+    radianTol: number = Geometry.smallAngleRadians): boolean {
     const delta = Math.abs(radiansA - radiansB);
-    if (delta <= Geometry.smallAngleRadians)
+    if (delta <= radianTol)
       return true;
     const period = Math.PI * 2.0;
-    if (Math.abs(delta - period) <= Geometry.smallAngleRadians)
+    if (Math.abs(delta - period) <= radianTol)
       return true;
     const numPeriod = Math.round(delta / period);
     const delta1 = delta - numPeriod * period;
-    return Math.abs(delta1) <= Geometry.smallAngleRadians;
+    return Math.abs(delta1) <= radianTol;
   }
   /**
-   * Test if this angle and other are equivalent, allowing shift by full circle (i.e. by a multiple of 360 degrees)
+   * Test if this angle and other are equivalent, allowing shift by full circle (i.e., multiples of `2 * PI`).
+   * @param other the other angle
+   * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public isAlmostEqualAllowPeriodShift(other: Angle): boolean {
-    return Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians, other._radians);
+  public isAlmostEqualAllowPeriodShift(other: Angle, radianTol: number = Geometry.smallAngleRadians): boolean {
+    return Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians, other._radians, radianTol);
   }
   /**
-   * Test if two this angle and other are almost equal, NOT allowing shift by full circle multiples of 360 degrees.
+   * Test if two angle (in radians)  almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
+   * @param radiansA first radians value
+   * @param radiansB second radians value
+   * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public isAlmostEqualNoPeriodShift(other: Angle): boolean { return Math.abs(this._radians - other._radians) < Geometry.smallAngleRadians; }
+  public static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number,
+    radianTol: number = Geometry.smallAngleRadians): boolean {
+    return Math.abs(radiansA - radiansB) < radianTol;
+  }
   /**
-   * Test if two angle (in radians)  almost equal, NOT allowing shift by full circle multiples of `2 * PI`.
-   * * (Same test as isAlmostEqualRadiansNoPeriodShift)
+   * Test if two this angle and other are almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
+   * @param other the other angle
+   * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public isAlmostEqual(other: Angle): boolean { return this.isAlmostEqualNoPeriodShift(other); }
+  public isAlmostEqualNoPeriodShift(other: Angle, radianTol: number = Geometry.smallAngleRadians): boolean {
+    return Angle.isAlmostEqualRadiansNoPeriodShift(this._radians, other._radians, radianTol);
+  }
   /**
-   * Test if two angle (in radians)  almost equal, NOT allowing shift by full circle multiples of `2 * PI`.
+   * Test if two this angle and other are almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
+   * * This function is same as isAlmostEqualRadiansNoPeriodShift. Please use isAlmostEqualRadiansNoPeriodShift.
+   * @param other the other angle
+   * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number): boolean { return Math.abs(radiansA - radiansB) < Geometry.smallAngleRadians; }
+  public isAlmostEqual(other: Angle, radianTol: number = Geometry.smallAngleRadians): boolean {
+    return this.isAlmostEqualNoPeriodShift(other, radianTol);
+  }
   /**
    * Test if dot product values indicate non-zero length perpendicular vectors.
    * @param dotUU dot product of vectorU with itself

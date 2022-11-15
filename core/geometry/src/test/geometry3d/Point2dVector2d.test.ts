@@ -5,6 +5,7 @@
 // import { Sample } from "../serialization/GeometrySamples";
 import { expect } from "chai";
 import { Angle } from "../../geometry3d/Angle";
+import { PerpParallelOptions } from "../../Geometry";
 import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
@@ -56,7 +57,7 @@ describe("Point2d", () => {
     pointA3d.z = 32.9;
     pointB3d.z = 29.1;
     const vectorMax = vectorAB.maxAbs();
-    ck.testCoordinate(pointDiff, vectorMax, "maxdiff, maxabs");
+    ck.testCoordinate(pointDiff, vectorMax, "maxDiff, maxAbs");
     ck.testCoordinate(vectorAB.magnitude(), pointA.distance(pointB), "distance and magnitude");
     ck.testCoordinate(vectorAB.magnitudeSquared(), pointA.distanceSquared(pointB), "distance and magnitude");
     const d3 = pointA3d.distanceXY(pointB3d);
@@ -81,7 +82,7 @@ describe("Point2d", () => {
     pointA3d.z = 32.9;
     pointB3d.z = 29.1;
     const vectorMax = vectorAB.maxAbs();
-    ck.testCoordinate(pointDiff, vectorMax, "maxdiff, maxabs");
+    ck.testCoordinate(pointDiff, vectorMax, "maxDiff, maxAbs");
 
     /* TODO add indexOfMaxAbs to 2d
     const symmetricLattice3 = Sample.createPoint2dLattice(-3, 1, 3);
@@ -231,7 +232,7 @@ describe("Point2d", () => {
     const fPerp = 0.1;
     const pointD = pointA.addForwardLeft(fTangent, fPerp, vectorU);
     const gTangent = pointD.fractionOfProjectionToLine(pointA, pointB);
-    ck.testCoordinate(fTangent, gTangent, "proejct to 2d line");
+    ck.testCoordinate(fTangent, gTangent, "project to 2d line");
     ck.checkpoint("Point2d.Misc");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -332,4 +333,50 @@ describe("Point2d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+});
+
+describe("Vector2d.isParallelTo", () => {
+  it("Vector2d.isParallelToWithZeroVector", () => {
+    const thisVector: Vector2d = Vector2d.create(1, 2);
+    const other: Vector2d = Vector2d.create(0, 0);
+    const output: boolean = thisVector.isParallelTo(other);
+    expect(output).equal(false);
+  }),
+    it("Vector2d.isParallelToTrueWithGivenTolerances", () => {
+      const thisVector: Vector2d = Vector2d.create(1, 2);
+      const other: Vector2d = Vector2d.create(1.01, 2.01);
+      const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
+      const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
+      expect(output).equal(true);
+    }),
+    it("Vector2d.isParallelToFalseWithGivenTolerances", () => {
+      const thisVector: Vector2d = Vector2d.create(1, 2);
+      const other: Vector2d = Vector2d.create(1.01, 2.01);
+      const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
+      const output: boolean = thisVector.isParallelTo(other, undefined, undefined, options);
+      expect(output).equal(false);
+    });
+});
+
+describe("Vector2d.isPerpendicularTo", () => {
+  it("Vector2d.isPerpendicularToWithZeroVector", () => {
+    const thisVector: Vector2d = Vector2d.create(1, 2);
+    const other: Vector2d = Vector2d.create(0, 0);
+    const output: boolean = thisVector.isPerpendicularTo(other);
+    expect(output).equal(false);
+  }),
+    it("Vector2d.isPerpendicularToTrueWithGivenTolerances", () => {
+      const thisVector: Vector2d = Vector2d.create(1, 2);
+      const other: Vector2d = Vector2d.create(-2.01, 1.01);
+      const options: PerpParallelOptions = { radianSquaredTol: 1, distanceSquaredTol: 1 };
+      const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
+      expect(output).equal(true);
+    }),
+    it("Vector2d.isPerpendicularToFalseWithGivenTolerances", () => {
+      const thisVector: Vector2d = Vector2d.create(1, 2);
+      const other: Vector2d = Vector2d.create(-2.01, 1.01);
+      const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
+      const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
+      expect(output).equal(false);
+    });
 });
