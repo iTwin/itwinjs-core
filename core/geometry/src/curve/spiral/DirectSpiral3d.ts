@@ -6,6 +6,7 @@
  * @module Curve
  */
 import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
@@ -13,18 +14,19 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
+import { CurveLengthContext } from "../internalContexts/CurveLengthContext";
 import { LineString3d } from "../LineString3d";
 import { StrokeOptions } from "../StrokeOptions";
-import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
+import { AustralianRailCorpXYEvaluator } from "./AustralianRailCorpXYEvaluator";
 import { ClothoidSeriesRLEvaluator } from "./ClothoidSeries";
 import { CzechSpiralEvaluator, ItalianSpiralEvaluator } from "./CzechSpiralEvaluator";
 import { DirectHalfCosineSpiralEvaluator } from "./DirectHalfCosineSpiralEvaluator";
-import { AustralianRailCorpXYEvaluator } from "./AustralianRailCorpXYEvaluator";
-import { XYCurveEvaluator } from "./XYCurveEvaluator";
-import { TransitionSpiral3d } from "./TransitionSpiral3d";
-import { Angle } from "../../geometry3d/Angle";
 import { MXCubicAlongArcEvaluator } from "./MXCubicAlongArcSpiralEvaluator";
 import { PolishCubicEvaluator } from "./PolishCubicSpiralEvaluator";
+import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
+import { TransitionSpiral3d } from "./TransitionSpiral3d";
+import { XYCurveEvaluator } from "./XYCurveEvaluator";
+
 /**
 * DirectSpiral3d acts like a TransitionSpiral3d for serialization purposes, but implements spiral types that have "direct" xy calculations without the integrations required
 * for IntegratedSpiral3d.
@@ -499,12 +501,22 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     const n = this.computeStrokeCountForOptions(options);
     const activeStrokes = this.activeStrokes;
     dest.startParentCurvePrimitive(this);
-    if (n <= activeStrokes.numPoints()) {
-      // this.activeStrokes.emitStrokableParts(dest, options);
-      dest.announceIntervalForUniformStepStrokes(this, 2 * activeStrokes.numPoints(), 0.0, 1.0);
-    } else {
-      dest.announceIntervalForUniformStepStrokes(this, n, 0.0, 1.0);
+
+    // hack: specify the extended range so we can compute length of an extended spiral
+    let globalFraction0 = 0.0;
+    let globalFraction1 = 1.0;
+    if (dest instanceof CurveLengthContext) {
+      if (dest.getFraction0 < 0.0)
+        globalFraction0 = dest.getFraction0;
+      if (dest.getFraction1 > 1.0)
+        globalFraction1 = dest.getFraction1;
     }
+
+    if (n <= activeStrokes.numPoints())
+      dest.announceIntervalForUniformStepStrokes(this, 2 * activeStrokes.numPoints(), globalFraction0, globalFraction1);
+    else
+      dest.announceIntervalForUniformStepStrokes(this, n, globalFraction0, globalFraction1);
+
     dest.endParentCurvePrimitive(this);
   }
 
