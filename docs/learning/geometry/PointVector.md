@@ -113,11 +113,11 @@ Typical names in the tables are:
 | cross product of vectors from instance point to 2 targets | value = p.crossProductToPointsXY (targetA, targetB) |  | | |
 | (scalar) triple product of three vectors  | value = p.tripleProductToPoints () : number| | | |
 | (scalar) triple product of three vectors  | | value = vectorA.tripleProduct (vectorB, vectorC) : number| | |
-| project instance onto a line segment, return fractional postition | fraction = spacePoint.fractionOfProjectionToLine (pointA, pointB) : number | fraction = spaceVector.fractionOfProjectionToVector(targetVector) : number | fraction = spacePoint.fractionOfProjectionToLine (pointA, pointB) : number|fraction = spaceVector.fractionOfProjectionToVector(targetVector) : number |
-| in the instance, accumulate crossproduct of vectors from (baseX. baseY, baseZ) to (ax, ay, az) and (bx, by, bz) | | vector.addCrossProductToTargetsInPlace (baseX, baseY, baseZ, ax, ay, az, bx, by, bz) | |
+| project instance onto a line segment, return fractional position | fraction = spacePoint.fractionOfProjectionToLine (pointA, pointB) : number | fraction = spaceVector.fractionOfProjectionToVector(targetVector) : number | fraction = spacePoint.fractionOfProjectionToLine (pointA, pointB) : number|fraction = spaceVector.fractionOfProjectionToVector(targetVector) : number |
+| in the instance, accumulate cross product of vectors from (baseX. baseY, baseZ) to (ax, ay, az) and (bx, by, bz) | | vector.addCrossProductToTargetsInPlace (baseX, baseY, baseZ, ax, ay, az, bx, by, bz) | |
 | dot product of vectors from instance to 2 targets | a = basePoint.dotVectorsToTargets (pointA, pointB) | | a = basePoint.dotVectorsToTargets (pointA, pointB) | |
 | dot product of instance vector with vector from startPoint to endPoint.  | | a = vector.dotProductStartEnd (startPoint, endPoint)  : number| | a = vector.dotProductStartEnd (startPoint, endPoint) : number |
-| dot product of instance vector with vector from startPoint to endPoint.  endPoint given as x,y,z,w to be unweighted. returns zero if weighth is zero.| | a = vector.dotProductStartEndXYZW (startPoint, x,y,x,z)  : number| | | |
+| dot product of instance vector with vector from startPoint to endPoint.  endPoint given as x,y,z,w to be unweighted. returns zero if weight is zero.| | a = vector.dotProductStartEndXYZW (startPoint, x,y,x,z)  : number| | | |
 | squared magnitude of cross product | | value = vectorA.crossProductMagnitudeSquared (vectorB) | | |
 | magnitude of cross product | | value = vectorA.crossProductMagnitude (vectorB) | | |
 
@@ -132,10 +132,13 @@ Typical names in the tables are:
 | angle between vectors, in their plane but using outOfPlaneVector to define top and bottom. `outOfPlane` is *not* necessarily a perpendicular. |  | angle = vectorA.signedAngleTo (vectorB, outOfPlaneVector) : Angle | | |
 | radians between vectors, in their plane but using outOfPlaneVector to define top and bottom. `outOfPlane` is *not* necessarily a perpendicular. |  | angle = vectorA.signedRadiansTo (vectorB, outOfPlaneVector) : number | | |
 | angle between vectors, as viewed in xy plane |  | angle = vectorA.angleToXY (vectorB) : Angle  | | |
-| angle between vectors, as viewed in plane perpendicular to planeNormal |  | angle = vectorA.planrRadiansTo (vectorB, planeNormal) : number  | | |
-|      |  | angle = vectorA.planrAngleTo (vectorB, planeNormal) : Angle  | | |
-| parallel vector test | | vectorA.isParallelTo (vectorB, oppositeIsParallel : boolean = false, returValueIfAnInputIsZero : boolean = false) | |vectorA.isParallelTo (vectorB, oppositeIsParallel : boolean = false) |
-| perpendicular vector test | | vectorA.isPerpendicularTo (vectorB, returValueIfAnInputIsZero : boolean = false) | | vectorA.isPerpendicularTo (vectorB) |
+| angle between vectors, as viewed in plane perpendicular to planeNormal |  | angle = vectorA.planarRadiansTo (vectorB, planeNormal) : number  | | |
+|      |  | angle = vectorA.planarAngleTo (vectorB, planeNormal) : Angle  | | |
+| parallel vector test | | vectorA.isParallelTo (vectorB, oppositeIsParallel : boolean = false, returnValueIfAnInputIsZero : boolean = false) | |vectorA.isParallelTo (vectorB, oppositeIsParallel : boolean = false) |
+| perpendicular vector test | | vectorA.isPerpendicularTo (vectorB, returnValueIfAnInputIsZero : boolean = false) | | vectorA.isPerpendicularTo (vectorB) |
+
+## projection of a vector on a plane
+![>](./figs/PointVector/projectVectorOnPlane.png)
 
 ## in-place updates (instance methods)
 

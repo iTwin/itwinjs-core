@@ -377,7 +377,10 @@ export class Geometry {
   public static isSmallMetricDistanceSquared(distanceSquared: number): boolean {
     return Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared;
   }
-  /** Return `axis modulo 3` with proper handling of negative indices (-1 is z), -2 is y, -3 is x etc) */
+  /**
+   * Return `axis modulo 3` with proper handling of negative indices
+   * ..., -3:x, -2:y, -1:z, 0:x, 1:y, 2:z, 3:x, 4:y, 5:z, 6:x, 7:y, 8:z, ...
+   *  */
   public static cyclic3dAxis(axis: number): number {
     /* Direct test for the most common cases, avoid modulo */
     if (axis >= 0) {
