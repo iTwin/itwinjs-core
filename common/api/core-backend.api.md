@@ -4939,7 +4939,7 @@ export class StandaloneDb extends BriefcaseDb {
     static findByKey(key: string): StandaloneDb;
     // (undocumented)
     get isStandalone(): boolean;
-    static openFile(filePath: LocalFileName, openMode?: OpenMode, options?: SnapshotDbOpenArgs): StandaloneDb;
+    static openFile(filePath: LocalFileName, openMode?: OpenMode, options?: SnapshotDbOpenArgs, upgradeOptions?: UpgradeOptions): StandaloneDb;
     // (undocumented)
     static tryFindByKey(key: string): StandaloneDb | undefined;
     static upgradeStandaloneSchemas(filePath: LocalFileName): void;
