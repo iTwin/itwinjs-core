@@ -39,7 +39,7 @@ export interface FooterPopupProps extends Partial<PopupProps> {
 export type FooterPopupDefaultProps = Pick<FooterPopupProps, "contentType">;
 
 /** Popup component used in [[Footer]] component.
- * @deprecated Use [StatusBarIndicator] instead.
+ * @deprecated Use `popup` prop of [StatusBarIndicator]($appui-react) instead.
  * @beta
  */
 export class FooterPopup extends React.PureComponent<FooterPopupProps> {
