@@ -139,7 +139,7 @@ describe("Render Compatibility", () => {
     expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.StandardDerivatives)).to.not.equal(-1);
   });
 
-  it.only("should query proper render compatibility info assuming lack of float rendering support with webgl1", () => {
+  it("should query proper render compatibility info assuming lack of float rendering support with webgl1", () => {
     const context = makeTestContext(false);
     const caps = new Capabilities();
     const compatibility = caps.init(context, ["OES_texture_float", "OES_texture_half_float"]);
@@ -147,7 +147,7 @@ describe("Render Compatibility", () => {
     expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.FloatRendering)).to.not.equal(-1);
   });
 
-  it.only("should query proper render compatibility info assuming lack of float rendering support with webgl2", () => {
+  it("should query proper render compatibility info assuming lack of float rendering support with webgl2", () => {
     const context = makeTestContext(true);
     const caps = new Capabilities();
     const compatibility = caps.init(context, ["OES_texture_float", "OES_texture_half_float"]);
