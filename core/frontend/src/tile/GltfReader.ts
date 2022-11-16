@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
-  MeshEdges, MeshPolyline, MeshPolylineList, NormalMap, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
+  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
@@ -2082,10 +2082,15 @@ export abstract class GltfReader {
     }
 
     let nMap;
-    if (undefined !== normalMap) {
-      const tmp = texture ? texture : undefined;
-      texture = normalMap;
-      nMap = new NormalMap(tmp);
+    if (normalMap) {
+      if (texture) {
+        nMap = {
+          normalMap,
+        };
+      } else {
+        texture = normalMap;
+        nMap = {};
+      }
     }
 
     return texture ? new TextureMapping(texture, new TextureMapping.Params(), nMap) : undefined;

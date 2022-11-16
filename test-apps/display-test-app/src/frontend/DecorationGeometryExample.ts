@@ -103,9 +103,9 @@ class GeometryDecorator {
           textureMapping = { texture: tx, transform, mode, worldMapping };
       } else {
         if (undefined !== tx)
-          textureMapping = { texture:nm, transform, mode, worldMapping, normalMap: { texture: tx }};
+          textureMapping = { texture:tx, transform, mode, worldMapping, normalMapParams: { normalMap: nm }};
         else
-          textureMapping = { texture:nm, transform, mode, worldMapping, normalMap: {}};
+          textureMapping = { texture:nm, transform, mode, worldMapping, normalMapParams: {}};
       }
 
       const gp = GraphicParams.fromSymbology(color, color, 1);

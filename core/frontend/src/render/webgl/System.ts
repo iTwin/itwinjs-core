@@ -709,7 +709,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         mapMode: args.textureMapping.mode,
         textureWeight: args.textureMapping.weight,
         worldMapping: args.textureMapping.worldMapping,
-      }), args.textureMapping.normalMap);
+      }), args.textureMapping.normalMapParams);
     }
 
     if (args.source) {

@@ -9,38 +9,33 @@
 import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d } from "@itwin/core-geometry";
 import { RenderTexture } from "./RenderTexture";
 
-/** Defines normal map parameters and texture to use as pattern map when texture is a normal map.
+/** Defines normal map parameters.
  * @public
  */
-export class NormalMap {
-  /** The texture to use as a pattern map. */
-  public texture?: RenderTexture;
+export interface NormalMapParams {
+  /** The texture to use as a normal map. If not present then the pattern map texture will be used as a normal map. */
+  normalMap?: RenderTexture;
   /** True if need to flip Y component of the normal map texture. */
-  public flipY?: boolean;
+  flipY?: boolean;
   /** Scale factor to strengthen or weaken the normal map. */
-  public scale?: number;
-  public constructor(texture?: RenderTexture, flipY?: boolean, scale?: number) {
-    this.texture = texture;
-    this.flipY = flipY;
-    this.scale = scale;
-  }
+  scale?: number;
 }
 
 /** Describes how to map a [[RenderTexture]]'s image onto a surface as part of a [[RenderMaterial]].
  * @public
  */
 export class TextureMapping {
-  /** The texture to be mapped to the surface. */
+  /** The texture to be mapped to the surface. If normalMapParams is present but does not contain a normal map, then texture is used as a normal map rather than a pattern map. */
   public readonly texture: RenderTexture;
-  /** If present, the texture is used as a normal map and normalMap.texture is used as the texture. */
-  public normalMap?: NormalMap;
-  /** The parameters describing how the texture image is mapped to the surface. */
+  /** The parameters for normal mapping. */
+  public normalMapParams?: NormalMapParams;
+  /** The parameters describing how the textures are mapped to the surface. */
   public readonly params: TextureMapping.Params;
 
-  public constructor(tx: RenderTexture, params: TextureMapping.Params, normalMap?: NormalMap ) {
+  public constructor(tx: RenderTexture, params: TextureMapping.Params, normalMapParams?: NormalMapParams ) {
     this.texture = tx;
     this.params = params;
-    this.normalMap = normalMap;
+    this.normalMapParams = normalMapParams;
   }
 
   /** @internal */

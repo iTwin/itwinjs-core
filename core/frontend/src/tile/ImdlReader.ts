@@ -10,7 +10,7 @@ import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, ColorDefProps, ComputeNodeId, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
-  ImageSource, ImageSourceFormat, ImdlHeader, LinePixels, NormalMap, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial,
+  ImageSource, ImageSourceFormat, ImdlHeader, LinePixels, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial,
   RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
@@ -729,7 +729,7 @@ export class ImdlReader {
     let normalMap;
     // TODO: (Marc) get normal map info from json, but for now uncomment the following 2 lines to use texture as normal map.
     // if (undefined !== texture) {
-    //   normalMap = new NormalMap(undefined);
+    //   normalMap = {};
     // }
     return new TextureMapping(texture, new TextureMapping.Params(paramProps), normalMap);
   }

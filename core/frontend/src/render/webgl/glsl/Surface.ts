@@ -511,9 +511,9 @@ function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: Is
         let normalMapScale = 1.0;
         if (undefined !== params.geometry.materialInfo && !params.geometry.materialInfo.isAtlas &&
             undefined !== params.geometry.materialInfo.textureMapping &&
-            undefined !== params.geometry.materialInfo.textureMapping.normalMap) {
-          normalMapScale = params.geometry.materialInfo.textureMapping.normalMap.scale ?? 1.0;
-          if (params.geometry.materialInfo.textureMapping.normalMap.flipY)
+            undefined !== params.geometry.materialInfo.textureMapping.normalMapParams) {
+          normalMapScale = params.geometry.materialInfo.textureMapping.normalMapParams.scale ?? 1.0;
+          if (params.geometry.materialInfo.textureMapping.normalMapParams.flipY)
             normalMapScale = -normalMapScale;
         }
         uniform.setUniform1f(normalMapScale);
