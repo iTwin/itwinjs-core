@@ -149,8 +149,8 @@ export class XY implements XAndY {
     return this.x === other.x && this.y === other.y;
   }
   /** returns true if x,y match `other` within metric tolerance */
-  public isAlmostEqualMetric(other: XAndY, radianTol: number = Geometry.smallMetricDistance): boolean {
-    return this.maxDiff(other) <= radianTol;
+  public isAlmostEqualMetric(other: XAndY, distanceTol: number = Geometry.smallMetricDistance): boolean {
+    return this.maxDiff(other) <= distanceTol;
   }
   /** Return a (full length) vector from this point to other */
   public vectorTo(other: XAndY, result?: Vector2d): Vector2d {
@@ -322,8 +322,8 @@ export class Point2d extends XY implements BeJSONFunctions {
   }
   /**
    * Returns the (scalar) cross product of vector from this to targetA and vector from this to targetB
-   * @param targetA target of first vector
-   * @param targetB target of second vector
+   * @param target1 target of first vector
+   * @param target2 target of second vector
    */
   public crossProductToPoints(target1: XAndY, target2: XAndY): number {
     const x1 = target1.x - this.x;

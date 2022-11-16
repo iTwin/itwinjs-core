@@ -6103,7 +6103,7 @@ export class XY implements XAndY {
     freeze(): Readonly<this>;
     indexOfMaxAbs(): number;
     isAlmostEqual(other: XAndY, tol?: number): boolean;
-    isAlmostEqualMetric(other: XAndY, radianTol?: number): boolean;
+    isAlmostEqualMetric(other: XAndY, distanceTol?: number): boolean;
     isAlmostEqualXY(x: number, y: number, tol?: number): boolean;
     get isAlmostZero(): boolean;
     isExactEqual(other: XAndY): boolean;
