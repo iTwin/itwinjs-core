@@ -5,14 +5,12 @@ jobs:
 - job: Deploy
   pool:
     name: PRG Octo Deploy Only
-    # demands: DotNetFramework -exists
 
   variables:
     - group: ${{ parameters.variableGroup }}
 
   steps:
     - checkout: none
-
     - script: |
         echo * * * * * * * * * *
         echo * * * * * * * * * * Definition: $(Build.DefinitionName)($(System.DefinitionId))

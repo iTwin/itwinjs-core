@@ -18,16 +18,12 @@ steps:
       echo Copying all reference files to staging
       robocopy /E generated-docs\core\ ${{ parameters.stagingDir }}\reference\
       if %errorlevel% GEQ 8 exit 1
-
       robocopy /E generated-docs\ui\ ${{ parameters.stagingDir }}\reference\
       if %errorlevel% GEQ 8 exit 1
-
       robocopy /E generated-docs\presentation\ ${{ parameters.stagingDir }}\reference\
       if %errorlevel% GEQ 8 exit 1
-
       robocopy /E generated-docs\domains\ ${{ parameters.stagingDir }}\reference\
       if %errorlevel% GEQ 8 exit 1
-
       echo Copying extracted code to staging
       mkdir ${{ parameters.stagingDir }}\extract\
       robocopy /E generated-docs\extract\ ${{ parameters.stagingDir }}\extract\
