@@ -835,9 +835,9 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
   return packed;
 }
 
-// TODO: clean-up of saved widgets.
 // istanbul ignore next
-function packSavedWidgets(savedWidgets: SavedWidgets, frontstageDef: FrontstageDef): SavedWidgets {
+function packSavedWidgets(frontstageDef: FrontstageDef): SavedWidgets {
+  let savedWidgets: Array<SavedWidget> = [];
   for (const widgetDef of frontstageDef.widgetDefs) {
     const id = widgetDef.id;
     const initialWidget: SavedWidget = {
@@ -854,19 +854,30 @@ function packSavedWidgets(savedWidgets: SavedWidgets, frontstageDef: FrontstageD
     if (widget === initialWidget)
       continue;
 
-    savedWidgets = produce(savedWidgets, (draft) => {
-      draft.push(widget);
-    });
+    savedWidgets.push(widget);
   }
+
+  // Add previously saved widgets.
+  const prevSavedWidgets = frontstageDef.savedWidgetDefs || [];
+  for (const prevWidget of prevSavedWidgets) {
+    if (savedWidgets.find((w) => w.id === prevWidget.id))
+      continue;
+
+    savedWidgets.push(prevWidget);
+  }
+
+  // Limit number of saved widgets.
+  const maxWidgets = 100;
+  if (savedWidgets.length > maxWidgets)
+    savedWidgets = savedWidgets.slice(0, maxWidgets);
 
   return savedWidgets;
 }
 
 // istanbul ignore next
-function restoreSavedWidgets(savedWidgets: SavedWidgets, frontstage: FrontstageDef) {
-  let i = savedWidgets.length;
-  while (i--) {
-    const savedWidget = savedWidgets[i];
+function restoreSavedWidgets(frontstage: FrontstageDef) {
+  const savedWidgets = frontstage.savedWidgetDefs || [];
+  for (const savedWidget of savedWidgets) {
     const widgetId = savedWidget.id;
     const widgetDef = frontstage.findWidgetDef(widgetId);
     if (!widgetDef)
@@ -878,13 +889,7 @@ function restoreSavedWidgets(savedWidgets: SavedWidgets, frontstage: FrontstageD
     if (savedWidget.popoutBounds) {
       widgetDef.popoutBounds = Rectangle.create(savedWidget.popoutBounds);
     }
-
-    savedWidgets = produce(savedWidgets, (draft) => {
-      draft.splice(i, 1);
-    });
   }
-
-  return savedWidgets;
 }
 
 /** @internal */
@@ -1157,13 +1162,15 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
         const setting = settingResult.setting;
         if (setting.version >= version && setting.stateVersion >= stateVersion) {
           const restored = restoreNineZoneState(frontstageDef, setting.nineZone);
-          const savedWidgets = restoreSavedWidgets(setting.widgets, frontstageDef);
+
+          frontstageDef.savedWidgetDefs = setting.widgets;
+          restoreSavedWidgets(frontstageDef);
+
           let state = addMissingWidgets(frontstageDef, restored);
           state = hideWidgets(state, frontstageDef);
           state = processPopoutWidgets(state, frontstageDef);
 
           frontstageDef.nineZoneState = state;
-          frontstageDef.savedWidgetDefs = savedWidgets;
           return;
         }
       }
@@ -1178,14 +1185,16 @@ export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   const nineZone = useNineZoneState(frontstageDef);
   const uiSettingsStorage = useUiStateStorageHandler();
   const saveSetting = React.useMemo(() => {
-    return debounce(async (frontstage: FrontstageDef, state: NineZoneState, savedWidgets: SavedWidgets) => {
+    return debounce(async (frontstage: FrontstageDef, state: NineZoneState) => {
       const id = frontstage.id;
+      const widgets = packSavedWidgets(frontstage);
+      frontstage.savedWidgetDefs = widgets;
       const setting: WidgetPanelsFrontstageState = {
         id,
         version: frontstage.version,
         stateVersion,
         nineZone: packNineZoneState(state),
-        widgets: packSavedWidgets(savedWidgets, frontstage),
+        widgets,
       };
       await uiSettingsStorage.saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id), setting);
     }, 1000);
@@ -1198,8 +1207,7 @@ export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
     if (!nineZone || nineZone.draggedTab)
       return;
-    const savedWidgets = frontstageDef.savedWidgetDefs || [];
-    saveSetting(frontstageDef, nineZone, savedWidgets);
+    saveSetting(frontstageDef, nineZone);
   }, [frontstageDef, nineZone, saveSetting]);
 }
 
@@ -1335,6 +1343,7 @@ export function useItemsManager(frontstageDef: FrontstageDef) {
   const refreshNineZoneState = (def: FrontstageDef) => {
     // Fired for both registered/unregistered. Update definitions and remove/add missing widgets.
     def.updateWidgetDefs();
+    restoreSavedWidgets(def);
     let state = def.nineZoneState;
     if (!state)
       return;
