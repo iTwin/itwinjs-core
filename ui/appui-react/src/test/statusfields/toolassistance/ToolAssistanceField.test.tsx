@@ -10,8 +10,8 @@ import { Logger } from "@itwin/core-bentley";
 import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
 import { LocalStateStorage } from "@itwin/core-react";
-import { FooterPopup, TitleBarButton } from "@itwin/appui-layout-react";
-import { ToggleSwitch } from "@itwin/itwinui-react";
+import { FooterPopup } from "@itwin/appui-layout-react";
+import { IconButton, ToggleSwitch } from "@itwin/itwinui-react";
 import {
   AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, FrontstageManager, StatusBar, StatusBarWidgetControl,
   StatusBarWidgetControlArgs, ToolAssistanceField, WidgetDef,
@@ -565,13 +565,13 @@ import { render } from "@testing-library/react";
       expect(toolAssistanceField.length).to.eq(1);
       expect(toolAssistanceField.state("isPinned")).to.be.false;
 
-      let buttons = wrapper.find(TitleBarButton); // Pin button
+      let buttons = wrapper.find(IconButton); // Pin button
       expect(buttons.length).to.eq(1);
       buttons.simulate("click");
       wrapper.update();
       expect(toolAssistanceField.state("isPinned")).to.be.true;
 
-      buttons = wrapper.find(TitleBarButton);   // Close button
+      buttons = wrapper.find(IconButton);   // Close button
       expect(buttons.length).to.eq(1);
       buttons.simulate("click");
       wrapper.update();
