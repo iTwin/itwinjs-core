@@ -67,6 +67,7 @@ jobs:
   - template: ../templates/core-build.yaml
     parameters:
       nodeVersion: 18.12.x
+      buildIos: true
   # Will run if even there is a failure somewhere else in the pipeline.
   - template: ../templates/publish-test-results.yaml
     parameters:
