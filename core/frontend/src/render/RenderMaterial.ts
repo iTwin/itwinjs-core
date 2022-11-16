@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { ColorDef, RenderTexture, RgbColorProps, TextureMapping } from "@itwin/core-common";
+import { ColorDef, NormalMap, RenderTexture, RgbColorProps, TextureMapping } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 
 /** Specifies the provenance of a [RenderMaterial]($common) created for a persistent material element.
@@ -61,6 +61,9 @@ export interface MaterialSpecularProps {
 export interface MaterialTextureMappingProps {
   /** The texture from which the image is obtained. */
   texture: RenderTexture;
+
+  /** If present, the texture is used as a normal map and normalMap.texture is used as the texture. */
+  normalMap?: NormalMap;
 
   /** The mode controlling how the image is mapped onto the surface.
    * Default: [TextureMapping.Mode.Parametric]($common).

@@ -43,11 +43,27 @@ export class MeshData implements WebGLDisposable {
     if (FeatureIndexType.Uniform === params.vertices.featureIndexType)
       this.uniformFeatureId = params.vertices.uniformFeatureID;
 
-    if (undefined !== params.surface.textureMapping) {
-      this.texture = params.surface.textureMapping.texture as Texture;
-      // TODO: (Marc) Need to set normal map somehow. For now can comment out above line and uncomment out line below.
-      // this.normalMap = params.surface.textureMapping.texture as Texture;
-      this._textureAlwaysDisplayed = params.surface.textureMapping.alwaysDisplayed;
+    // Sort out the texture and normal map.
+    // If a material is used and it contains normal map data then textureMapping.texture is the normal map and textureMapping.normalMap.texture is the texture.
+    const tm = params.surface.textureMapping;
+    let tx;
+    let haveNormalMap = false;
+    if (undefined !== params.surface.material && !params.surface.material.isAtlas) {
+      const mat = params.surface.material.material;
+      if (undefined !== mat.textureMapping && undefined !== mat.textureMapping.normalMap) {
+        haveNormalMap = true;
+        tx = mat.textureMapping.normalMap.texture;
+      }
+    }
+    if (undefined !== tm) {
+      if (haveNormalMap) {
+        this.normalMap = tm.texture as Texture;
+        this.texture = undefined !== tx ? tx as Texture : undefined;
+      } else {
+        this.texture = tm.texture as Texture;
+        this.normalMap = undefined;
+      }
+      this._textureAlwaysDisplayed = tm.alwaysDisplayed;
     } else {
       this.texture = undefined;
       this._textureAlwaysDisplayed = false;

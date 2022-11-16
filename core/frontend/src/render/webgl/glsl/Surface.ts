@@ -380,7 +380,6 @@ const finalizeNormalPrelude = `
 `;
 
 const finalizeNormalNormalMap = `
-
   if (isSurfaceBitSet(kSurfaceBit_HasNormalMap)) {
     // Modify the normal with the normal map texture.
     // First calculate the tangent.
@@ -406,7 +405,6 @@ const finalizeNormalNormalMap = `
       normal = normalize (normM.x * tangent + normM.y * biTangent + normM.z * normal);
     }
   }
-
 `;
 
 const finalizeNormalPostlude = `
@@ -509,14 +507,16 @@ function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: Is
   if (System.instance.capabilities.isWebGL2) {
     finalizeNormal += finalizeNormalNormalMap;
     builder.frag.addUniform("u_normalMapScale", VariableType.Float, (prog) => {
-      prog.addProgramUniform("u_normalMapScale", (uniform, params) => {
-        let nms = 1.0;
-        if (undefined !== params.target.plan.lights) {
-          nms = params.target.plan.lights.specularIntensity;
-          if (params.target.plan.lights.ambient.intensity > 0.25)
-            nms = -nms;
+      prog.addGraphicUniform("u_normalMapScale", (uniform, params) => {
+        let normalMapScale = 1.0;
+        if (undefined !== params.geometry.materialInfo && !params.geometry.materialInfo.isAtlas &&
+            undefined !== params.geometry.materialInfo.textureMapping &&
+            undefined !== params.geometry.materialInfo.textureMapping.normalMap) {
+          normalMapScale = params.geometry.materialInfo.textureMapping.normalMap.scale ?? 1.0;
+          if (params.geometry.materialInfo.textureMapping.normalMap.flipY)
+            normalMapScale = -normalMapScale;
         }
-        uniform.setUniform1f(nms); // TODO: (Marc) Get normal map scale from somewhere in params set to negative for inverted normal maps
+        uniform.setUniform1f(normalMapScale);
       });
     });
   }
@@ -579,7 +579,7 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
       prog.addGraphicUniform("s_normalMap", (uniform, params) => {
         const surfGeom = params.geometry.asSurface!;
         if (surfGeom.useNormalMap(params.programParams)) {
-          const normalMap = (params.geometry.hasAnimation && params.target.analysisTexture) ? (params.target.analysisTexture as Texture) : surfGeom.normalMap;
+          const normalMap = surfGeom.normalMap;
           assert(undefined !== normalMap);
           normalMap.texture.bindSampler(uniform, TextureUnit.NormalMap);
         } else {

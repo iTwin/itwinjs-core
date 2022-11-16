@@ -9,18 +9,38 @@
 import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d } from "@itwin/core-geometry";
 import { RenderTexture } from "./RenderTexture";
 
+/** Defines normal map parameters and texture to use as pattern map when texture is a normal map.
+ * @public
+ */
+export class NormalMap {
+  /** The texture to use as a pattern map. */
+  public texture?: RenderTexture;
+  /** True if need to flip Y component of the normal map texture. */
+  public flipY?: boolean;
+  /** Scale factor to strengthen or weaken the normal map. */
+  public scale?: number;
+  public constructor(texture?: RenderTexture, flipY?: boolean, scale?: number) {
+    this.texture = texture;
+    this.flipY = flipY;
+    this.scale = scale;
+  }
+}
+
 /** Describes how to map a [[RenderTexture]]'s image onto a surface as part of a [[RenderMaterial]].
  * @public
  */
 export class TextureMapping {
   /** The texture to be mapped to the surface. */
   public readonly texture: RenderTexture;
+  /** If present, the texture is used as a normal map and normalMap.texture is used as the texture. */
+  public normalMap?: NormalMap;
   /** The parameters describing how the texture image is mapped to the surface. */
   public readonly params: TextureMapping.Params;
 
-  public constructor(tx: RenderTexture, params: TextureMapping.Params) {
+  public constructor(tx: RenderTexture, params: TextureMapping.Params, normalMap?: NormalMap ) {
     this.texture = tx;
     this.params = params;
+    this.normalMap = normalMap;
   }
 
   /** @internal */
