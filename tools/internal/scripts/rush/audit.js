@@ -41,7 +41,8 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   const excludedAdvisories = [
     "GHSA-f8q6-p94x-37v3", // https://github.com/advisories/GHSA-f8q6-p94x-37v3 minimatch ReDoS
     "GHSA-76p3-8jx3-jpfq", // https://github.com/advisories/GHSA-76p3-8jx3-jpfq appui>@bentley/react-scripts>loader-utils
-    "GHSA-3rfm-jhwj-7488", // https://github.com/advisories/GHSA-3rfm-jhwj-7488 appui-test-app>@bentley/react-scripts>loader-utils
+    "GHSA-3rfm-jhwj-7488", // https://github.com/advisories/GHSA-3rfm-jhwj-7488 appui-test-app>@bentley/react-scripts>react-dev-utils>loader-utils
+    "GHSA-hhq3-ff78-jv3g", // https://github.com/advisories/GHSA-hhq3-ff78-jv3g appui-test-app>@bentley/react-scripts>react-dev-utils>loader-utils
   ];
 
   let shouldFailBuild = false;
