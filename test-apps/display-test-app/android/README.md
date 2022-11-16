@@ -23,9 +23,7 @@ To run the app, open the **imodeljs-test-app** project (a directory peer of this
 
 ## Displaying an iModel
 
-First, upload a briefcase bim file to the `/data/data/com.bentley.imodeljs_test_app/files/` directory on your device.
-
-Next, modify line 25 in `app/src/main/java/com/bentley/imodeljs_test_app/MainActivity.java` where `MobileFrontend` is being configured to specify the filename for your uploaded iModel.
+Press the briefcase button and you will be able to select a snapshot iModel to open. It will get copied into the app's external files directory and then opened from there.
 
 ## Using a local build of the add-on (iTwinAndroidLibrary.aar)
 
