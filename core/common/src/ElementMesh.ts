@@ -12,7 +12,7 @@ import { IndexedPolyface } from "@itwin/core-geometry";
 export interface ElementMeshOptions {
   chordTolerance?: number;
   angleTolerance?: number;
-  decimationTolerance?: number;
+  // ###TODO? decimationTolerance?: number;
   minBRepFeatureSize?: number;
 }
 
