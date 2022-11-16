@@ -17,6 +17,7 @@ Table of contents:
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
 - [Geometry](#geometry)
   - [Polyface](#polyface)
+  - [Curves](#curves)
 - [Deprecations](#deprecations)
   - [@itwin/components-react](#itwincomponents-react)
   - [@itwin/core-backend](#itwincore-backend)
@@ -156,6 +157,10 @@ To use this package, you must initialize it by calling [MapLayersFormats.initial
 ### Polyface
 
 The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
+
+### Curves
+
+The methods [CurveCollection.projectedParameterRange]($core-geometry) and [CurvePrimitive.projectedParameterRange]($core-geometry) have been added for computing the range of fractional projection parameters of the instance curve(s) onto a `Ray3d`. The default implementation of the latter method returns undefined to avoid a circular dependency, so extenders of [CurvePrimitive]($core-geometry) should override as appropriate.
 
 ## Deprecations
 

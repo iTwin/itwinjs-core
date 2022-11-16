@@ -288,6 +288,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: false, result?: CurveLocationDetail): CurveLocationDetail;
     otherArcAsLocalVectors(other: Arc3d): ArcVectors | undefined;
     get perpendicularVector(): Vector3d;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     static readonly quadratureGuassCount = 5;
     static readonly quadratureIntervalAngleDegrees = 10;
     quickEccentricity(): number;
@@ -575,6 +576,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     get order(): number;
     protected _polygon: Bezier1dNd;
     polygonLength(): number;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     quickLength(): number;
     reverseInPlace(): void;
     saturateInPlace(knotVector: KnotVector, spanIndex: number): boolean;
@@ -830,6 +832,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     get numSpan(): number;
     get order(): number;
     poleIndexToDataIndex(poleIndex: number): number | undefined;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     reverseInPlace(): void;
     setWrappable(value: BSplineWrapMode): void;
     startPoint(): Point3d;
@@ -1504,6 +1507,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     isSameGeometryClass(other: GeometryQuery): boolean;
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     get path(): CurveChain;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     quickLength(): number;
     reverseInPlace(): void;
     startPoint(result?: Point3d): Point3d;
@@ -1532,6 +1536,7 @@ export abstract class CurveCollection extends GeometryQuery {
     isInner: boolean;
     get isOpenPath(): boolean;
     maxGap(): number;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     sumLengths(): number;
     abstract tryAddChild(child: AnyCurve | undefined): boolean;
     tryTransformInPlace(transform: Transform): boolean;
@@ -1729,6 +1734,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     protected moveSignedDistanceFromFractionGeneric(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     parent?: any;
+    projectedParameterRange(_ray: Vector3d | Ray3d, _lowHigh?: Range1d): Range1d | undefined;
     abstract quickLength(): number;
     rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     rangeBetweenFractionsByClone(fraction0: number, fraction1: number, transform?: Transform): Range3d;
@@ -3192,6 +3198,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     isSameGeometryClass(other: GeometryQuery): boolean;
     get point0Ref(): Point3d;
     get point1Ref(): Point3d;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     quickLength(): number;
     rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     reverseInPlace(): void;
@@ -3287,6 +3294,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     get pointIndices(): GrowableFloat64Array | undefined;
     get points(): Point3d[];
     popPoint(): void;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     quickLength(): number;
     quickUnitNormal(result?: Vector3d): Vector3d | undefined;
     rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
@@ -4655,6 +4663,7 @@ export abstract class ProxyCurve extends CurvePrimitive {
     fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     get proxyCurve(): CurvePrimitive;
     // (undocumented)
     protected _proxyCurve: CurvePrimitive;
@@ -5100,6 +5109,7 @@ export class RegionOps {
     };
     static computeXYArea(root: AnyRegion): number | undefined;
     static computeXYAreaMoments(root: AnyRegion): MomentData | undefined;
+    static computeXYAreaTolerance(range: Range3d, distanceTolerance?: number): number;
     static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;
     static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
     // @alpha
@@ -5739,6 +5749,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     static interpolateCurvatureR0R1(r0: number, fraction: number, r1: number): number;
     get localToWorld(): Transform;
     protected _localToWorld: Transform;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     static radius0LengthSweepRadiansToRadius1(radius0: number, arcLength: number, sweepRadians: number): number;
     static radius1LengthSweepRadiansToRadius0(radius1: number, arcLength: number, sweepRadians: number): number;
     static radiusRadiusLengthToSweepRadians(radius0: number, radius1: number, arcLength: number): number;

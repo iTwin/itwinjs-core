@@ -1465,7 +1465,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   /** return the diagonal vector. There is no check for isNull -- if the range isNull(), the vector will have very large negative coordinates. */
   public diagonal(result?: Vector2d): Vector2d { return this.low.vectorTo(this.high, result); }
 
-  /** return the diagonal vector. There is no check for isNull -- if the range isNull(), the vector will have very large negative coordinates. */
+  /** return the point at the specified fraction along the diagonal vector. There is no check for isNull -- if the range isNull(), the vector will have very large negative coordinates. */
   public diagonalFractionToPoint(fraction: number, result?: Point2d): Point2d { return this.low.interpolate(fraction, this.high, result); }
 
   /** return a point given by fractional positions on the XY axes. This is done with no check for isNull !!! */
