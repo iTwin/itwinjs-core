@@ -46,7 +46,7 @@ Functions like [ViewState.lookAtVolume]($frontend) and [Viewport.zoomToElements]
 Now, [MarginOptions]($frontend) has an alternative way to specify how to adjust the size of the viewed volume, using [MarginOptions.paddingPercent]($frontend). Like [MarginPercent]($frontend), a [PaddingPercent]($frontend) specifies the extra space as a percentage of the original volume's space on each side - though it may also specify a single padding to be applied to all four sides, or omit any side that should have no padding applied. For example,
 
 ```
-{paddingPercent: {{left: .2, right: .2, top: .2, bottom: .2}}
+{paddingPercent: {left: .2, right: .2, top: .2, bottom: .2}}
 // is equivalent to
 {paddingPercent: .2}
 ```

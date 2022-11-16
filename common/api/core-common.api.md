@@ -4306,6 +4306,8 @@ export interface HttpServerRequest extends BackendReadable {
     // (undocumented)
     rawTrailers: string[];
     // (undocumented)
+    setTimeout(msecs: number, callback: () => void): void;
+    // (undocumented)
     setTimeout(msecs: number, callback: () => void): this;
     // (undocumented)
     socket: any;
