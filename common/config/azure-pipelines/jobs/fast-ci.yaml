@@ -42,14 +42,17 @@ jobs:
         OS: windows-latest
         platform: Windows_NT
         name: $(win_pool)
+        ios: false
       "Linux_Node_18":
         OS: ubuntu-latest
         platform: Linux
         name: $(linux_pool)
+        ios: false
       "MacOS_Node_18":
         OS: macOS-latest
         platform: Darwin
         name: $(mac_pool)
+        ios: true
 
   pool:
     name: $(name)
@@ -67,7 +70,7 @@ jobs:
   - template: ../templates/core-build.yaml
     parameters:
       nodeVersion: 18.12.x
-      buildIos: true
+      buildIos: (ios)
   # Will run if even there is a failure somewhere else in the pipeline.
   - template: ../templates/publish-test-results.yaml
     parameters:
