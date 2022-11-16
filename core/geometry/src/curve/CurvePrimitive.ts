@@ -743,10 +743,11 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public abstract constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
 
   /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
-   * * Common implementation is delegated to subclasses to avoid circular dependency.
    * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
    * @param lowHigh optional receiver for output
    * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
    */
-  public abstract projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
+  public projectedParameterRange(_ray: Vector3d | Ray3d, _lowHigh?: Range1d): Range1d | undefined {
+    return undefined; // common implementation delegated to subclasses to avoid circular dependency
+  }
 }
