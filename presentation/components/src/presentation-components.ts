@@ -114,6 +114,7 @@ export * from "./presentation-components/instance-filter-builder/PresentationIns
 export * from "./presentation-components/instance-filter-builder/Types";
 export * from "./presentation-components/instance-filter-builder/Utils";
 export * from "./presentation-components/instance-filter-builder/InstanceFilterConverter";
+export * from "./presentation-components/instance-filter-builder/ECClassesHierarchy";
 
 Presentation.registerInitializationHandler(initializeLocalization);
 Presentation.registerInitializationHandler(initializePropertyValueRenderers);

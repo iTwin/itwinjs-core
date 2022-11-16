@@ -19,8 +19,8 @@ import {
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
 import {
+  ECClassHierarchyProvider,
   PresentationInstanceFilterBuilder, PresentationInstanceFilterProperty, useFilterBuilderNavigationPropertyEditorContext,
   usePresentationInstanceFilteringProps,
 } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";

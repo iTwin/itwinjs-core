@@ -11,11 +11,11 @@ import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, RelationshipPath } from "@itwin/presentation-common";
 import { createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo } from "@itwin/presentation-common/lib/cjs/test";
-import { ClassHierarchy, ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
 import { convertToInstanceFilterDefinition } from "../../presentation-components/instance-filter-builder/InstanceFilterConverter";
 import {
   PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup,
 } from "../../presentation-components/instance-filter-builder/Types";
+import { ClassHierarchy, ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 
 describe("convertToInstanceFilterDefinition", () => {
   describe("converts single condition with", () => {
