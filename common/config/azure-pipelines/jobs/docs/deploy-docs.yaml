@@ -20,6 +20,7 @@ jobs:
         echo * * * * * * * * * * Build: $(Build.BuildNumber)
         echo * * * * * * * * * *
       displayName: Release Header
+
     - task: octopusdeploy.octopus-deploy-build-release-tasks.octo-installer.OctoInstaller@5
       displayName: Use Octopus CLI tool version 8.0.1
       inputs:

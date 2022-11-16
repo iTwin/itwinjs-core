@@ -28,6 +28,7 @@ steps:
       mkdir ${{ parameters.stagingDir }}\extract\
       robocopy /E generated-docs\extract\ ${{ parameters.stagingDir }}\extract\
       if %errorlevel% GEQ 8 exit 1
+
       echo Copying all files from \docs folder
       robocopy /E docs\ ${{ parameters.stagingDir }}\
       if %errorlevel% GEQ 8 exit 1
