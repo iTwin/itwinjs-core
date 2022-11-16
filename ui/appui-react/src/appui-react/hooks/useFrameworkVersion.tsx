@@ -40,7 +40,7 @@ export interface FrameworkVersionProps {
  * @deprecated Used to toggle between UI1.0 and UI2.0.
  * @public
  */
-export function FrameworkVersion(props: FrameworkVersionProps) { // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation
+export function FrameworkVersion(props: FrameworkVersionProps) { // eslint-disable-line deprecation/deprecation
   const uiVersion = useSelector((state: FrameworkRootState) => {
     const frameworkState = (state as any)[UiFramework.frameworkStateKey];
     return frameworkState ? frameworkState.configurableUiState.frameworkVersion as FrameworkVersionId : "2"; // eslint-disable-line deprecation/deprecation
