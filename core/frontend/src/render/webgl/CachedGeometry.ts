@@ -788,26 +788,7 @@ export class BlurGeometry extends TexturedViewportQuadGeometry {
 }
 
 /** @internal */
-export class EDLSimpleGeometry extends TexturedViewportQuadGeometry {
-
-  public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture) {
-    const params = ViewportQuad.getInstance().createParams();
-    if (undefined === params)
-      return undefined;
-
-    return new EDLSimpleGeometry(params, [colorBuffer, depthBuffer]);
-  }
-
-  public get colorTexture() { return this._textures[0]; }
-  public get depthTexture() { return this._textures[1]; }
-
-  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
-    super(params, TechniqueId.EDLSimple, textures);
-  }
-}
-
-/** @internal */
-export class EDLCalcEnhGeometry extends TexturedViewportQuadGeometry {
+export class EDLCalcBasicGeometry extends TexturedViewportQuadGeometry {
   public readonly texInfo = new Float32Array(3);
 
   public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, width: number, height: number) {
@@ -815,14 +796,14 @@ export class EDLCalcEnhGeometry extends TexturedViewportQuadGeometry {
     if (undefined === params)
       return undefined;
 
-    return new EDLCalcEnhGeometry(params, [colorBuffer, depthBuffer], width, height);
+    return new EDLCalcBasicGeometry(params, [colorBuffer, depthBuffer], width, height);
   }
 
   public get colorTexture() { return this._textures[0]; }
   public get depthTexture() { return this._textures[1]; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], width: number, height: number) {
-    super(params, TechniqueId.EDLCalcAdv1, textures);
+    super(params, TechniqueId.EDLCalcBasic, textures);
     this.texInfo[0] = 1.0 / width;
     this.texInfo[1] = 1.0 / height;
     this.texInfo[2] = 1.0;
@@ -845,7 +826,7 @@ export class EDLCalcFullGeometry extends TexturedViewportQuadGeometry {
   public get depthTexture() { return this._textures[1]; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], scale: number, width: number, height: number) {
-    super(params, TechniqueId.EDLCalcAdv2, textures);
+    super(params, TechniqueId.EDLCalcFull, textures);
     this.texInfo[0] = 1.0 / width;
     this.texInfo[1] = 1.0 / height;
     this.texInfo[2] = scale;

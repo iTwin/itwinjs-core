@@ -805,7 +805,6 @@ abstract class Compositor extends SceneCompositor {
     this._opaqueRenderState.flags.depthTest = true;
 
     this._pointCloudRenderState.flags.depthTest = true;
-    // ###TODO what does point cloud render state actually need?
 
     this._translucentRenderState.flags.depthMask = false;
     this._translucentRenderState.flags.blend = this._translucentRenderState.flags.depthTest = true;
@@ -1007,9 +1006,6 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     // Render point cloud geometry with possible EDL (WebGL2 only)
-    // ###TODO might be cleaner to add a new explicit capability to the Capabilities class (`edlCapable`)?
-    // ###TODO do we need separate frameStats for this?
-    // ###TODO is this the correct location in sequence?
     if (System.instance.capabilities.isWebGL2) {
       this.target.beginPerfMetricRecord("Render PointClouds");
       this.renderPointClouds(commands, compositeFlags);
@@ -1107,6 +1103,7 @@ abstract class Compositor extends SceneCompositor {
       this.renderLayers(commands, false, RenderPass.OpaqueLayers);
       this.target.endPerfMetricRecord(true);
 
+      // PointClouds are rendered in Opaque pass for readPixels
       this.target.beginPerfMetricRecord("Render Opaque", true);
       this.renderOpaque(commands, CompositeFlags.None, true);
       this.target.endPerfMetricRecord(true);
@@ -2158,8 +2155,8 @@ class MRTCompositor extends Compositor {
       }
     }
 
-    // ###TODO figure out RenderState and pingPong
-    const needComposite = CompositeFlags.None !== compositeFlags; // ###TODO what about composite flags?
+    // ###TODO figure out pingPong
+    const needComposite = CompositeFlags.None !== compositeFlags;
     const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
     const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
     const system = System.instance;

@@ -9,10 +9,11 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMemory } from "../RenderMemory";
-import { EDLCalcEnhGeometry, EDLCalcFullGeometry, EDLFilterGeometry, EDLMixGeometry, EDLSimpleGeometry } from "./CachedGeometry";
+import { EDLCalcBasicGeometry, EDLCalcFullGeometry, EDLFilterGeometry, EDLMixGeometry } from "./CachedGeometry";
 import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
+import { RenderState } from "./RenderState";
 import { collectGeometryStatistics, collectTextureStatistics } from "./SceneCompositor";
 import { getDrawParams } from "./ScratchDrawParams";
 import { System } from "./System";
@@ -33,8 +34,7 @@ class Bundle implements WebGLDisposable {
     public edlFiltFbo2?: FrameBuffer,
     public edlFiltFbo4?: FrameBuffer,
 
-    public edlSimpleGeom?: EDLSimpleGeometry,
-    public edlCalcEnhGeom?: EDLCalcEnhGeometry,
+    public edlCalcBasicGeom?: EDLCalcBasicGeometry,
     public edlCalcFullGeom?: [EDLCalcFullGeometry | undefined, EDLCalcFullGeometry | undefined, EDLCalcFullGeometry | undefined],
     public edlFiltGeom?: [EDLFilterGeometry | undefined, EDLFilterGeometry | undefined],
     public edlMixGeom?: EDLMixGeometry) {
@@ -81,8 +81,7 @@ class Bundle implements WebGLDisposable {
       && undefined === this.edlCalcFbo4
       && undefined === this.edlFiltFbo2
       && undefined === this.edlFiltFbo4
-      && undefined === this.edlSimpleGeom
-      && undefined === this.edlCalcEnhGeom
+      && undefined === this.edlCalcBasicGeom
       && undefined === this.edlCalcFullGeom?.[0]
       && undefined === this.edlCalcFullGeom?.[1]
       && undefined === this.edlCalcFullGeom?.[2]
@@ -104,8 +103,7 @@ class Bundle implements WebGLDisposable {
     this.edlCalcFbo4 = dispose(this.edlCalcFbo4);
     this.edlFiltFbo2 = dispose(this.edlFiltFbo2);
     this.edlFiltFbo4 = dispose(this.edlFiltFbo4);
-    this.edlSimpleGeom = dispose(this.edlSimpleGeom);
-    this.edlCalcEnhGeom = dispose(this.edlCalcEnhGeom);
+    this.edlCalcBasicGeom = dispose(this.edlCalcBasicGeom);
     if (this.edlCalcFullGeom) {
       this.edlCalcFullGeom[0] = dispose(this.edlCalcFullGeom?.[0]);
       this.edlCalcFullGeom[1] = dispose(this.edlCalcFullGeom?.[1]);
@@ -173,8 +171,7 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
       collectTextureStatistics(bundle.edlFiltTex2, stats);
       collectTextureStatistics(bundle.edlFiltTex4, stats);
 
-      collectGeometryStatistics(bundle.edlSimpleGeom, stats);
-      collectGeometryStatistics(bundle.edlCalcEnhGeom, stats);
+      collectGeometryStatistics(bundle.edlCalcBasicGeom, stats);
       collectGeometryStatistics(bundle.edlCalcFullGeom?.[0], stats);
       collectGeometryStatistics(bundle.edlCalcFullGeom?.[1], stats);
       collectGeometryStatistics(bundle.edlCalcFullGeom?.[2], stats);
@@ -215,17 +212,19 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
 
     const fbStack = System.instance.frameBufferStack;
     const useMsBuffers = edlParams.useMsBuffers;
-    // ###TODO figure out RenderState and multisampling
+    System.instance.applyRenderState(RenderState.defaults);
+
+    // ###TODO figure out multisampling
     // ###TODO: should radius be (optionally?) voxel based instead of pixel here?
     if (edlParams.edlMode === EDLMode.On) {
       // draw using enhanced version of simple (8 samples, still single draw)
       fbStack.execute(this._edlFinalFbo, true, edlParams.useMsBuffers, () => {
-        if (bundle.edlCalcEnhGeom === undefined) {
+        if (bundle.edlCalcBasicGeom === undefined) {
           const ct1 = edlParams.inputTex;
           const ctd = this._depth!.getHandle()!;
-          bundle.edlCalcEnhGeom = EDLCalcEnhGeometry.createGeometry(ct1.getHandle()!, ctd, ct1.width, ct1.height);
+          bundle.edlCalcBasicGeom = EDLCalcBasicGeometry.createGeometry(ct1.getHandle()!, ctd, ct1.width, ct1.height);
         }
-        const params = getDrawParams(this._target, bundle.edlCalcEnhGeom!);
+        const params = getDrawParams(this._target, bundle.edlCalcBasicGeom!);
         this._target.techniques.draw(params);
       });
     } else { // EDLMode.Full
