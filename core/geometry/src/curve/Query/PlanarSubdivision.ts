@@ -16,7 +16,7 @@ import { RegionOps } from "../RegionOps";
  * @module Curve
  */
 
-class MapCurvePrimitiveToCurveLocatioNDetailPairArray {
+class MapCurvePrimitiveToCurveLocationDetailPairArray {
   public primitiveToPair = new Map<CurvePrimitive, CurveLocationDetailPair[]>();
   // index assigned to this primitive for this calculation.
   public primitiveToIndex = new Map<CurvePrimitive, number>();
@@ -66,9 +66,10 @@ function tagString(name: string, value: number | undefined): string {
  * @internal
  */
 export class PlanarSubdivision {
-  public static assembleHalfEdgeGraph(_primitives: CurvePrimitive[], allPairs: CurveLocationDetailPair[]): HalfEdgeGraph {
-    const detailByPrimitive = new MapCurvePrimitiveToCurveLocatioNDetailPairArray();   // map from key CurvePrimitive to CurveLocationDetailPair.
-    for (const p of _primitives)
+  /** Create a graph from an array of curves, and an array of the curves' precomputed intersections. */
+  public static assembleHalfEdgeGraph(primitives: CurvePrimitive[], allPairs: CurveLocationDetailPair[]): HalfEdgeGraph {
+    const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray();   // map from key CurvePrimitive to CurveLocationDetailPair.
+    for (const p of primitives)
       detailByPrimitive.assignPrimitiveIndex(p);
     for (const pair of allPairs) {
       detailByPrimitive.insertPair(pair);

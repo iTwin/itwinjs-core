@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/webgl-compatibility",
+      "comment": "Add float rendering compatibility tests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/webgl-compatibility"
+}
