@@ -459,6 +459,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     // if (doConnectives !== 0)
       this.addConnectives();
   }
+  private _workSegment?: LineSegment3d;
   /**
    * The sweep operations require access to all geometry by edge crossings and face walk.
    * If input loops are non-overlapping, there may be disconnected islands not reachable.
@@ -474,28 +475,27 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const areaTol = RegionOps.computeXYAreaTolerance(rangeAB);
     const direction = Vector3d.create(1.0, -0.12328974132467);
     let margin = 0.1;
-    const lowHigh = PlaneAltitudeRangeContext.findExtremePointsInDirection(rangeAB.corners(), direction);
-    if (lowHigh && lowHigh.length === 2)
-      margin *= lowHigh[0].distanceXY(lowHigh[1]);  // how much further to extend each bridge ray
+    this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(rangeAB.corners(), direction, this._workSegment);
+    if (this._workSegment)
+      margin *= this._workSegment.point0Ref.distanceXY(this._workSegment.point1Ref);  // how much further to extend each bridge ray
 
+    const maxPoints: Point3d[] = [];
     const findExtremePointsInLoop = (region: Loop) => {
       const area = RegionOps.computeXYArea(region);
       if (area === undefined || Math.abs(area) < areaTol)
         return;   // avoid bridging trivial faces
-      const extremes = PlaneAltitudeRangeContext.findExtremePointsInDirection(region, direction);
-      if (extremes && extremes.length === 2)
-        maxPoints.push(extremes[1]);
+      this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(region, direction, this._workSegment);
+      if (this._workSegment)
+        maxPoints.push(this._workSegment.point1Ref);
     };
 
-    const maxPoints: Point3d[] = [];
     for (const groupMembers of [this.groupA.members, this.groupB.members]) {
       for (const m of groupMembers) {
         if (m.region instanceof Loop) {
           findExtremePointsInLoop(m.region);
         } else if (m.region instanceof ParityRegion) {
-          for (const loop of m.region.children) {
+          for (const loop of m.region.children)
             findExtremePointsInLoop(loop);
-          }
         }
       }
     }

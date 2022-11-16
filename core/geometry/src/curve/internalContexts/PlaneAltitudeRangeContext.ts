@@ -6,19 +6,21 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
-import { PlaneAltitudeEvaluator } from "../../Geometry";
-import { Range1d } from "../../geometry3d/Range";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Arc3d } from "../Arc3d";
-import { SineCosinePolynomial } from "../../numerics/Polynomials";
-import { GeometryQuery } from "../GeometryQuery";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
+import { Geometry, PlaneAltitudeEvaluator } from "../../Geometry";
+import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range1d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { SineCosinePolynomial } from "../../numerics/Polynomials";
+import { Arc3d } from "../Arc3d";
+import { GeometryQuery } from "../GeometryQuery";
+import { LineSegment3d } from "../LineSegment3d";
+import { LineString3d } from "../LineString3d";
 
 /**
  * Accumulator context for searching for extrema of geometry along a plane.
@@ -99,18 +101,63 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
     this.announcePoint((this._workPoint = g.endPoint(this._workPoint)));
   }
 
-  public static findExtremePointsInDirection(geometry: GeometryQuery | Point3d[], direction: Vector3d): Point3d[] | undefined {
-    const plane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, 0), direction);
+  private static findExtremesInDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d): PlaneAltitudeRangeContext | undefined {
+    const origin = direction instanceof Ray3d ? direction.origin : Point3d.createZero();
+    const vector = direction instanceof Ray3d ? direction.direction : direction;
+    const plane = Plane3dByOriginAndUnitNormal.create(origin, vector);  // vector is normalized, so altitudes are distances
     if (plane) {
       const context = new PlaneAltitudeRangeContext(plane);
       if (geometry instanceof GeometryQuery) {
         geometry.dispatchToGeometryHandler(context);
+      } else if (geometry instanceof GrowableXYZArray) {
+        context.announcePoints(geometry);
       } else {
         for (const pt of geometry)
           context.announcePoint(pt);
       }
-      if (context.highPoint && context.lowPoint)
-        return [context.lowPoint, context.highPoint];
+      return context;
+    }
+    return undefined;
+  }
+  /** Compute altitudes for the geometry (via dispatch) over the plane defined by the given direction,
+   *   and return points at min and max altitude, packed into a `LineSegment3d`.
+   * @param geometry geometry to project
+   * @param direction vector or ray on which to project the instance. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param lowHigh optional receiver for output
+  */
+  public static findExtremePointsInDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: LineSegment3d): LineSegment3d | undefined {
+    const context = this.findExtremesInDirection(geometry, direction);
+    if (context && context.highPoint && context.lowPoint)
+      return LineSegment3d.create(context.lowPoint, context.highPoint, lowHigh);
+    return undefined;
+  }
+  /** Compute altitudes for the geometry (via dispatch) over the plane defined by the given direction,
+   *   and return the min and max altitudes, packed into a Range1d.
+   * @param geometry geometry to project
+   * @param direction vector or ray on which to project the instance. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param lowHigh optional receiver for output
+  */
+  public static findExtremeAltitudesInDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    const context = this.findExtremesInDirection(geometry, direction);
+    if (context && !context.range.isNull)
+      return Range1d.createFrom(context.range, lowHigh);
+    return undefined;
+  }
+  /** Project geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+   * @param geometry geometry to project
+   * @param direction vector or ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param lowHigh optional receiver for output
+   */
+  public static findExtremeFractionsAlongDirection(geometry: GeometryQuery | GrowableXYZArray | Point3d[], direction: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    const range = this.findExtremeAltitudesInDirection(geometry, direction, lowHigh);
+    if (undefined !== range) {
+      const mag = (direction instanceof Vector3d) ? direction.magnitude() : direction.direction.magnitude();
+      const scaleToFraction = Geometry.conditionalDivideCoordinate(1.0, mag);
+      if (undefined !== scaleToFraction) {
+        range.low *= scaleToFraction;
+        range.high *= scaleToFraction;
+        return range;
+      }
     }
     return undefined;
   }

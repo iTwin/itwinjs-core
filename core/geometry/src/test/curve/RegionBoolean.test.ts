@@ -8,11 +8,14 @@ import * as fs from "fs";
 import { UnionRegion } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
+import { CurveCollection } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveFactory } from "../../curve/CurveFactory";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { PlaneAltitudeRangeContext } from "../../curve/internalContexts/PlaneAltitudeRangeContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop, SignedLoops } from "../../curve/Loop";
@@ -27,7 +30,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PointStreamXYZHandlerBase, VariantPointDataStream } from "../../geometry3d/PointStreaming";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Range3d } from "../../geometry3d/Range";
+import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceVisitor } from "../../polyface/Polyface";
@@ -705,6 +708,49 @@ describe("RegionBoolean", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "BridgeEdgesAndDegenerateLoops");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("PlaneAltitudeRangeContext", () => {
+  it("OneAltitude", () => {
+    const ck = new Checker();
+    const linestring = LineString3d.createRectangleXY(Point3d.create(-2, -1), 5, 4, true);
+    const opts = new InterpolationCurve3dOptions(linestring.points);
+    opts.closed = true;
+    opts.isChordLenKnots = 1;
+    const fitCurve = InterpolationCurve3d.create(opts);
+    const lsLoop = Loop.create(linestring);
+    let lowHigh: Range1d | undefined;
+    interface RayParam  {
+      ray: Vector3d | Ray3d;  // defines 0-altitude plane
+      param: number;          // expected fractional projection parameter (for xy-plane geometry)
+    }
+    const rayParams: RayParam[] = [
+      {ray: Vector3d.unitZ(), param: 0.0},
+      {ray: Ray3d.create(Point3d.create(0,0,5), Vector3d.unitZ()), param: -5.0},
+      {ray: Ray3d.create(Point3d.create(0,0,-1), Vector3d.unitZ(3.0)), param: 1/3},
+      ];
+    for (const geom of [lsLoop, linestring, lsLoop.getPackedStrokes(), linestring.points, fitCurve]) {
+      for (const rayParam of rayParams) {
+        if (geom instanceof CurveCollection)
+          lowHigh = geom.projectedParameterRange(rayParam.ray, lowHigh);
+        else if (geom instanceof CurvePrimitive)
+          lowHigh = geom.projectedParameterRange(rayParam.ray, lowHigh);
+        else if (undefined !== geom)
+          lowHigh = PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(geom, rayParam.ray, lowHigh);
+        if (ck.testDefined(lowHigh) && lowHigh) {
+          ck.testFalse(lowHigh.isNull, "projection range computed");
+          ck.testTrue(lowHigh.isSinglePoint, "projection range is single point");
+          ck.testCoordinate(rayParam.param, lowHigh.low, "low projection as expected");
+          ck.testCoordinate(rayParam.param, lowHigh.high, "high projection as expected");
+        }
+      }
+    }
+    const zero = Vector3d.createZero();
+    ck.testUndefined(lsLoop.projectedParameterRange(zero), "CurveCollection projection range is undefined for undefined plane");
+    ck.testUndefined(linestring.projectedParameterRange(zero), "CurvePrimitive projection range is undefined for undefined plane");
+    ck.testUndefined(PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(linestring.points, zero), "points projection range is undefined for undefined plane");
     expect(ck.getNumErrors()).equals(0);
   });
 });
