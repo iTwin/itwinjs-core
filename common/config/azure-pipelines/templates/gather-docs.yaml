@@ -35,6 +35,7 @@ steps:
       exit 0
     workingDirectory: ${{ parameters.workingDir }}
     displayName: Copy Reference files to Staging
+
   # BIS Docs are pulled from a separate internal build
   - task: DownloadBuildArtifacts@0
     displayName: Download Bis Docs Artifacts
