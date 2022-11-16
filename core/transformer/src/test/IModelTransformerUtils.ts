@@ -792,7 +792,7 @@ export class TransformerExtensiveTestScenario extends BackendTestUtils.Extensive
     const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Element)[0] as ExternalSourceAspect;
     assert.exists(aspect);
     assert.equal(aspect.kind, ExternalSourceAspect.Kind.Element);
-    assert.equal(aspect.scope.id, IModel.rootSubjectId);
+    assert.equal(aspect.scope?.id, IModel.rootSubjectId);
     assert.isUndefined(aspect.checksum);
     assert.isTrue(Id64.isValidId64(aspect.identifier));
     const sourceLastMod: string = sourceDb.elements.queryLastModifiedTime(aspect.identifier);

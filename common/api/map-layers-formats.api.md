@@ -35,6 +35,10 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // (undocumented)
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
     // (undocumented)
+    get maximumZoomLevel(): number;
+    // (undocumented)
+    get minimumZoomLevel(): number;
+    // (undocumented)
     serviceJson: any;
     // (undocumented)
     get tileSize(): number;

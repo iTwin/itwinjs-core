@@ -14,8 +14,8 @@ There are several mechanisms available in BIS that domain authors can take advan
 * A Model can contain Elements.
 * An Element can be sub-modeled by a Model.
 * An Element can own child Elements.
-* A *Spatial Organizer* can hold an Element as part of the spatial structure of a *Facility*, from the perspective of a specific discipline.
-* A *Physical System* can group member Elements.
+* A *Spatial Organizer* can hold an Element as part of a hierarchical spatial decomposition of a *Facility*, from the perspective of a specific discipline.
+* A *Physical System* can group member Elements as part of a hierarchical organization by sub-systems, from the perspective of a specific discipline.
 * The provenance of an Element can be traced back to an *External Source*, whose organization may be hierarchical.
 
 Each of these mechanism is intended to be used in specific circumstances which are explained in this chapter.
@@ -40,7 +40,7 @@ For example, a `DrawingModel` sub-models a `Drawing` Element and contains the `D
 
 ### Element Owns Child Elements
 
-An Element can own child Elements. This is useful for modeling *assembly* relationships or for modeling cases where one Element exclusively controls the lifetime of other Elements. An Element can have 0 or 1 parent Elements as defined by the `ElementOwnsChildElements` relationship. An Element without a parent is considered a *top-level* Element. An Element with a parent is considered a *child* Element. These hierarchies can go N levels deep, which means that an Element can be both a parent and a child.
+An Element can own child Elements. This is useful for modeling *assembly* relationships or for modeling cases where one Element exclusively controls the lifetime of other Elements. An Element can have 0 or 1 parent Elements as defined by the `ElementOwnsChildElements` relationship. An Element without a parent is considered a *top-level* Element. An Element with a parent is considered a *child* Element. These hierarchies can go N levels deep, which means that an Element can be both a parent and a child. A parent Element and all its children are required to be contained in the same model.
 
 ### Element Held by Spatial Organizer
 
@@ -58,21 +58,21 @@ For more details about Spatial Composition in BIS, please refer to the [Spatial 
 
 ### Physical System Groups Members
 
-A Physical System can group member-Elements which, together, provide a specific function.
-These Physical System hierarchies can co-exist with the other organization mechanisms listed above.
+A Physical System can group member-Elements which, together, provide a specific function. Physical Systems can be organized in a hierarchical manner by using the `bis:PhysicalSystemAggregatesSubSystems` relationship. Physical System hierarchies can co-exist with the other organization mechanisms listed above.
+
+![Physical Systems](../media/physical-systems.png)
+
 For more details about Physical Systems in BIS, please refer to the [Modeling Systems](./modeling-systems.md) topic later in this chapter.
 
 ### Element Is From Source
 
-An Element's provenance, captured by `bis:ExternalSourceAspect`s attached to it, can refer to the External Source it came from.
-External Sources can be organized in a hierarchical manner, reflecting how they are laid out in the external repository.
-These External Source hierarchies can co-exist with the other organization mechanisms listed above.
+An Element's provenance, captured by `bis:ExternalSourceAspect`s attached to it, can refer to the External Source it came from. External Sources can be organized in a hierarchical manner, reflecting how they are laid out in the external repository. These External Source hierarchies can co-exist with the other organization mechanisms listed above.
 
 For example, an iModel Connector synchronizes data from a Road dataset containing 4 dgn files. The model-attachments among those dgn files are represented in the iModel by a hierarchy composed of `ExternalSource` instances, which act as the *sources* for the elements in the iModel that were synchronized from the external dgn files. The following instance-diagram depicts such situation. See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
 
 ![External Sources Example](../media/external-sources.png)
 
-For more details about External Sources in BIS, please refer to the [BisCore](../../domains/biscore.ecschema/#externalsource) documentation.
+For more details about External Sources in BIS, please refer to [Provenance in BIS](../../domains/Provenance-in-BIS.md).
 
 ## Top of the World
 

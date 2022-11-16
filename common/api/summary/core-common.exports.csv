@@ -24,7 +24,13 @@ public;AuxCoordSystemProps
 public;AxisAlignedBox3d = Range3d
 public;AxisAlignedBox3dProps = Range3dProps
 internal;B3dmHeader 
+internal;BackendBuffer = Buffer_2
+deprecated;BackendBuffer = Buffer_2
 public;BackendError 
+public;BackendReadable = Readable
+deprecated;BackendReadable = Readable
+public;BackendWritable = Writable
+deprecated;BackendWritable = Writable
 public;BackgroundFill
 public;BackgroundMapProps
 public;BackgroundMapProvider
@@ -818,6 +824,7 @@ public;ViewQueryParams
 public;ViewStateLoadProps
 public;ViewStateProps
 internal;WEB_RPC_CONSTANTS:
+internal;class WebAppRpcLogging
 internal;class WebAppRpcProtocol 
 internal;WebAppRpcRequest 
 public;WhiteOnWhiteReversalProps

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "WorkspaceContainer.Props.syncOnConnect now defaults to true",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -62,7 +62,9 @@ export namespace EditManipulator {
       // Set this.receivedDownEvent to still get up events sent to this tool instance when installed from another tool's down event (ex. onModelStartDrag).
       this.receivedDownEvent = true;
 
-      // Override inherited tool state from suspended primitive tool...
+      // Override inherited tool state from suspended primitive tool.
+      IModelApp.accuSnap.onStartTool();
+
       if (this.wantAccuSnap)
         this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None);
       else
