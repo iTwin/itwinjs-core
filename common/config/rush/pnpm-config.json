@@ -15,5 +15,14 @@
       "react": "17",
       "react-dom": "17"
     }
+  },
+  "globalPackageExtensions": {
+    "@bentley/react-scripts": {
+      "peerDependenciesMeta": {
+        "react": {
+          "optional": true
+        }
+      }
+    }
   }
 }
