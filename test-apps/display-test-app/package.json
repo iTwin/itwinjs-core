@@ -32,7 +32,7 @@
     "cover": "",
     "copy:config": "internal-tools copy-config",
     "build:mobile": "npm run -s build:mobile-frontend && npm run -s build:mobile-backend && npm run -s build:mobile-env-json",
-    "build:mobile-frontend": "PUBLIC_URL=./ npm run -s build:frontend-webpack",
+    "build:mobile-frontend": "cross-env PUBLIC_URL=./ npm run -s build:frontend-webpack",
     "build:mobile-backend": "npm run -s build:backend && webpack --config ./mobile_backend.config --env outdir=./lib/mobile --env entry=./lib/backend/MobileMain.js --env bundlename=main",
     "build:mobile-env-json": "ts-node --skip-project ./buildEnvJson.ts",
     "build:ios-app": "cd ios/imodeljs-test-app && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme imodeljs-test-app -arch x86_64 -sdk iphonesimulator -configuration Debug",
