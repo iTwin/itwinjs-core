@@ -80,7 +80,7 @@ function runPnpmAuditAsync(cwd) {
 
     console.log("Running audit");
     const pnpmPath = path.join(rushCommonDir, "temp/pnpm-local/node_modules/.bin/pnpm");
-    const child = spawn(pnpmPath, ["audit", "--json"], { cwd, shell: true });
+    const child = spawn(pnpmPath, ["audit", "--prod", "--json"], { cwd, shell: true });
 
     let stdout = "";
     child.stdout.on('data', (data) => {
