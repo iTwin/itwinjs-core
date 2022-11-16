@@ -7,16 +7,21 @@
  * @module Curve
  */
 
-import { CurvePrimitive } from "../CurvePrimitive";
+import { Geometry } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
-import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
-import { Geometry } from "../../Geometry";
-import { LineString3d } from "../LineString3d";
+import { CurvePrimitive } from "../CurvePrimitive";
 import { CurveOffsetXYHandler } from "../internalContexts/CurveOffsetXYHandler";
+import { PlaneAltitudeRangeContext } from "../internalContexts/PlaneAltitudeRangeContext";
 import { OffsetOptions } from "../internalContexts/PolygonOffsetContext";
-import { Range3d } from "../../geometry3d/Range";
+import { LineString3d } from "../LineString3d";
+import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
+
+import type { Vector3d } from "../../geometry3d/Point3dVector3d";
+import type { Ray3d } from "../../geometry3d/Ray3d";
+
 /**
  * This is the set of valid type names for "integrated" spirals
  * * Behavior is expressed by a `NormalizedTransition` snap function.
@@ -216,5 +221,13 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     let count = Math.ceil (strokes.numPoints() * Math.abs (fractionB - fractionA));
     count = Geometry.clamp (5, count, 30);
     return this.rangeBetweenFractionsByCount (fractionA, fractionB, count, transform, 0.5);
+  }
+  /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+   * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param lowHigh optional receiver for output
+   * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
+   */
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
 }
