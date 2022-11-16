@@ -23,6 +23,7 @@ public;PresentationBackendNativeLoggerCategory
 public;PresentationManager
 public;PresentationManagerCachingConfig
 public;PresentationManagerMode
+deprecated;PresentationManagerMode
 public;PresentationManagerProps
 public;PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps
 public;PresentationPropsBase 

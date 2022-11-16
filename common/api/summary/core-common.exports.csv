@@ -163,6 +163,7 @@ public;CutStyleProps
 public;DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm"
 internal;DbBlobRequest 
 internal;DbBlobResponse 
+internal;DbQueryConfig
 public;DbQueryError 
 internal;DbQueryRequest 
 internal;DbQueryResponse 
