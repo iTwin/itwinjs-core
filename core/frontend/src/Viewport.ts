@@ -1068,6 +1068,10 @@ export abstract class Viewport implements IDisposable, TileUser {
       removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
         this.synchWithView();
       }));
+
+      removals.push(this.iModel.onDisplayedExtentsExpansion.addListener(() => {
+        this.invalidateController();
+      }));
     }
   }
 

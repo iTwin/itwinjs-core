@@ -23,7 +23,7 @@ To run the app, open the **imodeljs-test-app** project (a directory peer of this
 
 ## Displaying an iModel
 
-Press the briefcase button and you will be able to select a snapshot iModel to open. It will get copied into the app's external files directory and then opeened from there.
+Press the briefcase button and you will be able to select a snapshot iModel to open. It will get copied into the app's external files directory and then opened from there.
 
 ## Using a local build of the add-on (iTwinAndroidLibrary.aar)
 
