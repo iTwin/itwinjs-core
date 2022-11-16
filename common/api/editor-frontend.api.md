@@ -168,7 +168,7 @@ export class BreakCurveTool extends ModifyCurveTool {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    protected modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): CurveCollection | CurvePrimitive | undefined;
+    protected modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): GeometryQuery | undefined;
     // (undocumented)
     protected modifyOriginal: boolean;
     // (undocumented)
@@ -1344,7 +1344,7 @@ export class ExtendCurveTool extends ModifyCurveTool {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    protected modifyCurve(ev: BeButtonEvent, _isAccept: boolean): CurveCollection | CurvePrimitive | undefined;
+    protected modifyCurve(ev: BeButtonEvent, _isAccept: boolean): GeometryQuery | undefined;
     // (undocumented)
     protected modifyingEnd?: CurvePrimitive;
     // (undocumented)
@@ -1359,6 +1359,59 @@ export class ExtendCurveTool extends ModifyCurveTool {
     static toolId: string;
     // (undocumented)
     protected get wantAgendaAppearanceOverride(): boolean;
+}
+
+// @alpha
+export class ExtrudeCurveTool extends ModifyCurveTool {
+    // (undocumented)
+    protected acceptCurve(curve: CurveCollection | CurvePrimitive): boolean;
+    // (undocumented)
+    protected allowView(vp: Viewport): boolean;
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    get capped(): boolean;
+    set capped(value: boolean);
+    // (undocumented)
+    get cappedProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    get keepProfile(): boolean;
+    set keepProfile(value: boolean);
+    // (undocumented)
+    get keepProfileProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    get length(): number;
+    set length(value: number);
+    // (undocumented)
+    get lengthProperty(): DialogProperty<number>;
+    // (undocumented)
+    protected modifyCurve(ev: BeButtonEvent, isAccept: boolean): GeometryQuery | undefined;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    get orthogonal(): boolean;
+    set orthogonal(value: boolean);
+    // (undocumented)
+    get orthogonalProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    get useLength(): boolean;
+    set useLength(value: boolean);
+    // (undocumented)
+    get useLengthProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected get wantModifyOriginal(): boolean;
 }
 
 // @alpha (undocumented)
@@ -1661,7 +1714,7 @@ export abstract class ModifyCurveTool extends ModifyElementWithDynamicsTool {
         params: GeometryParams;
     } | undefined;
     // (undocumented)
-    protected modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): CurveCollection | CurvePrimitive | undefined;
+    protected modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): GeometryQuery | undefined;
     // (undocumented)
     protected onAgendaModified(): Promise<void>;
     // (undocumented)
@@ -1785,7 +1838,7 @@ export class OffsetCurveTool extends ModifyCurveTool {
     // (undocumented)
     get makeCopyProperty(): DialogProperty<boolean>;
     // (undocumented)
-    protected modifyCurve(ev: BeButtonEvent, isAccept: boolean): CurveCollection | CurvePrimitive | undefined;
+    protected modifyCurve(ev: BeButtonEvent, isAccept: boolean): GeometryQuery | undefined;
     // (undocumented)
     onRestartTool(): Promise<void>;
     // (undocumented)
@@ -2211,6 +2264,55 @@ export class RedoTool extends Tool {
     run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
+}
+
+// @alpha
+export class RevolveCurveTool extends ModifyCurveTool {
+    // (undocumented)
+    protected acceptCurve(curve: CurveCollection | CurvePrimitive): boolean;
+    // (undocumented)
+    protected allowView(vp: Viewport): boolean;
+    // (undocumented)
+    get angle(): number;
+    set angle(value: number);
+    // (undocumented)
+    get angleProperty(): DialogProperty<number>;
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    get capped(): boolean;
+    set capped(value: boolean);
+    // (undocumented)
+    get cappedProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    get keepProfile(): boolean;
+    set keepProfile(value: boolean);
+    // (undocumented)
+    get keepProfileProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    protected modifyCurve(ev: BeButtonEvent, isAccept: boolean): GeometryQuery | undefined;
+    // (undocumented)
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected points: Point3d[];
+    // (undocumented)
+    protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected get wantAdditionalInput(): boolean;
+    // (undocumented)
+    protected get wantModifyOriginal(): boolean;
 }
 
 // @alpha (undocumented)
