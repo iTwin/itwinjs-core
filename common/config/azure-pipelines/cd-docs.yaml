@@ -1,6 +1,13 @@
 # Release pipeline for the iTwin.js Docs site
 
-trigger: none
+trigger:
+  branches:
+    include:
+      - master
+      - release/*
+    exclude:
+      - release/2*
+      - release/1*
 pr: none
 
 # Octopus requires release be of format 'x.y.z' or 'w.x.y.z'
@@ -10,13 +17,13 @@ resources:
   pipelines:
   - pipeline: bemetalsmith-tests
     source: Bemetalsmith - Selenium Tests
-    version: 1764396
+    version: 1764396 # Should be replaced with build from master
 
   repositories:
   - repository: build-pipeline-scripts
     type: git
     name: iModelTechnologies/imodeljs-build-pipeline-scripts
-    ref: refs/heads/docs-release-pipeline-templates
+    ref: refs/heads/docs-release-pipeline-templates # Should be replaced with master branch
   - repository: bemetalsmith
     type: git
     name: iModelTechnologies/BeMetalsmith
