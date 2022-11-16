@@ -213,5 +213,13 @@ export class UiShowHideManager {
   /** @internal */
   public static terminate() {
     UiShowHideManager.cancelTimer();
+    // Ensure that next use will have default values for tests.
+    UiShowHideManager._isUiVisible = true;
+    UiShowHideManager._autoHideUi = true;
+    UiShowHideManager._showHidePanels = false;
+    UiShowHideManager._showHideFooter = false;
+    UiShowHideManager._inactivityTime = INACTIVITY_TIME_DEFAULT;
+    UiShowHideManager._useProximityOpacity = false;
+    UiShowHideManager._snapWidgetOpacity = false;
   }
 }
