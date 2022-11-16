@@ -209,10 +209,10 @@ export async function openDecorationGeometryExample(viewer: Viewer) {
     sky: SkyBox.fromJSON({ twoColor: true, nadirColor: 0xdfefff, zenithColor: 0xffefdf }),
   });
 
-  const txrEl = await imageElementFromUrl(`${IModelApp.publicPath}images/brick05baseColor.jpg`);
+  const txrEl = await imageElementFromUrl("brick05baseColor.jpg");
   const texture = IModelApp.renderSystem.createTexture({ image: { source: txrEl, transparency: TextureTransparency.Opaque }, ownership: "external" });
 
-  const nMapEl = await imageElementFromUrl(`${IModelApp.publicPath}images/brick05normal.jpg`);
+  const nMapEl = await imageElementFromUrl("brick05normal.jpg");
   const normalMap = IModelApp.renderSystem.createTexture({ image: { source: nMapEl, transparency: TextureTransparency.Opaque }, ownership: "external" });
 
   gd.setTextures(texture, normalMap);
