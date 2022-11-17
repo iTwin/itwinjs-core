@@ -28,13 +28,6 @@ pr:
 
 jobs:
 - job:
-  # variables:
-  # - name: linuxPool
-  #   value: 'iModeljs Linux'
-  # - name: mac_pool
-  #   value: iModelTechCI
-  # - name: win_pool
-  #   value: iModelTechCI
 
   strategy:
     matrix:
@@ -70,7 +63,7 @@ jobs:
   - template: ../templates/core-build.yaml
     parameters:
       nodeVersion: 18.12.x
-      buildIos: (ios)
+      buildIos: $(ios)
   # Will run if even there is a failure somewhere else in the pipeline.
   - template: ../templates/publish-test-results.yaml
     parameters:
