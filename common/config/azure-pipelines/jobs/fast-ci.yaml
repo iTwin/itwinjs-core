@@ -9,8 +9,7 @@ variables:
   - group: Rush Build Cache SAS Token
   - name: shouldWriteToCache
     value: ${{ and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
-  - name: ios
-    value: ${{ eq(variables['Agent.OS'], 'Darwin') }}
+
 
 pr:
   autoCancel: true
@@ -50,9 +49,6 @@ jobs:
     name: $(name)
     demands:
       - Agent.OS -equals $(platform)
-    variables:
-    - name: ios
-      value: $(ios)
 
   timeoutInMinutes: 60
 
