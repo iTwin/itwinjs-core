@@ -19,7 +19,7 @@ describe("ViewCreator3d", async () => {
     await TestUtility.shutdownFrontend();
   });
 
-  it.only("should generate tiles when using a viewstate created by viewcreator3d", async () => {
+  it("should generate tiles when using a viewstate created by viewcreator3d", async () => {
     const div = document.createElement("div");
     div.style.width = div.style.height = "20px";
     document.body.appendChild(div);
