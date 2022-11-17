@@ -58,9 +58,13 @@ export function readElementMeshes(data: Uint8Array): IndexedPolyface[] {
     if (!chunk || chunk.type !== "PLFC" || !chunk.data)
       continue;
 
+    try {
     const geom = BentleyGeometryFlatBuffer.bytesToGeometry(chunk.data);
     if (geom instanceof IndexedPolyface)
       polyfaces.push(geom);
+    } catch (_) {
+      //
+    }
   }
 
   return polyfaces;

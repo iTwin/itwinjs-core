@@ -53,15 +53,45 @@ describe.only("readElementMeshes", () => {
   });
 
   it("requires LMSH chunk", () => {
+    const builder = new MeshesBuilder();
+    builder.appendTriangle();
+    builder.appendTriangle();
+    expect(builder.getPolyfaces().length).to.equal(0);
   });
 
   it("ignores invalid polyfaces", () => {
+    const builder = new MeshesBuilder();
+    builder.appendChunk("LMSH");
+    builder.appendChunk("PLFC", new Uint8Array(8));
+    expect(builder.getPolyfaces().length).to.equal(0);
+
+    builder.appendTriangle();
+    expect(builder.getPolyfaces().length).to.equal(1);
   });
 
   it("ignores unrecognized and invalid chunk types", () => {
+    const builder = new MeshesBuilder();
+    builder.appendChunk("LMSH");
+    builder.appendTriangle("BLAH");
+    builder.appendTriangle();
+    builder.appendTriangle("*_x!");
+    expect(builder.getPolyfaces().length).to.equal(1);
   });
 
   it("ignores trailing non-chunk bytes", () => {
+    const builder = new MeshesBuilder();
+    builder.appendChunk("LMSH");
+    builder.appendTriangle();
+    builder.append(new Uint8Array([1, 2, 3, 4, 5]));
+    expect(builder.getPolyfaces().length).to.equal(1);
+  });
+
+  it("ignores chunks following non-chunk data", () => {
+    const builder = new MeshesBuilder();
+    builder.appendChunk("LMSH");
+    builder.append(new Uint8Array([1, 2, 3, 4, 5]));
+    builder.appendTriangle();
+    expect(builder.getPolyfaces().length).to.equal(0);
   });
 });
 
