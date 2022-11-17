@@ -48,7 +48,7 @@ function nextChunk(stream: ByteStream): Chunk | undefined {
 export function readElementMeshes(data: Uint8Array): IndexedPolyface[] {
   const polyfaces: IndexedPolyface[] = [];
 
-  const stream = new ByteStream(data);
+  const stream = ByteStream.fromUint8Array(data);
   const firstChunk = nextChunk(stream);
   if (!firstChunk || "LMSH" !== firstChunk.type)
     return polyfaces;
