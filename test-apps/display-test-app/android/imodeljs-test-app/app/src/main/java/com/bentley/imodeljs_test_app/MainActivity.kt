@@ -66,6 +66,10 @@ fun Context.copyToExternalFiles(uri: Uri, destDir: String): String? {
     }
 }
 
+fun JSONObject.optStringNotEmpty(name: String): String? {
+    return optString(name).takeIf { it.isNotEmpty() }
+}
+
 typealias PickUriContractType = ActivityResultContract<Nothing?, Uri?>
 
 class PickUriContract(val destDir: String) : PickUriContractType() {
@@ -134,12 +138,12 @@ class MainActivity : AppCompatActivity() {
 
         var args = "&standalone=true"
         loadEnvJson()
-        env.optString("IMJS_STANDALONE_FILENAME", "").takeIf { it.isNotEmpty() }?.let { fileName ->
+        env.optStringNotEmpty("IMJS_STANDALONE_FILENAME")?.let { fileName ->
             // ensure fileName already exists in the external files
             getExternalFilesDir(BIM_CACHE_DIR)?.let { filesDir ->
-                File(filesDir, fileName).takeIf { it.exists() }?.let {
-                    args += "&iModelName=${Uri.encode(it.toString())}"
-                }
+                val fullPath = File(filesDir, fileName)
+                if (fullPath.exists())
+                    args += "&iModelName=${Uri.encode(fullPath.toString())}"
             }
         }
 
@@ -149,8 +153,7 @@ class MainActivity : AppCompatActivity() {
         val frontend = object : MobileFrontend(host, args) {
             override fun supplyEntryPoint(): String {
                 // Connect to a local dev server if specified in the env JSON, otherwise use the embedded frontend
-                return env.optString("IMJS_DEBUG_URL", "").takeIf { it.isNotEmpty() } ?:
-                    "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/frontend/index.html"
+                return env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/frontend/index.html"
             }
         }
 
