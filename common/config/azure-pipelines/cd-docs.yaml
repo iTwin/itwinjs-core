@@ -23,7 +23,7 @@ resources:
   - repository: build-pipeline-scripts
     type: git
     name: iModelTechnologies/imodeljs-build-pipeline-scripts
-    ref: refs/heads/docs-release-pipeline-templates # Should be replaced with master branch
+    ref: refs/heads/master
   - repository: bemetalsmith
     type: git
     name: iModelTechnologies/BeMetalsmith
