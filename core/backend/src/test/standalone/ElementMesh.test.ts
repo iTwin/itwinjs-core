@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { LineString3d, Loop, Point3d, Range3d } from "@itwin/core-geometry";
+import { LineString3d, Loop, Path, Point3d, Range3d } from "@itwin/core-geometry";
 import {
   AreaPattern, Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamEntryProps,
   GeometryStreamIterator, IModel, readElementMeshes,
@@ -107,6 +107,17 @@ describe.only("generateElementMeshes", () => {
   });
 
   it("ignores open curves", async () => {
+    const bldr = new GeometryStreamBuilder();
+    bldr.appendGeometryParamsChange(new GeometryParams(categoryId));
+    bldr.appendGeometry(Loop.createPolygon([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(0, 0, 0)]));
+    bldr.appendGeometry(Path.create([new Point3d(0, 0, 0), new Point3d(1, 1, 1)]));
+    bldr.appendGeometry(Loop.createPolygon([new Point3d(0, 0, 5), new Point3d(1, 0, 5), new Point3d(0, 1, 5), new Point3d(0, 0, 5)]));
+    const source = insertElement(bldr.geometryStream);
+
+    const meshes = readElementMeshes(await imodel.nativeDb.generateElementMeshes({source}));
+    expect(meshes.length).to.equal(2);
+    expect(meshes[0].range().isAlmostEqual(new Range3d(0, 0, 0, 1, 1, 0))).to.be.true;
+    expect(meshes[1].range().isAlmostEqual(new Range3d(0, 0, 5, 1, 1, 5))).to.be.true;
   });
 
   it("omits normals and UVs", async () => {
