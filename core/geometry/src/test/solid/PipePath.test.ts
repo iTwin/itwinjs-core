@@ -100,7 +100,7 @@ describe("PipePath", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipe0, builder0.claimPolyface()], x0, y0, z0);
 
         // test scaling and un-scaling
-        for (const scale of [Point2d.create(10, 10), Point3d.create(5, 10), Point3d.create(10, 5)]) {
+        for (const scale of [Point2d.create(10, 10), Point2d.create(5, 10), Point2d.create(10, 5)]) {
           // Create radii-scaled TorusPipe
           const pipeScaledRadii = TorusPipe.createDgnTorusPipe(center, xAxis, yAxis, majorRadius * scale.x, minorRadius * scale.y, sweep, capped);
           if (!ck.testDefined(pipeScaledRadii) || pipeScaledRadii === undefined)
@@ -115,6 +115,9 @@ describe("PipePath", () => {
 
           // Clone original TorusPipe with scale transform from scale factors in local coords, and compare with radii-scaled TorusPipe.
           // The major radius is affected by local x-axis scale; the minor radius is affected by local z-axis scale.
+          // Note that non-uniform scale is NOT preserved after round-trip through json. This is because conversion to json forces orthogonal
+          // localToWorld (getConstructiveFrame), and so does v.v. See IModelJsonWriter.handleTorusPipe and IModelJsonReader.parseTorusPipe.
+          // This discrepancy can be seen in output: the pre-conversion mesh exhibits non-uniform scale, but not the post-conversion pipe.
           const scaleInLocalCoords = Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createScale(scale.x, scale.x, scale.y));
           const scaleInWorldCoords = pipe0.cloneLocalToWorld().multiplyTransformTransform(scaleInLocalCoords.multiplyTransformTransform(pipe0.cloneLocalToWorld().inverse()!));
           const pipeCloneScaled = pipe0.cloneTransformed(scaleInWorldCoords);
