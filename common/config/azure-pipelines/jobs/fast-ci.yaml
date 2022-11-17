@@ -51,6 +51,9 @@ jobs:
     name: $(name)
     demands:
       - Agent.OS -equals $(platform)
+    variables:
+    - name: ios
+      value: $(ios)
 
   timeoutInMinutes: 60
 
