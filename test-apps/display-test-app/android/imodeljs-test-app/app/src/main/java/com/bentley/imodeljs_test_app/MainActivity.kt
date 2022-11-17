@@ -22,12 +22,13 @@ import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 import com.bentley.itwin.IModelJsHost
 import com.bentley.itwin.MobileFrontend
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.URLConnection
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import java.io.File
+import org.json.JSONObject
 
 /**
  * Determines the display name for the uri.
@@ -65,9 +66,13 @@ fun Context.copyToExternalFiles(uri: Uri, destDir: String): String? {
     }
 }
 
+fun JSONObject.optStringNotEmpty(name: String): String? {
+    return optString(name).takeIf { it.isNotEmpty() }
+}
+
 typealias PickUriContractType = ActivityResultContract<Nothing?, Uri?>
 
-class PickUriContract : PickUriContractType() {
+class PickUriContract(val destDir: String) : PickUriContractType() {
     private lateinit var context: Context
 
     override fun createIntent(context: Context, input: Nothing?): Intent {
@@ -81,7 +86,6 @@ class PickUriContract : PickUriContractType() {
     override fun parseResult(resultCode: Int, intent: Intent?): Uri? {
         val uri = intent?.takeIf { resultCode == Activity.RESULT_OK }?.data
         if (uri != null) {
-            val destDir = "bim_cache"
             context.copyToExternalFiles(uri, destDir)?.let { result ->
                 return Uri.parse(result)
             }
@@ -115,9 +119,15 @@ class AssetsPathHandler(context: Context) : WebViewAssetLoader.PathHandler {
     }
 }
 
+@Suppress("SpellCheckingInspection")
 class MainActivity : AppCompatActivity() {
     private lateinit var host: IModelJsHost
     private var promiseName: String = ""
+    private lateinit var env: JSONObject
+
+    companion object {
+        const val BIM_CACHE_DIR = "bim_cache"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -125,10 +135,25 @@ class MainActivity : AppCompatActivity() {
         val alwaysExtractAssets = true // for debugging, otherwise the host will only extract when app version changes
         host = IModelJsHost(this, alwaysExtractAssets, true)
         host.startup()
-        val frontend = object : MobileFrontend(host, "&standalone=true") {
+
+        var args = "&standalone=true"
+        loadEnvJson()
+        env.optStringNotEmpty("IMJS_STANDALONE_FILENAME")?.let { fileName ->
+            // ensure fileName already exists in the external files
+            getExternalFilesDir(BIM_CACHE_DIR)?.let { filesDir ->
+                val fullPath = File(filesDir, fileName)
+                if (fullPath.exists())
+                    args += "&iModelName=${Uri.encode(fullPath.toString())}"
+            }
+        }
+
+        if (env.has("IMJS_IGNORE_CACHE"))
+            args += "&ignoreCache=true"
+
+        val frontend = object : MobileFrontend(host, args) {
             override fun supplyEntryPoint(): String {
-                // If you want to connect to a local dev server instead of the built-in frontend, return something like: "192.168.86.20:3000"
-                return "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/frontend/index.html"
+                // Connect to a local dev server if specified in the env JSON, otherwise use the embedded frontend
+                return env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/frontend/index.html"
             }
         }
 
@@ -142,7 +167,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val startPickDocument = registerForActivityResult(PickUriContract()) { uri ->
+        val startPickDocument = registerForActivityResult(PickUriContract(BIM_CACHE_DIR)) { uri ->
             if (uri != null && promiseName.isNotEmpty()) {
                 val js = "if (window.$promiseName) window.$promiseName(\"$uri\"); else console.log('Error: window.$promiseName is not defined!');"
                 MainScope().launch {
@@ -170,6 +195,14 @@ class MainActivity : AppCompatActivity() {
         host.setFrontend(frontend)
         setContentView(frontend)
         frontend.loadEntryPoint()
+    }
+
+    private fun loadEnvJson() {
+        env = try {
+            JSONObject(assets.open("env.json").bufferedReader().use { it.readText() })
+        } catch (ex: Exception) {
+            JSONObject()
+        }
     }
 
     // Intentionally commented out until we can resolve why pausing and resuming the host causes the backend to apparently shutdown or possibly crash.

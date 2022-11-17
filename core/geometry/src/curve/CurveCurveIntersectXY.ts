@@ -147,7 +147,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     if (!extend0 && fraction < 0) {
       return Geometry.isSmallMetricDistance(fraction * pointA.distanceXY(pointB));
     } else if (!extend1 && fraction > 1.0)
-      return Geometry.isSmallMetricDistance(fraction * pointA.distanceXY(pointB));
+      return Geometry.isSmallMetricDistance((fraction - 1.0) * pointA.distanceXY(pointB));
     return true;
   }
   /**

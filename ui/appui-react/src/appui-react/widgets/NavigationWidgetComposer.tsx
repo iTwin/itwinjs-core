@@ -106,7 +106,7 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
   };
 
   // istanbul ignore else
-  if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) {
+  if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) { // eslint-disable-line deprecation/deprecation
     const navigationAidOpacity = (0.30 * proximityScale) + 0.70;
     divStyle.opacity = `${navigationAidOpacity}`;
   }
