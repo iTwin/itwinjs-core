@@ -26,8 +26,11 @@ interface Chunk {
 }
 
 function nextChunk(stream: ByteStream): Chunk | undefined {
-  if (stream.remainingLength < 8)
+  if (stream.remainingLength < 8) {
+    // Consume remaining bytes.
+    stream.curPos = stream.length;
     return undefined;
+  }
 
   // Type codes are a sequence of four uppercase ASCII letters.
   const chars = [stream.nextUint8, stream.nextUint8, stream.nextUint8, stream.nextUint8];
