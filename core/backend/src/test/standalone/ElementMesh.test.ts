@@ -5,14 +5,13 @@
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import {
-  LineString3d, Loop, Path, PolyfaceBuilder, Point3d, Range3d, StrokeOptions,
+  Loop, Path, Point3d, PolyfaceBuilder, Range3d, StrokeOptions,
 } from "@itwin/core-geometry";
 import {
-  AreaPattern, Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamEntryProps,
-  GeometryStreamIterator, IModel, readElementMeshes,
+  Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamEntryProps, IModel, readElementMeshes,
 } from "@itwin/core-common";
 import {
-  GenericSchema, GeometricElement3d, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements,
+  GenericSchema, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 

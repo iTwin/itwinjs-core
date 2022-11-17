@@ -36,6 +36,7 @@ import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelJson } from '@itwin/core-geometry';
 import { IModelStatus } from '@itwin/core-bentley';
+import { IndexedPolyface } from '@itwin/core-geometry';
 import { IndexedPolyfaceVisitor } from '@itwin/core-geometry';
 import { IndexedValue } from '@itwin/core-bentley';
 import { IndexMap } from '@itwin/core-bentley';
@@ -2719,6 +2720,18 @@ export interface ElementLoadProps extends ElementLoadOptions {
     id?: Id64String;
 }
 
+// @beta
+export interface ElementMeshOptions {
+    angleTolerance?: number;
+    chordTolerance?: number;
+    minBRepFeatureSize?: number;
+}
+
+// @beta
+export interface ElementMeshRequestProps extends ElementMeshOptions {
+    source: Id64String;
+}
+
 // @public
 export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
     elementIds: Iterable<Id64String>;
@@ -4676,6 +4689,8 @@ export interface IModelProps {
 export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void>;
+    // (undocumented)
+    generateElementMeshes(_iModelToken: IModelRpcProps, _props: ElementMeshRequestProps): Promise<Uint8Array>;
     // (undocumented)
     getAllCodeSpecs(_iModelToken: IModelRpcProps): Promise<any[]>;
     // (undocumented)
@@ -6946,6 +6961,9 @@ export interface ReadableFormData extends Readable {
         [key: string]: any;
     };
 }
+
+// @beta
+export function readElementMeshes(data: Uint8Array): IndexedPolyface[];
 
 // @internal
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
