@@ -5,42 +5,46 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
+import { UnionRegion } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
+import { CurveCollection } from "../../curve/CurveCollection";
+import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveFactory } from "../../curve/CurveFactory";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
+import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { PlaneAltitudeRangeContext } from "../../curve/internalContexts/PlaneAltitudeRangeContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop, SignedLoops } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { PointStreamXYZHandlerBase, VariantPointDataStream } from "../../geometry3d/PointStreaming";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
+import { Range1d, Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
+import { PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { HalfEdgeGraph } from "../../topology/Graph";
+import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/Merging";
+import { MultiLineStringDataVariant } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GraphChecker } from "../topology/Graph.test";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Range3d } from "../../geometry3d/Range";
-import { PolyfaceVisitor } from "../../polyface/Polyface";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { CurveCurve } from "../../curve/CurveCurve";
-import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { PointStreamXYZHandlerBase, VariantPointDataStream } from "../../geometry3d/PointStreaming";
-import { MultiLineStringDataVariant } from "../../topology/Triangulation";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/Merging";
 
 /* eslint-disable no-console */
 
@@ -646,6 +650,108 @@ describe("RegionBoolean", () => {
     testSelectedTangencySubsets(true, [1,2,3,4,1], [2,3,4,7,8], [], "UpperSymmetricQuad");
     testSelectedTangencySubsets(false, [4,5,6,7,4], [-1], [], "LowerRightLobeQuadA");
     testSelectedTangencySubsets(false, [3,5,6,8,3], [-1], [], "LowerRightLobeQuadB");
+  });
+
+  // cspell:word laurynas
+  it("BridgeEdgesAndDegenerateLoops", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+    let xDelta = 0;
+    interface TestInput {
+      jsonFilePath: string;
+      expectedNumComponents: number;
+    }
+    // try various combinations of the loops in the original test case, which contains:
+    // * null faces,
+    // * duplicate geometry,
+    // * multiple connected components,
+    // * almost-equal vertices,
+    // * holes, and
+    // * polygons with vertices of degree > 2
+    const testCases: TestInput[] = [{jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2},
+                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion1.imjs", expectedNumComponents: 1},
+                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion2.imjs", expectedNumComponents: 2},
+                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion3.imjs", expectedNumComponents: 2},
+                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion4.imjs", expectedNumComponents: 2},
+                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion5.imjs", expectedNumComponents: 2},
+                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion6.imjs", expectedNumComponents: 2},
+                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion7.imjs", expectedNumComponents: 3},
+                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion8.imjs", expectedNumComponents: 2},
+                                    {jsonFilePath: "./src/test/testInputs/curve/disconnectedRegions.imjs", expectedNumComponents: 2},
+                                   ];
+    for (const testCase of testCases) {
+      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as Loop[];
+      if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
+        const merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union);
+        if (ck.testDefined(merged, "regionBooleanXY succeeded") && merged) {
+          x0 += (xDelta = 1.5 * merged.range().xLength());
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0, y0);
+          if (ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion")) {
+            const signedLoops = RegionOps.constructAllXYRegionLoops(merged);
+            if (ck.testExactNumber(testCase.expectedNumComponents, signedLoops.length, "UnionRegion has expected number of connected components.")) {
+              x0 += xDelta;
+              for (const signedLoop of signedLoops) {
+                if (ck.testExactNumber(1, signedLoop.negativeAreaLoops.length, "SignedLoop has one outer loop.")) {
+                  GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoop.negativeAreaLoops, x0, y0);
+                  for (const positiveLoop of signedLoop.positiveAreaLoops)
+                    GeometryCoreTestIO.captureCloneGeometry(allGeometry, positiveLoop, x0, y0);
+                }
+              }
+            }
+          }
+          x0 = 0;
+          y0 += 1.5 * merged.range().yLength();
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "BridgeEdgesAndDegenerateLoops");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("PlaneAltitudeRangeContext", () => {
+  it("OneAltitude", () => {
+    const ck = new Checker();
+    const linestring = LineString3d.createRectangleXY(Point3d.create(-2, -1), 5, 4, true);
+    const opts = new InterpolationCurve3dOptions(linestring.points);
+    opts.closed = true;
+    opts.isChordLenKnots = 1;
+    const fitCurve = InterpolationCurve3d.create(opts);
+    const lsLoop = Loop.create(linestring);
+    let lowHigh: Range1d | undefined;
+    interface RayParam  {
+      ray: Vector3d | Ray3d;  // defines 0-altitude plane
+      param: number;          // expected fractional projection parameter (for xy-plane geometry)
+    }
+    const rayParams: RayParam[] = [
+      {ray: Vector3d.unitZ(), param: 0.0},
+      {ray: Ray3d.create(Point3d.create(0,0,5), Vector3d.unitZ()), param: -5.0},
+      {ray: Ray3d.create(Point3d.create(0,0,-1), Vector3d.unitZ(3.0)), param: 1/3},
+      ];
+    for (const geom of [lsLoop, linestring, lsLoop.getPackedStrokes(), linestring.points, fitCurve]) {
+      for (const rayParam of rayParams) {
+        if (geom instanceof CurveCollection)
+          lowHigh = geom.projectedParameterRange(rayParam.ray, lowHigh);
+        else if (geom instanceof CurvePrimitive)
+          lowHigh = geom.projectedParameterRange(rayParam.ray, lowHigh);
+        else if (undefined !== geom)
+          lowHigh = PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(geom, rayParam.ray, lowHigh);
+        if (ck.testDefined(lowHigh) && lowHigh) {
+          ck.testFalse(lowHigh.isNull, "projection range computed");
+          ck.testTrue(lowHigh.isSinglePoint, "projection range is single point");
+          ck.testCoordinate(rayParam.param, lowHigh.low, "low projection as expected");
+          ck.testCoordinate(rayParam.param, lowHigh.high, "high projection as expected");
+        }
+      }
+    }
+    const zero = Vector3d.createZero();
+    ck.testUndefined(lsLoop.projectedParameterRange(zero), "CurveCollection projection range is undefined for undefined plane");
+    ck.testUndefined(linestring.projectedParameterRange(zero), "CurvePrimitive projection range is undefined for undefined plane");
+    ck.testUndefined(PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(linestring.points, zero), "points projection range is undefined for undefined plane");
+    expect(ck.getNumErrors()).equals(0);
   });
 });
 
