@@ -222,7 +222,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
             {this.renderIModels()}
           </div>
         </div>
-        <ActivityMessagePopup />
+        <ActivityMessagePopup /> {/* eslint-disable-line deprecation/deprecation */}
       </>
     );
   }

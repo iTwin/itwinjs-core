@@ -141,6 +141,7 @@ export * from "./appui-react/redux/ReducerRegistry";
 export * from "./appui-react/redux/redux-ts";
 
 export * from "./appui-react/safearea/SafeAreaContext";
+export * from "./appui-react/safearea/SafeAreaInsets";
 
 export * from "./appui-react/selection/SelectionContextItemDef";
 export * from "./appui-react/selection/HideIsolateEmphasizeManager";
@@ -169,6 +170,11 @@ export * from "./appui-react/stagepanels/StagePanel";
 export * from "./appui-react/stagepanels/StagePanelDef";
 export * from "./appui-react/stagepanels/StagePanelHeader";
 
+export * from "./appui-react/statusbar/dialog/Dialog";
+
+export * from "./appui-react/statusbar/Indicator";
+export * from "./appui-react/statusbar/LabelIndicator";
+export * from "./appui-react/statusbar/Separator";
 export * from "./appui-react/statusbar/StatusBar";
 export * from "./appui-react/statusbar/StatusBarWidgetControl";
 export * from "./appui-react/statusbar/StatusBarComposer";

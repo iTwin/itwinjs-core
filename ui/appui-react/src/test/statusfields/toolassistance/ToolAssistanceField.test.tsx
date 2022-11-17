@@ -356,7 +356,7 @@ import { render } from "@testing-library/react";
 
     it("should close on outside click", () => {
       const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
-      const footerPopup = wrapper.find(FooterPopup);
+      const footerPopup = wrapper.find(FooterPopup); // eslint-disable-line deprecation/deprecation
       const toolAssistanceField = wrapper.find(ToolAssistanceField);
       const toolAssistance = wrapper.find("div.nz-indicator");
 
@@ -379,7 +379,7 @@ import { render } from "@testing-library/react";
 
     it("should not close on outside click if pinned", () => {
       const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
-      const footerPopup = wrapper.find(FooterPopup);
+      const footerPopup = wrapper.find(FooterPopup); // eslint-disable-line deprecation/deprecation
       const toolAssistance = wrapper.find("div.nz-indicator");
       const toolAssistanceField = wrapper.find(ToolAssistanceField);
 
