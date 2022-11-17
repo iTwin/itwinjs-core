@@ -24,6 +24,7 @@ export enum ZoneState {
 
 /**
  * A ZoneDef represents each zone within a Frontstage.
+ * @deprecated Use [PanelDef] or [WidgetDef] instead.
  * @public
  */
 export class ZoneDef extends WidgetHost {
