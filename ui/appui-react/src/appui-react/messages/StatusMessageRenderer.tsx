@@ -21,6 +21,7 @@ interface StatusMessageRendererrMessage {
 }
 
 /** Properties for [[StatusMessageRenderer]] component
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface StatusMessageRendererProps extends CommonProps {
@@ -38,7 +39,7 @@ export function StatusMessageRenderer({
   closeMessage,
   cancelActivityMessage: cancelActivityMessageProp,
   dismissActivityMessage,
-}: StatusMessageRendererProps) {
+}: StatusMessageRendererProps) { // eslint-disable-line deprecation/deprecation
   const messages = React.useRef<StatusMessageRendererrMessage[]>([]);
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);
 
@@ -65,8 +66,8 @@ export function StatusMessageRenderer({
           { onRemove: () => onRemove(msg.id) },
           { placement: "top", order: "descending" }
         );
-        if(!!displayedMessage)
-          messages.current.push({close: displayedMessage.close, id: msg.id});
+        if (!!displayedMessage)
+          messages.current.push({ close: displayedMessage.close, id: msg.id });
       });
     };
 
@@ -106,7 +107,7 @@ export function StatusMessageRenderer({
     cancelActivityMessageProp && cancelActivityMessageProp();
   }, [cancelActivityMessageProp]);
 
-  useActivityMessage({activityMessageInfo, cancelActivityMessage, dismissActivityMessage});
+  useActivityMessage({ activityMessageInfo, cancelActivityMessage, dismissActivityMessage });
 
   return <></>;
 }

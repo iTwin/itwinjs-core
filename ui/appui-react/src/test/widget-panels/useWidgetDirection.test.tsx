@@ -46,7 +46,7 @@ describe("useWidgetDirection", () => {
         <Provider store={TestUtils.store} >
           <NineZoneContext.Provider value={nineZone}>
             <TabIdContext.Provider value="t1">
-              <FrameworkVersion>
+              <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
                 {children}
               </FrameworkVersion>
             </TabIdContext.Provider>
@@ -69,7 +69,7 @@ describe("useWidgetDirection", () => {
         <Provider store={TestUtils.store} >
           <NineZoneContext.Provider value={nineZone}>
             <TabIdContext.Provider value="t1">
-              <FrameworkVersion>
+              <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
                 {children}
               </FrameworkVersion>
             </TabIdContext.Provider>
