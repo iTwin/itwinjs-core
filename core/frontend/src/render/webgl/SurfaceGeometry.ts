@@ -302,7 +302,7 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   private wantNormalMaps(target: Target, normalMapExists: boolean): boolean {
-    if (!normalMapExists)
+    if (!normalMapExists || !target.displayNormalMaps)
       return false;
 
     const flags = target.currentViewFlags;
