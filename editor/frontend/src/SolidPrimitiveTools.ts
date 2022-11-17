@@ -1676,19 +1676,18 @@ export class RevolveCurveTool extends ModifyCurveTool {
     const contour = (geom instanceof CurvePrimitive) ? Path.create(geom) : geom;
     const sweep = RotationalSweep.create(contour, axis, angle, this.capped && contour.isAnyRegionType);
 
-    // TODO: Detect and reject a self-intersection...PlaneAltitudeRangeContext method being added...
-    // const localToWorld = sweep?.getConstructiveFrame();
-    // if (undefined === localToWorld)
-    //   return undefined;
+    // Detect a self-intersection...contour should not intersect axis of revolution...
+    const localToWorld = sweep?.getConstructiveFrame();
+    if (undefined === localToWorld)
+      return undefined;
 
-    // const xVec = localToWorld.matrix.getColumn(0);
-    // const xAxis = Ray3d.create(this.points[0], xVec);
+    const xVec = localToWorld.matrix.columnX(); // NOTE: Not always towards contour...
+    const xAxis = Ray3d.create(localToWorld.getOrigin(), xVec);
 
-    // Check parameter range of radial axis ray, if low or high is less than zero don't accept this result...
-    // Range1d paramRange = curve->ProjectedParameterRange(xAxis);
-
-    // if (paramRange.low < 0.0 || paramRange.high < 0.0)
-    //   return undefined;
+    // Check parameter range of radial axis ray, if low is negative and high is positive reject result...
+    const paramRange = sweep?.getCurves().projectedParameterRange(xAxis);
+    if (undefined === paramRange || (paramRange.low < -Geometry.smallMetricDistanceSquared && paramRange.high > Geometry.smallMetricDistanceSquared))
+      return undefined;
 
     return sweep;
   }

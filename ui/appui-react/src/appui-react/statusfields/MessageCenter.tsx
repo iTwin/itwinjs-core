@@ -122,9 +122,8 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
             {this.state.messageCount.toString()}
           </MessageCenter>
         </div>
-        <FooterPopup
-          // eslint-disable-next-line deprecation/deprecation
-          isOpen={(this.props.openWidget ?? this.state.openWidget) === this._className}
+        <FooterPopup // eslint-disable-line deprecation/deprecation
+          isOpen={(this.props.openWidget ?? this.state.openWidget) === this._className} // eslint-disable-line deprecation/deprecation
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
           target={this.state.target}
