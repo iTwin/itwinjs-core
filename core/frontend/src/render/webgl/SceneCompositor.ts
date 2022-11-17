@@ -2155,14 +2155,14 @@ class MRTCompositor extends Compositor {
       }
     }
 
-    // ###TODO figure out pingPong
+    // ###TODO figure out pingPong - currently assumes don't need
     const needComposite = CompositeFlags.None !== compositeFlags;
-    const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    const fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
     const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
     const system = System.instance;
     const fbStack = system.frameBufferStack;
 
-    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
+    this._readPickDataFromPingPong = false;
 
     for (const pc of pointClouds) {
       pcs = pc.pcs;
@@ -2178,14 +2178,14 @@ class MRTCompositor extends Compositor {
             edlOn = false;
           else {
             // can draw EDL, first draw pointcloud to borrowed hilite texture and regular depth buffer
-            fbStack.execute(this._fbos.edlDrawCol, true, useMsBuffers, () => {
+            fbStack.execute(this._fbos.edlDrawCol, true, false, () => {
               system.context.clearColor(0, 0, 0, 0);
               system.context.clear(GL.BufferBit.Color);
               system.applyRenderState(this.getRenderState(RenderPass.PointClouds));
               this.target.techniques.execute(this.target, pc.cmds, RenderPass.PointClouds);
             });
             // then process buffers to generate EDL (depth buffer is passed during init)
-            this.target.beginPerfMetricRecord("Calc EDL");
+            this.target.beginPerfMetricRecord("Calc EDL");  // ### todo keep? (probably)
             const sts = this.eyeDomeLighting.draw ({
               edlStrength: pc.pcs!.edlStrength,
               edlMode: pc.pcs?.edlMode === "full" ? EDLMode.Full : EDLMode.On,
@@ -2209,7 +2209,8 @@ class MRTCompositor extends Compositor {
         });
       }
     }
-    this._readPickDataFromPingPong = false;
+    if (useMsBuffers)
+      fbo.blitMsBuffersToTextures(needComposite);
   }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {

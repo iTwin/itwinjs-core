@@ -73,7 +73,6 @@ export class PointCloudGeometry extends CachedGeometry {
   public get techniqueId(): TechniqueId { return TechniqueId.PointCloud; }
   public override getPass(target: Target): Pass {
     // Point clouds don't cast shadows.
-    // ###TODO might be cleaner to add a new explicit capability to the Capabilities class (`edlCapable`)
     if (System.instance.capabilities.isWebGL2)
       return target.isDrawingShadowMap ? "none" : "point-clouds";
     return target.isDrawingShadowMap ? "none" : "opaque";

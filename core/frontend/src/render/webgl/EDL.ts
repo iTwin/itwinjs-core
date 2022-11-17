@@ -214,11 +214,11 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
     const useMsBuffers = edlParams.useMsBuffers;
     System.instance.applyRenderState(RenderState.defaults);
 
-    // ###TODO figure out multisampling
+    // ###TODO figure out msaa
     // ###TODO: should radius be (optionally?) voxel based instead of pixel here?
     if (edlParams.edlMode === EDLMode.On) {
       // draw using enhanced version of simple (8 samples, still single draw)
-      fbStack.execute(this._edlFinalFbo, true, edlParams.useMsBuffers, () => {
+      fbStack.execute(this._edlFinalFbo, true, false, () => {
         if (bundle.edlCalcBasicGeom === undefined) {
           const ct1 = edlParams.inputTex;
           const ctd = this._depth!.getHandle()!;
@@ -252,7 +252,7 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
       const gl = System.instance.context;
       // Loop through the 3 sizes calculating an edl buffer, and if not first size, then optionally filtering those
       for (let i = 0; i < 3; ++i) {
-        fbStack.execute(edlCalc2FB[i], true, useMsBuffers, () => {
+        fbStack.execute(edlCalc2FB[i], true, false, () => {
           const colTex = edlCalc2FB[i].getColor(0);
           gl.viewport(0, 0, colTex.width, colTex.height); // have to set viewport to current texture size
           const params = getDrawParams(this._target, bundle.edlCalcFullGeom![i]!);
@@ -260,7 +260,7 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
         });
 
         if (edlParams.edlFilter && i > 0) {
-          fbStack.execute(edlFiltFbos[i-1], true, useMsBuffers, () => {
+          fbStack.execute(edlFiltFbos[i-1], true, false, () => {
             const params = getDrawParams(this._target, bundle.edlFiltGeom![i-1]!);
             this._target.techniques.draw(params);
           });
