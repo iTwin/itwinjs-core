@@ -93,6 +93,29 @@ describe.only("generateElementMeshes", () => {
   });
 
   it("applies part reference transform", async () => {
+    const ptBldr = new GeometryStreamBuilder();
+    ptBldr.appendGeometry(Loop.createPolygon([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(0, 0, 0)]));
+    const partProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: IModel.dictionaryId,
+      code: GeometryPart.createCode(imodel, IModel.dictionaryId, Guid.createValue()),
+      geom: ptBldr.geometryStream,
+    };
+
+    const partId = imodel.elements.insertElement(partProps);
+    expect(Id64.isValidId64(partId)).to.be.true;
+
+    const elBldr = new GeometryStreamBuilder();
+    elBldr.appendGeometryParamsChange(new GeometryParams(categoryId));
+    elBldr.appendGeometryPart3d(partId, new Point3d(0, 0, 1));
+    elBldr.appendGeometryPart3d(partId, new Point3d(0, 0, -1));
+    const source = insertElement(elBldr.geometryStream, [2, -4, 0]);
+
+    const bytes = await imodel.nativeDb.generateElementMeshes({source});
+    const meshes = readElementMeshes(bytes);
+    expect(meshes.length).to.equal(2);
+    expect(meshes[0].range().isAlmostEqual(new Range3d(2, -4, 1, 3, -3, 1))).to.be.true;
+    expect(meshes[1].range().isAlmostEqual(new Range3d(2, -4, -1, 3, -3, -1))).to.be.true;
   });
 
   it("produces multiple polyfaces", async () => {
