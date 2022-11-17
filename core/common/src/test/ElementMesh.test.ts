@@ -38,7 +38,7 @@ class MeshesBuilder extends Uint8ArrayBuilder {
   }
 }
 
-describe.only("readElementMeshes", () => {
+describe("readElementMeshes", () => {
   it("reads polyfaces", () => {
     const builder = new MeshesBuilder();
     builder.appendChunk("LMSH");
