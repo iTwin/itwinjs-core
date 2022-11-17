@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 10 Nov 2022 19:32:17 GMT and should not be manually modified.
+This log was last generated on Thu, 17 Nov 2022 21:32:50 GMT and should not be manually modified.
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:50 GMT
+
+_Version update only_
 
 ## 3.4.4
 Thu, 10 Nov 2022 19:32:17 GMT
