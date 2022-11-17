@@ -249,13 +249,13 @@ export type CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resiz
 // @internal (undocumented)
 export const CursorTypeContext: React_2.Context<CursorType | undefined>;
 
-// @beta
+// @beta @deprecated
 export class Dialog extends React_2.PureComponent<DialogProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @beta @deprecated
 export interface DialogProps extends CommonProps {
     children?: React_2.ReactNode;
     titleBar?: React_2.ReactNode;
@@ -677,10 +677,10 @@ export class Footer extends React_2.PureComponent<FooterProps> {
     render(): JSX.Element;
 }
 
-// @beta
-export function FooterIndicator(props: FooterIndicatorProps): JSX.Element;
+// @beta @deprecated
+export const FooterIndicator: React_2.ForwardRefExoticComponent<FooterIndicatorProps & React_2.RefAttributes<HTMLDivElement>>;
 
-// @beta
+// @beta @deprecated
 export interface FooterIndicatorProps extends CommonProps {
     children?: React_2.ReactNode;
     // @deprecated
@@ -689,7 +689,7 @@ export interface FooterIndicatorProps extends CommonProps {
     title?: string;
 }
 
-// @beta
+// @beta @deprecated
 export class FooterPopup extends React_2.PureComponent<FooterPopupProps> {
     // (undocumented)
     static readonly defaultProps: FooterPopupDefaultProps;
@@ -697,16 +697,16 @@ export class FooterPopup extends React_2.PureComponent<FooterPopupProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @beta @deprecated
 export enum FooterPopupContentType {
     Dialog = "nz-content-dialog",
     Panel = "nz-content-panel"
 }
 
-// @beta
+// @beta @deprecated
 export type FooterPopupDefaultProps = Pick<FooterPopupProps, "contentType">;
 
-// @beta
+// @beta @deprecated
 export interface FooterPopupProps extends Partial<PopupProps> {
     contentType: FooterPopupContentType;
 }
@@ -721,13 +721,13 @@ export interface FooterProps extends CommonProps {
     safeAreaInsets?: SafeAreaInsets;
 }
 
-// @public
+// @public @deprecated
 export class FooterSeparator extends React_2.PureComponent<FooterSeparatorProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface FooterSeparatorProps extends CommonProps, NoChildrenProps {
 }
 
@@ -1960,7 +1960,7 @@ export function restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): S
 // @internal (undocumented)
 export type RightPanelSide = "right";
 
-// @beta
+// @beta @deprecated
 export enum SafeAreaInsets {
     // (undocumented)
     All = 15,
@@ -2565,7 +2565,7 @@ export class Title extends React_2.PureComponent<TitleProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @beta @deprecated
 export class TitleBar extends React_2.PureComponent<TitleBarProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -2584,7 +2584,7 @@ export interface TitleBarButtonProps extends CommonProps {
     title?: string;
 }
 
-// @beta
+// @beta @deprecated
 export interface TitleBarProps extends CommonProps {
     children?: React_2.ReactNode;
     title?: string;

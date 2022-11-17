@@ -9,8 +9,7 @@ import {
   BriefcaseConnection, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
 } from "@itwin/core-frontend";
 import { CommonProps, Icon } from "@itwin/core-react";
-import { UiFramework } from "@itwin/appui-react";
-import { FooterIndicator } from "@itwin/appui-layout-react";
+import { StatusBarIndicator, UiFramework } from "@itwin/appui-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 
 function translate(prompt: string) {
@@ -183,7 +182,7 @@ export class PushPullStatusField extends React.Component<CommonProps, PushPullSt
 
     if (this.state.isSynchronizing) {
       return (
-        <FooterIndicator
+        <StatusBarIndicator
           className={"simple-editor-app-statusFields-pushPull"}
           style={this.props.style}
         >
@@ -196,7 +195,7 @@ export class PushPullStatusField extends React.Component<CommonProps, PushPullSt
               <Icon iconSpec="icon icon-blank" />
             </div>
           </div>
-        </FooterIndicator >
+        </StatusBarIndicator >
       );
     }
     const mustPush = this.mustPush && !this.state.isSynchronizing;
@@ -209,7 +208,7 @@ export class PushPullStatusField extends React.Component<CommonProps, PushPullSt
     const pullTitleTxt = translate(mustPull ? "pullButtonTitle" : "pullButtonDisabledTitle");
 
     return (
-      <FooterIndicator
+      <StatusBarIndicator
         className={"simple-editor-app-statusFields-pushPull"}
         style={this.props.style}
       >
@@ -224,7 +223,7 @@ export class PushPullStatusField extends React.Component<CommonProps, PushPullSt
             {pullChangeCount}<Icon iconSpec={pullIcon} />
           </div>
         </div>
-      </FooterIndicator>
+      </StatusBarIndicator>
     );
   }
 
