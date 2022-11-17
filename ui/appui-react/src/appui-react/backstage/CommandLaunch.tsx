@@ -21,7 +21,7 @@ import { BackstageItemUtilities } from "./BackstageItemUtilities";
 // cspell:ignore safearea
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const BackstageItem = withSafeArea(NZ_BackstageItem);
+const BackstageItem = withSafeArea(NZ_BackstageItem); // eslint-disable-line deprecation/deprecation
 
 /** Properties for a [[CommandLaunchBackstageItem]] component
  * @public

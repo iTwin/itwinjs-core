@@ -109,7 +109,7 @@ import TestUtils, { mount } from "../TestUtils";
 
     it("Message Center should close on outside click", () => {
       const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
-      const footerPopup = wrapper.find(FooterPopup);
+      const footerPopup = wrapper.find(FooterPopup); // eslint-disable-line deprecation/deprecation
       const messageCenterField = wrapper.find(MessageCenterField);
       const messageCenter = wrapper.find("div.nz-indicator");
 
@@ -134,7 +134,7 @@ import TestUtils, { mount } from "../TestUtils";
 
     it("Message Center should not close on outside click", () => {
       const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
-      const footerPopup = wrapper.find(FooterPopup);
+      const footerPopup = wrapper.find(FooterPopup); // eslint-disable-line deprecation/deprecation
 
       const statusBarInstance = wrapper.instance();
       statusBarInstance.setState(() => ({ openWidget: "test-widget" }));

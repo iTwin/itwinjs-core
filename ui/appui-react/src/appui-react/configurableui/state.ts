@@ -40,7 +40,7 @@ export interface ConfigurableUiState {
   theme: string;
   widgetOpacity: number;
   useDragInteraction: boolean;
-  frameworkVersion: FrameworkVersionId;
+  frameworkVersion: FrameworkVersionId; // eslint-disable-line deprecation/deprecation
   showWidgetIcon: boolean;
   autoCollapseUnpinnedPanels: boolean;
   viewOverlayDisplay: boolean;
@@ -78,7 +78,7 @@ export const ConfigurableUiActions = {   // eslint-disable-line @typescript-esli
     // istanbul ignore next
     (opacity: number) => createAction(ConfigurableUiActionId.SetWidgetOpacity, opacity),
   setDragInteraction: (dragInteraction: boolean) => createAction(ConfigurableUiActionId.SetDragInteraction, dragInteraction),
-  setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => createAction(ConfigurableUiActionId.SetFrameworkVersion, frameworkVersion),
+  setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => createAction(ConfigurableUiActionId.SetFrameworkVersion, frameworkVersion), // eslint-disable-line deprecation/deprecation
   setShowWidgetIcon: (showWidgetIcon: boolean) => createAction(ConfigurableUiActionId.SetShowWidgetIcon, showWidgetIcon),
   setAutoCollapseUnpinnedPanels: (autoCollapse: boolean) => createAction(ConfigurableUiActionId.AutoCollapseUnpinnedPanels, autoCollapse),
   setViewOverlayDisplay: (displayViewOverlay: boolean) => createAction(ConfigurableUiActionId.SetViewOverlayDisplay, displayViewOverlay),
