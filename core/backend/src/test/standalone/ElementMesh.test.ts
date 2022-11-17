@@ -48,7 +48,7 @@ describe.only("generateElementMeshes", () => {
     await expect(imodel.nativeDb.generateElementMeshes({source: "NotAnId"})).rejectedWith("Geometric element required");
   });
 
-  it("produces a polyface", async () => {
+  function insertTriangle(origin = [0, 0, 0]): string {
     const bldr = new GeometryStreamBuilder();
     bldr.appendGeometryParamsChange(new GeometryParams(categoryId));
 
@@ -60,14 +60,18 @@ describe.only("generateElementMeshes", () => {
       category: categoryId,
       geom: bldr.geometryStream,
       placement: {
-        origin: [0, 0, 0],
+        origin,
         angles: { },
       },
     };
 
-    const source = imodel.elements.insertElement(props);
-    expect(Id64.isValidId64(source)).to.be.true;
+    const elemId = imodel.elements.insertElement(props);
+    expect(Id64.isValidId64(elemId)).to.be.true;
+    return elemId;
+  }
 
+  it("produces a polyface", async () => {
+    const source = insertTriangle();
     const bytes = await imodel.nativeDb.generateElementMeshes({source});
     const meshes = readElementMeshes(bytes);
     expect(meshes.length).to.equal(1);
@@ -75,6 +79,11 @@ describe.only("generateElementMeshes", () => {
   });
 
   it("applies element placement transform", async () => {
+    const source = insertTriangle([5, 0, -2]);
+    const bytes = await imodel.nativeDb.generateElementMeshes({source});
+    const meshes = readElementMeshes(bytes);
+    expect(meshes.length).to.equal(1);
+    expect(meshes[0].range().isAlmostEqual(new Range3d(5, 0, -2, 6, 1, -2))).to.be.true;
   });
 
   it("applies part reference transform", async () => {
