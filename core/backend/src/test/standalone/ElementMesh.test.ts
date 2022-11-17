@@ -6,8 +6,7 @@ import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
 import {
-  AreaPattern,
-  Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
+  AreaPattern, Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel, readElementMeshes,
 } from "@itwin/core-common";
 import {
   GenericSchema, GeometricElement3d, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements,
@@ -49,6 +48,31 @@ describe.only("generateElementMeshes", () => {
     await expect(imodel.nativeDb.generateElementMeshes({source: "NotAnId"})).rejectedWith("Geometric element required");
   });
 
+  it("produces a polyface", async () => {
+    const bldr = new GeometryStreamBuilder();
+    bldr.appendGeometryParamsChange(new GeometryParams(categoryId));
+
+    bldr.appendGeometry(Loop.createPolygon([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(0, 0, 0)]));
+    const props: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: modelId,
+      code: Code.createEmpty(),
+      category: categoryId,
+      geom: bldr.geometryStream,
+      placement: {
+        origin: [0, 0, 0],
+        angles: { },
+      },
+    };
+
+    const source = imodel.elements.insertElement(props);
+    expect(Id64.isValidId64(source)).to.be.true;
+
+    const bytes = await imodel.nativeDb.generateElementMeshes({source});
+    const meshes = readElementMeshes(bytes);
+    expect(meshes.length).to.equal(1);
+  });
+
   it("applies element placement transform", async () => {
   });
 
@@ -56,9 +80,6 @@ describe.only("generateElementMeshes", () => {
   });
 
   it("produces multiple polyfaces", async () => {
-  });
-
-  it("produces a polyface", async () => {
   });
 
   it("ignores open curves", async () => {

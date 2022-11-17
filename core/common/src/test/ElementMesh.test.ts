@@ -28,7 +28,7 @@ class MeshesBuilder extends Uint8ArrayBuilder {
   public appendTriangle(chunkType = "PLFC"): void {
     const builder = PolyfaceBuilder.create();
     builder.addTriangleFacet([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(1, 0, 0)]);
-    const bytes = BentleyGeometryFlatBuffer.geometryToBytes(builder.claimPolyface())!;
+    const bytes = BentleyGeometryFlatBuffer.geometryToBytes(builder.claimPolyface(), true)!;
     expect(bytes).not.to.be.undefined;
     this.appendChunk(chunkType, bytes);
   }
