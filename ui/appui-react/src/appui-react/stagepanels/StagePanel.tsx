@@ -73,6 +73,7 @@ export interface StagePanelZonesProps {
 export type StagePanelMaxSizeSpec = number | { percentage: number };
 
 /** Properties of a [[StagePanel]] component
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface StagePanelProps {
@@ -109,6 +110,7 @@ export interface StagePanelProps {
 }
 
 /** Default properties of [[StagePanel]] component.
+ * @deprecated Default props of a deprecated component.
  * @public
  */
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
@@ -136,6 +138,7 @@ interface StagePanelComponentState {
 }
 
 /** Frontstage Panel React component.
+ * @deprecated Use [PanelConfig] instead.
  * @public
  */
 export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {

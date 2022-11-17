@@ -11,6 +11,7 @@ import { WidgetProps } from "./WidgetProps";
 
 /** Widget React component.
  * A Widget is a collection of UI components tied to a particular Zone that allows the user to view and/or modify data relevant to their current context.
+ * @deprecated Use [WidgetConfig] instead.
  * @public
  */
 export class Widget extends React.Component<WidgetProps> {

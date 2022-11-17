@@ -11,21 +11,20 @@ import { AbstractWidgetProps } from "@itwin/appui-abstract";
 import { IconProps } from "@itwin/core-react";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
-/** Properties for a [Widget]($appui-react) component.
- * @deprecated Props of a deprecated component.
- * @public
+/** Configuration from which a widget is created.
+ * @beta
  */
-export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps {
+export interface WidgetConfig extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps {
   /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
-  labelKey?: string;
+  readonly labelKey?: string;
   /** if set, it is used to define a key that is used to look up a localized string. This value is used only if tooltip is not explicitly set. */
-  tooltipKey?: string;
+  readonly tooltipKey?: string;
   /** A [[WidgetControl]] providing information about the Widget. */
-  control?: ConfigurableUiControlConstructor;
+  readonly control?: ConfigurableUiControlConstructor;
   /** A React component for the Widget. */
-  element?: React.ReactNode;
+  readonly element?: React.ReactNode;
   /** Control's class id */
-  classId?: string | ConfigurableUiControlConstructor;
+  readonly classId?: string | ConfigurableUiControlConstructor;
   /** @alpha */
-  preferredPanelSize?: "fit-content";
+  readonly preferredPanelSize?: "fit-content";
 }

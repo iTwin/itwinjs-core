@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import { FrontstageProps } from "./Frontstage";
+import { FrontstageConfig } from "./FrontstageConfig";
 
 /** Provides a Frontstage as a React based definition
  * @public
@@ -15,5 +16,5 @@ import { FrontstageProps } from "./Frontstage";
 export abstract class FrontstageProvider {
   /** Get the Frontstage React based definition */
   public abstract get id(): string;
-  public abstract get frontstage(): React.ReactElement<FrontstageProps>;
+  public abstract get frontstage(): React.ReactElement<FrontstageProps> | FrontstageConfig; // eslint-disable-line deprecation/deprecation
 }

@@ -32,6 +32,7 @@ import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
 import { FrontstageActivatedEventArgs, FrontstageManager } from "./FrontstageManager";
 
 /** Properties for a [[Frontstage]] component.
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface FrontstageProps extends CommonProps {
@@ -119,6 +120,7 @@ interface FrontstageState {
 
 /** Frontstage React component.
  * A Frontstage is a full-screen configuration designed to enable the user to accomplish a task.
+ * @deprecated Use [FrontstageConfig] instead.
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
