@@ -7,7 +7,7 @@ import { IModelConnection, ScreenViewport, SnapshotConnection, ViewCreator3d} fr
 import { TestUtility } from "../TestUtility";
 import { ProcessDetector } from "@itwin/core-bentley";
 
-describe.only("ViewCreator3d", async () => {
+describe("ViewCreator3d", async () => {
   let imodel: IModelConnection;
 
   before(async () => {

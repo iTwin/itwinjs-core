@@ -11,7 +11,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { CustomViewState3dCreator } from "../../CustomViewState3dCreator";
 import { Range3d } from "@itwin/core-geometry";
 
-describe.only("CustomViewState3dCreator", () => {
+describe("CustomViewState3dCreator", () => {
   let imodel: SnapshotDb;
   after(() => {
     if (imodel && imodel.isOpen)
