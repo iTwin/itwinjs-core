@@ -16,7 +16,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-describe.only("generateElementMeshes", () => {
+describe("generateElementMeshes", () => {
   let imodel: SnapshotDb;
   let modelId: string;
   let categoryId: string;
