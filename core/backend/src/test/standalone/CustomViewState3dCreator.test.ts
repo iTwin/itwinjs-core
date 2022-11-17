@@ -13,9 +13,13 @@ import { Range3d } from "@itwin/core-geometry";
 
 describe.only("CustomViewState3dCreator", () => {
   let imodel: SnapshotDb;
-  afterEach(() => sinon.restore());
+  after(() => {
+    if (imodel && imodel.isOpen)
+      imodel.close();
+  });
   before(() => {
-    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("ElementGraphics", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    const filename = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
+    imodel = SnapshotDb.openFile(filename);
   });
   function setsAreEqual<T>(set1: Set<T>, set2: Set<T>): boolean {
     return set1.size === set2.size && [...set1].every((value) => set2.has(value));
