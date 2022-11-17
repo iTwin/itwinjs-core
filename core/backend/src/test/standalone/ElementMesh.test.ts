@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { LineString3d, Loop, Path, Point3d, Range3d } from "@itwin/core-geometry";
+import {
+  LineString3d, Loop, Path, PolyfaceBuilder, Point3d, Range3d, StrokeOptions,
+} from "@itwin/core-geometry";
 import {
   AreaPattern, Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamEntryProps,
   GeometryStreamIterator, IModel, readElementMeshes,
@@ -121,5 +123,26 @@ describe.only("generateElementMeshes", () => {
   });
 
   it("omits normals and UVs", async () => {
+    const opts = new StrokeOptions();
+    opts.needNormals = opts.needParams = true;
+    const pfBldr = PolyfaceBuilder.create(opts);
+    pfBldr.addTriangleFacet([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0)]);
+    const pf = pfBldr.claimPolyface();
+    expect(pf.pointCount).to.equal(3);
+    expect(pf.normalCount).least(1);
+    expect(pf.paramCount).least(1);
+
+    const bldr = new GeometryStreamBuilder();
+    bldr.appendGeometryParamsChange(new GeometryParams(categoryId));
+    bldr.appendGeometry(pf);
+    const source = insertElement(bldr.geometryStream, [10, 0, 0]);
+
+    const bytes = await imodel.nativeDb.generateElementMeshes({source});
+    const meshes = readElementMeshes(bytes);
+    expect(meshes.length).to.equal(1);
+    expect(meshes[0].pointCount).to.equal(3);
+    expect(meshes[0].paramCount).to.equal(0);
+    expect(meshes[0].normalCount).to.equal(0);
+    expect(meshes[0].range().isAlmostEqual(new Range3d(10, 0, 0, 11, 1, 0))).to.be.true;
   });
 });
