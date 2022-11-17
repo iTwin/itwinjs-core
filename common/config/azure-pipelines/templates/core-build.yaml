@@ -12,6 +12,10 @@ parameters:
     default: false
   - name: nodeVersion
     default: ''
+  - name: currentBranch
+    default: $(Build.SourceBranch)
+  - name: targetBranch
+    default: $(System.PullRequest.TargetBranch)
 
 steps:
 
@@ -48,7 +52,7 @@ steps:
       workingDirectory: ${{ parameters.workingDir }}
       scriptSource: filepath
       scriptPath: common/scripts/run_rush_change.py
-      arguments: $(Build.SourceBranch) $(Build.Reason) $(System.PullRequest.TargetBranch)
+      arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
       failOnStderr: true
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
