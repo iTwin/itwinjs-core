@@ -31,11 +31,11 @@ jobs:
   steps:
     - checkout: self
       clean: true
-    # - task: NodeTool@0
-    #   displayName: "Use Node ${{ parameters.nodeVersion }}"
-    #   inputs:
-    #     versionSpec: ${{ parameters.nodeVersion }}
-    #     checkLatest: true
+    - task: NodeTool@0
+      displayName: "Use Node ${{ parameters.nodeVersion }}"
+      inputs:
+        versionSpec: ${{ parameters.nodeVersion }}
+        checkLatest: true
 
     - script: |
         git config --local user.email imodeljs-admin@users.noreply.github.com
