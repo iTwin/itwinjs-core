@@ -66,7 +66,7 @@ export class ByteStream {
     return this._view.byteLength;
   }
 
-  /** The number of bytes remaining to be read, from [[curPoss]] to the end of the stream. */
+  /** The number of bytes remaining to be read, from [[curPos]] to the end of the stream. */
   public get remainingLength(): number {
     return this.length - this.curPos;
   }
