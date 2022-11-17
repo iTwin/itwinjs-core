@@ -15,7 +15,7 @@ import {
 import {
   BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
-  QPoint3dList, Quantization, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
+  QPoint3dList, Quantization, RenderMaterial, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
@@ -33,6 +33,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { TextureImageSource } from "../render/RenderTexture";
+import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -1378,7 +1379,12 @@ export abstract class GltfReader {
     const normalMapId = this.extractNormalMapId(material);
     const textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId) : undefined;
     const color = colorFromMaterial(material, isTransparent);
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
+    let renderMaterial: RenderMaterial | undefined;
+    if (undefined !== textureMapping && undefined !== textureMapping.normalMapParams) {
+      const args: CreateRenderMaterialArgs = { diffuse: { color }, specular: { color: ColorDef.white }, textureMapping };
+      renderMaterial = IModelApp.renderSystem.createRenderMaterial(args);
+    }
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d): GltfMeshData[] {
