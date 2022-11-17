@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
+import { LineString3d, Loop, Point3d, Range3d } from "@itwin/core-geometry";
 import {
   AreaPattern, Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel, readElementMeshes,
 } from "@itwin/core-common";
@@ -71,6 +71,7 @@ describe.only("generateElementMeshes", () => {
     const bytes = await imodel.nativeDb.generateElementMeshes({source});
     const meshes = readElementMeshes(bytes);
     expect(meshes.length).to.equal(1);
+    expect(meshes[0].range().isAlmostEqual(new Range3d(0, 0, 0, 1, 1, 0))).to.be.true;
   });
 
   it("applies element placement transform", async () => {
