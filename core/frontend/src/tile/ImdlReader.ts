@@ -726,11 +726,7 @@ export class ImdlReader {
       worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
     };
 
-    let normalMap;
-    // TODO: (Marc) get normal map info from json, but for now uncomment the following 2 lines to use texture as normal map.
-    // if (undefined !== texture) {
-    //   normalMap = {};
-    // }
+    let normalMap; // TODO: Need to extract normal map properties from json once they're sent by the backend.
     return new TextureMapping(texture, new TextureMapping.Params(paramProps), normalMap);
   }
 
