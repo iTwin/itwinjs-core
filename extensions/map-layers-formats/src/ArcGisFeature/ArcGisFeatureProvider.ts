@@ -190,7 +190,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // Check for minScale / max scale
     const minScale = this._layerMetadata?.minScale || undefined;  // undefined, 0 -> undefined
     const maxScale = this._layerMetadata?.maxScale || undefined;  // undefined, 0 -> undefined
-    const scales = ArcGisUtilities.getZoomLevelsScales(this.defaultMaximumZoomLevel, this.tileSize, minScale, maxScale);
+    const scales = ArcGisUtilities.getZoomLevelsScales(this.defaultMaximumZoomLevel, this.tileSize, minScale, maxScale, 1.0);
     if (scales.minLod)
       this._minDepthFromLod = scales.minLod;
 

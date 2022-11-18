@@ -244,9 +244,10 @@ export class ArcGisUtilities {
    * @param latitude Latitude in degrees to use to compute scales (i.e 0 for Equator)
    * @param tileSize Size of a tile in pixels (i.e 256)
    * @param screenDpi Monitor resolution in dots per inch (i.e. typically 96dpi is used by Google Maps)
+   *
   * @returns An array containing resolution and scale values for each requested zoom level
    */
-  public static computeZoomLevelsScales(startZoom: number = 0, endZoom: number = 20, latitude: number = 0, tileSize: number = 256, screenDpi = 96 ): {zoom: number, resolution: number, scale: number}[] {
+  public static computeZoomLevelsScales(startZoom: number = 0, endZoom: number = 20, latitude: number = 0, tileSize: number = 256, screenDpi = 96): {zoom: number, resolution: number, scale: number}[] {
     // Note: There is probably a more direct way to compute this, but I prefer to go for a simple and well documented approach.
     if (startZoom <0 || endZoom < startZoom || tileSize < 0 || screenDpi < 1  || latitude < -90 || latitude > 90)
       return [];
@@ -274,7 +275,7 @@ export class ArcGisUtilities {
    * @param maxScale Maximum  scale value that needs to be matched to a LOD level
   * @returns minLod: LOD value matching minScale,  maxLod: LOD value matching maxScale
    */
-  public static getZoomLevelsScales( defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number): {minLod?: number, maxLod?: number} {
+  public static getZoomLevelsScales( defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance: number = 0): {minLod?: number, maxLod?: number} {
 
     let minLod: number|undefined, maxLod: number|undefined;
 
@@ -285,7 +286,7 @@ export class ArcGisUtilities {
       if (minScale) {
         minLod = 0;
         // We are looking for the largest scale value with a scale value smaller than minScale
-        for (; minLod < zoomScales.length && zoomScales[minLod].scale > minScale; minLod++)
+        for (; minLod < zoomScales.length && (zoomScales[minLod].scale > minScale && Math.abs(zoomScales[minLod].scale - minScale) > tolerance); minLod++)
           ;
 
       }
@@ -293,7 +294,7 @@ export class ArcGisUtilities {
       if (maxScale) {
         maxLod = defaultMaxLod;
         // We are looking for the smallest scale value with a value greater than maxScale
-        for (; maxLod >= 0 && zoomScales[maxLod].scale < maxScale; maxLod--)
+        for (; maxLod >= 0 && zoomScales[maxLod].scale < maxScale && Math.abs(zoomScales[maxLod].scale - maxScale) > tolerance; maxLod--)
           ;
       }
     }
