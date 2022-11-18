@@ -166,7 +166,7 @@ export class MobileFileHandler {
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
-    buffer = buffer.slice(0, bytesRead);
+    buffer = buffer.subarray(0, bytesRead);
 
     const options: RequestOptions = {
       method: "PUT",

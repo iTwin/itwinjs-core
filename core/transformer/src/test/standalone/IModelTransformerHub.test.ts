@@ -651,14 +651,13 @@ describe("IModelTransformerHub", () => {
       await synchronizer.processChanges(accessToken);
       expect(didExportModelSelector).to.be.true;
       expect(didImportModelSelector).to.be.true;
-      provenanceInitializer.dispose();
+      synchronizer.dispose();
       targetDb.saveChanges();
       await targetDb.pushChanges({ accessToken, description: "synchronize" });
 
       // check that the model selector has the expected change in the target
       const modelSelectorInTargetId = targetDb.elements.queryElementIdByCode(modelSelectorCode);
-      if (modelSelectorInTargetId === undefined)
-        throw Error(`expected obj ${modelSelectorInTargetId} to be defined`);
+      assert(modelSelectorInTargetId !== undefined, `expected obj ${modelSelectorInTargetId} to be defined`);
 
       const modelSelectorInTarget = targetDb.elements.getElement<ModelSelector>(modelSelectorInTargetId, ModelSelector);
       expect(modelSelectorInTarget.models).to.have.length(2);

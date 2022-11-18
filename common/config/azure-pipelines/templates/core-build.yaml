@@ -10,8 +10,37 @@ parameters:
   - name: buildIos
     type: boolean
     default: false
+  - name: nodeVersion
+    default: ''
+  - name: currentBranch
+    default: $(Build.SourceBranch)
+  - name: targetBranch
+    default: $(System.PullRequest.TargetBranch)
 
 steps:
+
+  - task: NodeTool@0
+    displayName: "Use Node ${{ parameters.nodeVersion }}"
+    inputs:
+      versionSpec: ${{ parameters.nodeVersion }}
+      checkLatest: true
+
+  - script: |
+      git config --local user.email imodeljs-admin@users.noreply.github.com
+      git config --local user.name imodeljs-admin
+    displayName: git config
+
+  - powershell: |
+      # Get the new version number.
+      $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
+      $currVersion = $json[0].version
+
+      $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
+
+      Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
+    displayName: Set build number
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+
   - script: node common/scripts/set-rush-write-cache-variables.js
     displayName: 'Set Rush Write Cache Variables'
   - script: node common/scripts/install-run-rush.js check
@@ -23,7 +52,7 @@ steps:
       workingDirectory: ${{ parameters.workingDir }}
       scriptSource: filepath
       scriptPath: common/scripts/run_rush_change.py
-      arguments: $(Build.SourceBranch) $(Build.Reason) $(System.PullRequest.TargetBranch)
+      arguments: ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
       failOnStderr: true
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install

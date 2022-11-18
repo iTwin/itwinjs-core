@@ -7,6 +7,7 @@ import { CellProps, Column } from "react-table";
 import { Primitives, PropertyValueFormat } from "@itwin/appui-abstract";
 import { CellItem, RowItem, TableDataProvider } from "@itwin/components-react";
 import { ReactTableCell } from "./ReactTableCell";
+/* eslint-disable deprecation/deprecation */
 
 /**
  * Adapts TableDataProvider data for use by iTwinUI-react Table & react-table

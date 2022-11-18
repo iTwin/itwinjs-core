@@ -43,10 +43,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
   private _maxDepthFromLod = 0;
   private _minDepthFromLod = 0;
-  // We should not be making any request if layer is currently out of range,
-  // but since minimum LOD is not correctely supported by iTwin tile, we dont use it for now.
-  // public get minimumZoomLevel(): number { return this._minDepthFromLod; }
-  // public get maximumZoomLevel(): number { return this._maxDepthFromLod; }
+  public override get minimumZoomLevel(): number { return this._minDepthFromLod; }
+  public override get maximumZoomLevel(): number { return this._maxDepthFromLod; }
 
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);

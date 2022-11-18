@@ -8,7 +8,7 @@
   },
   "version": "1.8.0",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 < 19.0"
   },
   "private": true,
   "scripts": {
@@ -17,9 +17,9 @@
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:backend-webpack": "backend-webpack-tools build -s ./lib/backend/DtaElectronMain.js -o ./lib/build/",
     "build:frontend": "tsc",
-    "build:frontend-webpack": "cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_ESLINT_PLUGIN=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts --max_old_space_size=8192 build",
+    "build:frontend-webpack": "cross-env DISABLE_TERSER=true DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_ESLINT_PLUGIN=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts --max_old_space_size=8192 build",
     "build:webpack": "npm run build:frontend-webpack && npm run build:backend-webpack",
-    "clean": "rimraf build lib .rush/temp/package-deps*.json ios/imodeljs-test-app/build",
+    "clean": "rimraf build lib .rush/temp/package-deps*.json ios/imodeljs-test-app/build android/imodeljs-test-app/app/build android/imodeljs-test-app/app/src/main/assets",
     "docs": "",
     "lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.ts\" 1>&2",
     "start": "cross-env NODE_ENV=development run-p start:webserver start:electron",
@@ -31,17 +31,18 @@
     "test": "",
     "cover": "",
     "copy:config": "internal-tools copy-config",
-    "build:ios-backend": "npm run -s build:backend && webpack --config ./ios/backend.config --env outdir=./lib/ios --env entry=./lib/backend/MobileMain.js --env bundlename=main",
+    "build:ios-backend": "npm run -s build:backend && webpack --config ./mobile_backend.config --env outdir=./lib/ios --env entry=./lib/backend/MobileMain.js --env bundlename=main",
     "copy:ios-frontend": "mkdir -p ./lib/ios && rm -rf ./lib/ios/www && cp -R ./build ./lib/ios/www",
     "build:ios": "npm run -s build:frontend-webpack && npm run -s build:ios-backend && npm run -s copy:ios-frontend && npm run build:ios-env-json",
     "build:ios-env-json": "ts-node --skip-project ./buildEnvJson.ts",
     "build:ios-app": "cd ios/imodeljs-test-app && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme imodeljs-test-app -arch x86_64 -sdk iphonesimulator -configuration Debug",
     "ios": "ts-node --skip-project ./runIosSimulator.ts",
     "ios:all": "npm run build:ios && npm run build:ios-app && npm run ios",
-    "build:android-backend": "npm run -s build:backend && webpack --config ./android/backend.config --env.outdir=./lib/android --env.entry=./lib/backend/MobileMain.js --env.bundlename=main",
+    "build:android-backend": "npm run -s build:backend && webpack --config ./mobile_backend.config --env outdir=./lib/android --env entry=./lib/backend/MobileMain.js --env bundlename=main",
     "install-android-lib": "node ./android/scripts/installAndroidNativeLib.js",
     "copy:android-assets": "node ./android/scripts/copyAndroidAssets.js",
-    "build:android": "npm run -s install-android-lib && npm run -s build:frontend-webpack && npm run -s build:android-backend && npm run -s copy:android-assets"
+    "build:android": "PUBLIC_URL=./ npm run -s build:frontend-webpack && npm run -s build:android-backend && npm run -s copy:android-assets",
+    "build:android-app": "cd android/imodeljs-test-app && ./gradlew --no-daemon build"
   },
   "repository": {},
   "dependencies": {

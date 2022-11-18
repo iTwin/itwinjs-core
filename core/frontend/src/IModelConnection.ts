@@ -157,6 +157,12 @@ export abstract class IModelConnection extends IModel {
    */
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
+  /** Event called immediately after *this* IModelConnection has its displayed extents expanded.
+   * @note This event is called only for this IModelConnection.
+   * @internal
+   */
+  public readonly onDisplayedExtentsExpansion = new BeEvent<() => void>();
+
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
   public fontMap?: FontMap;
 
@@ -502,10 +508,7 @@ export abstract class IModelConnection extends IModel {
     this.displayedExtents.setFrom(this.projectExtents);
     this.displayedExtents.extendRange(this._extentsExpansion);
 
-    for (const vp of IModelApp.viewManager) {
-      if (vp.view.isSpatialView() && vp.iModel === this)
-        vp.invalidateController();
-    }
+    this.onDisplayedExtentsExpansion.raiseEvent();
   }
 
   /** @internal */

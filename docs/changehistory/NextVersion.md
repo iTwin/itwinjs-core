@@ -13,14 +13,15 @@ Table of contents:
   - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
 - [Element aspect ids](#element-aspect-ids)
 - [AppUi](#appui)
+- [New packages](#new-packages)
+  - [@itwin/map-layers-formats](#itwinmap-layers-formats)
 - [Geometry](#geometry)
   - [Polyface](#polyface)
 - [Deprecations](#deprecations)
+  - [@itwin/components-react](#itwincomponents-react)
   - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
-  - [@itwin/presentation-backend](#itwinpresentation-backend)
-- [New packages](#new-packages)
-  - [@itwin/map-layers-formats](#map-layers-formats)
 
 ## Display system
 
@@ -43,7 +44,7 @@ Functions like [ViewState.lookAtVolume]($frontend) and [Viewport.zoomToElements]
 Now, [MarginOptions]($frontend) has an alternative way to specify how to adjust the size of the viewed volume, using [MarginOptions.paddingPercent]($frontend). Like [MarginPercent]($frontend), a [PaddingPercent]($frontend) specifies the extra space as a percentage of the original volume's space on each side - though it may also specify a single padding to be applied to all four sides, or omit any side that should have no padding applied. For example,
 
 ```
-{paddingPercent: {{left: .2, right: .2, top: .2, bottom: .2}}
+{paddingPercent: {left: .2, right: .2, top: .2, bottom: .2}}
 // is equivalent to
 {paddingPercent: .2}
 ```
@@ -120,10 +121,21 @@ With the new approach we "break" at the duplicate A node:
    +--+ A
 ```
 
-## Element aspect ids
+## Element aspects
 
-[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
-the ids returned are not unique from all element ids and may collide.
+### Aspect Ids
+
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so the ids returned are not unique from all element ids and may collide.
+
+### ExternalSourceAspect find methods
+
+[ExternalSourceAspect.findBySource]($core-backend) is deprecated. Use [ExternalSourceAspect.findAllBySource]($core-backend) instead.
+
+An [Element]($core-backend) can have more than one ExternalSourceAspect with the same scope, kind, and identifier. Also, many elements could have ExternalSourceAspects with the same scope, kind, and identifier. Therefore, `ExternalSourceAspect.findAllBySource` returns an *array*.
+
+If an app expects there to be only one [ExternalSourceAspect]($core-backend) with a given scope, kind, and identifier in the iModel, it must check that the array returned by ExternalSourceAspect.findAllBySource contains only one item.
+
+To narrow the search to just the `ExternalSourceAspect`s on a single element, use an ECSql query, such as `select ecinstanceid from Bis.ExternalSourceAspect where scope.id=? and kind=? and identifier=? and element.id=?`. If only one such aspect is expected, verify that only one row is found.
 
 ## AppUi
 
@@ -147,12 +159,20 @@ The method [Polyface.facetCount]($core-geometry) has been added to this abstract
 
 ## Deprecations
 
+### @itwin/components-react
+
+All the components that were only used by or with the deprecated [Table]($components-react) are now marked as deprecated as well and will be removed in an upcoming version. The Table was deprecated a year ago in favor of the Table component provided in the `@itwin/itwinui-react` package, which do not use any of these parts.
+
 ### @itwin/core-backend
 
 The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated in favor of [IModelDb.Views.getViewStateProps]($backend), which accepts the same inputs and returns the same output, but performs some potentially-expensive work on a background thread to avoid blocking the JavaScript event loop.
 
 The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
  The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
+
+### @itwin/core-geometry
+
+The method [PathFragment.childFractionTChainDistance]($core-geometry) has been deprecated in favor of the correctly spelled method [PathFragment.childFractionToChainDistance]($core-geometry).
 
 ### @itwin/core-transformer
 

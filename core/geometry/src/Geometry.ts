@@ -187,7 +187,7 @@ export class Geometry {
   /** tolerance for small angle measured in degrees. */
   public static readonly smallAngleDegrees = 5.7e-11;
   /** tolerance for small angle measured in arc-seconds. */
-   public static readonly smallAngleSeconds = 2e-7;
+  public static readonly smallAngleSeconds = 2e-7;
   /** numeric value that may be considered huge for a ratio of numbers.
    * * Note that the "allowed" result value is vastly larger than 1.
    */
@@ -367,7 +367,7 @@ export class Geometry {
     if (tol !== undefined)
       return Math.abs(distance) <= Math.abs(tol);
     return Math.abs(distance) <= Geometry.smallMetricDistance;
-    }
+  }
   /** Toleranced equality test, using `smallMetricDistance` tolerance. */
   public static isSmallMetricDistance(distance: number): boolean {
     return Math.abs(distance) <= Geometry.smallMetricDistance;
@@ -377,7 +377,10 @@ export class Geometry {
   public static isSmallMetricDistanceSquared(distanceSquared: number): boolean {
     return Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared;
   }
-  /** Return `axis modulo 3` with proper handling of negative indices (-1 is z), -2 is y, -3 is x etc) */
+  /**
+   * Return `axis modulo 3` with proper handling of negative indices
+   * ..., -3:x, -2:y, -1:z, 0:x, 1:y, 2:z, 3:x, 4:y, 5:z, 6:x, 7:y, 8:z, ...
+   *  */
   public static cyclic3dAxis(axis: number): number {
     /* Direct test for the most common cases, avoid modulo */
     if (axis >= 0) {
@@ -636,10 +639,10 @@ export class Geometry {
   public static resolveValue<T>(value: T | undefined, defaultValue: T): T {
     return value !== undefined ? value : defaultValue;
   }
-/** If given value matches a target, return undefined.   Otherwise return the value. */
-public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined {
-  return value === targetValue ? undefined : value;
-}
+  /** If given value matches a target, return undefined.   Otherwise return the value. */
+  public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined {
+    return value === targetValue ? undefined : value;
+  }
 
   /** simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
   public static interpolate(a: number, f: number, b: number): number {
@@ -824,66 +827,66 @@ public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | u
   public static equalStringNoCase(string1: string, string2: string): boolean {
     return string1.toUpperCase() === string2.toUpperCase();
   }
-/** test for EXACT match of number arrays. */
+  /** test for EXACT match of number arrays. */
   public static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean {
-  if (Array.isArray(a) && a.length === 0)
-      a = undefined;
-  if (Array.isArray(b) && b.length === 0)
-      b = undefined;
-  if (a === undefined && b === undefined)
-    return true;
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length)
-      return false;
-    for (let i = 0; i < a.length; i++)
-      if (a[i] !== b[i])
-        return false;
-    return true;
-  }
-  return false;
-}
-
-/** test for  match of XYZ arrays. */
-  public static almostEqualArrays<T>(a: T[] | undefined, b: T[] | undefined,
-    testFunction: (p: T, q: T) => boolean): boolean{
     if (Array.isArray(a) && a.length === 0)
       a = undefined;
-  if (Array.isArray(b) && b.length === 0)
+    if (Array.isArray(b) && b.length === 0)
       b = undefined;
-  if (a === undefined && b === undefined)
-    return true;
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length)
-      return false;
-    for (let i = 0; i < a.length; i++){
-      if (!testFunction (a[i],b[i]))
+    if (a === undefined && b === undefined)
+      return true;
+    if (Array.isArray(a) && Array.isArray(b)) {
+      if (a.length !== b.length)
         return false;
-      }
-    return true;
+      for (let i = 0; i < a.length; i++)
+        if (a[i] !== b[i])
+          return false;
+      return true;
     }
-  return false;
+    return false;
   }
 
-/** test for  match of typed arrays (e.g. Float64Array). */
-public static almostEqualNumberArrays(a: number[] | Float64Array | undefined, b: number[] | Float64Array | undefined,
-  testFunction: (p: number, q: number) => boolean): boolean{
-  if (Array.isArray(a) && a.length === 0)
-    a = undefined;
-if (Array.isArray(b) && b.length === 0)
-    b = undefined;
-if (a === undefined && b === undefined)
-  return true;
-if (Array.isArray(a) && Array.isArray(b)) {
-  if (a.length !== b.length)
-    return false;
-  for (let i = 0; i < a.length; i++){
-    if (!testFunction (a[i],b[i]))
-      return false;
+  /** test for  match of XYZ arrays. */
+  public static almostEqualArrays<T>(a: T[] | undefined, b: T[] | undefined,
+    testFunction: (p: T, q: T) => boolean): boolean {
+    if (Array.isArray(a) && a.length === 0)
+      a = undefined;
+    if (Array.isArray(b) && b.length === 0)
+      b = undefined;
+    if (a === undefined && b === undefined)
+      return true;
+    if (Array.isArray(a) && Array.isArray(b)) {
+      if (a.length !== b.length)
+        return false;
+      for (let i = 0; i < a.length; i++) {
+        if (!testFunction(a[i], b[i]))
+          return false;
+      }
+      return true;
     }
-  return true;
+    return false;
   }
-return false;
-}
+
+  /** test for  match of typed arrays (e.g. Float64Array). */
+  public static almostEqualNumberArrays(a: number[] | Float64Array | undefined, b: number[] | Float64Array | undefined,
+    testFunction: (p: number, q: number) => boolean): boolean {
+    if (Array.isArray(a) && a.length === 0)
+      a = undefined;
+    if (Array.isArray(b) && b.length === 0)
+      b = undefined;
+    if (a === undefined && b === undefined)
+      return true;
+    if (Array.isArray(a) && Array.isArray(b)) {
+      if (a.length !== b.length)
+        return false;
+      for (let i = 0; i < a.length; i++) {
+        if (!testFunction(a[i], b[i]))
+          return false;
+      }
+      return true;
+    }
+    return false;
+  }
 
   /**
    * Return
@@ -896,7 +899,7 @@ return false;
    * @param resultIfBothUndefined return value when both are undefined.
    * @returns
    */
-  public static areEqualAllowUndefined<T>(a: T | undefined, b: T | undefined, resultIfBothUndefined: boolean = true): boolean{
+  public static areEqualAllowUndefined<T>(a: T | undefined, b: T | undefined, resultIfBothUndefined: boolean = true): boolean {
     if (a === undefined && b === undefined)
       return resultIfBothUndefined;
     if (a !== undefined && b !== undefined)
@@ -907,15 +910,15 @@ return false;
   /** clone an array whose members have a clone method.
    * * undefined return from clone is forced into the output array.
   */
-  public static cloneMembers<T extends  Cloneable<T>>(a: T[] | undefined): T[] | undefined{
+  public static cloneMembers<T extends Cloneable<T>>(a: T[] | undefined): T[] | undefined {
     if (a === undefined)
       return undefined;
     const b: T[] = [];
     for (const p of a) {
       b.push(p.clone()!);
-      }
-    return b;
     }
+    return b;
+  }
 }
 
 /**
@@ -924,5 +927,19 @@ return false;
  */
 export interface Cloneable<T> {
   /** required method to return a deep clone. */
-  clone (): T | undefined;
+  clone(): T | undefined;
+}
+
+/** Options used for methods like [[Vector2d.isPerpendicularTo]] and [[Vector3d.isParallelTo]].
+ * @public
+ */
+export interface PerpParallelOptions {
+  /** Squared radian tolerance for comparing the angle between two vectors.
+   * Default: [[Geometry.smallAngleRadiansSquared]].
+   */
+  radianSquaredTol?: number;
+  /** Squared distance tolerance for detecting a zero-length vector.
+   * Default: [[Geometry.smallMetricDistanceSquared]].
+   */
+  distanceSquaredTol?: number;
 }

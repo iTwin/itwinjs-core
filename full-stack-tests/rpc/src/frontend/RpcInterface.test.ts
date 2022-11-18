@@ -227,6 +227,7 @@ describe("RpcInterface", () => {
     // }
 
     const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
+    controlChannel.initialize();
     const controlInterface = (controlChannel as any)._channelInterface as RpcInterfaceDefinition;
     const originalName = controlInterface.interfaceName;
     const originalVersion = IModelReadRpcInterface.interfaceVersion;
