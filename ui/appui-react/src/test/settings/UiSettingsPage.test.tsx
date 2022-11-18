@@ -138,7 +138,7 @@ describe("UiSettingsPage", () => {
     expect(checkbox).not.to.be.null;
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(12);
 
     wrapper.unmount();
   });
@@ -216,7 +216,7 @@ describe("UiSettingsPage", () => {
     await TestUtils.flushAsyncOperations();
     const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />);
     expect(wrapper).not.to.be.undefined;
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(12);
     const uiVersionSpan = wrapper.getByText("settings.uiSettingsPage.newUiTitle");
     const checkbox = getInputBySpanTitle(uiVersionSpan);
 
@@ -226,7 +226,7 @@ describe("UiSettingsPage", () => {
 
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(12);
 
     wrapper.unmount();
   });

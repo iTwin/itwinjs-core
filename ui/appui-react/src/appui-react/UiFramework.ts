@@ -26,7 +26,7 @@ import { CursorMenuData, PresentationSelectionScope, SessionStateActionId } from
 import { StateManager } from "./redux/StateManager";
 import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
 import { SyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
-import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
+import { SYSTEM_PREFERRED_COLOR_THEME, TOOLBAR_OPACITY_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
@@ -482,6 +482,24 @@ export class UiFramework {
 
   public static getColorTheme(): string {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.theme : /* istanbul ignore next */ SYSTEM_PREFERRED_COLOR_THEME;
+  }
+
+  /** UiFramework.setToolbarOpacity() sets the non-hovered opacity to the value specified. Used by UI 2.0 and later.
+   * @param opacity a value between 0 and 1. The default value is 0.5. IT IS NOT ADVISED TO USE A VALUE BELOW 0.2
+   * @public
+   */
+  public static setToolbarOpacity(opacity: number) {
+    if (UiFramework.getToolbarOpacity() === opacity)
+      return;
+
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetToolbarOpacity, opacity, true);
+  }
+
+  /** UiFramework.getToolbarOpacity() returns a number between 0 and 1 that is the non-hovered opacity for toolbars.
+   * @public
+   */
+  public static getToolbarOpacity(): number {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.toolbarOpacity : /* istanbul ignore next */ TOOLBAR_OPACITY_DEFAULT;
   }
 
   public static setWidgetOpacity(opacity: number) {

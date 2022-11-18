@@ -30,7 +30,12 @@ export const SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED";
  */
 export const WIDGET_OPACITY_DEFAULT = 0.90;
 
-/** Properties of [[ThemeManagerComponent]].
+/** The default widget opacity.
+ * @public
+ */
+ export const TOOLBAR_OPACITY_DEFAULT = 0.50;
+
+ /** Properties of [[ThemeManagerComponent]].
  */
 interface ThemeManagerProps {
   /** theme ("light", "dark", etc.) */
@@ -38,6 +43,7 @@ interface ThemeManagerProps {
   /* Widget Opacity */
   widgetOpacity: number;
   children?: React.ReactNode;
+  toolbarOpacity: number;
 }
 
 function mapStateToProps(state: any) {
@@ -49,6 +55,7 @@ function mapStateToProps(state: any) {
   return {
     theme: frameworkState.configurableUiState.theme,
     widgetOpacity: frameworkState.configurableUiState.widgetOpacity,
+    toolbarOpacity: frameworkState.configurableUiState.toolbarOpacity,
   };
 }
 
@@ -72,9 +79,12 @@ class ThemeManagerComponent extends React.Component<ThemeManagerProps, ThemeMana
   public override componentDidUpdate(prevProps: ThemeManagerProps) {
     if (this.props.theme !== prevProps.theme)
       this._setTheme(this.props.theme);
-    const currentOpacity = document.documentElement.style.getPropertyValue("--buic-widget-opacity");
-    if (this.props.widgetOpacity.toString() !== currentOpacity)
+    const currentWidgetOpacity = document.documentElement.style.getPropertyValue("--buic-widget-opacity");
+    if (this.props.widgetOpacity.toString() !== currentWidgetOpacity)
       this._setWidgetOpacity(this.props.widgetOpacity);
+    const currentToolbarOpacity = document.documentElement.style.getPropertyValue("--buic-toolbar-opacity");
+    if (this.props.toolbarOpacity.toString() !== currentToolbarOpacity)
+      this._setToolbarOpacity(this.props.toolbarOpacity);
   }
 
   private _setTheme = (theme: string) => {
@@ -86,6 +96,11 @@ class ThemeManagerComponent extends React.Component<ThemeManagerProps, ThemeMana
   private _setWidgetOpacity = (opacity: number) => {
     setTimeout(() =>
       document.documentElement.style.setProperty("--buic-widget-opacity", opacity.toString()));
+  };
+
+  private _setToolbarOpacity = (opacity: number) => {
+    setTimeout(() =>
+      document.documentElement.style.setProperty("--buic-toolbar-opacity", opacity.toString()));
   };
 
   private _handleRefSet = (popupDiv: HTMLElement | null) => {
