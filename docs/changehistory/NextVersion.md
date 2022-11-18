@@ -25,7 +25,6 @@ Table of contents:
   - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-common](#itwincore-common)
   - [@itwin/core-geometry](#itwincore-geometry)
-  - [@itwin/core-i18n](#itwincore-i18n)
   - [@itwin/core-transformer](#itwincore-transformer)
 
 ## Display system
@@ -218,10 +217,6 @@ The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renam
 ### @itwin/core-geometry
 
 The method [PathFragment.childFractionTChainDistance]($core-geometry) has been deprecated in favor of the correctly spelled method [PathFragment.childFractionToChainDistance]($core-geometry).
-
-### @itwin/core-i18n
-
-[ITwinLocalization.getLocalizedStringWithNamespace]($i18n) is deprecated alongside the deprecation of [Localization.getLocalizedStringWithNamespace]($common). (See [@itwin/core-common deprecations](#itwincore-common).) Instead, use [ITwinLocalization.getLocalizedString]($i18n) and provide either a key with a namespace `<namespace>:<key>` or include `{ ns: <namespace> }` in the options.
 
 ### @itwin/core-transformer
 
