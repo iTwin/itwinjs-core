@@ -45,7 +45,7 @@ export interface ConfigurableUiContentProps extends CommonProps {
  * @public
  */
 export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
-  const version = useFrameworkVersion();
+  const version = useFrameworkVersion(); // eslint-disable-line deprecation/deprecation
   React.useEffect(() => {
     KeyboardShortcutManager.setFocusToHome();
   }, []);

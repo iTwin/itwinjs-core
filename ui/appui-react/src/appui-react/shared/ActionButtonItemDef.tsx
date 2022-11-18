@@ -82,7 +82,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     const key = this.getKey(index);
 
     return (
-      <ActionItemButton
+      <ActionItemButton // eslint-disable-line deprecation/deprecation
         key={key}
         actionItem={this}
         onSizeKnown={this.handleSizeKnown}

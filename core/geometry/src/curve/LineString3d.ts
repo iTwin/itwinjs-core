@@ -17,7 +17,7 @@ import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUn
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "../geometry3d/PointStreaming";
-import { Range3d } from "../geometry3d/Range";
+import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { XAndY } from "../geometry3d/XYZProps";
@@ -26,6 +26,7 @@ import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMo
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "./LineSegment3d";
 import { StrokeCountMap } from "./Query/StrokeCountMap";
@@ -1377,6 +1378,14 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
       }
     }
     return offsets;
+  }
+  /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+   * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param lowHigh optional receiver for output
+   * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
+   */
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
 }
 /** An AnnotatedLineString3d is a linestring with additional surface-related data attached to each point

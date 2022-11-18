@@ -25,7 +25,7 @@ enum LayoutMode {
  */
 export function ToolSettingsGridContainer({ componentGenerator }: { componentGenerator: ComponentGenerator }) {
   const { availableContentWidth } = React.useContext(ToolSettingsContentContext);
-  const version = useFrameworkVersion();
+  const version = useFrameworkVersion(); // eslint-disable-line deprecation/deprecation
   const layoutMode = toLayoutMode(availableContentWidth);
   const className = classnames(
     "uifw-tool-settings-grid-container",
