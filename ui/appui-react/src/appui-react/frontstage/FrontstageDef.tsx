@@ -27,8 +27,8 @@ import { ToolItemDef } from "../shared/ToolItemDef";
 import { StagePanelDef, StagePanelState, toPanelSide } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
-import { WidgetDef } from "../widgets/WidgetDef";
-import { ZoneLocation } from "../zones/Zone";
+import { WidgetDef, WidgetType } from "../widgets/WidgetDef";
+import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
 import { ZoneDef } from "../zones/ZoneDef";
 import { Frontstage, FrontstageProps } from "./Frontstage";
 import { FrontstageManager } from "./FrontstageManager";
@@ -39,6 +39,8 @@ import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { SavedWidgets } from "../widget-panels/Frontstage";
 import { assert, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
 import { ContentDialogManager } from "../dialog/ContentDialogManager";
+import { FrontstageConfig } from "./FrontstageConfig";
+import { WidgetConfig } from "../widgets/WidgetConfig";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -56,6 +58,7 @@ export interface FrontstageNineZoneStateChangedEventArgs extends FrontstageEvent
 export class FrontstageDef {
   private _id: string = "";
   private _initialProps?: FrontstageProps;
+  private _initialConfig?: FrontstageConfig;
   private _defaultTool?: ToolItemDef;
   private _defaultContentId: string = "";
   private _isInFooterMode: boolean = true;
@@ -65,6 +68,10 @@ export class FrontstageDef {
   private _applicationData?: any;
   private _usage?: string;
   private _version: number = 0;
+  private _toolSettings?: WidgetDef;
+  private _statusBar?: WidgetDef;
+  private _contentManipulation?: WidgetDef;
+  private _viewNavigation?: WidgetDef;
   private _topLeft?: ZoneDef;
   private _topCenter?: ZoneDef;
   private _topRight?: ZoneDef;
@@ -107,6 +114,15 @@ export class FrontstageDef {
   public get bottomLeft(): ZoneDef | undefined { return this._bottomLeft; }
   public get bottomCenter(): ZoneDef | undefined { return this._bottomCenter; }
   public get bottomRight(): ZoneDef | undefined { return this._bottomRight; }
+
+  /** @beta */
+  public get toolSettings() { return this._toolSettings; }
+  /** @beta */
+  public get statusBar() { return this._statusBar; }
+  /** @beta */
+  public get contentManipulation() { return this._contentManipulation; }
+  /** @beta */
+  public get viewNavigation() { return this._viewNavigation; }
 
   /** @beta */
   public get topPanel(): StagePanelDef | undefined { return this._topPanel; }
@@ -259,8 +275,12 @@ export class FrontstageDef {
     def._frontstageProvider = provider;
 
     // istanbul ignore else
-    if (provider.frontstage.props)
-      await def.initializeFromProps(provider.frontstage.props);
+    const frontstage = provider.frontstage;
+    if (React.isValidElement(frontstage)) {
+      await def.initializeFromProps(frontstage.props);
+    } else {
+      await def.initializeFromConfig(frontstage);
+    }
 
     return def;
   }
@@ -272,8 +292,11 @@ export class FrontstageDef {
   public async onActivated() {
     this.updateWidgetDefs();
 
-    if (this._contentGroupProvider && this._initialProps) {
-      this._contentGroup = await this._contentGroupProvider.provideContentGroup(this._initialProps);
+    if (this._contentGroupProvider) {
+      if (this._initialProps)
+        this._contentGroup = await this._contentGroupProvider.provideContentGroup(this._initialProps);
+      else if (this._initialConfig)
+        this._contentGroup = await this._contentGroupProvider.provideContentGroup(this._initialConfig);
     }
 
     // istanbul ignore next
@@ -672,6 +695,39 @@ export class FrontstageDef {
     this._rightPanel = Frontstage.createStagePanelDef(StagePanelLocation.Right, props);
     this._bottomPanel = Frontstage.createStagePanelDef(StagePanelLocation.Bottom, props);
     this._bottomMostPanel = Frontstage.createStagePanelDef(StagePanelLocation.BottomMost, props);
+  }
+
+  /** Initializes a FrontstageDef from FrontstageConfig.
+   * @internal
+   */
+  public async initializeFromConfig(config: FrontstageConfig): Promise<void> {
+    this._id = config.id;
+    this._initialConfig = config;
+    this._defaultTool = config.defaultTool;
+
+    if (config.defaultContentId !== undefined)
+      this._defaultContentId = config.defaultContentId;
+
+    if (config.contentGroup instanceof ContentGroupProvider) {
+      this._contentGroupProvider = config.contentGroup;
+    } else {
+      this._contentGroup = config.contentGroup;
+    }
+
+    if (config.applicationData !== undefined)
+      this._applicationData = config.applicationData;
+
+    this._usage = config.usage;
+    this._version = config.version || 0;
+
+    this._toolSettings = createWidgetDef(config.toolSettings, `uifw-toolSettings-widget`, WidgetType.ToolSettings);
+    this._statusBar = createWidgetDef(config.statusBar, `uifw-statusBar-widget`, WidgetType.StatusBar);
+    this._contentManipulation = createWidgetDef(config.contentManipulation, `uifw-contentManipulation-widget`, WidgetType.Tool);
+    this._viewNavigation = createWidgetDef(config.viewNavigation, `uifw-viewNavigation-widget`, WidgetType.Navigation);
+    this._topPanel = createStagePanelDef(config, StagePanelLocation.Top);
+    this._leftPanel = createStagePanelDef(config, StagePanelLocation.Left);
+    this._rightPanel = createStagePanelDef(config, StagePanelLocation.Right);
+    this._bottomPanel = createStagePanelDef(config, StagePanelLocation.Bottom);
   }
 
   /** @internal */
@@ -1085,4 +1141,38 @@ export class FrontstageDef {
       },
     };
   }
+}
+
+function createWidgetDef(config: WidgetConfig | undefined, stableId: string, type: WidgetType): WidgetDef | undefined {
+  if (!config)
+    return undefined;
+
+  const stableConfig = getStableWidgetProps(config, stableId);
+  const widgetDef = new WidgetDef(stableConfig);
+  widgetDef.initializeFromConfig(stableConfig, type);
+  return widgetDef;
+}
+
+function createStagePanelDef(config: FrontstageConfig, location: StagePanelLocation): StagePanelDef | undefined {
+  const panelDef = new StagePanelDef();
+
+  const panel = getStagePanel(config, location);
+  panelDef.initializeFromConfig(panel, location);
+
+  return panelDef;
+}
+
+function getStagePanel(config: FrontstageConfig, location: StagePanelLocation) {
+  switch (location) {
+    case StagePanelLocation.Top:
+      return config.topPanel;
+    case StagePanelLocation.Left:
+      return config.leftPanel;
+    case StagePanelLocation.Right:
+      return config.rightPanel;
+    case StagePanelLocation.Bottom:
+      return config.bottomPanel;
+  }
+
+  return undefined;
 }

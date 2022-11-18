@@ -89,7 +89,7 @@ export interface ZoneRuntimeProps {
 }
 
 /** @internal */
-export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string) {
+export function getStableWidgetProps<T extends { id?: string }>(widgetProps: T, stableId: string) {
   let props = widgetProps;
   if (props.id === undefined)
     props = {

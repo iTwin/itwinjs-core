@@ -21,6 +21,7 @@ import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
 import { IconHelper, IconSpec, Rectangle, SizeProps } from "@itwin/core-react";
+import { WidgetConfig } from "./WidgetConfig";
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],
@@ -66,6 +67,7 @@ export enum WidgetType {
 }
 
 /** Properties for a Toolbar Widget.
+ * @deprecated
  * @public
  */
 export interface ToolbarWidgetProps extends WidgetProps {
@@ -77,6 +79,7 @@ export interface ToolbarWidgetProps extends WidgetProps {
 }
 
 /** Properties for a Tool Widget.
+ * @deprecated
  * @public
  */
 export interface ToolWidgetProps extends ToolbarWidgetProps {
@@ -84,6 +87,7 @@ export interface ToolWidgetProps extends ToolbarWidgetProps {
 }
 
 /** Properties for a Navigation Widget.
+ * @deprecated
  * @public
  */
 export interface NavigationWidgetProps extends ToolbarWidgetProps {
@@ -91,6 +95,7 @@ export interface NavigationWidgetProps extends ToolbarWidgetProps {
 }
 
 /** Union of all Widget properties.
+ * @deprecated
  * @public
  */
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
@@ -151,7 +156,7 @@ export class WidgetDef {
 
   private _hideWithUiWhenFloating?: boolean;
   private _allowedPanelTargets?: ReadonlyArray<"left"|"right"|"bottom"|"top">;
-  private _initialProps?: WidgetProps;
+  private _initialProps?: WidgetProps; // eslint-disable-line deprecation/deprecation
 
   private _tabLocation?: TabLocation;
   private _defaultTabLocation: TabLocation = {
@@ -193,7 +198,7 @@ export class WidgetDef {
   public get iconSpec(): IconSpec { return this._iconSpec === IconHelper.reactIconKey ? IconHelper.getIconReactNode(this._iconSpec, this._internalData) : this._iconSpec; }
   public set iconSpec(spec: IconSpec) { this._iconSpec = this._internalData ? IconHelper.getIconData(spec, this._internalData) : spec; }
   public get badgeType(): BadgeType | undefined { return this._badgeType; }
-  public get initialProps(): WidgetProps | undefined { return this._initialProps; }
+  public get initialProps(): WidgetProps | undefined { return this._initialProps; } // eslint-disable-line deprecation/deprecation
 
   public get widgetType(): WidgetType { return this._widgetType; }
   public set widgetType(type: WidgetType) { this._widgetType = type; }
@@ -220,18 +225,26 @@ export class WidgetDef {
   public get popoutBounds() { return this._popoutBounds; }
   public set popoutBounds(bounds: Rectangle | undefined) { this._popoutBounds = bounds; }
 
-  constructor(widgetProps: WidgetProps) {
-    if (widgetProps.id !== undefined)
+  constructor();
+
+  /** @deprecated */
+  constructor(props: WidgetProps); // eslint-disable-line @typescript-eslint/unified-signatures, deprecation/deprecation
+
+  /** @internal */
+  constructor(widgetProps?: WidgetProps) { // eslint-disable-line deprecation/deprecation
+    if (widgetProps?.id !== undefined)
       this._id = widgetProps.id;
     else {
       WidgetDef._sId++;
       this._id = `Widget-${WidgetDef._sId}`;
     }
 
-    WidgetDef.initializeFromWidgetProps(widgetProps, this);
+    if (widgetProps)
+      WidgetDef.initializeFromWidgetProps(widgetProps, this); // eslint-disable-line deprecation/deprecation
   }
 
-  public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) {
+  /** @deprecated */
+  public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) { // eslint-disable-line deprecation/deprecation
     me._initialProps = widgetProps;
     if (widgetProps.label)
       me.setLabel(widgetProps.label);
@@ -308,8 +321,17 @@ export class WidgetDef {
     me.setUpSyncSupport(widgetProps);
   }
 
-  public static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps {
-    const widgetProps: WidgetProps = abstractWidgetProps;
+  /** @internal */
+  public initializeFromConfig(config: WidgetConfig, type?: WidgetType) {
+    WidgetDef.initializeFromWidgetProps(config, this); // eslint-disable-line deprecation/deprecation
+    this._initialProps = undefined;
+    if (type !== undefined)
+      this._widgetType = type;
+  }
+
+  /** @deprecated */
+  public static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps { // eslint-disable-line deprecation/deprecation
+    const widgetProps: WidgetProps = abstractWidgetProps; // eslint-disable-line deprecation/deprecation
     widgetProps.element = abstractWidgetProps.getWidgetContent();
     return widgetProps;
   }

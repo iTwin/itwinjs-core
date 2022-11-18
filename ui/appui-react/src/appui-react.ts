@@ -71,6 +71,7 @@ export * from "./appui-react/feedback/ElementTooltip";
 
 export * from "./appui-react/frontstage/Frontstage";
 export * from "./appui-react/frontstage/FrontstageComposer";
+export * from "./appui-react/frontstage/FrontstageConfig";
 export * from "./appui-react/frontstage/FrontstageDef";
 export * from "./appui-react/frontstage/FrontstageManager";
 export * from "./appui-react/frontstage/FrontstageProvider";
