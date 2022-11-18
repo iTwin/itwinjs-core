@@ -928,6 +928,7 @@ export class AccuSnap implements Decorator {
     get isSnapEnabledByUser(): boolean;
     get keypointDivisor(): number;
     readonly needFlash: Set<Viewport>;
+    neverFlash(ids?: Id64Arg): void;
     // @internal
     onEnabledStateChange(_isEnabled: boolean, _wasEnabled: boolean): void;
     // @internal (undocumented)
@@ -1001,6 +1002,8 @@ export namespace AccuSnap {
         enabled: boolean;
         // (undocumented)
         locate: boolean;
+        // (undocumented)
+        neverFlash?: Id64Set;
         // (undocumented)
         setFrom(other: ToolState): void;
         // (undocumented)
@@ -4554,6 +4557,8 @@ export class ImageryMapTile extends RealityTile {
     // (undocumented)
     get isDisplayable(): boolean;
     // (undocumented)
+    get isOutOfLodRange(): boolean;
+    // (undocumented)
     protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void;
     // (undocumented)
     markMapTileUsage(): void;
@@ -4866,6 +4871,8 @@ export abstract class IModelConnection extends IModel {
     static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
+    // @internal
+    readonly onDisplayedExtentsExpansion: BeEvent<() => void>;
     // @internal
     readonly onMapElevationLoaded: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
@@ -10866,6 +10873,8 @@ export abstract class Tile {
     protected _isLeaf: boolean;
     get isLoading(): boolean;
     get isNotFound(): boolean;
+    // @alpha
+    get isOutOfLodRange(): boolean;
     // @internal (undocumented)
     get isParentDisplayable(): boolean;
     get isQueued(): boolean;

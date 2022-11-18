@@ -104,7 +104,7 @@ export class ChildWindowManager {
             <Provider store={StateManager.store} >
               <UiStateStorageHandler>
                 <ThemeManager>
-                  <FrameworkVersion>
+                  <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
                     <div className="uifw-child-window-container-host">
                       <PopupRenderer />
                       <ModalDialogRenderer />

@@ -35,7 +35,7 @@ describe("ActivityMessagePopup", () => {
 
   it("Popup should render an Activity message", async () => {
     render(
-      <ActivityMessagePopup
+      <ActivityMessagePopup // eslint-disable-line deprecation/deprecation
         cancelActivityMessage={() => {}}
         dismissActivityMessage={() => {}}
       />
@@ -56,7 +56,7 @@ describe("ActivityMessagePopup", () => {
 
   it("Popup should render an Activity message without details", async () => {
     render(
-      <ActivityMessagePopup
+      <ActivityMessagePopup // eslint-disable-line deprecation/deprecation
         cancelActivityMessage={() => {}}
         dismissActivityMessage={() => {}}
       />
@@ -77,7 +77,7 @@ describe("ActivityMessagePopup", () => {
   it("Activity message should be canceled", async () => {
     const spy = sinon.spy();
     render(
-      <ActivityMessagePopup
+      <ActivityMessagePopup // eslint-disable-line deprecation/deprecation
         cancelActivityMessage={spy}
         dismissActivityMessage={() => {}}
       />
@@ -100,7 +100,7 @@ describe("ActivityMessagePopup", () => {
   it("Activity message should be dismissed & restored", async () => {
     const spy = sinon.spy();
     render(
-      <ActivityMessagePopup
+      <ActivityMessagePopup // eslint-disable-line deprecation/deprecation
         cancelActivityMessage={() => {}}
         dismissActivityMessage={spy}
       />
