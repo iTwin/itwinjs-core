@@ -172,11 +172,11 @@ export class ArcGisSymbologyRenderer {
     if (this._symbol === undefined) {
       Logger.logWarning(loggerCategory, "Symbology definition not supported, using default symbology");
       if (geometryType === "esriGeometryPoint" || geometryType === "esriGeometryMultipoint") {
-        this._symbol = ArcGisSymbologyRenderer.defaultPMS;
+        this._symbol = EsriPMS.fromJSON(ArcGisSymbologyRenderer.defaultPMS);
       } else if (geometryType === "esriGeometryLine" || geometryType === "esriGeometryPolyline") {
-        this._symbol = ArcGisSymbologyRenderer.defaultSLS;
+        this._symbol = EsriSLS.fromJSON(ArcGisSymbologyRenderer.defaultSLS);
       } else if (geometryType === "esriGeometryPolygon") {
-        this._symbol = ArcGisSymbologyRenderer.defaultSFS;
+        this._symbol = EsriSFS.fromJSON(ArcGisSymbologyRenderer.defaultSFS);
       } else {
         Logger.logError(loggerCategory, "Could not determine default symbology: geometry type not supported");
       }
