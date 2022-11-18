@@ -19,11 +19,11 @@ import {
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { ECClassInfo } from "../../presentation-components";
+import { ECClassInfo, getImodelMetadataProvider } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
 import {
   PresentationInstanceFilterBuilder, useFilterBuilderNavigationPropertyEditorContext, usePresentationInstanceFilteringProps,
 } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
-import { getImodelMetadataProvider, INSTANCE_FILTER_FIELD_SEPARATOR } from "../../presentation-components/instance-filter-builder/Utils";
+import { INSTANCE_FILTER_FIELD_SEPARATOR } from "../../presentation-components/instance-filter-builder/Utils";
 import { stubRaf } from "./Common";
 
 describe("PresentationInstanceFilter", () => {

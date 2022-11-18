@@ -12,8 +12,7 @@ import { BeEvent } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, RelationshipPath } from "@itwin/presentation-common";
 import { createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo } from "@itwin/presentation-common/lib/cjs/test";
-import { getImodelMetadataProvider } from "../../presentation-components";
-import { ECClassInfo } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
+import { ECClassInfo, getImodelMetadataProvider } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
 import { convertToInstanceFilterDefinition } from "../../presentation-components/instance-filter-builder/InstanceFilterConverter";
 import {
   PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup,

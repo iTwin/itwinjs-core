@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { compareStrings, Id64, Id64String, LRUDictionary } from "@itwin/core-bentley";
 import { QueryBinder, QueryOptions, QueryRowFormat } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
 
 // istanbul ignore file
 
@@ -117,6 +118,21 @@ const classQueryBase = `
   FROM meta.ECClassDef classDef
   JOIN meta.ECSChemaDef schemaDef ON classDef.Schema.Id = schemaDef.ECInstanceId
 `;
+
+const metadataProviders = new Map<string, ECMetadataProvider>();
+/** @internal */
+export function getImodelMetadataProvider(imodel: IModelConnection) {
+  let metadataProvider = metadataProviders.get(imodel.key);
+  if (!metadataProvider) {
+    metadataProvider = new ECMetadataProvider(imodel.query.bind(imodel));
+    metadataProviders.set(imodel.key, metadataProvider);
+    // istanbul ignore next
+    imodel.onClose.addOnce(() => {
+      metadataProviders.delete(imodel.key);
+    });
+  }
+  return metadataProvider;
+}
 
 interface CacheKey {
   id: Id64String;

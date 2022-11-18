@@ -13,10 +13,11 @@ import { assert } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
 import { navigationPropertyEditorContext, NavigationPropertyEditorContext } from "../properties/NavigationPropertyEditor";
+import { getImodelMetadataProvider } from "./ECMetadataProvider";
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
 import { PresentationInstanceFilterProperty } from "./PresentationInstanceFilterProperty";
 import { InstanceFilterPropertyInfo, PresentationInstanceFilter } from "./Types";
-import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getImodelMetadataProvider, getInstanceFilterFieldName } from "./Utils";
+import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName } from "./Utils";
 
 /** @alpha */
 export interface PresentationInstanceFilterBuilderProps {
