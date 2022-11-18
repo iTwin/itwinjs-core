@@ -64,7 +64,7 @@ export class UiIModelComponents {
     return "imodel-components-react";
   }
 
-  /** Calls localization.getLocalizedStringWithNamespace with the "UiIModelComponents" namespace. Do NOT include the namespace in the key.
+  /** Calls localization.getLocalizedString with the "UiIModelComponents" namespace. Do NOT include the namespace in the key.
    * @internal
    */
   public static translate(key: string | string[]): string {
@@ -72,8 +72,7 @@ export class UiIModelComponents {
       Logger.logError(UiIModelComponents.loggerCategory(this), `translate: IModelApp.localization has not been setup. Returning blank string.`);
       return "";
     }
-    // eslint-disable-next-line deprecation/deprecation
-    return IModelApp.localization.getLocalizedStringWithNamespace(UiIModelComponents.localizationNamespace, key);
+    return IModelApp.localization.getLocalizedString(key, { ns: UiIModelComponents.localizationNamespace });
   }
 
   /** @internal */
