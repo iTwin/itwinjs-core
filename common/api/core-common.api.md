@@ -521,6 +521,8 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
 
 // @public
 export interface BaseReaderOptions {
+    // @internal
+    delay?: number;
     priority?: number;
     quota?: QueryQuota;
     restartToken?: string;
@@ -639,15 +641,13 @@ export class BlobOptionsBuilder {
     constructor(_options?: BlobOptions);
     // (undocumented)
     getOptions(): BlobOptions;
-    // (undocumented)
+    // @internal
+    setDelay(val: number): this;
+    // @internal
     setPriority(val: number): this;
-    // (undocumented)
     setQuota(val: QueryQuota): this;
-    // (undocumented)
     setRange(val: BlobRange): this;
-    // (undocumented)
     setRestartToken(val: string): this;
-    // (undocumented)
     setUsePrimaryConnection(val: boolean): this;
 }
 
@@ -1801,6 +1801,20 @@ export interface DbBlobResponse extends DbResponse {
     data?: Uint8Array;
     // (undocumented)
     rawBlobSize: number;
+}
+
+// @internal (undocumented)
+export interface DbQueryConfig {
+    // (undocumented)
+    globalQuota?: QueryQuota;
+    // (undocumented)
+    ignoreDelay?: boolean;
+    // (undocumented)
+    ignorePriority?: boolean;
+    // (undocumented)
+    requestQueueSize?: number;
+    // (undocumented)
+    workerThreads?: number;
 }
 
 // @public (undocumented)
@@ -6809,33 +6823,20 @@ export namespace Quantization {
     export function unquantize(qpos: number, origin: number, scale: number): number;
 }
 
-// @public (undocumented)
+// @public
 export class QueryBinder {
-    // (undocumented)
     bindBlob(indexOrName: string | number, val: Uint8Array): this;
-    // (undocumented)
     bindBoolean(indexOrName: string | number, val: boolean): this;
-    // (undocumented)
     bindDouble(indexOrName: string | number, val: number): this;
-    // (undocumented)
     bindId(indexOrName: string | number, val: Id64String): this;
-    // (undocumented)
     bindIdSet(indexOrName: string | number, val: OrderedId64Iterable): this;
-    // (undocumented)
     bindInt(indexOrName: string | number, val: number): this;
-    // (undocumented)
     bindLong(indexOrName: string | number, val: number): this;
-    // (undocumented)
     bindNull(indexOrName: string | number): this;
-    // (undocumented)
     bindPoint2d(indexOrName: string | number, val: Point2d): this;
-    // (undocumented)
     bindPoint3d(indexOrName: string | number, val: Point3d): this;
-    // (undocumented)
     bindString(indexOrName: string | number, val: string): this;
-    // (undocumented)
     bindStruct(indexOrName: string | number, val: object): this;
-    // (undocumented)
     static from(args: any[] | object | undefined): QueryBinder;
     // (undocumented)
     serialize(): object;
@@ -6862,23 +6863,17 @@ export class QueryOptionsBuilder {
     constructor(_options?: QueryOptions);
     // (undocumented)
     getOptions(): QueryOptions;
-    // (undocumented)
     setAbbreviateBlobs(val: boolean): this;
-    // (undocumented)
     setConvertClassIdsToNames(val: boolean): this;
-    // (undocumented)
+    // @internal
+    setDelay(val: number): this;
     setLimit(val: QueryLimit): this;
-    // (undocumented)
+    // @internal
     setPriority(val: number): this;
-    // (undocumented)
     setQuota(val: QueryQuota): this;
-    // (undocumented)
     setRestartToken(val: string): this;
-    // (undocumented)
     setRowFormat(val: QueryRowFormat): this;
-    // (undocumented)
     setSuppressLogErrors(val: boolean): this;
-    // (undocumented)
     setUsePrimaryConnection(val: boolean): this;
 }
 
