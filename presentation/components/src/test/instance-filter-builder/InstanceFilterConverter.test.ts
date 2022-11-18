@@ -12,7 +12,7 @@ import { BeEvent } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, RelationshipPath } from "@itwin/presentation-common";
 import { createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo } from "@itwin/presentation-common/lib/cjs/test";
-import { ECClassInfo, getImodelMetadataProvider } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
+import { ECClassInfo, getIModelMetadataProvider } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
 import { convertToInstanceFilterDefinition } from "../../presentation-components/instance-filter-builder/InstanceFilterConverter";
 import {
   PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup,
@@ -383,7 +383,7 @@ describe("convertToInstanceFilterDefinition", () => {
       imodelMock.setup((x) => x.query).returns(() => () => asyncGenerator());
 
       // stub metadataProvider for test imodel
-      const metadataProvider = getImodelMetadataProvider(imodelMock.object);
+      const metadataProvider = getIModelMetadataProvider(imodelMock.object);
       sinon.stub(metadataProvider, "getECClassInfo").callsFake(async (id) => {
         switch (id) {
           case classAInfo.id:

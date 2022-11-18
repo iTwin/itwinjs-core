@@ -10,7 +10,7 @@ import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import { isUnaryPropertyFilterOperator, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, InstanceFilterDefinition, NestedContentField, PropertiesField, PropertyInfo, RelationshipPath } from "@itwin/presentation-common";
-import { getImodelMetadataProvider } from "./ECMetadataProvider";
+import { getIModelMetadataProvider } from "./ECMetadataProvider";
 import { PresentationInstanceFilter, PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup } from "./Types";
 
 /** @alpha */
@@ -177,7 +177,7 @@ async function findBaseExpressionClass(imodel: IModelConnection, propertyClasses
   if (propertyClasses.length === 1)
     return propertyClasses[0];
 
-  const metadataProvider = getImodelMetadataProvider(imodel);
+  const metadataProvider = getIModelMetadataProvider(imodel);
   const [firstClass, ...restClasses] = propertyClasses;
   let currentBaseClass = firstClass;
   for (const propClass of restClasses) {

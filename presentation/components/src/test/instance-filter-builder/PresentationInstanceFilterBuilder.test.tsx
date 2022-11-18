@@ -19,7 +19,7 @@ import {
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { ECClassInfo, getImodelMetadataProvider } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
+import { ECClassInfo, getIModelMetadataProvider } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
 import {
   PresentationInstanceFilterBuilder, useFilterBuilderNavigationPropertyEditorContext, usePresentationInstanceFilteringProps,
 } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
@@ -224,7 +224,7 @@ describe("usePresentationInstanceFilteringProps", () => {
   describe("properties filtering", () => {
     beforeEach(() => {
       // stub metadataProvider for test imodel
-      const metadataProvider = getImodelMetadataProvider(imodelMock.object);
+      const metadataProvider = getIModelMetadataProvider(imodelMock.object);
       sinon.stub(metadataProvider, "getECClassInfo").callsFake(async (id) => {
         switch (id) {
           case baseClass.id:

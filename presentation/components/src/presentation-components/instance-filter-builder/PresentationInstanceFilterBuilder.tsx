@@ -13,7 +13,7 @@ import { assert } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
 import { navigationPropertyEditorContext, NavigationPropertyEditorContext } from "../properties/NavigationPropertyEditor";
-import { getImodelMetadataProvider } from "./ECMetadataProvider";
+import { getIModelMetadataProvider } from "./ECMetadataProvider";
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
 import { PresentationInstanceFilterProperty } from "./PresentationInstanceFilterProperty";
 import { InstanceFilterPropertyInfo, PresentationInstanceFilter } from "./Types";
@@ -173,7 +173,7 @@ export function useFilterBuilderNavigationPropertyEditorContext(imodel: IModelCo
 }
 
 async function computePropertiesByClasses(properties: InstanceFilterPropertyInfo[], classes: ClassInfo[], imodel: IModelConnection): Promise<InstanceFilterPropertyInfo[] | undefined> {
-  const metadataProvider = getImodelMetadataProvider(imodel);
+  const metadataProvider = getIModelMetadataProvider(imodel);
   const ecClassInfos = await Promise.all(classes.map(async (info) => metadataProvider.getECClassInfo(info.id)));
   const filteredProperties: InstanceFilterPropertyInfo[] = [];
   for (const prop of properties) {
@@ -186,7 +186,7 @@ async function computePropertiesByClasses(properties: InstanceFilterPropertyInfo
 }
 
 async function computeClassesByProperty(classes: ClassInfo[], property: InstanceFilterPropertyInfo, imodel: IModelConnection): Promise<ClassInfo[]> {
-  const metadataProvider = getImodelMetadataProvider(imodel);
+  const metadataProvider = getIModelMetadataProvider(imodel);
   const propertyClass = await metadataProvider.getECClassInfo(property.sourceClassId);
   // istanbul ignore next
   if (!propertyClass)

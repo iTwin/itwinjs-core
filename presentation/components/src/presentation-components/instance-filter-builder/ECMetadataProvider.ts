@@ -121,7 +121,7 @@ const classQueryBase = `
 
 const metadataProviders = new Map<string, ECMetadataProvider>();
 /** @internal */
-export function getImodelMetadataProvider(imodel: IModelConnection) {
+export function getIModelMetadataProvider(imodel: IModelConnection) {
   let metadataProvider = metadataProviders.get(imodel.key);
   if (!metadataProvider) {
     metadataProvider = new ECMetadataProvider(imodel.query.bind(imodel));
