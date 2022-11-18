@@ -23,7 +23,9 @@ Table of contents:
   - [@itwin/appui-react](#itwinappui-react)
   - [@itwin/components-react](#itwincomponents-react)
   - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-common](#itwincore-common)
   - [@itwin/core-geometry](#itwincore-geometry)
+  - [@itwin/core-i18n](#itwincore-i18n)
   - [@itwin/core-transformer](#itwincore-transformer)
 
 ## Display system
@@ -209,9 +211,17 @@ The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated 
 The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
  The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
 
+### @itwin/core-common
+
+[Localization.getLocalizedStringWithNamespace]($core-common) is deprecated in favor of using [Localization.getLocalizedString]($core-common) and providing either a key with a namespace `<namespace>:<key>` or including `{ ns: <namespace> }` in the options.
+
 ### @itwin/core-geometry
 
 The method [PathFragment.childFractionTChainDistance]($core-geometry) has been deprecated in favor of the correctly spelled method [PathFragment.childFractionToChainDistance]($core-geometry).
+
+### @itwin/core-i18n
+
+[ITwinLocalization.getLocalizedStringWithNamespace]($core-i18n) is deprecated alongside the deprecation of [Localization.getLocalizedStringWithNamespace]($core-common). (See [@itwin/core-common deprecations](#itwincore-common).) Instead, use [ITwinLocalization.getLocalizedString]($core-common) and provide either a key with a namespace `<namespace>:<key>` or include `{ ns: <namespace> }` in the options.
 
 ### @itwin/core-transformer
 
