@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-mobile",
+      "comment": "Fixed to raise onEnterForeground event instead of onEnterBackground when app returns to foreground.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-mobile"
+}
