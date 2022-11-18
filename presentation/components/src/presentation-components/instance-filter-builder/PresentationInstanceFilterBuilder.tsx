@@ -72,14 +72,14 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, im
   }, [propertyInfos]);
 
   return {
-    onClassSelected,
-    onClassDeselected,
     onPropertySelected,
-    propertyRenderer,
     onClearClasses,
+    onClassDeselected,
+    onClassSelected,
+    propertyRenderer,
+    properties,
     classes,
     selectedClasses,
-    properties,
     isDisabled: isFilteringClasses || isFilteringProperties,
   };
 }
