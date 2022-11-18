@@ -58,6 +58,7 @@ function ViewSelectorPanel() {
             id: "views3dContainer",
             key: "views3dContainer",
             name:
+              // eslint-disable-next-line deprecation/deprecation
               IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "viewTypes.spatialViews"),
             enabled: false,
             type: ListItemType.Container,
@@ -71,6 +72,7 @@ function ViewSelectorPanel() {
             key: "views2dContainer",
             id: "views2dContainer",
             name:
+              // eslint-disable-next-line deprecation/deprecation
               IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "viewTypes.drawings"),
             enabled: false,
             type: ListItemType.Container,
@@ -84,6 +86,7 @@ function ViewSelectorPanel() {
             key: "sheetContainer",
             id: "sheetContainer",
             name:
+              // eslint-disable-next-line deprecation/deprecation
               IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "viewTypes.sheets"),
             enabled: false,
             type: ListItemType.Container,

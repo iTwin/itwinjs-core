@@ -80,6 +80,7 @@ export class UiCore {
       Logger.logError(UiCore.loggerCategory(this), `translate: UiCore must be initialize with a localization provider. Returning blank string.`);
       return "";
     }
+    // eslint-disable-next-line deprecation/deprecation
     return UiCore._localization.getLocalizedStringWithNamespace(UiCore.localizationNamespace, key);
   }
 

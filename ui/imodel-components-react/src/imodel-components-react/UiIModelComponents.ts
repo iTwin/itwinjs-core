@@ -72,6 +72,7 @@ export class UiIModelComponents {
       Logger.logError(UiIModelComponents.loggerCategory(this), `translate: IModelApp.localization has not been setup. Returning blank string.`);
       return "";
     }
+    // eslint-disable-next-line deprecation/deprecation
     return IModelApp.localization.getLocalizedStringWithNamespace(UiIModelComponents.localizationNamespace, key);
   }
 

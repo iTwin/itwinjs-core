@@ -78,6 +78,7 @@ export class UiComponents {
       Logger.logError(UiComponents.loggerCategory(this), `translate: UiComponents.initialize has not been called. Returning blank string.`);
       return "";
     }
+    // eslint-disable-next-line deprecation/deprecation
     return UiComponents.localization.getLocalizedStringWithNamespace(UiComponents.localizationNamespace, key);
   }
 

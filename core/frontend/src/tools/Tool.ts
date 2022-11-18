@@ -394,6 +394,7 @@ export class Tool {
 
   private static getLocalizedKey(name: string): string | undefined {
     const key = `tools.${this.toolId}.${name}`;
+    // eslint-disable-next-line deprecation/deprecation
     const val = IModelApp.localization.getLocalizedStringWithNamespace(this.namespace, key);
     return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
   }

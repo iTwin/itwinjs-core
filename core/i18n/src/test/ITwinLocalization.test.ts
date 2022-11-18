@@ -552,6 +552,7 @@ describe("ITwinLocalization", () => {
     });
   });
 
+  /* eslint-disable deprecation/deprecation */
   describe("#getLocalizedStringWithNamespace", () => {
 
     before(async () => {
@@ -766,6 +767,7 @@ describe("ITwinLocalization", () => {
       });
     });
   });
+  /* eslint-enable deprecation/deprecation */
 
   describe("#getEnglishString", () => {
 

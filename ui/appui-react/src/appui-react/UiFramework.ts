@@ -311,6 +311,7 @@ export class UiFramework {
    * @internal
    */
   public static translate(key: string | string[]): string {
+    // eslint-disable-next-line deprecation/deprecation
     return IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
   }
 
