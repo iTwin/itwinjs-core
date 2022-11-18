@@ -26,7 +26,7 @@ class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifi
     MobileApp.onMemoryWarning.raiseEvent();
   }
   public notifyOrientationChanged() { MobileApp.onOrientationChanged.raiseEvent(); }
-  public notifyEnterForeground() { MobileApp.onEnterBackground.raiseEvent(); }
+  public notifyEnterForeground() { MobileApp.onEnterForeground.raiseEvent(); }
   public notifyEnterBackground() { MobileApp.onEnterBackground.raiseEvent(); }
   public notifyWillTerminate() { MobileApp.onWillTerminate.raiseEvent(); }
   public notifyAuthAccessTokenChanged(accessToken: string | undefined, expirationDate: string | undefined) {
