@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers-formats",
-      "comment": "Improved ArcGIS feature for support servers older than vesion 11.",
+      "comment": "Improved ArcGIS feature for support servers older than version 11",
       "type": "none"
     }
   ],
