@@ -107,6 +107,7 @@ jobs:
         platform: Darwin
         name: $(mac_pool)
         node_version: 12.22.0
+    maxParallel: 3
 
   pool:
     demands:
