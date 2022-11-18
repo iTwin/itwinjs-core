@@ -5733,6 +5733,13 @@ export class NonUniformColor {
 }
 
 // @public
+export interface NormalMapParams {
+    flipY?: boolean;
+    normalMap?: RenderTexture;
+    scale?: number;
+}
+
+// @public
 export enum Npc {
     _000 = 0,
     _001 = 4,
@@ -9057,9 +9064,10 @@ export interface TextureLoadProps {
 
 // @public
 export class TextureMapping {
-    constructor(tx: RenderTexture, params: TextureMapping.Params);
+    constructor(tx: RenderTexture, params: TextureMapping.Params, normalMapParams?: NormalMapParams);
     // @internal (undocumented)
     computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
+    normalMapParams?: NormalMapParams;
     readonly params: TextureMapping.Params;
     readonly texture: RenderTexture;
 }
