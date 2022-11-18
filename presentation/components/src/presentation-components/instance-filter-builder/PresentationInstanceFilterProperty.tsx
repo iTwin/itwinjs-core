@@ -6,6 +6,7 @@
  * @module InstancesFilter
  */
 
+import * as React from "react";
 import { Badge, Tooltip } from "@itwin/itwinui-react";
 import { translate } from "../common/Utils";
 import { InstanceFilterPropertyInfo } from "./Types";
