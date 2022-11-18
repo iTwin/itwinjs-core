@@ -8,7 +8,7 @@
 
 import { SnapMode } from "@itwin/core-frontend";
 import { ActionsUnion, createAction } from "../redux/redux-ts";
-import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT } from "../theme/ThemeManager";
+import { SYSTEM_PREFERRED_COLOR_THEME, TOOLBAR_OPACITY_DEFAULT, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
 import { FrameworkVersionId } from "../UiFramework";
 
 // cSpell:ignore configurableui snapmode toolprompt

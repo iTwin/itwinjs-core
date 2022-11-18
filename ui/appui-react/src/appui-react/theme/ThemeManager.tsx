@@ -33,9 +33,9 @@ export const WIDGET_OPACITY_DEFAULT = 0.90;
 /** The default widget opacity.
  * @public
  */
- export const TOOLBAR_OPACITY_DEFAULT = 0.50;
+export const TOOLBAR_OPACITY_DEFAULT = 0.50;
 
- /** Properties of [[ThemeManagerComponent]].
+/** Properties of [[ThemeManagerComponent]].
  */
 interface ThemeManagerProps {
   /** theme ("light", "dark", etc.) */
