@@ -168,7 +168,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     if (!this._format) {
-      Logger.logError(loggerCategory, "Could not get service JSON");
+      Logger.logError(loggerCategory, "Could not get request format from service JSON");
       throw new ServerError(IModelStatus.ValidationFailed, "");
     }
 
@@ -351,9 +351,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     const response = this.fetch(new URL(tileUrl.url), { method: "GET" });
-    // if ((await response).status !== 200){
-    //   return undefined;
-    // }
     return new ArcGisFeatureResponse(this.format, response, tileUrl.envelope);
   }
 

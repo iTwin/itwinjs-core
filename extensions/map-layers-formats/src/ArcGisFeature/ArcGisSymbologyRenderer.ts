@@ -137,14 +137,14 @@ export class ArcGisSymbologyRenderer {
 
   private static readonly defaultSLS: EsriSLSProps = {
     type: "esriSLS",
-    color: [0, 0.0],
+    color: [0, 0, 0, 255],
     width: 1,
     style: "esriSLSSolid",
   };
 
   private static readonly defaultSFS: EsriSFSProps = {
     type: "esriSFS",
-    color: [0, 0.0],
+    color:  [0, 0, 0, 255],
     style: "esriSFSSolid",
   };
 

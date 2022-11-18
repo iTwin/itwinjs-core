@@ -198,7 +198,7 @@ export class ArcGisFeatureQuery {
 
         const geomStr = JSON.stringify(this.geometry.geom);
         url.searchParams.append( "geometry", geomStr);
-        url.searchParams.append( "units", "esriSRUnit_Meter");    // required on older server
+        url.searchParams.append( "units", "esriSRUnit_Meter");    // required on older server for get feature info
 
         url.searchParams.append( "inSR", `${this.geometry.geom.spatialReference.wkid}`);
       }

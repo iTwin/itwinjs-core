@@ -39,19 +39,19 @@ describe("ArcGisSymbologyRenderer", () => {
 
   it("should construct renderer from incomplete drawing info", async () => {
     let provider = new ArcGisSymbologyRenderer("esriGeometryPoint", NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer);
-    comparePointSymbol((provider as any)._symbol, (ArcGisSymbologyRenderer as any).defaultPMS);
+    comparePointSymbol((provider as any)._symbol, EsriPMS.fromJSON((ArcGisSymbologyRenderer as any).defaultPMS));
 
     provider = new ArcGisSymbologyRenderer("esriGeometryMultipoint", NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer);
-    comparePointSymbol((provider as any)._symbol, (ArcGisSymbologyRenderer as any).defaultPMS);
+    comparePointSymbol((provider as any)._symbol, EsriPMS.fromJSON((ArcGisSymbologyRenderer as any).defaultPMS));
 
     provider = new ArcGisSymbologyRenderer("esriGeometryPolyline", NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer);
-    compareLineSymbol((provider as any)._symbol, (ArcGisSymbologyRenderer as any).defaultSLS);
+    compareLineSymbol((provider as any)._symbol, EsriSLS.fromJSON((ArcGisSymbologyRenderer as any).defaultSLS));
 
     provider = new ArcGisSymbologyRenderer("esriGeometryLine", NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer);
-    compareLineSymbol((provider as any)._symbol, (ArcGisSymbologyRenderer as any).defaultSLS);
+    compareLineSymbol((provider as any)._symbol,  EsriSLS.fromJSON((ArcGisSymbologyRenderer as any).defaultSLS));
 
     provider = new ArcGisSymbologyRenderer("esriGeometryPolygon", NewYorkDataset.incompleteDrawingInfo.drawingInfo.renderer);
-    comparePolySymbol((provider as any)._symbol, (ArcGisSymbologyRenderer as any).defaultSFS);
+    comparePolySymbol((provider as any)._symbol, EsriSFS.fromJSON((ArcGisSymbologyRenderer as any).defaultSFS));
 
   });
 
