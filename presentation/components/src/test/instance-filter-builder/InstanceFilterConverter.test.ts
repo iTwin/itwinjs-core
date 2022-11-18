@@ -383,8 +383,9 @@ describe("convertToInstanceFilterDefinition", () => {
       imodelMock.setup((x) => x.onClose).returns(() => onClose);
       imodelMock.setup((x) => x.query).returns(() => () => asyncGenerator());
 
-      const originalProvider = getImodelMetadataProvider(imodelMock.object);
-      sinon.stub(originalProvider, "getECClassInfo").callsFake(async (id) => {
+      // stub metadataProvider for test imodel
+      const metadataProvider = getImodelMetadataProvider(imodelMock.object);
+      sinon.stub(metadataProvider, "getECClassInfo").callsFake(async (id) => {
         switch (id) {
           case classAInfo.id:
             return new ECClassInfo(classAInfo.id, classAInfo.name, classAInfo.label, new Set(), new Set([classBInfo.id, classCInfo.id]));
@@ -398,7 +399,7 @@ describe("convertToInstanceFilterDefinition", () => {
     });
 
     afterEach(() => {
-      sinon.restore();
+      sinon.resetBehavior();
       onClose.raiseEvent();
       imodelMock.reset();
     });

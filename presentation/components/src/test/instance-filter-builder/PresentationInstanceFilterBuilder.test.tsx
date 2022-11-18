@@ -223,6 +223,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
   describe("properties filtering", () => {
     beforeEach(() => {
+      // stub metadataProvider for test imodel
       const metadataProvider = getImodelMetadataProvider(imodelMock.object);
       sinon.stub(metadataProvider, "getECClassInfo").callsFake(async (id) => {
         switch (id) {
