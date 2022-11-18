@@ -150,6 +150,8 @@ export class ITwinLocalization implements Localization {
    * @returns The string corresponding to the first key that resolves.
    * @throws Error if no keys resolve to a string.
    * @internal
+   * @deprecated Use `getLocalizedString` instead; providing either a key with a namespace `<namespace>:<key>` or
+   * including `{ ns: <namespace> }` in the options.
    */
   public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TOptionsBase): string {
     let fullKey: string | string[] = "";
