@@ -130,9 +130,11 @@ export class ArcGisSymbologyRenderer {
     type: "esriPMS",
     url: "",
     contentType: "image/png",
-    imageData: "iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAYAAAByUDbMAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAT9JREFUOI2t1E8rRGEUx/HvMHViIm5ZXGt/3gFlwdKGhYjyAmxs7IassDHFyguwwkbZYJKNslVWJDZT1C3psRv9NMpmJk/Tvc3MHWf3/PuccxbPyfKPkW1wPmBmQ5L6giB4d849Al+tYjNAHpiQ1AHgnAMoA+dhGG5HUfTQCOsCDoGlhCTdwGIURfPVZPtJWCdwBkwntVF3d6+K78Rh+SYhP7bM7FbSjY8FwHqLEEBGUgEY97E5oCcFBjAGDAMvNWwyJVSLKR8L28QG4a/N7zYx+VipTazkY0VgNSVUAa597MrMniWNpMBOAOdjFUlrwAWQaQFywGZt4f+AIrAB7DYJlc1sQdJrHAZQAN6AA6A/STGzp1wut+ycu/f340bQEXAJrACzwCjQC3wAd8CppGNJP/UPk+bZZ7XKQlJ1cfEL1AZaAcKna+kAAAAASUVORK5CYII=",
-    width: 14,
-    height: 14,
+    imageData: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAmBJREFUOE+Nk01IVFEUx//n3jfvOZOaJkMtiiJ7o9RG3LgoqKhFSFJBTS1ahFBBi0ijfJXCIyQr+hBbSIsoW7iQoKKFCw2CkAI3tZAgy8Ei+xhoTCbnje/NPfHGnA816KzuPR+/c8/HJRQJE7o+VUhym0DcCOYGgBQEXjOLlyqo+nHanCkMoaL4rslKjZwOQLT4ek3Mmz3FACFNLB67ut6M1nWphbg8wI6VyJK5KEH0EQFVJRKbwzokAW++p/ErraAYSQK3u47bC3vLnA+ZB9i2gHF0oyQMCfCGNaUa+vauxs71wWz2V18cnBj8gQ8J1/eeBnHUa4sMFQDGdGno+4gwEAoQzjVUon3rqlx1KY9x7+0MWobjAPg3QJ2eZV4tAEyFNCN5FkSXyw2B3j1hRGvLcgBXMV5MptA4MOXr0gT0u5bZnAf0jBsyiSgJPAxqhON1K3FlRxUMvwFAtv7u0Wl0jvwEmJNEuOhakTt5wKEBifr6Oo14BIBRpgt07w6jcVMIngKGY7NofR5HwlF+zDcpsC193vyYB/innvHywCzdZfAR/+onX1segBTAxHzzfPE7/8yzzIPLjJE1LTixHZx5CtCK4gXLzovBiDPUsYxVM7gUkB3nWKlm6DYEnQGzXARxCOK+a1WfKtQXb6LNAvr7iCboCUA1Ocdsdv5KLPe7F6pH/w3wLbc+BwOuc5IZ1wEE/jonQbjptZn24tKKX7BgvR2r0NKZRwDvAqCI+Z30VJPTURv7P4A9psuQcYAUPwAoReBLrmX2Lmls7i8sZ7kWLwuoxA1FVJGxzMPLufi6P2r+2xFbOUjGAAAAAElFTkSuQmCC",
+    width: 16,
+    height: 16,
+    xoffset: -8,
+    yoffset: -16,
   };
 
   private static readonly defaultSLS: EsriSLSProps = {
@@ -227,14 +229,15 @@ export class ArcGisSymbologyRenderer {
       let xOffset = 0, yOffset = 0;
       if (pms.xoffset)
         xOffset = pms.xoffset;
+      else if (pms.width)
+        xOffset = pms.width * -0.5;  // if no offset center in the middle
+
       if (pms.yoffset)
         yOffset = pms.yoffset;
+      else if (pms.height)
+        yOffset = pms.height * -0.5; // if no offset center in the middle
 
       if (pms.width && pms.height) {
-        // // make sure the marker is centered on the point
-        xOffset += pms.width * -0.5;
-        yOffset += pms.height * -0.5;
-
         context.drawImage(pms.image, ptX + xOffset, ptY + yOffset, pms.width, pms.height);
       } else {
         context.drawImage(pms.image, ptX + xOffset, ptY + yOffset);
