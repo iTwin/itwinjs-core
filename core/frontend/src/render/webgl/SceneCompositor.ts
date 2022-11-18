@@ -1005,13 +1005,6 @@ abstract class Compositor extends SceneCompositor {
     this.renderLayers(commands, needComposite, RenderPass.OpaqueLayers);
     this.target.endPerfMetricRecord();
 
-    // Render point cloud geometry with possible EDL (WebGL2 only)
-    if (System.instance.capabilities.isWebGL2) {
-      this.target.beginPerfMetricRecord("Render PointClouds");
-      this.renderPointClouds(commands, compositeFlags);
-      this.target.endPerfMetricRecord();
-    }
-
     // Render opaque geometry
     this.target.frameStatsCollector.beginTime("onRenderOpaqueTime");
     IModelFrameLifecycle.onRenderOpaque.raiseEvent({
@@ -1022,6 +1015,13 @@ abstract class Compositor extends SceneCompositor {
       frameBufferStack: System.instance.frameBufferStack,
     });
     this.target.frameStatsCollector.endTime("onRenderOpaqueTime");
+
+    // Render point cloud geometry with possible EDL (WebGL2 only)
+    if (System.instance.capabilities.isWebGL2) {
+      this.target.beginPerfMetricRecord("Render PointClouds");
+      this.renderPointClouds(commands, compositeFlags);
+      this.target.endPerfMetricRecord();
+    }
 
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");
@@ -2155,7 +2155,6 @@ class MRTCompositor extends Compositor {
       }
     }
 
-    // ###TODO figure out pingPong - currently assumes don't need
     const needComposite = CompositeFlags.None !== compositeFlags;
     const fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
     const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
@@ -2171,28 +2170,44 @@ class MRTCompositor extends Compositor {
         if (undefined === this._textures.hilite)
           edlOn = false;
         else {
-          // create fbo on fly if not present
-          if (undefined === this._fbos.edlDrawCol)
-            this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth);
+          // create fbo on fly if not present, or has changed (from MS)
+          // ###TODO needs simplifying if possible
+          // ###TODO also consider not drawing point clouds to MS buffers, at least if EDL, it isn't worth the overhead.
+          //         would have to blit depth before draw, use depth for draw, then run shader to copy depth back to MSAA
+          //         at end, wherever color buf changed (test alpha, else discard)
+          let drawColBufs;
+          if (undefined !== this._fbos.edlDrawCol)
+            drawColBufs = this._fbos.edlDrawCol.getColorTargets(useMsBuffers, 0);
+          if (undefined === this._fbos.edlDrawCol || this._textures.hilite !== drawColBufs?.tex || this._textures.hiliteMsBuff !== drawColBufs.msBuf) {
+            this._fbos.edlDrawCol = dispose (this._fbos.edlDrawCol);
+            const filters = [GL.MultiSampling.Filter.Linear];
+            if (useMsBuffers)
+              this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth,
+                useMsBuffers && this._textures.hiliteMsBuff ? [this._textures.hiliteMsBuff] : undefined, filters, this._depthMS);
+            else
+              this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth);
+          }
           if (undefined === this._fbos.edlDrawCol)
             edlOn = false;
-          else {
-            // can draw EDL, first draw pointcloud to borrowed hilite texture and regular depth buffer
-            fbStack.execute(this._fbos.edlDrawCol, true, false, () => {
+          else { // can draw EDL
+            // first draw pointcloud to borrowed hilite texture(MS) and regular depth(MS) buffers
+            fbStack.execute(this._fbos.edlDrawCol, true, useMsBuffers, () => {
               system.context.clearColor(0, 0, 0, 0);
               system.context.clear(GL.BufferBit.Color);
               system.applyRenderState(this.getRenderState(RenderPass.PointClouds));
               this.target.techniques.execute(this.target, pc.cmds, RenderPass.PointClouds);
             });
-            // then process buffers to generate EDL (depth buffer is passed during init)
+            if (useMsBuffers)
+              this._fbos.edlDrawCol.blitMsBuffersToTextures(true, 0); // need to read the non-MS depth and hilite buffers
+
+            // next process buffers to generate EDL (depth buffer is passed during init)
             this.target.beginPerfMetricRecord("Calc EDL");  // ### todo keep? (probably)
             const sts = this.eyeDomeLighting.draw ({
-              edlStrength: pc.pcs!.edlStrength,
               edlMode: pc.pcs?.edlMode === "full" ? EDLMode.Full : EDLMode.On,
               edlFilter: !!pcs?.edlFilter,
               useMsBuffers,
               inputTex: this._textures.hilite,
-              outputTex: fbo.getColor(0),
+              curFbo: fbo,
             });
             this.target.endPerfMetricRecord();
             if (!sts) {
@@ -2209,8 +2224,6 @@ class MRTCompositor extends Compositor {
         });
       }
     }
-    if (useMsBuffers)
-      fbo.blitMsBuffersToTextures(needComposite);
   }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
@@ -2244,6 +2257,7 @@ class MRTCompositor extends Compositor {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
+      // assume we are done with MS at this point, so update the non-MS buffers
       if (useMsBuffers)
         fbo.blitMsBuffersToTextures(needComposite);
     }

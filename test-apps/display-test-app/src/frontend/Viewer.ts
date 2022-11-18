@@ -397,13 +397,13 @@ export class Viewer extends Window {
     });
 
     this.toolBar.addDropDown({
-      iconUnicode: "\ue923", // "EDL"  ###TODO where to get real icon?
+      iconUnicode: "\ue923", // "pencil"  ###TODO where to get real icon?
       createDropDown: async (container: HTMLElement) => {
         const panel = new RealityModelSettingsPanel(this.viewport, container);
         await panel.populate();
         return panel;
       },
-      tooltip: "EDL settings",
+      tooltip: "Point cloud settings",
     });
 
     this.updateTitle();

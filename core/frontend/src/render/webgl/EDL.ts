@@ -13,6 +13,7 @@ import { EDLCalcBasicGeometry, EDLCalcFullGeometry, EDLFilterGeometry, EDLMixGeo
 import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
+import { RenderBufferMultiSample } from "./RenderBuffer";
 import { RenderState } from "./RenderState";
 import { collectGeometryStatistics, collectTextureStatistics } from "./SceneCompositor";
 import { getDrawParams } from "./ScratchDrawParams";
@@ -125,8 +126,7 @@ export enum EDLMode { Off, On, Full }
 /** @internal */
 export interface EDLDrawParams {
   inputTex: TextureHandle;  // input to calc EDL from
-  outputTex: TextureHandle; // output to put EDL result in (using fbo from it)
-  edlStrength: number;      // > 0 enables EDL
+  curFbo: FrameBuffer;      // output fbo to get color texture from for EDL to put result in
   edlMode: EDLMode;
   edlFilter: boolean;       // applies to Full mode only
   useMsBuffers: boolean;
@@ -136,8 +136,9 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
   private _bundle?: Bundle;
   private _width: number;
   private _height: number;
-  private _depth?: DepthBuffer;
+  private _depth?: DepthBuffer;  // depth buffer to read from, has to be non-MS and be up to date in draw if MS is used
   private _edlFinalFbo?: FrameBuffer;
+  private _edlFinalBufs?: { tex: TextureHandle, msBuf: RenderBufferMultiSample | undefined };
   private readonly _target: Target;
 
   private getBundle(): Bundle | undefined {
@@ -196,16 +197,22 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
    * returns true if succeeds
    */
   public draw(edlParams: EDLDrawParams): boolean {
-    if (undefined === edlParams.inputTex || undefined === this._depth || undefined === edlParams.outputTex)
+    if (undefined === edlParams.inputTex || undefined === this._depth || undefined === edlParams.curFbo)
       return false;
 
     const bundle = this.getBundle();
     if (undefined === bundle)
       return false;
 
-    if (undefined === this._edlFinalFbo || edlParams.outputTex !== this._edlFinalFbo.getColor(0)) {
+    // NB: have to test and create MS buffer as well if useMsBuffers, not outputting to depth
+    const finalBufs = edlParams.curFbo.getColorTargets(edlParams.useMsBuffers, 0);
+    if (undefined === this._edlFinalFbo || this._edlFinalBufs?.tex !== finalBufs.tex ||
+       (edlParams.useMsBuffers && this._edlFinalBufs?.msBuf !== finalBufs.msBuf)) {
       this._edlFinalFbo = dispose (this._edlFinalFbo);
-      this._edlFinalFbo = FrameBuffer.create([edlParams.outputTex]);
+      this._edlFinalBufs = finalBufs;
+      const filters = [GL.MultiSampling.Filter.Linear];
+      this._edlFinalFbo = FrameBuffer.create([this._edlFinalBufs.tex], undefined,
+        edlParams.useMsBuffers && this._edlFinalBufs.msBuf ? [this._edlFinalBufs.msBuf] : undefined, filters, undefined);
       if (undefined === this._edlFinalFbo)
         return false;
     }
@@ -214,11 +221,10 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
     const useMsBuffers = edlParams.useMsBuffers;
     System.instance.applyRenderState(RenderState.defaults);
 
-    // ###TODO figure out msaa
     // ###TODO: should radius be (optionally?) voxel based instead of pixel here?
     if (edlParams.edlMode === EDLMode.On) {
-      // draw using enhanced version of simple (8 samples, still single draw)
-      fbStack.execute(this._edlFinalFbo, true, false, () => {
+      // draw using single pass version (still 8 samples, full size)
+      fbStack.execute(this._edlFinalFbo, true, useMsBuffers, () => {
         if (bundle.edlCalcBasicGeom === undefined) {
           const ct1 = edlParams.inputTex;
           const ctd = this._depth!.getHandle()!;
