@@ -213,7 +213,7 @@ The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renam
 
 ### @itwin/core-common
 
-[Localization.getLocalizedStringWithNamespace]($core-common) is deprecated in favor of using [Localization.getLocalizedString]($core-common) and providing either a key with a namespace `<namespace>:<key>` or including `{ ns: <namespace> }` in the options.
+[Localization.getLocalizedStringWithNamespace]($common) is deprecated in favor of using [Localization.getLocalizedString]($common) and providing either a key with a namespace `<namespace>:<key>` or including `{ ns: <namespace> }` in the options.
 
 ### @itwin/core-geometry
 
@@ -221,7 +221,7 @@ The method [PathFragment.childFractionTChainDistance]($core-geometry) has been d
 
 ### @itwin/core-i18n
 
-[ITwinLocalization.getLocalizedStringWithNamespace]($core-i18n) is deprecated alongside the deprecation of [Localization.getLocalizedStringWithNamespace]($core-common). (See [@itwin/core-common deprecations](#itwincore-common).) Instead, use [ITwinLocalization.getLocalizedString]($core-common) and provide either a key with a namespace `<namespace>:<key>` or include `{ ns: <namespace> }` in the options.
+[ITwinLocalization.getLocalizedStringWithNamespace]($i18n) is deprecated alongside the deprecation of [Localization.getLocalizedStringWithNamespace]($common). (See [@itwin/core-common deprecations](#itwincore-common).) Instead, use [ITwinLocalization.getLocalizedString]($i18n) and provide either a key with a namespace `<namespace>:<key>` or include `{ ns: <namespace> }` in the options.
 
 ### @itwin/core-transformer
 
