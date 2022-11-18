@@ -12,6 +12,7 @@ export interface Slider {
   label: HTMLLabelElement;
   slider: HTMLInputElement;
   div: HTMLDivElement;
+  readout: HTMLLabelElement;
 }
 
 /** @alpha */
@@ -64,12 +65,12 @@ export function createSlider(props: SliderProps): Slider {
   div.appendChild(slider);
 
   if (props.readout === "right") {
-    readout.innerText = props.value;
+    readout.innerText = slider.value;
     div.appendChild(readout);
   }
 
   if (undefined !== props.parent)
     props.parent.appendChild(div);
 
-  return { label, slider, div };
+  return { label, slider, div, readout };
 }
