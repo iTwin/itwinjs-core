@@ -49,6 +49,6 @@ export const createTestInstanceFilterPropertyInfo = (props?: Partial<InstanceFil
     displayLabel: "TestDisplayLabel",
     typename: "string",
   },
-  className: props?.className ? props?.className : "testSchema:testClass",
+  className: "testSchema:testClass",
   ...props,
 });
