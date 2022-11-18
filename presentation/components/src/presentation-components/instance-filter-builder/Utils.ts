@@ -8,11 +8,13 @@
 
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
 import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule, PropertyFilterRuleGroup } from "@itwin/components-react";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   CategoryDescription, ClassInfo, Descriptor, Field, FIELD_NAMES_SEPARATOR, NestedContentField, PropertiesField,
 } from "@itwin/presentation-common";
 import { createPropertyDescriptionFromFieldInfo } from "../common/ContentBuilder";
 import { findField } from "../common/Utils";
+import { ECMetadataProvider } from "./ECMetadataProvider";
 import { InstanceFilterPropertyInfo, PresentationInstanceFilter, PresentationInstanceFilterCondition } from "./Types";
 
 /** @alpha */
@@ -146,4 +148,19 @@ function getCategorizedFieldName(fieldName: string, categoryName?: string) {
 
 function getPrefixedFieldName(str: string, prefix?: string) {
   return prefix !== undefined ? `${prefix}${FIELD_NAMES_SEPARATOR}${str}` : str;
+}
+
+const metadataProviders = new Map<string, ECMetadataProvider>();
+/** @internal */
+export function getImodelMetadataProvider(imodel: IModelConnection) {
+  let metadataProvider = metadataProviders.get(imodel.key);
+  if (!metadataProvider) {
+    metadataProvider = new ECMetadataProvider(imodel.query.bind(imodel));
+    metadataProviders.set(imodel.key, metadataProvider);
+    // istanbul ignore next
+    imodel.onClose.addOnce(() => {
+      metadataProviders.delete(imodel.key);
+    });
+  }
+  return metadataProvider;
 }

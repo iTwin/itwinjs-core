@@ -9,17 +9,14 @@
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { PropertyFilter } from "@itwin/components-react";
-import { assert, Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Badge, Tooltip } from "@itwin/itwinui-react";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
-import { translate } from "../common/Utils";
 import { navigationPropertyEditorContext, NavigationPropertyEditorContext } from "../properties/NavigationPropertyEditor";
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
+import { PresentationInstanceFilterProperty } from "./PresentationInstanceFilterProperty";
 import { InstanceFilterPropertyInfo, PresentationInstanceFilter } from "./Types";
-import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName } from "./Utils";
-import "./PresentationInstanceFilterBuilder.scss";
-import { QueryRowFormat } from "@itwin/core-common";
+import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getImodelMetadataProvider, getInstanceFilterFieldName } from "./Utils";
 
 /** @alpha */
 export interface PresentationInstanceFilterBuilderProps {
@@ -33,8 +30,7 @@ export interface PresentationInstanceFilterBuilderProps {
 /** @alpha */
 export function PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps) {
   const { imodel, descriptor, onInstanceFilterChanged, ruleGroupDepthLimit } = props;
-  const classHierarchyProvider = useECClassHierarchyProvider(imodel);
-  const filteringProps = usePresentationInstanceFilteringProps(descriptor, classHierarchyProvider);
+  const filteringProps = usePresentationInstanceFilteringProps(descriptor, imodel);
 
   const onFilterChanged = React.useCallback((filter?: PropertyFilter) => {
     const presentationFilter = filter ? createPresentationInstanceFilter(descriptor, filter) : undefined;
@@ -53,25 +49,82 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
 }
 
 /** @alpha */
-export function usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider) {
-  const [selectedClasses, setSelectedClasses] = React.useState<ClassInfo[]>([]);
+export function usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection) {
   const propertyInfos = React.useMemo(() => createInstanceFilterPropertyInfos(descriptor), [descriptor]);
-  const properties = React.useMemo(() => {
-    const matchingClassesSet = getClassesSet(selectedClasses.map((selectedClass) => selectedClass.id), classHierarchyProvider);
-    // filter properties that are available on all selected classes
-    return propertyInfos
-      .filter((info) => !matchingClassesSet || matchingClassesSet.has(info.sourceClassId, { isBase: true, isDerived: true }, "all"))
-      .map((info) => info.propertyDescription);
-  }, [propertyInfos, selectedClasses, classHierarchyProvider]);
-
   const classes = React.useMemo(() => descriptor.selectClasses.map((selectClass) => selectClass.selectClassInfo), [descriptor]);
 
-  React.useEffect(() => {
-    setSelectedClasses([]);
-  }, [descriptor]);
+  const {
+    selectedClasses, onClassSelected, onClassDeselected, onClearClasses, isFilteringClasses, filterClassesByProperty,
+  } = useSelectedClasses(classes, imodel);
+  const { properties, isFilteringProperties } = useProperties(propertyInfos, selectedClasses, imodel);
 
-  const onClassSelected = React.useCallback((classInfo: ClassInfo) => {
-    setSelectedClasses((prevClasses) => ([...prevClasses, classInfo]));
+  const onPropertySelected = React.useCallback((property: PropertyDescription) => {
+    const propertyInfo = propertyInfos.find((info) => info.propertyDescription.name === property.name);
+    if (propertyInfo)
+      filterClassesByProperty(propertyInfo);
+  }, [propertyInfos, filterClassesByProperty]);
+
+  const propertyRenderer = React.useCallback((name: string) => {
+    const instanceFilterPropertyInfo = propertyInfos.find((info) => info.propertyDescription.name === name);
+    assert(instanceFilterPropertyInfo !== undefined);
+    return <PresentationInstanceFilterProperty instanceFilterPropertyInfo={instanceFilterPropertyInfo} />;
+  }, [propertyInfos]);
+
+  return {
+    onClassSelected,
+    onClassDeselected,
+    onPropertySelected,
+    propertyRenderer,
+    onClearClasses,
+    classes,
+    selectedClasses,
+    properties,
+    isDisabled: isFilteringClasses || isFilteringProperties,
+  };
+}
+
+function useProperties(propertyInfos: InstanceFilterPropertyInfo[], selectedClasses: ClassInfo[], imodel: IModelConnection) {
+  const [filteredProperties, setFilteredProperties] = React.useState<InstanceFilterPropertyInfo[] | undefined>();
+  const [isFilteringProperties, setIsFilteringProperties] = React.useState(false);
+  const properties = React.useMemo(
+    () => (filteredProperties ?? propertyInfos).map((info) => info.propertyDescription),
+    [propertyInfos, filteredProperties]
+  );
+
+  // filter properties by selected classes
+  React.useEffect(() => {
+    if (selectedClasses.length === 0) {
+      setFilteredProperties(undefined);
+      return;
+    }
+
+    setIsFilteringProperties(true);
+    let disposed = false;
+    void (async () => {
+      const newFilteredProperties = await computePropertiesByClasses(propertyInfos, selectedClasses, imodel);
+      // istanbul ignore else
+      if (!disposed) {
+        setFilteredProperties(newFilteredProperties);
+        setIsFilteringProperties(false);
+      }
+    })();
+    return () => { disposed = true; };
+  }, [propertyInfos, selectedClasses, imodel]);
+
+  return {
+    properties,
+    isFilteringProperties,
+  };
+}
+
+function useSelectedClasses(classes: ClassInfo[], imodel: IModelConnection) {
+  const [selectedClasses, setSelectedClasses] = React.useState<ClassInfo[]>([]);
+  const [isFilteringClasses, setIsFilteringClasses] = React.useState(false);
+  const disposedRef = React.useRef(false);
+  React.useEffect(() => () => { disposedRef.current = true; }, []);
+
+  const onClassSelected = React.useCallback((info: ClassInfo) => {
+    setSelectedClasses((prevClasses) => [...prevClasses, info]);
   }, []);
 
   const onClassDeselected = React.useCallback((classInfo: ClassInfo) => {
@@ -82,32 +135,25 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
     setSelectedClasses([]);
   }, []);
 
-  const onPropertySelected = React.useCallback((property: PropertyDescription) => {
-    const propertyInfo = propertyInfos.find((info) => info.propertyDescription.name === property.name);
-    if (!propertyInfo)
-      return;
-
-    setSelectedClasses((prevClasses) => {
-      const selectedClassesByProperty = computeSelectedClassesByProperty(propertyInfo, classes, prevClasses, classHierarchyProvider);
-      return selectedClassesByProperty ?? prevClasses;
-    });
-  }, [classes, propertyInfos, classHierarchyProvider]);
-
-  const propertyRenderer = React.useCallback((name: string) => {
-    const instanceFilterPropertyInfo = propertyInfos.find((info) => info.propertyDescription.name === name);
-    assert(instanceFilterPropertyInfo !== undefined);
-    return <PresentationInstanceFilterProperty instanceFilterPropertyInfo={instanceFilterPropertyInfo} />;
-  }, [propertyInfos]);
+  const filterClassesByProperty = React.useCallback((property: InstanceFilterPropertyInfo) => {
+    setIsFilteringClasses(true);
+    void (async () => {
+      const newSelectedClasses = await computeClassesByProperty(selectedClasses.length === 0 ? classes : selectedClasses, property, imodel);
+      // istanbul ignore else
+      if (!disposedRef.current) {
+        setSelectedClasses(newSelectedClasses);
+        setIsFilteringClasses(false);
+      }
+    })();
+  }, [selectedClasses, classes, imodel]);
 
   return {
-    onPropertySelected,
-    onClearClasses,
-    onClassDeselected,
-    onClassSelected,
-    propertyRenderer,
-    properties,
-    classes,
     selectedClasses,
+    isFilteringClasses,
+    onClassSelected,
+    onClassDeselected,
+    onClearClasses,
+    filterClassesByProperty,
   };
 }
 
@@ -125,234 +171,32 @@ export function useFilterBuilderNavigationPropertyEditorContext(imodel: IModelCo
   }), [imodel, descriptor]);
 }
 
-interface CategoryTooltipContentProps {
-  instanceFilterPropertyInfo: InstanceFilterPropertyInfo;
+async function computePropertiesByClasses(properties: InstanceFilterPropertyInfo[], classes: ClassInfo[], imodel: IModelConnection): Promise<InstanceFilterPropertyInfo[] | undefined> {
+  const metadataProvider = getImodelMetadataProvider(imodel);
+  const ecClassInfos = await Promise.all(classes.map(async (info) => metadataProvider.getECClassInfo(info.id)));
+  const filteredProperties: InstanceFilterPropertyInfo[] = [];
+  for (const prop of properties) {
+    // property should be shown if all selected classes are derived from property source class
+    if (ecClassInfos.every((info) => info && info.isDerivedFrom(prop.sourceClassId)))
+      filteredProperties.push(prop);
+  }
+
+  return filteredProperties.length === properties.length ? undefined : filteredProperties;
 }
 
-function CategoryTooltipContent(props: CategoryTooltipContentProps) {
-  const { instanceFilterPropertyInfo } = props;
-  const [schemaName, className] = instanceFilterPropertyInfo.className.split(":");
-  return <table>
-    <tbody>
-      <tr>
-        <th className="tooltip-content-header">{translate("instance-filter-builder.category")}</th>
-        <td className="tooltip-content-data">{instanceFilterPropertyInfo.categoryLabel}</td>
-      </tr>
-    </tbody>
-    <tbody>
-      <tr>
-        <th className="tooltip-content-header">{translate("instance-filter-builder.class")}</th>
-        <td className="tooltip-content-data">{className}</td>
-      </tr>
-    </tbody>
-    <tbody>
-      <tr>
-        <th className="tooltip-content-header">{translate("instance-filter-builder.schema")}</th>
-        <td className="tooltip-content-data">{schemaName}</td>
-      </tr>
-    </tbody>
-  </table>;
-}
-
-interface PresentationInstanceFilterPropertyProps {
-  instanceFilterPropertyInfo: InstanceFilterPropertyInfo;
-}
-
-/** @alpha */
-export function PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps) {
-  const { instanceFilterPropertyInfo } = props;
-  return <div className="property-item-line">
-    <Tooltip content={instanceFilterPropertyInfo.propertyDescription.displayLabel} placement="bottom">
-      <div className="property-display-label" title={instanceFilterPropertyInfo.propertyDescription.displayLabel}>
-        {instanceFilterPropertyInfo.propertyDescription.displayLabel}
-      </div>
-    </Tooltip>
-    <div className="property-badge-container">
-      {instanceFilterPropertyInfo.categoryLabel && <Tooltip content={<CategoryTooltipContent instanceFilterPropertyInfo={instanceFilterPropertyInfo} />} placement="bottom" style={{ textAlign: "left" }}>
-        <div className="badge">
-          <Badge className="property-category-badge" backgroundColor={"montecarlo"}>
-            {instanceFilterPropertyInfo.categoryLabel}
-          </Badge>
-        </div>
-      </Tooltip>}
-    </div>
-  </div>;
-}
-
-function getClassesSet(classIds: Id64String[], classHierarchyProvider?: ECClassHierarchyProvider): ClassHierarchiesSet | undefined {
-  if (!classHierarchyProvider || classIds.length === 0)
-    return undefined;
-
-  return classHierarchyProvider.getClassHierarchiesSet(classIds);
-}
-
-function computeSelectedClassesByProperty(propertyInfo: InstanceFilterPropertyInfo, availableClasses: ClassInfo[], currentClasses: ClassInfo[], classHierarchyProvider?: ECClassHierarchyProvider) {
-  // get set of classes that have property
-  const propertyClass = classHierarchyProvider?.getClassHierarchy(propertyInfo.sourceClassId);
-  /* istanbul ignore if */
+async function computeClassesByProperty(classes: ClassInfo[], property: InstanceFilterPropertyInfo, imodel: IModelConnection): Promise<ClassInfo[]> {
+  const metadataProvider = getImodelMetadataProvider(imodel);
+  const propertyClass = await metadataProvider.getECClassInfo(property.sourceClassId);
+  // istanbul ignore next
   if (!propertyClass)
-    return undefined;
+    return classes;
 
-  // get set of currently selected classes
-  const selectedClassesSet = getClassesSet(currentClasses.map((currentClass) => currentClass.id), classHierarchyProvider);
-
-  // find class infos that has property (class info is or is derived from property class) and
-  // are derived from selected classes
-  const propertyClassInfos = availableClasses.filter((classInfo) => {
-    return propertyClass.is(classInfo.id, { isDerived: true }) &&
-      (!selectedClassesSet || selectedClassesSet.has(classInfo.id, { isDerived: true }));
-  });
-  /* istanbul ignore if */
-  if (propertyClassInfos.length === 0)
-    return undefined;
-
-  // filter out currently selected classes that do not have this property (currently selected class should be derived class of property classes)
-  const selectedClasses = currentClasses.filter((currentClass) => propertyClass.is(currentClass.id, { isDerived: true }));
-
-  // add classes that have this property to the list
-  let addedNewClass = false;
-  for (const propertyClassInfo of propertyClassInfos) {
-    if (selectedClasses.findIndex((selectedClass) => selectedClass.id === propertyClassInfo.id) === -1) {
-      selectedClasses.push(propertyClassInfo);
-      addedNewClass = true;
-    }
-  }
-  if (selectedClasses.length === currentClasses.length && !addedNewClass)
-    return undefined;
-
-  return selectedClasses;
-}
-
-function useECClassHierarchyProvider(imodel: IModelConnection) {
-  const [classHierarchyProvider, setClassHierarchyProvider] = React.useState<ECClassHierarchyProvider>();
-
-  React.useEffect(() => {
-    let disposed = false;
-    void (async () => {
-      const hierarchyProvider = await ECClassHierarchyProvider.create(imodel);
-      /* istanbul ignore else */
-      if (!disposed)
-        setClassHierarchyProvider(hierarchyProvider);
-    })();
-    return () => { disposed = true; };
-  }, [imodel]);
-
-  return classHierarchyProvider;
-}
-
-/** @internal */
-export class ClassHierarchy {
-  constructor(
-    private _id: Id64String,
-    private _baseClassIds: Set<Id64String>,
-    private _derivedClassIds: Set<Id64String>
-  ) {
+  const classesWithProperty: ClassInfo[] = [];
+  for (const currentClass of classes) {
+    // add classes that are derived from property source class
+    if (propertyClass.isBaseOf(currentClass.id))
+      classesWithProperty.push(currentClass);
   }
 
-  public is(classId: Id64String, { isDerived, isBase }: { isDerived?: boolean, isBase?: boolean }) {
-    if (classId === this._id)
-      return true;
-
-    if (isDerived && this._derivedClassIds.has(classId))
-      return true;
-
-    if (isBase && this._baseClassIds.has(classId))
-      return true;
-
-    return false;
-  }
-}
-
-/** @internal */
-export class ClassHierarchiesSet {
-  constructor(private _classSets: ClassHierarchy[]) { }
-
-  public has(classId: Id64String, options: { isDerived?: boolean, isBase?: boolean }, match: "all" | "any" = "any") {
-    if (match === "all")
-      return this._classSets.every((idsSet) => idsSet.is(classId, options));
-    return this._classSets.some((idsSet) => idsSet.is(classId, options));
-  }
-}
-
-/** @internal */
-export class ECClassHierarchyProvider {
-  private _classHierarchyCache = new Map<Id64String, ClassHierarchy>();
-
-  public constructor(
-    private _classes: Set<Id64String>,
-    private _baseClasses: Map<Id64String, Id64String[]>,
-    private _derivedClasses: Map<Id64String, Id64String[]>) {
-  }
-
-  /* istanbul ignore next */
-  public static async create(imodel: IModelConnection) {
-    const classes = new Set<Id64String>();
-    const classesQuery =
-      `SELECT
-        c.ECInstanceId AS ClassId
-      FROM
-        meta.ECClassDef c
-      `;
-    for await (const row of imodel.query(classesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      classes.add(row.classId);
-    }
-
-    const baseClassHierarchy = new Map();
-    const derivedClassHierarchy = new Map();
-    const hierarchyQuery =
-      `SELECT
-        h.TargetECInstanceId AS BaseClassId,
-        h.SourceECInstanceId AS ClassId
-      FROM
-        meta.ClassHasBaseClasses h
-      `;
-    for await (const row of imodel.query(hierarchyQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      const { baseClassId, classId } = row;
-
-      const baseClasses = baseClassHierarchy.get(classId);
-      if (baseClasses)
-        baseClasses.push(baseClassId);
-      else
-        baseClassHierarchy.set(classId, [baseClassId]);
-
-      const derivedClasses = derivedClassHierarchy.get(baseClassId);
-      if (derivedClasses)
-        derivedClasses.push(classId);
-      else
-        derivedClassHierarchy.set(baseClassId, [classId]);
-    }
-
-    return new ECClassHierarchyProvider(classes, baseClassHierarchy, derivedClassHierarchy);
-  }
-
-  private getAllBaseClassIds(classId: Id64String) {
-    const baseClassIds = this._baseClasses.get(classId) ?? [];
-    return baseClassIds.reduce<Id64String[]>((arr, id) => {
-      arr.push(id, ...this.getAllBaseClassIds(id));
-      return arr;
-    }, []);
-  }
-
-  private getAllDerivedClassIds(baseClassId: Id64String) {
-    const derivedClassIds = this._derivedClasses.get(baseClassId) ?? [];
-    return derivedClassIds.reduce<Id64String[]>((arr, id) => {
-      arr.push(id, ...this.getAllDerivedClassIds(id));
-      return arr;
-    }, []);
-  }
-
-  public getClassHierarchy(id: Id64String) {
-    let set = this._classHierarchyCache.get(id);
-    if (!set) {
-      set = this._classes.has(id)
-        ? new ClassHierarchy(id, new Set<Id64String>(this.getAllBaseClassIds(id)), new Set<Id64String>(this.getAllDerivedClassIds(id)))
-        : /* istanbul ignore next */ new ClassHierarchy(id, new Set(), new Set());
-      this._classHierarchyCache.set(id, set);
-    }
-    return set;
-  }
-
-  public getClassHierarchiesSet(ids: Id64String[]) {
-    return new ClassHierarchiesSet(ids.map((id) => this.getClassHierarchy(id)));
-  }
+  return classesWithProperty;
 }

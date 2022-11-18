@@ -10,8 +10,8 @@ import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import { isUnaryPropertyFilterOperator, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, InstanceFilterDefinition, NestedContentField, PropertiesField, PropertyInfo, RelationshipPath } from "@itwin/presentation-common";
-import { ECClassHierarchyProvider } from "./PresentationInstanceFilterBuilder";
 import { PresentationInstanceFilter, PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup } from "./Types";
+import { getImodelMetadataProvider } from "./Utils";
 
 /** @alpha */
 export async function convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise<InstanceFilterDefinition> {
@@ -173,30 +173,16 @@ function isFilterConditionGroup(obj: PresentationInstanceFilter): obj is Present
   return (obj as PresentationInstanceFilterConditionGroup).conditions !== undefined;
 }
 
-const hierarchyProviders = new Map<string, ECClassHierarchyProvider>();
-async function getImodelClassHierarchyProvider(imodel: IModelConnection) {
-  let hierarchyProvider = hierarchyProviders.get(imodel.key);
-  if (!hierarchyProvider) {
-    hierarchyProvider = await ECClassHierarchyProvider.create(imodel);
-    hierarchyProviders.set(imodel.key, hierarchyProvider);
-    // istanbul ignore next
-    imodel.onClose.addOnce(() => {
-      hierarchyProviders.delete(imodel.key);
-    });
-  }
-  return hierarchyProvider;
-}
-
 async function findBaseExpressionClass(imodel: IModelConnection, propertyClasses: ClassInfo[]) {
   if (propertyClasses.length === 1)
     return propertyClasses[0];
 
-  const hierarchyProvider = await getImodelClassHierarchyProvider(imodel);
+  const metadataProvider = getImodelMetadataProvider(imodel);
   const [firstClass, ...restClasses] = propertyClasses;
   let currentBaseClass = firstClass;
   for (const propClass of restClasses) {
-    const propHierarchy = hierarchyProvider.getClassHierarchy(propClass.id);
-    if (propHierarchy.is(currentBaseClass.id, { isBase: true })) {
+    const propClassInfo = await metadataProvider.getECClassInfo(propClass.id);
+    if (propClassInfo && propClassInfo.isDerivedFrom(currentBaseClass.id)) {
       currentBaseClass = propClass;
     }
   }

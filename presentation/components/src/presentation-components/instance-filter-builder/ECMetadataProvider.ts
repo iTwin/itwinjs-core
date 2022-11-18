@@ -5,35 +5,36 @@
 import { compareStrings, Id64, Id64String, LRUDictionary } from "@itwin/core-bentley";
 import { QueryBinder, QueryOptions, QueryRowFormat } from "@itwin/core-common";
 
+// istanbul ignore file
+
+/** @internal */
 export class ECClassInfo {
   constructor(
-    private _id: Id64String,
-    private _name: string,
-    private _label: string,
+    public readonly id: Id64String,
+    public readonly name: string,
+    public readonly label: string,
     private _baseClasses: Set<Id64String>,
     private _derivedClasses: Set<Id64String>,
   ) {
   }
 
-  public get id(): Id64String { return this._id; }
-  public get name(): string { return this._name; }
-  public get label(): string { return this._label; }
   public get baseClassIds(): Array<Id64String> { return Array.from(this._baseClasses); }
   public get derivedClassIds(): Array<Id64String> { return Array.from(this._derivedClasses); }
 
   public isBaseOf(idOrInfo: Id64String | ECClassInfo): boolean {
     if (typeof idOrInfo === "string")
-      return this._derivedClasses.has(idOrInfo);
-    return this._derivedClasses.has(idOrInfo.id);
+      return idOrInfo === this.id || this._derivedClasses.has(idOrInfo);
+    return idOrInfo.id === this.id || this._derivedClasses.has(idOrInfo.id);
   }
 
   public isDerivedFrom(idOrInfo: Id64String | ECClassInfo): boolean {
     if (typeof idOrInfo === "string")
-      return this._baseClasses.has(idOrInfo);
-    return this._baseClasses.has(idOrInfo.id);
+      return idOrInfo === this.id || this._baseClasses.has(idOrInfo);
+    return idOrInfo.id === this.id || this._baseClasses.has(idOrInfo.id);
   }
 }
 
+/** @internal */
 export class ECMetadataProvider {
   private _classInfoCache = new LRUDictionary<CacheKey, ECClassInfo>(50, compareKeys);
 
@@ -73,7 +74,7 @@ export class ECMetadataProvider {
         ${classQueryBase}
         WHERE classDef.Name = :className AND schemaDef.Name = :schemaName
       `;
-      const [schemaName, className] = name.split(":");
+      const [schemaName, className] = this.splitFullClassName(name);
       classInfo = await this.createECClassInfo(this._queryRunner(classQuery, QueryBinder.from({ schemaName, className }), { rowFormat: QueryRowFormat.UseJsPropertyNames }));
       classInfo && this._classInfoCache.set({ id: classInfo.id, name: classInfo.name }, classInfo);
     }
@@ -103,6 +104,11 @@ export class ECMetadataProvider {
         hierarchy.baseClasses.add(row.baseId);
     }
     return hierarchy;
+  }
+
+  private splitFullClassName(fullName: string): [string, string] {
+    const [schemaName, className] = fullName.split(fullName.includes(".") ? "." : ":");
+    return [schemaName, className];
   }
 }
 
