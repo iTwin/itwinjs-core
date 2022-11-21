@@ -372,10 +372,10 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
  */
 export class BSplineCurve3d extends BSplineCurve3dBase {
 
-  private _workBezier?: BezierCurve3dH;
-  private initializeWorkBezier(): BezierCurve3dH {
+  private _workBezier?: BezierCurve3d;
+  private initializeWorkBezier(): BezierCurve3d {
     if (this._workBezier === undefined)
-      this._workBezier = BezierCurve3dH.createOrder(this.order);
+      this._workBezier = BezierCurve3d.createOrder(this.order);
     return this._workBezier;
   }
   /** test of `other` is an instance of BSplineCurve3d */
@@ -420,7 +420,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   /** Create a bspline with uniform knots. */
   public static createUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined {
     const numPoles = poles instanceof Float64Array ? poles.length / 3 : poles.length;
-    if (order < 1 || numPoles < order)
+    if (order < 2 || numPoles < order)
       return undefined;
     const knots = KnotVector.createUniformClamped(numPoles, order - 1, 0.0, 1.0);
     const curve = new BSplineCurve3d(numPoles, order, knots);
@@ -431,18 +431,44 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       curve._bcurve.packedData = poles.float64Data().slice(0, 3 * numPoles);
     } else {
       let i = 0;
-      for (const p of poles) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; }
+      for (const p of poles) {
+        curve._bcurve.packedData[i++] = p.x;
+        curve._bcurve.packedData[i++] = p.y;
+        curve._bcurve.packedData[i++] = p.z;
+      }
     }
     return curve;
   }
 
   /** Create a smoothly closed B-spline curve with uniform knots.
-   *  Note that the curve does not start at the first pole, and first and last poles should be distinct.
+   *  Note that the curve does not start at the first pole!
   */
   public static createPeriodicUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined {
-    const numPoles = poles instanceof Float64Array ? poles.length / 3 : poles.length;
-    if (order < 1 || numPoles < order)
+    if (order < 2)
       return undefined;
+
+    let numPoles = poles instanceof Float64Array ? poles.length / 3 : poles.length;
+    const startPoint = Point3d.createZero();
+    const endPoint = Point3d.createZero();
+    let hasClosurePoint = false;
+    do {
+      if (poles instanceof Float64Array) {
+        startPoint.set(poles[0], poles[1], poles[2]);
+        endPoint.set(poles[3 * numPoles - 3], poles[3 * numPoles - 2], poles[3 * numPoles - 1]);
+      } else if (poles instanceof GrowableXYZArray) {
+        startPoint.set(poles.float64Data()[0], poles.float64Data()[1], poles.float64Data()[2]);
+        endPoint.set(poles.float64Data()[3 * numPoles - 3], poles.float64Data()[3 * numPoles - 2], poles.float64Data()[3 * numPoles - 1]);
+      } else {
+        startPoint.setFromPoint3d(poles[0]);
+        endPoint.setFromPoint3d(poles[numPoles - 1]);
+      }
+      if (hasClosurePoint = startPoint.isAlmostEqual(endPoint))
+        --numPoles;   // remove wraparound pole if found
+    } while (hasClosurePoint && numPoles > 1);
+
+    if (numPoles < order)
+      return undefined;
+
     const degree = order - 1;
     const numIntervals = numPoles;
     const knots = KnotVector.createUniformWrapped(numIntervals, degree, 0.0, 1.0);
@@ -460,7 +486,11 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
         curve._bcurve.packedData[3 * numPoles + i] = poles.float64Data()[i];
     } else {
       let i = 0;
-      for (const p of poles) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; }
+      for (let j = 0; j < numPoles; j++) {
+        curve._bcurve.packedData[i++] = poles[j].x;
+        curve._bcurve.packedData[i++] = poles[j].y;
+        curve._bcurve.packedData[i++] = poles[j].z;
+      }
       for (let j = 0; j < degree; j++) {
         curve._bcurve.packedData[i++] = poles[j].x;
         curve._bcurve.packedData[i++] = poles[j].y;
@@ -503,7 +533,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     const numKnots = knotArray.length;
     // shift knots-of-interest limits for overclamped case ...
     const skipFirstAndLast = (numPoles + order === numKnots);
-    if (order < 1 || numPoles < order)
+    if (order < 2 || numPoles < order)
       return undefined;
     const knots = KnotVector.create(knotArray, order - 1, skipFirstAndLast);
     const curve = new BSplineCurve3d(numPoles, order, knots);
@@ -612,7 +642,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     const numSpan = this.numSpan;
     let numStroke = 0;
     for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
-      const bezier = this.getSaturatedBezierSpan3dH(spanIndex, workBezier);
+      const bezier = this.getSaturatedBezierSpan3d(spanIndex, workBezier);
       if (bezier)
         numStroke += bezier.computeStrokeCountForOptions(options);
     }
@@ -630,7 +660,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     const myData = StrokeCountMap.createWithCurvePrimitiveAndOptionalParent(this, parentStrokeMap, []);
 
     for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
-      const bezier = this.getSaturatedBezierSpan3dH(spanIndex, workBezier);
+      const bezier = this.getSaturatedBezierSpan3d(spanIndex, workBezier);
       if (bezier) {
         const segmentLength = workBezier.curveLength();
         const numStrokeOnSegment = workBezier.computeStrokeCountForOptions(options);
@@ -644,7 +674,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     const workBezier = this.initializeWorkBezier();
     const numSpan = this.numSpan;
     for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
-      const bezier = this.getSaturatedBezierSpan3dH(spanIndex, workBezier);
+      const bezier = this.getSaturatedBezierSpan3d(spanIndex, workBezier);
       if (bezier)
         bezier.emitStrokes(dest, options);
     }

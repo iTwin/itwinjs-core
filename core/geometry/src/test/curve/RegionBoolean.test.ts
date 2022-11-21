@@ -5,13 +5,14 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { UnionRegion } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
 import { CurveCollection } from "../../curve/CurveCollection";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveFactory } from "../../curve/CurveFactory";
-import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -751,6 +752,62 @@ describe("PlaneAltitudeRangeContext", () => {
     ck.testUndefined(lsLoop.projectedParameterRange(zero), "CurveCollection projection range is undefined for undefined plane");
     ck.testUndefined(linestring.projectedParameterRange(zero), "CurvePrimitive projection range is undefined for undefined plane");
     ck.testUndefined(PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(linestring.points, zero), "points projection range is undefined for undefined plane");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ClosedCurve", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const linestring = LineString3d.createRectangleXY(Point3d.create(-2, -1), 5, 4, true);
+    const opts = new InterpolationCurve3dOptions(linestring.points);
+    opts.closed = true;
+    opts.isChordLenKnots = 1;
+    const fitCurve = InterpolationCurve3d.create(opts);
+    const fitCurveLoop = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/interpolationCurveLoop.imjs", "utf8"))) as Loop;
+    const bCurve = BSplineCurve3d.createPeriodicUniformKnots(linestring.points, 3);
+    const bCurveLoop = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/bsplineCurveLoop.imjs", "utf8"))) as Loop;
+    const lsLoop = Loop.create(linestring);
+    const circle = Arc3d.createCenterNormalRadius(Point3d.createZero(), Vector3d.unitZ(), 1.0);
+    const diag = Vector3d.create(1,1,0).normalize()!;
+    const minusDiag = diag.negate();
+    const xyRay = Ray3d.create(Point3d.createZero(), diag);
+    let lowHigh: Range1d | undefined;
+    let x0 = 0;
+    interface TestParams  {
+      geom: GeometryQuery;
+      ray: Ray3d;
+      minParam: number;
+      maxParam: number;
+      label: string;
+    }
+    const params: TestParams[] = [
+      {geom: fitCurve!, ray: xyRay, minParam: -2.1249383598895526, maxParam: 4.246258703449196, label: "fitCurve"},
+      {geom: fitCurveLoop, ray: xyRay, minParam: -2.7265388486929107, maxParam: 4.6879835021011536, label: "fitCurveLoop"},
+      {geom: bCurve!, ray: xyRay, minParam: -1.3355667912298879, maxParam: 3.4568871347895316, label: "bCurve"},
+      {geom: bCurveLoop, ray: xyRay, minParam: -3.5945409474105596, maxParam: 3.5804340252875075, label: "bCurveLoop"},
+      {geom: lsLoop, ray: xyRay, minParam: - 1.5 * Math.sqrt(2), maxParam: 3 * Math.sqrt(2), label: "rectangle"},
+      {geom: circle, ray: xyRay, minParam: -1, maxParam: 1, label: "circle-xy"},
+      {geom: circle, ray: Ray3d.create(Point3d.create(2,0), minusDiag), minParam: Math.sqrt(2) - 1, maxParam: Math.sqrt(2) + 1, label: "circle-xy2"},
+      {geom: circle, ray: Ray3d.create(Point3d.create(1,-1), minusDiag), minParam: -1, maxParam: 1, label: "circle-xy3"},
+      {geom: circle, ray: Ray3d.create(Point3d.create(0.5,-0.5), minusDiag), minParam: -1, maxParam: 1, label: "circle-xy4"},
+      {geom: circle, ray: Ray3d.create(Point3d.createZero(), Vector3d.unitY()), minParam: -1, maxParam: 1, label: "circle-y"},
+      {geom: circle, ray: Ray3d.create(Point3d.create(0.9,0), Vector3d.unitX(-1)), minParam: -0.1, maxParam: 1.9, label: "circle-x"},
+      ];
+    for (const param of params) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [param.geom, LineSegment3d.create(param.ray.origin, param.ray.fractionToPoint(1.0))], x0);
+      x0 += 10;
+      lowHigh = undefined;
+      if (param.geom instanceof CurveCollection)
+        lowHigh = param.geom.projectedParameterRange(param.ray, lowHigh);
+      else if (param.geom instanceof CurvePrimitive)
+        lowHigh = param.geom.projectedParameterRange(param.ray, lowHigh);
+      if (ck.testDefined(lowHigh) && lowHigh) {
+        ck.testFalse(lowHigh.isNull, `${param.label} projection range computed`);
+        ck.testCoordinate(param.minParam, lowHigh.low, `${param.label} low projection as expected`);
+        ck.testCoordinate(param.maxParam, lowHigh.high, `${param.label} high projection as expected`);
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Curves", "ClosedCurveProjectionToRay");
     expect(ck.getNumErrors()).equals(0);
   });
 });
