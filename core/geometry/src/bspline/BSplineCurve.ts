@@ -6,9 +6,11 @@
  * @module Bspline
  */
 
-// import { Point2d } from "../Geometry2d";
 import { CurveIntervalRole, CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
+import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext";
+import { OffsetOptions } from "../curve/internalContexts/PolygonOffsetContext";
 import { LineString3d } from "../curve/LineString3d";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { StrokeOptions } from "../curve/StrokeOptions";
@@ -17,7 +19,6 @@ import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { Range1d, Range3d } from "../geometry3d/Range";
@@ -34,8 +35,8 @@ import { BSpline1dNd } from "./BSpline1dNd";
 import { BSplineCurveOps } from "./BSplineCurveOps";
 import { InterpolationCurve3dOptions } from "./InterpolationCurve3d";
 import { BSplineWrapMode, KnotVector } from "./KnotVector";
-import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
-import { OffsetOptions } from "../curve/internalContexts/PolygonOffsetContext";
+
+/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 
 /**
  * Base class for BSplineCurve3d and BSplineCurve3dH.
@@ -355,7 +356,14 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     this.emitStrokableParts(handler, options.strokeOptions);
     return handler.claimResult();
   }
-
+  /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+   * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param lowHigh optional receiver for output
+   * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
+   */
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
+  }
 }
 /**
  * A BSplineCurve3d is a bspline curve whose poles are Point3d.

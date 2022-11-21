@@ -41,10 +41,13 @@ describe("ToolWidget", () => {
           expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
           items={
             <>
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <ActionItemButton actionItem={CoreTools.selectElementCommand} />
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <ToolButton toolId="tool1a" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <ToolButton toolId="tool2a" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
-              <GroupButton
+              <GroupButton // eslint-disable-line deprecation/deprecation
                 iconSpec="icon-placeholder"
                 items={[tool1, tool2]}
                 direction={Direction.Bottom} // eslint-disable-line deprecation/deprecation
@@ -59,11 +62,15 @@ describe("ToolWidget", () => {
           expandsTo={Direction.Right} // eslint-disable-line deprecation/deprecation
           items={
             <>
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <ToolButton toolId="tool1b" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <ToolButton toolId="tool2b" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <ToolButton toolId="tool1c" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" isEnabled={false} />
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <ToolButton toolId="tool2c" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" isVisible={false} />
-              <GroupButton
+              <GroupButton // eslint-disable-line deprecation/deprecation
                 iconSpec="icon-placeholder"
                 items={[tool1, tool2]}
               />
@@ -144,11 +151,11 @@ describe("ToolWidget", () => {
           verticalToolbar={verticalToolbar}
         />,
       );
-      expect(wrapper.find(ToolButton).length).to.eq(6);
+      expect(wrapper.find(ToolButton).length).to.eq(6); // eslint-disable-line deprecation/deprecation
 
       wrapper.setProps({ verticalToolbar: undefined });
       wrapper.update();
-      expect(wrapper.find(ToolButton).length).to.eq(2);
+      expect(wrapper.find(ToolButton).length).to.eq(2); // eslint-disable-line deprecation/deprecation
     });
 
     it("ToolWidget should tool activated", () => {

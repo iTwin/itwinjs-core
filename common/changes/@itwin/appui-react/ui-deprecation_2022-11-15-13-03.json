@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Deprecate components in preparation for next major version.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

@@ -17,7 +17,10 @@ Table of contents:
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
 - [Geometry](#geometry)
   - [Polyface](#polyface)
+  - [Curves](#curves)
 - [Deprecations](#deprecations)
+  - [@itwin/appui-layout-react](#itwinappui-layout-react)
+  - [@itwin/appui-react](#itwinappui-react)
   - [@itwin/components-react](#itwincomponents-react)
   - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-geometry](#itwincore-geometry)
@@ -157,7 +160,43 @@ To use this package, you must initialize it by calling [MapLayersFormats.initial
 
 The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
 
+### Curves
+
+The methods [CurveCollection.projectedParameterRange]($core-geometry) and [CurvePrimitive.projectedParameterRange]($core-geometry) have been added for computing the range of fractional projection parameters of the instance curve(s) onto a `Ray3d`. The default implementation of the latter method returns undefined to avoid a circular dependency, so extenders of [CurvePrimitive]($core-geometry) should override as appropriate.
+
 ## Deprecations
+
+### @itwin/appui-layout-react
+
+All non-internal components are deprecated with their corresponding replacements available in `@itwin/appui-react` package. Going forward `@itwin/appui-layout-react` package is considered as internal implementation detail of the `@itwin/appui-react` package and should not be used directly.
+
+| Deprecated        | Replacement                                        |
+| ----------------- | -------------------------------------------------- |
+| `Dialog`          | [StatusBarDialog]($appui-react)                    |
+| `FooterIndicator` | [StatusBarIndicator]($appui-react)                 |
+| `FooterPopup`     | `popup` prop of [StatusBarIndicator]($appui-react) |
+| `FooterSeparator` | [StatusBarSeparator]($appui-react)                 |
+| `SafeAreaInsets`  | [SafeAreaInsets]($appui-react)                     |
+| `TitleBar`        | [StatusBarDialog.TitleBar]($appui-react)           |
+
+### @itwin/appui-react
+
+A number of **UI1.0** related APIs and components are deprecated and will be removed in the next `@itwin/appui-react` major version:
+`FrameworkVersion`, `FrameworkVersionContext`, `FrameworkVersionId`, `FrameworkVersionProps`, `ListPickerBase`, `useFrameworkVersion`,
+`NineZoneChangeHandler`, `StagePanelChangeHandler`, `WidgetStateFunc`, `ZoneDefProvider`.
+
+Other deprecations and their replacements:
+
+| Deprecated             | Replacement                                |
+| ---------------------- | ------------------------------------------ |
+| `ActionItemButton`     | [ActionButton]($appui-abstract)            |
+| `ActivityMessagePopup` | Activity messages are set-up automatically |
+| `Backstage`            | [BackstageComposer]($appui-react)          |
+| `BackstageEvent`       | [BackstageManager.onToggled]($appui-react) |
+| `GroupButton`          | [GroupButton]($appui-abstract)             |
+| `Indicator`            | [StatusBarIndicator]($appui-react)         |
+| `ToolButton`           | [CommonToolbarItem]($appui-abstract)       |
+| `withSafeArea`         | [SafeAreaContext]($appui-react)            |
 
 ### @itwin/components-react
 

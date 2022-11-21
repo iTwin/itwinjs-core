@@ -61,7 +61,7 @@ describe("GroupItem", () => {
   describe("<GroupButton />", () => {
     it("should render", () => {
       mount(
-        <GroupButton
+        <GroupButton // eslint-disable-line deprecation/deprecation
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
@@ -73,7 +73,7 @@ describe("GroupItem", () => {
 
     it("should not render if not visible", () => {
       mount(
-        <GroupButton
+        <GroupButton // eslint-disable-line deprecation/deprecation
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
@@ -86,7 +86,7 @@ describe("GroupItem", () => {
 
     it("renders correctly", () => {
       shallow(
-        <GroupButton
+        <GroupButton // eslint-disable-line deprecation/deprecation
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
@@ -98,7 +98,7 @@ describe("GroupItem", () => {
 
     it("should handle props change", () => {
       const wrapper = mount(
-        <GroupButton
+        <GroupButton // eslint-disable-line deprecation/deprecation
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
@@ -116,7 +116,7 @@ describe("GroupItem", () => {
       const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => { stateFunctionCalled = true; return state; };
 
       mount(
-        <GroupButton
+        <GroupButton // eslint-disable-line deprecation/deprecation
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
@@ -140,7 +140,7 @@ describe("GroupItem", () => {
       const testEventId = "test-button-state";
 
       mount(
-        <GroupButton
+        <GroupButton // eslint-disable-line deprecation/deprecation
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
@@ -153,7 +153,7 @@ describe("GroupItem", () => {
     });
 
     it("should set focus to home on Esc", () => {
-      const wrapper = mount(<GroupButton items={[tool1, tool2]} />);
+      const wrapper = mount(<GroupButton items={[tool1, tool2]} />); // eslint-disable-line deprecation/deprecation
       const element = wrapper.find(".nz-toolbar-item-item");
       element.simulate("focus");
       element.simulate("keyDown", { key: "Escape" });
@@ -236,6 +236,7 @@ describe("GroupItem", () => {
       it("should include a GroupToolExpander when a GroupItemDef is included", () => {
         const wrapper = mount(
           <ToolbarDragInteractionContext.Provider value={true}>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <GroupButton items={[tool1, tool2, group1]} />
           </ToolbarDragInteractionContext.Provider>,
         );
