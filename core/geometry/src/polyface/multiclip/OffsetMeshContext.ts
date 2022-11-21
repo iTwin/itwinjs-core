@@ -16,10 +16,16 @@ import { HalfEdgeGraphFromIndexedLoopsContext } from "../../topology/HalfEdgeGra
 import { IndexedPolyface} from "../Polyface";
 import { PolyfaceBuilder } from "../PolyfaceBuilder";
 import { XYAndZ } from "../../geometry3d/XYZProps";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 
+/**
+ * Function to be called for debugging observations at key times during offset computation.
+ */
+type FacetOffsetGraphDebugFunction = (message: string, Graph: HalfEdgeGraph, breakMaskA: HalfEdgeMask, breakMaskB: HalfEdgeMask) => void;
  // facet properties used during offset.
  //
- class FacetOffsetProperties {
+export class FacetOffsetProperties {
   public constructor(facetIndex: number, normal: Ray3d){
     this.facetIndex = facetIndex;
     this.facetNormal = normal;
@@ -34,7 +40,7 @@ public facetNormal: Ray3d;
   * * this.xyz is initially the base mesh xyz but is expected to move along the normal.
   * * this.count is used locally in computations.
   */
- class SectorOffsetProperties {
+export class SectorOffsetProperties {
   public constructor(normal: Vector3d, xyz: Point3d){
     this.xyz = xyz;
     this.normal = normal;
@@ -43,52 +49,89 @@ public facetNormal: Ray3d;
   public normal: Vector3d;
   public xyz: Point3d;
   public count: number;
-  public static almostEqualNormals(sectorA: SectorOffsetProperties, sectorB: SectorOffsetProperties): boolean{
-    return sectorA.normal.isAlmostEqual (sectorB.normal);
+  public static almostEqualNormals(sectorA: SectorOffsetProperties, sectorB: SectorOffsetProperties, radiansTolerance: number = Geometry.smallAngleRadians): boolean{
+    return sectorA.normal.radiansTo (sectorB.normal) <= radiansTolerance;
     }
-  // Set the offset point this.xyz as sum of the nodeXyz + distance * this.normal
-  public setOffsetPointAtDistance(node: HalfEdge, distance: number){
-      node.getPoint3d (this.xyz);
+    public static radiansBetweenNormals(sectorA: SectorOffsetProperties, sectorB: SectorOffsetProperties): number{
+      return sectorA.normal.radiansTo (sectorB.normal);
+      }
+    // Set the offset point this.xyz as sum of the nodeXyz + distance * this.normal
+  public setOffsetPointAtDistanceAtHalfEdge(halfEdge: HalfEdge, distance: number){
+      halfEdge.getPoint3d (this.xyz);
       this.xyz.addScaledInPlace (this.normal, distance);
     }
   // Set the offset point this.xyz directly
   public setXYAndZ(xyz: XYAndZ){
     this.xyz.set (xyz.x, xyz.y, xyz.z);
     }
-    // access the XYZ and push to the array (which makes copies, not reference)
+    // Look through the half edge to its properties.  Set the normal there.
+    public static setNormalAtHalfEdge(halfEdge: HalfEdge, uvw: Vector3d){
+      const props = halfEdge.edgeTag as SectorOffsetProperties;
+      if (props !== undefined)
+        props.normal.set (uvw.x, uvw.y, uvw.z);
+      }
+      // access the XYZ and push to the array (which makes copies, not reference)
     // return pointer to the SectorOffsetProperties
-  public static pushXYZ(xyzArray: GrowableXYZArray, node: HalfEdge): SectorOffsetProperties{
-      const sector = node.edgeTag as SectorOffsetProperties;
+  public static pushXYZ(xyzArray: GrowableXYZArray, halfEdge: HalfEdge): SectorOffsetProperties {
+      const sector = halfEdge.edgeTag as SectorOffsetProperties;
       if (sector !== undefined)
         xyzArray.push (sector.xyz);
       return sector;
       }
+  // Dereference to execute:       accumulatingVector += halfEdge.edgeTag.normal * scale
+  public static accumulateScaledNormalAtHalfEdge(halfEdge: HalfEdge, scale: number, accumulatingVector: Vector3d){
+    const sector = halfEdge.edgeTag as SectorOffsetProperties;
+    if (sector !== undefined)
+      accumulatingVector.addScaledInPlace (sector.normal, scale);
+      }
     }
 
   export class OffsetMeshContext {
-  private constructor(basePolyface: IndexedPolyface, baseGraph: HalfEdgeGraph){
+  private constructor(basePolyface: IndexedPolyface, baseGraph: HalfEdgeGraph,
+    smoothSingleDihedralAngle: Angle,
+    smoothAccumulatedDihedralAngleRadians: Angle
+    ){
   this._basePolyface = basePolyface;
   this._baseGraph = baseGraph;
+  this._breakMaskA = baseGraph.grabMask ();
+  this._breakMaskB = baseGraph.grabMask ();
+  this._exteriorMask = HalfEdgeMask.EXTERIOR;
+  this._smoothSingleDihedralAngleRadians = smoothSingleDihedralAngle.radians;
+  this._smoothAccumulatedDihedralAngleRadians = smoothAccumulatedDihedralAngleRadians.radians;
   }
   private _basePolyface: IndexedPolyface;
   private _baseGraph: HalfEdgeGraph;
+  private _exteriorMask: HalfEdgeMask;
+  /** "First" sector of a smooth sequence. */
+  private _breakMaskA: HalfEdgeMask;
+  /** "Last" sector of a smooth sequence. */
+  private _breakMaskB: HalfEdgeMask;
+  private _smoothSingleDihedralAngleRadians: number;
+  private _smoothAccumulatedDihedralAngleRadians: number;
+  public static graphDebugFunction?: FacetOffsetGraphDebugFunction;
 /**
  *
  * @param basePolyface
  * @param builder
  * @param distance
  */
-  public static buildOffsetMesh(basePolyface: IndexedPolyface, builder: PolyfaceBuilder, distance: number){
+  public static buildOffsetMesh(basePolyface: IndexedPolyface, builder: PolyfaceBuilder, distance: number,
+    smoothSingleDihedralAngle: Angle = Angle.createDegrees (20.0),
+    smoothAccumulatedDihedralAngle: Angle = Angle.createDegrees (50.0)){
     const baseGraph = this.buildBaseGraph (basePolyface);
     if (baseGraph !== undefined){
-      const breakMask = baseGraph.grabMask ();
-      const exteriorMask = HalfEdgeMask.EXTERIOR;
-      const offsetBuilder = new OffsetMeshContext (basePolyface, baseGraph);
-      offsetBuilder.computeSectorOffsetPoints (distance, exteriorMask, breakMask);
+      const offsetBuilder = new OffsetMeshContext (basePolyface, baseGraph,
+        smoothSingleDihedralAngle, smoothAccumulatedDihedralAngle);
+      if (OffsetMeshContext.graphDebugFunction !== undefined)
+        OffsetMeshContext.graphDebugFunction ("BaseGraph", baseGraph, offsetBuilder._breakMaskA, offsetBuilder._breakMaskB);
+
+      offsetBuilder.computeSectorOffsetPoints (distance);
+
+      if (OffsetMeshContext.graphDebugFunction !== undefined)
+        OffsetMeshContext.graphDebugFunction ("after computeSectorOffsetPoints", baseGraph, offsetBuilder._breakMaskA, offsetBuilder._breakMaskB);
       offsetBuilder.announceOffsetLoopsByFace (builder);
       offsetBuilder.announceOffsetLoopsByEdge (builder);
-      offsetBuilder.announceOffsetLoopsByVertex (builder, exteriorMask, breakMask);
-      baseGraph.dropMask (breakMask);
+      offsetBuilder.announceOffsetLoopsByVertex (builder);
     }
   }
 
@@ -158,7 +201,7 @@ public facetNormal: Ray3d;
       SectorOffsetProperties.pushXYZ(xyzLoop, node);
       return 0;
     };
-    this._baseGraph.announceNodes (
+    this._baseGraph.announceFaceLoops (
       (_graph: HalfEdgeGraph, seed: HalfEdge): boolean=>{
         if (!seed.isMaskSet (HalfEdgeMask.EXTERIOR)){
           xyzLoop.length = 0;
@@ -171,13 +214,13 @@ public facetNormal: Ray3d;
   /**
    * @param polyfaceBuilder
    */
-   public announceOffsetLoopsByVertex(polyfaceBuilder: PolyfaceBuilder,  exteriorMask: HalfEdgeMask, sectorMask: HalfEdgeMask){
+   public announceOffsetLoopsByVertex(polyfaceBuilder: PolyfaceBuilder){
     const xyzLoop = new GrowableXYZArray ();
     const breakEdges: HalfEdge[] = [];
     this._baseGraph.announceVertexLoops (
       (_graph: HalfEdgeGraph, seed: HalfEdge): boolean=>{
-        if (seed.countMaskAroundVertex (exteriorMask) === 0){
-        this.collectMaskedEdgesAroundVertex (seed, sectorMask, breakEdges);
+        if (seed.countMaskAroundVertex (this._exteriorMask) === 0){
+        seed.collectMaskedEdgesAroundVertex (this._breakMaskA, true, breakEdges);
         if (breakEdges.length > 3){
           xyzLoop.clear ();
           for (const node of breakEdges)
@@ -231,7 +274,7 @@ public facetNormal: Ray3d;
     vertexSeed.sumAroundVertex ((nodeAroundVertex: HalfEdge)=>{
         const props = nodeAroundVertex.edgeTag as SectorOffsetProperties;
         if (props !== undefined)
-          props.setOffsetPointAtDistance  (nodeAroundVertex, distance);
+          props.setOffsetPointAtDistanceAtHalfEdge  (nodeAroundVertex, distance);
         return 0.0;
         }
       );
@@ -247,17 +290,25 @@ public facetNormal: Ray3d;
         );
       }
 
-      private setOffsetXYAndZAroundVertexUpToMask(vertexSeed: HalfEdge, xyz: XYAndZ, mask: HalfEdgeMask): number {
+      /**
+      *  * start at vertexSeed.
+      *  * set the offset point at up to (and including) one with (a) this._breakMaskB or (b) this._exteriorMask
+      *  *
+      * @param vertexSeed first node to mark.
+      * @param f function to call to announce each node and its sector properties.
+      * @returns number of nodes marked.
+      */
+      private announceNodeAndSectorPropertiesInSmoothSector(vertexSeed: HalfEdge, f: (node: HalfEdge, properties: SectorOffsetProperties) => void): number {
         let n = 0;
-        for (let currentNode = vertexSeed;;){
+        for (let currentNode = vertexSeed;;currentNode = currentNode.vertexSuccessor){
           const props = currentNode.edgeTag as SectorOffsetProperties;
           n++;
           if (props !== undefined)
-            props.setXYAndZ  (xyz);
-          currentNode = currentNode.vertexSuccessor;
-          if (currentNode.isMaskSet (mask))
+              f(currentNode, props);
+          if (currentNode.isMaskSet (this._breakMaskB))
             return n;
-          if (currentNode.isMaskSet (HalfEdgeMask.EXTERIOR))
+          // REMARK: these additional exit conditions should not happen if (a) the graph is properly marked and (b) the start node is not exterior.
+          if (currentNode.isMaskSet (this._exteriorMask))
             return n;
           if (currentNode === vertexSeed)
             return n;
@@ -266,47 +317,107 @@ public facetNormal: Ray3d;
      /** Search around a vertex for a sector which has a different normal from its vertexPredecessor.
     * * The seed will be the first candidate considered
    */
-   private markAndCollectBreakEdgesAroundVertex(vertexSeed: HalfEdge,
-        exteriorMask: HalfEdgeMask,
-        breakMask: HalfEdgeMask,
-        breakEdges: HalfEdge[]){
-    breakEdges.length = 0;
-    vertexSeed.sumAroundVertex ((nodeA: HalfEdge): number =>{
-      nodeA.clearMask(breakMask);
-      let isBreak = false;
-      if (!nodeA.isMaskSet (exteriorMask)){
-        const nodeB = nodeA.edgeMate;
-        const nodeC = nodeB.faceSuccessor;
-        if (nodeB.isMaskSet (exteriorMask)){
-          isBreak = true;
+   private markAndCollectBreakEdgesAroundVertex(vertexSeed: HalfEdge){
+    vertexSeed.clearMaskAroundVertex (this._breakMaskA);
+    vertexSeed.clearMaskAroundVertex (this._breakMaskB);
+
+    const smoothSingleDihedralAngleRadians = this._smoothSingleDihedralAngleRadians;
+    const smoothAccumulatedDihedralAngleRadians = this._smoothAccumulatedDihedralAngleRadians;
+
+    // Step 1: Examine the edge between nodeA and the sector on its vertex predecessor side.  This (alone) determines single angle breaks.
+    let numBreaks = 0;
+    let nodeA = vertexSeed;
+    do {
+      const nodeB = nodeA.edgeMate;
+      const nodeC = nodeB.faceSuccessor;    // same as nodeA.vertexPredecessor
+      if (nodeA.isMaskSet (this._exteriorMask)){
+        if (!nodeB.isMaskSet (this._exteriorMask)){
+          nodeC.setMask (this._breakMaskB);
+          numBreaks++;
+        }
+      } else {
+        if (nodeB.isMaskSet (this._exteriorMask)){
+          numBreaks++;
+          nodeA.setMask (this._breakMaskA);
         } else if (!SectorOffsetProperties.almostEqualNormals(
             nodeA.edgeTag as SectorOffsetProperties,
-            nodeC.edgeTag as SectorOffsetProperties)){
-              isBreak = true;
+            nodeC.edgeTag as SectorOffsetProperties,
+            smoothSingleDihedralAngleRadians)){
+              nodeA.setMask (this._breakMaskA);
+              numBreaks++;
+              nodeC.setMask (this._breakMaskB);
             }
-        }
-        if (isBreak){
-          breakEdges.push (nodeA);
-        }
-        return 0.0;
-      });
+          }
+        nodeA = nodeA.vertexSuccessor;
+     } while (nodeA !== vertexSeed);
+     if (numBreaks === 0) {
+      // make the first vertex a break so subsequent searches have a place to start
+      vertexSeed.setMask (this._breakMaskA);
+      vertexSeed.vertexPredecessor.setMask (this._breakMaskB);
+      numBreaks = 1;
     }
-    /**
-     * search around a vertex for nodes that have a specified mask
-     * @param vertexSeed first node to search
-     * @param mask target mask
-     * @param collectedNodes array to be cleared and receive masked nodes
-     */
-    private collectMaskedEdgesAroundVertex(vertexSeed: HalfEdge,
-      mask: HalfEdgeMask,
-      collectedNodes: HalfEdge[]){
-      collectedNodes.length = 0;
-      vertexSeed.sumAroundVertex ((nodeA: HalfEdge): number =>{
-        if (nodeA.isMaskSet (mask))
-          collectedNodes.push (nodeA);
-          return 0.0;
-        });
+  // Step 2: At each single break, sweep forward to its closing breakA.  Insert breaks at accumulated angles.
+      // (minor TODO: for the insertion case, try to split more equally.)
+      nodeA = vertexSeed;
+      const nodeAStart = nodeA.findMaskAroundVertex (this._breakMaskA);
+      do {
+        if (nodeA.isMaskSet (this._breakMaskA) && !nodeA.isMaskSet (this._breakMaskB)){
+          let accumulatedRadians = 0.0;
+          do {
+            const nodeB = nodeA.vertexSuccessor;
+            accumulatedRadians += SectorOffsetProperties.radiansBetweenNormals (
+              nodeA.edgeTag as SectorOffsetProperties,
+              nodeB.edgeTag as SectorOffsetProperties,
+            );
+            if (accumulatedRadians > smoothAccumulatedDihedralAngleRadians){
+              nodeA.setMask (this._breakMaskB);
+              nodeB.setMask (this._breakMaskA);
+              numBreaks ++;
+              accumulatedRadians = 0.0;
+            }
+            nodeA = nodeB;
+          } while (!nodeA.isMaskSet (this._breakMaskB));
+        } else {
+          nodeA = nodeA.vertexSuccessor;
+        }
+      } while (nodeA !== nodeAStart);
+
+      if (numBreaks > 0){
+        // In each compound sector, accumulate and install average normal.
+        nodeA = nodeAStart;
+        const averageNormal = Vector3d.create ();
+        const edgeVectorU = Vector3d.create ();
+        const edgeVectorV = Vector3d.create ();
+        averageNormal.setZero ();
+        do {
+          if (nodeA.isMaskSet (this._breakMaskA) && !nodeA.isMaskSet (this._breakMaskB)){
+            let nodeQ = nodeA;
+            for (;;) {
+              nodeQ.vectorToFaceSuccessor (edgeVectorU);
+              nodeQ.vectorToFacePredecessor (edgeVectorV);
+              let singleSectorRadians = edgeVectorU.signedRadiansTo (edgeVectorV, (nodeQ.faceTag as FacetOffsetProperties).facetNormal.direction);
+              if (singleSectorRadians < 0.0)
+                singleSectorRadians += Math.PI * 2;
+              SectorOffsetProperties.accumulateScaledNormalAtHalfEdge (nodeQ, singleSectorRadians, averageNormal);
+              if (nodeQ.isMaskSet(this._breakMaskB))
+                break;
+              nodeQ = nodeQ.vertexSuccessor;
+            } while (!nodeQ.isMaskSet (this._breakMaskB));
+          if (averageNormal.normalizeInPlace ()){
+            nodeQ = nodeA;
+            for (;;) {
+              SectorOffsetProperties.setNormalAtHalfEdge (nodeQ, averageNormal);
+              if (nodeQ.isMaskSet(this._breakMaskB))
+                break;
+              nodeQ = nodeQ.vertexSuccessor;
+              }
+            }
+          }
+        nodeA = nodeA.vertexSuccessor;
+        } while (nodeA !== vertexSeed);
+
       }
+    }
 
 /** Compute the point of intersection of the planes in the sectors of 3 half edges */
    private compute3SectorIntersection(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge, result?: Vector3d): Vector3d | undefined{
@@ -337,11 +448,12 @@ private compute2SectorIntersection(nodeA: HalfEdge, nodeB: HalfEdge, result?: Ve
  *    * Each sectorOffsetProperties has an offset point computed with consideration of offset planes in the neighborhood.
  * @param distance distance to offset.
  */
-   private computeSectorOffsetPoints(distance: number, exteriorMask: HalfEdgeMask, breakMask: HalfEdgeMask){
+   private computeSectorOffsetPoints(distance: number){
     const breakEdges: HalfEdge[] = [];
     this._baseGraph.announceVertexLoops((_graph: HalfEdgeGraph, vertexSeed: HalfEdge) => {
-      this.markAndCollectBreakEdgesAroundVertex (vertexSeed, exteriorMask, breakMask, breakEdges);
+      this.markAndCollectBreakEdgesAroundVertex (vertexSeed);
       this.setOffsetAtDistanceAroundVertex (vertexSeed, distance);
+      vertexSeed.collectMaskedEdgesAroundVertex (this._breakMaskA, true, breakEdges);
       if (breakEdges.length <= 1){
         // just one smooth sequence.
         // everything is set already.
@@ -366,8 +478,11 @@ private compute2SectorIntersection(nodeA: HalfEdge, nodeB: HalfEdge, result?: Ve
         for (let i = 0; i + 2 < breakEdges.length; i++){
           const vectorFromOrigin = this.compute3SectorIntersection (breakEdges[i], breakEdges[i+1], breakEdges[i+2]);
           if (vectorFromOrigin !== undefined){
-            this.setOffsetXYAndZAroundVertexUpToMask (breakEdges[i+1], vectorFromOrigin, breakMask);
-          }
+            this.announceNodeAndSectorPropertiesInSmoothSector (breakEdges[i+1],
+              (_node: HalfEdge, properties: SectorOffsetProperties) => {
+                properties.setXYAndZ (vectorFromOrigin);
+              });
+            }
         }
       }
       return true;

@@ -105,7 +105,9 @@ export class GraphChecker {
       data[i].tryTransformInPlace(transform);
   }
   public static printToConsole = true;
-  public static dumpGraph(graph: HalfEdgeGraph | undefined, formatNode: NodeFunction = HalfEdge.nodeToIdXYString) {
+  public static dumpGraph(graph: HalfEdgeGraph | undefined,
+    formatNode: NodeFunction = HalfEdge.nodeToIdXYString,
+    formatNodeWithoutCoordinates: NodeFunction = HalfEdge.nodeToId) {
     if (graph === undefined){
       console.log ("   **** EMPTY GRAPH ****");
       return;
@@ -127,7 +129,7 @@ export class GraphChecker {
         vData.push("INCONSISTENT VERTEX XY");
         vData.push(JSON.stringify(v.collectAroundVertex(HalfEdge.nodeToIdMaskXY)));
       } else
-        vData.push([HalfEdge.nodeToIdXYString(v), v.collectAroundVertex(HalfEdge.nodeToId)]);
+        vData.push([formatNode(v), v.collectAroundVertex(formatNodeWithoutCoordinates)]);
     }
     if (this.printToConsole) {
       console.log(`"**VERTEX LOOPS ${vertices.length}`);

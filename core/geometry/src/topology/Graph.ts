@@ -494,6 +494,28 @@ export class HalfEdge {
     return count;
   }
 
+  /** Returns the first node with given mask value around this vertex loop.   */
+  public findMaskAroundVertex(mask: HalfEdgeMask, value: boolean = true): HalfEdge | undefined {
+    let node: HalfEdge = this;
+    do {
+      if (node.isMaskSet(mask) === value)
+        return node;
+      node = node.vertexSuccessor;
+    } while (node !== this);
+    return undefined;
+  }
+
+  /** Returns the first node with given mask value around this face loop.   */
+  public findMaskAroundFace(mask: HalfEdgeMask, value: boolean = true): HalfEdge | undefined {
+    let node: HalfEdge = this;
+    do {
+      if (node.isMaskSet(mask) === value)
+        return node;
+      node = node.faceSuccessor;
+    } while (node !== this);
+    return undefined;
+  }
+
   /** Set a mask, and return prior value.
    * @param mask mask to apply
    */
@@ -638,10 +660,20 @@ export class HalfEdge {
   }
   /** Return Vector3d to face successor */
   public vectorToFaceSuccessor(result?: Vector3d): Vector3d {
+    const other = this.faceSuccessor;
     return Vector3d.create(
-      this.faceSuccessor.x - this.x,
-      this.faceSuccessor.y - this.y,
-      this.faceSuccessor.z - this.z,
+      other.x - this.x,
+      other.y - this.y,
+      other.z - this.z,
+      result);
+  }
+  /** Return Vector3d to face successor */
+  public vectorToFacePredecessor(result?: Vector3d): Vector3d {
+    const other = this.facePredecessor;
+    return Vector3d.create(
+      other.x - this.x,
+      other.y - this.y,
+      other.z - this.z,
       result);
   }
   /** test if spaceNode is in the sector at sectorNode */
@@ -820,6 +852,29 @@ export class HalfEdge {
     } while (node !== this);
     return nodes;
   }
+    /**
+     * search around a vertex for nodes that have a specified mask setting.
+     * @param vertexSeed first node to search
+     * @param mask target mask
+     * @param value target value for mask on half edges.
+     * @param collectedNodes optional array to be cleared and receive masked nodes
+     */
+     public collectMaskedEdgesAroundVertex(
+      mask: HalfEdgeMask,
+      value: boolean = true,
+      result?: HalfEdge[]): HalfEdge[]{
+      if (result === undefined)
+          result = [];
+      else
+          result.length = 0;
+      let node: HalfEdge = this;
+      do {
+         if (node.isMaskSet (mask) === value)
+            result.push (node);
+          node = node.vertexSuccessor;
+         } while (node !== this);
+      return result;
+      }
 
   /**
    *

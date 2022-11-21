@@ -10,6 +10,7 @@ import { Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
+// cspell:word CCWXY
 
 /**
  *  * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both point and vector.
@@ -1237,6 +1238,17 @@ export class Vector3d extends XYZ {
     else
       return theta;
   }
+  /**
+   * Return the (simple number of radians) angle from this vector to vectorB
+   * * The returned angle can range from zero to positive PI.
+   * * Note that this is always positive.
+   * * The returned angle is "in the plane containing the two vectors"
+   * @param vectorB target vector of rotation.
+   */
+   public radiansTo(vector1: Vector3d): number {
+    const p = this.crossProduct(vector1);
+    return Math.atan2(p.magnitude(), this.dotProduct(vector1));
+    }
   /**
    * Return the (strongly typed Angle) angle from this vector to vectorB, measured in the plane containing both, with vectorW indicating which side to view to control sign of the angle.
    * * The returned angle can range from negative 180 degrees (negative PI radians) to positive 180 degrees (positive PI radians), not closed on the negative side.

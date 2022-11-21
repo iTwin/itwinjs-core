@@ -64,6 +64,12 @@ import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
 
 /* eslint-disable no-console */
+// cspell:word CCWXY
+// cspell:word bloss
+// cspell:word Arema
+// cspell:word ABCDA
+// a typo baked into the API:
+// cspell:word creatVerticalStaggerPolygon
 /**
  * Function to be called to obtain function value at (i,n), for
  * * n fixed over many calls
