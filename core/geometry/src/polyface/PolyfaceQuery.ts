@@ -1326,8 +1326,12 @@ export class PolyfaceQuery {
     BuildAverageNormalsContext.buildFastAverageNormals(polyface, toleranceAngle);
   }
 
-  /**
-   * * Return a new mesh whose facets are offset from the source mesh.
+ /**
+  * Offset the faces of the mesh.
+  * @param source original mesh
+  * @param signedOffsetDistance distance to offset
+  * @param offsetOptions angle options.  The default options are recommended.
+  * @returns shifted mesh.
   */
    public static cloneOffset(source: IndexedPolyface,
     signedOffsetDistance: number,
