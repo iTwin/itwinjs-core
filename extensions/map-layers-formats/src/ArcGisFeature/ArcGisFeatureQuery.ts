@@ -157,80 +157,70 @@ export class ArcGisFeatureQuery {
   }
 
   public toString() {
-    let customParams = "";
+    const url = new URL(`${this.baseUrl}/${this.layerIdx}/query`);
+
+    url.searchParams.append("f", this.format);
 
     if ( this.resultRecordCount !== undefined) {
-      customParams = ArcGisFeatureQuery.appendParam(customParams, "resultRecordCount", `${this.resultRecordCount}`);
+      url.searchParams.append("resultRecordCount", `${this.resultRecordCount}`);
     }
 
     if ( this.resultOffset !== undefined) {
-      customParams = ArcGisFeatureQuery.appendParam(customParams, "resultOffset", `${this.resultOffset}`);
+      url.searchParams.append( "resultOffset", `${this.resultOffset}`);
     }
 
     if ( this.returnGeometry !== undefined) {
-      customParams = ArcGisFeatureQuery.appendParam(customParams, "returnGeometry", this.returnGeometry?"true":"false");
+      url.searchParams.append("returnGeometry", this.returnGeometry?"true":"false");
     }
 
     if ( this.resultType !== undefined) {
-      customParams = ArcGisFeatureQuery.appendParam(customParams, "resultType", this.resultType);
+      url.searchParams.append("resultType", this.resultType);
     }
 
     if ( this.maxRecordCountFactor !== undefined) {
-      customParams = ArcGisFeatureQuery.appendParam(customParams, "maxRecordCountFactor", `${this.maxRecordCountFactor}`);
+      url.searchParams.append( "maxRecordCountFactor", `${this.maxRecordCountFactor}`);
     }
 
     if ( this.returnExceededLimitFeatures !== undefined) {
-      customParams = ArcGisFeatureQuery.appendParam(customParams, "returnExceededLimitFeatures", this.returnExceededLimitFeatures?"true":"false");
+      url.searchParams.append( "returnExceededLimitFeatures", this.returnExceededLimitFeatures?"true":"false");
     }
 
-    customParams = ArcGisFeatureQuery.appendParam(customParams, "outSR", `${this.outSR}`);
+    url.searchParams.append( "outSR", `${this.outSR}`);
 
     if (this.geometry || this.spatialRel) {
 
       if (this.spatialRel) {
-        customParams = ArcGisFeatureQuery.appendParam(customParams, "spatialRel", this.spatialRel);
+        url.searchParams.append( "spatialRel", this.spatialRel);
       }
 
       if (this.geometry) {
-        customParams = ArcGisFeatureQuery.appendParam(customParams, "geometryType", this.geometry.type);
+        url.searchParams.append( "geometryType", this.geometry.type);
 
         const geomStr = JSON.stringify(this.geometry.geom);
-        customParams = ArcGisFeatureQuery.appendParam(customParams, "geometry", geomStr);
+        url.searchParams.append( "geometry", geomStr);
+        url.searchParams.append( "units", "esriSRUnit_Meter");    // required on older server for get feature info
 
-        customParams = ArcGisFeatureQuery.appendParam(customParams, "inSR", `${this.geometry.geom.spatialReference.wkid}`);
+        url.searchParams.append( "inSR", `${this.geometry.geom.spatialReference.wkid}`);
       }
     } else {
       // No custom params, fetch all geometries
-      customParams = "where=1=1";
+      url.searchParams.append("where", "1=1");
     }
 
     if (this.quantizationParams) {
       const quantizationParamsStr = JSON.stringify(this.quantizationParams);
-      customParams = ArcGisFeatureQuery.appendParam(customParams, "quantizationParameters", quantizationParamsStr);
+      url.searchParams.append("quantizationParameters", quantizationParamsStr);
     }
 
     if (this.outFields) {
-      customParams = ArcGisFeatureQuery.appendParam(customParams, "outFields", this.outFields);
+      url.searchParams.append( "outFields", this.outFields);
     }
 
     if (this.distance) {
-      customParams = ArcGisFeatureQuery.appendParam(customParams, "distance", `${this.distance}`);
+      url.searchParams.append("distance", `${this.distance}`);
     }
 
-    return `${this.baseUrl}/${this.layerIdx}/query/?f=${this.format}&${customParams}`;
-  }
-
-  private static  appendParam(urlToAppend: string, paramName: string, paramValue: string) {
-    if (paramName.length === 0) {
-      return urlToAppend;
-    }
-
-    let url = urlToAppend;
-    if (urlToAppend.length > 0 && !urlToAppend.endsWith("&")) {
-      url = `${urlToAppend  }&`;
-    }
-
-    return `${url}${paramName}=${paramValue}`;
+    return url.toString();
   }
 
 }
