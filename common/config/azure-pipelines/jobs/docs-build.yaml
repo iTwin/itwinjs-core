@@ -59,7 +59,7 @@ jobs:
         workingDirectory: ${{ parameters.workingDir }}
 
       # Gathers all the pieces to run BeMetalsmith
-      - template: ../../templates/gather-docs.yaml
+      - template: ../templates/gather-docs.yaml
         parameters:
           workingDir: ${{ parameters.workingDir }}
           stagingDir: ${{ parameters.stagingDir }}
