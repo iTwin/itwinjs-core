@@ -27,12 +27,12 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 
 ### Backend Prerequisites
 
-| Operating System | Architectures | Versions                                                                                                           | Notes         |
-| ---------------- | ------------- | ------------------------------------------------------------------------------------------------------------------ | ------------- |
-| Linux            | all           | GLIBC >= 2.24, GLIBCXX >= 3.4.22                                                                                   |               |
-| Windows          | all           | [Visual Studio 2017 C Runtime](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads) |               |
-| macOS            | x64           | >= 10.15                                                                                                           |               |
-| macOS            | arm64         | >= 11                                                                                                              | iTwin.js@^3.3 |
+| Operating System | Architectures | Versions                                                                                                           | Notes           |
+| ---------------- | ------------- | ------------------------------------------------------------------------------------------------------------------ | --------------- |
+| Linux            | all           | GLIBC >= 2.24, GLIBCXX >= 3.4.22                                                                                   |                 |
+| Windows          | all           | [Visual Studio 2017 C Runtime](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads) |                 |
+| macOS            | x64           | >= 10.15                                                                                                           |                 |
+| macOS            | arm64         | >= 11                                                                                                              | >= iTwin.js 3.3 |
 
 ## Supported Browsers
 
