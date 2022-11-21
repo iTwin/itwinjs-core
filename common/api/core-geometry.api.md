@@ -2409,6 +2409,7 @@ export class HalfEdge {
     clearMaskAroundVertex(mask: HalfEdgeMask): void;
     collectAroundFace(f?: NodeFunction): any[];
     collectAroundVertex(f?: NodeFunction): any[];
+    collectMaskedEdgesAroundVertex(mask: HalfEdgeMask, value?: boolean, result?: HalfEdge[]): HalfEdge[];
     countEdgesAroundFace(): number;
     countEdgesAroundVertex(): number;
     countMaskAroundFace(mask: HalfEdgeMask, value?: boolean): number;
@@ -2427,10 +2428,13 @@ export class HalfEdge {
     get facePredecessor(): HalfEdge;
     faceStepY(numStep: number): number;
     get faceSuccessor(): HalfEdge;
+    faceTag?: any;
     static filterIsMaskOff(node: HalfEdge, mask: HalfEdgeMask): boolean;
     static filterIsMaskOn(node: HalfEdge, mask: HalfEdgeMask): boolean;
     findAroundFace(other: HalfEdge): boolean;
     findAroundVertex(other: HalfEdge): boolean;
+    findMaskAroundFace(mask: HalfEdgeMask, value?: boolean): HalfEdge | undefined;
+    findMaskAroundVertex(mask: HalfEdgeMask, value?: boolean): HalfEdge | undefined;
     fractionAlongAndPerpendicularToPoint2d(fractionAlong: number, fractionPerpendicular: number, result?: Point2d): Point2d;
     fractionToPoint2d(fraction: number, result?: Point2d): Point2d;
     fractionToPoint3d(fraction: number, result?: Point3d): Point3d;
@@ -2473,6 +2477,7 @@ export class HalfEdge {
     setMaskAroundEdge(mask: HalfEdgeMask): void;
     setMaskAroundFace(mask: HalfEdgeMask): void;
     setMaskAroundVertex(mask: HalfEdgeMask): void;
+    setXYZ(xyz: XYAndZ): void;
     setXYZAroundVertex(x: number, y: number, z: number): void;
     setXYZFrom(node: HalfEdge): void;
     signedFaceArea(): number;
@@ -2487,6 +2492,7 @@ export class HalfEdge {
     static testNodeMaskNotExterior(node: HalfEdge): boolean;
     static transferEdgeProperties(fromNode: HalfEdge, toNode: HalfEdge): void;
     static transverseIntersectionFractions(nodeA0: HalfEdge, nodeB0: HalfEdge, result?: Vector2d): Vector2d | undefined;
+    vectorToFacePredecessor(result?: Vector3d): Vector3d;
     vectorToFaceSuccessor(result?: Vector3d): Vector3d;
     vectorToFaceSuccessorXY(result?: Vector2d): Vector2d;
     get vertexPredecessor(): HalfEdge;
@@ -2505,6 +2511,7 @@ export class HalfEdgeGraph {
     constructor();
     addEdgeXY(x0: number, y0: number, x1: number, y1: number): HalfEdge;
     allHalfEdges: HalfEdge[];
+    announceEdges(announceEdge: GraphNodeFunction): void;
     announceFaceLoops(announceFace: GraphNodeFunction): void;
     announceNodes(announceNode: GraphNodeFunction): void;
     announceVertexLoops(announceVertex: GraphNodeFunction): void;
@@ -2518,6 +2525,7 @@ export class HalfEdgeGraph {
     countNodes(): number;
     countVertexLoops(): number;
     createEdgeHalfEdgeHalfEdge(nodeA: HalfEdge, idA: number, nodeB: HalfEdge, idB?: number): HalfEdge;
+    createEdgeIdId(iA?: number, iB?: number): HalfEdge;
     createEdgeXYAndZ(xyz0: XYAndZ, id0: number, xyz1: XYAndZ, id1: number): HalfEdge;
     createEdgeXYZHalfEdge(xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, node: HalfEdge, iB?: number): HalfEdge;
     createEdgeXYZXYZ(xA?: number, yA?: number, zA?: number, iA?: number, xB?: number, yB?: number, zB?: number, iB?: number): HalfEdge;
@@ -3767,6 +3775,13 @@ export class NumberArray {
 }
 
 // @public
+export class OffsetMeshOptions {
+    static create(smoothSingleDihedralAngle?: Angle, smoothAccumulatedDihedralAngle?: Angle): OffsetMeshOptions;
+    smoothAccumulatedDihedralAngle: Angle;
+    smoothSingleDihedralAngle: Angle;
+}
+
+// @public
 export class OffsetOptions {
     constructor(offsetDistanceOrOptions: number | JointOptions, strokeOptions?: StrokeOptions);
     clone(): OffsetOptions;
@@ -4510,6 +4525,7 @@ export class PolyfaceQuery {
     static buildPerFaceNormals(polyface: IndexedPolyface): void;
     static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface;
     static cloneFiltered(source: Polyface | PolyfaceVisitor, filter: (visitor: PolyfaceVisitor) => boolean): Polyface;
+    static cloneOffset(source: IndexedPolyface, signedOffsetDistance: number, offsetOptions?: OffsetMeshOptions): Polyface;
     static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[];
     static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface;
     static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyface | undefined;
@@ -4519,6 +4535,8 @@ export class PolyfaceQuery {
     static computeFacetUnitNormal(visitor: PolyfaceVisitor, facetIndex: number, result?: Vector3d): Vector3d | undefined;
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
     static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
+    // @internal
+    static convertToHalfEdgeGraph(mesh: IndexedPolyface): HalfEdgeGraph;
     static createIndexedEdges(polyface: Polyface | PolyfaceVisitor): IndexedEdgeMatcher;
     static fillSimpleHoles(mesh: IndexedPolyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
@@ -5317,6 +5335,8 @@ export class SineCosinePolynomial {
 // @public
 export class SmallSystem {
     static eliminateFromPivot(rowA: Float64Array, pivotIndex: number, rowB: Float64Array, a: number): boolean;
+    // (undocumented)
+    static intersect3Planes(xyzA: Point3d, normalA: Vector3d, xyzB: Point3d, normalB: Vector3d, xyzC: Point3d, normalC: Vector3d, result?: Vector3d): Vector3d | undefined;
     static linearSystem2d(ux: number, vx: number, // first row of matrix
     uy: number, vy: number, // second row of matrix
     cx: number, cy: number, // right side
@@ -5990,6 +6010,7 @@ export class Vector3d extends XYZ {
     plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, result?: Vector3d): Vector3d;
     plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Vector3d): Vector3d;
     plusScaled(vector: XYAndZ, scaleFactor: number, result?: Vector3d): Vector3d;
+    radiansTo(vector1: Vector3d): number;
     rotate90Around(axis: Vector3d, result?: Vector3d): Vector3d | undefined;
     rotate90CCWXY(result?: Vector3d): Vector3d;
     rotate90Towards(target: Vector3d, result?: Vector3d): Vector3d | undefined;

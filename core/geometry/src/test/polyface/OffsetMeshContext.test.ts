@@ -22,6 +22,7 @@ import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { GraphChecker } from "../topology/Graph.test";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 
 function cleanupZero(a: number, tol: number = 1.0e-12): number {
   return Math.abs (a) > tol ? a : 0.0;
@@ -194,7 +195,6 @@ function testOffsets(_ck: Checker, allGeometry: GeometryQuery[], polyface: Index
   offsets: number[],
   signs: number[],
   xStart: number){
-  const options = StrokeOptions.createForFacets();
   let y0 = 0;
   let x0 = xStart;
   const range = polyface.data.point.getRange ();
@@ -205,11 +205,9 @@ for (const offsetSign of signs){
     x0 = xStart;
     for (const offset of offsets){
       GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, x0, y0);
-      const offsetBuilder = PolyfaceBuilder.create(options);
-        OffsetMeshContext.buildOffsetMesh (polyface, offsetBuilder, offsetSign * offset);
-        const offset0 = offsetBuilder.claimPolyface ();
-        GeometryCoreTestIO.captureCloneGeometry (allGeometry, offset0, x0, y0 + yStepA);
-        x0 += xStep;
+      const offsetMesh = PolyfaceQuery.cloneOffset (polyface, offsetSign * offset);
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry, offsetMesh, x0, y0 + yStepA);
+      x0 += xStep;
       }
     y0 += yStepB;
     }

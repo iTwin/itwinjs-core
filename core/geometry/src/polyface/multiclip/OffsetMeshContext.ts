@@ -18,6 +18,7 @@ import { PolyfaceBuilder } from "../PolyfaceBuilder";
 import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
+import { OffsetMeshOptions } from "../PolyfaceQuery";
 
 /**
  * Function to be called for debugging observations at key times during offset computation.
@@ -110,18 +111,21 @@ export class SectorOffsetProperties {
   private _smoothAccumulatedDihedralAngleRadians: number;
   public static graphDebugFunction?: FacetOffsetGraphDebugFunction;
 /**
- *
- * @param basePolyface
- * @param builder
- * @param distance
+ * * build a mesh offset by given distance.
+ * * output the mesh to the given builder.
+ * @param basePolyface original mesh
+ * @param builder polyface builder to receive the new mesh.
+ * @param distance signed offset distance.
  */
-  public static buildOffsetMesh(basePolyface: IndexedPolyface, builder: PolyfaceBuilder, distance: number,
-    smoothSingleDihedralAngle: Angle = Angle.createDegrees (20.0),
-    smoothAccumulatedDihedralAngle: Angle = Angle.createDegrees (50.0)){
+  public static buildOffsetMesh(
+    basePolyface: IndexedPolyface,
+    builder: PolyfaceBuilder,
+    distance: number,
+    options: OffsetMeshOptions){
     const baseGraph = this.buildBaseGraph (basePolyface);
     if (baseGraph !== undefined){
       const offsetBuilder = new OffsetMeshContext (basePolyface, baseGraph,
-        smoothSingleDihedralAngle, smoothAccumulatedDihedralAngle);
+        options.smoothSingleDihedralAngle, options.smoothAccumulatedDihedralAngle);
       if (OffsetMeshContext.graphDebugFunction !== undefined)
         OffsetMeshContext.graphDebugFunction ("BaseGraph", baseGraph, offsetBuilder._breakMaskA, offsetBuilder._breakMaskB);
 

@@ -186,6 +186,7 @@ internal;NodeFunction = (node: HalfEdge) => any
 internal;NodeToNumberFunction = (node: HalfEdge) => number
 public;NullGeometryHandler 
 public;NumberArray
+public;OffsetMeshOptions
 public;OffsetOptions
 public;OptionalGrowableFloat64Array = GrowableFloat64Array | undefined
 internal;Order2Bezier 

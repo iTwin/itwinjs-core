@@ -43,6 +43,7 @@ import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { RangeLengthData } from "./RangeLengthData";
 import { SpacePolygonTriangulation } from "../topology/SpaceTriangulation";
 import { HalfEdgeGraphFromIndexedLoopsContext } from "../topology/HalfEdgeGraphFromIndexedLoopsContext";
+import { OffsetMeshContext } from "./multiclip/OffsetMeshContext";
 /**
  * Options carrier for cloneWithHolesFilled
  * @public
@@ -59,6 +60,40 @@ export interface HoleFillOptions {
   /** requests that all content from the original mesh be copied to the mesh with filled holes. */
   includeOriginalMesh?: boolean;
 }
+/**
+ * Options carrier for cloneOffsetMesh
+ * @public
+ */
+ export class OffsetMeshOptions {
+  /** max dihedral angle to be considered smooth */
+  public smoothSingleDihedralAngle: Angle;
+  /** max accumulation of dihedral angles to be considered smooth */
+  public smoothAccumulatedDihedralAngle: Angle;
+  /** Constructor -- CAPTURE parameters ... */
+  private constructor(
+    smoothSingleDihedralAngle: Angle = Angle.createDegrees (20),
+    smoothAccumulatedDihedralAngle: Angle = Angle.createDegrees (60)){
+    this.smoothSingleDihedralAngle = smoothSingleDihedralAngle.clone ();
+    this.smoothAccumulatedDihedralAngle = smoothAccumulatedDihedralAngle.clone ();
+    }
+  /** construct and return an OffsetMeshOptions with given parameters.
+   * * Angles are forced to minimum values.
+   * * Clones of the angles are given to the constructor.
+   */
+  public static create(
+    smoothSingleDihedralAngle: Angle = Angle.createDegrees (20),
+    smoothAccumulatedDihedralAngle: Angle = Angle.createDegrees (60)){
+
+    const mySmoothSingleDihedralAngle = smoothSingleDihedralAngle.clone ();
+    const mySmoothAccumulatedDihedralAngle = smoothAccumulatedDihedralAngle.clone ();
+    if (mySmoothSingleDihedralAngle.degrees < 1)
+      mySmoothAccumulatedDihedralAngle.setDegrees(1.0);
+    if (mySmoothAccumulatedDihedralAngle.degrees < 1.0)
+      mySmoothAccumulatedDihedralAngle.setDegrees(1.0);
+    return new OffsetMeshOptions (mySmoothSingleDihedralAngle, mySmoothAccumulatedDihedralAngle);
+    }
+  }
+
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
@@ -1160,6 +1195,7 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
 /**
  * Create a HalfEdgeGraph with a face for each facet of the IndexedPolyface
  * @param mesh mesh to convert
+ * @internal
  */
   public static convertToHalfEdgeGraph(mesh: IndexedPolyface) {
     const builder = new HalfEdgeGraphFromIndexedLoopsContext ();
@@ -1208,6 +1244,18 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
   */
   public static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle: Angle = Angle.createDegrees(31.0)) {
     BuildAverageNormalsContext.buildFastAverageNormals(polyface, toleranceAngle);
+  }
+
+  /**
+   * * Return a new mesh whose facets are offset from the source mesh.
+  */
+   public static cloneOffset(source: IndexedPolyface,
+    signedOffsetDistance: number,
+    offsetOptions: OffsetMeshOptions = OffsetMeshOptions.create()): Polyface {
+    const strokeOptions = StrokeOptions.createForFacets();
+    const offsetBuilder = PolyfaceBuilder.create(strokeOptions);
+    OffsetMeshContext.buildOffsetMesh (source, offsetBuilder, signedOffsetDistance, offsetOptions);
+    return offsetBuilder.claimPolyface ();
   }
 
 }
