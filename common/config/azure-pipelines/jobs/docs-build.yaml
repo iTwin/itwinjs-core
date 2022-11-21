@@ -80,15 +80,18 @@ jobs:
         displayName: Publish Pipeline Artifact - .updated.json
         condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
 
-      - script: |
-          node -p "require('./core/backend/package.json').version" > tmpFile
-          set /p ver= < tmpFile
-          del tmpFile
-          echo ##vso[build.addbuildtag]%ver%
-        displayName: Tag build with version
-        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
-
       - publish: ${{ parameters.outputDir }}
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - DocsBuild
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+
+      - powershell: |
+          $commitMsg = '$(Build.SourceVersionMessage)'
+          if ($commitMsg -match '^(\d+.\d+.\d+)(-dev.\d+)?$') {
+            Write-Host `'$commitMsg`'` is a version bump
+            Write-Host '##vso[build.addbuildtag]iTwinJsDocsRelease'
+          } else {
+            Write-Host `'$commitMsg`'` is not a version bump
+          }
+        displayName: Tag release if version bump
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
