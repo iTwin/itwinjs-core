@@ -14,7 +14,7 @@ import "./Frontstage.scss";
 import produce from "immer";
 import * as React from "react";
 import { assert, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { StagePanelLocation, StagePanelSection, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
+import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
 import { Rectangle, RectangleProps, Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {

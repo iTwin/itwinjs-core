@@ -70,7 +70,7 @@ export enum WidgetType {
  * @deprecated
  * @public
  */
-export interface ToolbarWidgetProps extends WidgetProps {
+export interface ToolbarWidgetProps extends WidgetProps { // eslint-disable-line deprecation/deprecation
   horizontalDirection?: Direction; // eslint-disable-line deprecation/deprecation
   verticalDirection?: Direction; // eslint-disable-line deprecation/deprecation
 
@@ -82,7 +82,7 @@ export interface ToolbarWidgetProps extends WidgetProps {
  * @deprecated
  * @public
  */
-export interface ToolWidgetProps extends ToolbarWidgetProps {
+export interface ToolWidgetProps extends ToolbarWidgetProps { // eslint-disable-line deprecation/deprecation
   appButton?: CommandItemDef;
 }
 
@@ -90,7 +90,7 @@ export interface ToolWidgetProps extends ToolbarWidgetProps {
  * @deprecated
  * @public
  */
-export interface NavigationWidgetProps extends ToolbarWidgetProps {
+export interface NavigationWidgetProps extends ToolbarWidgetProps { // eslint-disable-line deprecation/deprecation
   navigationAidId?: string;
 }
 
@@ -98,7 +98,7 @@ export interface NavigationWidgetProps extends ToolbarWidgetProps {
  * @deprecated
  * @public
  */
-export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
+export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps; // eslint-disable-line deprecation/deprecation
 
 /** Prototype for WidgetDef StateFunc (UI 1.0 only deprecate ???)
  * @deprecated Used in UI1.0 only.
@@ -318,7 +318,7 @@ export class WidgetDef {
     me._saveTransientState = widgetProps.saveTransientState;
     me._restoreTransientState = widgetProps.restoreTransientState;
 
-    me.setUpSyncSupport(widgetProps);
+    me.setUpSyncSupport(widgetProps); // eslint-disable-line deprecation/deprecation
   }
 
   /** @internal */
@@ -336,7 +336,8 @@ export class WidgetDef {
     return widgetProps;
   }
 
-  public setUpSyncSupport(props: WidgetProps) {
+  /** @deprecated */
+  public setUpSyncSupport(props: WidgetProps) { // eslint-disable-line deprecation/deprecation
     if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) { // eslint-disable-line deprecation/deprecation
       this._syncEventIds = props.syncEventIds;
       this._stateFunc = props.stateFunc; // eslint-disable-line deprecation/deprecation

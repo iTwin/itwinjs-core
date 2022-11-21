@@ -10,7 +10,7 @@ import { FrontstageDef, FrontstageManager, WidgetDef, WidgetPanelsStatusBar, Zon
 
 describe("WidgetPanelsStatusBar", () => {
   it("should render", () => {
-    const widget = new WidgetDef({});
+    const widget = new WidgetDef();
     const bottomCenter = new ZoneDef();
     const frontstageDef = new FrontstageDef();
     sinon.stub(frontstageDef, "bottomCenter").get(() => bottomCenter);

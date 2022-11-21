@@ -48,7 +48,7 @@ class BasicContentGroupProvider extends ContentGroupProvider {
     ],
   };
 
-  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     return new ContentGroup(this.initialContentGroupProps);
   }
 }
@@ -92,7 +92,7 @@ class TestContentGroupProvider extends ContentGroupProvider {
     return { ...contentGroupProps, contents: newContentsArray };
   }
 
-  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     if (this.hasSavedData) {
       const savedViewLayoutProps = await getSavedViewLayoutProps();
       if (savedViewLayoutProps) {
@@ -134,7 +134,7 @@ describe("ContentGroupProvider", () => {
   it("Should provide Content Group", async () => {
     const provider = new TestContentGroupProvider();
 
-    const frontstageProps: FrontstageProps = {
+    const frontstageProps: FrontstageProps = { // eslint-disable-line deprecation/deprecation
       id: "test",
       usage: "General",
       defaultTool: CoreTools.selectElementCommand,

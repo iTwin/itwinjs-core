@@ -14,9 +14,9 @@ import { WidgetProps } from "./WidgetProps";
  * @deprecated Use [WidgetConfig] instead.
  * @public
  */
-export class Widget extends React.Component<WidgetProps> {
+export class Widget extends React.Component<WidgetProps> { // eslint-disable-line deprecation/deprecation
 
-  constructor(props: WidgetProps) {
+  constructor(props: WidgetProps) { // eslint-disable-line deprecation/deprecation
     super(props);
   }
 
