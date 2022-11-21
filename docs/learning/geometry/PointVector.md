@@ -137,10 +137,12 @@ Typical names in the tables are:
 | parallel vector test | | vectorA.isParallelTo (vectorB, oppositeIsParallel : boolean = false, returnValueIfAnInputIsZero : boolean = false) | |vectorA.isParallelTo (vectorB, oppositeIsParallel : boolean = false) |
 | perpendicular vector test | | vectorA.isPerpendicularTo (vectorB, returnValueIfAnInputIsZero : boolean = false) | | vectorA.isPerpendicularTo (vectorB) |
 
-## projection of a vector on a plane
-![>](./figs/PointVector/projectVectorOnPlane.png)
+## Bisector of 2 unit vectors
+![>](./figs/PointVector/bisector.jpg)
+## Projection of a vector on a plane
+![>](./figs/PointVector/projectVectorOnPlane.jpg)
 
-## in-place updates (instance methods)
+## In-place updates (instance methods)
 
 | category | Point3d | Vector3d | Point2d | Vector2d |
 |---|---|---|---|---|
@@ -150,7 +152,7 @@ Typical names in the tables are:
 | set coordinates from other objects| `p.setFrom (other: Float64Array \| XAndY \| XAndYAndZ)` | `v.setFrom (other: Float64Array \| XAndY \| XAndYAndZ)` | p.setFrom (other?: XAndY) | v.setFrom (other?: XAndY) |
 | scale coordinates | p.scaleInPlace (scaleFactor) | v.scaleInPlace (scaleFactor) | | |
 
-## unary queries (instance methods)
+## Unary queries (instance methods)
 
 | category | Point3d | Vector3d | Point2d | Vector2d |
 |---|---|---|---|---|
@@ -161,7 +163,7 @@ Typical names in the tables are:
 | magnitude ignoring z |  p.magnitudeXY () | v.magnitudeXY () | | |
 | magnitude squared ignoring z | p.magnitudeSquaredXY () | v.magnitudeSquaredXY () | | |
 
-## property verification
+## Property verification
 
 These are static methods on the XYZ class.  Hence they are inherited by Point3d and Vector3d. Their inputs are raw objects which may have x,y,z as properties but are not full-fledged Point3d, Vector3d, Point2d, Vector2d objects.
 

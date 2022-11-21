@@ -38,6 +38,7 @@ import { FrontstageManager } from "./frontstage/FrontstageManager";
 // cSpell:ignore Mobi
 
 /** Defined that available UI Versions. It is recommended to always use the latest version available.
+ * @deprecated Used to toggle between UI1.0 and UI2.0.
  * @public
  */
 export type FrameworkVersionId = "1" | "2";
@@ -68,8 +69,8 @@ export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
  * @internal
  */
 export interface FrameworkVersionChangedEventArgs {
-  oldVersion: FrameworkVersionId;
-  version: FrameworkVersionId;
+  oldVersion: FrameworkVersionId; // eslint-disable-line deprecation/deprecation
+  version: FrameworkVersionId; // eslint-disable-line deprecation/deprecation
 }
 
 /** FrameworkVersion Changed Event class.
@@ -96,7 +97,7 @@ export class UiFramework {
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
   private static _widgetManager?: WidgetManager;
-  private static _uiVersion: FrameworkVersionId = "2";
+  private static _uiVersion: FrameworkVersionId = "2"; // eslint-disable-line deprecation/deprecation
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
   /** this provides a default state storage handler */
   private static _uiStateStorage: UiStateStorage = new LocalStateStorage();
@@ -306,11 +307,11 @@ export class UiFramework {
     return UiFramework._widgetManager;
   }
 
-  /** Calls localization.getLocalizedStringWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
+  /** Calls localization.getLocalizedString with the "UiFramework" namespace. Do NOT include the namespace in the key.
    * @internal
    */
   public static translate(key: string | string[]): string {
-    return IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
+    return IModelApp.localization.getLocalizedString(key, { ns: UiFramework.localizationNamespace });
   }
 
   /** @internal */
@@ -520,11 +521,11 @@ export class UiFramework {
   /** Returns the Ui Version.
    * @public
    */
-  public static get uiVersion(): FrameworkVersionId {
+  public static get uiVersion(): FrameworkVersionId { // eslint-disable-line deprecation/deprecation
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion;
   }
 
-  public static setUiVersion(version: FrameworkVersionId) {
+  public static setUiVersion(version: FrameworkVersionId) { // eslint-disable-line deprecation/deprecation
     if (UiFramework.uiVersion === version)
       return;
 

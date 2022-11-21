@@ -30,6 +30,7 @@ export function renderWithContext(
     ruleOperatorRenderer: rendererContextProps.ruleOperatorRenderer,
     ruleValueRenderer: rendererContextProps.ruleValueRenderer,
     propertyRenderer: rendererContextProps.propertyRenderer,
+    disablePropertySelection: rendererContextProps.disablePropertySelection,
   };
 
   const activeGroupContextValue: ActiveRuleGroupContextProps = {

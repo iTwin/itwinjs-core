@@ -5,8 +5,8 @@
 
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { assert, base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
-import { Matrix4d, Point3d, Transform } from "@itwin/core-geometry";
-import { ArcGisErrorCode, ArcGISImageryProvider, ArcGisUtilities, ImageryMapTileTree, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
+import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
+import { ArcGisErrorCode, ArcGISImageryProvider, ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
@@ -139,11 +139,28 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       }
     }
 
+    // Parse server version
+    let majorVersion: number|undefined;
+    if (this.serviceJson?.currentVersion) {
+      try {
+        majorVersion = Math.trunc(this.serviceJson?.currentVersion);
+      } catch {
+      }
+    }
+
+    // Coordinates Quantization:  If supported, server will transform for us the coordinates in the Tile coordinate space (pixels, origin = upper left corner
+    // If not supported, transformation will be applied client side.
+    // Note: For some reasons, even though 'supportsCoordinatesQuantization' is set to 'true' on the layer metadata, server will give an error message for server version < 11
+    if (majorVersion && majorVersion >= 11 && this._layerMetadata.supportsCoordinatesQuantization) {
+      this._supportsCoordinatesQuantization = true;
+    }
+
     // Check supported query formats: JSON and PBF are currently implemented by this provider
     // Note: needs to be checked on the layer metadata, service metadata advertises a different set of formats
+    //       Also, since PBF format does not support floating points, there is no point using this format if supportsCoordinatesQuantization is not available.
     if (this._layerMetadata.supportedQueryFormats) {
       const formats: string[] = this._layerMetadata.supportedQueryFormats.split(", ");
-      if (formats.includes("PBF")) {
+      if (formats.includes("PBF") && this._supportsCoordinatesQuantization ) {
         this._format = "PBF";
       } else if (formats.includes ("JSON"))  {
         this._format = "JSON";
@@ -151,24 +168,34 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     if (!this._format) {
-      Logger.logError(loggerCategory, "Could not get service JSON");
+      Logger.logError(loggerCategory, "Could not get request format from service JSON");
       throw new ServerError(IModelStatus.ValidationFailed, "");
     }
 
-    // Coordinates Quantization:  If supported, server will transform for us the coordinates in the Tile coordinate space (pixels, origin = upper left corner
-    // If not supported, transformation will be applied client side.
-    if (this._layerMetadata.supportsCoordinatesQuantization) {
-      this._supportsCoordinatesQuantization = true;
+    // Read range using full extent from service metadata
+    if (json.fullExtent) {
+      if (json.fullExtent.spatialReference.latestWkid === 3857 || json.fullExtent.spatialReference.wkid === 102100) {
+        const range3857 = Range2d.createFrom({
+          low: {x: json.fullExtent.xmin, y: json.fullExtent.ymin},
+          high: {x: json.fullExtent.xmax, y: json.fullExtent.ymax} });
+
+        const west = this.getEPSG4326Lon(range3857.xLow);
+        const south = this.getEPSG4326Lat(range3857.yLow);
+        const east = this.getEPSG4326Lon(range3857.xHigh);
+        const north = this.getEPSG4326Lat(range3857.yHigh);
+        this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
+      }
     }
 
     // Check for minScale / max scale
     const minScale = this._layerMetadata?.minScale || undefined;  // undefined, 0 -> undefined
     const maxScale = this._layerMetadata?.maxScale || undefined;  // undefined, 0 -> undefined
-    const scales = ArcGisUtilities.getZoomLevelsScales(this.defaultMaximumZoomLevel, this.tileSize, minScale, maxScale);
+    const scales = ArcGisUtilities.getZoomLevelsScales(this.defaultMaximumZoomLevel, this.tileSize, minScale, maxScale, 1.0);
     if (scales.minLod)
       this._minDepthFromLod = scales.minLod;
-    if (scales.maxLod)
-      this._maxDepthFromLod = scales.maxLod;
+
+    // Some servers advertises a max LOD of 0, it should be interpreted as 'not defined' (otherwise a max lod of 0 would would mean never display anything)
+    this._maxDepthFromLod =  (scales.maxLod ? scales.maxLod : this.defaultMaximumZoomLevel);
 
     this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerMetadata?.geometryType, this._layerMetadata?.drawingInfo?.renderer);
   }
@@ -205,7 +232,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // Actual spatial filter.
     // By default, we request the tile extent.  If 'cartoPoint' is specified,
     // we restrict the spatial to specific point. (i.e. GetFeatureInfo requests)
-    // We a refine envelope is provided, it has the priority over 'cartoPoint'
+    // If envelope is provided, it has the priority over 'cartoPoint'
     let geometry: ArcGisGeometry|undefined;
     if (geomOverride) {
       geometry = geomOverride;
@@ -324,9 +351,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     const response = this.fetch(new URL(tileUrl.url), { method: "GET" });
-    // if ((await response).status !== 200){
-    //   return undefined;
-    // }
     return new ArcGisFeatureResponse(this.format, response, tileUrl.envelope);
   }
 

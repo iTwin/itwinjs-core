@@ -19,8 +19,11 @@ Table of contents:
   - [Polyface](#polyface)
   - [Curves](#curves)
 - [Deprecations](#deprecations)
+  - [@itwin/appui-layout-react](#itwinappui-layout-react)
+  - [@itwin/appui-react](#itwinappui-react)
   - [@itwin/components-react](#itwincomponents-react)
   - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-common](#itwincore-common)
   - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
 
@@ -164,6 +167,38 @@ The methods [CurveCollection.projectedParameterRange]($core-geometry) and [Curve
 
 ## Deprecations
 
+### @itwin/appui-layout-react
+
+All non-internal components are deprecated with their corresponding replacements available in `@itwin/appui-react` package. Going forward `@itwin/appui-layout-react` package is considered as internal implementation detail of the `@itwin/appui-react` package and should not be used directly.
+
+| Deprecated        | Replacement                                        |
+| ----------------- | -------------------------------------------------- |
+| `Dialog`          | [StatusBarDialog]($appui-react)                    |
+| `FooterIndicator` | [StatusBarIndicator]($appui-react)                 |
+| `FooterPopup`     | `popup` prop of [StatusBarIndicator]($appui-react) |
+| `FooterSeparator` | [StatusBarSeparator]($appui-react)                 |
+| `SafeAreaInsets`  | [SafeAreaInsets]($appui-react)                     |
+| `TitleBar`        | [StatusBarDialog.TitleBar]($appui-react)           |
+
+### @itwin/appui-react
+
+A number of **UI1.0** related APIs and components are deprecated and will be removed in the next `@itwin/appui-react` major version:
+`FrameworkVersion`, `FrameworkVersionContext`, `FrameworkVersionId`, `FrameworkVersionProps`, `ListPickerBase`, `useFrameworkVersion`,
+`NineZoneChangeHandler`, `StagePanelChangeHandler`, `WidgetStateFunc`, `ZoneDefProvider`.
+
+Other deprecations and their replacements:
+
+| Deprecated             | Replacement                                |
+| ---------------------- | ------------------------------------------ |
+| `ActionItemButton`     | [ActionButton]($appui-abstract)            |
+| `ActivityMessagePopup` | Activity messages are set-up automatically |
+| `Backstage`            | [BackstageComposer]($appui-react)          |
+| `BackstageEvent`       | [BackstageManager.onToggled]($appui-react) |
+| `GroupButton`          | [GroupButton]($appui-abstract)             |
+| `Indicator`            | [StatusBarIndicator]($appui-react)         |
+| `ToolButton`           | [CommonToolbarItem]($appui-abstract)       |
+| `withSafeArea`         | [SafeAreaContext]($appui-react)            |
+
 ### @itwin/components-react
 
 All the components that were only used by or with the deprecated [Table]($components-react) are now marked as deprecated as well and will be removed in an upcoming version. The Table was deprecated a year ago in favor of the Table component provided in the `@itwin/itwinui-react` package, which do not use any of these parts.
@@ -174,6 +209,10 @@ The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated 
 
 The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
  The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
+
+### @itwin/core-common
+
+[Localization.getLocalizedStringWithNamespace]($common) is deprecated in favor of using [Localization.getLocalizedString]($common) and providing either a key with a namespace `<namespace>:<key>` or including `{ ns: <namespace> }` in the options.
 
 ### @itwin/core-geometry
 

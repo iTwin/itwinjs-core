@@ -20,6 +20,7 @@ import { HollowIcon } from "./HollowIcon";
 import { MessageContainer } from "@itwin/core-react";
 
 /** Properties for a [[ToastMessage]]
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface ToastMessageProps {
@@ -34,7 +35,7 @@ export interface ToastMessageProps {
  * @public
  * @deprecated
  */
-export function ToastMessage(props: ToastMessageProps) {
+export function ToastMessage(props: ToastMessageProps) { // eslint-disable-line deprecation/deprecation
   const { id, messageDetails, severity, toastTarget, closeMessage } = props;
 
   return (

@@ -32,7 +32,7 @@ describe("ArcGisFeatureQuery", () => {
     expect(queryUrl).to.not.contains("geometry");
     expect(queryUrl).to.not.contains("inSR");
     expect(queryUrl).to.not.contains("inSR");
-    expect(queryUrl).to.contains("where=1=1");
+    expect(queryUrl).to.contains("where=1%3D1");
   });
 
   it("should not apply different switches if not needed", async () => {
@@ -75,10 +75,11 @@ describe("ArcGisFeatureQuery", () => {
     expect(queryUrl).to.contains("maxRecordCountFactor=1000");
     expect(queryUrl).to.contains("returnExceededLimitFeatures=false");
     expect(queryUrl).to.contains("geometryType=esriGeometryEnvelope");
-    expect(queryUrl).to.contains(`geometry={"xmin":0,"ymin":0,"xmax":100,"ymax":100,"spatialReference":{"wkid":102100,"latestWkid":3857}}`);
+    expect(queryUrl).to.contains(`geometry=%7B%22xmin%22%3A0%2C%22ymin%22%3A0%2C%22xmax%22%3A100%2C%22ymax%22%3A100%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D`);
     expect(queryUrl).to.contains("inSR=102100");
     expect(queryUrl).to.contains("outFields=test");
     expect(queryUrl).to.contains("distance=100");
+    expect(queryUrl).to.contains("units=esriSRUnit_Meter");
 
   });
 
@@ -108,17 +109,9 @@ describe("ArcGisFeatureQuery", () => {
     query.geometry = {type:"esriGeometryEnvelope", geom:fakeEnvelope};
     queryUrl = query.toString();
     expect(queryUrl).to.contains("geometryType=esriGeometryEnvelope");
-    expect(queryUrl).to.contains(`geometry={"xmin":0,"ymin":0,"xmax":100,"ymax":100,"spatialReference":{"wkid":102100,"latestWkid":3857}}`);
+    expect(queryUrl).to.contains(`geometry=%7B%22xmin%22%3A0%2C%22ymin%22%3A0%2C%22xmax%22%3A100%2C%22ymax%22%3A100%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D`);
     expect(queryUrl).to.contains("inSR=102100");
 
-  });
-
-  it("should not include empty param", async () => {
-
-    const url = "https://test.com/rest/";
-    const clonedUrl = url.slice();
-    (ArcGisFeatureQuery as any).appendParam(clonedUrl, "", "value");
-    expect(url).to.equals(clonedUrl);
   });
 
 });
