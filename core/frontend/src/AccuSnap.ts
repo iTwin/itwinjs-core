@@ -6,8 +6,8 @@
  * @module LocatingElements
  */
 
-import { BeDuration } from "@itwin/core-bentley";
-import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
+import { BeDuration, Id64, Id64Arg, Id64Set } from "@itwin/core-bentley";
+import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Vector3d, XAndY } from "@itwin/core-geometry";
 import { SnapRequestProps } from "@itwin/core-common";
 import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
 import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
@@ -50,7 +50,9 @@ export class TouchCursor implements CanvasDecoration {
     if (!vp.viewRect.containsPoint(viewLocation))
       return false; // outside this viewport rect
 
-    viewLocation.x = Math.floor(viewLocation.x) + 0.5; viewLocation.y = Math.floor(viewLocation.y) + 0.5; viewLocation.z = 0.0;
+    viewLocation.x = Math.floor(viewLocation.x) + 0.5;
+    viewLocation.y = Math.floor(viewLocation.y) + 0.5;
+    viewLocation.z = 0.0;
     const offsetLocation = new Point3d(viewLocation.x, viewLocation.y - this._yOffset, viewLocation.z);
     if (!vp.viewRect.containsPoint(offsetLocation))
       return false; // outside this viewport rect
@@ -71,7 +73,9 @@ export class TouchCursor implements CanvasDecoration {
     ctx.bezierCurveTo(-this._size, -this._size * 0.85, -this._size * 0.6, -this._yOffset * 0.6, 0, -this._yOffset * 0.8);
     ctx.bezierCurveTo(this._size * 0.6, -this._yOffset * 0.6, this._size, -this._size * 0.85, this._size, 0);
     ctx.arc(0, 0, this._size, 0, Math.PI);
-    if (filled) ctx.fill();
+    if (filled)
+      ctx.fill();
+
     ctx.stroke();
 
     ctx.beginPath();
@@ -223,17 +227,46 @@ export class AccuSnap implements Decorator {
   public get isSnapEnabledByUser(): boolean { return this._settings.enableFlag; }
   private isFlashed(view: Viewport): boolean { return (this.areFlashed.has(view)); }
   private needsFlash(view: Viewport): boolean { return (this.needFlash.has(view)); }
-  private setNeedsFlash(view: Viewport) { this.needFlash.add(view); this.clearIsFlashed(view); view.invalidateDecorations(); }
+  private setNeedsFlash(view: Viewport) {
+    this.needFlash.add(view);
+    this.clearIsFlashed(view);
+    view.invalidateDecorations();
+  }
+
   private setIsFlashed(view: Viewport) { this.areFlashed.add(view); }
   private clearIsFlashed(view: Viewport) { this.areFlashed.delete(view); }
   private static toSnapDetail(hit?: HitDetail): SnapDetail | undefined { return (hit && hit instanceof SnapDetail) ? hit : undefined; }
   /** @internal */
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
   /** Determine whether there is a current hit that is *hot*. */
-  public get isHot(): boolean { const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot; }
+  public get isHot(): boolean {
+    const currSnap = this.getCurrSnapDetail();
+    return !currSnap ? false : currSnap.isHot;
+  }
+
+  /** Optional ids to never flash. Useful for tools like "trim curve" that won't want a flashed segment to obscure a result preview.
+   * @note Cleared when a primitive or view tool is started and saved/restored when a primitive tool is suspended/unsuspended.
+   * @public
+   */
+  public neverFlash(ids?: Id64Arg): void {
+    if (undefined === ids) {
+      this.toolState.neverFlash = undefined;
+      return;
+    }
+
+    const newIds = new Set<string>();
+    for (const id of Id64.iterable(ids))
+      newIds.add(id);
+
+    this.toolState.neverFlash = (0 !== newIds.size ? newIds : undefined);
+  }
 
   /** @internal */
-  public destroy(): void { this.currHit = undefined; this.aSnapHits = undefined; }
+  public destroy(): void {
+    this.currHit = undefined;
+    this.aSnapHits = undefined;
+  }
+
   private get _doSnapping(): boolean { return this.isSnapEnabled && this.isSnapEnabledByUser && !this._isSnapSuspended; }
   private get _isSnapSuspended(): boolean { return (0 !== this._suppressed || 0 !== this.toolState.suspended); }
 
@@ -506,7 +539,10 @@ export class AccuSnap implements Decorator {
       return false;
 
     if (hit.isModelHit || hit.isMapHit)
-      return false;       // Avoid annoying flashing of reality models.
+      return false; // Avoid annoying flashing of reality models.
+
+    if (this.toolState.neverFlash && this.toolState.neverFlash.has(hit.sourceId))
+      return false;
 
     const snap = AccuSnap.toSnapDetail(hit);
     return !snap || snap.isHot || this._settings.hiliteColdHits;
@@ -545,7 +581,10 @@ export class AccuSnap implements Decorator {
     return hit;
   }
 
-  private initCmdState() { this.toolState.suspended = 0; }
+  private initCmdState() {
+    this.toolState.suspended = 0;
+    this.toolState.neverFlash = undefined;
+  }
 
   /** @internal */
   public suspend(doSuspend: boolean) {
@@ -625,13 +664,19 @@ export class AccuSnap implements Decorator {
   public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined> {
     if (thisHit.isModelHit || thisHit.isMapHit || thisHit.isClassifier) {
       if (snapModes.includes(SnapMode.Nearest)) {
-        if (out) out.snapStatus = SnapStatus.Success;
+        if (out)
+          out.snapStatus = SnapStatus.Success;
+
         return new SnapDetail(thisHit, SnapMode.Nearest, SnapHeat.InRange);
       } else if (1 === snapModes.length && snapModes.includes(SnapMode.Intersection)) {
-        if (out) out.snapStatus = SnapStatus.NoSnapPossible;
+        if (out)
+          out.snapStatus = SnapStatus.NoSnapPossible;
+
         return undefined;
       } else {
-        if (out) out.snapStatus = SnapStatus.Success;
+        if (out)
+          out.snapStatus = SnapStatus.Success;
+
         const realitySnap = new SnapDetail(thisHit, SnapMode.Nearest, SnapHeat.None);
         realitySnap.sprite = undefined; // Don't show a snap mode that isn't applicable, but still accept hit point...
         return realitySnap;
@@ -700,7 +745,9 @@ export class AccuSnap implements Decorator {
       }
 
       if (1 === snapModes.length && undefined === requestProps.intersectCandidates) {
-        if (out) out.snapStatus = SnapStatus.NoSnapPossible;
+        if (out)
+          out.snapStatus = SnapStatus.NoSnapPossible;
+
         return undefined; // Don't make back end request when only doing intersection snap when we don't have another hit to intersect with...
       }
     }
@@ -708,7 +755,9 @@ export class AccuSnap implements Decorator {
     try {
       const result = await thisHit.iModel.requestSnap(requestProps);
 
-      if (out) out.snapStatus = result.status;
+      if (out)
+        out.snapStatus = result.status;
+
       if (result.status !== SnapStatus.Success)
         return undefined;
 
@@ -717,39 +766,27 @@ export class AccuSnap implements Decorator {
         return parsed instanceof GeometryQuery && "curvePrimitive" === parsed.geometryCategory ? parsed : undefined;
       };
 
-      // If this hit is from a plan projection model, apply the model's elevation to the snap point for display.
-      // Likewise, if it is a hit on a model with a display transform, apply the model's transform to the snap point.
-      let snapPoint = result.snapPoint!;
-      const elevation = undefined !== thisHit.modelId ? thisHit.viewport.view.getModelElevation(thisHit.modelId) : 0;
-      if (0 !== elevation || undefined !== thisHit.viewport.view.modelDisplayTransformProvider) {
-        const adjustedSnapPoint = Point3d.fromJSON(snapPoint);
-        thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, adjustedSnapPoint, false);
-        adjustedSnapPoint.z += elevation;
-        snapPoint = adjustedSnapPoint;
-      }
+      const snapPoint = Point3d.fromJSON(result.snapPoint);
+      const displayTransform = undefined !== thisHit.modelId ? thisHit.viewport.view.computeDisplayTransform({ modelId: thisHit.modelId, elementId: thisHit.sourceId }) : undefined;
+      displayTransform?.multiplyPoint3d(snapPoint, snapPoint);
 
       const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);
 
-      // Apply model's elevation and display transform to curve for display.
-      let transform;
-      if (undefined !== thisHit.modelId && undefined !== thisHit.viewport.view.modelDisplayTransformProvider) {
-        transform = thisHit.viewport.view.getModelDisplayTransform(thisHit.modelId, Transform.createIdentity());
-        if (0 !== elevation)
-          transform.origin.set(0, 0, elevation);
-      } else if (0 !== elevation) {
-        transform = Transform.createTranslationXYZ(0, 0, elevation);
-      }
-
-      snap.setCurvePrimitive(parseCurve(result.curve), transform, result.geomType);
+      snap.setCurvePrimitive(parseCurve(result.curve), displayTransform, result.geomType);
       if (undefined !== result.parentGeomType)
         snap.parentGeomType = result.parentGeomType;
+
+      // Update hitPoint from readPixels with exact point location corrected to surface/edge geometry.
       if (undefined !== result.hitPoint) {
-        snap.hitPoint.setFromJSON(result.hitPoint); // Update hitPoint from readPixels with exact point location corrected to surface/edge geometry...
-        thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, snap.hitPoint, false);
+        snap.hitPoint.setFromJSON(result.hitPoint);
+        displayTransform?.multiplyPoint3d(snap.hitPoint, snap.hitPoint);
       }
+
+      // Apply display transform to normal.
       if (undefined !== result.normal) {
         snap.normal = Vector3d.fromJSON(result.normal);
-        thisHit.viewport.view.transformNormalByModelDisplayTransform(thisHit.modelId, snap.normal);
+        displayTransform?.matrix.multiplyVector(snap.normal, snap.normal);
+        snap.normal.normalizeInPlace();
       }
 
       if (SnapMode.Intersection !== snap.snapMode)
@@ -765,7 +802,9 @@ export class AccuSnap implements Decorator {
       const intersect = new IntersectDetail(snap, snap.heat, snap.snapPoint, otherPrimitive, result.intersectId);
       return intersect;
     } catch (_err) {
-      if (out) out.snapStatus = SnapStatus.Aborted;
+      if (out)
+        out.snapStatus = SnapStatus.Aborted;
+
       return undefined;
     }
   }
@@ -961,15 +1000,32 @@ export class AccuSnap implements Decorator {
   /** @internal */
   public onPreButtonEvent(ev: BeButtonEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.isButtonHandled(ev) : false; }
   /** @internal */
-  public onTouchStart(ev: BeTouchEvent): void { if (undefined !== this.touchCursor) this.touchCursor.doTouchStart(ev); }
+  public onTouchStart(ev: BeTouchEvent): void {
+    if (undefined !== this.touchCursor)
+      this.touchCursor.doTouchStart(ev);
+  }
+
   /** @internal */
-  public onTouchEnd(ev: BeTouchEvent): void { if (undefined !== this.touchCursor && 0 === ev.touchCount) this.touchCursor.doTouchEnd(ev); }
+  public onTouchEnd(ev: BeTouchEvent): void {
+    if (undefined !== this.touchCursor && 0 === ev.touchCount)
+      this.touchCursor.doTouchEnd(ev);
+  }
+
   /** @internal */
-  public onTouchCancel(ev: BeTouchEvent): void { if (undefined !== this.touchCursor) this.touchCursor.doTouchEnd(ev); }
+  public onTouchCancel(ev: BeTouchEvent): void {
+    if (undefined !== this.touchCursor)
+      this.touchCursor.doTouchEnd(ev);
+  }
+
   /** @internal */
-  public onTouchMove(ev: BeTouchEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMove(ev) : false; }
+  public onTouchMove(ev: BeTouchEvent): boolean {
+    return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMove(ev) : false;
+  }
+
   /** @internal */
-  public onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMoveStart(ev, startEv) : false; }
+  public onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): boolean {
+    return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMoveStart(ev, startEv) : false;
+  }
 
   /** @internal */
   public get wantVirtualCursor(): boolean {
@@ -1003,8 +1059,13 @@ export class AccuSnap implements Decorator {
     }
 
     const hit = IModelApp.tentativePoint.getCurrSnap();
-    if (hit && !(hit.isModelHit || hit.isMapHit)) // Don't hilite reality models.
-      hit.draw(context);
+    if (!hit || hit.isModelHit || hit.isMapHit)
+      return; // Don't hilite reality models.
+
+    if (this.toolState.neverFlash && this.toolState.neverFlash.has(hit.sourceId))
+      return;
+
+    hit.draw(context);
   }
 
   /** @internal */
@@ -1110,12 +1171,18 @@ export namespace AccuSnap { // eslint-disable-line no-redeclare
     public enabled = false;
     public locate = false;
     public suspended = 0;
+    public neverFlash?: Id64Set;
     public setFrom(other: ToolState): void {
       this.enabled = other.enabled;
       this.locate = other.locate;
       this.suspended = other.suspended;
+      this.neverFlash = other.neverFlash;
     }
-    public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
+    public clone(): ToolState {
+      const val = new ToolState();
+      val.setFrom(this);
+      return val;
+    }
   }
 
   export class Settings {

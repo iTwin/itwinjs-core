@@ -39,14 +39,14 @@ describe("useWidgetDirection", () => {
     await TestUtils.flushAsyncOperations();
 
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
+    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
     const { result } = renderHook(() => useWidgetDirection(), {
       wrapper: ({ children }) => ( // eslint-disable-line react/display-name
         <Provider store={TestUtils.store} >
           <NineZoneContext.Provider value={nineZone}>
             <TabIdContext.Provider value="t1">
-              <FrameworkVersion>
+              <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
                 {children}
               </FrameworkVersion>
             </TabIdContext.Provider>
@@ -62,14 +62,14 @@ describe("useWidgetDirection", () => {
     await TestUtils.flushAsyncOperations();
 
     let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { result } = renderHook(() => useWidgetDirection(), {
       wrapper: ({ children }) => ( // eslint-disable-line react/display-name
         <Provider store={TestUtils.store} >
           <NineZoneContext.Provider value={nineZone}>
             <TabIdContext.Provider value="t1">
-              <FrameworkVersion>
+              <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
                 {children}
               </FrameworkVersion>
             </TabIdContext.Provider>

@@ -1,119 +1,218 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
 Table of contents:
 
-- [Ambient Occlusion Improvements](#ambient-occlusion-improvements)
-- [Transformer API](#transformer-api)
+- [Display system](#display-system)
+  - [Reality model display customization](#reality-model-display-customization)
+  - [View padding](#view-padding)
 - [Presentation](#presentation)
-  - [Restoring Presentation tree state](#restoring-presentation-tree-state)
-  - [OpenTelemetry](#opentelemetry)
-- [Electron versions support](#electron-versions-support)
+  - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
+  - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
+- [Element aspect ids](#element-aspect-ids)
+- [AppUi](#appui)
+- [New packages](#new-packages)
+  - [@itwin/map-layers-formats](#itwinmap-layers-formats)
 - [Geometry](#geometry)
-  - [Coplanar facet consolidation](#coplanar-facet-consolidation)
-  - [Filling mesh holes](#filling-mesh-holes)
+  - [Polyface](#polyface)
+  - [Curves](#curves)
+- [Deprecations](#deprecations)
+  - [@itwin/appui-layout-react](#itwinappui-layout-react)
+  - [@itwin/appui-react](#itwinappui-react)
+  - [@itwin/components-react](#itwincomponents-react)
+  - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-geometry](#itwincore-geometry)
+  - [@itwin/core-transformer](#itwincore-transformer)
 
-## Ambient Occlusion Improvements
+## Display system
 
-The ambient occlusion effect has undergone some quality improvements.
+### Reality model display customization
 
-Changes:
+You can now customize various aspects of how a reality model is displayed within a [Viewport]($frontend) by applying your own [RealityModelDisplaySettings]($common) to the model. For contextual reality models, use [ContextRealityModel.displaySettings]($common); for persistent reality [Model]($backend)s, use [DisplayStyleSettings.setRealityModelDisplaySettings]($common).
 
-- The shadows cast by ambient occlusion will decrease in size the more distant the geometry is.
-- The maximum distance for applying ambient occlusion now defaults to 10,000 meters instead of 100 meters.
-- The effect will now fade as it approaches the maximum distance.
+For all types of reality models, you can customize how the model's color is mixed with a color override applied by a [FeatureAppearance]($common) or a [SpatialClassifier]($common). [RealityModelDisplaySettings.overrideColorRatio]($common) defaults to 0.5, mixing the two colors equally, but you can adjust it to any value between 0.0 (use only the model's color) and 1.0 (use only the override color).
 
-Old effect, as shown below:
+Point clouds provide the following additional customizations:
 
-![AO effect is the same strength in the near distance and far distance](./assets/AOOldDistance.png)
+- [PointCloudDisplaySettings.sizeMode]($common) controls how the size of each point in the cloud is computed - either as a specific radius in pixels via [PointCloudDisplaySettings.pixelSize]($common), or based on the [Tile]($frontend)'s voxel size in meters.
+- When using voxel size mode, points can be scaled using [PointCloudDisplaySettings.voxelScale]($common) and clamped to a range of pixel sizes using [PointCloudDisplaySettings.minPixelsPerVoxel]($common) and [PointCloudDisplaySettings.maxPixelsPerVoxel]($common).
+- [PointCloudDisplaySettings.shape]($common) specifies whether to draw rounded points or square points.
 
-New effect, shown below:
+### View padding
 
-![AO effect fades in the distance; shadows decrease in size](./assets/AONewDistance.png)
+Functions like [ViewState.lookAtVolume]($frontend) and [Viewport.zoomToElements]($frontend) fit a view to a specified volume. They accept a [MarginOptions]($frontend) that allows the caller to customize how tightly the view fits to the volume, via [MarginPercent]($frontend). However, the amount by which the volume is enlarged to add extra space can yield surprising results. For example, a [MarginPercent]($frontend) that specifies a margin of 25% on each side - `{left: .25, right: .25, top: .25, bottom: .25}` - actually *doubles* the width and height of the volume, adding 50% of the original volume's size to each side. Moreover, [MarginPercent]($frontend)'s constructor clamps the margin values to a minimum of zero and maximum of 0.25.
 
-For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
+Now, [MarginOptions]($frontend) has an alternative way to specify how to adjust the size of the viewed volume, using [MarginOptions.paddingPercent]($frontend). Like [MarginPercent]($frontend), a [PaddingPercent]($frontend) specifies the extra space as a percentage of the original volume's space on each side - though it may also specify a single padding to be applied to all four sides, or omit any side that should have no padding applied. For example,
 
-## Transformer API
+```
+{paddingPercent: {left: .2, right: .2, top: .2, bottom: .2}}
+// is equivalent to
+{paddingPercent: .2}
+```
 
-The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated.
-It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
-awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
-changes instead of the full source contents.
+and
+
+```
+{paddingPercent: {left: 0, top: 0, right: .5, bottom: .5}}
+// is equivalent to
+{paddingPercent: {right: .5, bottom: .5}
+```
+
+Moreover, [PaddingPercent]($frontend) imposes no constraints on the padding values. They can even be negative, which causes the volume to shrink instead of expand by **subtracting** a percentage of the original volume's size from one or more sides.
+
+The padding computations are more straightforward than those used for margins. For example, `{paddingPercent: 0.25}` adds 25% of the original volume's size to each side, whereas the equivalent `marginPercent` adds 50% to each side.
+
+Note that both margins and padding apply only to 2d views, or to 3d views with the camera turned off; and that additional extra space will be allocated on either the top and bottom or left and right to preserve the viewport's aspect ratio.
 
 ## Presentation
 
-### Restoring Presentation tree state
+### Controlling in-memory cache sizes
 
-It is now possible to restore previously saved Presentation tree state on component mount.
+The presentation library uses a number of SQLite connections, each of which have an associated in-memory page cache. Ability to control the size of these caches on the backend has been added to allow consumers fine-tune their configuration based on their memory restrictions and use cases.
 
-```ts
-// Save current tree state
-const { nodeLoader } = usePresentationTreeNodeLoader(args);
-useEffect(() => exampleStoreTreeModel(nodeLoader.modelSource.getModel()), []);
-
-// Restore tree state on component mount
-const seedTreeModel = exampleRetrieveStoredTreeModel();
-const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
-```
-
-## IModelSchemaLoader replaced with SchemaLoader
-
-Replaced `IModelSchemaLoader` with `SchemaLoader` class and function to get schemas from an iModel. This allows us to remove the ecschema-metadata dependency in core-backend.
-
-```typescript
-// Old
-import { IModelSchemaLoader } from "@itwin/core-backend";
-const loader = new IModelSchemaLoader(iModel);
-const schema = loader.getSchema("BisCore");
-
-// New
-import { SchemaLoader } from "@itwin/ecschema-metadata";
-const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
-const schema = loader.getSchema("BisCore");
-```
-
-The new `SchemaLoader` can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
-
-### OpenTelemetry
-
-It is now possible to setup OpenTelemetry reporting using `PresentationManagerProps.diagnosticsCallback` attribute.
-
-Example usage:
+The configuration is done when initializing [Presentation]($presentation-backend) or creating a [PresentationManager]($presentation-backend):
 
 ```ts
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
-import { context, trace } from "@opentelemetry/api";
-import { convertToReadableSpans } from "@itwin/presentation-opentelemetry";
-import { Presentation } from "@itwin/presentation-backend";
-
-const traceExporter = new OTLPTraceExporter({
-  url: "<OpenTelemetry collector's url>",
+Presentation.initialize({
+  caching: {
+    // use 8 megabytes page cache for worker connections to iModels
+    workerConnectionCacheSize: 8 * 1024 * 1024,
+    // use a disk-based hierarchy cache with a 4 megabytes in-memory page cache
+    hierarchies: {
+      mode: HierarchyCacheMode.Disk,
+      memoryCacheSize: 4 * 1024 * 1024,
+    },
+  },
 });
-
-Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
-  const parentSpanContext = trace.getSpan(context.active())?.spanContext();
-  const spans = convertToReadableSpans(diagnostics, parentSpanContext);
-  traceExporter.export(spans, () => {});
-} });
 ```
 
-## Electron versions support
+See the [Caching documentation page](../presentation/advanced/Caching.md) for more details on various caches used by presentation system.
 
-In addition to the already supported Electron 14, Electron versions 15, 16, and 17 are now supported (blog posts for Electron versions [15](https://www.electronjs.org/blog/electron-15-0), [16](https://www.electronjs.org/blog/electron-16-0), [17](https://www.electronjs.org/blog/electron-17-0)). At the moment, support for Electron 18 and 19 is blocked due to a bug in the V8 javascript engine (for more information see [Issue #35043](https://github.com/electron/electron/issues/35043)).
+### Changes to infinite hierarchy prevention
+
+The idea of infinite hierarchy prevention is to stop producing hierarchy when we notice duplicate ancestor nodes. See more details about that in the [Infinite hierarchy prevention page](../presentation/hierarchies/InfiniteHierarchiesPrevention.md).
+
+Previously, when a duplicate node was detected, our approach to handle the situation was to just hide the duplicate node altogether. However, in some situations that turned out to be causing mismatches between what we get through a nodes count request and what we get through a nodes request (e.g. the count request returns `2`, but the nodes request returns only 1 node). There was no way to keep the count request efficient with this approach of handling infinite hierarchies.
+
+The new approach, instead of hiding the duplicate node, shows it, but without any children. This still "breaks" the hierarchy when we want that, but keeps the count and nodes in sync.
+
+#### Example
+
+Say, we have two instances A and B and they point to each other through a relationship:
+
+```
+A -> refers to -> B
+B -> refers to -> A
+```
+
+With presentation rules we can set up a hierarchy where root node is A, its child is B, whose child is again A, and so on.
+
+With previous approach the produced hierarchy "breaks" at the B node and looks like this:
+
+```
++ A
++--+ B
+```
+
+With the new approach we "break" at the duplicate A node:
+
+```
++ A
++--+ B
+   +--+ A
+```
+
+## Element aspects
+
+### Aspect Ids
+
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so the ids returned are not unique from all element ids and may collide.
+
+### ExternalSourceAspect find methods
+
+[ExternalSourceAspect.findBySource]($core-backend) is deprecated. Use [ExternalSourceAspect.findAllBySource]($core-backend) instead.
+
+An [Element]($core-backend) can have more than one ExternalSourceAspect with the same scope, kind, and identifier. Also, many elements could have ExternalSourceAspects with the same scope, kind, and identifier. Therefore, `ExternalSourceAspect.findAllBySource` returns an *array*.
+
+If an app expects there to be only one [ExternalSourceAspect]($core-backend) with a given scope, kind, and identifier in the iModel, it must check that the array returned by ExternalSourceAspect.findAllBySource contains only one item.
+
+To narrow the search to just the `ExternalSourceAspect`s on a single element, use an ECSql query, such as `select ecinstanceid from Bis.ExternalSourceAspect where scope.id=? and kind=? and identifier=? and element.id=?`. If only one such aspect is expected, verify that only one row is found.
+
+## AppUi
+
+### Setting allowed panel zones for widgets
+
+When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
+
+## New packages
+
+### @itwin/map-layers-formats
+
+A new `@itwin/map-layers-formats` package has been introduced to provide additional [MapLayerFormat]($frontend)s not delivered as part of `@itwin/core-frontend`. The initial release contains the new `ArgGISFeature` format which allows vector data published by [ArcGIS Feature services](https://enterprise.arcgis.com/en/server/latest/publish-services/windows/what-is-a-feature-service-.htm) to be displayed in a [Viewport]($frontend).
+
+To use this package, you must initialize it by calling [MapLayersFormats.initialize]($map-layers-formats) to register the additional formats. This should be done only **after** [IModelApp.startup]($frontend) has been called.
 
 ## Geometry
 
-### Coplanar facet consolidation
+### Polyface
 
-A new method, [PolyfaceQuery.cloneWithMaximalPlanarFacets]($core-geometry), can identify groups of adjacent coplanar facets in a mesh and produce a new mesh in which each group is consolidated into a single facet. The consolidated facets are necessarily not triangular and various bridge edges will be present in non-convex facets.
+The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
 
-![maximalPlanarFacets](assets/Geometry-maximalPlanarFacets.png "Mesh with many coplanar facets; new mesh with consolidation of coplanar facets")
+### Curves
 
-### Filling mesh holes
+The methods [CurveCollection.projectedParameterRange]($core-geometry) and [CurvePrimitive.projectedParameterRange]($core-geometry) have been added for computing the range of fractional projection parameters of the instance curve(s) onto a `Ray3d`. The default implementation of the latter method returns undefined to avoid a circular dependency, so extenders of [CurvePrimitive]($core-geometry) should override as appropriate.
 
-A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify holes in a mesh and produce a new mesh in which some or all of the holes are replaced with facets. Which holes are filled can be controlled using [HoleFillOptions]($core-geometry) to specify constraints such as maximum hole perimeter, number of edges, and/or loop direction.
+## Deprecations
 
-![fillHoles](assets/Geometry-fillHoles.png "Mesh with holes; All boundaries extracted from surface, including outer boundary; Mesh with holes filled")
+### @itwin/appui-layout-react
+
+All non-internal components are deprecated with their corresponding replacements available in `@itwin/appui-react` package. Going forward `@itwin/appui-layout-react` package is considered as internal implementation detail of the `@itwin/appui-react` package and should not be used directly.
+
+| Deprecated        | Replacement                                        |
+| ----------------- | -------------------------------------------------- |
+| `Dialog`          | [StatusBarDialog]($appui-react)                    |
+| `FooterIndicator` | [StatusBarIndicator]($appui-react)                 |
+| `FooterPopup`     | `popup` prop of [StatusBarIndicator]($appui-react) |
+| `FooterSeparator` | [StatusBarSeparator]($appui-react)                 |
+| `SafeAreaInsets`  | [SafeAreaInsets]($appui-react)                     |
+| `TitleBar`        | [StatusBarDialog.TitleBar]($appui-react)           |
+
+### @itwin/appui-react
+
+A number of **UI1.0** related APIs and components are deprecated and will be removed in the next `@itwin/appui-react` major version:
+`FrameworkVersion`, `FrameworkVersionContext`, `FrameworkVersionId`, `FrameworkVersionProps`, `ListPickerBase`, `useFrameworkVersion`,
+`NineZoneChangeHandler`, `StagePanelChangeHandler`, `WidgetStateFunc`, `ZoneDefProvider`.
+
+Other deprecations and their replacements:
+
+| Deprecated             | Replacement                                |
+| ---------------------- | ------------------------------------------ |
+| `ActionItemButton`     | [ActionButton]($appui-abstract)            |
+| `ActivityMessagePopup` | Activity messages are set-up automatically |
+| `Backstage`            | [BackstageComposer]($appui-react)          |
+| `BackstageEvent`       | [BackstageManager.onToggled]($appui-react) |
+| `GroupButton`          | [GroupButton]($appui-abstract)             |
+| `Indicator`            | [StatusBarIndicator]($appui-react)         |
+| `ToolButton`           | [CommonToolbarItem]($appui-abstract)       |
+| `withSafeArea`         | [SafeAreaContext]($appui-react)            |
+
+### @itwin/components-react
+
+All the components that were only used by or with the deprecated [Table]($components-react) are now marked as deprecated as well and will be removed in an upcoming version. The Table was deprecated a year ago in favor of the Table component provided in the `@itwin/itwinui-react` package, which do not use any of these parts.
+
+### @itwin/core-backend
+
+The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated in favor of [IModelDb.Views.getViewStateProps]($backend), which accepts the same inputs and returns the same output, but performs some potentially-expensive work on a background thread to avoid blocking the JavaScript event loop.
+
+The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
+ The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
+
+### @itwin/core-geometry
+
+The method [PathFragment.childFractionTChainDistance]($core-geometry) has been deprecated in favor of the correctly spelled method [PathFragment.childFractionToChainDistance]($core-geometry).
+
+### @itwin/core-transformer
+
+[IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).

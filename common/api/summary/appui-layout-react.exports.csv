@@ -5,9 +5,7 @@ internal;addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], 
 internal;addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial
 internal;addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"], tabs: WidgetState["tabs"], popoutWidgetArgs?: Partial
 internal;addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial
-internal;addWidgetTabToDraftFloatingPanel(draft: Draft
-internal;addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState
-internal;addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panelSectionWidgetId: string, widgetTabId: string): NineZoneState
+internal;addTabToWidget(state: NineZoneState, tabId: TabState["id"], widgetId: WidgetState["id"]): NineZoneState
 internal;AnimateDockedToolSettingsContext: React_2.Context
 internal;AppButton 
 internal;AppButtonProps 
@@ -41,25 +39,15 @@ deprecated;containVertically: (componentBounds: RectangleProps, containerBounds:
 internal;ContentNodeContext: React_2.Context
 internal;ContentZoneId = 5
 internal;convertAllPopupWidgetContainersToFloating(state: NineZoneState): NineZoneState
-internal;convertFloatingWidgetContainerToPopout(state: NineZoneState, widgetContainerId: string): NineZoneState
-internal;convertPopoutWidgetContainerToFloating(state: NineZoneState, widgetContainerId: string): NineZoneState
-internal;createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial
-internal;createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial
-internal;createHorizontalPanelState(side: HorizontalPanelSide, args?: Partial
 internal;createNineZoneState(args?: Partial
-internal;createPanelsState(args?: Partial
-internal;createPanelState(side: PanelSide):
-internal;createPopoutWidgetState(id: PopoutWidgetState["id"], args?: Partial
-internal;createTabsState(args?: Partial
-internal;createTabState(id: TabState["id"], args?: Partial
-internal;createVerticalPanelState(side: VerticalPanelSide, args?: Partial
-internal;createWidgetState(id: WidgetState["id"], tabs: WidgetState["tabs"], args?: Partial
 internal;Css
 internal;CssProperties
 internal;CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resize" | "grabbing"
 internal;CursorTypeContext: React_2.Context
 beta;Dialog 
+deprecated;Dialog 
 beta;DialogProps 
+deprecated;DialogProps 
 beta;Direction
 deprecated;Direction
 internal;DirectionHelpers
@@ -74,7 +62,7 @@ internal;DockedToolSettingsOverflow: React_2.MemoExoticComponent
 internal;DockedToolSettingsOverflowProps 
 internal;DockedToolSettingsProps 
 internal;DockedToolSettingsState
-internal;dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean): NineZoneState | undefined
+internal;dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean): NineZoneState
 internal;DraggedPanelSideContext: React_2.Context
 internal;DraggedResizeHandleContext: React_2.Context
 internal;DraggedTabContext: React_2.Context
@@ -85,6 +73,7 @@ internal;DraggedWidgetManager
 internal;DraggedWidgetManagerProps
 internal;DragHandle 
 internal;DragHandleProps 
+internal;DragItem = TabDragItem | WidgetDragItem | PanelGripDragItem | ResizeHandleDragItem
 internal;DragManager
 internal;DragManagerContext: React_2.Context
 internal;DragProvider: React_2.NamedExoticComponent
@@ -101,19 +90,21 @@ beta;ExpandableItem
 deprecated;ExpandableItem 
 beta;ExpandableItemProps 
 deprecated;ExpandableItemProps 
-internal;findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined
-internal;findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined
 internal;FloatingTab(): JSX.Element
-internal;FloatingWidget: React_2.NamedExoticComponent
-internal;floatingWidgetBringToFront(state: Draft
+internal;FloatingTabLocation
+internal;FloatingWidget(props: FloatingWidgetProps): JSX.Element
+internal;floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState
 internal;FloatingWidgetBringToFrontAction
 internal;FloatingWidgetClearUserSizedAction
-internal;floatingWidgetClearUserSizedFlag(state: Draft
 internal;FloatingWidgetContext: React_2.Context
 internal;FloatingWidgetDropTargetState
 internal;FloatingWidgetHomeState
 internal;FloatingWidgetIdContext: React_2.Context
+internal;FloatingWidgetLocation
+internal;FloatingWidgetNodeContext: React_2.Context
 internal;FloatingWidgetProps
+internal;FloatingWidgetProvider(props: FloatingWidgetProviderProps): JSX.Element
+internal;FloatingWidgetProviderProps
 internal;FloatingWidgetResizeAction
 internal;FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidgetCornerHandle
 internal;FloatingWidgets: React_2.NamedExoticComponent
@@ -122,19 +113,27 @@ internal;FloatingWidgetSetBoundsAction
 internal;FloatingWidgetsState
 internal;FloatingWidgetsStateContext: React_2.Context
 internal;FloatingWidgetState
-internal;floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState | undefined
+internal;floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState
 internal;Footer 
 deprecated;Footer 
-beta;FooterIndicator(props: FooterIndicatorProps): JSX.Element
+beta;FooterIndicator: React_2.ForwardRefExoticComponent
+deprecated;FooterIndicator: React_2.ForwardRefExoticComponent
 beta;FooterIndicatorProps 
+deprecated;FooterIndicatorProps 
 beta;FooterPopup 
+deprecated;FooterPopup 
 beta;FooterPopupContentType
+deprecated;FooterPopupContentType
 beta;FooterPopupDefaultProps = Pick
+deprecated;FooterPopupDefaultProps = Pick
 beta;FooterPopupProps 
+deprecated;FooterPopupProps 
 internal;FooterProps 
 deprecated;FooterProps 
 public;FooterSeparator 
+deprecated;FooterSeparator 
 public;FooterSeparatorProps 
+deprecated;FooterSeparatorProps 
 internal;getChildKey(child: React_2.ReactNode, index: number): string
 internal;getClosedWidgetTabIndex: (tabIndex: number) => number
 internal;getColumnZones: (id: WidgetZoneId) => WidgetZoneId[]
@@ -156,9 +155,11 @@ internal;getDefaultZonesManagerZonesProps: () => ZonesManagerZonesProps
 internal;getDragDistance: (from: Point, to: Point, direction: Direction) => number
 internal;getOverflown(width: number, docked: ReadonlyArray
 internal;getResizeBy(handle: FloatingWidgetResizeHandle, offset: PointProps): Rectangle
+internal;getTabLocation(state: NineZoneState, id: TabState["id"]): TabLocation | undefined
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 internal;getToolbarItemProps: 
 internal;getUniqueId(): string
+internal;getWidgetLocation(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined
 internal;getWidgetPanelSectionId(side: PanelSide, panelSectionIndex: number): string
 internal;getWindowResizeSettings: (zoneId: WidgetZoneId) => ZoneWindowResizeSettings
 internal;getZoneCell: (id: ZoneId) => Cell
@@ -189,20 +190,24 @@ internal;HorizontalAnchorHelpers
 internal;HorizontalPanelSide = TopPanelSide | BottomPanelSide
 internal;HorizontalPanelState 
 internal;IconOnlyOnWidgetTabContext: React_2.Context
-internal;initSizeAndPositionProps
-internal;isFloatingLocation(location: TabLocation): location is FloatingLocation
+internal;insertPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], sectionIndex: number, widgetArgs?: Partial
+internal;insertTabToWidget(state: NineZoneState, tabId: TabState["id"], widgetId: WidgetState["id"], tabIndex: number): NineZoneState
+internal;isDockedToolSettingsState(state: ToolSettingsState): state is DockedToolSettingsState
+internal;isFloatingTabLocation(location: TabLocation): location is FloatingTabLocation
 internal;isFloatingWidgetLocation(location: WidgetLocation): location is FloatingWidgetLocation
 internal;isHorizontalPanelSide: (side: PanelSide) => side is HorizontalPanelSide
 internal;isHorizontalPanelState(state: PanelState): state is HorizontalPanelState
 internal;isPanelDropTargetState(state: DropTargetState): state is PanelDropTargetState
-internal;isPanelLocation(location: TabLocation): location is PanelLocation
-internal;isPopoutLocation(location: TabLocation): location is PopoutLocation
+internal;isPanelTabLocation(location: TabLocation): location is PanelTabLocation
+internal;isPanelWidgetLocation(location: WidgetLocation): location is PanelWidgetLocation
+internal;isPopoutTabLocation(location: TabLocation): location is PopoutTabLocation
 internal;isPopoutWidgetLocation(location: WidgetLocation): location is PopoutWidgetLocation
 internal;isSectionDropTargetState(state: DropTargetState): state is SectionDropTargetState
 internal;isTabDragDropTargetState(state: DropTargetState): state is TabDragDropTargetState
 internal;isTabDropTargetState(state: DropTargetState): state is TabDropTargetState
 internal;isWidgetDragDropTargetState(state: DropTargetState): state is WidgetDragDropTargetState
 internal;isWidgetDropTargetState(state: DropTargetState): state is WidgetDropTargetState
+internal;isWindowDropTargetState(state: WidgetDragDropTargetState): state is WindowDropTargetState
 beta;Item 
 deprecated;Item 
 beta;ItemProps 
@@ -240,9 +245,9 @@ internal;NestedStagePanelsId
 internal;NestedStagePanelsManager
 internal;NestedStagePanelsManagerProps
 internal;NineZone(props: NineZoneProps): JSX.Element
-internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelSetSplitterPercentAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction
+internal;NineZoneAction = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelSetSplitterPercentAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction
 internal;NineZoneContext: React_2.Context
-internal;NineZoneDispatch = (action: NineZoneActionTypes) => void
+internal;NineZoneDispatch = (action: NineZoneAction) => void
 internal;NineZoneDispatchContext: React_2.Context
 internal;NineZoneLabels
 internal;NineZoneLabelsContext: React_2.Context
@@ -264,7 +269,7 @@ internal;NineZoneStagePanelPaneManagerProps
 internal;NineZoneStagePanelsManager 
 internal;NineZoneStagePanelsManagerProps 
 internal;NineZoneState
-internal;NineZoneStateReducer: (state: NineZoneState, action: NineZoneActionTypes) => NineZoneState
+internal;NineZoneStateReducer(state: NineZoneState, action: NineZoneAction): NineZoneState
 internal;offsetAndContainInContainer: (tooltipBounds: RectangleProps, containerSize: SizeProps, offset?: PointProps) => Point
 internal;onOverflowLabelAndEditorResize(): void
 internal;OrthogonalDirection
@@ -292,28 +297,32 @@ internal;PanelsState
 internal;PanelsStateContext: React_2.Context
 internal;PanelState
 internal;PanelStateContext: React_2.Context
+internal;PanelTabLocation
 internal;PanelTarget: React_2.NamedExoticComponent
 internal;PanelToggleCollapsedAction
 internal;PanelTogglePinnedAction
 internal;PanelToggleSpanAction
 internal;PanelWidget: React_2.MemoExoticComponent
 internal;PanelWidgetDragStartAction
+internal;PanelWidgetLocation
 internal;PanelWidgetProps
 internal;PinToggle: React_2.NamedExoticComponent
 internal;PointerCaptor 
 internal;PointerCaptorArgs
 internal;PointerCaptorEvent = MouseEvent | TouchEvent
 internal;PointerCaptorProps 
+internal;PopoutTabLocation
 internal;PopoutToggle: React_2.NamedExoticComponent
+internal;PopoutWidgetLocation
 internal;PopoutWidgetSendBackAction
 internal;PopoutWidgetsState
 internal;PopoutWidgetState
-internal;popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState | undefined
+internal;popoutWidgetToChildWindow(state: NineZoneState, tabId: string, preferredBounds: RectangleProps): NineZoneState
 internal;ProgressProps 
 internal;RECTANGULAR_DEFAULT_MIN_HEIGHT = 220
 internal;RECTANGULAR_DEFAULT_MIN_WIDTH = 296
-internal;removeTab(state: Draft
-internal;removeWidgetTab(state: Draft
+internal;removeTab(state: NineZoneState, tabId: TabState["id"]): NineZoneState
+internal;removeTabFromWidget(state: NineZoneState, tabId: TabState["id"]): NineZoneState
 internal;ResizeAction
 internal;ResizeDirection
 internal;ResizeDirectionHelpers
@@ -325,13 +334,13 @@ internal;ResizeStrategy
 internal;restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): SizeProps
 internal;RightPanelSide = "right"
 beta;SafeAreaInsets
+deprecated;SafeAreaInsets
 internal;SafeAreaInsetsHelpers
 internal;ScrollableWidgetContent: React_2.NamedExoticComponent
 internal;ScrollableWidgetContentProps
 internal;SectionDropTargetState
 internal;SendBack: React_2.NamedExoticComponent
 internal;setFloatingWidgetContainerBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps): NineZoneState
-internal;setRectangleProps(props: Draft
 internal;ShowWidgetIconContext: React_2.Context
 internal;ShrinkBottom 
 internal;class ShrinkHorizontalStrategy 
@@ -341,7 +350,6 @@ internal;class ShrinkStrategy
 internal;ShrinkTop 
 internal;class ShrinkVerticalStrategy 
 internal;sideToCursorType(side: PanelSide): CursorType
-internal;SizeAndPositionProps 
 internal;Snap 
 internal;SnapMode 
 deprecated;SnapMode 
@@ -379,6 +387,7 @@ internal;TabDropTargetState
 internal;TabGroup 
 internal;TabGroupProps 
 internal;TabIdContext: React_2.Context
+internal;TabLocation = PanelTabLocation | FloatingTabLocation | PopoutTabLocation
 internal;TabMode
 internal;TabModeHelpers
 internal;TabNodeContext: React_2.Context
@@ -393,9 +402,11 @@ internal;TabState
 internal;TabStateContext: React_2.Context
 internal;Title 
 beta;TitleBar 
+deprecated;TitleBar 
 internal;TitleBarButton 
 internal;TitleBarButtonProps 
 beta;TitleBarProps 
+deprecated;TitleBarProps 
 internal;TitleProps 
 internal;Toast 
 deprecated;Toast 
@@ -461,6 +472,7 @@ internal;useBorders(widgetId: WidgetState["id"]):
 internal;useCursor(): void
 internal;useDoubleClick(onDoubleClick?: () => void): () => void
 internal;useDrag
+internal;useDraggedItem(): DragItem | undefined
 internal;useDraggedItemId
 internal;useDragItem
 internal;UseDragItemArgs
@@ -468,13 +480,12 @@ internal;useDragPanelGrip(args: UseDragPanelGripArgs): ({ initialPointerPosition
 internal;UseDragPanelGripArgs
 internal;useDragResizeHandle(args: UseDragResizeHandleArgs): ({ initialPointerPosition }: DragStartArgs) => void
 internal;UseDragResizeHandleArgs
-internal;useDragTab(args: UseDragTabArgs): ({ initialPointerPosition, widgetSize }: TabDragStartArgs) => void
+internal;useDragTab(args: UseDragTabArgs): ({ initialPointerPosition, pointerPosition, widgetSize }: TabDragStartArgs) => void
 internal;UseDragTabArgs
 internal;useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPosition }: DragStartArgs) => void
 internal;UseDragToolSettingsArgs
-internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition, pointerPosition }: WidgetDragStartArgs) => void
+internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition, pointerPosition }: DragStartArgs) => void
 internal;UseDragWidgetArgs
-internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
 internal;useIsDraggedType(type: DragItem["type"]): boolean
 internal;useIsMainPanelWidget(): boolean
@@ -520,9 +531,9 @@ internal;WidgetContextArgs
 internal;WidgetDragAction
 internal;WidgetDragDropTargetState = PanelDropTargetState | SectionDropTargetState | WidgetDropTargetState | TabDropTargetState | WindowDropTargetState
 internal;WidgetDragEndAction
-internal;WidgetDragStartArgs 
 internal;WidgetDropTargetState
 internal;WidgetIdContext: React_2.Context
+internal;WidgetLocation = PanelWidgetLocation | FloatingWidgetLocation | PopoutWidgetLocation
 internal;WidgetManagerProps
 internal;WidgetMenu(props: WidgetMenuProps): JSX.Element
 internal;WidgetMenuProps 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add MarginOptions.paddingPercent for a more straightforward way to pad out a viewed volume.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

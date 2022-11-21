@@ -13,9 +13,9 @@ import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
-  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
-  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
-  SubCategoryResultRow,
+  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
+  ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat,
+  RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow,
   TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
@@ -156,6 +156,12 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
+
+  /** Event called immediately after *this* IModelConnection has its displayed extents expanded.
+   * @note This event is called only for this IModelConnection.
+   * @internal
+   */
+  public readonly onDisplayedExtentsExpansion = new BeEvent<() => void>();
 
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
   public fontMap?: FontMap;
@@ -485,10 +491,7 @@ export abstract class IModelConnection extends IModel {
     this.displayedExtents.setFrom(this.projectExtents);
     this.displayedExtents.extendRange(this._extentsExpansion);
 
-    for (const vp of IModelApp.viewManager) {
-      if (vp.view.isSpatialView() && vp.iModel === this)
-        vp.invalidateController();
-    }
+    this.onDisplayedExtentsExpansion.raiseEvent();
   }
 
   /** @internal */
@@ -772,10 +775,33 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       this._loaded.delete(modelId);
     }
 
-    /** Query for a set of model ranges by ModelIds. */
+    /** Query for a set of model ranges by ModelIds.
+     * @param modelIds the Id or Ids of the [GeometricModel]($backend)s for which to query the ranges.
+     * @returns An array containing the range of each model of each unique model Id, omitting the range for any Id which did no identify a GeometricModel.
+     * @note The contents of the returned array do not follow a deterministic order.
+     * @throws [IModelError]($common) if exactly one model Id is specified and that Id does not identify a GeoemtricModel.
+     * @see [[queryExtents]] for a similar function that does not throw and produces a deterministically-ordered result.
+     */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelRanges(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
+    }
+
+    /** For each [GeometricModel]($backend) specified by Id, attempts to obtain the union of the volumes of all geometric elements within that model.
+     * @param modelIds The Id or Ids of the geometric models for which to obtain the extents.
+     * @returns An array of results, one per supplied Id, in the order in which the Ids were supplied. If the extents could not be obtained, the
+     * corresponding results entry's `extents` will be a "null" range (@see [Range3d.isNull]($geometry) and its `status` will indicate
+     * why the extents could not be obtained (e.g., because the Id did not identify a [GeometricModel]($backend)).
+     */
+    public async queryExtents(modelIds: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
+      const iModel = this._iModel;
+      if (!iModel.isOpen)
+        return [];
+
+      if (typeof modelIds === "string")
+        modelIds = [modelIds];
+
+      return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelExtents(iModel.getRpcProps(), modelIds);
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams.
@@ -790,11 +816,15 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       params.from = queryParams.from || ModelState.classFullName; // use "BisCore:Model" as default class name
       params.where = queryParams.where || "";
       if (!queryParams.wantPrivate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
+
         params.where += "IsPrivate=FALSE ";
       }
       if (!queryParams.wantTemplate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
+
         params.where += "IsTemplate=FALSE ";
       }
       return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelProps(iModel.getRpcProps(), params);
@@ -1021,7 +1051,9 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       params.from = queryParams.from || ViewState.classFullName; // use "BisCore:ViewDefinition" as default class name
       params.where = queryParams.where || "";
       if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
+
         params.where += "IsPrivate=FALSE ";
       }
       const viewProps = await IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params);
@@ -1043,7 +1075,10 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     public async getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]> {
       const views: ViewSpec[] = [];
       const viewProps: ViewDefinitionProps[] = await this.queryProps(queryParams);
-      viewProps.forEach((viewProp) => { views.push({ id: viewProp.id as string, name: viewProp.code.value!, class: viewProp.classFullName }); });
+      viewProps.forEach((viewProp) => {
+        views.push({ id: viewProp.id as string, name: viewProp.code.value!, class: viewProp.classFullName });
+      });
+
       return views;
     }
 

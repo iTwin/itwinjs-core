@@ -5,8 +5,8 @@
 
 import { AccessToken, BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@itwin/core-bentley";
 import { CodeProps } from "@itwin/core-common";
+import { CloudSqlite } from "./CloudSqlite";
 import { IModelDb } from "./IModelDb";
-import { SQLiteDb } from "./SQLiteDb";
 import { SettingObject } from "./workspace/Settings";
 
 /**
@@ -71,11 +71,17 @@ export interface CodeService {
   readonly codeIndex: CodeIndex;
 
   /**
-   * Application-supplied parameters for obtaining the write lock on the container and for reserving new codes.
+   * Application-supplied parameters for obtaining the write lock on the container.
    * Applications should set these parameters by adding a listener for `BriefcaseDb.onCodeServiceCreated`
    * that is called every time a BriefcaseDb that uses code services is opened for write access.
    */
-  readonly appParams: SQLiteDb.ObtainLockParams & CodeService.AuthorAndOrigin;
+  readonly lockParams: CloudSqlite.ObtainLockParams;
+
+  /**
+   * Application-supplied parameters for reserving new codes.
+   * @see lockParams
+   */
+  readonly appParams: CodeService.AuthorAndOrigin;
 
   /**
    * The token that grants access to the cloud container for this CodeService.
@@ -181,7 +187,9 @@ export namespace CodeService {
   export let createForIModel: ((db: IModelDb) => CodeService) | undefined;
 
   /** Register an instance of a`CodeSequence` so it can be looked up by name. */
-  export function registerSequence(seq: CodeSequence) { codeSequences.set(seq.sequenceName, seq); }
+  export function registerSequence(seq: CodeSequence) {
+    codeSequences.set(seq.sequenceName, seq);
+  }
 
   /** Get a previously registered `CodeSequence` by its name.
    * @throws if no sequence by that name was registered.

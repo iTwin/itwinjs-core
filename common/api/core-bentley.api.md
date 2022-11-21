@@ -6,7 +6,7 @@
 
 /// <reference types="node" />
 
-import type { Attributes } from '@opentelemetry/api';
+import type { SpanAttributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
 import type { Tracer } from '@opentelemetry/api';
@@ -197,6 +197,7 @@ export enum ChangeSetStatus {
     ChangeTrackingNotEnabled = 90114,
     CorruptedChangeStream = 90115,
     CouldNotOpenDgnDb = 90131,
+    DownloadCancelled = 90138,
     FileNotFound = 90116,
     FileWriteError = 90117,
     HasLocalChanges = 90118,
@@ -1144,6 +1145,8 @@ export class Logger {
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logInfo: LogFunction | undefined;
+    // @internal (undocumented)
+    static logLevelChangedFn?: VoidFunction;
     static logTrace(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logTrace: LogFunction | undefined;
@@ -1275,6 +1278,9 @@ export class ObservableSet<T> extends Set<T> {
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
 
+// @public
+export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]>;
+
 // @beta
 export class OneAtATimeAction<T> {
     constructor(run: (...args: any[]) => Promise<T>, msg?: string);
@@ -1343,6 +1349,11 @@ export class PerfLogger implements IDisposable {
     // (undocumented)
     dispose(): void;
 }
+
+// @public
+export type PickAsyncMethods<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never;
+};
 
 // @public
 export class PriorityQueue<T> implements Iterable<T> {
@@ -1549,13 +1560,70 @@ export abstract class SuccessCategory extends StatusCategory {
 // @alpha
 export class Tracing {
     static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
-    static setAttributes(attributes: Attributes): void;
+    static setAttributes(attributes: SpanAttributes): void;
     static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
 }
 
 // @public
 export class TransientIdSequence {
     get next(): Id64String;
+}
+
+// @public
+export class TupleKeyedMap<K extends readonly any[], V> {
+    // (undocumented)
+    [Symbol.iterator](): IterableIterator<[K, V]>;
+    // (undocumented)
+    get [Symbol.toStringTag](): string;
+    constructor(entries?: readonly (readonly [K, V])[] | null);
+    // (undocumented)
+    clear(): void;
+    // (undocumented)
+    get(key: K): V | undefined;
+    // (undocumented)
+    has(key: K): boolean;
+    // (undocumented)
+    set(key: K, value: V): this;
+    // (undocumented)
+    get size(): number;
+}
+
+// @public
+export class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
+    protected constructor(constructor: Constructor<T>, options?: TypedArrayBuilderOptions);
+    append(values: T): void;
+    at(index: number): number;
+    get capacity(): number;
+    protected readonly _constructor: Constructor<T>;
+    protected _data: T;
+    ensureCapacity(newCapacity: number): number;
+    readonly growthFactor: number;
+    get length(): number;
+    protected _length: number;
+    push(value: number): void;
+    toTypedArray(includeUnusedCapacity?: boolean): T;
+}
+
+// @public
+export interface TypedArrayBuilderOptions {
+    growthFactor?: number;
+    initialCapacity?: number;
+}
+
+// @public
+export class Uint16ArrayBuilder extends TypedArrayBuilder<Uint16Array> {
+    constructor(options?: TypedArrayBuilderOptions);
+}
+
+// @public
+export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
+    constructor(options?: TypedArrayBuilderOptions);
+    toUint8Array(includeUnusedCapacity?: boolean): Uint8Array;
+}
+
+// @public
+export class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
+    constructor(options?: TypedArrayBuilderOptions);
 }
 
 // @public

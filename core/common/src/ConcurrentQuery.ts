@@ -7,7 +7,7 @@
  */
 import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import { Buffer } from "buffer";
+import { Base64 } from "js-base64";
 
 /**
  * Specifies the format of the rows returned by the `query` and `restartQuery` methods of
@@ -129,26 +129,70 @@ export interface BlobOptions extends BaseReaderOptions {
 export class QueryOptionsBuilder {
   public constructor(private _options: QueryOptions = {}) { }
   public getOptions(): QueryOptions { return this._options; }
-  public setPriority(val: number) { this._options.priority = val; return this; }
-  public setRestartToken(val: string) { this._options.restartToken = val; return this; }
-  public setQuota(val: QueryQuota) { this._options.quota = val; return this; }
-  public setUsePrimaryConnection(val: boolean) { this._options.usePrimaryConn = val; return this; }
-  public setAbbreviateBlobs(val: boolean) { this._options.abbreviateBlobs = val; return this; }
-  public setSuppressLogErrors(val: boolean) { this._options.suppressLogErrors = val; return this; }
-  public setConvertClassIdsToNames(val: boolean) { this._options.convertClassIdsToClassNames = val; return this; }
-  public setLimit(val: QueryLimit) { this._options.limit = val; return this; }
-  public setRowFormat(val: QueryRowFormat) { this._options.rowFormat = val; return this; }
+  public setPriority(val: number) {
+    this._options.priority = val;
+    return this;
+  }
+  public setRestartToken(val: string) {
+    this._options.restartToken = val;
+    return this;
+  }
+  public setQuota(val: QueryQuota) {
+    this._options.quota = val;
+    return this;
+  }
+  public setUsePrimaryConnection(val: boolean) {
+    this._options.usePrimaryConn = val;
+    return this;
+  }
+  public setAbbreviateBlobs(val: boolean) {
+    this._options.abbreviateBlobs = val;
+    return this;
+  }
+  public setSuppressLogErrors(val: boolean) {
+    this._options.suppressLogErrors = val;
+    return this;
+  }
+  public setConvertClassIdsToNames(val: boolean) {
+    this._options.convertClassIdsToClassNames = val;
+    return this;
+  }
+  public setLimit(val: QueryLimit) {
+    this._options.limit = val;
+    return this;
+  }
+  public setRowFormat(val: QueryRowFormat) {
+    this._options.rowFormat = val;
+    return this;
+  }
+
 }
 /** @beta */
 export class BlobOptionsBuilder {
   public constructor(private _options: BlobOptions = {}) { }
   public getOptions(): BlobOptions { return this._options; }
-  public setPriority(val: number) { this._options.priority = val; return this; }
-  public setRestartToken(val: string) { this._options.restartToken = val; return this; }
-  public setQuota(val: QueryQuota) { this._options.quota = val; return this; }
-  public setUsePrimaryConnection(val: boolean) { this._options.usePrimaryConn = val; return this; }
-  public setRange(val: BlobRange) { this._options.range = val; return this; }
+  public setPriority(val: number) {
+    this._options.priority = val;
+    return this;
+  }
+  public setRestartToken(val: string) {
+    this._options.restartToken = val;
+    return this;
+  }
+  public setQuota(val: QueryQuota) {
+    this._options.quota = val;
+    return this;
+  }
+  public setUsePrimaryConnection(val: boolean) {
+    this._options.usePrimaryConn = val;
+    return this;
+  }
+  public setRange(val: BlobRange) {
+    this._options.range = val;
+    return this;
+  }
 }
+
 /** @internal */
 enum QueryParamType {
   Boolean = 0,
@@ -195,7 +239,7 @@ export class QueryBinder {
   public bindBlob(indexOrName: string | number, val: Uint8Array) {
     this.verify(indexOrName);
     const name = String(indexOrName);
-    const base64 = Buffer.from(val).toString("base64");
+    const base64 = Base64.fromUint8Array(val);
     Object.defineProperty(this._args, name, {
       enumerable: true, value: {
         type: QueryParamType.Blob,

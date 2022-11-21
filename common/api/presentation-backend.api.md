@@ -60,26 +60,27 @@ export interface BackendDiagnosticsAttribute {
 }
 
 // @beta
-export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
+export type BackendDiagnosticsHandler<TContext = any> = (logs: Diagnostics, requestContext?: TContext) => void;
 
 // @beta
-export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
-    // (undocumented)
-    handler: BackendDiagnosticsHandler;
+export interface BackendDiagnosticsOptions<TContext = any> extends DiagnosticsOptions {
+    handler: BackendDiagnosticsHandler<TContext>;
+    requestContextSupplier?: () => TContext;
 }
+
+// @internal (undocumented)
+export function combineDiagnosticsOptions(...options: Array<BackendDiagnosticsOptions | undefined>): DiagnosticsOptions | undefined;
 
 // @public
 export interface ContentCacheConfig {
-    // @alpha
+    // @beta
     size?: number;
 }
-
-// @public
-export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
 
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
+    memoryCacheSize?: number;
     // (undocumented)
     mode: HierarchyCacheMode.Disk;
 }
@@ -88,7 +89,7 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
 
 // @internal (undocumented)
-export const getLocalesDirectory: (assetsDirectory: string) => string;
+export function getLocalizedStringEN(key: string): any;
 
 // @beta
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
@@ -147,6 +148,12 @@ export class Presentation {
 }
 
 // @public
+export interface PresentationAssetsRootConfig {
+    backend: string;
+    common: string;
+}
+
+// @public
 export enum PresentationBackendLoggerCategory {
     Ipc = "presentation-backend.Ipc",
     // (undocumented)
@@ -192,8 +199,8 @@ export enum PresentationBackendNativeLoggerCategory {
 // @public
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
-    get activeLocale(): string | undefined;
-    set activeLocale(value: string | undefined);
+    // @deprecated
+    activeLocale: string | undefined;
     get activeUnitSystem(): UnitSystemKey | undefined;
     set activeUnitSystem(value: UnitSystemKey | undefined);
     compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
@@ -235,6 +242,15 @@ export class PresentationManager {
 }
 
 // @public
+export interface PresentationManagerCachingConfig {
+    content?: ContentCacheConfig;
+    // @beta
+    hierarchies?: HierarchyCacheConfig;
+    // @beta
+    workerConnectionCacheSize?: number;
+}
+
+// @public
 export enum PresentationManagerMode {
     ReadOnly = 0,
     ReadWrite = 1
@@ -244,27 +260,25 @@ export enum PresentationManagerMode {
 export interface PresentationManagerProps {
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
-    caching?: {
-        hierarchies?: HierarchyCacheConfig;
-        content?: ContentCacheConfig;
-    };
+    caching?: PresentationManagerCachingConfig;
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
     };
+    // @deprecated
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
-    // (undocumented)
-    diagnosticsCallback?: DiagnosticsCallback;
+    // @beta
+    diagnostics?: BackendDiagnosticsOptions;
     // @deprecated
     enableSchemasPreload?: boolean;
+    // @beta
+    getLocalizedString?: (key: string) => string;
     // @internal
     id?: string;
+    // @deprecated
     localeDirectories?: string[];
     mode?: PresentationManagerMode;
-    presentationAssetsRoot?: string | {
-        backend: string;
-        common: string;
-    };
+    presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
     // @alpha
@@ -282,6 +296,9 @@ export interface PresentationPropsBase extends PresentationManagerProps {
     enableSchemasPreload?: boolean;
     requestTimeout?: number;
 }
+
+// @internal (undocumented)
+export function reportDiagnostics<TContext>(diagnostics: Diagnostics, options: BackendDiagnosticsOptions<TContext>, context?: TContext): void;
 
 // @beta
 export class RulesetEmbedder {

@@ -19,7 +19,7 @@ Each package has its own **node_modules** directory that contains symbolic links
 ## Prerequisites
 
 - [Git](https://git-scm.com/)
-- [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 16. The Node installation also includes the **npm** package manager.
+- [Node](https://nodejs.org/en/):an installation of the latest security patch of Node 18. The Node installation also includes the **npm** package manager.
 - [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
 - [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
 - [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
@@ -49,7 +49,7 @@ For incremental builds, the `rush build` command can be used to only build packa
 3. Ensure linting passes when run locally: `rush lint`
 4. Locally commit changes: `git commit` (or use the Visual Studio Code user interface)
 5. Repeat steps 1-4 until ready to push changes
-6. Check for API signature changes: `rush extract-api`. This will update the signature files, located in `common/api`.
+6. Check for API signature changes: `rush extract-api`. This will update the signature files, located in `common/api`. __Note:__ before doing this, first do the following:
     - Be sure that your branch is up to date with the target branch (i.e. `git merge origin/master`)
     - Cleanup your build output: `rush clean`
     - Rebuild the project: `rush build`

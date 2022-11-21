@@ -3,24 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// Note: only import types! Does not create a `require("electron")` in JavaScript after transpiling. That's important so this file can
-// be imported by apps that sometimes use Electron and sometimes not. Call to `ElectronBackend.initialize`
-// will do the necessary `require("electron")`
-// IMPORTANT: Do not call or construct any of these imports. Otherwise, a require("electron") call will be emitted at top level.
-// Instead, use `ElectronHost.electron.<type>`
-
+// Note: only import *types* from electron so this file can be imported by apps that sometimes use Electron and sometimes not.
 import type { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
+import type * as ElectronModule from "electron";
+
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { DialogModuleMethod } from "../common/ElectronIpcInterface";
-
-// This will not be transpiled into JavaScript files as long as it isn't used for more than it's type definition.
-// See: https://www.typescriptlang.org/docs/handbook/modules.html#optional-module-loading-and-other-advanced-loading-scenarios
-import * as ElectronModuleExports from "electron";
+import { dialogChannel, DialogModuleMethod } from "../common/ElectronIpcInterface";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -93,15 +86,15 @@ export interface WindowSizeAndPositionProps {
 export class ElectronHost {
   private static _ipc: ElectronIpc;
   private static _developmentServer: boolean;
-  private static _electron: typeof ElectronModuleExports;
+  private static _electron: typeof ElectronModule;
   private static _electronFrontend = "electron://frontend/";
   private static _mainWindow?: BrowserWindow;
   public static webResourcesPath: string;
   public static appIconPath: string;
   public static frontendURL: string;
   public static rpcConfig: RpcConfiguration;
-  public static get ipcMain() { return this._electron.ipcMain; }
-  public static get app() { return this._electron.app; }
+  public static get ipcMain() { return this._electron?.ipcMain; }
+  public static get app() { return this._electron?.app; }
   public static get electron() { return this._electron; }
 
   private constructor() { }
@@ -115,7 +108,7 @@ export class ElectronHost {
    */
   private static parseElectronUrl(requestedUrl: string): string {
     // Note that the "frontend/" path is arbitrary - this is just so we can handle *some* relative URLs...
-    let assetPath = requestedUrl.substr(this._electronFrontend.length);
+    let assetPath = requestedUrl.substring(this._electronFrontend.length);
     if (assetPath.length === 0)
       assetPath = "index.html";
     assetPath = path.normalize(`${this.webResourcesPath}/${assetPath}`);
@@ -182,6 +175,8 @@ export class ElectronHost {
       mainWindow.on("moved", () => saveWindowPosition());
       mainWindow.on("maximize", () => saveMaximized(true));
       mainWindow.on("unmaximize", () => saveMaximized(false));
+
+      saveMaximized(mainWindow.isMaximized());
     }
   }
 
@@ -259,7 +254,14 @@ export class ElectronHost {
       this._ipc = new ElectronIpc();
       const app = this.app;
       if (!app.isReady())
-        this.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+        this.electron.protocol.registerSchemesAsPrivileged([{
+          scheme: "electron",
+          privileges: {
+            standard: true,
+            secure: true,
+            supportFetchAPI: true,
+          },
+        }]);
       const eopt = opts?.electronHost;
       this._developmentServer = eopt?.developmentServer ?? false;
       const frontendPort = eopt?.frontendPort ?? 3000;
@@ -274,29 +276,20 @@ export class ElectronHost {
     opts.ipcHost.socket = this._ipc;
     await NativeHost.startup(opts);
     if (IpcHost.isValid) {
-      ElectronAppHandler.register();
+      ElectronDialogHandler.register();
       opts.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
   }
 }
 
-class ElectronAppHandler extends IpcHandler {
-  public get channelName() { return "electron-safe"; }
-  public async callElectron(member: string, method: string, ...args: any) {
-    let allowedMethods: readonly string[] = [];
-    if (member === "dialog") {
-      const methods: DialogModuleMethod[] = ["showMessageBox", "showOpenDialog", "showSaveDialog"];
-      allowedMethods = methods;
-    }
+class ElectronDialogHandler extends IpcHandler {
+  public get channelName() { return dialogChannel; }
+  public async callDialog(method: DialogModuleMethod, ...args: any) {
+    const dialog = ElectronHost.electron.dialog;
+    const dialogMethod = dialog[method] as Function;
+    if (typeof dialogMethod !== "function")
+      throw new IModelError(IModelStatus.FunctionNotFound, `illegal electron dialog method`);
 
-    if (allowedMethods.indexOf(method) >= 0) {
-      const electronMember = (ElectronHost.electron as any)[member];
-      const func = electronMember[method];
-      if (typeof func === "function") {
-        return func.call(electronMember, ...args);
-      }
-    }
-
-    throw new IModelError(IModelStatus.FunctionNotFound, `Method ${method} not found electron.${member}`);
+    return dialogMethod.call(dialog, ...args);
   }
 }

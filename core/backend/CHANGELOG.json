@@ -2,6 +2,174 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.4.4",
+      "tag": "@itwin/core-backend_v3.4.4",
+      "date": "Thu, 10 Nov 2022 19:32:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix ClassRegistry.getRootMetaData mixin handling, handle null ExternalSourceAspect.scope"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.3",
+      "tag": "@itwin/core-backend_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:57 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.2",
+      "tag": "@itwin/core-backend_v3.4.2",
+      "date": "Mon, 24 Oct 2022 13:23:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add asynchronous functions to obtain the extents of geometric models."
+          },
+          {
+            "comment": "Return a pending response from calls to IModelReadRpcInterface.getCustomViewState3dData if they take too long."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.1",
+      "tag": "@itwin/core-backend_v3.4.1",
+      "date": "Mon, 17 Oct 2022 20:06:51 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add EntityReferences and associated utilities"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.0",
+      "tag": "@itwin/core-backend_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Removed IModelSchemaLoader, replaced with function to return schema from iModel by and a generic SchemaLoader added to ecschema-metadata"
+          },
+          {
+            "comment": "Chunk traversal options for ChangedElementsDb"
+          },
+          {
+            "comment": "Deprecated CloudStorage in favor of TileStorage + iTwin/object-storage"
+          },
+          {
+            "comment": "added \"onlyBaseProperties\" to ElementLoadOptions to limit properties to only those in ElementProps, not subclasses"
+          },
+          {
+            "comment": "BoxProps.origin name changed to baseOrigin to agree with json format"
+          },
+          {
+            "comment": "Replace node-report crash reporting with Node.js Diagnostic Reporting"
+          },
+          {
+            "comment": "Clarify RenderMaterialElement documentation"
+          },
+          {
+            "comment": "`IModelJsFs.readdirSync` will now check if dir exists before reading"
+          },
+          {
+            "comment": "add tokenFunc argument to getWorkspaceDb"
+          },
+          {
+            "comment": "Add some logging in CustomViewState3dCreator."
+          },
+          {
+            "comment": "add querySubCategories function"
+          },
+          {
+            "comment": "call container.checkForChanges before attempting to open a v2 checkpoint"
+          },
+          {
+            "comment": "remove typescript retries for v2 checkpoint downloads"
+          },
+          {
+            "comment": "Updated Node types declaration to support latest v16"
+          },
+          {
+            "comment": "add PropertyStore interface"
+          },
+          {
+            "comment": "delete definition models"
+          },
+          {
+            "comment": "IModelDb.Elements.queryParent"
+          },
+          {
+            "comment": " deleteElementTree and deleteElementSubTrees"
+          },
+          {
+            "comment": "add doc for CloudCache.setLogMask"
+          },
+          {
+            "comment": "added @beta CloudSqlite"
+          },
+          {
+            "comment": "generate correct date format in local hub changesets"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.5",
+      "tag": "@itwin/core-backend_v3.3.5",
+      "date": "Tue, 27 Sep 2022 11:50:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add some logging in CustomViewState3dCreator."
+          },
+          {
+            "comment": "time getmodelextents per modelid"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.4",
+      "tag": "@itwin/core-backend_v3.3.4",
+      "date": "Thu, 08 Sep 2022 19:00:04 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "call container.checkForChanges before attempting to open a v2 checkpoint"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.3",
+      "tag": "@itwin/core-backend_v3.3.3",
+      "date": "Tue, 06 Sep 2022 20:54:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Chunk traversal options for ChangedElementsDb"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.2",
+      "tag": "@itwin/core-backend_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "await new promise in CustomViewState3dCreator getModelExtents"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.3.1",
       "tag": "@itwin/core-backend_v3.3.1",
       "date": "Fri, 26 Aug 2022 15:40:02 GMT",

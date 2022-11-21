@@ -2,6 +2,117 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "3.4.4",
+      "tag": "@itwin/core-frontend_v3.4.4",
+      "date": "Thu, 10 Nov 2022 19:32:17 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.3",
+      "tag": "@itwin/core-frontend_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "ArcGIS tilemap requests were missing oauth2 token if available."
+          },
+          {
+            "comment": "Reproject reality tiles to the surface of the Earth."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.2",
+      "tag": "@itwin/core-frontend_v3.4.2",
+      "date": "Mon, 24 Oct 2022 13:23:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add functions to obtain the extents of geometric models asynchronously on the backend."
+          },
+          {
+            "comment": "Fall back to requesting a tile from the backend when a request to cloud storage throws a 404 error."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.1",
+      "tag": "@itwin/core-frontend_v3.4.1",
+      "date": "Mon, 17 Oct 2022 20:06:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.0",
+      "tag": "@itwin/core-frontend_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improve ambient occlusion effect by decreasing the size of shadows for more distant geometry, increasing the default maximum distance of the effect to 10,000 meters, and fading the effect as it approaches maximum distance."
+          },
+          {
+            "comment": "Deprecated CloudStorage in favor of TileStorage + iTwin/object-storage"
+          },
+          {
+            "comment": "Fix display issue with ArcGIS server of 'Geologic Map of North America'"
+          },
+          {
+            "comment": "Use createImageBitmap when creating textures for reality models (currently enabled for Chromium only)"
+          },
+          {
+            "comment": "Add waitForSceneCompletion API to Viewport."
+          },
+          {
+            "comment": "lock down @types/semver to 7.3.10"
+          },
+          {
+            "comment": "add querySubCategories to imodelconnection"
+          },
+          {
+            "comment": "Updated Node types declaration to support latest v16"
+          },
+          {
+            "comment": "Improve support for display transforms in AccuSnap and ViewClipByElementTool."
+          },
+          {
+            "comment": "Fix pan tool failing to work when zoomed out with planar globe mode."
+          },
+          {
+            "comment": "Limit the shadow-casting range for tile trees that span the entire globe, like the OpenStreetMap buildings."
+          },
+          {
+            "comment": "Add support for custom terrain providers."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.5",
+      "tag": "@itwin/core-frontend_v3.3.5",
+      "date": "Tue, 27 Sep 2022 11:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.4",
+      "tag": "@itwin/core-frontend_v3.3.4",
+      "date": "Thu, 08 Sep 2022 19:00:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.3",
+      "tag": "@itwin/core-frontend_v3.3.3",
+      "date": "Tue, 06 Sep 2022 20:54:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.2",
+      "tag": "@itwin/core-frontend_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.3.1",
       "tag": "@itwin/core-frontend_v3.3.1",
       "date": "Fri, 26 Aug 2022 15:40:02 GMT",

@@ -28,7 +28,7 @@ describe("EmphasizeElements tests", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -38,7 +38,9 @@ describe("EmphasizeElements tests", () => {
     const emph = EmphasizeElements.getOrCreate(vp);
     const ids = new Set<string>();
 
-    ids.add("0x1"); ids.add("0x2"); ids.add("0x3");
+    ids.add("0x1");
+    ids.add("0x2");
+    ids.add("0x3");
     let status = emph.emphasizeElements(ids, vp, undefined, true);
     assert.isTrue(status);
     let currIds = emph.getEmphasizedElements(vp);
@@ -50,7 +52,8 @@ describe("EmphasizeElements tests", () => {
     currIds = emph.getEmphasizedElements(vp);
     assert.isTrue(undefined !== currIds && ids.size === currIds.size);
 
-    ids.clear(); ids.add("0x5");
+    ids.clear();
+    ids.add("0x5");
     status = emph.emphasizeElements(ids, vp, undefined, true);
     assert.isTrue(status);
     currIds = emph.getEmphasizedElements(vp);
@@ -70,7 +73,9 @@ describe("EmphasizeElements tests", () => {
     const emph = EmphasizeElements.getOrCreate(vp);
     const ids = new Set<string>();
 
-    ids.add("0x1"); ids.add("0x2"); ids.add("0x3");
+    ids.add("0x1");
+    ids.add("0x2");
+    ids.add("0x3");
     let status = emph.isolateElements(ids, vp, true);
     assert.isTrue(status);
     let currIds = emph.getIsolatedElements(vp);
@@ -82,7 +87,8 @@ describe("EmphasizeElements tests", () => {
     currIds = emph.getIsolatedElements(vp);
     assert.isTrue(undefined !== currIds && ids.size === currIds.size);
 
-    ids.clear(); ids.add("0x5");
+    ids.clear();
+    ids.add("0x5");
     status = emph.isolateElements(ids, vp, true);
     assert.isTrue(status);
     currIds = emph.getIsolatedElements(vp);
@@ -102,7 +108,9 @@ describe("EmphasizeElements tests", () => {
     const emph = EmphasizeElements.getOrCreate(vp);
     const ids = new Set<string>();
 
-    ids.add("0x1"); ids.add("0x2"); ids.add("0x3");
+    ids.add("0x1");
+    ids.add("0x2");
+    ids.add("0x3");
     let status = emph.hideElements(ids, vp, true);
     assert.isTrue(status);
     let currIds = emph.getHiddenElements(vp);
@@ -114,7 +122,8 @@ describe("EmphasizeElements tests", () => {
     currIds = emph.getHiddenElements(vp);
     assert.isTrue(undefined !== currIds && ids.size === currIds.size);
 
-    ids.clear(); ids.add("0x5");
+    ids.clear();
+    ids.add("0x5");
     status = emph.hideElements(ids, vp, true);
     assert.isTrue(status);
     currIds = emph.getHiddenElements(vp);
@@ -139,13 +148,16 @@ describe("EmphasizeElements tests", () => {
     assert.isFalse(undefined === redKey);
     assert.isFalse(undefined === blueKey);
 
-    redIds.add("0x1"); redIds.add("0x2"); redIds.add("0x3");
+    redIds.add("0x1");
+    redIds.add("0x2");
+    redIds.add("0x3");
     let status = emph.overrideElements(redIds, vp, ColorDef.red, FeatureOverrideType.ColorOnly, true);
     assert.isTrue(status);
     let currRedIds = emph.getOverriddenElementsByKey(redKey!);
     assert.isTrue(undefined !== currRedIds && redIds.size === currRedIds.size);
 
-    blueIds.add("0x11"); blueIds.add("0x21");
+    blueIds.add("0x11");
+    blueIds.add("0x21");
     status = emph.overrideElements(blueIds, vp, ColorDef.blue, FeatureOverrideType.ColorOnly, true);
     assert.isTrue(status);
     let currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
@@ -169,13 +181,15 @@ describe("EmphasizeElements tests", () => {
     currMap = emph.getOverriddenElements();
     assert.isTrue(undefined !== currMap && 2 === currMap.size);
 
-    redIds.clear(); redIds.add("0x5");
+    redIds.clear();
+    redIds.add("0x5");
     status = emph.overrideElements(redIds, vp, ColorDef.red, FeatureOverrideType.ColorOnly, true);
     assert.isTrue(status);
     currRedIds = emph.getOverriddenElementsByKey(redKey!);
     assert.isTrue(undefined !== currRedIds && redIds.size === currRedIds.size);
 
-    blueIds.clear(); blueIds.add("0x41");
+    blueIds.clear();
+    blueIds.add("0x41");
     status = emph.overrideElements(blueIds, vp, ColorDef.blue, FeatureOverrideType.ColorOnly, true);
     assert.isTrue(status);
     currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
@@ -210,13 +224,16 @@ describe("EmphasizeElements tests", () => {
     assert.isFalse(undefined === redKey);
     assert.isFalse(undefined === blueKey);
 
-    redIds.add("0x1"); redIds.add("0x2"); redIds.add("0x3");
+    redIds.add("0x1");
+    redIds.add("0x2");
+    redIds.add("0x3");
     let status = emph.overrideElements(redIds, vp, ColorDef.red, FeatureOverrideType.ColorOnly, true);
     assert.isTrue(status);
     let currRedIds = emph.getOverriddenElementsByKey(redKey!);
     assert.isTrue(undefined !== currRedIds && redIds.size === currRedIds.size);
 
-    blueIds.add("0x11"); blueIds.add("0x21");
+    blueIds.add("0x11");
+    blueIds.add("0x21");
     status = emph.overrideElements(blueIds, vp, ColorDef.blue, FeatureOverrideType.ColorOnly, true);
     assert.isTrue(status);
     let currBlueIds = emph.getOverriddenElementsByKey(blueKey!);
@@ -451,24 +468,33 @@ describe("EmphasizeElements tests", () => {
 
     roundTrip((emph, vp) => {
       const ids = new Set<string>();
-      ids.add("0x1"); ids.add("0x2"); ids.add("0x3"); ids.add("0x4"); ids.add("0x5");
+      ids.add("0x1");
+      ids.add("0x2");
+      ids.add("0x3");
+      ids.add("0x4");
+      ids.add("0x5");
       expect(emph.isolateElements(ids, vp, true)).to.be.true;
       let currIds = emph.getIsolatedElements(vp);
       assert.isTrue(undefined !== currIds && ids.size === currIds.size);
 
-      ids.clear(); ids.add("0x3"); ids.add("0x4"); ids.add("0x5");
+      ids.clear();
+      ids.add("0x3");
+      ids.add("0x4");
+      ids.add("0x5");
       expect(emph.emphasizeElements(ids, vp, undefined, true)).to.be.true;
       currIds = emph.getEmphasizedElements(vp);
       assert.isTrue(undefined !== currIds && ids.size === currIds.size);
 
       const redKey = emph.createOverrideKey(ColorDef.red, FeatureOverrideType.ColorOnly)!;
       expect(redKey).not.to.be.undefined;
-      ids.clear(); ids.add("0x5");
+      ids.clear();
+      ids.add("0x5");
       expect(emph.overrideElements(ids, vp, ColorDef.red, undefined, true)).to.be.true;
       currIds = emph.getOverriddenElementsByKey(redKey);
       assert.isTrue(undefined !== currIds && ids.size === currIds.size);
 
-      ids.clear(); ids.add("0x2");
+      ids.clear();
+      ids.add("0x2");
       expect(emph.hideElements(ids, vp, true)).to.be.true;
       currIds = emph.getHiddenElements(vp);
       assert.isTrue(undefined !== currIds && ids.size === currIds.size);
@@ -478,7 +504,9 @@ describe("EmphasizeElements tests", () => {
       const redIds = new Set<string>();
       const redKey = emph.createOverrideKey(ColorDef.red, FeatureOverrideType.ColorOnly)!;
       expect(redKey).not.to.be.undefined;
-      redIds.add("0x1"); redIds.add("0x2"); redIds.add("0x3");
+      redIds.add("0x1");
+      redIds.add("0x2");
+      redIds.add("0x3");
       expect(emph.overrideElements(redIds, vp, ColorDef.red, undefined, true)).to.be.true;
       const currRedIds = emph.getOverriddenElementsByKey(redKey);
       assert.isTrue(undefined !== currRedIds && redIds.size === currRedIds.size);
@@ -486,7 +514,8 @@ describe("EmphasizeElements tests", () => {
       const blueIds = new Set<string>();
       const blueKey = emph.createOverrideKey(ColorDef.blue, FeatureOverrideType.ColorOnly)!;
       expect(blueKey).not.to.be.undefined;
-      blueIds.add("0x4"); blueIds.add("0x5");
+      blueIds.add("0x4");
+      blueIds.add("0x5");
       expect(emph.overrideElements(blueIds, vp, ColorDef.blue, undefined, true)).to.be.true;
       const currBlueIds = emph.getOverriddenElementsByKey(blueKey);
       assert.isTrue(undefined !== currBlueIds && blueIds.size === currBlueIds.size);

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
@@ -15,7 +16,7 @@ import { RegionOps } from "../RegionOps";
  * @module Curve
  */
 
-class MapCurvePrimitiveToCurveLocatioNDetailPairArray {
+class MapCurvePrimitiveToCurveLocationDetailPairArray {
   public primitiveToPair = new Map<CurvePrimitive, CurveLocationDetailPair[]>();
   // index assigned to this primitive for this calculation.
   public primitiveToIndex = new Map<CurvePrimitive, number>();
@@ -65,9 +66,10 @@ function tagString(name: string, value: number | undefined): string {
  * @internal
  */
 export class PlanarSubdivision {
-  public static assembleHalfEdgeGraph(_primitives: CurvePrimitive[], allPairs: CurveLocationDetailPair[]): HalfEdgeGraph {
-    const detailByPrimitive = new MapCurvePrimitiveToCurveLocatioNDetailPairArray();   // map from key CurvePrimitive to CurveLocationDetailPair.
-    for (const p of _primitives)
+  /** Create a graph from an array of curves, and an array of the curves' precomputed intersections. */
+  public static assembleHalfEdgeGraph(primitives: CurvePrimitive[], allPairs: CurveLocationDetailPair[]): HalfEdgeGraph {
+    const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray();   // map from key CurvePrimitive to CurveLocationDetailPair.
+    for (const p of primitives)
       detailByPrimitive.assignPrimitiveIndex(p);
     for (const pair of allPairs) {
       detailByPrimitive.insertPair(pair);
@@ -158,12 +160,19 @@ export class PlanarSubdivision {
     } while (he !== faceSeed);
     return loop;
   }
-// return true if there are only two edges.
-  // In a line-only graph, this is a null-area face.
+  // Return true if there are only two edges in the face loop, and their start curvatures are the same.
   private static isNullFace(he: HalfEdge): boolean {
-    return he.faceSuccessor.faceSuccessor === he;
+    const faceHasTwoEdges = (he.faceSuccessor.faceSuccessor === he);
+    let faceIsBanana = false;
+    if (faceHasTwoEdges) {
+      const c0 = HalfEdgeGraphMerge.curvatureSortKey(he);
+      const c1 = HalfEdgeGraphMerge.curvatureSortKey(he.faceSuccessor.edgeMate);
+      if (!Geometry.isSameCoordinate(c0, c1)) // default tol!
+        faceIsBanana = true;  // heuristic: we could also check end curvatures, and/or higher derivatives...
+    }
+    return faceHasTwoEdges && !faceIsBanana;
   }
-  // Look  across edge mates (possibly several) for a nonnull mate face.
+  // Look across edge mates (possibly several) for a nonnull mate face.
   private static nonNullEdgeMate(_graph: HalfEdgeGraph, e: HalfEdge): HalfEdge | undefined {
     if (this.isNullFace (e))
       return undefined;

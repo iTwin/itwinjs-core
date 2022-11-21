@@ -1,6 +1,89 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 26 Aug 2022 15:40:02 GMT and should not be manually modified.
+This log was last generated on Thu, 10 Nov 2022 19:32:17 GMT and should not be manually modified.
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+### Updates
+
+- fix ClassRegistry.getRootMetaData mixin handling, handle null ExternalSourceAspect.scope
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:57 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+### Updates
+
+- Add asynchronous functions to obtain the extents of geometric models.
+- Return a pending response from calls to IModelReadRpcInterface.getCustomViewState3dData if they take too long.
+
+## 3.4.1
+Mon, 17 Oct 2022 20:06:51 GMT
+
+### Updates
+
+- Add EntityReferences and associated utilities
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Removed IModelSchemaLoader, replaced with function to return schema from iModel by and a generic SchemaLoader added to ecschema-metadata
+- Chunk traversal options for ChangedElementsDb
+- Deprecated CloudStorage in favor of TileStorage + iTwin/object-storage
+- added "onlyBaseProperties" to ElementLoadOptions to limit properties to only those in ElementProps, not subclasses
+- BoxProps.origin name changed to baseOrigin to agree with json format
+- Replace node-report crash reporting with Node.js Diagnostic Reporting
+- Clarify RenderMaterialElement documentation
+- `IModelJsFs.readdirSync` will now check if dir exists before reading
+- add tokenFunc argument to getWorkspaceDb
+- Add some logging in CustomViewState3dCreator.
+- add querySubCategories function
+- call container.checkForChanges before attempting to open a v2 checkpoint
+- remove typescript retries for v2 checkpoint downloads
+- Updated Node types declaration to support latest v16
+- add PropertyStore interface
+- delete definition models
+- IModelDb.Elements.queryParent
+-  deleteElementTree and deleteElementSubTrees
+- add doc for CloudCache.setLogMask
+- added @beta CloudSqlite
+- generate correct date format in local hub changesets
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+### Updates
+
+- Add some logging in CustomViewState3dCreator.
+- time getmodelextents per modelid
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+### Updates
+
+- call container.checkForChanges before attempting to open a v2 checkpoint
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+### Updates
+
+- Chunk traversal options for ChangedElementsDb
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+### Updates
+
+- await new promise in CustomViewState3dCreator getModelExtents
 
 ## 3.3.1
 Fri, 26 Aug 2022 15:40:02 GMT

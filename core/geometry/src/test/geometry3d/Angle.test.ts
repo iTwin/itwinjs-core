@@ -918,3 +918,47 @@ describe("MiscAngles", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+
+describe("Angle.isAlmostEqualAllowPeriodShift", () => {
+  it("Angle.isAlmostEqualAllowPeriodShiftTrue", () => {
+    const thisAngle: Angle = Angle.createRadians(1);
+    const otherAngle: Angle = Angle.createRadians(1 + Angle.pi2Radians + 1e-15);
+    const output: boolean = thisAngle.isAlmostEqualAllowPeriodShift(otherAngle);
+    expect(output).equal(true);
+  }),
+    it("Angle.isAlmostEqualAllowPeriodShiftFalse", () => {
+      const thisAngle: Angle = Angle.createRadians(1);
+      const otherAngle: Angle = Angle.createRadians(Angle.pi2Radians);
+      const output: boolean = thisAngle.isAlmostEqualAllowPeriodShift(otherAngle);
+      expect(output).equal(false);
+    }),
+    it("Angle.isAlmostEqualAllowPeriodShiftTrueWithDefaultTolerance", () => {
+      const thisAngle: Angle = Angle.createRadians(1);
+      const otherAngle: Angle = Angle.createRadians(0.9 + Angle.pi2Radians);
+      const radianTol: number = 0.2;
+      const output: boolean = thisAngle.isAlmostEqualAllowPeriodShift(otherAngle, radianTol);
+      expect(output).equal(true);
+    });
+});
+
+describe("Angle.isAlmostEqualNoPeriodShift", () => {
+  it("Angle.isAlmostEqualNoPeriodShiftTrue", () => {
+    const thisAngle: Angle = Angle.createRadians(1);
+    const otherAngle: Angle = Angle.createRadians(1 + 1e-15);
+    const output: boolean = thisAngle.isAlmostEqualNoPeriodShift(otherAngle);
+    expect(output).equal(true);
+  }),
+    it("Angle.isAlmostEqualNoPeriodShiftFalse", () => {
+      const thisAngle: Angle = Angle.createRadians(1);
+      const otherAngle: Angle = Angle.createRadians(1 + Angle.pi2Radians + 1e-15);
+      const output: boolean = thisAngle.isAlmostEqualNoPeriodShift(otherAngle);
+      expect(output).equal(false);
+    }),
+    it("Angle.isAlmostEqualNoPeriodShiftTrueWithDefaultTolerance", () => {
+      const thisAngle: Angle = Angle.createRadians(1);
+      const otherAngle: Angle = Angle.createRadians(0.9);
+      const radianTol: number = 0.2;
+      const output: boolean = thisAngle.isAlmostEqualNoPeriodShift(otherAngle, radianTol);
+      expect(output).equal(true);
+    });
+});

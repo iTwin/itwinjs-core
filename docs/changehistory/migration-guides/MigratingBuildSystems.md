@@ -58,7 +58,6 @@ With the above background in mind, the quickest/easiest migration pattern for al
 
    ```json
    "browserslist": [
-     "electron 6.0.0",
      "last 4 chrome version",
      "last 4 firefox version",
      "last 4 safari version",

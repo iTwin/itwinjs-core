@@ -1,6 +1,7 @@
 {
   "name": "imjs-importer",
   "//private": "NOTE: this is a private package that is never published",
+  "version": "0.0.0",
   "private": true,
   "license": "MIT",
   "description": "Converter to import IModelJson files into bim files.",
@@ -36,7 +37,7 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.7",
+    "@types/node": "18.11.5",
     "@types/yargs": "^17.0.10",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",

@@ -61,7 +61,10 @@ export interface TileDrawArgParams {
   animationTransformNodeId?: number;
   /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
   boundingRange?: Range3d;
+  /** @alpha */
+  maximumScreenSpaceError?: number;
 }
+
 /**
  * Provides context used when selecting and drawing [[Tile]]s.
  * @see [[TileTree.selectTiles]]
@@ -114,6 +117,8 @@ export class TileDrawArgs {
   public readonly pixelSizeScaleFactor;
   /** @internal */
   public readonly animationTransformNodeId?: number;
+  /** @alpha */
+  public maximumScreenSpaceError;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -168,7 +173,7 @@ export class TileDrawArgs {
   /** Compute the size in meters of one pixel at the point on a sphere closest to the camera.
    * Device scaling is not applied.
    */
-  protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
+  public computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
     if (this.context.viewport.view.is3d() && this.context.viewport.isCameraOn && this._nearFrontCenter) {
       const toFront = Vector3d.createStartEnd(center, this._nearFrontCenter);
       const viewZ = this.context.viewport.rotation.rowZ();
@@ -220,30 +225,29 @@ export class TileDrawArgs {
 
   private computePixelSizeScaleFactor(): number {
     // Check to see if a model display transform with non-uniform scaling is being used.
-    const tf = this.context.viewport.view.getModelDisplayTransform(this.tree.modelId, Transform.createIdentity());
-    const scale = [];
-    scale[0] = tf.matrix.getColumn(0).magnitude();
-    scale[1] = tf.matrix.getColumn(1).magnitude();
-    scale[2] = tf.matrix.getColumn(2).magnitude();
+    const mat = this.context.viewport.view.modelDisplayTransformProvider?.getModelDisplayTransform(this.tree.modelId)?.matrix;
+    if (!mat)
+      return 1;
+
+    const scale = [0, 1, 2].map((x) => mat.getColumn(x).magnitude());
     if (Math.abs(scale[0] - scale[1]) <= Geometry.smallMetricDistance && Math.abs(scale[0] - scale[2]) <= Geometry.smallMetricDistance)
       return 1;
+
     // If the component with the largest scale is not the same as the component with the largest tile range use it to adjust the pixel size.
     const rangeDiag = this.tree.range.diagonal();
     let maxS = 0;
     let maxR = 0;
-    if (scale[0] > scale[1]) {
+    if (scale[0] > scale[1])
       maxS = (scale[0] > scale[2] ? 0 : 2);
-    } else {
+    else
       maxS = (scale[1] > scale[2] ? 1 : 2);
-    }
-    if (rangeDiag.x > rangeDiag.y) {
+
+    if (rangeDiag.x > rangeDiag.y)
       maxR = (rangeDiag.x > rangeDiag.z ? 0 : 2);
-    } else {
+    else
       maxR = (rangeDiag.y > rangeDiag.z ? 1 : 2);
-    }
-    if (maxS !== maxR)
-      return scale[maxS];
-    return 1;
+
+    return maxS !== maxR ? scale[maxS] : 1;
   }
 
   /** Constructor */
@@ -257,6 +261,7 @@ export class TileDrawArgs {
     this.hiddenLineSettings = params.hiddenLineSettings;
     this.animationTransformNodeId = params.animationTransformNodeId;
     this.boundingRange = params.boundingRange;
+    this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 16; // 16 is Cesium's default.
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)

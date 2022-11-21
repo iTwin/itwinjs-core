@@ -18,6 +18,7 @@ import {
 } from "@itwin/presentation-backend";
 import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
+import Backend from "i18next-http-backend";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -88,7 +89,6 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
-    localeDirectories: [path.join(libDir, "assets", "locales")],
     defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
     caching: {
@@ -108,7 +108,35 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     authorizationClient: props.useClientServices
       ? TestUtility.getAuthorizationClient(TestUsers.regular)
       : undefined,
-    localization: new ITwinLocalization({ urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}` }),
+    localization: new ITwinLocalization({
+      urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
+      initOptions: {
+        preload: ["test"],
+      },
+      backendHttpOptions: {
+        request: (options, url, payload, callback) => {
+          /**
+           * A few reasons why we need to modify this request fn:
+           * - The above urlTemplate uses the file:// protocol
+           * - Node v18's fetch implementation does not support file://
+           * - i18n-http-backend uses fetch if it defined globally
+           */
+          const fileProtocol = "file://";
+          const request = new Backend().options.request?.bind(this as void);
+
+          if (url.startsWith(fileProtocol)){
+            try {
+              const data = fs.readFileSync(url.replace(fileProtocol, ""), "utf8");
+              callback(null, {status: 200, data});
+            } catch (error) {
+              callback(error, {status: 500, data: ""});
+            }
+          } else {
+            request!(options, url, payload, callback);
+          }
+        },
+      },
+    }),
   };
 
   if (props.useClientServices)

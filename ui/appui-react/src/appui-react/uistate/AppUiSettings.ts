@@ -19,7 +19,7 @@ import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFram
 export interface InitialAppUiSettings {
   colorTheme: string;
   dragInteraction: boolean;
-  frameworkVersion: FrameworkVersionId;
+  frameworkVersion: FrameworkVersionId; // eslint-disable-line deprecation/deprecation
   widgetOpacity: number;
   showWidgetIcon?: boolean;
   /** @alpha */
@@ -48,7 +48,7 @@ export class AppUiSettings implements UserSettingsProvider {
 
   public colorTheme: UiStateEntry<string>;
   public dragInteraction: UiStateEntry<boolean>;
-  public frameworkVersion: UiStateEntry<FrameworkVersionId>;
+  public frameworkVersion: UiStateEntry<FrameworkVersionId>; // eslint-disable-line deprecation/deprecation
   public widgetOpacity: UiStateEntry<number>;
   public showWidgetIcon: UiStateEntry<boolean>;
   public autoCollapseUnpinnedPanels: UiStateEntry<boolean>;
@@ -82,9 +82,9 @@ export class AppUiSettings implements UserSettingsProvider {
       (value: boolean) => UiFramework.setAutoCollapseUnpinnedPanels(value), defaults.autoCollapseUnpinnedPanels);
     this._settings.push(this.autoCollapseUnpinnedPanels);
 
-    this.frameworkVersion = new UiStateEntry<FrameworkVersionId>(AppUiSettings._settingNamespace, "FrameworkVersion",
+    this.frameworkVersion = new UiStateEntry<FrameworkVersionId>(AppUiSettings._settingNamespace, "FrameworkVersion", // eslint-disable-line deprecation/deprecation
       () => UiFramework.uiVersion,
-      (value: FrameworkVersionId) => UiFramework.setUiVersion(value), defaults.frameworkVersion);
+      (value: FrameworkVersionId) => UiFramework.setUiVersion(value), defaults.frameworkVersion); // eslint-disable-line deprecation/deprecation
     this._settings.push(this.frameworkVersion);
 
     this.widgetOpacity = new UiStateEntry<number>(AppUiSettings._settingNamespace, "WidgetOpacity",

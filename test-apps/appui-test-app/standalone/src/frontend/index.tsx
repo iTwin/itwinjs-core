@@ -10,14 +10,13 @@ import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName, UiItemsManager } from "@itwin/appui-abstract";
-import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import { TargetOptions, TargetOptionsContext } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/target/TargetOptions";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, BackstageComposer, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageManager,
   IModelViewportControl,
   InitialAppUiSettings,
-  ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
+  ModalFrontstageClosedEventArgs, SafeAreaContext, SafeAreaInsets, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
@@ -46,6 +45,7 @@ import {
   FloatingWidgetsUiItemsProvider, InspectUiItemInfoToolProvider, WidgetApiStage,
 } from "@itwin/appui-test-providers";
 import { useHandleURLParams } from "./UrlParams";
+import { MapLayersFormats } from "@itwin/map-layers-formats";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -215,6 +215,7 @@ export class SampleAppIModelApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
+    MapLayersFormats.initialize();
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
@@ -379,7 +380,7 @@ function AppDragInteractionComponent(props: { dragInteraction: boolean, children
 
 function AppFrameworkVersionComponent(props: { frameworkVersion: string, children: React.ReactNode }) {
   return (
-    <FrameworkVersion>
+    <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
       {props.children}
     </FrameworkVersion>
   );

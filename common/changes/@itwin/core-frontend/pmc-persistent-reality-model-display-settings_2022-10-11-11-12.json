@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix emphasis and hilite effects applied to point clouds.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

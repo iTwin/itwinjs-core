@@ -49,13 +49,16 @@ export enum RpcRequestStatus {
   NoContent,
   BadGateway,
   ServiceUnavailable,
-  GatewayTimeout
+  GatewayTimeout,
+  RequestTimeout,
+  TooManyRequests
 }
 
 /** @public */
 export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no-redeclare
   export function isTransientError(status: RpcRequestStatus) {
-    return status === RpcRequestStatus.BadGateway || status === RpcRequestStatus.ServiceUnavailable || status === RpcRequestStatus.GatewayTimeout;
+    return status === RpcRequestStatus.BadGateway || status === RpcRequestStatus.ServiceUnavailable || status === RpcRequestStatus.GatewayTimeout
+       || status === RpcRequestStatus.RequestTimeout || status === RpcRequestStatus.TooManyRequests;
   }
 }
 

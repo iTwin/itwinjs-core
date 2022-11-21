@@ -41,7 +41,7 @@ describe("Locate Toolbar items", () => {
         expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={
           <>
-            <ToolButton toolId="tool1" iconSpec="icon-placeholder" label="SampleApp:buttons.tool1" />
+            <ToolButton toolId="tool1" iconSpec="icon-placeholder" label="SampleApp:buttons.tool1" /> {/* eslint-disable-line deprecation/deprecation */}
           </>
         }
       />;
@@ -51,8 +51,8 @@ describe("Locate Toolbar items", () => {
         expandsTo={Direction.Right} // eslint-disable-line deprecation/deprecation
         items={
           <>
-            <ToolButton toolId="tool2" iconSpec="icon-placeholder" label="SampleApp:buttons.tool2" />
-            <GroupButton
+            <ToolButton toolId="tool2" iconSpec="icon-placeholder" label="SampleApp:buttons.tool2" /> {/* eslint-disable-line deprecation/deprecation */}
+            <GroupButton // eslint-disable-line deprecation/deprecation
               label="SampleApp:group"
               iconSpec="icon-placeholder"
               items={[tool1, tool2]}

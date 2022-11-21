@@ -146,9 +146,13 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
         <h4>{title}</h4>
         <div />
         <ul>
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
           <li onClick={onClose}>Item 1</li>
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
           <li onClick={onClose}>Item 2</li>
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
           <li onClick={onClose}>Item 3</li>
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
           <li onClick={onClose}>Item 4</li>
         </ul>
       </div>
@@ -250,10 +254,12 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
           </div>
           <div className="options">
             <div>
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
               <label>Arrow</label>
               <ToggleSwitch className="popup-toggle" onChange={this._onArrowChange} checked={this.state.showArrow} />
             </div>
             <div>
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
               <label>Shadow</label>
               <ToggleSwitch className="popup-toggle" onChange={this._onShadowChange} checked={this.state.showShadow} />
             </div>

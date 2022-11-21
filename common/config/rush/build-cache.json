@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/build-cache.schema.json",
+  "buildCacheEnabled": false,
+  "cacheProvider": "azure-blob-storage",
+  "azureBlobStorageConfiguration": {
+    "storageAccountName": "itwinbuildcache",
+    "storageContainerName": "itwincache",
+    "isCacheWriteAllowed": false
+  }
+}

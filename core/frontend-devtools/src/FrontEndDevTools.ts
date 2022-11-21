@@ -39,6 +39,7 @@ import {
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
 import {
+  AttachArcGISFeatureMapLayerByUrlTool,
   AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachModelMapLayerTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
   AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisibilityTool,
   MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool,
@@ -99,6 +100,7 @@ export class FrontendDevTools {
       AttachMapOverlayTool,
       AttachModelMapLayerTool,
       AttachArcGISMapLayerByUrlTool,
+      AttachArcGISFeatureMapLayerByUrlTool,
       AttachWmsMapLayerByUrlTool,
       AttachWmtsMapLayerByUrlTool,
       AttachTileURLMapLayerByUrlTool,

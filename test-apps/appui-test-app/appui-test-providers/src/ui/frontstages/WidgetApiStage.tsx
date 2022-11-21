@@ -6,7 +6,8 @@ import * as React from "react";
 import { useSelector } from "react-redux";
 
 import {
-  BackstageAppButton, BackstageManager, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
+  BackstageAppButton, BackstageManager, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps,
+  FrontstageManager, FrontstageProps,
   IModelViewportControl, StagePanelState, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
   StandardStatusbarUiItemsProvider,
@@ -15,13 +16,14 @@ import {
 } from "@itwin/appui-react";
 import {
   ConditionalStringValue,
-  StageUsage, StandardContentLayouts, UiItemsManager,
+  StageUsage, StandardContentLayouts, UiItemsManager, WidgetState,
 } from "@itwin/appui-abstract";
 import { getSavedViewLayoutProps } from "../../tools/ContentLayoutTools";
 import { WidgetApiStageUiItemsProvider } from "../providers/WidgetApiStageUiItemsProvider";
 import { getTestProviderState, setShowCustomViewOverlay, TestProviderState } from "../../store";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { SvgSmileyHappyVery } from "@itwin/itwinui-icons-react";
 
 /**
  * The WidgetApiStageContentGroupProvider class method `provideContentGroup` returns a ContentGroup that displays
@@ -136,6 +138,11 @@ export class WidgetApiStage {
         pinned: true,
         defaultState: StagePanelState.Open,
       },
+      leftPanelProps: {
+        resizable: true,
+        pinned: true,
+        defaultState: StagePanelState.Open,
+      },
     };
 
     ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(widgetApiStageProps));
@@ -181,6 +188,23 @@ export function getToggleCustomOverlayCommandItemDef() {
       const showCustomViewOverlay = getTestProviderState().showCustomViewOverlay;
       StateManager.store.dispatch(setShowCustomViewOverlay(!showCustomViewOverlay));
       IModelApp.toolAdmin.dispatchUiSyncEvent(AppUiTestProviders.syncEventIdHideCustomViewOverlay);
+    },
+  });
+}
+
+export function getShowHideFloatingWidgetCommandItemDef() {
+  const commandId = "testHideShowFloatingWidget";
+  return new CommandItemDef({
+    commandId,
+    iconSpec: <SvgSmileyHappyVery />,
+    label: "Toggle Hidden Floating Widget Display",
+
+    execute: () => {
+      const def = FrontstageManager.activeFrontstageDef?.findWidgetDef("FW-H1");
+      if (def) {
+        const currentState = FrontstageManager.activeFrontstageDef?.getWidgetCurrentState(def);
+        def.setWidgetState(currentState === WidgetState.Floating ? WidgetState.Hidden : WidgetState.Floating);
+      }
     },
   });
 }

@@ -8,6 +8,7 @@
 
 import { Primitives, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
 import { CellItem, RowItem } from "../TableDataProvider";
+/* eslint-disable deprecation/deprecation */
 
 /** Column Filtering utility methods
  * @internal

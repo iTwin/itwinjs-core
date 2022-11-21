@@ -268,7 +268,7 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
   const expandsTo = toolbarOrientation === Orientation.Horizontal ? Direction.Bottom : usage === ToolbarUsage.ViewNavigation ? Direction.Left : Direction.Right;
   // eslint-disable-next-line deprecation/deprecation
   const panelAlignment = (toolbarOrientation === Orientation.Horizontal && usage === ToolbarUsage.ViewNavigation) ? ToolbarPanelAlignment.End : ToolbarPanelAlignment.Start;
-  const version = useFrameworkVersion();
+  const version = useFrameworkVersion(); // eslint-disable-line deprecation/deprecation
   const isDragEnabled = React.useContext(ToolbarDragInteractionContext);
   const useProximityOpacity = useProximityOpacitySetting();
 

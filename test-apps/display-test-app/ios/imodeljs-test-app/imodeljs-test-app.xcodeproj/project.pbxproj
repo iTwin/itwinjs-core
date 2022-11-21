@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1F3CA70228BEB7320096B6D6 /* DtaAuthorizationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3CA70128BEB7320096B6D6 /* DtaAuthorizationClient.swift */; };
+		1F3CA70428BEB8370096B6D6 /* PrintLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3CA70328BEB8370096B6D6 /* PrintLogger.swift */; };
+		1F3CA70628BEB8940096B6D6 /* DtaOidcAuthorizationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3CA70528BEB8940096B6D6 /* DtaOidcAuthorizationClient.swift */; };
+		1F3CA70928BEB9F50096B6D6 /* AppAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 1F3CA70828BEB9F50096B6D6 /* AppAuth */; };
+		1F3CA70B28BEB9F50096B6D6 /* AppAuthCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1F3CA70A28BEB9F50096B6D6 /* AppAuthCore */; };
+		1F3CA70F28BFFEFD0096B6D6 /* DtaServiceAuthorizationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3CA70E28BFFEFD0096B6D6 /* DtaServiceAuthorizationClient.swift */; };
 		415D588423E37F5200907B7B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415D588323E37F5200907B7B /* AppDelegate.swift */; };
 		415D588623E37F5200907B7B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415D588523E37F5200907B7B /* SceneDelegate.swift */; };
 		415D588823E37F5200907B7B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415D588723E37F5200907B7B /* ViewController.swift */; };
@@ -32,6 +38,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1F3CA70128BEB7320096B6D6 /* DtaAuthorizationClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DtaAuthorizationClient.swift; sourceTree = "<group>"; };
+		1F3CA70328BEB8370096B6D6 /* PrintLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintLogger.swift; sourceTree = "<group>"; };
+		1F3CA70528BEB8940096B6D6 /* DtaOidcAuthorizationClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DtaOidcAuthorizationClient.swift; sourceTree = "<group>"; };
+		1F3CA70E28BFFEFD0096B6D6 /* DtaServiceAuthorizationClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DtaServiceAuthorizationClient.swift; sourceTree = "<group>"; };
 		415D588023E37F5200907B7B /* imodeljs-test-app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "imodeljs-test-app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		415D588323E37F5200907B7B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		415D588523E37F5200907B7B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -51,8 +61,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1F3CA70928BEB9F50096B6D6 /* AppAuth in Frameworks */,
 				F4A4D86028A599050015ED63 /* IModelJsNative in Frameworks */,
 				415D58A123E38DD100907B7B /* WebKit.framework in Frameworks */,
+				1F3CA70B28BEB9F50096B6D6 /* AppAuthCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,6 +93,10 @@
 			isa = PBXGroup;
 			children = (
 				415D588323E37F5200907B7B /* AppDelegate.swift */,
+				1F3CA70128BEB7320096B6D6 /* DtaAuthorizationClient.swift */,
+				1F3CA70528BEB8940096B6D6 /* DtaOidcAuthorizationClient.swift */,
+				1F3CA70E28BFFEFD0096B6D6 /* DtaServiceAuthorizationClient.swift */,
+				1F3CA70328BEB8370096B6D6 /* PrintLogger.swift */,
 				415D588523E37F5200907B7B /* SceneDelegate.swift */,
 				415D588723E37F5200907B7B /* ViewController.swift */,
 				415D58B623E4ACAA00907B7B /* AssetHandler.swift */,
@@ -121,6 +137,8 @@
 			name = "imodeljs-test-app";
 			packageProductDependencies = (
 				F4A4D85F28A599050015ED63 /* IModelJsNative */,
+				1F3CA70828BEB9F50096B6D6 /* AppAuth */,
+				1F3CA70A28BEB9F50096B6D6 /* AppAuthCore */,
 			);
 			productName = "imodeljs-test-app";
 			productReference = 415D588023E37F5200907B7B /* imodeljs-test-app.app */;
@@ -134,7 +152,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 1130;
 				LastUpgradeCheck = 1330;
-				ORGANIZATIONNAME = "Affan Khan";
+				ORGANIZATIONNAME = "Bentley Systems Inc.";
 				TargetAttributes = {
 					415D587F23E37F5200907B7B = {
 						CreatedOnToolsVersion = 11.3;
@@ -153,6 +171,7 @@
 			mainGroup = 415D587723E37F5200907B7B;
 			packageReferences = (
 				F4A4D85E28A599050015ED63 /* XCRemoteSwiftPackageReference "mobile-native-ios" */,
+				1F3CA70728BEB9F50096B6D6 /* XCRemoteSwiftPackageReference "AppAuth-iOS" */,
 			);
 			productRefGroup = 415D588123E37F5200907B7B /* Products */;
 			projectDirPath = "";
@@ -192,7 +211,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\n\n# Copy FrontEnd and BackEnd assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\ncp -L -R $AssetRoot/ $AppBundleRoot/Assets/\n";
+			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\n\n# Remove existing assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\n\n# Copy Frontend and Backend assets\nAssetRoot=\"$PROJECT_DIR/../..\"\ncp -L -R $AssetRoot/build/ $AppBundleRoot/Assets/www/\ncp -L -R $AssetRoot/lib/mobile/ $AppBundleRoot/Assets/\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -202,9 +221,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1F3CA70F28BFFEFD0096B6D6 /* DtaServiceAuthorizationClient.swift in Sources */,
 				415D588823E37F5200907B7B /* ViewController.swift in Sources */,
 				415D588423E37F5200907B7B /* AppDelegate.swift in Sources */,
 				415D58B723E4ACAA00907B7B /* AssetHandler.swift in Sources */,
+				1F3CA70428BEB8370096B6D6 /* PrintLogger.swift in Sources */,
+				1F3CA70228BEB7320096B6D6 /* DtaAuthorizationClient.swift in Sources */,
+				1F3CA70628BEB8940096B6D6 /* DtaOidcAuthorizationClient.swift in Sources */,
 				415D588623E37F5200907B7B /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -416,17 +439,35 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		1F3CA70728BEB9F50096B6D6 /* XCRemoteSwiftPackageReference "AppAuth-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/openid/AppAuth-iOS.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.4.0;
+			};
+		};
 		F4A4D85E28A599050015ED63 /* XCRemoteSwiftPackageReference "mobile-native-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-				version = 3.4.9;
+				version = 3.5.6;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		1F3CA70828BEB9F50096B6D6 /* AppAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1F3CA70728BEB9F50096B6D6 /* XCRemoteSwiftPackageReference "AppAuth-iOS" */;
+			productName = AppAuth;
+		};
+		1F3CA70A28BEB9F50096B6D6 /* AppAuthCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1F3CA70728BEB9F50096B6D6 /* XCRemoteSwiftPackageReference "AppAuth-iOS" */;
+			productName = AppAuthCore;
+		};
 		F4A4D85F28A599050015ED63 /* IModelJsNative */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F4A4D85E28A599050015ED63 /* XCRemoteSwiftPackageReference "mobile-native-ios" */;

@@ -23,10 +23,9 @@ import {
 import { Dialog, FillCentered, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@itwin/core-react";
 import {
   Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
-  FrontstageManager, IModelViewportControl, Indicator, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
-  StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef,
+  FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails, StatusBarDialog,
+  StatusBarItemUtilities, StatusBarLabelIndicator, StatusBarSeparator, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef,
 } from "@itwin/appui-react";
-import { FooterPopupContentType, FooterSeparator, Dialog as NZ_Dialog, TitleBar } from "@itwin/appui-layout-react";
 import { SampleAppIModelApp } from "../";
 import { AppUi } from "../appui/AppUi";
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
@@ -123,25 +122,23 @@ class AppItemsProvider implements UiItemsProvider {
   public provideStatusBarItems(_stageId: string, _stageUsage: string): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
     const isHiddenCondition = new ConditionalBooleanValue(() => !AppItemsProvider._sampleBackstageItemVisible, [AppItemsProvider.syncEventId]);
-    statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusSeparatorId, StatusBarSection.Left, 11, <FooterSeparator />, { isHidden: isHiddenCondition }));
+    statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusSeparatorId, StatusBarSection.Left, 11, <StatusBarSeparator />, { isHidden: isHiddenCondition }));
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusFieldId, StatusBarSection.Left, 12, <SampleStatusField />, { isHidden: isHiddenCondition }));
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusField2Id, StatusBarSection.Left, 13,
-      <Indicator
-        iconName="icon-app-1"
-        dialog={<TestStatusBarDialog />}
-        toolTip="Middle"
-        contentType={FooterPopupContentType.Panel}
+      <StatusBarLabelIndicator
+        iconSpec="icon-app-1"
+        popup={<TestStatusBarDialog />}
+        title="Middle"
       />, { isHidden: isHiddenCondition }));
 
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusField3Id, StatusBarSection.Left, 14,
-      <Indicator
-        iconName="icon-app-2"
-        dialog={<NZ_Dialog titleBar={<TitleBar title="Right Test" />}>
+      <StatusBarLabelIndicator
+        iconSpec="icon-app-2"
+        popup={<StatusBarDialog titleBar={<StatusBarDialog.TitleBar title="Right Test" />}>
           <TestStatusBarDialog />
-        </NZ_Dialog>}
+        </StatusBarDialog>}
         label="Right"
-        isLabelVisible={true}
-        toolTip="Right Test"
+        title="Right Test"
         labelSide={StatusBarLabelSide.Right}
       />, { isHidden: isHiddenCondition }));
     return statusBarItems;

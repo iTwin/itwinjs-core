@@ -104,7 +104,7 @@ export class ChildWindowManager {
             <Provider store={StateManager.store} >
               <UiStateStorageHandler>
                 <ThemeManager>
-                  <FrameworkVersion>
+                  <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
                     <div className="uifw-child-window-container-host">
                       <PopupRenderer />
                       <ModalDialogRenderer />
@@ -125,11 +125,10 @@ export class ChildWindowManager {
 
       childWindow.onbeforeunload = () => {
         const frontStageDef = FrontstageManager.activeFrontstageDef;
-        if (frontStageDef) {
-          void frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow).then(() => {
-            this.closeChildWindow(childWindowId, false);
-          });
-        }
+        if (!frontStageDef)
+          return;
+        frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow);
+        this.closeChildWindow(childWindowId, false);
       };
     }
   }

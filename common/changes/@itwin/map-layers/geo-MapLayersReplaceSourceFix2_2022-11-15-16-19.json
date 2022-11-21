@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "MapLayers widget's preferences UI now support edit,delete buttons without having an iModel ID. Also fix an issue with edit. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}
