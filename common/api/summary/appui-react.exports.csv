@@ -53,6 +53,7 @@ public;AnalysisAnimationTimelineDataProvider
 public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef
 public;AnyToolbarItemDef = AnyItemDef | CustomItemDef
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
+deprecated;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 internal;appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray
 public;AppNotificationManager 
 public;AppUiSettings 
@@ -268,11 +269,13 @@ internal;FrameworkVersionSwitchProps
 internal;FrameworkZone 
 internal;FrameworkZoneProps 
 public;Frontstage 
+deprecated;Frontstage 
 internal;FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings"
 public;FrontstageActivatedEvent 
 public;FrontstageActivatedEventArgs
 public;FrontstageComposer 
 deprecated;FrontstageComposer 
+public;FrontstageConfig 
 public;FrontstageDeactivatedEvent 
 public;FrontstageDeactivatedEventArgs
 public;FrontstageDef
@@ -284,6 +287,7 @@ deprecated;FrontstageLaunchBackstageItemProps
 public;FrontstageManager
 internal;FrontstageNineZoneStateChangedEventArgs 
 public;FrontstageProps 
+deprecated;FrontstageProps 
 public;class FrontstageProvider
 public;FrontstageReadyEvent 
 public;FrontstageReadyEventArgs
@@ -307,7 +311,7 @@ internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePa
 internal;getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[]
 beta;getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial
 beta;getSelectionContextSyncEventIds(): string[]
-internal;getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps
+internal;getStableWidgetProps
 internal;getStagePanelType: (location: StagePanelLocation) => StagePanelType
 beta;getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry
 internal;getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes
@@ -440,6 +444,7 @@ public;NavigationWidgetComposerProps
 public;NavigationWidgetDef 
 deprecated;NavigationWidgetDef 
 public;NavigationWidgetProps 
+deprecated;NavigationWidgetProps 
 public;NavigationWidgetPropsEx 
 deprecated;NavigationWidgetPropsEx 
 public;NestedFrontstage
@@ -450,6 +455,9 @@ public;NotifyMessageType = MessageType
 public;OpenChildWindowInfo
 public;OpenMessageCenterEvent 
 internal;packNineZoneState(state: NineZoneState): SavedNineZoneState
+beta;PanelConfig
+beta;PanelSectionConfig = ReadonlyArray
+beta;PanelSectionsConfig
 internal;PanelSizeChangedEvent 
 internal;PanelSizeChangedEventArgs
 beta;PanelStateChangedEvent 
@@ -547,16 +555,19 @@ internal;SplitterPaneTargetProps
 public;StageContentLayout
 public;StageContentLayoutProps
 public;StagePanel 
+deprecated;StagePanel 
 public;StagePanelChangeHandler
 deprecated;StagePanelChangeHandler
 public;StagePanelDef 
 public;StagePanelDefaultProps = Pick
+deprecated;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
 deprecated;StagePanelHeader 
 alpha;StagePanelHeaderProps 
 deprecated;StagePanelHeaderProps 
 public;StagePanelMaxSizeSpec = number |
 public;StagePanelProps
+deprecated;StagePanelProps
 internal;StagePanelRuntimeProps
 public;StagePanelState
 internal;StagePanelZoneDef 
@@ -673,6 +684,7 @@ internal;ToolbarProps
 public;ToolbarWidgetDefBase 
 deprecated;ToolbarWidgetDefBase 
 public;ToolbarWidgetProps 
+deprecated;ToolbarWidgetProps 
 public;ToolButton 
 deprecated;ToolButton 
 public;ToolButtonProps 
@@ -701,6 +713,7 @@ public;ToolWidgetComposerProps
 public;ToolWidgetDef 
 deprecated;ToolWidgetDef 
 public;ToolWidgetProps 
+deprecated;ToolWidgetProps 
 public;ToolWidgetPropsEx 
 deprecated;ToolWidgetPropsEx 
 internal;toPanelSide(location: StagePanelLocation): PanelSide
@@ -794,10 +807,12 @@ alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JS
 alpha;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
 public;Widget 
+deprecated;Widget 
 public;WIDGET_OPACITY_DEFAULT = 0.9
 internal;WidgetChangedEventArgs
 public;WidgetChangeHandler
 deprecated;WidgetChangeHandler
+beta;WidgetConfig = WidgetProps
 internal;WidgetContent(): JSX.Element
 public;WidgetControl 
 public;WidgetDef
@@ -814,6 +829,7 @@ internal;WidgetPanelsTab(): JSX.Element
 internal;WidgetPanelsToolbars(): JSX.Element
 internal;WidgetPanelsToolSettings(): JSX.Element | null
 public;WidgetProps 
+deprecated;WidgetProps 
 internal;WidgetsChangedEvent 
 internal;WidgetsChangedEventArgs
 internal;WidgetStack 
@@ -850,12 +866,15 @@ deprecated;WorkflowProps
 internal;WorkflowPropsList
 deprecated;WorkflowPropsList
 public;Zone 
+deprecated;Zone 
 public;ZoneDef 
+deprecated;ZoneDef 
 public;ZoneDefProvider
 deprecated;ZoneDefProvider
 public;ZoneLocation
 deprecated;ZoneLocation
 public;ZoneProps 
+deprecated;ZoneProps 
 internal;ZoneRuntimeProps
 public;ZoneState
 deprecated;ZoneState
