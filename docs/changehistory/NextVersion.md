@@ -23,6 +23,7 @@ Table of contents:
   - [@itwin/appui-react](#itwinappui-react)
   - [@itwin/components-react](#itwincomponents-react)
   - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-common](#itwincore-common)
   - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
 
@@ -208,6 +209,10 @@ The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated 
 
 The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
  The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
+
+### @itwin/core-common
+
+[Localization.getLocalizedStringWithNamespace]($common) is deprecated in favor of using [Localization.getLocalizedString]($common) and providing either a key with a namespace `<namespace>:<key>` or including `{ ns: <namespace> }` in the options.
 
 ### @itwin/core-geometry
 
