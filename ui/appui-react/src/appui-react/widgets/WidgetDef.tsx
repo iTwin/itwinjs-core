@@ -232,12 +232,8 @@ export class WidgetDef {
 
   /** @internal */
   constructor(widgetProps?: WidgetProps) { // eslint-disable-line deprecation/deprecation
-    if (widgetProps?.id !== undefined)
-      this._id = widgetProps.id;
-    else {
-      WidgetDef._sId++;
-      this._id = `Widget-${WidgetDef._sId}`;
-    }
+    WidgetDef._sId++;
+    this._id = `Widget-${WidgetDef._sId}`;
 
     if (widgetProps)
       WidgetDef.initializeFromWidgetProps(widgetProps, this); // eslint-disable-line deprecation/deprecation
@@ -246,6 +242,10 @@ export class WidgetDef {
   /** @deprecated */
   public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) { // eslint-disable-line deprecation/deprecation
     me._initialProps = widgetProps;
+
+    if (widgetProps.id !== undefined)
+      me._id = widgetProps.id;
+
     if (widgetProps.label)
       me.setLabel(widgetProps.label);
     else if (widgetProps.labelKey)

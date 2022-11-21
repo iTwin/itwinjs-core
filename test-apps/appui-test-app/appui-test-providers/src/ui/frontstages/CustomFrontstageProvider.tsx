@@ -72,15 +72,13 @@ export class CustomFrontstageProvider extends FrontstageProvider {
         size: 500,
         defaultState: StagePanelState.Minimized,
         sections: {
-          start: {
-            widgets: [
-              {
-                id: "widget-1",
-                label: "Widget 1",
-                element: <>Frontstage provided widget: <b>widget-1</b></>,
-              },
-            ],
-          },
+          start: [
+            {
+              id: "widget-1",
+              label: "Widget 1",
+              element: <>Frontstage provided widget: <b>widget-1</b></>,
+            },
+          ],
         },
       },
     };

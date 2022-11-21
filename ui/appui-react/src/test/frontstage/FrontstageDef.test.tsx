@@ -8,11 +8,12 @@ import * as React from "react";
 import * as sinon from "sinon";
 import produce from "immer";
 import { MockRender } from "@itwin/core-frontend";
-import { CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
+import { CoreTools, Frontstage, FrontstageConfig, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState } from "@itwin/appui-layout-react";
 import { ProcessDetector } from "@itwin/core-bentley";
+import { StagePanelState } from "../../appui-react/stagepanels/StagePanelDef";
 
 describe("FrontstageDef", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
@@ -70,6 +71,43 @@ describe("FrontstageDef", () => {
           contentGroup={TestUtils.TestContentGroup1}
         />
       );
+    }
+  }
+
+  class ConfigFrontstageProvider extends FrontstageProvider {
+    public override get id() {
+      return "config";
+    }
+
+    public override get frontstage(): FrontstageConfig {
+      return {
+        id: this.id,
+        defaultTool: CoreTools.selectElementCommand,
+        contentGroup: TestUtils.TestContentGroup1,
+        leftPanel: {
+          defaultState: StagePanelState.Minimized,
+          sections: {
+            start: [
+              {
+                id: "w1",
+              },
+            ],
+          },
+        },
+        bottomPanel: {
+          size: 400,
+          sections: {
+            start: [
+              {
+                id: "w2",
+              },
+              {
+                id: "w3",
+              },
+            ],
+          },
+        },
+      };
     }
   }
 
@@ -301,6 +339,24 @@ describe("FrontstageDef", () => {
       top: 99,
       right: 99 + 999 + 16,
       bottom: 99 + 999 + 39,
+    });
+  });
+
+  describe("initializeFromConfig", () => {
+    it("should initialize a frontstage", async () => {
+      const provider = new ConfigFrontstageProvider();
+      const frontstageDef = new FrontstageDef();
+      await frontstageDef.initializeFromConfig(provider.frontstage);
+      const w1 = frontstageDef.findWidgetDef("w1");
+      expect(w1).to.exist;
+
+      const leftPanel = frontstageDef.leftPanel;
+      expect(leftPanel).to.exist;
+      expect(leftPanel?.panelState).to.eq(StagePanelState.Minimized);
+
+      const bottomPanel = frontstageDef.bottomPanel;
+      expect(bottomPanel).to.exist;
+      expect(bottomPanel?.size).to.eq(400);
     });
   });
 });

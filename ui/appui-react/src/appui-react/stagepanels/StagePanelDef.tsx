@@ -334,7 +334,7 @@ export class StagePanelZoneDef extends WidgetHost {
 
   /** @internal */
   public initializeFromConfig(config: PanelSectionConfig | undefined, location: StagePanelLocation, section: StagePanelSection) {
-    config?.widgets.forEach((widgetConfig, index) => {
+    config?.forEach((widgetConfig, index) => {
       const stableId = `uifw-ps-${StagePanelLocation[location]}-${section}-${index}`;
       const stableConfig = getStableWidgetProps(widgetConfig, stableId);
       const widgetDef = new WidgetDef();

@@ -39,12 +39,7 @@ export interface PanelConfig {
 /** Configuration from which a panel section is created.
  * @beta
  */
-export interface PanelSectionConfig {
-  /** Widget configurations of this section. */
-  readonly widgets: ReadonlyArray<WidgetConfig>;
-  /** Any application data to attach to this Zone. */
-  readonly applicationData?: any;
-}
+export type PanelSectionConfig = ReadonlyArray<WidgetConfig>;
 
 /** Configuration from which panel sections are created.
  * @beta
