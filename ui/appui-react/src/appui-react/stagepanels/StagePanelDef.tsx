@@ -16,7 +16,6 @@ import { WidgetHost } from "../widgets/WidgetHost";
 import { StagePanelMaxSizeSpec, StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel";
 import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
 import { UiFramework } from "../UiFramework";
-import { PanelConfig } from "./PanelConfig";
 
 /** Enum for StagePanel state.
  * @public

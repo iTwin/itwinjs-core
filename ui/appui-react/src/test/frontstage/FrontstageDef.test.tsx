@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import produce from "immer";
 import { MockRender } from "@itwin/core-frontend";
-import { CoreTools, Frontstage, FrontstageConfig, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
+import { ContentGroup, ContentGroupProvider, CoreTools, Frontstage, FrontstageConfig, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState } from "@itwin/appui-layout-react";
@@ -74,7 +74,21 @@ describe("FrontstageDef", () => {
     }
   }
 
+  class ConfigContentGroupProvider extends ContentGroupProvider {
+    public override async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
+      throw new Error();
+    }
+
+    public override async contentGroup(_config: FrontstageConfig): Promise<ContentGroup> {
+      return TestUtils.TestContentGroup1;
+    }
+  }
+
   class ConfigFrontstageProvider extends FrontstageProvider {
+    public constructor(private _contentGroup?: FrontstageConfig["contentGroup"]) {
+      super();
+    }
+
     public override get id() {
       return "config";
     }
@@ -83,7 +97,7 @@ describe("FrontstageDef", () => {
       return {
         id: this.id,
         defaultTool: CoreTools.selectElementCommand,
-        contentGroup: TestUtils.TestContentGroup1,
+        contentGroup: this._contentGroup ? this._contentGroup : TestUtils.TestContentGroup1,
         leftPanel: {
           defaultState: StagePanelState.Minimized,
           sections: {
@@ -342,7 +356,7 @@ describe("FrontstageDef", () => {
     });
   });
 
-  describe("FrontstageConfig", () => {
+  describe.only("FrontstageConfig", () => {
     it("should initialize a frontstage", async () => {
       const provider = new ConfigFrontstageProvider();
       const frontstageDef = await FrontstageDef.create(provider);
@@ -356,6 +370,15 @@ describe("FrontstageDef", () => {
       const bottomPanel = frontstageDef.bottomPanel;
       expect(bottomPanel).to.exist;
       expect(bottomPanel?.size).to.eq(400);
+    });
+
+    it("should use ContentGroupProvider.contentGroup", async () => {
+      const contentGroupProvider = new ConfigContentGroupProvider();
+      const spy = sinon.spy(contentGroupProvider, "contentGroup");
+      const provider = new ConfigFrontstageProvider(contentGroupProvider);
+      FrontstageManager.addFrontstageProvider(provider);
+      await FrontstageManager.setActiveFrontstage(provider.id);
+      sinon.assert.calledOnceWithExactly(spy, sinon.match({ id: provider.id }));
     });
   });
 });

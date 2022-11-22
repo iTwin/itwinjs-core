@@ -292,9 +292,14 @@ export class FrontstageDef {
   public async onActivated() {
     this.updateWidgetDefs();
 
-    if (this._contentGroupProvider) {
-      if (this._initialProps)
-        this._contentGroup = await this._contentGroupProvider.provideContentGroup(this._initialProps);
+    const provider = this._contentGroupProvider;
+    if (provider && this._initialProps) {
+      if (provider.contentGroup) {
+        const config = toFrontstageConfig(this._initialProps);
+        this._contentGroup = await provider.contentGroup(config);
+      } else {
+        this._contentGroup = await provider.provideContentGroup(this._initialProps);
+      }
     }
 
     // istanbul ignore next
@@ -1156,4 +1161,37 @@ function toStagePanelElement(config: PanelConfig): React.ReactElement<StagePanel
       {...other}
     />
   );
+}
+
+function toWidgetConfig(zone: React.ReactElement<ZoneProps>): WidgetConfig | undefined {
+  const widgets = zone.props.widgets;
+  if (!widgets || widgets.length === 0)
+    return undefined;
+  const widget = widgets[0];
+  return widget.props;
+}
+
+function toPanelConfig(panel: React.ReactElement<StagePanelProps>): PanelConfig | undefined {
+  const props = panel.props;
+  const { ...other } = props;
+  const config: PanelConfig = {
+    ...other,
+  };
+  return config;
+}
+
+function toFrontstageConfig(props: FrontstageProps): FrontstageConfig {
+  const { contentManipulationTools, viewNavigationTools, toolSettings, statusBar, topPanel, leftPanel, bottomPanel, rightPanel, ...other } = props;
+  const config: FrontstageConfig = {
+    ...other,
+    contentManipulation: contentManipulationTools ? toWidgetConfig(contentManipulationTools) : undefined,
+    viewNavigation: viewNavigationTools ? toWidgetConfig(viewNavigationTools) : undefined,
+    toolSettings: toolSettings ? toWidgetConfig(toolSettings) : undefined,
+    statusBar: statusBar ? toWidgetConfig(statusBar) : undefined,
+    topPanel: topPanel ? toPanelConfig(topPanel) : undefined,
+    leftPanel: leftPanel ? toPanelConfig(leftPanel) : undefined,
+    bottomPanel: bottomPanel ? toPanelConfig(bottomPanel) : undefined,
+    rightPanel: rightPanel ? toPanelConfig(rightPanel) : undefined,
+  };
+  return config;
 }
