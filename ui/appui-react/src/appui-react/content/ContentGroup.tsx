@@ -45,7 +45,17 @@ export interface ContentGroupProps {
  * @public
  */
 export abstract class ContentGroupProvider {
-  abstract provideContentGroup(props: FrontstageProps | FrontstageConfig): Promise<ContentGroup>; // eslint-disable-line deprecation/deprecation
+  /**
+   * Return the contentGroup based on the `FrontstageProps` received.
+   * @deprecated Implement using `contentGroup(FrontstageConfig)` instead, no need to provide this method if the other is provided. At least one should be provided in order for the provider to do anything.
+   */
+  abstract provideContentGroup?(props: FrontstageProps): Promise<ContentGroup>; // eslint-disable-line deprecation/deprecation
+  
+  /**
+   * Return the contentGroup based on the `FrontstageConfig`.
+   * @beta This method will be required in upcoming version, this method will be prioritized if it exists over `provideContentGroup`. Only one of these 2 methods will be called and at least one need to be implemented in order for the provider to do anything.)
+   */
+  abstract contentGroup?(config: FrontstageConfig): Promise<ContentGroup>;
 
   /** Allow provider to update any data stored in ContentGroupProps. Typically this may
    * be to remove applicationData entries.
