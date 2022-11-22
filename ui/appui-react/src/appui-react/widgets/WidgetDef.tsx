@@ -21,7 +21,6 @@ import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
 import { IconHelper, IconSpec, Rectangle, SizeProps } from "@itwin/core-react";
-import { WidgetConfig } from "./WidgetConfig";
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],
@@ -319,14 +318,6 @@ export class WidgetDef {
     me._restoreTransientState = widgetProps.restoreTransientState;
 
     me.setUpSyncSupport(widgetProps); // eslint-disable-line deprecation/deprecation
-  }
-
-  /** @internal */
-  public initializeFromConfig(config: WidgetConfig, type?: WidgetType) {
-    WidgetDef.initializeFromWidgetProps(config, this); // eslint-disable-line deprecation/deprecation
-    this._initialProps = undefined;
-    if (type !== undefined)
-      this._widgetType = type;
   }
 
   /** @deprecated */

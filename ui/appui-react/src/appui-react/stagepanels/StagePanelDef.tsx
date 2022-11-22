@@ -16,7 +16,7 @@ import { WidgetHost } from "../widgets/WidgetHost";
 import { StagePanelMaxSizeSpec, StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel";
 import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
 import { UiFramework } from "../UiFramework";
-import { PanelConfig, PanelSectionConfig, PanelSectionsConfig } from "./PanelConfig";
+import { PanelConfig } from "./PanelConfig";
 
 /** Enum for StagePanel state.
  * @public
@@ -66,7 +66,6 @@ export class StagePanelDef extends WidgetHost {
   private _applicationData?: any;
   private _location: StagePanelLocation = StagePanelLocation.Left;
   private _panelZones = new StagePanelZonesDef();
-  private _initialConfig?: PanelConfig;
 
   /** Constructor for PanelDef.
    */
@@ -222,31 +221,6 @@ export class StagePanelDef extends WidgetHost {
     }
   }
 
-  /** @internal */
-  public initializeFromConfig(config?: PanelConfig, location?: StagePanelLocation): void {
-    this._initialConfig = config;
-    if (location !== undefined)
-      this._location = location;
-    if (!config)
-      return;
-    this._size = config.size;
-    this._defaultSize = config.size;
-    this._maxSizeSpec = config.maxSize;
-    this._minSize = config.minSize;
-    if (config.defaultState !== undefined) {
-      this._panelState = config.defaultState;
-      this._defaultState = config.defaultState;
-    }
-
-    this._resizable = config.resizable === undefined ? true : config.resizable;
-    if (config.pinned !== undefined)
-      this._pinned = config.pinned;
-    if (config.applicationData !== undefined)
-      this._applicationData = config.applicationData;
-
-    this._panelZones.initializeFromConfig(config.sections, this._location);
-  }
-
   /** Gets the list of Widgets. */
   public override get widgetDefs(): ReadonlyArray<WidgetDef> {
     const widgetDefs = [...super.widgetDefs];
@@ -305,12 +279,6 @@ export class StagePanelZonesDef {
   }
 
   /** @internal */
-  public initializeFromConfig(config: PanelSectionsConfig | undefined, panelLocation: StagePanelLocation): void {
-    this.start.initializeFromConfig(config?.start, panelLocation, StagePanelSection.Start);
-    this.end.initializeFromConfig(config?.end, panelLocation, StagePanelSection.End);
-  }
-
-  /** @internal */
   public *[Symbol.iterator](): Iterator<[StagePanelZoneDefKeys, StagePanelZoneDef]> {
     for (const key of stagePanelZoneDefKeys) {
       const value = this[key];
@@ -328,17 +296,6 @@ export class StagePanelZoneDef extends WidgetHost {
       const stableId = `uifw-spz-${StagePanelLocation[panelLocation]}-${panelZone}-${index}`;
       const stableProps = getStableWidgetProps(widgetNode.props, stableId);
       const widgetDef = new WidgetDef(stableProps);
-      this.addWidgetDef(widgetDef);
-    });
-  }
-
-  /** @internal */
-  public initializeFromConfig(config: PanelSectionConfig | undefined, location: StagePanelLocation, section: StagePanelSection) {
-    config?.forEach((widgetConfig, index) => {
-      const stableId = `uifw-ps-${StagePanelLocation[location]}-${section}-${index}`;
-      const stableConfig = getStableWidgetProps(widgetConfig, stableId);
-      const widgetDef = new WidgetDef();
-      widgetDef.initializeFromConfig(stableConfig);
       this.addWidgetDef(widgetDef);
     });
   }

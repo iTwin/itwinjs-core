@@ -342,11 +342,10 @@ describe("FrontstageDef", () => {
     });
   });
 
-  describe("initializeFromConfig", () => {
+  describe("FrontstageConfig", () => {
     it("should initialize a frontstage", async () => {
       const provider = new ConfigFrontstageProvider();
-      const frontstageDef = new FrontstageDef();
-      await frontstageDef.initializeFromConfig(provider.frontstage);
+      const frontstageDef = await FrontstageDef.create(provider);
       const w1 = frontstageDef.findWidgetDef("w1");
       expect(w1).to.exist;
 
