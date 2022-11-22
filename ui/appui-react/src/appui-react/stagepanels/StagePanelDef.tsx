@@ -204,8 +204,7 @@ export class StagePanelDef extends WidgetHost {
     this._resizable = props.resizable;
     if (props.pinned !== undefined)
       this._pinned = props.pinned;
-    if (props.applicationData !== undefined)
-      this._applicationData = props.applicationData;
+    this._applicationData = props.applicationData;
     if (props.panelZones) {
       this._panelZones.initializeFromProps(props.panelZones, this._location);
     }

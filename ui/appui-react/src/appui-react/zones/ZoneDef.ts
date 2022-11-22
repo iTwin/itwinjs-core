@@ -93,8 +93,7 @@ export class ZoneDef extends WidgetHost {
       this._zoneState = props.defaultState;
     if (props.allowsMerging !== undefined)
       this._allowsMerging = props.allowsMerging;
-    if (props.applicationData !== undefined)
-      this._applicationData = props.applicationData;
+    this._applicationData = props.applicationData;
     if (props.mergeWithZone !== undefined)
       this._mergeWithZone = props.mergeWithZone;
     this.setInitialWidth(props.initialWidth);
