@@ -76,7 +76,7 @@ describe("FrontstageDef", () => {
 
   class ConfigContentGroupProvider extends ContentGroupProvider {
     public override async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
-      throw new Error();
+      throw new Error("Not implemented.");
     }
 
     public override async contentGroup(_config: FrontstageConfig): Promise<ContentGroup> {
@@ -93,7 +93,11 @@ describe("FrontstageDef", () => {
       return "config";
     }
 
-    public override get frontstage(): FrontstageConfig {
+    public override get frontstage(): React.ReactElement<FrontstageProps> {
+      throw new Error("Not implemented.");
+    }
+
+    public override frontstageConfig(): FrontstageConfig {
       return {
         id: this.id,
         defaultTool: CoreTools.selectElementCommand,
@@ -356,7 +360,7 @@ describe("FrontstageDef", () => {
     });
   });
 
-  describe.only("FrontstageConfig", () => {
+  describe("FrontstageConfig", () => {
     it("should initialize a frontstage", async () => {
       const provider = new ConfigFrontstageProvider();
       const frontstageDef = await FrontstageDef.create(provider);

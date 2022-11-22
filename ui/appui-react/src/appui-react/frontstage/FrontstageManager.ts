@@ -378,11 +378,11 @@ export class FrontstageManager {
     const provider = FrontstageManager._frontstageProviders.get(frontstageId);
     let isIModelIndependent = false;
     if (provider) {
-      const frontstage = provider.frontstage;
-      if (React.isValidElement(frontstage))
-        isIModelIndependent = !!frontstage.props.isIModelIndependent;
-      else
-        isIModelIndependent = !!frontstage.isIModelIndependent;
+      if (provider.frontstageConfig) {
+        isIModelIndependent = !!provider.frontstageConfig().isIModelIndependent;
+      } else {
+        isIModelIndependent = !!provider.frontstage.props.isIModelIndependent;
+      }
     }
     const imodelId = UiFramework.getIModelConnection()?.iModelId ?? "noImodel";
     const key = isIModelIndependent ? frontstageId : `[${imodelId}]${frontstageId}`;

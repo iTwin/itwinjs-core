@@ -273,13 +273,12 @@ export class FrontstageDef {
     const def = new FrontstageDef();
     def._frontstageProvider = provider;
 
-    const frontstage = provider.frontstage;
-    // istanbul ignore else
-    if (React.isValidElement(frontstage)) {
-      await def.initializeFromProps(frontstage.props);
-    } else {
-      const props = toFrontstageProps(frontstage);
+    if (provider.frontstageConfig) {
+      const config = provider.frontstageConfig();
+      const props = toFrontstageProps(config);
       await def.initializeFromProps(props);
+    } else {
+      await def.initializeFromProps(provider.frontstage.props);
     }
 
     return def;
