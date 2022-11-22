@@ -83,6 +83,3 @@ export const getInstancesCount = (keys: Readonly<KeySet>): number => {
  * @public
  */
 export const DEFAULT_KEYS_BATCH_SIZE = 5000;
-
-/** @internal */
-export const PRESENTATION_COMMON_ROOT = typeof __dirname !== "undefined" ? __dirname : "__dirname";

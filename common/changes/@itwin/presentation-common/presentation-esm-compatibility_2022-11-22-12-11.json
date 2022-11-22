@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Avoid reading `__dirname` variable in ESM context.",
+      "comment": "Remove uses of `__dirname`, which is not available in ESM context.",
       "type": "none"
     }
   ],
