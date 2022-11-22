@@ -1453,10 +1453,12 @@ export interface ContentGroupProps {
 // @public
 export abstract class ContentGroupProvider {
     applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps): ContentGroupProps;
+    // @beta
+    contentGroup?(config: FrontstageConfig): Promise<ContentGroup>;
     onFrontstageDeactivated(): Promise<void>;
     prepareToSaveProps(contentGroupProps: ContentGroupProps): ContentGroupProps;
-    // (undocumented)
-    abstract provideContentGroup(props: FrontstageProps | FrontstageConfig): Promise<ContentGroup>;
+    // @deprecated
+    abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
 }
 
 // @public
@@ -2526,31 +2528,23 @@ export class FrontstageComposer extends React_2.Component<CommonProps, Frontstag
     readonly state: Readonly<FrontstageComposerState>;
 }
 
-// @public
+// @beta
 export interface FrontstageConfig extends CommonProps {
     readonly applicationData?: any;
-    // @beta
     readonly bottomPanel?: PanelConfig;
     readonly contentGroup: ContentGroup | ContentGroupProvider;
-    // @beta
     readonly contentManipulation?: WidgetConfig;
     readonly defaultContentId?: string;
     readonly defaultTool: ToolItemDef;
     readonly id: string;
     readonly isIModelIndependent?: boolean;
-    // @beta
     readonly leftPanel?: PanelConfig;
-    // @beta
     readonly rightPanel?: PanelConfig;
-    // @beta
     readonly statusBar?: WidgetConfig;
-    // @beta
     readonly toolSettings?: WidgetConfig;
-    // @beta
     readonly topPanel?: PanelConfig;
     readonly usage?: string;
     readonly version?: number;
-    // @beta
     readonly viewNavigation?: WidgetConfig;
 }
 
@@ -2629,8 +2623,6 @@ export class FrontstageDef {
     getZoneDef(zoneId: number): ZoneDef | undefined;
     // (undocumented)
     get id(): string;
-    // @internal
-    initializeFromConfig(config: FrontstageConfig): Promise<void>;
     // @internal
     initializeFromProps(props: FrontstageProps): Promise<void>;
     // (undocumented)
@@ -2880,8 +2872,10 @@ export interface FrontstageProps extends CommonProps {
 
 // @public
 export abstract class FrontstageProvider {
-    // (undocumented)
-    abstract get frontstage(): React_2.ReactElement<FrontstageProps> | FrontstageConfig;
+    // @deprecated
+    abstract get frontstage(): React_2.ReactElement<FrontstageProps>;
+    // @beta
+    frontstageConfig?(): FrontstageConfig;
     abstract get id(): string;
 }
 
@@ -5208,8 +5202,6 @@ export class StagePanelDef extends WidgetHost {
     // @internal (undocumented)
     get defaultState(): StagePanelState;
     // @internal (undocumented)
-    initializeFromConfig(config?: PanelConfig, location?: StagePanelLocation): void;
-    // @internal (undocumented)
     initializeFromProps(props?: StagePanelProps, location?: StagePanelLocation): void;
     get location(): StagePanelLocation;
     // @internal (undocumented)
@@ -5312,8 +5304,6 @@ export enum StagePanelState {
 // @internal (undocumented)
 export class StagePanelZoneDef extends WidgetHost {
     // (undocumented)
-    initializeFromConfig(config: PanelSectionConfig | undefined, location: StagePanelLocation, section: StagePanelSection): void;
-    // (undocumented)
     initializeFromProps(props: StagePanelZoneProps, panelLocation: StagePanelLocation, panelZone: StagePanelZoneDefKeys): void;
 }
 
@@ -5332,8 +5322,6 @@ export class StagePanelZonesDef {
     [Symbol.iterator](): Iterator<[StagePanelZoneDefKeys, StagePanelZoneDef]>;
     // (undocumented)
     get end(): StagePanelZoneDef;
-    // (undocumented)
-    initializeFromConfig(config: PanelSectionsConfig | undefined, panelLocation: StagePanelLocation): void;
     // (undocumented)
     initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation): void;
     // (undocumented)
@@ -7009,8 +6997,6 @@ export class WidgetDef {
     set iconSpec(spec: IconSpec);
     // (undocumented)
     get id(): string;
-    // @internal (undocumented)
-    initializeFromConfig(config: WidgetConfig, type?: WidgetType): void;
     // @deprecated (undocumented)
     static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef): void;
     // (undocumented)

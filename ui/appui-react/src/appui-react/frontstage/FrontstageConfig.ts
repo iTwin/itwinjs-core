@@ -13,7 +13,7 @@ import { PanelConfig } from "../stagepanels/PanelConfig";
 import { WidgetConfig } from "../widgets/WidgetConfig";
 
 /** Configuration from which a frontstage is created.
- * @public
+ * @beta
  */
 export interface FrontstageConfig extends CommonProps {
   /** Id for the Frontstage */
@@ -36,37 +36,21 @@ export interface FrontstageConfig extends CommonProps {
   /** if isIModelIndependent then frontstage is independent from any iModel. */
   readonly isIModelIndependent?: boolean;
 
-  /** The top-left corner that shows tools typically used to query and modify content.
-   * @beta
-   */
+  /** The top-left corner that shows tools typically used to query and modify content. */
   readonly contentManipulation?: WidgetConfig;
-  /** The settings of the active tool.
-   * @beta
-   */
+  /** The settings of the active tool. */
   readonly toolSettings?: WidgetConfig;
-  /** The top-right corner that shows view navigation tools.
-   * @beta
-   */
+  /** The top-right corner that shows view navigation tools. */
   readonly viewNavigation?: WidgetConfig;
-  /** The status bar of the application.
-   * @beta
-   */
+  /** The status bar of the application. */
   readonly statusBar?: WidgetConfig;
 
-  /** Top panel of the application.
-   * @beta
-   */
+  /** Top panel of the application. */
   readonly topPanel?: PanelConfig;
-  /** Left panel of the application.
-   * @beta
-   */
+  /** Left panel of the application. */
   readonly leftPanel?: PanelConfig;
-  /** Right panel of the application.
-   * @beta
-   */
+  /** Right panel of the application. */
   readonly rightPanel?: PanelConfig;
-  /** Bottom panel of the application.
-   * @beta
-   */
+  /** Bottom panel of the application. */
   readonly bottomPanel?: PanelConfig;
 }

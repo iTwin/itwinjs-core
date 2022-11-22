@@ -275,7 +275,7 @@ public;FrontstageActivatedEvent
 public;FrontstageActivatedEventArgs
 public;FrontstageComposer 
 deprecated;FrontstageComposer 
-public;FrontstageConfig 
+beta;FrontstageConfig 
 public;FrontstageDeactivatedEvent 
 public;FrontstageDeactivatedEventArgs
 public;FrontstageDef
