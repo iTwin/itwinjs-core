@@ -2722,9 +2722,9 @@ export class StandaloneDb extends BriefcaseDb {
    * @throws [[IModelError]] if the file is not a standalone iModel.
    * @see [BriefcaseConnection.openStandalone]($frontend) to open a StandaloneDb from the frontend
    */
-  public static openFile(filePath: LocalFileName, openMode: OpenMode = OpenMode.ReadWrite, options?: SnapshotDbOpenArgs): StandaloneDb {
+  public static openFile(filePath: LocalFileName, openMode: OpenMode = OpenMode.ReadWrite, options?: SnapshotDbOpenArgs, upgradeOptions?: UpgradeOptions): StandaloneDb {
     const file = { path: filePath, key: options?.key };
-    const nativeDb = this.openDgnDb(file, openMode, undefined, options);
+    const nativeDb = this.openDgnDb(file, openMode, upgradeOptions, options);
 
     try {
       const iTwinId = nativeDb.getITwinId();

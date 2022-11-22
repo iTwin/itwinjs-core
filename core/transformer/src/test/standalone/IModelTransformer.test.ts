@@ -19,7 +19,7 @@ import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementAspectProps, ElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
+  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, ProfileOptions, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelExportHandler, IModelTransformer, IModelTransformOptions, TransformerLoggerCategory } from "../../core-transformer";
@@ -1101,7 +1101,7 @@ describe("IModelTransformer", () => {
     targetDbTestCopy.close();
     seedDb.close();
     setToStandalone(targetDbPath);
-    const targetDb = StandaloneDb.openFile(targetDbPath);
+    const targetDb = StandaloneDb.openFile(targetDbPath, undefined, undefined, {profile: ProfileOptions.Upgrade});
 
     assert(
       Semver.lt(
