@@ -568,7 +568,7 @@ export class HalfEdge {
 
   /**
    * Pinch this half edge out of its base vertex loop.
-   * * if this  the half edge (possibly undefined)
+   * @return the surviving HalfEdge in the vertex loop, or undefined if the instance HalfEdge is already dangling
    */
   public yankFromVertexLoop(): HalfEdge | undefined {
     const other = this.edgeMate.faceSuccessor;

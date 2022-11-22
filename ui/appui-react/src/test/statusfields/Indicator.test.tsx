@@ -11,7 +11,7 @@ import { Indicator } from "../../appui-react";
 describe("Indicator", () => {
   it("Should render label on left", () => {
     const wrapper = render(
-      <Indicator iconSpec={"test-icon"} label="test-label" isLabelVisible={true} labelSide={StatusBarLabelSide.Left} />);
+      <Indicator iconSpec={"test-icon"} label="test-label" isLabelVisible={true} labelSide={StatusBarLabelSide.Left} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     expect(wrapper.container.querySelector(".uifw-footer-label-reversed")).to.be.null;
     expect(wrapper.container.querySelector(".icon.test-icon")).not.to.be.null;
@@ -21,7 +21,7 @@ describe("Indicator", () => {
 
   it("Should render label on right", () => {
     const wrapper = render(
-      <Indicator iconSpec={"test-icon"} label="test-label" isLabelVisible={true} labelSide={StatusBarLabelSide.Right} />);
+      <Indicator iconSpec={"test-icon"} label="test-label" isLabelVisible={true} labelSide={StatusBarLabelSide.Right} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     expect(wrapper.container.querySelector(".uifw-footer-label-reversed")).not.to.be.null;
     expect(wrapper.container.querySelector(".icon.test-icon")).not.to.be.null;
@@ -31,7 +31,7 @@ describe("Indicator", () => {
 
   it("Should not render label", () => {
     const wrapper = render(
-      <Indicator iconSpec={"test-icon"} label="test-label" isLabelVisible={false} labelSide={StatusBarLabelSide.Right} />);
+      <Indicator iconSpec={"test-icon"} label="test-label" isLabelVisible={false} labelSide={StatusBarLabelSide.Right} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     expect(wrapper.container.querySelector(".uifw-footer-label-reversed")).not.to.be.null;
     expect(wrapper.container.querySelector(".icon.test-icon")).not.to.be.null;
@@ -41,7 +41,7 @@ describe("Indicator", () => {
 
   it("Should support isInfooterMode=false (deprecated)", () => {
     const wrapper = render(
-      <Indicator iconSpec={"test-icon"} label="test-label" isLabelVisible={false} labelSide={StatusBarLabelSide.Right} isInFooterMode={false} />);
+      <Indicator iconSpec={"test-icon"} label="test-label" isLabelVisible={false} labelSide={StatusBarLabelSide.Right} isInFooterMode={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     expect(wrapper.container.querySelector(".uifw-footer-label-reversed")).not.to.be.null;
     expect(wrapper.container.querySelector(".icon.test-icon")).not.to.be.null;

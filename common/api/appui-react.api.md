@@ -124,7 +124,7 @@ import { RectangleProps } from '@itwin/core-react';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { ResizeHandle } from '@itwin/appui-layout-react';
 import { Ruleset } from '@itwin/presentation-common';
-import { SafeAreaInsets } from '@itwin/appui-layout-react';
+import { SafeAreaInsets as SafeAreaInsets_2 } from '@itwin/appui-layout-react';
 import { ScreenViewport } from '@itwin/core-frontend';
 import { SelectionMode as SelectionMode_2 } from '@itwin/components-react';
 import { SettingsManager } from '@itwin/core-react';
@@ -416,7 +416,7 @@ export type ActionCreatorsObject = {
     [actionCreatorName: string]: FunctionType;
 };
 
-// @public
+// @public @deprecated
 export class ActionItemButton extends React_2.Component<ActionItemButtonProps, BaseItemState> {
     constructor(props: ActionItemButtonProps);
     // @internal (undocumented)
@@ -431,7 +431,7 @@ export class ActionItemButton extends React_2.Component<ActionItemButtonProps, B
     readonly state: Readonly<BaseItemState>;
 }
 
-// @public
+// @public @deprecated
 export interface ActionItemButtonProps extends CommonProps {
     actionItem: ActionButtonItemDef;
     isEnabled?: boolean;
@@ -491,10 +491,10 @@ export interface ActivityMessageEventArgs {
     restored?: boolean;
 }
 
-// @public
+// @public @deprecated
 export function ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface ActivityMessagePopupProps extends CommonProps {
     // (undocumented)
     cancelActivityMessage?: () => void;
@@ -502,7 +502,7 @@ export interface ActivityMessagePopupProps extends CommonProps {
     dismissActivityMessage?: () => void;
 }
 
-// @public
+// @public @deprecated
 export interface ActivityMessageProps {
     // (undocumented)
     activityMessageInfo: ActivityMessageEventArgs;
@@ -597,7 +597,7 @@ export class AppUiSettings implements UserSettingsProvider {
 // @beta
 export function areNoFeatureOverridesActive(): boolean;
 
-// @public
+// @public @deprecated
 export class Backstage extends React_2.Component<BackstageProps, BackstageState> {
     constructor(props: BackstageProps);
     static get backstageToggleCommand(): CommandItemDef;
@@ -675,7 +675,7 @@ export interface BackstageComposerStageLauncherProps {
     readonly item: BackstageStageLauncher_2;
 }
 
-// @public
+// @public @deprecated
 export class BackstageEvent extends UiEvent_2<BackstageEventArgs> {
 }
 
@@ -744,7 +744,7 @@ export class BackstageManager {
     toggle(): void;
 }
 
-// @public
+// @public @deprecated
 export interface BackstageProps extends CommonProps {
     // (undocumented)
     header?: React_2.ReactNode;
@@ -1195,6 +1195,8 @@ export enum ConfigurableUiActionId {
     // (undocumented)
     SetTheme = "configurableui:set_theme",
     // (undocumented)
+    SetToolbarOpacity = "configurableui:set_toolbar_opacity",
+    // (undocumented)
     SetToolPrompt = "configurableui:set_toolprompt",
     // (undocumented)
     SetViewOverlayDisplay = "configurableui:set-view-overlay-display",
@@ -1217,6 +1219,7 @@ export const ConfigurableUiActions: {
     setViewOverlayDisplay: (displayViewOverlay: boolean) => ActionWithPayload<ConfigurableUiActionId.SetViewOverlayDisplay, boolean>;
     setAnimateToolSettings: (animateToolSettings: boolean) => ActionWithPayload<ConfigurableUiActionId.AnimateToolSettings, boolean>;
     setUseToolAsToolSettingsLabel: (useToolAsToolSettingsLabel: boolean) => ActionWithPayload<ConfigurableUiActionId.UseToolAsToolSettingsLabel, boolean>;
+    setToolbarOpacity: (opacity: number) => ActionWithPayload<ConfigurableUiActionId.SetToolbarOpacity, number>;
 };
 
 // @public
@@ -1320,6 +1323,8 @@ export interface ConfigurableUiState {
     snapMode: number;
     // (undocumented)
     theme: string;
+    // (undocumented)
+    toolbarOpacity: number;
     // (undocumented)
     toolPrompt: string;
     // (undocumented)
@@ -2251,7 +2256,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 export const FrameworkReducer: (state: CombinedReducerState<    {
 configurableUiState: typeof ConfigurableUiReducer;
 sessionState: typeof SessionStateReducer;
-}>, action: DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, FrameworkVersionId>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AnimateToolSettings, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.UseToolAsToolSettingsLabel, boolean>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, DeepReadonlyArray<PresentationSelectionScope>>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, DeepReadonlyObject<CursorMenuData>>>) => CombinedReducerState<    {
+}>, action: DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, FrameworkVersionId>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AnimateToolSettings, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.UseToolAsToolSettingsLabel, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolbarOpacity, number>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, DeepReadonlyArray<PresentationSelectionScope>>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, DeepReadonlyObject<CursorMenuData>>>) => CombinedReducerState<    {
 configurableUiState: typeof ConfigurableUiReducer;
 sessionState: typeof SessionStateReducer;
 }>;
@@ -2364,7 +2369,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
 }
 
-// @public
+// @public @deprecated
 export function FrameworkVersion(props: FrameworkVersionProps): JSX.Element;
 
 // @internal
@@ -2379,13 +2384,13 @@ export interface FrameworkVersionChangedEventArgs {
     version: FrameworkVersionId;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export const FrameworkVersionContext: React_2.Context<FrameworkVersionId>;
 
-// @public
+// @public @deprecated
 export type FrameworkVersionId = "1" | "2";
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export interface FrameworkVersionProps {
     // (undocumented)
     children?: React_2.ReactNode;
@@ -2946,13 +2951,13 @@ export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFr
 // @internal (undocumented)
 export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes;
 
-// @public
+// @public @deprecated
 export function GroupButton(props: GroupButtonProps): JSX.Element;
 
 // @internal
 export function GroupButtonItem(props: GroupButtonProps_2): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface GroupButtonProps extends GroupItemProps, CommonProps {
 }
 
@@ -3186,7 +3191,7 @@ export interface IModelViewportControlOptions {
 // @internal
 export const INACTIVITY_TIME_DEFAULT = 3500;
 
-// @beta
+// @beta @deprecated
 export function Indicator(props: IndicatorProps): JSX.Element;
 
 // @public
@@ -3589,7 +3594,7 @@ export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
     render(): JSX.Element;
 }
 
-// @beta
+// @beta @deprecated
 export class ListPickerBase extends React_2.PureComponent<ListPickerProps, ListPickerState> {
     constructor(props: any);
     // @internal (undocumented)
@@ -4147,7 +4152,7 @@ export class NestedFrontstage {
     static get backToPreviousFrontstageCommand(): CommandItemDef;
 }
 
-// @public
+// @public @deprecated
 export interface NineZoneChangeHandler {
     // (undocumented)
     handleFloatingZonesBoundsChange(bounds: RectangleProps): void;
@@ -4557,7 +4562,13 @@ export const RULESET_SPATIAL_BREAKDOWN: Ruleset;
 export const RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset;
 
 // @public
-export const SafeAreaContext: React_2.Context<SafeAreaInsets>;
+export const SafeAreaContext: React_2.Context<SafeAreaInsets_2>;
+
+// @beta
+export type SafeAreaInsets = SafeAreaInsets_2;
+
+// @beta
+export const SafeAreaInsets: typeof SafeAreaInsets_2;
 
 // @internal
 export interface SavedWidget {
@@ -5117,7 +5128,7 @@ export class StagePanel extends React_2.Component<StagePanelProps, StagePanelCom
     render(): React_2.ReactNode;
 }
 
-// @public
+// @public @deprecated
 export interface StagePanelChangeHandler {
     // @alpha (undocumented)
     handlePanelInitialize(panelLocation: StagePanelLocation, size: number): void;
@@ -5435,8 +5446,35 @@ export interface StatusBarComposerProps extends CommonProps {
 // @internal
 export const StatusBarContext: React_2.Context<StatusBarWidgetControlArgs>;
 
+// @beta
+export function StatusBarDialog(props: StatusBarDialogProps): JSX.Element;
+
+// @beta
+export namespace StatusBarDialog {
+    const TitleBar: typeof StatusBarDialogTitleBar;
+    const TitleBarButton: typeof StatusBarDialogTitleBarButton;
+}
+
+// @beta
+export interface StatusBarDialogProps extends CommonProps {
+    children?: React_2.ReactNode;
+    titleBar?: React_2.ReactNode;
+}
+
 // @public
 export type StatusBarFieldId = string | null;
+
+// @beta
+export function StatusBarIndicator(props: StatusBarIndicatorProps): JSX.Element;
+
+// @beta
+export interface StatusBarIndicatorProps extends CommonProps {
+    children?: React_2.ReactNode;
+    defaultIsOpen?: boolean;
+    onClick?: () => void;
+    popup?: React_2.ReactNode;
+    title?: string;
+}
 
 // @public
 export interface StatusBarItem extends AbstractStatusBarCustomItem {
@@ -5463,6 +5501,16 @@ export class StatusBarItemUtilities {
     static createStatusBarItem: (id: string, section: StatusBarSection, itemPriority: number, reactNode: React_2.ReactNode, itemProps?: Partial<StatusBarItem> | undefined) => StatusBarItem;
 }
 
+// @beta
+export function StatusBarLabelIndicator(props: StatusBarLabelIndicatorProps): JSX.Element;
+
+// @beta
+export interface StatusBarLabelIndicatorProps extends Omit<StatusBarIndicatorProps, "children"> {
+    iconSpec?: IconSpec;
+    label?: string;
+    labelSide?: StatusBarLabelSide;
+}
+
 // @public
 export function StatusBarLeftSection(props: CommonDivProps): JSX.Element;
 
@@ -5476,6 +5524,9 @@ export interface StatusBarProps extends CommonProps {
 
 // @public
 export function StatusBarRightSection(props: CommonDivProps): JSX.Element;
+
+// @public
+export function StatusBarSeparator(props: CommonProps): JSX.Element;
 
 // @public
 export function StatusBarSpaceBetween(props: CommonDivProps): JSX.Element;
@@ -5547,7 +5598,7 @@ export interface StatusFieldProps extends CommonProps {
 // @public @deprecated
 export function StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface StatusMessageRendererProps extends CommonProps {
     // (undocumented)
     cancelActivityMessage?: () => void;
@@ -5560,7 +5611,7 @@ export interface StatusMessageRendererProps extends CommonProps {
 // @public @deprecated
 export function StickyMessage(props: StickyMessageProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface StickyMessageProps {
     // (undocumented)
     closeMessage: (id: string) => void;
@@ -5629,6 +5680,8 @@ export enum SyncUiEventId {
     BackstageEvent = "backstageevent",
     ContentControlActivated = "contentcontrolactivated",
     ContentLayoutActivated = "contentlayoutactivated",
+    // @alpha
+    FeatureOverridesChanged = "featureoverrideschanged",
     FrontstageActivating = "frontstageactivating",
     FrontstageReady = "frontstageready",
     ModalDialogChanged = "modaldialogchanged",
@@ -5757,7 +5810,7 @@ export interface TaskPropsList {
 }
 
 // @public
-export const ThemeManager: ConnectedComponent<typeof ThemeManagerComponent, Omit_3<React_2.ClassAttributes<ThemeManagerComponent> & ThemeManagerProps, "theme" | "widgetOpacity">>;
+export const ThemeManager: ConnectedComponent<typeof ThemeManagerComponent, Omit_3<React_2.ClassAttributes<ThemeManagerComponent> & ThemeManagerProps, "theme" | "widgetOpacity" | "toolbarOpacity">>;
 
 // @public
 export class TileLoadingIndicator extends React_2.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
@@ -5772,7 +5825,7 @@ export class TileLoadingIndicator extends React_2.PureComponent<StatusFieldProps
 // @public @deprecated
 export function ToastMessage(props: ToastMessageProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface ToastMessageProps {
     // (undocumented)
     closeMessage: (id: string) => void;
@@ -5852,6 +5905,9 @@ export class Toolbar extends React_2.Component<ToolbarProps, ToolbarState> {
     // (undocumented)
     render(): JSX.Element | null;
 }
+
+// @public
+export const TOOLBAR_OPACITY_DEFAULT = 0.5;
 
 // @public
 export class ToolbarButtonHelper {
@@ -5971,7 +6027,7 @@ export interface ToolbarWidgetProps extends WidgetProps {
     verticalItems?: ItemList;
 }
 
-// @public
+// @public @deprecated
 export class ToolButton extends React_2.Component<ToolButtonProps, BaseItemState> {
     constructor(props: ToolItemProps);
     // (undocumented)
@@ -5986,7 +6042,7 @@ export class ToolButton extends React_2.Component<ToolButtonProps, BaseItemState
     readonly state: Readonly<BaseItemState>;
 }
 
-// @public
+// @public @deprecated
 export interface ToolButtonProps extends ToolItemProps, CommonProps {
 }
 
@@ -6257,6 +6313,7 @@ export class UiFramework {
     static getIModelConnection(): IModelConnection | undefined;
     // (undocumented)
     static getIsUiVisible(): boolean;
+    static getToolbarOpacity(): number;
     static getUiStateStorage(): UiStateStorage;
     // (undocumented)
     static getWidgetOpacity(): number;
@@ -6314,6 +6371,7 @@ export class UiFramework {
     // (undocumented)
     static setShowWidgetIcon(value: boolean): void;
     static get settingsManager(): SettingsManager;
+    static setToolbarOpacity(opacity: number): void;
     // (undocumented)
     static setUiStateStorage(storage: UiStateStorage, immediateSync?: boolean): Promise<void>;
     // (undocumented)
@@ -6484,7 +6542,7 @@ export const useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => rea
 // @public
 export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[];
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export function useFrameworkVersion(): FrameworkVersionId;
 
 // @internal (undocumented)
@@ -7218,7 +7276,7 @@ export interface WidgetStateChangedEventArgs {
     widgetState: WidgetState;
 }
 
-// @public
+// @public @deprecated
 export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;
 
 // @internal
@@ -7255,7 +7313,7 @@ export enum WidgetType {
 // @public @deprecated
 export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
 
-// @public
+// @public @deprecated
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React_2.JSXElementConstructor<P> & C) => {
     new (props: JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>> | Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>): {
         render(): JSX.Element;
@@ -7419,7 +7477,7 @@ export class ZoneDef extends WidgetHost {
     get zoneState(): ZoneState;
 }
 
-// @public
+// @public @deprecated
 export interface ZoneDefProvider {
     // (undocumented)
     getZoneDef(zoneId: number): ZoneDef | undefined;

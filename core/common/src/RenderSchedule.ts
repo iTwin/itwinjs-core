@@ -1204,7 +1204,9 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Used as part of a [[RenderSchedule.ScriptBuilder]] to define a [[RenderSchedule.Timeline]].
+  /** Used as part of a [[RenderSchedule.ScriptBuilder]] to define a [[RenderSchedule.Timeline]]. Functions that append
+   * to the timeline expect entries to be appended in chronological order - i.e., you cannot append an entry that is earlier
+   * than a previously appended entry.
    * @see [[RenderSchedule.ElementTimelineBuilder]] and [[RenderSchedule.ModelTimelineBuilder]].
    */
   export class TimelineBuilder {
@@ -1217,7 +1219,7 @@ export namespace RenderSchedule {
     /** Timeline controlling clipping. */
     public cuttingPlane?: CuttingPlaneEntryProps[];
 
-    /** Append a new [[RenderSchedule.VisibilityEntry]] to the timeline. */
+    /** Append a new [[RenderSchedule.VisibilityEntry]] to the timeline. `time` must be more recent than any previously-appended visibility entries. */
     public addVisibility(time: number, visibility: number | undefined, interpolation = Interpolation.Linear): void {
       if (!this.visibility)
         this.visibility = [];
@@ -1225,7 +1227,7 @@ export namespace RenderSchedule {
       this.visibility.push({ time, value: visibility, interpolation });
     }
 
-    /** Append a new [[RenderSchedule.ColorEntry]] to the timeline. */
+    /** Append a new [[RenderSchedule.ColorEntry]] to the timeline. `time` must be more recent than any previously-appended color entries. */
     public addColor(time: number, color: RgbColor | { red: number, green: number, blue: number } | undefined, interpolation = Interpolation.Linear): void {
       if (!this.color)
         this.color = [];
@@ -1234,7 +1236,7 @@ export namespace RenderSchedule {
       this.color.push({ time, value, interpolation });
     }
 
-    /** Append a new [[RenderSchedule.CuttingPlaneEntry]] to the timeline. */
+    /** Append a new [[RenderSchedule.CuttingPlaneEntry]] to the timeline.  `time` must be more recent than any previously-appended cutting plane entries. */
     public addCuttingPlane(time: number, plane: { position: XYAndZ, direction: XYAndZ, visible?: boolean, hidden?: boolean } | undefined, interpolation = Interpolation.Linear): void {
       if (!this.cuttingPlane)
         this.cuttingPlane = [];
@@ -1256,7 +1258,7 @@ export namespace RenderSchedule {
       this.cuttingPlane.push({ time, value, interpolation });
     }
 
-    /** Append a new [[RenderSchedule.TransformEntry]] to the timeline. */
+    /** Append a new [[RenderSchedule.TransformEntry]] to the timeline.  `time` must be more recent than any previously-appended transform entries. */
     public addTransform(time: number, transform: Readonly<Transform> | undefined, components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ }, interpolation = Interpolation.Linear): void {
       if (!this.transform)
         this.transform = [];
@@ -1383,7 +1385,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Assembles the JSON representation for a new [[RenderSchedule.Script]]. As an extremely simple example, the following code produces a script that changes the color of a single element:
+  /** Assembles the JSON representation for a new [[RenderSchedule.Script]]. Ensure that entries on any given element timeline are added chronologically. As an extremely simple example, the following code produces a script that changes the color of a single element:
    * ```ts
    *  const script = new ScriptBuilder();
    *  const model = script.addModelTimeline("0x123");

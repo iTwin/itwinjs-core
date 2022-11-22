@@ -152,7 +152,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 1130;
 				LastUpgradeCheck = 1330;
-				ORGANIZATIONNAME = "Affan Khan";
+				ORGANIZATIONNAME = "Bentley Systems Inc.";
 				TargetAttributes = {
 					415D587F23E37F5200907B7B = {
 						CreatedOnToolsVersion = 11.3;
@@ -211,7 +211,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\n\n# Copy FrontEnd and BackEnd assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\ncp -L -R $AssetRoot/ $AppBundleRoot/Assets/\n";
+			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\n\n# Remove existing assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\n\n# Copy Frontend and Backend assets\nAssetRoot=\"$PROJECT_DIR/../..\"\ncp -L -R $AssetRoot/build/ $AppBundleRoot/Assets/www/\ncp -L -R $AssetRoot/lib/mobile/ $AppBundleRoot/Assets/\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

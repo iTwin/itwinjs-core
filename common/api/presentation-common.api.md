@@ -2023,9 +2023,6 @@ export type PartialNode = AllOrNone<Partial<Node_2>, "key" | "label">;
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
 
 // @internal (undocumented)
-export const PRESENTATION_COMMON_ROOT: string;
-
-// @internal (undocumented)
 export const PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface";
 
 // @public

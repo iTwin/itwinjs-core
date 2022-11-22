@@ -14,7 +14,7 @@ import {
   KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset,
   RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
-import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
+import { PRESENTATION_BACKEND_ASSETS_ROOT } from "./Constants";
 import { buildElementsProperties } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
@@ -39,11 +39,12 @@ export class PresentationManagerDetail implements IDisposable {
   constructor(params: PresentationManagerProps) {
     this._disposed = false;
 
-    const presentationAssetsRoot = params.presentationAssetsRoot ?? {
-      common: PRESENTATION_COMMON_ASSETS_ROOT,
-      backend: PRESENTATION_BACKEND_ASSETS_ROOT,
-    };
+    const backendAssetsRoot = ((typeof params.presentationAssetsRoot === "string")
+      ? params.presentationAssetsRoot
+      : params.presentationAssetsRoot?.backend
+    ) ?? PRESENTATION_BACKEND_ASSETS_ROOT;
     const changeTrackingEnabled = !!params.updatesPollInterval;
+
     this._nativePlatform = params.addon ?? createNativePlatform(
       params.id ?? "",
       params.workerThreadsCount ?? 2,
@@ -65,7 +66,7 @@ export class PresentationManagerDetail implements IDisposable {
 
     setupRulesetDirectories(
       this._nativePlatform,
-      typeof presentationAssetsRoot === "string" ? presentationAssetsRoot : presentationAssetsRoot.backend,
+      backendAssetsRoot,
       params.supplementalRulesetDirectories ?? [],
       params.rulesetDirectories ?? [],
     );

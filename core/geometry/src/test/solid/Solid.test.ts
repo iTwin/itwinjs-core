@@ -7,6 +7,7 @@ import { expect } from "chai";
 import * as fs from "fs";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
+import { Box } from "../../solid/Box";
 import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCurves";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -24,7 +25,6 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Sample } from "../../serialization/GeometrySamples";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Cone } from "../../solid/Cone";
 import { RotationalSweep } from "../../solid/RotationalSweep";
 import { RuledSweep } from "../../solid/RuledSweep";
@@ -34,7 +34,7 @@ import { SweepContour } from "../../solid/SweepContour";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 
 /* eslint-disable no-console */
 let outputFolderPath = "./src/test/output";
@@ -67,9 +67,7 @@ function exerciseUVToWorld(ck: Checker, s: SolidPrimitive, u: number, v: number,
       console.log(" U", vector10, plane00.vectorU);
     if (!ck.testLT(vector01.angleTo(plane00.vectorV).degrees, toleranceDegrees))
       console.log(" V", vector01, plane00.vectorV);
-
   }
-
 }
 function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
   const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 2), Matrix3d.createUniformScale(2));
@@ -85,26 +83,32 @@ function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
         if (ck.testPointer(s2) && s1.tryTransformInPlace(scaleTransform)) {
           ck.testFalse(s2.isAlmostEqual(s), "scaled is different from original");
           ck.testTrue(s1.isAlmostEqual(s2), "clone transform commute");
-          const range2A = Range3d.create();
-          const range2B = Range3d.create();
-          s2.extendRange(range2A);
-          s.extendRange(range2B, scaleTransform);
-          range2B.expandInPlace(0.10 * range2B.diagonal().magnitude());    // HACK -- ranges are not precise.  Allow fuzz.
-          if (!ck.testTrue(range2B.containsRange(range2A), "range commutes with scale transform",
-            range2B.low.toJSON(),
-            range2A.low.toJSON(),
-            range2A.high.toJSON(),
-            range2B.high.toJSON())) {
-            console.log("s", prettyPrint(IModelJson.Writer.toIModelJson(s)));
-            console.log("s.range", prettyPrint(s.range()));
-            console.log("s1", prettyPrint(IModelJson.Writer.toIModelJson(s1)));
-            console.log("s2", prettyPrint(IModelJson.Writer.toIModelJson(s2)));
-            const range2C = Range3d.create();
-            const range2D = Range3d.create();
-            s2.extendRange(range2C);
-            s.extendRange(range2D, scaleTransform);
+          const range = Range3d.create();
+          s.extendRange(range);
+          const rangeScaled = Range3d.create();
+          s.extendRange(rangeScaled, scaleTransform);
+          const rangeScaledExpanded = rangeScaled.clone();
+          rangeScaledExpanded.expandInPlace(0.10 * rangeScaledExpanded.diagonal().magnitude());    // HACK -- ranges are not precise.  Allow fuzz.
+          const range2 = Range3d.create();
+          s2.extendRange(range2);
+          if (!ck.testTrue(rangeScaledExpanded.containsRange(range2), "scaled range of solid commutes with range of scaled solid",
+              rangeScaledExpanded.low.toJSON(),
+              range2.low.toJSON(),
+              range2.high.toJSON(),
+              rangeScaledExpanded.high.toJSON())) {
+            const allGeometry: GeometryQuery[] = [];
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+              [s, Box.createRange(range, true)!,
+                  Box.createRange(rangeScaled, true)!,
+                  Box.createRange(rangeScaledExpanded, true)!,
+              s2, Box.createRange(range2, true)!]);
+            GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "ExerciseSolids");
+            // compute ranges again to debug failure
+            const myRangeScaled = Range3d.create();
+            s.extendRange(myRangeScaled, scaleTransform);
+            const myRange2 = Range3d.create();
+            s2.extendRange(myRange2);
           }
-
           exerciseUVToWorld(ck, s, 0.01, 0.02, 0.0001);
         }
       }
@@ -220,6 +224,7 @@ describe("Solids", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+
   it("TransformedSpheres", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -238,6 +243,15 @@ describe("Solids", () => {
       x0 += 5.0 * radius;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TransformedSpheres");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("RoundTrippedEllipsoids", () => {
+    const ck = new Checker();
+    const origin = Point3d.createZero();
+    const radii = Point3d.create(1, 3, 4);
+    const ellipsoid = Sphere.createEllipsoid(Transform.createFixedPointAndMatrix(origin, Matrix3d.createScale(radii.x, radii.y, radii.z)), AngleSweep.create(), false);
+    testGeometryQueryRoundTrip(ck, ellipsoid);
     expect(ck.getNumErrors()).equals(0);
   });
 

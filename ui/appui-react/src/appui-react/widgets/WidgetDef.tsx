@@ -96,6 +96,7 @@ export interface NavigationWidgetProps extends ToolbarWidgetProps {
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
 /** Prototype for WidgetDef StateFunc (UI 1.0 only deprecate ???)
+ * @deprecated Used in UI1.0 only.
  * @public
  */
 export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;
@@ -133,7 +134,7 @@ export class WidgetDef {
   private _stateChanged: boolean = false;
   private _fillZone: boolean = false;
   private _syncEventIds: string[] = [];
-  private _stateFunc?: WidgetStateFunc;
+  private _stateFunc?: WidgetStateFunc; // eslint-disable-line deprecation/deprecation
   private _widgetType: WidgetType = WidgetType.Rectangular;
   private _applicationData?: any;
   private _iconSpec?: string | ConditionalStringValue | React.ReactNode;
@@ -186,7 +187,7 @@ export class WidgetDef {
   public get stateChanged(): boolean { return this._stateChanged; }
   public get fillZone(): boolean { return this._fillZone; }
   public get syncEventIds(): string[] { return this._syncEventIds; }
-  public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; }
+  public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; } // eslint-disable-line deprecation/deprecation
   public get applicationData(): any | undefined { return this._applicationData; }
   public get isFloating(): boolean { return this.state === WidgetState.Floating; }
   public get iconSpec(): IconSpec { return this._iconSpec === IconHelper.reactIconKey ? IconHelper.getIconReactNode(this._iconSpec, this._internalData) : this._iconSpec; }

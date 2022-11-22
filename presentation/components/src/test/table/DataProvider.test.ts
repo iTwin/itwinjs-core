@@ -94,6 +94,7 @@ describe("TableDataProvider", () => {
 
     it("returns valid deserialized InstanceKey", () => {
       const key = createRandomECInstanceKey();
+      // eslint-disable-next-line deprecation/deprecation
       const row: RowItem = {
         key: JSON.stringify(key),
         cells: [],
