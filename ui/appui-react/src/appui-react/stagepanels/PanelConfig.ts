@@ -7,7 +7,6 @@
  * @module Frontstage
  */
 
-import * as React from "react";
 import { WidgetConfig } from "../widgets/WidgetConfig";
 import { StagePanelMaxSizeSpec } from "./StagePanel";
 import { StagePanelState as StagePanelState } from "./StagePanelDef";
@@ -16,12 +15,8 @@ import { StagePanelState as StagePanelState } from "./StagePanelDef";
  * @beta
  */
 export interface PanelConfig {
-  /** Any application data to attach to this Panel. */
-  readonly applicationData?: any;
   /** Default Panel state. Controls how the panel is initially displayed. Defaults to StagePanelState.Open. */
   readonly defaultState?: StagePanelState;
-  /** Panel header. */
-  readonly header?: React.ReactNode;
   /** Maximum size of the panel. */
   readonly maxSize?: StagePanelMaxSizeSpec;
   /** Minimum size of the panel. */
