@@ -377,24 +377,12 @@ export class FrontstageManager {
   private static getFrontstageKey(frontstageId: string) {
     const provider = FrontstageManager._frontstageProviders.get(frontstageId);
     let isIModelIndependent = false;
-    if (provider) {
-      if (provider.frontstageConfig) {
-        isIModelIndependent = !!provider.frontstageConfig().isIModelIndependent;
-      } else {
-        isIModelIndependent = !!provider.frontstage.props.isIModelIndependent;
-      }
+    if (provider && !provider.frontstageConfig) {
+      isIModelIndependent = !!provider.frontstage.props.isIModelIndependent;
     }
     const imodelId = UiFramework.getIModelConnection()?.iModelId ?? "noImodel";
     const key = isIModelIndependent ? frontstageId : `[${imodelId}]${frontstageId}`;
     return key;
-  }
-
-  /** Add a Frontstage via a definition.
-   * @param frontstageDef  Definition of the Frontstage to add
-   */
-  private static addFrontstageDef(frontstageDef: FrontstageDef): void {
-    const key = FrontstageManager.getFrontstageKey(frontstageDef.id);
-    FrontstageManager._frontstageDefs.set(key, frontstageDef);
   }
 
   /** @internal */
