@@ -26,6 +26,7 @@ export interface InitialAppUiSettings {
   autoCollapseUnpinnedPanels?: boolean;
   animateToolSettings?: boolean;
   useToolAsToolSettingsLabel?: boolean;
+  toolbarOpacity: number;
 }
 
 /** These are the UI settings that are stored in the Redux store. They control the color theme, the UI version,
@@ -54,6 +55,7 @@ export class AppUiSettings implements UserSettingsProvider {
   public autoCollapseUnpinnedPanels: UiStateEntry<boolean>;
   public animateToolSettings: UiStateEntry<boolean>;
   public useToolAsToolSettingsLabel: UiStateEntry<boolean>;
+  public toolbarOpacity: UiStateEntry<number>;
 
   private setColorTheme = (theme: string) => {
     UiFramework.setColorTheme(theme);
@@ -101,6 +103,10 @@ export class AppUiSettings implements UserSettingsProvider {
       (value: boolean) => UiFramework.setUseToolAsToolSettingsLabel(value), defaults.useToolAsToolSettingsLabel);
     this._settings.push(this.useToolAsToolSettingsLabel);
 
+    this.toolbarOpacity = new UiStateEntry<number>(AppUiSettings._settingNamespace, "ToolOpacity",
+      () => UiFramework.getToolbarOpacity(), (value: number) => UiFramework.setToolbarOpacity(value), defaults.toolbarOpacity);
+    this._settings.push(this.toolbarOpacity);
+
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
   }
 
@@ -134,6 +140,9 @@ export class AppUiSettings implements UserSettingsProvider {
 
     if (args.eventIds.has("configurableui:set-use-tool-as-tool-settings-label"))
       await this.useToolAsToolSettingsLabel.saveSetting(UiFramework.getUiStateStorage());
+
+    if (args.eventIds.has("configurableui:set_toolbar_opacity"))
+      await this.toolbarOpacity.saveSetting(UiFramework.getUiStateStorage());
   };
 
   public async apply(storage: UiStateStorage): Promise<void> {

@@ -232,5 +232,8 @@ describe("ConfigurableUiReducer", () => {
 
     outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setUseToolAsToolSettingsLabel(true));
     expect(outState.useToolAsToolSettingsLabel).to.be.true;
+
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setToolbarOpacity(.9));
+    expect(outState.toolbarOpacity).to.be.eql(.9);
   });
 });
