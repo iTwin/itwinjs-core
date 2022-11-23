@@ -1162,12 +1162,16 @@ function toStagePanelElement(config: PanelConfig): React.ReactElement<StagePanel
   );
 }
 
+let widgetId = 0;
 function toWidgetConfig(zone: React.ReactElement<ZoneProps>): WidgetConfig | undefined {
   const widgets = zone.props.widgets;
   if (!widgets || widgets.length === 0)
     return undefined;
-  const widget = widgets[0];
-  return widget.props;
+  const props = widgets[0].props;
+  return {
+    ...props,
+    id: props.id ? props.id : `widget-config-${++widgetId}`,
+  };
 }
 
 function toPanelConfig(panel: React.ReactElement<StagePanelProps>): PanelConfig | undefined {
@@ -1183,6 +1187,7 @@ function toFrontstageConfig(props: FrontstageProps): FrontstageConfig {
   const { contentManipulationTools, viewNavigationTools, toolSettings, statusBar, topPanel, leftPanel, bottomPanel, rightPanel, ...other } = props;
   const config: FrontstageConfig = {
     ...other,
+    version: props.version || 0,
     contentManipulation: contentManipulationTools ? toWidgetConfig(contentManipulationTools) : undefined,
     viewNavigation: viewNavigationTools ? toWidgetConfig(viewNavigationTools) : undefined,
     toolSettings: toolSettings ? toWidgetConfig(toolSettings) : undefined,

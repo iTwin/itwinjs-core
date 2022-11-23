@@ -11,4 +11,4 @@ import { WidgetProps } from "./WidgetProps";
 /** Configuration from which a widget is created.
  * @beta
  */
-export type WidgetConfig = WidgetProps; // eslint-disable-line deprecation/deprecation
+export type WidgetConfig = Readonly<Omit<WidgetProps, "id">> & { readonly id: string }; // eslint-disable-line deprecation/deprecation

@@ -29,10 +29,10 @@ export interface FrontstageConfig extends CommonProps {
   /** Usage type for this Frontstage. */
   readonly usage?: string;
   /** Frontstage version. Used to force saved layout reinitialization after changes to frontstage.
-   * @note This value should be increased when changes are made to Frontstage.
+   * @note This value should be increased when changes are made to the Frontstage.
    * Increasing the value will make sure to reinitialize App layout instead of restoring to old layout.
    */
-  readonly version?: number;
+  readonly version: number;
   /** if isIModelIndependent then frontstage is independent from any iModel. */
   readonly isIModelIndependent?: boolean;
 

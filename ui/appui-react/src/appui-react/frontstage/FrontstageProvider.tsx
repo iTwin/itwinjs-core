@@ -10,7 +10,7 @@ import * as React from "react";
 import { FrontstageProps } from "./Frontstage";
 import { FrontstageConfig } from "./FrontstageConfig";
 
-/** Provides a Frontstage as a React based definition
+/** Provides a definition required to create a Frontstage.
  * @public
  */
 export abstract class FrontstageProvider {
