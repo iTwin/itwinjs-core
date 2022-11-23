@@ -38,7 +38,9 @@ import { FrontstageActivatedEventArgs, FrontstageManager } from "./FrontstageMan
 export interface FrontstageProps extends CommonProps {
   /** Id for the Frontstage */
   id: string;
-  /** Tool that is started once the Frontstage is activated */
+  /** Tool that is started once the Frontstage is activated.
+   * Use [FrontstageManager.onFrontstageReadyEvent] instead.
+   */
   defaultTool: ToolItemDef;
   /** The Content Group providing the Content Views */
   contentGroup: ContentGroup | ContentGroupProvider;
