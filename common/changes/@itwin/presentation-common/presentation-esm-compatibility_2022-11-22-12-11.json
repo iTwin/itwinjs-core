@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Remove uses of `__dirname`, which is not available in ESM context.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

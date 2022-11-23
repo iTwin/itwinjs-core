@@ -150,6 +150,7 @@ export class Presentation {
 // @public
 export interface PresentationAssetsRootConfig {
     backend: string;
+    // @deprecated
     common: string;
 }
 
