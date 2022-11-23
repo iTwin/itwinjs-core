@@ -101,7 +101,7 @@ export function getStableWidgetProps<T extends { id?: string }>(widgetProps: T, 
 
 /** Zone React component.
  * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
- * @deprecated Use [WidgetConfig] or [PanelConfig] instead.
+ * @deprecated Use [WidgetConfig] or [StagePanelConfig] instead.
  * @public
  */
 export class Zone extends React.Component<ZoneProps> {

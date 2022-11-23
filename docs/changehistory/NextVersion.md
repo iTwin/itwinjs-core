@@ -191,7 +191,7 @@ Pseudo components used by the [FrontstageProvider]($appui-react) are deprecated 
 | ------------ | -------------------------------- |
 | `Frontstage` | [FrontstageConfig]($appui-react) |
 | `Widget`     | [WidgetConfig]($appui-react)     |
-| `StagePanel` | [PanelConfig]($appui-react)      |
+| `StagePanel` | [StagePanelConfig]($appui-react) |
 
 Other deprecations and their replacements:
 
