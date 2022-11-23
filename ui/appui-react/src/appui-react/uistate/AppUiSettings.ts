@@ -141,7 +141,7 @@ export class AppUiSettings implements UserSettingsProvider {
     if (args.eventIds.has("configurableui:set-use-tool-as-tool-settings-label"))
       await this.useToolAsToolSettingsLabel.saveSetting(UiFramework.getUiStateStorage());
 
-    if (args.eventIds.has("configurableui:set_toolbar_opacity"))
+    if (args.eventIds.has("configurableui:set-toolbar-opacity"))
       await this.toolbarOpacity.saveSetting(UiFramework.getUiStateStorage());
   };
 

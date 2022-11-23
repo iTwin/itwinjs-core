@@ -29,7 +29,7 @@ export enum ConfigurableUiActionId {
   SetViewOverlayDisplay = "configurableui:set-view-overlay-display",
   AnimateToolSettings = "configurableui:set-animate-tool-settings",
   UseToolAsToolSettingsLabel = "configurableui:set-use-tool-as-tool-settings-label",
-  SetToolbarOpacity = "configurableui:set_toolbar_opacity",
+  SetToolbarOpacity = "configurableui:set-toolbar-opacity",
 }
 
 /** The portion of state managed by the ConfigurableUiReducer.
