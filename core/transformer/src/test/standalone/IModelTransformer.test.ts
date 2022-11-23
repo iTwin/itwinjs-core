@@ -1101,7 +1101,11 @@ describe("IModelTransformer", () => {
     targetDbTestCopy.close();
     seedDb.close();
     setToStandalone(targetDbPath);
-    const targetDb = StandaloneDb.openFile(targetDbPath, undefined, undefined, {profile: ProfileOptions.Upgrade});
+    // StandaloneDb.upgradeStandaloneSchemas is the suggested method to handle a profile upgrade but that will also upgrade
+    // the BisCore schema.  This test is explicitly testing that he BisCore schema will be updated from the source iModel
+    const nativeDb = StandaloneDb.openDgnDb({path: targetDbPath}, OpenMode.ReadWrite, {profile: ProfileOptions.Upgrade});
+    nativeDb.closeIModel();
+    const targetDb = StandaloneDb.openFile(targetDbPath);
 
     assert(
       Semver.lt(
