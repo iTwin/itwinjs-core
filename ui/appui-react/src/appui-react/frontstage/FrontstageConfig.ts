@@ -8,7 +8,7 @@
 
 import { CommonProps } from "@itwin/core-react";
 import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
-import { PanelConfig } from "../stagepanels/PanelConfig";
+import { StagePanelConfig } from "../stagepanels/StagePanelConfig";
 import { WidgetConfig } from "../widgets/WidgetConfig";
 
 /** Configuration from which a frontstage is created.
@@ -37,11 +37,11 @@ export interface FrontstageConfig extends CommonProps {
   readonly statusBar?: WidgetConfig;
 
   /** Top panel of the application. */
-  readonly topPanel?: PanelConfig;
+  readonly topPanel?: StagePanelConfig;
   /** Left panel of the application. */
-  readonly leftPanel?: PanelConfig;
+  readonly leftPanel?: StagePanelConfig;
   /** Right panel of the application. */
-  readonly rightPanel?: PanelConfig;
+  readonly rightPanel?: StagePanelConfig;
   /** Bottom panel of the application. */
-  readonly bottomPanel?: PanelConfig;
+  readonly bottomPanel?: StagePanelConfig;
 }

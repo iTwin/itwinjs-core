@@ -455,9 +455,6 @@ public;NotifyMessageType = MessageType
 public;OpenChildWindowInfo
 public;OpenMessageCenterEvent 
 internal;packNineZoneState(state: NineZoneState): SavedNineZoneState
-beta;PanelConfig
-beta;PanelSectionConfig = ReadonlyArray
-beta;PanelSectionsConfig
 internal;PanelSizeChangedEvent 
 internal;PanelSizeChangedEventArgs
 beta;PanelStateChangedEvent 
@@ -558,6 +555,7 @@ public;StagePanel
 deprecated;StagePanel 
 public;StagePanelChangeHandler
 deprecated;StagePanelChangeHandler
+beta;StagePanelConfig
 public;StagePanelDef 
 public;StagePanelDefaultProps = Pick
 deprecated;StagePanelDefaultProps = Pick
@@ -569,6 +567,8 @@ public;StagePanelMaxSizeSpec = number |
 public;StagePanelProps
 deprecated;StagePanelProps
 internal;StagePanelRuntimeProps
+beta;StagePanelSectionConfig = ReadonlyArray
+beta;StagePanelSectionsConfig
 public;StagePanelState
 internal;StagePanelZoneDef 
 internal;StagePanelZoneDefKeys = keyof Pick
@@ -812,7 +812,7 @@ public;WIDGET_OPACITY_DEFAULT = 0.9
 internal;WidgetChangedEventArgs
 public;WidgetChangeHandler
 deprecated;WidgetChangeHandler
-beta;WidgetConfig = WidgetProps
+beta;WidgetConfig = Readonly
 internal;WidgetContent(): JSX.Element
 public;WidgetControl 
 public;WidgetDef

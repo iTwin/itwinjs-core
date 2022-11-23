@@ -43,7 +43,7 @@ import { FrontstageConfig } from "./FrontstageConfig";
 import { Widget } from "../widgets/Widget";
 import { WidgetConfig } from "../widgets/WidgetConfig";
 import { StagePanel, StagePanelProps, StagePanelZonesProps } from "../stagepanels/StagePanel";
-import { PanelConfig } from "../stagepanels/PanelConfig";
+import { StagePanelConfig } from "../stagepanels/StagePanelConfig";
 import { WidgetProps } from "../widgets/WidgetProps";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 
@@ -1143,7 +1143,7 @@ function toZoneElement(config: WidgetConfig): React.ReactElement<ZoneProps> {
   );
 }
 
-function toStagePanelElement(config: PanelConfig): React.ReactElement<StagePanelProps> {
+function toStagePanelElement(config: StagePanelConfig): React.ReactElement<StagePanelProps> {
   const { sections, ...other } = config;
   const startWidgets = sections?.start?.map((widget) => toWidgetElement(widget));
   const endWidgets = sections?.end?.map((widget) => toWidgetElement(widget));
@@ -1181,12 +1181,12 @@ function toWidgetConfigFromZone(zone: React.ReactElement<ZoneProps>): WidgetConf
   return toWidgetConfig(widget);
 }
 
-function toPanelConfig(panel: React.ReactElement<StagePanelProps>): PanelConfig | undefined {
+function toPanelConfig(panel: React.ReactElement<StagePanelProps>) {
   const props = panel.props;
   const { panelZones, ...other } = props;
   const start = panelZones?.start?.widgets?.map((w) => toWidgetConfig(w));
   const end = panelZones?.end?.widgets?.map((w) => toWidgetConfig(w));
-  const config: PanelConfig = {
+  const config: StagePanelConfig = {
     ...other,
     sections: {
       start,
@@ -1196,7 +1196,7 @@ function toPanelConfig(panel: React.ReactElement<StagePanelProps>): PanelConfig 
   return config;
 }
 
-function toFrontstageConfig(props: FrontstageProps): FrontstageConfig {
+function toFrontstageConfig(props: FrontstageProps) {
   const { contentManipulationTools, viewNavigationTools, toolSettings, statusBar, topPanel, leftPanel, bottomPanel, rightPanel, ...other } = props;
   const config: FrontstageConfig = {
     ...other,

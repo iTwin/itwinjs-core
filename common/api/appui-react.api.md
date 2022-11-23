@@ -2530,21 +2530,17 @@ export class FrontstageComposer extends React_2.Component<CommonProps, Frontstag
 
 // @beta
 export interface FrontstageConfig extends CommonProps {
-    readonly applicationData?: any;
-    readonly bottomPanel?: PanelConfig;
+    readonly bottomPanel?: StagePanelConfig;
     readonly contentGroup: ContentGroup | ContentGroupProvider;
     readonly contentManipulation?: WidgetConfig;
-    readonly defaultContentId?: string;
-    readonly defaultTool: ToolItemDef;
     readonly id: string;
-    readonly isIModelIndependent?: boolean;
-    readonly leftPanel?: PanelConfig;
-    readonly rightPanel?: PanelConfig;
+    readonly leftPanel?: StagePanelConfig;
+    readonly rightPanel?: StagePanelConfig;
     readonly statusBar?: WidgetConfig;
     readonly toolSettings?: WidgetConfig;
-    readonly topPanel?: PanelConfig;
+    readonly topPanel?: StagePanelConfig;
     readonly usage?: string;
-    readonly version?: number;
+    readonly version: number;
     readonly viewNavigation?: WidgetConfig;
 }
 
@@ -4212,28 +4208,6 @@ export class OpenMessageCenterEvent extends UiEvent<{}> {
 // @internal
 export function packNineZoneState(state: NineZoneState): SavedNineZoneState;
 
-// @beta
-export interface PanelConfig {
-    readonly applicationData?: any;
-    readonly defaultState?: StagePanelState;
-    readonly header?: React_2.ReactNode;
-    readonly maxSize?: StagePanelMaxSizeSpec;
-    readonly minSize?: number;
-    readonly pinned?: boolean;
-    readonly resizable?: boolean;
-    readonly sections?: PanelSectionsConfig;
-    readonly size?: number;
-}
-
-// @beta
-export type PanelSectionConfig = ReadonlyArray<WidgetConfig>;
-
-// @beta
-export interface PanelSectionsConfig {
-    readonly end?: PanelSectionConfig;
-    readonly start?: PanelSectionConfig;
-}
-
 // @internal (undocumented)
 export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> {
 }
@@ -4921,6 +4895,11 @@ export const setPanelSize: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | ReactText | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | {
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: Key | null;
@@ -4937,11 +4916,6 @@ export const setPanelSize: (base: {
                 } | any | null | undefined;
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
-            } | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -5193,6 +5167,17 @@ export interface StagePanelChangeHandler {
     handleTogglePanelCollapse(panelLocation: StagePanelLocation): void;
 }
 
+// @beta
+export interface StagePanelConfig {
+    readonly defaultState?: StagePanelState;
+    readonly maxSize?: StagePanelMaxSizeSpec;
+    readonly minSize?: number;
+    readonly pinned?: boolean;
+    readonly resizable?: boolean;
+    readonly sections?: StagePanelSectionsConfig;
+    readonly size?: number;
+}
+
 // @public
 export class StagePanelDef extends WidgetHost {
     constructor();
@@ -5287,6 +5272,15 @@ export interface StagePanelRuntimeProps {
     widgetTabs: WidgetTabs;
     // (undocumented)
     zoneDefProvider: ZoneDefProvider;
+}
+
+// @beta
+export type StagePanelSectionConfig = ReadonlyArray<WidgetConfig>;
+
+// @beta
+export interface StagePanelSectionsConfig {
+    readonly end?: StagePanelSectionConfig;
+    readonly start?: StagePanelSectionConfig;
 }
 
 // @public
@@ -6930,7 +6924,9 @@ export interface WidgetChangeHandler {
 }
 
 // @beta
-export type WidgetConfig = WidgetProps;
+export type WidgetConfig = Readonly<Omit<WidgetProps, "id">> & {
+    readonly id: string;
+};
 
 // @internal (undocumented)
 export function WidgetContent(): JSX.Element;

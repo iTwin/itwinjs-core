@@ -11,10 +11,10 @@ import { WidgetConfig } from "../widgets/WidgetConfig";
 import { StagePanelMaxSizeSpec } from "./StagePanel";
 import { StagePanelState as StagePanelState } from "./StagePanelDef";
 
-/** Configuration from which a panel is created.
+/** Configuration from which a stage panel is created.
  * @beta
  */
-export interface PanelConfig {
+export interface StagePanelConfig {
   /** Default Panel state. Controls how the panel is initially displayed. Defaults to StagePanelState.Open. */
   readonly defaultState?: StagePanelState;
   /** Maximum size of the panel. */
@@ -28,20 +28,20 @@ export interface PanelConfig {
   /** Default size of the panel. */
   readonly size?: number;
   /** Configuration of the panel sections. */
-  readonly sections?: PanelSectionsConfig;
+  readonly sections?: StagePanelSectionsConfig;
 }
 
-/** Configuration from which a panel section is created.
+/** Configuration from which a stage panel section is created.
  * @beta
  */
-export type PanelSectionConfig = ReadonlyArray<WidgetConfig>;
+export type StagePanelSectionConfig = ReadonlyArray<WidgetConfig>;
 
-/** Configuration from which panel sections are created.
+/** Configuration from which stage panel sections are created.
  * @beta
  */
-export interface PanelSectionsConfig {
+export interface StagePanelSectionsConfig {
   /** Configuration of the `start` section. */
-  readonly start?: PanelSectionConfig;
+  readonly start?: StagePanelSectionConfig;
   /** Configuration of the `end` section. */
-  readonly end?: PanelSectionConfig;
+  readonly end?: StagePanelSectionConfig;
 }
