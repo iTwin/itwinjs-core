@@ -115,7 +115,7 @@ describe("FrontstageDef", () => {
         bottomPanel: {
           size: 400,
           sections: {
-            start: [
+            end: [
               {
                 id: "w2",
               },
@@ -383,6 +383,10 @@ describe("FrontstageDef", () => {
       FrontstageManager.addFrontstageProvider(provider);
       await FrontstageManager.setActiveFrontstage(provider.id);
       sinon.assert.calledOnceWithExactly(spy, sinon.match({ id: provider.id }));
+      const config = spy.firstCall.args[0];
+
+      expect(config.leftPanel?.sections?.start).to.eql([{ id: "w1" }]);
+      expect(config.bottomPanel?.sections?.end).to.eql([{ id: "w2" }, { id: "w3" }]);
     });
   });
 });

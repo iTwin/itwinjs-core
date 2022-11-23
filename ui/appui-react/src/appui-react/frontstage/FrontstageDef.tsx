@@ -1165,22 +1165,33 @@ function toStagePanelElement(config: PanelConfig): React.ReactElement<StagePanel
 }
 
 let widgetConfigId = 0;
-function toWidgetConfig(zone: React.ReactElement<ZoneProps>): WidgetConfig | undefined {
-  const widgets = zone.props.widgets;
-  if (!widgets || widgets.length === 0)
-    return undefined;
-  const props = widgets[0].props;
+function toWidgetConfig(widget: React.ReactElement<WidgetProps>): WidgetConfig {
+  const props = widget.props;
   return {
     ...props,
     id: props.id ? props.id : `widget-config-${++widgetConfigId}`,
   };
 }
 
+function toWidgetConfigFromZone(zone: React.ReactElement<ZoneProps>): WidgetConfig | undefined {
+  const widgets = zone.props.widgets;
+  if (!widgets || widgets.length === 0)
+    return undefined;
+  const widget = widgets[0];
+  return toWidgetConfig(widget);
+}
+
 function toPanelConfig(panel: React.ReactElement<StagePanelProps>): PanelConfig | undefined {
   const props = panel.props;
-  const { ...other } = props;
+  const { panelZones, ...other } = props;
+  const start = panelZones?.start?.widgets?.map((w) => toWidgetConfig(w));
+  const end = panelZones?.end?.widgets?.map((w) => toWidgetConfig(w));
   const config: PanelConfig = {
     ...other,
+    sections: {
+      start,
+      end,
+    },
   };
   return config;
 }
@@ -1190,10 +1201,10 @@ function toFrontstageConfig(props: FrontstageProps): FrontstageConfig {
   const config: FrontstageConfig = {
     ...other,
     version: props.version || 0,
-    contentManipulation: contentManipulationTools ? toWidgetConfig(contentManipulationTools) : undefined,
-    viewNavigation: viewNavigationTools ? toWidgetConfig(viewNavigationTools) : undefined,
-    toolSettings: toolSettings ? toWidgetConfig(toolSettings) : undefined,
-    statusBar: statusBar ? toWidgetConfig(statusBar) : undefined,
+    contentManipulation: contentManipulationTools ? toWidgetConfigFromZone(contentManipulationTools) : undefined,
+    viewNavigation: viewNavigationTools ? toWidgetConfigFromZone(viewNavigationTools) : undefined,
+    toolSettings: toolSettings ? toWidgetConfigFromZone(toolSettings) : undefined,
+    statusBar: statusBar ? toWidgetConfigFromZone(statusBar) : undefined,
     topPanel: topPanel ? toPanelConfig(topPanel) : undefined,
     leftPanel: leftPanel ? toPanelConfig(leftPanel) : undefined,
     bottomPanel: bottomPanel ? toPanelConfig(bottomPanel) : undefined,
