@@ -36,7 +36,10 @@
   &.core-dialog-hidden {
     background-color: transparent;
     pointer-events: none;
-    &>*{pointer-events: all;}
+
+    & > * {
+      pointer-events: all;
+    }
   }
 
   .core-dialog-container {
