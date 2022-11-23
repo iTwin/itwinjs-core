@@ -1197,7 +1197,7 @@ export enum ConfigurableUiActionId {
     // (undocumented)
     SetTheme = "configurableui:set_theme",
     // (undocumented)
-    SetToolbarOpacity = "configurableui:set_toolbar_opacity",
+    SetToolbarOpacity = "configurableui:set-toolbar-opacity",
     // (undocumented)
     SetToolPrompt = "configurableui:set_toolprompt",
     // (undocumented)
