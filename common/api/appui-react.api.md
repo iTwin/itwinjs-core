@@ -589,6 +589,8 @@ export class AppUiSettings implements UserSettingsProvider {
     // (undocumented)
     showWidgetIcon: UiStateEntry<boolean>;
     // (undocumented)
+    toolbarOpacity: UiStateEntry<number>;
+    // (undocumented)
     useToolAsToolSettingsLabel: UiStateEntry<boolean>;
     // (undocumented)
     widgetOpacity: UiStateEntry<number>;
@@ -3208,6 +3210,8 @@ export interface InitialAppUiSettings {
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
     showWidgetIcon?: boolean;
+    // (undocumented)
+    toolbarOpacity: number;
     // (undocumented)
     useToolAsToolSettingsLabel?: boolean;
     // (undocumented)
