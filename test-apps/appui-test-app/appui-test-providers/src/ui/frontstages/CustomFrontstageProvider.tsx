@@ -9,7 +9,7 @@ import {
   ConfigurableCreateInfo,
   ConfigurableUiManager,
   ContentControl,
-  ContentGroup, ContentToolWidgetComposer, CoreTools, FrontstageConfig, FrontstageProvider, StagePanelState, StandardContentToolsUiItemsProvider, StandardNavigationToolsUiItemsProvider, StandardStatusbarUiItemsProvider, StatusBarWidgetComposerControl, ViewToolWidgetComposer,
+  ContentGroup, ContentToolWidgetComposer, CoreTools, FrontstageConfig, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelState, StandardContentToolsUiItemsProvider, StandardNavigationToolsUiItemsProvider, StandardStatusbarUiItemsProvider, StatusBarWidgetComposerControl, ViewToolWidgetComposer,
 } from "@itwin/appui-react";
 import { StandardContentLayouts, UiItemsManager } from "@itwin/appui-abstract";
 import { CustomStageUiItemsProvider } from "../providers/CustomStageUiItemsProvider";
@@ -38,17 +38,20 @@ export class CustomFrontstageProvider extends FrontstageProvider {
     return CustomFrontstageProvider.stageId;
   }
 
-  public override get frontstage(): FrontstageConfig {
+  public override get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
+    throw new Error("`frontstageConfig` should be used instead.");
+  }
+
+  public override frontstageConfig(): FrontstageConfig {
     const id = this.id;
     const contentGroup = new ContentGroup({
       id: "test-group",
       layout: StandardContentLayouts.singleView,
       contents: [{id: "custom-content", classId: CustomContentControl }],
     });
-    const defaultTool = CoreTools.selectElementCommand;
     return {
       id,
-      defaultTool,
+      version: 1,
       contentGroup,
       contentManipulation: {
         id: `${id}-contentManipulationTools`,
@@ -63,7 +66,9 @@ export class CustomFrontstageProvider extends FrontstageProvider {
         id: `${id}-viewNavigationTools`,
         element: <ViewToolWidgetComposer />,
       },
-      toolSettings: {},
+      toolSettings: {
+        id: `${id}-toolSettings`,
+      },
       statusBar: {
         id: `${id}-statusBar`,
         control: StatusBarWidgetComposerControl,
@@ -106,6 +111,12 @@ export class CustomFrontstageProvider extends FrontstageProvider {
     UiItemsManager.register(new StandardStatusbarUiItemsProvider(), { providerId: "widget-api-stage-standardStatusItems", stageIds: [CustomFrontstageProvider.stageId] });
 
     ConfigurableUiManager.addFrontstageProvider(new CustomFrontstageProvider());
+    FrontstageManager.onFrontstageActivatedEvent.addListener(({ activatedFrontstageDef }) => {
+      if (activatedFrontstageDef.id !== CustomFrontstageProvider.stageId)
+        return;
+      const defaultTool = CoreTools.selectElementCommand;
+      defaultTool.execute();
+    });
     CustomStageUiItemsProvider.register();
   }
 }
