@@ -8,7 +8,6 @@
 
 import { CommonProps } from "@itwin/core-react";
 import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
-import { ToolItemDef } from "../shared/ToolItemDef";
 import { PanelConfig } from "../stagepanels/PanelConfig";
 import { WidgetConfig } from "../widgets/WidgetConfig";
 
@@ -18,8 +17,6 @@ import { WidgetConfig } from "../widgets/WidgetConfig";
 export interface FrontstageConfig extends CommonProps {
   /** Id for the Frontstage */
   readonly id: string;
-  /** Tool that is started once the Frontstage is activated */
-  readonly defaultTool: ToolItemDef;
   /** The Content Group providing the Content Views */
   readonly contentGroup: ContentGroup | ContentGroupProvider;
   /** Usage type for this Frontstage. */

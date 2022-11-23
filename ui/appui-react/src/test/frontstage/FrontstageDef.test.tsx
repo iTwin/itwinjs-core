@@ -101,7 +101,6 @@ describe("FrontstageDef", () => {
       return {
         id: this.id,
         version: 1,
-        defaultTool: CoreTools.selectElementCommand,
         contentGroup: this._contentGroup ? this._contentGroup : TestUtils.TestContentGroup1,
         leftPanel: {
           defaultState: StagePanelState.Minimized,

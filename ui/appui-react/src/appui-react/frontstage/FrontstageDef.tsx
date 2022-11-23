@@ -45,6 +45,7 @@ import { WidgetConfig } from "../widgets/WidgetConfig";
 import { StagePanel, StagePanelProps, StagePanelZonesProps } from "../stagepanels/StagePanel";
 import { PanelConfig } from "../stagepanels/PanelConfig";
 import { WidgetProps } from "../widgets/WidgetProps";
+import { CoreTools } from "../tools/CoreToolDefinitions";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -1115,6 +1116,7 @@ function toFrontstageProps(config: FrontstageConfig): FrontstageProps {
   const { contentManipulation, viewNavigation, toolSettings, statusBar, topPanel, leftPanel, bottomPanel, rightPanel, ...other } = config;
   const props: FrontstageProps = {
     ...other,
+    defaultTool: CoreTools.selectElementCommand,
     toolSettings: toolSettings ? toZoneElement(toolSettings) : undefined,
     statusBar: statusBar ? toZoneElement(statusBar) : undefined,
     contentManipulationTools: contentManipulation ? toZoneElement(contentManipulation) : undefined,
@@ -1162,7 +1164,7 @@ function toStagePanelElement(config: PanelConfig): React.ReactElement<StagePanel
   );
 }
 
-let widgetId = 0;
+let widgetConfigId = 0;
 function toWidgetConfig(zone: React.ReactElement<ZoneProps>): WidgetConfig | undefined {
   const widgets = zone.props.widgets;
   if (!widgets || widgets.length === 0)
@@ -1170,7 +1172,7 @@ function toWidgetConfig(zone: React.ReactElement<ZoneProps>): WidgetConfig | und
   const props = widgets[0].props;
   return {
     ...props,
-    id: props.id ? props.id : `widget-config-${++widgetId}`,
+    id: props.id ? props.id : `widget-config-${++widgetConfigId}`,
   };
 }
 
