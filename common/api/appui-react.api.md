@@ -589,6 +589,8 @@ export class AppUiSettings implements UserSettingsProvider {
     // (undocumented)
     showWidgetIcon: UiStateEntry<boolean>;
     // (undocumented)
+    toolbarOpacity: UiStateEntry<number>;
+    // (undocumented)
     useToolAsToolSettingsLabel: UiStateEntry<boolean>;
     // (undocumented)
     widgetOpacity: UiStateEntry<number>;
@@ -1195,7 +1197,7 @@ export enum ConfigurableUiActionId {
     // (undocumented)
     SetTheme = "configurableui:set_theme",
     // (undocumented)
-    SetToolbarOpacity = "configurableui:set_toolbar_opacity",
+    SetToolbarOpacity = "configurableui:set-toolbar-opacity",
     // (undocumented)
     SetToolPrompt = "configurableui:set_toolprompt",
     // (undocumented)
@@ -3208,6 +3210,8 @@ export interface InitialAppUiSettings {
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
     showWidgetIcon?: boolean;
+    // (undocumented)
+    toolbarOpacity: number;
     // (undocumented)
     useToolAsToolSettingsLabel?: boolean;
     // (undocumented)

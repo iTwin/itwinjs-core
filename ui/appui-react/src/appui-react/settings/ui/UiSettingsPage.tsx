@@ -79,7 +79,7 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
     const syncIdsOfInterest = ["configurableui:set_theme", "configurableui:set_widget_opacity", "configurableui:set-show-widget-icon",
       "configurableui:set-drag-interaction", "configurableui:set-framework-version",
       "configurableui:set-auto-collapse-unpinned-panels", "configurableui:set-animate-tool-settings",
-      "configurableui:set-use-tool-as-tool-settings-label", "configurableui:set_toolbar_opacity", SyncUiEventId.ShowHideManagerSettingChange];
+      "configurableui:set-use-tool-as-tool-settings-label", "configurableui:set-toolbar-opacity", SyncUiEventId.ShowHideManagerSettingChange];
 
     const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       // istanbul ignore else
