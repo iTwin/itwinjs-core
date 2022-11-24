@@ -184,7 +184,15 @@ All non-internal components are deprecated with their corresponding replacements
 
 A number of **UI1.0** related APIs and components are deprecated and will be removed in the next `@itwin/appui-react` major version:
 `FrameworkVersion`, `FrameworkVersionContext`, `FrameworkVersionId`, `FrameworkVersionProps`, `ListPickerBase`, `useFrameworkVersion`,
-`NineZoneChangeHandler`, `StagePanelChangeHandler`, `WidgetStateFunc`, `ZoneDefProvider`.
+`NineZoneChangeHandler`, `StagePanelChangeHandler`, `WidgetStateFunc`, `ZoneDefProvider`, `Zone`, `ZoneDef`.
+
+Pseudo components used by the [FrontstageProvider]($appui-react) are deprecated and replaced by corresponding configuration interfaces:
+
+| Component    | Replacement                      |
+| ------------ | -------------------------------- |
+| `Frontstage` | [FrontstageConfig]($appui-react) |
+| `Widget`     | [WidgetConfig]($appui-react)     |
+| `StagePanel` | [StagePanelConfig]($appui-react) |
 
 Other deprecations and their replacements:
 

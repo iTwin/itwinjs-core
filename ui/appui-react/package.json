@@ -157,7 +157,7 @@
     ],
     "check-coverage": true,
     "statements": 99,
-    "branches": 98.5,
+    "branches": 97,
     "functions": 99,
     "lines": 99
   },
