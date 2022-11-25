@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Geometry, PerpParallelOptions } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+
 import { Ray3d } from "../../core-geometry";
-import { Sample } from "../../serialization/GeometrySamples";
+import { AxisIndex, AxisOrder, Geometry, PerpParallelOptions } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
 import { XYZProps } from "../../geometry3d/XYZProps";
+import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
 /* eslint-disable no-console */
@@ -535,5 +536,57 @@ describe("Vector3d.isPerpendicularTo", () => {
       const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
       const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
       expect(output).equal(false);
+    });
+});
+
+describe("Geometry", () => {
+  it("AxisIndex", () => {
+    const ck = new bsiChecker.Checker();
+    const axisX: AxisIndex = AxisIndex.X;
+    const axisY: AxisIndex = AxisIndex.Y;
+    const axisZ: AxisIndex = AxisIndex.Z;
+    ck.testExactNumber(AxisOrder.XYZ,
+      Geometry.axisIndexToRightHandedAxisOrder(axisX), "X==>XYZ"
+    );
+    ck.testExactNumber(AxisOrder.YZX,
+      Geometry.axisIndexToRightHandedAxisOrder(axisY), "Y==>YZX"
+    );
+    ck.testExactNumber(AxisOrder.ZXY,
+      Geometry.axisIndexToRightHandedAxisOrder(axisZ), "X==>ZXY"
+    );
+
+    for (const phase of [0, 1, 2, 500, -10, -8, -2, -1]) {
+      ck.testExactNumber(AxisOrder.XYZ,
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase), "X==>XYZ"
+      );
+      ck.testExactNumber(AxisOrder.YZX,
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 1), "Y==>YZX"
+      );
+      ck.testExactNumber(AxisOrder.ZXY,
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 2), "X==>ZXY"
+      );
+      for (const baseAxis of [0, 1, 2]) {
+        const axis = phase * 3 + baseAxis;
+        ck.testExactNumber(baseAxis, Geometry.cyclic3dAxis(axis), "Cyclic axis reduction");
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  }),
+    it("lexical", () => {
+      const ck = new bsiChecker.Checker();
+      const pointI = Point3d.create();
+      const pointJ = Point3d.create();
+      const lattice = Sample.createPoint3dLattice(-1, 2, 1);
+      for (let i = 0; i < lattice.length; i++) {
+        ck.testExactNumber(0, Geometry.lexicalXYZLessThan(lattice[i], lattice[i]));
+
+        for (let j = i + 1; j < lattice.length; j++) {
+          pointI.set(lattice[i].z, lattice[i].y, lattice[i].x);
+          pointJ.set(lattice[j].z, lattice[j].y, lattice[j].x);
+          ck.testExactNumber(-1, Geometry.lexicalXYZLessThan(pointI, pointJ));
+          ck.testExactNumber(1, Geometry.lexicalXYZLessThan(pointJ, pointI));
+        }
+      }
+      expect(ck.getNumErrors()).equals(0);
     });
 });
