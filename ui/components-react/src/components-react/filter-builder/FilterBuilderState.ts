@@ -117,8 +117,8 @@ export function isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRule
 }
 
 /** @alpha */
-export function usePropertyFilterBuilderState() {
-  const [state, setState] = React.useState<PropertyFilterBuilderState>(() => ({
+export function usePropertyFilterBuilderState(initialState?: PropertyFilterBuilderState) {
+  const [state, setState] = React.useState<PropertyFilterBuilderState>(initialState ? initialState : () => ({
     rootGroup: createEmptyRuleGroup(),
   }));
   const [actions] = React.useState(() => new PropertyFilterBuilderActions(setState));

@@ -9,10 +9,11 @@ import { PropertyFilterBuilderRuleOperatorProps } from "./FilterBuilderRuleOpera
 import { PropertyFilterBuilderRuleValueProps } from "./FilterBuilderRuleValue";
 import {
   isPropertyFilterBuilderRuleGroup, PropertyFilterBuilderActions, PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup,
-  PropertyFilterBuilderRuleGroupItem, usePropertyFilterBuilderState,
+  PropertyFilterBuilderRuleGroupItem, PropertyFilterBuilderState, usePropertyFilterBuilderState,
 } from "./FilterBuilderState";
-import { isUnaryPropertyFilterOperator } from "./Operators";
-import { PropertyFilter } from "./Types";
+import { isUnaryPropertyFilterOperator, PropertyFilterRuleGroupOperator } from "./Operators";
+import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule } from "./Types";
+import { Guid } from "@itwin/core-bentley";
 
 /** @alpha */
 export interface PropertyFilterBuilderProps {
@@ -24,6 +25,7 @@ export interface PropertyFilterBuilderProps {
   ruleGroupDepthLimit?: number;
   propertyRenderer?: (name: string) => React.ReactNode;
   disablePropertySelection?: boolean;
+  initialFilter?: PropertyFilter;
 }
 
 /** @alpha */
@@ -45,6 +47,53 @@ export interface PropertyFilterBuilderRuleRenderingContextProps {
   disablePropertySelection?: boolean;
 }
 
+function getGroupRuleItem(filter: PropertyFilter, parentId: string): PropertyFilterBuilderRuleGroupItem {
+  const id = Guid.createValue();
+  if (isPropertyFilterRuleGroup(filter))
+    return {
+      id,
+      groupId: parentId,
+      operator: filter.operator,
+      items: filter.rules.map((rule) => getGroupRuleItem(rule, id)),
+    };
+  else {
+    return getSingleRuleItem(filter, id);
+  }
+}
+
+function getSingleRuleItem(filter: PropertyFilterRule, parentId: string) {
+  return {
+    id: Guid.createValue(),
+    groupId: parentId,
+    property: filter.property,
+    operator: filter.operator,
+    value: filter.value,
+  };
+}
+
+function convertFilterToState(filter?: PropertyFilter): PropertyFilterBuilderState | undefined {
+  if (!filter)
+    return undefined;
+  const id = Guid.createValue();
+  if (isPropertyFilterRuleGroup(filter)) {
+    return {
+      rootGroup: {
+        id,
+        operator: filter.operator,
+        items: filter.rules.map((rule) => getGroupRuleItem(rule, id)),
+      },
+    };
+  } else {
+    return {
+      rootGroup: {
+        id,
+        operator: PropertyFilterRuleGroupOperator.And,
+        items: [getSingleRuleItem(filter, id)],
+      },
+    };
+  }
+}
+
 /** @alpha */
 export const PropertyFilterBuilderRuleRenderingContext = React.createContext<PropertyFilterBuilderRuleRenderingContextProps>({});
 
@@ -52,8 +101,8 @@ const ROOT_GROUP_PATH: string[] = [];
 
 /** @alpha */
 export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
-  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer, disablePropertySelection } = props;
-  const { state, actions } = usePropertyFilterBuilderState();
+  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer, disablePropertySelection, initialFilter } = props;
+  const { state, actions } = usePropertyFilterBuilderState(convertFilterToState(initialFilter));
   const rootRef = React.useRef<HTMLDivElement>(null);
 
   const filter = React.useMemo(() => buildPropertyFilter(state.rootGroup), [state]);

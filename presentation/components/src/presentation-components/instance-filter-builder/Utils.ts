@@ -13,12 +13,15 @@ import {
 } from "@itwin/presentation-common";
 import { createPropertyDescriptionFromFieldInfo } from "../common/ContentBuilder";
 import { findField } from "../common/Utils";
-import { InstanceFilterPropertyInfo, PresentationInstanceFilter, PresentationInstanceFilterCondition } from "./Types";
+import { InstanceFilterPropertyInfo, isPresentationInstanceFilterConditionGroup, PresentationInstanceFilter, PresentationInstanceFilterCondition } from "./Types";
 
 /** @alpha */
 export function createInstanceFilterPropertyInfos(descriptor: Descriptor): InstanceFilterPropertyInfo[] {
-  const rootCategoryName = findRootCategoryName(descriptor.categories);
-  return createPropertyInfos(descriptor, { categoryName: rootCategoryName });
+  const propertyInfos = new Array<InstanceFilterPropertyInfo>();
+  for (const field of descriptor.fields) {
+    propertyInfos.push(...createPropertyInfos(field));
+  }
+  return propertyInfos;
 }
 
 /** @internal */
@@ -77,50 +80,45 @@ function createPresentationInstanceFilterCondition(descriptor: Descriptor, condi
   };
 }
 
-function findRootCategoryName(categories: CategoryDescription[]) {
-  /* istanbul ignore next */
-  return categories.find((category) => category.parent === undefined)?.name;
+function createPropertyInfos(field: Field): InstanceFilterPropertyInfo[] {
+  if (field.isNestedContentField()) {
+    return field.nestedFields.flatMap((nestedField) => createPropertyInfos(nestedField));
+  }
+  // istanbul ignore else
+  if (field.isPropertiesField()) {
+    return [createPropertyInfosFromPropertiesField(field)];
+  }
+  // istanbul ignore next
+  return [];
 }
 
-interface ParentInfo {
-  categoryName?: string;
+interface CategoryInfo {
   name?: string;
   label?: string;
 }
 
-function createPropertyInfos(descriptor: Descriptor, parentInfo: ParentInfo): InstanceFilterPropertyInfo[] {
-  const fields = new Array<InstanceFilterPropertyInfo>();
-
-  for (const category of descriptor.categories) {
-    if (category.parent?.name !== parentInfo.categoryName)
-      continue;
-
-    fields.push(...createPropertyInfos(descriptor, {
-      categoryName: category.name,
-      name: parentInfo.name ? `${parentInfo.name}/${category.name}` : category.name,
-      label: parentInfo.label ? `${parentInfo.label} | ${category.label}` : category.label,
-    }));
-  }
-
-  for (const field of descriptor.fields) {
-    fields.push(...createPropertyInfosFromContentField(field, parentInfo, undefined));
-  }
-
-  return fields;
+function getCategoryInfo(parentCategory: CategoryDescription, categoryInfo: CategoryInfo): CategoryInfo {
+  if (!parentCategory.parent)
+    return categoryInfo;
+  return getCategoryInfo(parentCategory.parent,
+    {
+      name: categoryInfo.name ? `${parentCategory.name}/${categoryInfo.name}` : `${parentCategory.name}`,
+      label: categoryInfo.label ? `${parentCategory.label} | ${categoryInfo.label}` : `${parentCategory.label}`,
+    });
 }
 
-function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInfo, fieldNamePrefix?: string): InstanceFilterPropertyInfo[] {
-  if (field.isNestedContentField()) {
-    const childPrefix = getPrefixedFieldName(field.name, fieldNamePrefix);
-    return field.nestedFields.flatMap((nestedField) => createPropertyInfosFromContentField(nestedField, parentInfo, childPrefix));
-  }
+function getParentNames(field: Field, name: string): string {
+  if (!field.parent)
+    return getPrefixedFieldName(name, field.name);
+  return getParentNames(field.parent, getPrefixedFieldName(name, field.name));
+}
 
-  if (field.category.name !== parentInfo.categoryName || !field.isPropertiesField())
-    return [];
+function createPropertyInfosFromPropertiesField(field: PropertiesField): InstanceFilterPropertyInfo {
+  const categoryInfo = getCategoryInfo(field.category, { name: undefined, label: undefined });
+  const name = field.parent ? getParentNames(field.parent, field.name) : field.name;
 
-  const fieldName = getPrefixedFieldName(field.name, fieldNamePrefix);
   const propertyDescription = createPropertyDescriptionFromFieldInfo({
-    name: getCategorizedFieldName(fieldName, parentInfo.name),
+    name: getCategorizedFieldName(name, categoryInfo.name),
     label: field.label,
     type: field.type,
     editor: field.editor,
@@ -129,13 +127,13 @@ function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInf
     renderer: field.renderer,
   });
 
-  return [{
+  return {
     field,
     sourceClassId: getPropertySourceClassInfo(field).id,
     propertyDescription,
-    categoryLabel: parentInfo.label,
+    categoryLabel: categoryInfo.label,
     className: field.properties[0].property.classInfo.name,
-  }];
+  };
 }
 
 /** @alpha */
@@ -144,6 +142,39 @@ function getCategorizedFieldName(fieldName: string, categoryName?: string) {
   return `${categoryName ?? ""}${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`;
 }
 
-function getPrefixedFieldName(str: string, prefix?: string) {
-  return prefix !== undefined ? `${prefix}${FIELD_NAMES_SEPARATOR}${str}` : str;
+function getPrefixedFieldName(str: string, prefix: string) {
+  return `${prefix}${FIELD_NAMES_SEPARATOR}${str}`;
+}
+
+/** @alpha */
+export function convertPresentationFilterToPropertyFilter(descriptor: Descriptor, filter?: PresentationInstanceFilter): PropertyFilter | undefined {
+  if (!filter)
+    return undefined;
+  return PresentationFilterToPropertyFilter(filter, descriptor);
+}
+
+/** @alpha */
+function PresentationFilterToPropertyFilter(filter: PresentationInstanceFilter, descriptor: Descriptor): PropertyFilter | undefined {
+  if (isPresentationInstanceFilterConditionGroup(filter)) {
+    const rules: PropertyFilter[] = [];
+    for (const condition of filter.conditions) {
+      const rule = PresentationFilterToPropertyFilter(condition, descriptor);
+      if (!rule)
+        return undefined;
+      rules.push(rule);
+    }
+    return {
+      operator: filter.operator,
+      rules,
+    };
+  } else {
+    const field = descriptor.getFieldByName(filter.field.name, true);
+    if (!field || !field.isPropertiesField())
+      return undefined;
+    return {
+      property: createPropertyInfosFromPropertiesField(field).propertyDescription,
+      operator: filter.operator,
+      value: filter.value,
+    };
+  }
 }

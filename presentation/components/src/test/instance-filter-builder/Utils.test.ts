@@ -4,14 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
-import { PropertyFilterRule, PropertyFilterRuleGroup, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
+import { PropertyFilter, PropertyFilterRule, PropertyFilterRuleGroup, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { Field } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import {
+  convertPresentationFilterToPropertyFilter,
   createInstanceFilterPropertyInfos, createPresentationInstanceFilter, INSTANCE_FILTER_FIELD_SEPARATOR,
 } from "../../presentation-components/instance-filter-builder/Utils";
+import { PresentationInstanceFilter } from "../../presentation-components";
+
+function getPropertyDescriptionName(field: Field) {
+  return `${INSTANCE_FILTER_FIELD_SEPARATOR}${field.name}`;
+}
 
 describe("createInstanceFilterPropertyInfos", () => {
 
@@ -99,10 +105,6 @@ describe("createPresentationInstanceFilter", () => {
     fields: [propertyField1, propertyField2],
   });
 
-  function getPropertyDescriptionName(field: Field) {
-    return `${INSTANCE_FILTER_FIELD_SEPARATOR}${field.name}`;
-  }
-
   it("finds properties fields for property description", () => {
     const filter: PropertyFilterRuleGroup = {
       operator: PropertyFilterRuleGroupOperator.And,
@@ -161,5 +163,141 @@ describe("createPresentationInstanceFilter", () => {
       value: { valueFormat: PropertyValueFormat.Array, items: [], itemsTypeName: "number" },
     };
     expect(createPresentationInstanceFilter(descriptor, filter)).to.be.undefined;
+  });
+});
+
+describe("convertPresentationInstanceFilterToInstanceFilter", () => {
+  const category = createTestCategoryDescription({ name: "root", label: "Root" });
+  const propertyField1 = createTestPropertiesContentField({
+    properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop1", type: "string" } }],
+    category,
+    name: "propField1",
+    label: "Prop1",
+  });
+  const propertyField2 = createTestPropertiesContentField({
+    properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop2", type: "string" } }],
+    category,
+    name: "propField2",
+    label: "Prop2",
+  });
+  const propertyField3 = createTestPropertiesContentField({
+    properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop3", type: "string" } }],
+    category,
+    name: "propField3",
+    label: "Prop3",
+  });
+  const nestedField = createTestNestedContentField({
+    nestedFields: [propertyField3],
+    category,
+    name: "nestedField",
+    label: "NestedProp",
+  });
+  const nestedField2 = createTestNestedContentField({
+    nestedFields: [nestedField],
+    category,
+    name: "nestedField2",
+    label: "NestedProp2",
+  });
+  propertyField3.rebuildParentship(nestedField);
+  const descriptor = createTestContentDescriptor({
+    categories: [category],
+    fields: [propertyField1, propertyField2, nestedField2],
+  });
+
+  it(" Property filter converts to presentation filter and vise versa correctly ", () => {
+    const filter: PropertyFilter = {
+      operator: PropertyFilterRuleGroupOperator.And,
+      rules: [{
+        property: { name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string" },
+        operator: PropertyFilterRuleOperator.IsNull,
+        value: undefined,
+      }, {
+        property: { name: getPropertyDescriptionName(propertyField2), displayLabel: "Prop2", typename: "string" },
+        operator: PropertyFilterRuleOperator.IsNull,
+        value: undefined,
+      }],
+    };
+
+    const presentationFilter = createPresentationInstanceFilter(descriptor, filter);
+    const result = convertPresentationFilterToPropertyFilter(descriptor, presentationFilter);
+    expect(result).to.be.deep.eq(filter);
+  });
+
+  it("Converts presentation filter with nested conditions to property filter", () => {
+    const presentationFilter: PresentationInstanceFilter = {
+      operator: PropertyFilterRuleGroupOperator.And,
+      conditions: [{
+        operator: PropertyFilterRuleGroupOperator.And,
+        conditions: [{
+          field: propertyField1,
+          operator: PropertyFilterRuleOperator.IsNull,
+          value: undefined,
+        }],
+      }],
+    };
+
+    const propertyFilter: PropertyFilter = {
+      operator: PropertyFilterRuleGroupOperator.And,
+      rules: [{
+        operator: PropertyFilterRuleGroupOperator.And,
+        rules: [{
+          property: { name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string" },
+          operator: PropertyFilterRuleOperator.IsNull,
+          value: undefined,
+        }],
+      }],
+    };
+
+    const result = convertPresentationFilterToPropertyFilter(descriptor, presentationFilter);
+    expect(result).to.be.deep.eq(propertyFilter);
+  });
+
+  it("Converts presentation filter with nested fields to property filter", () => {
+    const presentationFilter: PresentationInstanceFilter = {
+      operator: PropertyFilterRuleGroupOperator.And,
+      conditions: [{
+        field: propertyField3,
+        operator: PropertyFilterRuleOperator.IsNull,
+        value: undefined,
+      }],
+    };
+
+    const propertyFilter: PropertyFilter = {
+      operator: PropertyFilterRuleGroupOperator.And,
+      rules: [{
+        property: { name: `${getPropertyDescriptionName(nestedField2)}$${nestedField.name}$${propertyField3.name}`, displayLabel: "Prop3", typename: "string" },
+        operator: PropertyFilterRuleOperator.IsNull,
+        value: undefined,
+      }],
+    };
+
+    const result = convertPresentationFilterToPropertyFilter(descriptor, presentationFilter);
+    expect(result).to.be.deep.eq(propertyFilter);
+  });
+
+  it("returns undefined if filter is not passed", () => {
+    const result = convertPresentationFilterToPropertyFilter(descriptor);
+    expect(result).to.be.undefined;
+  });
+
+  it("returns undefined if property in filter is not found in descriptor", () => {
+    const propertyField = createTestPropertiesContentField({
+      properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop", type: "string" } }],
+      category,
+      name: "propField",
+      label: "Prop",
+    });
+
+    const presentationFilter: PresentationInstanceFilter = {
+      operator: PropertyFilterRuleGroupOperator.And,
+      conditions: [{
+        field: propertyField,
+        operator: PropertyFilterRuleOperator.IsNull,
+        value: undefined,
+      }],
+    };
+
+    const result = convertPresentationFilterToPropertyFilter(descriptor, presentationFilter);
+    expect(result).to.be.undefined;
   });
 });

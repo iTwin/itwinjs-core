@@ -17,32 +17,40 @@ import { getIModelMetadataProvider } from "./ECMetadataProvider";
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
 import { PresentationInstanceFilterProperty } from "./PresentationInstanceFilterProperty";
 import { InstanceFilterPropertyInfo, PresentationInstanceFilter } from "./Types";
-import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName } from "./Utils";
+import { convertPresentationFilterToPropertyFilter, createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName } from "./Utils";
+
+/** @alpha */
+export interface PresentationInstanceFilterInfo {
+  filter: PresentationInstanceFilter;
+  usedClasses: ClassInfo[];
+}
 
 /** @alpha */
 export interface PresentationInstanceFilterBuilderProps {
   imodel: IModelConnection;
   descriptor: Descriptor;
-  onInstanceFilterChanged: (filter?: PresentationInstanceFilter) => void;
+  onInstanceFilterChanged: (filter?: PresentationInstanceFilterInfo) => void;
   enableClassFilteringByProperties?: boolean;
   ruleGroupDepthLimit?: number;
+  initialFilter?: PresentationInstanceFilterInfo;
 }
 
 /** @alpha */
 export function PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps) {
-  const { imodel, descriptor, onInstanceFilterChanged, ruleGroupDepthLimit } = props;
-  const filteringProps = usePresentationInstanceFilteringProps(descriptor, imodel);
+  const { imodel, descriptor, onInstanceFilterChanged, ruleGroupDepthLimit, initialFilter } = props;
+  const filteringProps = usePresentationInstanceFilteringProps(descriptor, imodel, initialFilter?.usedClasses);
 
   const onFilterChanged = React.useCallback((filter?: PropertyFilter) => {
     const presentationFilter = filter ? createPresentationInstanceFilter(descriptor, filter) : undefined;
-    onInstanceFilterChanged(presentationFilter);
-  }, [descriptor, onInstanceFilterChanged]);
+    onInstanceFilterChanged(presentationFilter ? { filter: presentationFilter, usedClasses: filteringProps.selectedClasses } : undefined);
+  }, [descriptor, onInstanceFilterChanged, filteringProps.selectedClasses]);
 
   const contextValue = useFilterBuilderNavigationPropertyEditorContext(imodel, descriptor);
 
   return <navigationPropertyEditorContext.Provider value={contextValue}>
     <InstanceFilterBuilder
       {...filteringProps}
+      initialFilter={initialFilter ? convertPresentationFilterToPropertyFilter(descriptor, initialFilter.filter) : undefined}
       onFilterChanged={onFilterChanged}
       ruleGroupDepthLimit={ruleGroupDepthLimit}
     />
@@ -50,13 +58,13 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
 }
 
 /** @alpha */
-export function usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection) {
+export function usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection, initialClasses?: ClassInfo[]) {
   const propertyInfos = React.useMemo(() => createInstanceFilterPropertyInfos(descriptor), [descriptor]);
   const classes = React.useMemo(() => descriptor.selectClasses.map((selectClass) => selectClass.selectClassInfo), [descriptor]);
 
   const {
     selectedClasses, onClassSelected, onClassDeselected, onClearClasses, isFilteringClasses, filterClassesByProperty,
-  } = useSelectedClasses(classes, imodel);
+  } = useSelectedClasses(classes, imodel, initialClasses);
   const { properties, isFilteringProperties } = useProperties(propertyInfos, selectedClasses, imodel);
 
   const onPropertySelected = React.useCallback((property: PropertyDescription) => {
@@ -118,11 +126,18 @@ function useProperties(propertyInfos: InstanceFilterPropertyInfo[], selectedClas
   };
 }
 
-function useSelectedClasses(classes: ClassInfo[], imodel: IModelConnection) {
-  const [selectedClasses, setSelectedClasses] = React.useState<ClassInfo[]>([]);
+function useSelectedClasses(classes: ClassInfo[], imodel: IModelConnection, initialClasses?: ClassInfo[]) {
+  const [selectedClasses, setSelectedClasses] = React.useState<ClassInfo[]>(initialClasses ? initialClasses : []);
   const [isFilteringClasses, setIsFilteringClasses] = React.useState(false);
   const disposedRef = React.useRef(false);
   React.useEffect(() => () => { disposedRef.current = true; }, []);
+
+  const firstRender = React.useRef(true);
+  React.useEffect(() => {
+    if (!firstRender.current)
+      setSelectedClasses([]);
+    firstRender.current = false;
+  }, [classes]);
 
   const onClassSelected = React.useCallback((info: ClassInfo) => {
     setSelectedClasses((prevClasses) => [...prevClasses, info]);
