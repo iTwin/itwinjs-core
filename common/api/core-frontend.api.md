@@ -87,6 +87,7 @@ import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementGeometryChange } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadOptions } from '@itwin/core-common';
+import { ElementMeshRequestProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
 import { Ellipsoid } from '@itwin/core-geometry';
 import { EllipsoidPatch } from '@itwin/core-geometry';
@@ -4841,6 +4842,8 @@ export abstract class IModelConnection extends IModel {
     fontMap?: FontMap;
     // @internal
     protected _gcsDisabled: boolean;
+    // @beta
+    generateElementMeshes(requestProps: ElementMeshRequestProps): Promise<Uint8Array>;
     // @internal
     get geodeticToSeaLevel(): number | undefined;
     // @internal

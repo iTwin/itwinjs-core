@@ -26,6 +26,7 @@ Table of contents:
   - [@itwin/core-common](#itwincore-common)
   - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
+  - [@itwin/presentation-backend](#itwinpresentation-backend)
 
 ## Display system
 
@@ -229,3 +230,7 @@ The method [PathFragment.childFractionTChainDistance]($core-geometry) has been d
 ### @itwin/core-transformer
 
 [IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).
+
+### @itwin/presentation-backend
+
+[PresentationManagerProps.mode]($presentation-backend) has been deprecated because there is no performance difference between [PresentationManager]($presentation-backend) working in `ReadOnly` or `ReadWrite` modes.

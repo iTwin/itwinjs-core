@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add Rpc method for obtaining meshes from elements.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
