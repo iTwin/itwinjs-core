@@ -3,7 +3,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, DbRequestKind } from "@itwin/core-common";
+import { DbBlobRequest, DbBlobResponse, DbQueryConfig, DbQueryRequest, DbQueryResponse, DbRequestKind } from "@itwin/core-common";
 
 /** @internal */
 export type OnResponse = (response: Response) => void;
@@ -27,5 +27,11 @@ export class ConcurrentQuery {
         resolve(response as DbBlobResponse);
       });
     });
+  }
+  public static resetConfig(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb, config?: DbQueryConfig): DbQueryConfig {
+    return conn.concurrentQueryResetConfig(config);
+  }
+  public static shutdown(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb) {
+    conn.concurrentQueryShutdown();
   }
 }
