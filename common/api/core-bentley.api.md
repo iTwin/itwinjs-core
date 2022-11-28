@@ -182,6 +182,7 @@ export class ByteStream {
     nextUint32s(numUint32s: number): Uint32Array;
     get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
+    get remainingLength(): number;
     reset(): void;
     rewind(numBytes: number): boolean;
 }

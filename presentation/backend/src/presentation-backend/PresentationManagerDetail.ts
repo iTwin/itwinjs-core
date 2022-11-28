@@ -20,7 +20,7 @@ import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
 } from "./NativePlatform";
-import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
+import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
@@ -43,12 +43,10 @@ export class PresentationManagerDetail implements IDisposable {
       ? params.presentationAssetsRoot
       : params.presentationAssetsRoot?.backend
     ) ?? PRESENTATION_BACKEND_ASSETS_ROOT;
-    const mode = params.mode ?? PresentationManagerMode.ReadWrite;
     const changeTrackingEnabled = mode === PresentationManagerMode.ReadWrite && !!params.updatesPollInterval;
     this._nativePlatform = params.addon ?? createNativePlatform(
       params.id ?? "",
       params.workerThreadsCount ?? 2,
-      mode,
       changeTrackingEnabled,
       params.caching,
       params.defaultFormats,
@@ -447,7 +445,6 @@ interface UnitFormatMap {
 function createNativePlatform(
   id: string,
   workerThreadsCount: number,
-  mode: PresentationManagerMode,
   changeTrackingEnabled: boolean,
   caching: PresentationManagerProps["caching"],
   defaultFormats: UnitFormatMap | undefined,
@@ -456,7 +453,6 @@ function createNativePlatform(
   return new (createDefaultNativePlatform({
     id,
     taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: workerThreadsCount },
-    mode,
     isChangeTrackingEnabled: changeTrackingEnabled,
     cacheConfig: createCacheConfig(caching?.hierarchies),
     contentCacheSize: caching?.content?.size,
