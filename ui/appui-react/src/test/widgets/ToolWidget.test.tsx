@@ -96,7 +96,7 @@ describe("ToolWidget", () => {
       applicationData: { key: "value" },
     });
 
-    const widgetProps: AnyWidgetProps = {
+    const widgetProps: AnyWidgetProps = { // eslint-disable-line deprecation/deprecation
       classId: "ToolWidget",
       defaultState: WidgetState.Open,
       isFreeform: true,

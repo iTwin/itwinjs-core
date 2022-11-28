@@ -28,7 +28,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
   public verticalItems?: ItemList;
   private _toolbarBaseName = "";
 
-  constructor(def: ToolbarWidgetProps) {
+  constructor(def: ToolbarWidgetProps) { // eslint-disable-line deprecation/deprecation
     super(def);
 
     // eslint-disable-next-line deprecation/deprecation

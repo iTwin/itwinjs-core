@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Avoid loading whole class hierarchy up front for PresentationInstanceFilterBuilder component",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}

@@ -13,7 +13,7 @@ export class ScheduleAnimationFrontstage extends FrontstageProvider {
     return ScheduleAnimationFrontstage.stageId;
   }
 
-  public get frontstage(): React.ReactElement<FrontstageProps> {
+  public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
@@ -29,7 +29,7 @@ export class ScheduleAnimationFrontstage extends FrontstageProvider {
     );
 
     return (
-      <Frontstage id={this.id}
+      <Frontstage id={this.id} // eslint-disable-line deprecation/deprecation
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         applicationData={{ key: "value" }}
