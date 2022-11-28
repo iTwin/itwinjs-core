@@ -43,7 +43,8 @@ export class PresentationManagerDetail implements IDisposable {
       ? params.presentationAssetsRoot
       : params.presentationAssetsRoot?.backend
     ) ?? PRESENTATION_BACKEND_ASSETS_ROOT;
-    const changeTrackingEnabled = mode === PresentationManagerMode.ReadWrite && !!params.updatesPollInterval;
+
+    const changeTrackingEnabled = !!params.updatesPollInterval;
     this._nativePlatform = params.addon ?? createNativePlatform(
       params.id ?? "",
       params.workerThreadsCount ?? 2,
