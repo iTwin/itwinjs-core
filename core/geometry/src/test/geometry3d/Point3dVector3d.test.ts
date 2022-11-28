@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { Geometry, PerpParallelOptions } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { Ray3d } from "../../core-geometry";
 import { Sample } from "../../serialization/GeometrySamples";
 import { XYZProps } from "../../geometry3d/XYZProps";
@@ -186,6 +187,20 @@ describe("Point3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("Point3dArrayCarrier", () => {
+    const ck = new bsiChecker.Checker();
+    const pointArray1 = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(1, 1, 1)];
+    const pointArray2 = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(1, 1, 1)];
+    const carrier = new Point3dArrayCarrier(pointArray1);
+    const carrierReverse = new Point3dArrayCarrier(pointArray2);
+    carrierReverse.reverseInPlace();
+    ck.testPoint3d(carrier.data[0], carrierReverse.data[3]);
+    ck.testPoint3d(carrier.data[1], carrierReverse.data[2]);
+    ck.testPoint3d(carrier.data[2], carrierReverse.data[1]);
+    ck.testPoint3d(carrier.data[3], carrierReverse.data[0]);
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 describe("Point3d.setFrom", () => {
@@ -405,13 +420,39 @@ describe("Vector3d.scaleToLength", () => {
   });
 });
 
-describe("Vector3d.normalizeWithDefault", () => {
+describe("Vector3d.normalize", () => {
   it("Vector3d.normalizeWithDefault", () => {
     const thisVector: Vector3d = Vector3d.create(0, 0, 0);
     const expectedVector: Vector3d = Vector3d.create(1, 0, 0);
     const output: Vector3d = thisVector.normalizeWithDefault(0, 0, 0);
     expect(output).to.deep.equal(expectedVector);
   });
+
+  it("Vector3d.createNormalized", () => {
+    const ck = new bsiChecker.Checker();
+    const unitVec = Vector3d.create(Math.SQRT1_2, Math.SQRT1_2);
+    const vec = Vector3d.createNormalized(3, 3)!;
+    ck.testVector3d(unitVec, vec, "expect normalized vector");
+    vec.setZero();
+    ck.testVector3d(unitVec, Vector3d.createNormalized(1, 1, 0, vec)!, "expect normalized vector with initialized result");
+    ck.testUndefined(Vector3d.createNormalized(), "expect undefined when input is zero vector");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("Vector3d.rotate90", () => {
+  it("Vector3d.rotate90CCWXY", () => {
+    const thisVector: Vector3d = Vector3d.create(1, 2, 0);
+    const rotatedVector: Vector3d = Vector3d.create(-2, 1, 0);
+    const outputVector: Vector3d = thisVector.rotate90CCWXY();
+    expect(outputVector).to.deep.equal(rotatedVector);
+  }),
+    it("Vector3d.rotate90CWXY", () => {
+      const thisVector: Vector3d = Vector3d.create(1, 2, 0);
+      const rotatedVector: Vector3d = Vector3d.create(2, -1, 0);
+      const outputVector: Vector3d = thisVector.rotate90CWXY();
+      expect(outputVector).to.deep.equal(rotatedVector);
+    });
 });
 
 describe("Vector3d.dotProductStartEndXYZW", () => {

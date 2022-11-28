@@ -5945,7 +5945,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     dotProductStartEnd(pointA: XAndY, pointB: XAndY): number;
     fractionOfProjectionToVector(target: Vector2d, defaultFraction?: number): number;
     static fromJSON(json?: XYProps): Vector2d;
-    interpolate(fraction: number, right: Vector2d, result?: Vector2d): Vector2d;
+    interpolate(fraction: number, vectorB: Vector2d, result?: Vector2d): Vector2d;
     isParallelTo(other: Vector2d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
     isPerpendicularTo(other: Vector2d, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
     minus(vector: XAndY, result?: Vector2d): Vector2d;
@@ -5983,6 +5983,7 @@ export class Vector3d extends XYZ {
     static createCrossProduct(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d): Vector3d;
     static createCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d;
     static createFrom(data: XYAndZ | XAndY | Float64Array | number[], result?: Vector3d): Vector3d;
+    static createNormalized(x?: number, y?: number, z?: number, result?: Vector3d): Vector3d | undefined;
     static createPolar(r: number, theta: Angle, z?: number): Vector3d;
     static createRotateVectorAroundVector(vector: Vector3d, axis: Vector3d, angle?: Angle): Vector3d | undefined;
     static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d;
@@ -6028,6 +6029,7 @@ export class Vector3d extends XYZ {
     radiansTo(vectorB: Vector3d): number;
     rotate90Around(axis: Vector3d, result?: Vector3d): Vector3d | undefined;
     rotate90CCWXY(result?: Vector3d): Vector3d;
+    rotate90CWXY(result?: Vector3d): Vector3d;
     rotate90Towards(target: Vector3d, result?: Vector3d): Vector3d | undefined;
     rotateXY(angle: Angle, result?: Vector3d): Vector3d;
     safeDivideOrNull(denominator: number, result?: Vector3d): Vector3d | undefined;
@@ -6095,12 +6097,14 @@ export type XAndY = Readonly<WritableXAndY>;
 // @public
 export class XY implements XAndY {
     protected constructor(x?: number, y?: number);
+    at(index: number): number;
     static crossProductToPoints(origin: XAndY, targetA: XAndY, targetB: XAndY): number;
     distance(other: XAndY): number;
     distanceSquared(other: XAndY): number;
     freeze(): Readonly<this>;
+    indexOfMaxAbs(): number;
     isAlmostEqual(other: XAndY, tol?: number): boolean;
-    isAlmostEqualMetric(other: XAndY): boolean;
+    isAlmostEqualMetric(other: XAndY, distanceTol?: number): boolean;
     isAlmostEqualXY(x: number, y: number, tol?: number): boolean;
     get isAlmostZero(): boolean;
     isExactEqual(other: XAndY): boolean;
@@ -6109,12 +6113,13 @@ export class XY implements XAndY {
     maxAbs(): number;
     maxDiff(other: XAndY): number;
     set(x?: number, y?: number): void;
+    setAt(index: number, value: number): void;
     setFrom(other?: XAndY): void;
     setFromJSON(json?: XYProps): void;
     setZero(): void;
     toJSON(): XYProps;
     toJSONXY(): XYProps;
-    unitVectorTo(target: XAndY, result?: Vector2d): Vector2d | undefined;
+    unitVectorTo(other: XAndY, result?: Vector2d): Vector2d | undefined;
     vectorTo(other: XAndY, result?: Vector2d): Vector2d;
     x: number;
     y: number;

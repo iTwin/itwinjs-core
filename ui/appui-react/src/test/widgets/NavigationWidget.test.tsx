@@ -50,7 +50,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
       await IModelApp.shutdown();
     });
 
-    const widgetProps: AnyWidgetProps = {
+    const widgetProps: AnyWidgetProps = { // eslint-disable-line deprecation/deprecation
       id: "navigationWidget",
       classId: "NavigationWidget",
       defaultState: WidgetState.Open,

@@ -47,7 +47,7 @@ describe("ArcGisFeatureProvider", () => {
     await provider.initialize();
 
     expect((provider as any)._minDepthFromLod).to.equals(11);
-    expect((provider as any)._maxDepthFromLod).to.equals(0);
+    expect((provider as any)._maxDepthFromLod).to.equals(22);
   });
 
   it("should not initialize with no service metadata", async () => {
@@ -176,13 +176,41 @@ describe("ArcGisFeatureProvider", () => {
       return {defaultVisibility:true, supportedQueryFormats:"PBF, JSON"};
     });
 
-    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
+    const getServiceJsonStub = sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
       return {capabilities: "Query"};
     });
 
     let provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
+    expect(provider.format).to.equals("JSON");
+
+    // PBF requires 'supportsCoordinatesQuantization'
+    getServiceJsonStub.restore();
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
+      return { currentVersion: 11, capabilities: "Query"};
+    });
+    getLayerMetadataStub.restore();
+    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+      return {defaultVisibility:true, supportsCoordinatesQuantization:true, supportedQueryFormats:"PBF, JSON"};
+    });
+
+    provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
     expect(provider.format).to.equals("PBF");
+
+    getLayerMetadataStub.restore();
+    getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+      return {defaultVisibility:true, supportedQueryFormats:"JSON"};
+    });
+
+    getServiceJsonStub.restore();
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
+      return { currentVersion: 10.91, capabilities: "Query", supportsCoordinatesQuantization:true};
+    });
+
+    provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+    expect(provider.format).to.equals("JSON");
 
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
@@ -252,7 +280,7 @@ describe("ArcGisFeatureProvider", () => {
     });
 
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return {capabilities: "Query"};
+      return {currentVersion: 11, capabilities: "Query"};
     });
 
     const provider = new ArcGisFeatureProvider(settings);
@@ -269,7 +297,7 @@ describe("ArcGisFeatureProvider", () => {
         latestWkid: 3857,
       },
     };
-    expect(url?.url).to.equals(`https://dummy.com/0/query/?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry={"xmin":-20037508.34,"ymin":-20037508.339999996,"xmax":20037508.34,"ymax":20037508.340000004,"spatialReference":{"wkid":102100,"latestWkid":3857}}&inSR=102100`);
+    expect(url?.url).to.equals(`https://dummy.com/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100`);
     expect(url?.envelope?.xmin).to.be.closeTo(extent.xmin, 0.01);
     expect(url?.envelope?.ymin).to.be.closeTo(extent.ymin, 0.01);
     expect(url?.envelope?.xmax).to.be.closeTo(extent.xmax, 0.01);
@@ -290,7 +318,7 @@ describe("ArcGisFeatureProvider", () => {
     const provider2 = new ArcGisFeatureProvider(settings);
     await provider2.initialize();
     url = provider2.constructFeatureUrl(0,0,0, "PBF");
-    expect(url?.url).to.equals(`https://dummy.com/0/query/?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry={"xmin":-20037508.34,"ymin":-20037508.339999996,"xmax":20037508.34,"ymax":20037508.340000004,"spatialReference":{"wkid":102100,"latestWkid":3857}}&inSR=102100&quantizationParameters={"mode":"view","originPosition":"upperLeft","tolerance":78271.516953125,"extent":{"xmin":-20037508.34,"ymin":-20037508.339999996,"xmax":20037508.34,"ymax":20037508.340000004,"spatialReference":{"wkid":102100,"latestWkid":3857}}}`);
+    expect(url?.url).to.equals(`https://dummy.com/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100&quantizationParameters=%7B%22mode%22%3A%22view%22%2C%22originPosition%22%3A%22upperLeft%22%2C%22tolerance%22%3A78271.516953125%2C%22extent%22%3A%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D%7D`);
     expect(url?.envelope?.xmin).to.be.closeTo(extent.xmin, 0.01);
     expect(url?.envelope?.ymin).to.be.closeTo(extent.ymin, 0.01);
     expect(url?.envelope?.xmax).to.be.closeTo(extent.xmax, 0.01);
@@ -315,7 +343,7 @@ describe("ArcGisFeatureProvider", () => {
     const provider3 = new ArcGisFeatureProvider(settings);
     await provider3.initialize();
     url = provider3.constructFeatureUrl(0,0,0, "PBF", overrideGeom);
-    expect(url?.url).to.equals(`https://dummy.com/0/query/?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry={"xmin":-50,"ymin":-50,"xmax":50,"ymax":50,"spatialReference":{"wkid":102100,"latestWkid":3857}}&inSR=102100&quantizationParameters={"mode":"view","originPosition":"upperLeft","tolerance":78271.516953125,"extent":{"xmin":-20037508.34,"ymin":-20037508.339999996,"xmax":20037508.34,"ymax":20037508.340000004,"spatialReference":{"wkid":102100,"latestWkid":3857}}}`);
+    expect(url?.url).to.equals(`https://dummy.com/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-50%2C%22ymin%22%3A-50%2C%22xmax%22%3A50%2C%22ymax%22%3A50%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100&quantizationParameters=%7B%22mode%22%3A%22view%22%2C%22originPosition%22%3A%22upperLeft%22%2C%22tolerance%22%3A78271.516953125%2C%22extent%22%3A%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D%7D`);
     expect(url?.envelope?.xmin).to.be.closeTo((overrideGeom.geom as ArcGisExtent).xmin, 0.01);
     expect(url?.envelope?.ymin).to.be.closeTo((overrideGeom.geom as ArcGisExtent).ymin, 0.01);
     expect(url?.envelope?.xmax).to.be.closeTo((overrideGeom.geom as ArcGisExtent).xmax, 0.01);
@@ -325,7 +353,7 @@ describe("ArcGisFeatureProvider", () => {
 
     // Now test with a different tolerance value
     url = provider3.constructFeatureUrl(0,0,0, "PBF", overrideGeom, undefined, 10);
-    expect(url?.url).to.equals(`https://dummy.com/0/query/?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry={"xmin":-50,"ymin":-50,"xmax":50,"ymax":50,"spatialReference":{"wkid":102100,"latestWkid":3857}}&inSR=102100&quantizationParameters={"mode":"view","originPosition":"upperLeft","tolerance":78271.516953125,"extent":{"xmin":-20037508.34,"ymin":-20037508.339999996,"xmax":20037508.34,"ymax":20037508.340000004,"spatialReference":{"wkid":102100,"latestWkid":3857}}}&distance=782715.16953125`);
+    expect(url?.url).to.equals(`https://dummy.com/0/query?f=PBF&resultType=tile&maxRecordCountFactor=3&returnExceededLimitFeatures=false&outSR=102100&geometryType=esriGeometryEnvelope&geometry=%7B%22xmin%22%3A-50%2C%22ymin%22%3A-50%2C%22xmax%22%3A50%2C%22ymax%22%3A50%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D&units=esriSRUnit_Meter&inSR=102100&quantizationParameters=%7B%22mode%22%3A%22view%22%2C%22originPosition%22%3A%22upperLeft%22%2C%22tolerance%22%3A78271.516953125%2C%22extent%22%3A%7B%22xmin%22%3A-20037508.34%2C%22ymin%22%3A-20037508.339999996%2C%22xmax%22%3A20037508.34%2C%22ymax%22%3A20037508.340000004%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%2C%22latestWkid%22%3A3857%7D%7D%7D&distance=782715.16953125`);
     expect(url?.envelope?.xmin).to.be.closeTo((overrideGeom.geom as ArcGisExtent).xmin, 0.01);
     expect(url?.envelope?.ymin).to.be.closeTo((overrideGeom.geom as ArcGisExtent).ymin, 0.01);
     expect(url?.envelope?.xmax).to.be.closeTo((overrideGeom.geom as ArcGisExtent).xmax, 0.01);
@@ -352,7 +380,7 @@ describe("ArcGisFeatureProvider", () => {
     });
 
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return {capabilities: "Query"};
+      return {currentVersion: 11, capabilities: "Query"};
     });
     sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
       return undefined;
@@ -379,13 +407,14 @@ describe("ArcGisFeatureProvider", () => {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"PBF, JSON",
+        supportsCoordinatesQuantization:true,
         minScale: 600000,
         maxScale: 5000,
       };
     });
 
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return {capabilities: "Query"};
+      return {currentVersion: 11, capabilities: "Query"};
     });
     sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async  function _(_url: URL, _options?: RequestInit) {
       const test = {
@@ -569,7 +598,7 @@ describe("ArcGisFeatureProvider", () => {
       };
     });
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return {capabilities: "Query"};
+      return {currentVersion: 11, capabilities: "Query"};
     });
     sandbox.stub(HTMLCanvasElement.prototype, "getContext").callsFake( function _(_contextId: any, _options?: any) {
       return {} as RenderingContext;
