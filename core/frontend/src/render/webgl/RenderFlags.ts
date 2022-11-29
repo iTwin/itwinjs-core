@@ -184,7 +184,7 @@ export enum TextureUnit {
   // Lookup table for indexed edges - used only if WebGL 2 is available.
   EdgeLUT = WebGLRenderingContext.TEXTURE12,
 
-  // Lookup table for indexed edges - used only if WebGL 2 is available.
+  // Normal map texture - used only if WebGL 2 is available.
   NormalMap = WebGLRenderingContext.TEXTURE13,
 }
 
