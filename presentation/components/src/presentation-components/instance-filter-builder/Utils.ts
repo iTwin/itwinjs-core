@@ -154,7 +154,7 @@ export function convertPresentationFilterToPropertyFilter(descriptor: Descriptor
 }
 
 /** @alpha */
-function PresentationFilterToPropertyFilter(filter: PresentationInstanceFilter, descriptor: Descriptor): PropertyFilter | undefined {
+function presentationFilterToPropertyFilter(filter: PresentationInstanceFilter, descriptor: Descriptor): PropertyFilter | undefined {
   if (isPresentationInstanceFilterConditionGroup(filter)) {
     const rules: PropertyFilter[] = [];
     for (const condition of filter.conditions) {
