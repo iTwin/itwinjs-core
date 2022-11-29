@@ -64,7 +64,7 @@
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/rbac-client": "workspace:*",
-    "@xmldom/xmldom": "^0.7.6",
+    "@xmldom/xmldom": "^0.7.9",
     "chai-string": "^1.5.0",
     "chalk": "^3.0.0",
     "commander": "^2.14.1",
