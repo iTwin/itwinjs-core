@@ -61,7 +61,7 @@
     "webpack": "4.42.0"
   },
   "dependencies": {
-    "@xmldom/xmldom": "^0.7.6",
+    "@xmldom/xmldom": "^0.7.9",
     "deep-assign": "^2.0.0",
     "js-base64": "^2.4.5",
     "lodash": "^4.17.10",

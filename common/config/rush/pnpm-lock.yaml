@@ -250,7 +250,7 @@ importers:
       '@types/node': 10.14.1
       '@types/qs': ^6.5.0
       '@types/superagent': ^4.1.7
-      '@xmldom/xmldom': ^0.7.6
+      '@xmldom/xmldom': ^0.7.9
       chai: ^4.1.2
       deep-assign: ^2.0.0
       eslint: ^7.11.0
@@ -267,7 +267,7 @@ importers:
       webpack: 4.42.0
       xpath: 0.0.27
     dependencies:
-      '@xmldom/xmldom': 0.7.6
+      '@xmldom/xmldom': 0.7.9
       deep-assign: 2.0.0
       js-base64: 2.6.4
       lodash: 4.17.21
@@ -885,7 +885,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ^0.7.6
+      '@xmldom/xmldom': ^0.7.9
       almost-equal: ^1.1.0
       benchmark: ^2.1.4
       chai: ^4.1.2
@@ -916,7 +916,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/sinon': 9.0.11
-      '@xmldom/xmldom': 0.7.6
+      '@xmldom/xmldom': 0.7.9
       benchmark: 2.1.4
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
@@ -941,7 +941,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ^0.7.6
+      '@xmldom/xmldom': ^0.7.9
       chai: ^4.1.2
       chai-as-promised: ^7
       eslint: ^7.11.0
@@ -962,7 +962,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/sinon': 9.0.11
-      '@xmldom/xmldom': 0.7.6
+      '@xmldom/xmldom': 0.7.9
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       eslint: 7.32.0
@@ -986,7 +986,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ^0.7.6
+      '@xmldom/xmldom': ^0.7.9
       almost-equal: ^1.1.0
       benchmark: ^2.1.4
       chai: ^4.1.2
@@ -1016,7 +1016,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/sinon': 9.0.11
-      '@xmldom/xmldom': 0.7.6
+      '@xmldom/xmldom': 0.7.9
       benchmark: 2.1.4
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
@@ -4335,7 +4335,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
-      '@xmldom/xmldom': ^0.7.6
+      '@xmldom/xmldom': ^0.7.9
       chai: ^4.1.2
       chai-string: ^1.5.0
       chalk: ^3.0.0
@@ -4360,7 +4360,7 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/rbac-client': link:../../clients/rbac
-      '@xmldom/xmldom': 0.7.6
+      '@xmldom/xmldom': 0.7.9
       chai-string: 1.5.0_chai@4.3.6
       chalk: 3.0.0
       commander: 2.20.3
@@ -12178,8 +12178,8 @@ packages:
       '@xtuc/long': 4.2.2
     dev: true
 
-  /@xmldom/xmldom/0.7.6:
-    resolution: {integrity: sha512-HHXP9hskkFQHy8QxxUXkS7946FFIhYVfGqsk0WLwllmexN9x/+R4UBLvurHEuyXRfVEObVR8APuQehykLviwSQ==}
+  /@xmldom/xmldom/0.7.9:
+    resolution: {integrity: sha512-yceMpm/xd4W2a85iqZyO09gTnHvXF6pyiWjD2jcOJs7hRoZtNNOO1eJlhHj1ixA+xip2hOyGn+LgcvLCMo5zXA==}
     engines: {node: '>=10.0.0'}
 
   /@xtuc/ieee754/1.2.0:
