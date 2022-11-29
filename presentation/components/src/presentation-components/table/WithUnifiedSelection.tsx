@@ -14,9 +14,12 @@ import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent
 import { getDisplayName } from "../common/Utils";
 import { IPresentationTableDataProvider } from "./DataProvider";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Props that are injected to the TableWithUnifiedSelection HOC component.
  * @public
+ * @deprecated used by [[tableWithUnifiedSelection]] which is deprecated
  */
 export interface TableWithUnifiedSelectionProps {
   /** The data provider used by the property grid. */
@@ -54,22 +57,20 @@ export interface TableWithUnifiedSelectionProps {
  * **Note:** it is required for the table to use [[PresentationTableDataProvider]]
  *
  * @public
+ * @deprecated based on [Table]($components-react) component which is deprecated
  */
-// eslint-disable-next-line deprecation/deprecation
 export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableWithUnifiedSelectionProps> {
 
   type CombinedProps = P & TableWithUnifiedSelectionProps;
 
   return class WithUnifiedSelection extends React.Component<CombinedProps> implements IUnifiedSelectionComponent {
 
-    // eslint-disable-next-line deprecation/deprecation
     private _base: React.RefObject<BaseTable>;
     private _boundarySelectionLevel: number;
     private _selectionHandler?: SelectionHandler;
 
     constructor(props: CombinedProps) {
       super(props);
-      // eslint-disable-next-line deprecation/deprecation
       this._base = React.createRef<BaseTable>();
       this._boundarySelectionLevel = getBoundarySelectionLevelFromProps(props);
     }
@@ -82,7 +83,6 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
 
     public get imodel() { return this.props.dataProvider.imodel; }
 
-    // eslint-disable-next-line deprecation/deprecation
     private get baseProps(): TableProps { return this.props; }
 
     public override componentDidMount() {
@@ -162,7 +162,6 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       this.displaySelection(evt.level);
     };
 
-    // eslint-disable-next-line deprecation/deprecation
     private async getRowKeys(rows: AsyncIterableIterator<RowItem>): Promise<InstanceKey[]> {
       const keys = new Array<InstanceKey>();
       for await (const row of rows)
@@ -170,7 +169,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       return keys;
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private isRowSelected = (row: RowItem): boolean => {
       // give consumers a chance to tell if row is selected
       if (this.baseProps.isRowSelected)
@@ -183,7 +182,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       return selection.has(this.props.dataProvider.getRowKey(row));
     };
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private onRowsSelected = async (rows: AsyncIterableIterator<RowItem>, replace: boolean): Promise<boolean> => {
       // give consumers a chance to handle selection changes and either
       // continue default handling (by returning `true`) or abort (by
@@ -201,7 +200,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       return true;
     };
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private onRowsDeselected = async (rows: AsyncIterableIterator<RowItem>): Promise<boolean> => {
       // give consumers a chance to handle selection changes and either
       // continue default handling (by returning `true`) or abort (by

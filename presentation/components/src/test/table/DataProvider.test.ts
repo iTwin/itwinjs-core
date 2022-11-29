@@ -23,6 +23,8 @@ import { CacheInvalidationProps } from "../../presentation-components/common/Con
 import { PresentationTableDataProvider, TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE } from "../../presentation-components/table/DataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * This is just a helper class to provide public access to
  * protected methods of PresentationTableDataProvider
@@ -94,7 +96,6 @@ describe("TableDataProvider", () => {
 
     it("returns valid deserialized InstanceKey", () => {
       const key = createRandomECInstanceKey();
-      // eslint-disable-next-line deprecation/deprecation
       const row: RowItem = {
         key: JSON.stringify(key),
         cells: [],

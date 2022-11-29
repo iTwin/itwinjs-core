@@ -13,9 +13,12 @@ import { findField } from "./common/Utils";
 import { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider";
 import { IPresentationTableDataProvider, PresentationTableDataProvider, PresentationTableDataProviderProps } from "./table/DataProvider";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Data structure holding initialization properties for [[DataProvidersFactory]]
  * @public
+ * @deprecated used by [[DataProvidersFactory]] which is deprecated
  */
 export interface DataProvidersFactoryProps {
   /** Rulesets' factory to use when creating data providers */
@@ -27,6 +30,7 @@ export interface DataProvidersFactoryProps {
  * specific use cases.
  *
  * @public
+ * @deprecated uses [[PresentationTableDataProvider]] which is deprecated
  */
 export class DataProvidersFactory {
   private _rulesetsFactory: RulesetsFactory;
