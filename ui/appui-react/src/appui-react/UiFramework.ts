@@ -179,7 +179,7 @@ export class UiFramework {
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
 
     if (startInUi1Mode)
-      UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetFrameworkVersion, payload: "1" });
+      UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetFrameworkVersion, payload: "1" }); // eslint-disable-line deprecation/deprecation
 
     // set up namespace and register all tools from package
     const frameworkNamespace = IModelApp.localization?.registerNamespace(UiFramework.localizationNamespace);
@@ -534,19 +534,19 @@ export class UiFramework {
   }
 
   /** Returns the Ui Version.
-   * @deprecated UI1.0 is deprecated, only UI2.0 is supported.
+   * @deprecated UI1.0 is deprecated.
    * @public
    */
   public static get uiVersion(): FrameworkVersionId { // eslint-disable-line deprecation/deprecation
-    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion;
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion; // eslint-disable-line deprecation/deprecation
   }
 
-  /** @deprecated UI1.0 is deprecated, only UI2.0 is supported. */
+  /** @deprecated UI1.0 is deprecated. */
   public static setUiVersion(version: FrameworkVersionId) { // eslint-disable-line deprecation/deprecation
-    if (UiFramework.uiVersion === version)
+    if (UiFramework.uiVersion === version) // eslint-disable-line deprecation/deprecation
       return;
 
-    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1" ? "1" : "2", true);
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1" ? "1" : "2", true); // eslint-disable-line deprecation/deprecation
   }
 
   public static get showWidgetIcon(): boolean {

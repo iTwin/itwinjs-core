@@ -19,7 +19,7 @@ import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFram
 export interface InitialAppUiSettings {
   colorTheme: string;
   dragInteraction: boolean;
-  /** @deprecated UI1.0 is deprecated, only UI2.0 is supported. */
+  /** @deprecated UI1.0 is deprecated. */
   frameworkVersion: FrameworkVersionId; // eslint-disable-line deprecation/deprecation
   widgetOpacity: number;
   showWidgetIcon?: boolean;
@@ -87,9 +87,9 @@ export class AppUiSettings implements UserSettingsProvider {
     this._settings.push(this.autoCollapseUnpinnedPanels);
 
     this.frameworkVersion = new UiStateEntry<FrameworkVersionId>(AppUiSettings._settingNamespace, "FrameworkVersion", // eslint-disable-line deprecation/deprecation
-      () => UiFramework.uiVersion,
+      () => UiFramework.uiVersion, // eslint-disable-line deprecation/deprecation
       (value: FrameworkVersionId) => UiFramework.setUiVersion(value), defaults.frameworkVersion); // eslint-disable-line deprecation/deprecation
-    this._settings.push(this.frameworkVersion);
+    this._settings.push(this.frameworkVersion); // eslint-disable-line deprecation/deprecation
 
     this.widgetOpacity = new UiStateEntry<number>(AppUiSettings._settingNamespace, "WidgetOpacity",
       () => UiFramework.getWidgetOpacity(), (value: number) => UiFramework.setWidgetOpacity(value), defaults.widgetOpacity);
@@ -126,7 +126,7 @@ export class AppUiSettings implements UserSettingsProvider {
       await this.dragInteraction.saveSetting(UiFramework.getUiStateStorage());
 
     if (args.eventIds.has("configurableui:set-framework-version"))
-      await this.frameworkVersion.saveSetting(UiFramework.getUiStateStorage());
+      await this.frameworkVersion.saveSetting(UiFramework.getUiStateStorage()); // eslint-disable-line deprecation/deprecation
 
     if (args.eventIds.has("configurableui:set-show-widget-icon"))
       await this.showWidgetIcon.saveSetting(UiFramework.getUiStateStorage());

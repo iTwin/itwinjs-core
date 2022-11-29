@@ -21,7 +21,7 @@ describe("WidgetControl", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     // need to set to UI 1 so widget state is independent of NineZoneState.
-    UiFramework.setUiVersion("1");
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
   });
 
   after(() => {

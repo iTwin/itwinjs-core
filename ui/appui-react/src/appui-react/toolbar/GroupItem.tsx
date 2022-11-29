@@ -73,7 +73,7 @@ export class GroupItemDef extends ActionButtonItemDef {
       this.groupId = GroupItemDef.groupIdPrefix + GroupItemDef._sId;
     }
 
-    this.directionExplicit = (groupItemProps.direction !== undefined);
+    this.directionExplicit = (groupItemProps.direction !== undefined); // eslint-disable-line deprecation/deprecation
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom; // eslint-disable-line deprecation/deprecation
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
     this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.panelLabelKey); // eslint-disable-line deprecation/deprecation
