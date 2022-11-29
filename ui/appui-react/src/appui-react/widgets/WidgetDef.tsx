@@ -59,6 +59,7 @@ export interface WidgetEventArgs {
 export enum WidgetType {
   Tool,
   Navigation,
+  /** @deprecated */
   FreeFrom,
   Rectangular,
   ToolSettings,
@@ -183,14 +184,18 @@ export class WidgetDef {
   public get id(): string { return this._id; }
   public get classId(): string | ConfigurableUiControlConstructor | undefined { return this._classId; }
   public get priority(): number { return this._priority; }
+  /** @deprecated */
   public get isFreeform(): boolean { return this._isFreeform; }
   public get isFloatingStateSupported(): boolean { return this._isFloatingStateSupported; }
   public get isFloatingStateWindowResizable(): boolean { return this._isFloatingStateWindowResizable; }
   public get isToolSettings(): boolean { return this._isToolSettings; }
   public get isStatusBar(): boolean { return this._isStatusBar; }
   public get stateChanged(): boolean { return this._stateChanged; }
+  /** @deprecated UI1.0 is deprecated. */
   public get fillZone(): boolean { return this._fillZone; }
+  /** @deprecated */
   public get syncEventIds(): string[] { return this._syncEventIds; }
+  /** @deprecated */
   public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; } // eslint-disable-line deprecation/deprecation
   public get applicationData(): any | undefined { return this._applicationData; }
   public get isFloating(): boolean { return this.state === WidgetState.Floating; }
