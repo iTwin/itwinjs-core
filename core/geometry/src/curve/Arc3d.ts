@@ -716,9 +716,12 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public getPlaneAltitudeSineCosinePolynomial(plane: PlaneAltitudeEvaluator, result?: SineCosinePolynomial): SineCosinePolynomial {
     if (!result)
       result = new SineCosinePolynomial(0, 0, 0);
+    // altitude function of angle t, given plane with origin o and unit normal n:
+    //  A(t) = (c + u cos(t) + v sin(t)) . n = (c-o).n + u.n cos(t) + v.n sin(t)
+    // Note the different functions for computing dot product against a point vs. a vector!
     result.set(plane.altitude(this._center),
-      plane.altitudeXYZ(this._matrix.coffs[0], this._matrix.coffs[3], this._matrix.coffs[6]),
-      plane.altitudeXYZ(this._matrix.coffs[1], this._matrix.coffs[4], this._matrix.coffs[7]));
+      plane.velocityXYZ(this._matrix.coffs[0], this._matrix.coffs[3], this._matrix.coffs[6]),
+      plane.velocityXYZ(this._matrix.coffs[1], this._matrix.coffs[4], this._matrix.coffs[7]));
     return result;
   }
   /**

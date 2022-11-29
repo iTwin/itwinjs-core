@@ -38,15 +38,15 @@ Provenance for a specific Element is captured in terms of:
 
 - An `Identifier` in the source repository (required).
 - A `Kind` of object within the source repository.
-- A reference to another Element that represents a `Scope` in which the combination of `Identifier` and `Kind` is unique. This referenced Element is typically a [RepositoryLink](#repositorylink) or an [InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement).
+- A reference to another Element that represents a `Scope` in which the combination of `Identifier` and `Kind` is *typically* unique. This referenced Element is usually a [RepositoryLink](#repositorylink) or an [InformationPartitionElement](./BisCore.ecschema.md#informationpartitionelement). Note that uniqueness among these three attributes in light of a single Element is not enforced by BIS repositories.
 - A reference to an [ExternalSource](#externalsource) from which the Element originated (required).
 - An optional `Version` of the Element's data captured in the BIS repository.
 - An optional `Checksum` - a cryptographic hash (any algorithm) - of the Element's data captured in the BIS repository.
 - Optional `JsonProperties` in case additional provenance-related attributes need to be captured.
 
-This provenance properties are very important during data-synchronization workflows. Each data-synchronizer needs to decide what values from entities in the external source to capture in the aforementioned properties. It is recommended that data-synchronizers assign not-null values to `Identifier`, `Kind` and `Scope` since they are targeted by aspect-finding-APIs in iTwin.js.
+This provenance properties are very important during data-synchronization workflows. Each data-synchronizer needs to decide what values from entities in the external source to capture in the aforementioned properties. Chosen values need to be sufficient in order to match Elements in an iModel with entities in its external source and efficiently detect changes in the latter that need to be synchronized in the former. It is recommended that data-synchronizers assign not-null values to `Identifier`, `Kind` and `Scope` since they are targeted by aspect-finding-APIs in iTwin.js.
 
-Note that an Element can own more than one `ExternalSourceAspect` if its provenance is associated to multiple source repositories or multiple entities in one external repository. Furthermore, `ExternalSourceAspect`s with the same combination of `Identifier`, `Kind` and `Scope` are allowed on the same Element. Data-synchronizers can use the `JsonProperties` attribute of each `ExternalSourceAspect` in order to differenciate their provenance, if needed.
+Note that an Element can own more than one `ExternalSourceAspect` if its provenance is associated to multiple source repositories or multiple entities in one external repository. Furthermore, `ExternalSourceAspect`s with the same combination of `Identifier`, `Kind` and `Scope` are allowed on the same Element. In those cases, data-synchronizers can use the `JsonProperties` attribute of each `ExternalSourceAspect` in order to differenciate their provenance, if needed.
 
 The following instance diagram shows an example of three elements synchronized from an external repository consisting of a single Dgn file containing two Dgn models. See [Instance-diagram Conventions](../guide/references/instance-diagram-conventions.md) for details about the conventions used.
 

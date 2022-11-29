@@ -334,8 +334,28 @@ Object {
       },
     },
   ],
+  "fieldsFilterExpression": "testFilterExpression",
   "filterExpression": "testFilterExpression",
   "inputKeysHash": undefined,
+  "instanceFilter": Object {
+    "expression": "testExpression",
+    "relatedInstances": Array [
+      Object {
+        "alias": "testAlias",
+        "isRequired": true,
+        "pathFromSelectToPropertyClass": Array [
+          Object {
+            "isForwardRelationship": true,
+            "relationshipName": "relClass",
+            "sourceClassName": "sourceClass",
+            "targetClassName": "targetClass",
+          },
+        ],
+        "relationshipAlias": "testRelAlias",
+      },
+    ],
+    "selectClassName": "testClass",
+  },
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": false,

@@ -23,6 +23,7 @@ export interface PropertyFilterBuilderProps {
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
   ruleGroupDepthLimit?: number;
   propertyRenderer?: (name: string) => React.ReactNode;
+  disablePropertySelection?: boolean;
 }
 
 /** @alpha */
@@ -41,6 +42,7 @@ export interface PropertyFilterBuilderRuleRenderingContextProps {
   ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
   propertyRenderer?: (name: string) => React.ReactNode;
+  disablePropertySelection?: boolean;
 }
 
 /** @alpha */
@@ -50,7 +52,7 @@ const ROOT_GROUP_PATH: string[] = [];
 
 /** @alpha */
 export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
-  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer } = props;
+  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer, disablePropertySelection } = props;
   const { state, actions } = usePropertyFilterBuilderState();
   const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -64,8 +66,8 @@ export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
     [actions, properties, onRulePropertySelected, ruleGroupDepthLimit]
   );
   const renderingContextValue = React.useMemo<PropertyFilterBuilderRuleRenderingContextProps>(
-    () => ({ ruleOperatorRenderer, ruleValueRenderer, propertyRenderer }),
-    [ruleOperatorRenderer, ruleValueRenderer, propertyRenderer]
+    () => ({ ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, disablePropertySelection }),
+    [ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, disablePropertySelection]
   );
   return (
     <PropertyFilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>

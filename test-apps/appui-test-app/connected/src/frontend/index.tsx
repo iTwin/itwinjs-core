@@ -191,7 +191,7 @@ export class SampleAppIModelApp {
 
       const rpcParams: BentleyCloudRpcParams =
         undefined !== process.env.IMJS_UITESTAPP_GP_BACKEND ?
-          { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
+          { info: { title: "imodel/rpc", version: "" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
           : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
 
@@ -268,6 +268,7 @@ export class SampleAppIModelApp {
       widgetOpacity: 0.8,
       showWidgetIcon: true,
       autoCollapseUnpinnedPanels: false,
+      toolbarOpacity: 0.5,
     };
 
     // initialize any settings providers that may need to have defaults set by iModelApp

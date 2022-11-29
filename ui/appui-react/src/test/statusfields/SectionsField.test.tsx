@@ -39,7 +39,7 @@ import TestUtils, { mount } from "../TestUtils";
       await TestUtils.initializeUiFramework();
       await MockRender.App.startup();
 
-      const statusBarWidgetDef = new WidgetDef({
+      const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
         classId: AppStatusBarWidgetControl,
         defaultState: WidgetState.Open,
         isFreeform: false,

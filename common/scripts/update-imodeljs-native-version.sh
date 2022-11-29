@@ -45,7 +45,6 @@ echo "Updating @bentley/imodeljs-native to $AddonVersion..."
 
 # Update package.json files
 updatePackageJson "core/backend"
-updatePackageJson "full-stack-tests/backend"
 
 # Update XCode projects. This relies on the "version = " string occurring exactly once, specifying the imodeljs-native version.
 PbxProj1="$RepoRoot/tools/internal/ios/core-test-runner/core-test-runner.xcodeproj/project.pbxproj"

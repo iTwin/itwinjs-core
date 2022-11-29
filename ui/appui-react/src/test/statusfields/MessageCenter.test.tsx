@@ -41,7 +41,7 @@ import TestUtils, { mount } from "../TestUtils";
       ConfigurableUiManager.unregisterControl("AppStatusBar");
       ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
 
-      const statusBarWidgetDef = new WidgetDef({
+      const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
         classId: AppStatusBarWidgetControl,
         defaultState: WidgetState.Open,
         isFreeform: false,
