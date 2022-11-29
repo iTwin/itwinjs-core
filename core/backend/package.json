@@ -92,7 +92,7 @@
   },
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
-    "@bentley/imodeljs-native": "3.4.21",
+    "@bentley/imodeljs-native": "3.4.22",
     "@itwin/object-storage-azure": "~1.4.0",
     "@itwin/cloud-agnostic-core": "~1.4.0",
     "@itwin/object-storage-core": "~1.4.0",
