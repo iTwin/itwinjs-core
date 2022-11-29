@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Update TypeOfChange with Parent changes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
