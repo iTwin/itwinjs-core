@@ -204,7 +204,7 @@ describe("convertPresentationInstanceFilterToInstanceFilter", () => {
     fields: [propertyField1, propertyField2, nestedField2],
   });
 
-  it(" Property filter converts to presentation filter and vise versa correctly ", () => {
+  it("property filter converts to presentation filter and vise versa correctly", () => {
     const filter: PropertyFilter = {
       operator: PropertyFilterRuleGroupOperator.And,
       rules: [{
@@ -223,7 +223,7 @@ describe("convertPresentationInstanceFilterToInstanceFilter", () => {
     expect(result).to.be.deep.eq(filter);
   });
 
-  it("Converts presentation filter with nested conditions to property filter", () => {
+  it("converts presentation filter with nested conditions to property filter", () => {
     const presentationFilter: PresentationInstanceFilter = {
       operator: PropertyFilterRuleGroupOperator.And,
       conditions: [{
@@ -252,7 +252,7 @@ describe("convertPresentationInstanceFilterToInstanceFilter", () => {
     expect(result).to.be.deep.eq(propertyFilter);
   });
 
-  it("Converts presentation filter with nested fields to property filter", () => {
+  it("converts presentation filter with nested fields to property filter", () => {
     const presentationFilter: PresentationInstanceFilter = {
       operator: PropertyFilterRuleGroupOperator.And,
       conditions: [{
@@ -280,7 +280,7 @@ describe("convertPresentationInstanceFilterToInstanceFilter", () => {
     expect(result).to.be.undefined;
   });
 
-  it("returns undefined if property in filter is not found in descriptor", () => {
+  it("returns undefined if property used in filter is not found in descriptor", () => {
     const propertyField = createTestPropertiesContentField({
       properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop", type: "string" } }],
       category,

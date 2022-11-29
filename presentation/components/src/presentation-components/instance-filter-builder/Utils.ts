@@ -113,7 +113,7 @@ function getParentNames(field: Field, name: string): string {
   return getParentNames(field.parent, getPrefixedFieldName(name, field.name));
 }
 
-function createPropertyInfosFromPropertiesField(field: PropertiesField): InstanceFilterPropertyInfo {
+function createPropertyInfoFromPropertiesField(field: PropertiesField): InstanceFilterPropertyInfo {
   const categoryInfo = getCategoryInfo(field.category, { name: undefined, label: undefined });
   const name = field.parent ? getParentNames(field.parent, field.name) : field.name;
 
@@ -154,7 +154,7 @@ export function convertPresentationFilterToPropertyFilter(descriptor: Descriptor
 }
 
 /** @alpha */
-function PresentationFilterToPropertyFilter(filter: PresentationInstanceFilter, descriptor: Descriptor): PropertyFilter | undefined {
+function presentationFilterToPropertyFilter(filter: PresentationInstanceFilter, descriptor: Descriptor): PropertyFilter | undefined {
   if (isPresentationInstanceFilterConditionGroup(filter)) {
     const rules: PropertyFilter[] = [];
     for (const condition of filter.conditions) {
