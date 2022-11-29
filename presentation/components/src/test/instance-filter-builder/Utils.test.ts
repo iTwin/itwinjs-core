@@ -280,7 +280,7 @@ describe("convertPresentationInstanceFilterToInstanceFilter", () => {
     expect(result).to.be.undefined;
   });
 
-  it("returns undefined if property in filter is not found in descriptor", () => {
+  it("returns undefined if property used in filter is not found in descriptor", () => {
     const propertyField = createTestPropertiesContentField({
       properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop", type: "string" } }],
       category,
