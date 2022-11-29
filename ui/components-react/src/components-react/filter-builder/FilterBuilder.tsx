@@ -8,12 +8,12 @@ import { ActiveRuleGroupContext, PropertyFilterBuilderRuleGroupRenderer } from "
 import { PropertyFilterBuilderRuleOperatorProps } from "./FilterBuilderRuleOperator";
 import { PropertyFilterBuilderRuleValueProps } from "./FilterBuilderRuleValue";
 import {
+  convertFilterToState,
   isPropertyFilterBuilderRuleGroup, PropertyFilterBuilderActions, PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup,
-  PropertyFilterBuilderRuleGroupItem, PropertyFilterBuilderState, usePropertyFilterBuilderState,
+  PropertyFilterBuilderRuleGroupItem, usePropertyFilterBuilderState,
 } from "./FilterBuilderState";
-import { isUnaryPropertyFilterOperator, PropertyFilterRuleGroupOperator } from "./Operators";
-import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule } from "./Types";
-import { Guid } from "@itwin/core-bentley";
+import { isUnaryPropertyFilterOperator } from "./Operators";
+import { PropertyFilter } from "./Types";
 
 /** @alpha */
 export interface PropertyFilterBuilderProps {
@@ -45,53 +45,6 @@ export interface PropertyFilterBuilderRuleRenderingContextProps {
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
   propertyRenderer?: (name: string) => React.ReactNode;
   disablePropertySelection?: boolean;
-}
-
-function getGroupRuleItem(filter: PropertyFilter, parentId: string): PropertyFilterBuilderRuleGroupItem {
-  const id = Guid.createValue();
-  if (isPropertyFilterRuleGroup(filter))
-    return {
-      id,
-      groupId: parentId,
-      operator: filter.operator,
-      items: filter.rules.map((rule) => getGroupRuleItem(rule, id)),
-    };
-  else {
-    return getSingleRuleItem(filter, id);
-  }
-}
-
-function getSingleRuleItem(filter: PropertyFilterRule, parentId: string) {
-  return {
-    id: Guid.createValue(),
-    groupId: parentId,
-    property: filter.property,
-    operator: filter.operator,
-    value: filter.value,
-  };
-}
-
-function convertFilterToState(filter?: PropertyFilter): PropertyFilterBuilderState | undefined {
-  if (!filter)
-    return undefined;
-  const id = Guid.createValue();
-  if (isPropertyFilterRuleGroup(filter)) {
-    return {
-      rootGroup: {
-        id,
-        operator: filter.operator,
-        items: filter.rules.map((rule) => getGroupRuleItem(rule, id)),
-      },
-    };
-  } else {
-    return {
-      rootGroup: {
-        id,
-        operator: PropertyFilterRuleGroupOperator.And,
-        items: [getSingleRuleItem(filter, id)],
-      },
-    };
-  }
 }
 
 /** @alpha */
