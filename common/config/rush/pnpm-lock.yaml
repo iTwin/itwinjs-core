@@ -8,7 +8,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.4.21
+      '@bentley/imodeljs-native': 3.4.22
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ~1.4.0
       '@itwin/core-bentley': workspace:*
@@ -55,7 +55,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.11.0
-      '@bentley/imodeljs-native': 3.4.21
+      '@bentley/imodeljs-native': 3.4.22
       '@itwin/cloud-agnostic-core': 1.4.0
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.4.0
@@ -1594,7 +1594,7 @@ importers:
       '@bentley/cif-subsurface-conflict-analysis-schema': ^1.0.3
       '@bentley/cif-subsurface-schema': ^1.0.3
       '@bentley/cif-units-schema': ^1.0.1
-      '@bentley/imodeljs-native': 3.4.21
+      '@bentley/imodeljs-native': 3.4.22
       '@bentley/plant-custom-attributes-schema': ^1.0.1
       '@bentley/process-functional-schema': ^1.0.1
       '@bentley/process-physical-schema': ^1.0.2
@@ -1647,7 +1647,7 @@ importers:
       '@bentley/cif-subsurface-conflict-analysis-schema': 1.0.3
       '@bentley/cif-subsurface-schema': 1.0.3
       '@bentley/cif-units-schema': 1.0.1
-      '@bentley/imodeljs-native': 3.4.21
+      '@bentley/imodeljs-native': 3.4.22
       '@bentley/plant-custom-attributes-schema': 1.0.1
       '@bentley/process-functional-schema': 1.0.1
       '@bentley/process-physical-schema': 1.0.2
@@ -6702,8 +6702,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.4.21:
-    resolution: {integrity: sha512-uxp0ic5Oufd9YYI3fOsHZBLYW+KZ47DqOD0TszWyMtRalm9VSPv4JeE8xBbBgC7Y8QRu/on6v1/19utUO/GcJg==}
+  /@bentley/imodeljs-native/3.4.22:
+    resolution: {integrity: sha512-0YINupJ+M5kD2+B81a4j9z+daCsbcKcyAqzt+leqifa2NufYYRQItLCHD1EWhPLNe700Z6KtaY/8nOR0U4yqxg==}
     requiresBuild: true
     dev: false
 
@@ -12915,7 +12915,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.38.0_5c337c142110162b1d1db88f53844096
       '@typescript-eslint/experimental-utils': 5.38.0_eslint@8.24.0+typescript@4.4.4
       eslint: 8.24.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -15651,7 +15651,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -20983,7 +20983,7 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.19.1
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-util: 27.5.1
       json5: 2.2.1
       lodash.memoize: 4.1.2
