@@ -27,12 +27,14 @@ import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
+import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
+import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
-import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
-import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
+
 /**
  * Compact vector form of an elliptic arc defined by center, vectors for angle coordinates 0 and 90 degrees, and sweep.
  * * See `Arc3d` for further details of the parameterization and meaning of the vectors.
@@ -714,9 +716,12 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public getPlaneAltitudeSineCosinePolynomial(plane: PlaneAltitudeEvaluator, result?: SineCosinePolynomial): SineCosinePolynomial {
     if (!result)
       result = new SineCosinePolynomial(0, 0, 0);
+    // altitude function of angle t, given plane with origin o and unit normal n:
+    //  A(t) = (c + u cos(t) + v sin(t)) . n = (c-o).n + u.n cos(t) + v.n sin(t)
+    // Note the different functions for computing dot product against a point vs. a vector!
     result.set(plane.altitude(this._center),
-      plane.altitudeXYZ(this._matrix.coffs[0], this._matrix.coffs[3], this._matrix.coffs[6]),
-      plane.altitudeXYZ(this._matrix.coffs[1], this._matrix.coffs[4], this._matrix.coffs[7]));
+      plane.velocityXYZ(this._matrix.coffs[0], this._matrix.coffs[3], this._matrix.coffs[6]),
+      plane.velocityXYZ(this._matrix.coffs[1], this._matrix.coffs[4], this._matrix.coffs[7]));
     return result;
   }
   /**
@@ -1047,6 +1052,15 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
     this.emitStrokableParts(handler, options.strokeOptions);
     return handler.claimResult();
+  }
+
+  /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+   * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param lowHigh optional receiver for output
+   * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
+   */
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
 }
 /**

@@ -100,11 +100,35 @@ describe("UiSettingsPage", () => {
     expect(thumb).to.exist;
     fireEvent.keyDown(thumb!, { key: SpecialKey.ArrowRight });
     await TestUtils.flushAsyncOperations();
-
+    let widgetOpacity = UiFramework.getWidgetOpacity();
+    expect (widgetOpacity).greaterThan(.9);
     await TestUtils.flushAsyncOperations();
     // trigger sync event processing
     UiFramework.setWidgetOpacity(.5);
     await TestUtils.flushAsyncOperations();
+    widgetOpacity = UiFramework.getWidgetOpacity();
+    expect (widgetOpacity).equals(.5);
+    wrapper.unmount();
+  });
+
+  it("renders without version option (V2) set toolbar opacity", async () => {
+    UiFramework.setUiVersion("2");
+    await TestUtils.flushAsyncOperations();
+
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    expect(wrapper).not.to.be.undefined;
+    const thumb = wrapper.container.ownerDocument.querySelectorAll(".iui-slider-thumb");
+    expect(thumb[0]).to.exist;
+    fireEvent.keyDown(thumb[0]!, { key: SpecialKey.ArrowRight });
+    await TestUtils.flushAsyncOperations();
+    let toolbarOpacity = UiFramework.getToolbarOpacity();
+    expect (toolbarOpacity).greaterThan(.5);
+    await TestUtils.flushAsyncOperations();
+    // trigger sync event processing
+    UiFramework.setToolbarOpacity(.9);
+    await TestUtils.flushAsyncOperations();
+    toolbarOpacity = UiFramework.getToolbarOpacity();
+    expect (toolbarOpacity).equals(.9);
     wrapper.unmount();
   });
 
@@ -140,7 +164,7 @@ describe("UiSettingsPage", () => {
     expect(checkbox).not.to.be.null;
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(12);
 
     wrapper.unmount();
   });
@@ -218,7 +242,7 @@ describe("UiSettingsPage", () => {
     await TestUtils.flushAsyncOperations();
     const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />);
     expect(wrapper).not.to.be.undefined;
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(12);
     const uiVersionSpan = wrapper.getByText("settings.uiSettingsPage.newUiTitle");
     const checkbox = getInputBySpanTitle(uiVersionSpan);
 
@@ -228,7 +252,7 @@ describe("UiSettingsPage", () => {
 
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(12);
 
     wrapper.unmount();
   });

@@ -12,6 +12,7 @@ import {
 import {
   ColumnDescription, FilterRenderer, RowItem, SimpleTableDataProvider, TableDataProvider,
 } from "@itwin/components-react";
+/* eslint-disable deprecation/deprecation */
 
 // cSpell:ignore datetime
 

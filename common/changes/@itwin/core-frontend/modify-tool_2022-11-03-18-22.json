@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix for tools that supply hints to override the default AccuDraw origin.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

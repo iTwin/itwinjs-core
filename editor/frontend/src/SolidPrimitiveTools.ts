@@ -6,20 +6,21 @@
 import { DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper } from "@itwin/appui-abstract";
 import { BentleyError } from "@itwin/core-bentley";
 import {
-  Code, ElementGeometry, ElementGeometryBuilderParams, FlatBufferGeometryStream, GeometricElementProps, JsonGeometryStream, PlacementProps,
+  Code, ColorDef, ElementGeometry, ElementGeometryBuilderParams, FlatBufferGeometryStream, GeometricElementProps, JsonGeometryStream, PlacementProps,
 } from "@itwin/core-common";
 import {
-  AccuDrawHintBuilder, AngleDescription, BeButtonEvent, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority,
+  AccuDrawHintBuilder, AngleDescription, BeButtonEvent, DynamicsContext, EventHandled, GraphicType, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority,
   ToolAssistanceInstruction, Viewport,
 } from "@itwin/core-frontend";
 import {
-  Angle, Arc3d, Box, Cone, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Point3d, SolidPrimitive, Sphere, TorusPipe,
+  Angle, Arc3d, AxisOrder, Box, Cone, CurveCollection, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, LinearSweep, LineSegment3d, LineString3d, Loop, Matrix3d, Path, Point3d, Ray3d, RotationalSweep, SolidPrimitive, Sphere, TorusPipe,
   Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { CreateElementWithDynamicsTool } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
 import { basicManipulationIpc } from "./EditToolIpc";
+import { ModifyCurveTool } from "./ModifyCurveTools";
 
 /** @alpha Base class for creating a capped or uncapped SolidPrimitive. */
 export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
@@ -1404,3 +1405,372 @@ export class CreateTorusTool extends SolidPrimitiveTool {
       return this.exitTool();
   }
 }
+
+/** @alpha Tool for extruding paths and regions. */
+export class ExtrudeCurveTool extends ModifyCurveTool {
+  public static override toolId = "ExtrudeCurve";
+  public static override iconSpec = "icon-scale"; // Need better icon...
+
+  protected override allowView(vp: Viewport) { return vp.view.is3d(); }
+
+  private _useLengthProperty: DialogProperty<boolean> | undefined;
+  public get useLengthProperty() {
+    if (!this._useLengthProperty)
+      this._useLengthProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildLockPropertyDescription("useExtrudeLength"), false);
+    return this._useLengthProperty;
+  }
+
+  public get useLength(): boolean { return this.useLengthProperty.value; }
+  public set useLength(value: boolean) { this.useLengthProperty.value = value; }
+
+  private _lengthProperty: DialogProperty<number> | undefined;
+  public get lengthProperty() {
+    if (!this._lengthProperty)
+      this._lengthProperty = new DialogProperty<number>(new LengthDescription("extrudeLength", EditTools.translate("ExtrudeCurve.Label.Length")), 0.1, undefined, !this.useLength);
+    return this._lengthProperty;
+  }
+
+  public get length(): number { return this.lengthProperty.value; }
+  public set length(value: number) { this.lengthProperty.value = value; }
+
+  private _cappedProperty: DialogProperty<boolean> | undefined;
+  public get cappedProperty() {
+    if (!this._cappedProperty)
+      this._cappedProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("extrudeCapped", EditTools.translate("ExtrudeCurve.Label.Capped")), true);
+    return this._cappedProperty;
+  }
+
+  public get capped(): boolean { return this.cappedProperty.value; }
+  public set capped(value: boolean) { this.cappedProperty.value = value; }
+
+  private _orthogonalProperty: DialogProperty<boolean> | undefined;
+  public get orthogonalProperty() {
+    if (!this._orthogonalProperty)
+      this._orthogonalProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("extrudeOrthogonal", EditTools.translate("ExtrudeCurve.Label.Orthogonal")), true);
+    return this._orthogonalProperty;
+  }
+
+  public get orthogonal(): boolean { return this.orthogonalProperty.value; }
+  public set orthogonal(value: boolean) { this.orthogonalProperty.value = value; }
+
+  private _keepProfileProperty: DialogProperty<boolean> | undefined;
+  public get keepProfileProperty() {
+    if (!this._keepProfileProperty)
+      this._keepProfileProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("extrudeKeepProfile", EditTools.translate("ExtrudeCurve.Label.KeepProfile")), false);
+    return this._keepProfileProperty;
+  }
+
+  public get keepProfile(): boolean { return this.keepProfileProperty.value; }
+  public set keepProfile(value: boolean) { this.keepProfileProperty.value = value; }
+
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return (property === this.useLengthProperty ? this.lengthProperty : undefined);
+  }
+
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    return this.changeToolSettingPropertyValue(updatedValue);
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.keepProfileProperty, this.orthogonalProperty, this.cappedProperty, this.useLengthProperty, this.lengthProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+
+    // ensure controls are enabled/disabled based on current lock property state
+    this.lengthProperty.isDisabled = !this.useLength;
+    const useLengthLock = this.useLengthProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 });
+    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }, useLengthLock));
+    toolSettings.push(this.orthogonalProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+    toolSettings.push(this.cappedProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 }));
+    toolSettings.push(this.keepProfileProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 }));
+
+    return toolSettings;
+  }
+
+  protected override acceptCurve(curve: CurveCollection | CurvePrimitive): boolean {
+    if ("curvePrimitive" === curve.geometryCategory)
+      return true;
+
+    switch (curve.curveCollectionType) {
+      case "path":
+      case "loop":
+      case "parityRegion":
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
+  protected override modifyCurve(ev: BeButtonEvent, isAccept: boolean): GeometryQuery | undefined {
+    if (undefined === ev.viewport || undefined === this.anchorPoint)
+      return undefined;
+
+    const geom = this.curveData?.geom;
+    if (undefined === geom)
+      return undefined;
+
+    const matrix = AccuDrawHintBuilder.getCurrentRotation(ev.viewport, true, true);
+    const localToWorld = FrameBuilder.createRightHandedFrame(matrix?.getColumn(2), geom);
+    if (undefined === localToWorld)
+      return undefined;
+
+    const spacePoint = this.orthogonal ? AccuDrawHintBuilder.projectPointToLineInView(ev.point, this.anchorPoint, localToWorld.matrix.getColumn(2), ev.viewport, true) : ev.point;
+    if (undefined === spacePoint)
+      return undefined;
+
+    const direction = Vector3d.createStartEnd(this.anchorPoint, spacePoint);
+
+    if (this.useLength && undefined === direction.scaleToLength(this.length, direction))
+      return undefined;
+
+    if (direction.magnitude() < Geometry.smallMetricDistance)
+      return undefined;
+
+    if (!this.useLength) {
+      this.length = direction.magnitude();
+      this.syncToolSettingPropertyValue(this.lengthProperty);
+      if (isAccept)
+        this.saveToolSettingPropertyValue(this.lengthProperty, this.lengthProperty.dialogItemValue);
+    }
+
+    const contour = (geom instanceof CurvePrimitive) ? Path.create(geom) : geom;
+
+    return LinearSweep.create(contour, direction, this.capped && contour.isAnyRegionType);
+  }
+
+  protected override get wantModifyOriginal(): boolean {
+    return !this.keepProfile;
+  }
+
+  protected override setupAccuDraw(): void {
+    const hints = new AccuDrawHintBuilder();
+
+    if (this.agenda.isEmpty) {
+      hints.enableSmartRotation = true;
+    } else if (undefined !== this.anchorPoint && undefined !== this.targetView) {
+      const geom = this.curveData?.geom;
+      const matrix = AccuDrawHintBuilder.getCurrentRotation(this.targetView, true, true);
+      const localToWorld = FrameBuilder.createRightHandedFrame(matrix?.getColumn(2), geom);
+
+      hints.setModeRectangular();
+      hints.setOrigin(this.anchorPoint);
+      hints.setOriginFixed = true;
+
+      if (undefined !== localToWorld) {
+        hints.setXAxis2(localToWorld.matrix.getColumn(2));
+
+        if (this.orthogonal) {
+          hints.setLockY = true;
+          hints.setLockZ = true;
+        }
+      }
+    }
+
+    hints.sendHints(false);
+  }
+
+  protected override provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
+    let mainMsg;
+    if (!this.agenda.isEmpty)
+      mainMsg = EditTools.translate("ExtrudeCurve.Prompts.DefineLength");
+    super.provideToolAssistance(mainMsg);
+  }
+
+  public async onRestartTool(): Promise<void> {
+    const tool = new ExtrudeCurveTool();
+    if (!await tool.run())
+      return this.exitTool();
+  }
+}
+
+/** @alpha Tool for revolving paths and regions. */
+export class RevolveCurveTool extends ModifyCurveTool {
+  public static override toolId = "RevolveCurve";
+  public static override iconSpec = "icon-scale"; // Need better icon...
+
+  protected points: Point3d[] = [];
+
+  protected override allowView(vp: Viewport) { return vp.view.is3d(); }
+
+  private _angleProperty: DialogProperty<number> | undefined;
+  public get angleProperty() {
+    if (!this._angleProperty)
+      this._angleProperty = new DialogProperty<number>(new AngleDescription("revolveAngle", EditTools.translate("RevolveCurve.Label.Angle")), Angle.piOver2Radians, undefined, false);
+    return this._angleProperty;
+  }
+
+  public get angle(): number { return this.angleProperty.value; }
+  public set angle(value: number) { this.angleProperty.value = value; }
+
+  private _cappedProperty: DialogProperty<boolean> | undefined;
+  public get cappedProperty() {
+    if (!this._cappedProperty)
+      this._cappedProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("revolveCapped", EditTools.translate("RevolveCurve.Label.Capped")), true);
+    return this._cappedProperty;
+  }
+
+  public get capped(): boolean { return this.cappedProperty.value; }
+  public set capped(value: boolean) { this.cappedProperty.value = value; }
+
+  private _keepProfileProperty: DialogProperty<boolean> | undefined;
+  public get keepProfileProperty() {
+    if (!this._keepProfileProperty)
+      this._keepProfileProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("revolveKeepProfile", EditTools.translate("RevolveCurve.Label.KeepProfile")), false);
+    return this._keepProfileProperty;
+  }
+
+  public get keepProfile(): boolean { return this.keepProfileProperty.value; }
+  public set keepProfile(value: boolean) { this.keepProfileProperty.value = value; }
+
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    return this.changeToolSettingPropertyValue(updatedValue);
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.keepProfileProperty, this.cappedProperty, this.angleProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+
+    toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }));
+    toolSettings.push(this.cappedProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 }));
+    toolSettings.push(this.keepProfileProperty.toDialogItem({ rowPriority: 4, columnIndex: 0 }));
+
+    return toolSettings;
+  }
+
+  protected override acceptCurve(curve: CurveCollection | CurvePrimitive): boolean {
+    if ("curvePrimitive" === curve.geometryCategory)
+      return true;
+
+    switch (curve.curveCollectionType) {
+      case "path":
+      case "loop":
+      case "parityRegion":
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
+  protected override modifyCurve(ev: BeButtonEvent, isAccept: boolean): GeometryQuery | undefined {
+    if (undefined === ev.viewport || this.points.length < (isAccept ? 2 : 1))
+      return undefined;
+
+    const geom = this.curveData?.geom;
+    if (undefined === geom)
+      return undefined;
+
+    const direction = Vector3d.createStartEnd(this.points[0], isAccept ? this.points[1] : ev.point);
+    if (direction.magnitude() < Geometry.smallMetricDistance)
+      return undefined;
+
+    const axis = Ray3d.create(this.points[0], direction);
+    const angle = Angle.createRadians(this.angle);
+    const contour = (geom instanceof CurvePrimitive) ? Path.create(geom) : geom;
+    const sweep = RotationalSweep.create(contour, axis, angle, this.capped && contour.isAnyRegionType);
+
+    // Detect a self-intersection...contour should not intersect axis of revolution...
+    const localToWorld = sweep?.getConstructiveFrame();
+    if (undefined === localToWorld)
+      return undefined;
+
+    const xVec = localToWorld.matrix.columnX(); // NOTE: Not always towards contour...
+    const xAxis = Ray3d.create(localToWorld.getOrigin(), xVec);
+
+    // Check parameter range of radial axis ray, if low is negative and high is positive reject result...
+    const paramRange = sweep?.getCurves().projectedParameterRange(xAxis);
+    if (undefined === paramRange || (paramRange.low < -Geometry.smallMetricDistanceSquared && paramRange.high > Geometry.smallMetricDistanceSquared))
+      return undefined;
+
+    return sweep;
+  }
+
+  public override onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    if (0 === this.points.length)
+      return;
+
+    const pts = this.points.slice();
+    pts.push(ev.point.clone());
+
+    const builder = context.createGraphic({ type: GraphicType.WorldOverlay });
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 3);
+    builder.addLineString(pts);
+
+    context.addGraphic(builder.finish());
+
+    super.onDynamicFrame(ev, context);
+  }
+
+  protected override get wantModifyOriginal(): boolean {
+    return !this.keepProfile;
+  }
+
+  protected override get wantAdditionalInput(): boolean {
+    return this.points.length < 2;
+  }
+
+  protected override async gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined> {
+    if (undefined !== this.anchorPoint)
+      this.points.push(ev.point.clone());
+
+    return super.gatherInput(ev);
+  }
+
+  protected override setupAccuDraw(): void {
+    const hints = new AccuDrawHintBuilder();
+
+    if (this.agenda.isEmpty) {
+      hints.enableSmartRotation = true;
+    } else if (0 !== this.points.length) {
+      hints.setOrigin(this.points[0]);
+      hints.setOriginFixed = true;
+      hints.setLockZ = true;
+    } else if (undefined !== this.anchorPoint && undefined !== this.targetView) {
+      const geom = this.curveData?.geom;
+      const closeDetail = (geom instanceof CurvePrimitive) ? geom.closestPoint(this.anchorPoint, false) : geom?.closestPoint(this.anchorPoint);
+      if (undefined === closeDetail?.curve)
+        return;
+
+      const unitX = closeDetail.curve.fractionToPointAndUnitTangent(closeDetail.fraction).direction;
+      if (undefined === unitX)
+        return;
+
+      const matrix = AccuDrawHintBuilder.getCurrentRotation(this.targetView, true, true);
+      const localToWorld = FrameBuilder.createRightHandedFrame(matrix?.getColumn(2), geom);
+      if (undefined === localToWorld)
+        return;
+
+      const unitZ = localToWorld.matrix.getColumn(2);
+      const frame = Matrix3d.createRigidFromColumns(unitX, unitZ, AxisOrder.XZY);
+      if (undefined === frame)
+        return;
+
+      hints.setModeRectangular();
+      hints.setOrigin(closeDetail.point);
+      hints.setMatrix(frame);
+    }
+
+    hints.sendHints(false);
+  }
+
+  protected override provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
+    let mainMsg;
+    if (!this.agenda.isEmpty)
+      mainMsg = EditTools.translate(0 === this.points.length ? "RevolveCurve.Prompts.AxisPoint" : "RevolveCurve.Prompts.AxisDirection");
+    super.provideToolAssistance(mainMsg);
+  }
+
+  public async onRestartTool(): Promise<void> {
+    const tool = new RevolveCurveTool();
+    if (!await tool.run())
+      return this.exitTool();
+  }
+}
+

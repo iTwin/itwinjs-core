@@ -7,16 +7,26 @@ Table of contents:
 
 - [Display system](#display-system)
   - [Reality model display customization](#reality-model-display-customization)
+  - [View padding](#view-padding)
 - [Presentation](#presentation)
   - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
   - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
 - [Element aspect ids](#element-aspect-ids)
 - [AppUi](#appui)
+- [New packages](#new-packages)
+  - [@itwin/map-layers-formats](#itwinmap-layers-formats)
 - [Geometry](#geometry)
   - [Polyface](#polyface)
+  - [Curves](#curves)
 - [Deprecations](#deprecations)
+  - [@itwin/appui-layout-react](#itwinappui-layout-react)
+  - [@itwin/appui-react](#itwinappui-react)
+  - [@itwin/components-react](#itwincomponents-react)
   - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-common](#itwincore-common)
+  - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
+  - [@itwin/presentation-backend](#itwinpresentation-backend)
 
 ## Display system
 
@@ -31,6 +41,32 @@ Point clouds provide the following additional customizations:
 - [PointCloudDisplaySettings.sizeMode]($common) controls how the size of each point in the cloud is computed - either as a specific radius in pixels via [PointCloudDisplaySettings.pixelSize]($common), or based on the [Tile]($frontend)'s voxel size in meters.
 - When using voxel size mode, points can be scaled using [PointCloudDisplaySettings.voxelScale]($common) and clamped to a range of pixel sizes using [PointCloudDisplaySettings.minPixelsPerVoxel]($common) and [PointCloudDisplaySettings.maxPixelsPerVoxel]($common).
 - [PointCloudDisplaySettings.shape]($common) specifies whether to draw rounded points or square points.
+
+### View padding
+
+Functions like [ViewState.lookAtVolume]($frontend) and [Viewport.zoomToElements]($frontend) fit a view to a specified volume. They accept a [MarginOptions]($frontend) that allows the caller to customize how tightly the view fits to the volume, via [MarginPercent]($frontend). However, the amount by which the volume is enlarged to add extra space can yield surprising results. For example, a [MarginPercent]($frontend) that specifies a margin of 25% on each side - `{left: .25, right: .25, top: .25, bottom: .25}` - actually *doubles* the width and height of the volume, adding 50% of the original volume's size to each side. Moreover, [MarginPercent]($frontend)'s constructor clamps the margin values to a minimum of zero and maximum of 0.25.
+
+Now, [MarginOptions]($frontend) has an alternative way to specify how to adjust the size of the viewed volume, using [MarginOptions.paddingPercent]($frontend). Like [MarginPercent]($frontend), a [PaddingPercent]($frontend) specifies the extra space as a percentage of the original volume's space on each side - though it may also specify a single padding to be applied to all four sides, or omit any side that should have no padding applied. For example,
+
+```
+{paddingPercent: {left: .2, right: .2, top: .2, bottom: .2}}
+// is equivalent to
+{paddingPercent: .2}
+```
+
+and
+
+```
+{paddingPercent: {left: 0, top: 0, right: .5, bottom: .5}}
+// is equivalent to
+{paddingPercent: {right: .5, bottom: .5}
+```
+
+Moreover, [PaddingPercent]($frontend) imposes no constraints on the padding values. They can even be negative, which causes the volume to shrink instead of expand by **subtracting** a percentage of the original volume's size from one or more sides.
+
+The padding computations are more straightforward than those used for margins. For example, `{paddingPercent: 0.25}` adds 25% of the original volume's size to each side, whereas the equivalent `marginPercent` adds 50% to each side.
+
+Note that both margins and padding apply only to 2d views, or to 3d views with the camera turned off; and that additional extra space will be allocated on either the top and bottom or left and right to preserve the viewport's aspect ratio.
 
 ## Presentation
 
@@ -90,10 +126,21 @@ With the new approach we "break" at the duplicate A node:
    +--+ A
 ```
 
-## Element aspect ids
+## Element aspects
 
-[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
-the ids returned are not unique from all element ids and may collide.
+### Aspect Ids
+
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so the ids returned are not unique from all element ids and may collide.
+
+### ExternalSourceAspect find methods
+
+[ExternalSourceAspect.findBySource]($core-backend) is deprecated. Use [ExternalSourceAspect.findAllBySource]($core-backend) instead.
+
+An [Element]($core-backend) can have more than one ExternalSourceAspect with the same scope, kind, and identifier. Also, many elements could have ExternalSourceAspects with the same scope, kind, and identifier. Therefore, `ExternalSourceAspect.findAllBySource` returns an *array*.
+
+If an app expects there to be only one [ExternalSourceAspect]($core-backend) with a given scope, kind, and identifier in the iModel, it must check that the array returned by ExternalSourceAspect.findAllBySource contains only one item.
+
+To narrow the search to just the `ExternalSourceAspect`s on a single element, use an ECSql query, such as `select ecinstanceid from Bis.ExternalSourceAspect where scope.id=? and kind=? and identifier=? and element.id=?`. If only one such aspect is expected, verify that only one row is found.
 
 ## AppUi
 
@@ -101,13 +148,69 @@ the ids returned are not unique from all element ids and may collide.
 
 When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
 
+## New packages
+
+### @itwin/map-layers-formats
+
+A new `@itwin/map-layers-formats` package has been introduced to provide additional [MapLayerFormat]($frontend)s not delivered as part of `@itwin/core-frontend`. The initial release contains the new `ArgGISFeature` format which allows vector data published by [ArcGIS Feature services](https://enterprise.arcgis.com/en/server/latest/publish-services/windows/what-is-a-feature-service-.htm) to be displayed in a [Viewport]($frontend).
+
+To use this package, you must initialize it by calling [MapLayersFormats.initialize]($map-layers-formats) to register the additional formats. This should be done only **after** [IModelApp.startup]($frontend) has been called.
+
 ## Geometry
 
 ### Polyface
 
 The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
 
+### Curves
+
+The methods [CurveCollection.projectedParameterRange]($core-geometry) and [CurvePrimitive.projectedParameterRange]($core-geometry) have been added for computing the range of fractional projection parameters of the instance curve(s) onto a `Ray3d`. The default implementation of the latter method returns undefined to avoid a circular dependency, so extenders of [CurvePrimitive]($core-geometry) should override as appropriate.
+
 ## Deprecations
+
+### @itwin/appui-layout-react
+
+All non-internal components are deprecated with their corresponding replacements available in `@itwin/appui-react` package. Going forward `@itwin/appui-layout-react` package is considered as internal implementation detail of the `@itwin/appui-react` package and should not be used directly.
+
+| Deprecated        | Replacement                                        |
+| ----------------- | -------------------------------------------------- |
+| `Dialog`          | [StatusBarDialog]($appui-react)                    |
+| `FooterIndicator` | [StatusBarIndicator]($appui-react)                 |
+| `FooterPopup`     | `popup` prop of [StatusBarIndicator]($appui-react) |
+| `FooterSeparator` | [StatusBarSeparator]($appui-react)                 |
+| `SafeAreaInsets`  | [SafeAreaInsets]($appui-react)                     |
+| `TitleBar`        | [StatusBarDialog.TitleBar]($appui-react)           |
+
+### @itwin/appui-react
+
+A number of **UI1.0** related APIs and components are deprecated and will be removed in the next `@itwin/appui-react` major version:
+`FrameworkVersion`, `FrameworkVersionContext`, `FrameworkVersionId`, `FrameworkVersionProps`, `ListPickerBase`, `useFrameworkVersion`,
+`NineZoneChangeHandler`, `StagePanelChangeHandler`, `WidgetStateFunc`, `ZoneDefProvider`, `Zone`, `ZoneDef`.
+
+Pseudo components used by the [FrontstageProvider]($appui-react) are deprecated and replaced by corresponding configuration interfaces:
+
+| Component    | Replacement                      |
+| ------------ | -------------------------------- |
+| `Frontstage` | [FrontstageConfig]($appui-react) |
+| `Widget`     | [WidgetConfig]($appui-react)     |
+| `StagePanel` | [StagePanelConfig]($appui-react) |
+
+Other deprecations and their replacements:
+
+| Deprecated             | Replacement                                |
+| ---------------------- | ------------------------------------------ |
+| `ActionItemButton`     | [ActionButton]($appui-abstract)            |
+| `ActivityMessagePopup` | Activity messages are set-up automatically |
+| `Backstage`            | [BackstageComposer]($appui-react)          |
+| `BackstageEvent`       | [BackstageManager.onToggled]($appui-react) |
+| `GroupButton`          | [GroupButton]($appui-abstract)             |
+| `Indicator`            | [StatusBarIndicator]($appui-react)         |
+| `ToolButton`           | [CommonToolbarItem]($appui-abstract)       |
+| `withSafeArea`         | [SafeAreaContext]($appui-react)            |
+
+### @itwin/components-react
+
+All the components that were only used by or with the deprecated [Table]($components-react) are now marked as deprecated as well and will be removed in an upcoming version. The Table was deprecated a year ago in favor of the Table component provided in the `@itwin/itwinui-react` package, which do not use any of these parts.
 
 ### @itwin/core-backend
 
@@ -116,6 +219,18 @@ The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated 
 The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
  The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
 
+### @itwin/core-common
+
+[Localization.getLocalizedStringWithNamespace]($common) is deprecated in favor of using [Localization.getLocalizedString]($common) and providing either a key with a namespace `<namespace>:<key>` or including `{ ns: <namespace> }` in the options.
+
+### @itwin/core-geometry
+
+The method [PathFragment.childFractionTChainDistance]($core-geometry) has been deprecated in favor of the correctly spelled method [PathFragment.childFractionToChainDistance]($core-geometry).
+
 ### @itwin/core-transformer
 
 [IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).
+
+### @itwin/presentation-backend
+
+[PresentationManagerProps.mode]($presentation-backend) has been deprecated because there is no performance difference between [PresentationManager]($presentation-backend) working in `ReadOnly` or `ReadWrite` modes.

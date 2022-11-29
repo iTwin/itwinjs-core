@@ -85,7 +85,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
             }}
             title={requireAuthTooltip}
           >
-            <Icon iconSpec="icon-status-warning" />
+            <Icon className="map-layer-source-item-warnMessage-icon" iconSpec="icon-status-warning" />
           </Button>
         }
         <MapLayerSettingsMenu activeViewport={props.activeViewport} mapLayerSettings={activeLayer} onMenuItemSelection={props.onMenuItemSelected} disabled={props.disabled} />

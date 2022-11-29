@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Support for reporting progress and cancelling 'BriefcaseConnection.pullChanges'.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

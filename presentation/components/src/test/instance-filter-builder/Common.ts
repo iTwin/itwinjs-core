@@ -3,6 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { createTestCategoryDescription, createTestPropertiesContentField, createTestPropertyInfo } from "@itwin/presentation-common/lib/cjs/test";
+import { InstanceFilterPropertyInfo } from "../../presentation-components/instance-filter-builder/Types";
+
 /**
  * Stubs global 'requestAnimationFrame' and 'cancelAnimationFrame' functions.
  * This is needed for tests using 'react-select' component.
@@ -37,3 +40,15 @@ export function stubRaf() {
     });
   });
 }
+
+export const createTestInstanceFilterPropertyInfo = (props?: Partial<InstanceFilterPropertyInfo>) => ({
+  sourceClassId: "0x1",
+  field: createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }], category: createTestCategoryDescription() }),
+  propertyDescription: {
+    name: "TestName",
+    displayLabel: "TestDisplayLabel",
+    typename: "string",
+  },
+  className: "testSchema:testClass",
+  ...props,
+});

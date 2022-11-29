@@ -28,7 +28,7 @@ import { StagePanelDef, StagePanelState, toPanelSide } from "../stagepanels/Stag
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
 import { WidgetDef } from "../widgets/WidgetDef";
-import { ZoneLocation } from "../zones/Zone";
+import { Zone, ZoneLocation, ZoneProps } from "../zones/Zone";
 import { ZoneDef } from "../zones/ZoneDef";
 import { Frontstage, FrontstageProps } from "./Frontstage";
 import { FrontstageManager } from "./FrontstageManager";
@@ -39,6 +39,13 @@ import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { SavedWidgets } from "../widget-panels/Frontstage";
 import { assert, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
 import { ContentDialogManager } from "../dialog/ContentDialogManager";
+import { FrontstageConfig } from "./FrontstageConfig";
+import { Widget } from "../widgets/Widget";
+import { WidgetConfig } from "../widgets/WidgetConfig";
+import { StagePanel, StagePanelProps, StagePanelZonesProps } from "../stagepanels/StagePanel";
+import { StagePanelConfig } from "../stagepanels/StagePanelConfig";
+import { WidgetProps } from "../widgets/WidgetProps";
+import { CoreTools } from "../tools/CoreToolDefinitions";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -107,6 +114,15 @@ export class FrontstageDef {
   public get bottomLeft(): ZoneDef | undefined { return this._bottomLeft; }
   public get bottomCenter(): ZoneDef | undefined { return this._bottomCenter; }
   public get bottomRight(): ZoneDef | undefined { return this._bottomRight; }
+
+  /** @beta */
+  public get toolSettings(): WidgetDef | undefined { return this.topCenter?.getSingleWidgetDef(); }
+  /** @beta */
+  public get statusBar(): WidgetDef | undefined { return this.bottomCenter?.getSingleWidgetDef(); }
+  /** @beta */
+  public get contentManipulation(): WidgetDef | undefined { return this.topLeft?.getSingleWidgetDef(); }
+  /** @beta */
+  public get viewNavigation(): WidgetDef | undefined { return this.topRight?.getSingleWidgetDef(); }
 
   /** @beta */
   public get topPanel(): StagePanelDef | undefined { return this._topPanel; }
@@ -258,9 +274,13 @@ export class FrontstageDef {
     const def = new FrontstageDef();
     def._frontstageProvider = provider;
 
-    // istanbul ignore else
-    if (provider.frontstage.props)
+    if (provider.frontstageConfig) {
+      const config = provider.frontstageConfig();
+      const props = toFrontstageProps(config);
+      await def.initializeFromProps(props);
+    } else {
       await def.initializeFromProps(provider.frontstage.props);
+    }
 
     return def;
   }
@@ -272,8 +292,14 @@ export class FrontstageDef {
   public async onActivated() {
     this.updateWidgetDefs();
 
-    if (this._contentGroupProvider && this._initialProps) {
-      this._contentGroup = await this._contentGroupProvider.provideContentGroup(this._initialProps);
+    const provider = this._contentGroupProvider;
+    if (provider && this._initialProps) {
+      if (provider.contentGroup) {
+        const config = toFrontstageConfig(this._initialProps);
+        this._contentGroup = await provider.contentGroup(config);
+      } else {
+        this._contentGroup = await provider.provideContentGroup(this._initialProps);
+      }
     }
 
     // istanbul ignore next
@@ -642,8 +668,7 @@ export class FrontstageDef {
 
     if (props.isInFooterMode !== undefined)
       this._isInFooterMode = props.isInFooterMode;
-    if (props.applicationData !== undefined)
-      this._applicationData = props.applicationData;
+    this._applicationData = props.applicationData;
 
     this._usage = props.usage;
     this._version = props.version || 0;
@@ -1085,4 +1110,105 @@ export class FrontstageDef {
       },
     };
   }
+}
+
+function toFrontstageProps(config: FrontstageConfig): FrontstageProps {
+  const { contentManipulation, viewNavigation, toolSettings, statusBar, topPanel, leftPanel, bottomPanel, rightPanel, ...other } = config;
+  const props: FrontstageProps = {
+    ...other,
+    defaultTool: CoreTools.selectElementCommand,
+    toolSettings: toolSettings ? toZoneElement(toolSettings) : undefined,
+    statusBar: statusBar ? toZoneElement(statusBar) : undefined,
+    contentManipulationTools: contentManipulation ? toZoneElement(contentManipulation) : undefined,
+    viewNavigationTools: viewNavigation ? toZoneElement(viewNavigation) : undefined,
+    topPanel: topPanel ? toStagePanelElement(topPanel) : undefined,
+    leftPanel: leftPanel ? toStagePanelElement(leftPanel) : undefined,
+    bottomPanel: bottomPanel ? toStagePanelElement(bottomPanel) : undefined,
+    rightPanel: rightPanel ? toStagePanelElement(rightPanel) : undefined,
+  };
+  return props;
+}
+
+function toWidgetElement(config: WidgetConfig): React.ReactElement<WidgetProps> {
+  return (
+    <Widget key={config.id} {...config} />
+  );
+}
+
+function toZoneElement(config: WidgetConfig): React.ReactElement<ZoneProps> {
+  return (
+    <Zone widgets={[
+      toWidgetElement(config),
+    ]} />
+  );
+}
+
+function toStagePanelElement(config: StagePanelConfig): React.ReactElement<StagePanelProps> {
+  const { sections, ...other } = config;
+  const startWidgets = sections?.start?.map((widget) => toWidgetElement(widget));
+  const endWidgets = sections?.end?.map((widget) => toWidgetElement(widget));
+  const panelZones: StagePanelZonesProps = {};
+  if (startWidgets)
+    panelZones.start = {
+      widgets: startWidgets,
+    };
+  if (endWidgets)
+    panelZones.end = {
+      widgets: endWidgets,
+    };
+  return (
+    <StagePanel
+      panelZones={panelZones}
+      {...other}
+    />
+  );
+}
+
+let widgetConfigId = 0;
+function toWidgetConfig(widget: React.ReactElement<WidgetProps>): WidgetConfig {
+  const props = widget.props;
+  return {
+    ...props,
+    id: props.id ? props.id : `widget-config-${++widgetConfigId}`,
+  };
+}
+
+function toWidgetConfigFromZone(zone: React.ReactElement<ZoneProps>): WidgetConfig | undefined {
+  const widgets = zone.props.widgets;
+  if (!widgets || widgets.length === 0)
+    return undefined;
+  const widget = widgets[0];
+  return toWidgetConfig(widget);
+}
+
+function toPanelConfig(panel: React.ReactElement<StagePanelProps>) {
+  const props = panel.props;
+  const { panelZones, ...other } = props;
+  const start = panelZones?.start?.widgets?.map((w) => toWidgetConfig(w));
+  const end = panelZones?.end?.widgets?.map((w) => toWidgetConfig(w));
+  const config: StagePanelConfig = {
+    ...other,
+    sections: {
+      start,
+      end,
+    },
+  };
+  return config;
+}
+
+function toFrontstageConfig(props: FrontstageProps) {
+  const { contentManipulationTools, viewNavigationTools, toolSettings, statusBar, topPanel, leftPanel, bottomPanel, rightPanel, ...other } = props;
+  const config: FrontstageConfig = {
+    ...other,
+    version: props.version || 0,
+    contentManipulation: contentManipulationTools ? toWidgetConfigFromZone(contentManipulationTools) : undefined,
+    viewNavigation: viewNavigationTools ? toWidgetConfigFromZone(viewNavigationTools) : undefined,
+    toolSettings: toolSettings ? toWidgetConfigFromZone(toolSettings) : undefined,
+    statusBar: statusBar ? toWidgetConfigFromZone(statusBar) : undefined,
+    topPanel: topPanel ? toPanelConfig(topPanel) : undefined,
+    leftPanel: leftPanel ? toPanelConfig(leftPanel) : undefined,
+    bottomPanel: bottomPanel ? toPanelConfig(bottomPanel) : undefined,
+    rightPanel: rightPanel ? toPanelConfig(rightPanel) : undefined,
+  };
+  return config;
 }

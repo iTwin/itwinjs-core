@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Updated pin icon for help widget.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

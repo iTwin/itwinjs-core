@@ -1,6 +1,27 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Mon, 17 Oct 2022 20:06:51 GMT and should not be manually modified.
+This log was last generated on Thu, 10 Nov 2022 19:32:17 GMT and should not be manually modified.
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:58 GMT
+
+### Updates
+
+- ArcGIS tilemap requests were missing oauth2 token if available.
+- Reproject reality tiles to the surface of the Earth.
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+### Updates
+
+- Add functions to obtain the extents of geometric models asynchronously on the backend.
+- Fall back to requesting a tile from the backend when a request to cloud storage throws a 404 error.
 
 ## 3.4.1
 Mon, 17 Oct 2022 20:06:51 GMT

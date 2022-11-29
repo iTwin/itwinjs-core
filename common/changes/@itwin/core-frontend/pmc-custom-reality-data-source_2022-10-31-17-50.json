@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add preliminary alpha support for custom reality data providers.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

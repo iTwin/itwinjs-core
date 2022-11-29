@@ -43,8 +43,10 @@ export const TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5;
  * Interface for presentation rules-driven table data provider.
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export type IPresentationTableDataProvider = ITableDataProvider & IContentDataProvider & {
   /** Get key of ECInstance that's represented by the supplied row */
+  // eslint-disable-next-line deprecation/deprecation
   getRowKey: (row: RowItem) => InstanceKey;
 };
 
@@ -83,8 +85,11 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
   private _sortColumnKey: string | undefined;
   private _sortDirection = UiSortDirection.NoSort;
   private _filterExpression: string | undefined;
+  // eslint-disable-next-line deprecation/deprecation
   private _pages: PageContainer<RowItem, PromisedPage<RowItem>>;
+  // eslint-disable-next-line deprecation/deprecation
   public onColumnsChanged = new TableDataChangeEvent();
+  // eslint-disable-next-line deprecation/deprecation
   public onRowsChanged = new TableDataChangeEvent();
 
   /** Constructor. */
@@ -103,6 +108,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
   }
 
   /** Get key of ECInstance that's represented by the supplied row */
+  // eslint-disable-next-line deprecation/deprecation
   public getRowKey(row: RowItem): InstanceKey {
     return InstanceKey.fromJSON(JSON.parse(row.key));
   }
@@ -121,6 +127,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
   /**
    * Get the column which is used for sorting data in the table.
    */
+  // eslint-disable-next-line deprecation/deprecation
   public get sortColumn(): Promise<ColumnDescription | undefined> {
     return (async () => {
       if (!this._sortColumnKey)
@@ -193,14 +200,16 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
         direction: (this._sortDirection === UiSortDirection.Descending) ? SortDirection.Descending : SortDirection.Ascending,
       };
     }
-    if (this._filterExpression)
-      overrides.filterExpression = this._filterExpression;
+    if (this._filterExpression) {
+      overrides.fieldsFilterExpression = this._filterExpression;
+    }
     return overrides;
   }
 
   /**
    * Returns column definitions.
    */
+  // eslint-disable-next-line deprecation/deprecation
   public getColumns = memoize(async (): Promise<ColumnDescription[]> => {
     const descriptor = await this.getContentDescriptor();
     return createColumns(descriptor);
@@ -217,6 +226,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
    * Get a single row.
    * @param rowIndex Index of the row to return.
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async getRow(rowIndex: number): Promise<RowItem> {
     let page = this._pages.getPage(rowIndex);
     if (!page) {
@@ -238,6 +248,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
    * Try to get a loaded row. Returns undefined if the row is not currently loaded.
    * @param rowIndex Index of the row to return.
    */
+  // eslint-disable-next-line deprecation/deprecation
   public getLoadedRow(rowIndex: number): Readonly<RowItem> | undefined {
     return this._pages.getItem(rowIndex);
   }
@@ -245,6 +256,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
 
 const DISPLAY_LABEL_COLUMN_KEY = "/DisplayLabel/";
 
+// eslint-disable-next-line deprecation/deprecation
 const createColumns = (descriptor: Readonly<Descriptor> | undefined): ColumnDescription[] => {
   if (!descriptor)
     return [];
@@ -355,6 +367,7 @@ const extractNestedContentValue = (values: ValuesDictionary<Value>, nestedConten
   }
 };
 
+// eslint-disable-next-line deprecation/deprecation
 const createColumn = (field: Readonly<Field>): ColumnDescription => {
   return {
     key: field.name,
@@ -367,6 +380,7 @@ const createColumn = (field: Readonly<Field>): ColumnDescription => {
   };
 };
 
+// eslint-disable-next-line deprecation/deprecation
 const createLabelColumn = (): ColumnDescription => {
   return {
     key: DISPLAY_LABEL_COLUMN_KEY,
@@ -377,6 +391,7 @@ const createLabelColumn = (): ColumnDescription => {
   };
 };
 
+// eslint-disable-next-line deprecation/deprecation
 const createRows = (c: Readonly<Content> | undefined): RowItem[] => {
   if (!c)
     return [];
@@ -384,6 +399,7 @@ const createRows = (c: Readonly<Content> | undefined): RowItem[] => {
   return c.contentSet.map((item) => createRow(c.descriptor, item, sameInstanceFieldsMap, updatedFields));
 };
 
+// eslint-disable-next-line deprecation/deprecation
 const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>, sameInstanceFieldsMap: { [fieldName: string]: Field }, updatedFields: Field[]): RowItem => {
   if (item.primaryKeys.length !== 1) {
     // note: for table view we expect the record to always have only 1 primary key
@@ -409,6 +425,7 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>, sameI
 };
 
 class CellsBuilder extends PropertyRecordsBuilder {
+  // eslint-disable-next-line deprecation/deprecation
   private _cells?: CellItem[];
 
   public constructor(
@@ -418,6 +435,7 @@ class CellsBuilder extends PropertyRecordsBuilder {
     super();
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public get cells(): CellItem[] {
     assert(this._cells !== undefined);
     return this._cells;
@@ -443,6 +461,7 @@ class CellsBuilder extends PropertyRecordsBuilder {
     return {
       append: (record: FieldHierarchyRecord) => {
         assert(this._cells !== undefined);
+        // eslint-disable-next-line deprecation/deprecation
         const itemProps: Partial<CellItem> = {};
         const mergedCellsCount = this._mergedCellCounts[record.fieldHierarchy.field.name];
         if (mergedCellsCount) {

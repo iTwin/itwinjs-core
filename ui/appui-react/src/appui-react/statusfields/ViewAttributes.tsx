@@ -10,11 +10,11 @@ import "./ViewAttributes.scss";
 import * as React from "react";
 import { ViewFlagProps, ViewFlags } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { Dialog, TitleBar } from "@itwin/appui-layout-react";
 import { Checkbox } from "@itwin/itwinui-react";
 import { UiFramework } from "../UiFramework";
 import { Indicator } from "./Indicator";
 import { StatusFieldProps } from "./StatusFieldProps";
+import { StatusBarDialog } from "../statusbar/dialog/Dialog";
 
 interface ViewAttributesStatusFieldState {
   viewFlags: ViewFlagProps;
@@ -112,16 +112,16 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
     const isOpen = this.props.openWidget === this._className;
     return (
       <>
-        <Indicator
+        <Indicator // eslint-disable-line deprecation/deprecation
           iconName="icon-window-settings"
           opened={isOpen}
           toolTip={this._title}
-          dialog={<Dialog
+          dialog={<StatusBarDialog
             titleBar={
-              <TitleBar title={this._title} />
+              <StatusBarDialog.TitleBar title={this._title} />
             }>
             {this.getViewFlags()}
-          </Dialog>}
+          </StatusBarDialog>}
           // eslint-disable-next-line deprecation/deprecation
           isInFooterMode={this.props.isInFooterMode ?? true}
         />

@@ -182,6 +182,7 @@ export class ByteStream {
     nextUint32s(numUint32s: number): Uint32Array;
     get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
+    get remainingLength(): number;
     reset(): void;
     rewind(numBytes: number): boolean;
 }
@@ -197,6 +198,7 @@ export enum ChangeSetStatus {
     ChangeTrackingNotEnabled = 90114,
     CorruptedChangeStream = 90115,
     CouldNotOpenDgnDb = 90131,
+    DownloadCancelled = 90138,
     FileNotFound = 90116,
     FileWriteError = 90117,
     HasLocalChanges = 90118,
@@ -1144,6 +1146,8 @@ export class Logger {
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logInfo: LogFunction | undefined;
+    // @internal (undocumented)
+    static logLevelChangedFn?: VoidFunction;
     static logTrace(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logTrace: LogFunction | undefined;

@@ -150,6 +150,7 @@ export class Presentation {
 // @public
 export interface PresentationAssetsRootConfig {
     backend: string;
+    // @deprecated
     common: string;
 }
 
@@ -250,7 +251,7 @@ export interface PresentationManagerCachingConfig {
     workerConnectionCacheSize?: number;
 }
 
-// @public
+// @public @deprecated
 export enum PresentationManagerMode {
     ReadOnly = 0,
     ReadWrite = 1
@@ -277,6 +278,7 @@ export interface PresentationManagerProps {
     id?: string;
     // @deprecated
     localeDirectories?: string[];
+    // @deprecated
     mode?: PresentationManagerMode;
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
