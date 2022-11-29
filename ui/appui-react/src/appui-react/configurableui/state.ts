@@ -23,6 +23,7 @@ export enum ConfigurableUiActionId {
   SetToolPrompt = "configurableui:set_toolprompt",
   SetWidgetOpacity = "configurableui:set_widget_opacity",
   SetDragInteraction = "configurableui:set-drag-interaction",
+  /** @deprecated UI1.0 is deprecated, only UI2.0 is supported. */
   SetFrameworkVersion = "configurableui:set-framework-version",
   SetShowWidgetIcon = "configurableui:set-show-widget-icon",
   AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
@@ -41,6 +42,7 @@ export interface ConfigurableUiState {
   theme: string;
   widgetOpacity: number;
   useDragInteraction: boolean;
+  /** @deprecated UI1.0 is deprecated, only UI2.0 is supported. */
   frameworkVersion: FrameworkVersionId; // eslint-disable-line deprecation/deprecation
   showWidgetIcon: boolean;
   autoCollapseUnpinnedPanels: boolean;
@@ -81,6 +83,7 @@ export const ConfigurableUiActions = {   // eslint-disable-line @typescript-esli
     // istanbul ignore next
     (opacity: number) => createAction(ConfigurableUiActionId.SetWidgetOpacity, opacity),
   setDragInteraction: (dragInteraction: boolean) => createAction(ConfigurableUiActionId.SetDragInteraction, dragInteraction),
+  /** @deprecated UI1.0 is deprecated, only UI2.0 is supported. */
   setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => createAction(ConfigurableUiActionId.SetFrameworkVersion, frameworkVersion), // eslint-disable-line deprecation/deprecation
   setShowWidgetIcon: (showWidgetIcon: boolean) => createAction(ConfigurableUiActionId.SetShowWidgetIcon, showWidgetIcon),
   setAutoCollapseUnpinnedPanels: (autoCollapse: boolean) => createAction(ConfigurableUiActionId.AutoCollapseUnpinnedPanels, autoCollapse),

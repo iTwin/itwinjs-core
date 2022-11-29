@@ -260,9 +260,19 @@ function SettingsItem(props: SettingsItemProps) {
   );
 }
 
+/** @beta */
+export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntry;
+
+/**
+ * @deprecated Framework version is deprecated, only UI2.0 is supported. Use `getUiSettingsManagerEntry(itemPriority)` instead.
+ * @beta
+ */
+export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry; // eslint-disable-line @typescript-eslint/unified-signatures
+
 /**
  * Return a SettingsTabEntry that can be used to define the available settings that can be set for an application.
  * @param itemPriority - Used to define the order of the entry in the Settings Stage
+ * @deprecated
  * @beta
  */
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry {

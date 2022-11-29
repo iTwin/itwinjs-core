@@ -19,6 +19,7 @@ import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFram
 export interface InitialAppUiSettings {
   colorTheme: string;
   dragInteraction: boolean;
+  /** @deprecated UI1.0 is deprecated, only UI2.0 is supported. */
   frameworkVersion: FrameworkVersionId; // eslint-disable-line deprecation/deprecation
   widgetOpacity: number;
   showWidgetIcon?: boolean;
@@ -49,6 +50,7 @@ export class AppUiSettings implements UserSettingsProvider {
 
   public colorTheme: UiStateEntry<string>;
   public dragInteraction: UiStateEntry<boolean>;
+  /** @deprecated */
   public frameworkVersion: UiStateEntry<FrameworkVersionId>; // eslint-disable-line deprecation/deprecation
   public widgetOpacity: UiStateEntry<number>;
   public showWidgetIcon: UiStateEntry<boolean>;

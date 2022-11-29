@@ -519,12 +519,14 @@ export class UiFramework {
   }
 
   /** Returns the Ui Version.
+   * @deprecated UI1.0 is deprecated, only UI2.0 is supported.
    * @public
    */
   public static get uiVersion(): FrameworkVersionId { // eslint-disable-line deprecation/deprecation
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion;
   }
 
+  /** @deprecated UI1.0 is deprecated, only UI2.0 is supported. */
   public static setUiVersion(version: FrameworkVersionId) { // eslint-disable-line deprecation/deprecation
     if (UiFramework.uiVersion === version)
       return;
