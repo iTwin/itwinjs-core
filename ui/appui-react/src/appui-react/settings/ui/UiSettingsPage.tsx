@@ -33,7 +33,20 @@ import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react
  *
  * @beta
  */
-export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettingUiFrameworkVersion: boolean }) {
+export function UiSettingsPage(): JSX.Element;
+
+/**
+ * @deprecated Framework version is deprecated, only UI2.0 is supported.
+ * @beta
+ */
+export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettingUiFrameworkVersion: boolean }): JSX.Element; // eslint-disable-line @typescript-eslint/unified-signatures
+
+/**
+ * @deprecated
+ * @beta
+ */
+export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean }) {
+  const { allowSettingUiFrameworkVersion } = props || {};
   const themeTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeTitle"));
   const themeDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeDescription"));
   const autoHideTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoHideTitle"));
@@ -81,6 +94,9 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
       "configurableui:set-auto-collapse-unpinned-panels", "configurableui:set-animate-tool-settings",
       "configurableui:set-use-tool-as-tool-settings-label", "configurableui:set-toolbar-opacity", SyncUiEventId.ShowHideManagerSettingChange];
 
+    /**
+     *
+     */
     const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       // istanbul ignore else
       if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
@@ -260,7 +276,11 @@ function SettingsItem(props: SettingsItemProps) {
   );
 }
 
-/** @beta */
+/**
+ * Return a SettingsTabEntry that can be used to define the available settings that can be set for an application.
+ * @param itemPriority - Used to define the order of the entry in the Settings Stage
+ * @beta
+ */
 export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntry;
 
 /**
@@ -270,8 +290,6 @@ export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntr
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry; // eslint-disable-line @typescript-eslint/unified-signatures
 
 /**
- * Return a SettingsTabEntry that can be used to define the available settings that can be set for an application.
- * @param itemPriority - Used to define the order of the entry in the Settings Stage
  * @deprecated
  * @beta
  */
