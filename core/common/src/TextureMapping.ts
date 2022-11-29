@@ -10,7 +10,7 @@ import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Tr
 import { RenderTexture } from "./RenderTexture";
 
 /** Defines normal map parameters.
- * @public
+ * @beta
  */
 export interface NormalMapParams {
   /** The texture to use as a normal map. If not present then the pattern map texture will be used as a normal map. */
@@ -27,7 +27,9 @@ export interface NormalMapParams {
 export class TextureMapping {
   /** The texture to be mapped to the surface. If normalMapParams is present but does not contain a normal map, then texture is used as a normal map rather than a pattern map. */
   public readonly texture: RenderTexture;
-  /** The parameters for normal mapping. */
+  /** The parameters for normal mapping.
+   * @beta
+   */
   public normalMapParams?: NormalMapParams;
   /** The parameters describing how the textures are mapped to the surface. */
   public readonly params: TextureMapping.Params;
