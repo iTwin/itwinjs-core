@@ -204,7 +204,7 @@ describe("convertPresentationInstanceFilterToInstanceFilter", () => {
     fields: [propertyField1, propertyField2, nestedField2],
   });
 
-  it(" Property filter converts to presentation filter and vise versa correctly ", () => {
+  it("property filter converts to presentation filter and vise versa correctly", () => {
     const filter: PropertyFilter = {
       operator: PropertyFilterRuleGroupOperator.And,
       rules: [{
