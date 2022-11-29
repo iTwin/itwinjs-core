@@ -5762,7 +5762,7 @@ export class NonUniformColor {
     readonly isOpaque: boolean;
 }
 
-// @public
+// @beta
 export interface NormalMapParams {
     flipY?: boolean;
     normalMap?: RenderTexture;
@@ -9078,9 +9078,10 @@ export interface TextureLoadProps {
 
 // @public
 export class TextureMapping {
-    constructor(tx: RenderTexture, params: TextureMapping.Params, normalMapParams?: NormalMapParams);
+    constructor(tx: RenderTexture, params: TextureMapping.Params);
     // @internal (undocumented)
     computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
+    // @beta
     normalMapParams?: NormalMapParams;
     readonly params: TextureMapping.Params;
     readonly texture: RenderTexture;

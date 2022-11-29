@@ -34,10 +34,9 @@ export class TextureMapping {
   /** The parameters describing how the textures are mapped to the surface. */
   public readonly params: TextureMapping.Params;
 
-  public constructor(tx: RenderTexture, params: TextureMapping.Params, normalMapParams?: NormalMapParams ) {
+  public constructor(tx: RenderTexture, params: TextureMapping.Params) {
     this.texture = tx;
     this.params = params;
-    this.normalMapParams = normalMapParams;
   }
 
   /** @internal */

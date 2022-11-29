@@ -2099,7 +2099,12 @@ export abstract class GltfReader {
       }
     }
 
-    return texture ? new TextureMapping(texture, new TextureMapping.Params(), nMap) : undefined;
+    if (!texture)
+      return undefined;
+
+    const textureMapping = new TextureMapping(texture, new TextureMapping.Params());
+    textureMapping.normalMapParams = nMap;
+    return textureMapping;
   }
 }
 
