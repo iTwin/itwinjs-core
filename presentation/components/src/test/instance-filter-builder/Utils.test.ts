@@ -252,7 +252,7 @@ describe("convertPresentationInstanceFilterToInstanceFilter", () => {
     expect(result).to.be.deep.eq(propertyFilter);
   });
 
-  it("Converts presentation filter with nested fields to property filter", () => {
+  it("converts presentation filter with nested fields to property filter", () => {
     const presentationFilter: PresentationInstanceFilter = {
       operator: PropertyFilterRuleGroupOperator.And,
       conditions: [{
