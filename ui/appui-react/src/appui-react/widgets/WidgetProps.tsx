@@ -11,7 +11,7 @@ import { AbstractWidgetProps } from "@itwin/appui-abstract";
 import { IconProps } from "@itwin/core-react";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
-/** Properties for a [Widget]($appui-react) component.
+/** Properties for a [[Widget]] component.
  * @deprecated Props of a deprecated component.
  * @public
  */
