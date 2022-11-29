@@ -6,7 +6,7 @@ import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { ColorByName, ColorDef } from "@itwin/core-common";
+import { ColorByName, ColorDef, EmptyLocalization } from "@itwin/core-common";
 import { CompassMode, IModelApp, IModelAppOptions, ItemField, MockRender } from "@itwin/core-frontend";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { Orientation } from "@itwin/core-react";
@@ -36,6 +36,7 @@ describe("AccuDrawFieldContainer", () => {
     const opts: IModelAppOptions = {};
     opts.accuDraw = new FrameworkAccuDraw();
     opts.uiAdmin = new FrameworkUiAdmin();
+    opts.localization = new EmptyLocalization();
     await MockRender.App.startup(opts);
   });
 

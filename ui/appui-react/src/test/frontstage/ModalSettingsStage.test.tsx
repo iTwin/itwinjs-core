@@ -12,6 +12,7 @@ import { UiFramework } from "../../appui-react/UiFramework";
 import { SettingsManager, SettingsTabEntry, SettingsTabsProvider, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "@itwin/core-react";
 import { IModelApp, MockRender } from "@itwin/core-frontend";
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";
+import { EmptyLocalization } from "@itwin/core-common";
 
 function TestModalSettingsPage({ settingsManager, title }: { settingsManager: SettingsManager, title: string }) {
 
@@ -49,7 +50,7 @@ function renderModalFrontstage(isOpen: boolean): React.ReactElement<any> {
 describe("ModalSettingsStage", () => {
   beforeEach(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({localization: new EmptyLocalization()});
   });
 
   afterEach(async () => {

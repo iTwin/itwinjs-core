@@ -13,6 +13,7 @@ import { TestUtils } from "../TestUtils";
 import { IModelApp, IModelAppOptions, ItemField, MockRender } from "@itwin/core-frontend";
 import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
 import { FrameworkUiAdmin } from "../../appui-react/uiadmin/FrameworkUiAdmin";
+import { EmptyLocalization } from "@itwin/core-common";
 
 // cspell:ignore uiadmin
 
@@ -34,6 +35,7 @@ describe("AccuDrawInputField", () => {
     const opts: IModelAppOptions = {};
     opts.accuDraw = new FrameworkAccuDraw();
     opts.uiAdmin = new FrameworkUiAdmin();
+    opts.localization = new EmptyLocalization();
     await MockRender.App.startup(opts);
   });
 

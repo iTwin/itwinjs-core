@@ -11,13 +11,14 @@ import TestUtils, { handleError, selectChangeValueByText, storageMock, stubScrol
 import { UiFramework } from "../../appui-react/UiFramework";
 import { ColorTheme } from "../../appui-react/theme/ThemeManager";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("UiSettingsPage", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
   let localStorageMock = storageMock();
 
   before(async () => {
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({localization: new EmptyLocalization()});
   });
 
   after(async () => {
@@ -64,6 +65,7 @@ describe("UiSettingsPage", () => {
 
   it("renders without version option (V1) set theme", async () => {
     const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    // wrapper.debug();
     expect(wrapper).not.to.be.undefined;
 
     // const themeSpan = wrapper.getByText("settings.uiSettingsPage.themeTitle");
