@@ -113,7 +113,7 @@ function getParentNames(field: Field, name: string): string {
   return getParentNames(field.parent, getPrefixedFieldName(name, field.name));
 }
 
-function createPropertyInfosFromPropertiesField(field: PropertiesField): InstanceFilterPropertyInfo {
+function createPropertyInfoFromPropertiesField(field: PropertiesField): InstanceFilterPropertyInfo {
   const categoryInfo = getCategoryInfo(field.category, { name: undefined, label: undefined });
   const name = field.parent ? getParentNames(field.parent, field.name) : field.name;
 
