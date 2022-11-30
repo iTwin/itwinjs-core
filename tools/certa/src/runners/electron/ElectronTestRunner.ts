@@ -30,7 +30,8 @@ export class ElectronTestRunner {
     const rendererWindow = new BrowserWindow({
       show: config.debug,
       webPreferences: {
-        nodeIntegration: true,
+        // nodeIntegration: true,
+        sandbox: true,
         enableRemoteModule: true,
       },
     });
