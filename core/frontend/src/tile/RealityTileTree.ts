@@ -404,6 +404,9 @@ export class RealityTileTree extends TileTree {
   public getBaseRealityDepth(_sceneContext: SceneContext) { return -1; }
 
   /** @internal */
+  public reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]) {}
+
+  /** @internal */
   public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[] {
     this._lastSelected = BeTimePoint.now();
     const selected: RealityTile[] = [];
@@ -453,6 +456,9 @@ export class RealityTileTree extends TileTree {
         this.logTiles("Imagery:", imageryTiles.values());
     }
 
+    if (context.missing.length === 0)
+      this.reportTileVisibility(args, selected);
+
     IModelApp.tileAdmin.addTilesForUser(args.context.viewport, selected, args.readyTiles);
     return selected;
   }
@@ -489,7 +495,7 @@ export class RealityTileTree extends TileTree {
       depthMap.set(depth, found === undefined ? 1 : found + 1);
     }
 
-    depthMap.forEach((key, value) => depthString += `${key}-${value}, `);
+    depthMap.forEach((value, key ) => depthString += `${key}(x${value}), `);
     // eslint-disable-next-line no-console
     console.log(`${label}: ${count} Min: ${min} Max: ${max} Depths: ${depthString}`);
   }

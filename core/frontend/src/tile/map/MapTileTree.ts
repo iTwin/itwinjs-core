@@ -25,7 +25,7 @@ import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
-  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo,
+  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryMapTileTreeVisibility, ImageryTileTreeVisibilityState, MapCartoRectangle, MapLayerFeatureInfo,
   MapLayerTileTreeReference, MapTile, MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
@@ -85,6 +85,7 @@ export class MapTileTree extends RealityTileTree {
   /** @internal */
   public imageryTrees: ImageryMapTileTree[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
+  private _layerVisibility = new Map<Id64String, ImageryMapTileTreeVisibility>();
   private _modelIdToIndex = new Map<Id64String, number>();
   /** @internal */
   public layerClassifiers = new Map<number, RenderPlanarClassifier>();
@@ -144,6 +145,22 @@ export class MapTileTree extends RealityTileTree {
     // by depth so that painters algorithm will approximate correct depth display.
     return this.useDepthBuffer ? this.loader.parentsAndChildrenExclusive : false;
   }
+  public getLayerVisibility(treeId: string) {
+    return this._layerVisibility.get(treeId);
+  }
+
+  public cloneLayerVisibility() {
+
+    const clone = new Map<Id64String, ImageryMapTileTreeVisibility>();
+    for (const [treeId, visibility] of this._layerVisibility) {
+      clone.set(treeId, visibility.clone());
+    }
+    return clone;
+  }
+
+  public getLayerSettings(treeId: string) {
+    return this._layerSettings.get(treeId);
+  }
 
   /** @internal */
   public tileFromQuadId(quadId: QuadId): MapTile | undefined {
@@ -154,6 +171,8 @@ export class MapTileTree extends RealityTileTree {
   public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number) {
     this.imageryTrees.push(tree);
     this._layerSettings.set(tree.modelId, settings);
+    if (!this._layerVisibility.has(tree.modelId))
+      this._layerVisibility.set(tree.modelId, new ImageryMapTileTreeVisibility());
     this._modelIdToIndex.set(tree.modelId, index);
   }
 
@@ -411,6 +430,70 @@ export class MapTileTree extends RealityTileTree {
       }
     } else {
       resolveCorners(gridPoints);
+    }
+  }
+
+  /** @internal */
+  public override reportTileVisibility(args: TileDrawArgs, selected: RealityTile[]) {
+
+    const layersVisibilityBefore =  this.cloneLayerVisibility();
+
+    if (layersVisibilityBefore) {
+      for (const [treeId] of layersVisibilityBefore) {
+        const treeVisibility = this.getLayerVisibility(treeId);
+        if (treeVisibility) {
+          treeVisibility.reset();
+        }
+      }
+
+      const out: string[] = [];
+      const vis: string[] = [];
+
+      let allTilesRead = true;
+      for (const selectedTile of selected) {
+        if (selectedTile instanceof MapTile) {
+          if (!selectedTile.isReady)
+            allTilesRead = false;
+          const selectedImageryTiles = selectedTile.imageryTiles;
+          if (selectedImageryTiles) {
+            for (const selectedImageryTile of selectedImageryTiles) {
+              const treeVisibility = this.getLayerVisibility(selectedImageryTile.tree.id);
+              if (treeVisibility) {
+                if (selectedImageryTile.isOutOfLodRange) {
+                  out.push(selectedImageryTile.contentId);
+                  treeVisibility.setVisibility(false);
+                } else {
+                  treeVisibility.setVisibility(true);
+                  vis.push(selectedImageryTile.contentId);
+                }
+                // treeVisibility.setVisibility(selectedImageryTile.isOutOfLodRange !== true);
+              }
+
+            }
+          }
+        }
+      }
+
+      if (!allTilesRead)
+        return;
+
+      for (const [treeId, prevVisibility] of layersVisibilityBefore) {
+        const newVisibility = this.getLayerVisibility(treeId);
+        if (newVisibility) {
+
+          const prevState = prevVisibility.getState();
+          const newState = newVisibility.getState();
+          if ( prevState !== newState) {
+            // console.log(`Visible : '${vis.join(", ")}'`);
+            // console.log(`Out : '${out.join(", ")}'`);
+            console.log(`ImageryTileTree '${treeId}' changed prev state: '${ImageryTileTreeVisibilityState[prevState]}' new state: '${ImageryTileTreeVisibilityState[newState]}'`);
+
+            // const settings = this.mapTree.getLayerSettings(treeId);
+            args.context.viewport.onLayerVisibilityChanged.raiseEvent(this.id, treeId, newVisibility.getState());
+
+          }
+        }
+      }
     }
   }
 
@@ -790,6 +873,20 @@ export class MapTileTreeReference extends TileTreeReference {
     const baseLayerIndex = this._baseImageryLayerIncluded ? 1 : 0;
     const treeIndex = index + baseLayerIndex;
     return index < 0 || treeIndex >= this._layerTrees.length ? undefined : this._layerTrees[treeIndex];
+  }
+
+  public getMapLayerVisibilityRangeState(index: number): ImageryTileTreeVisibilityState {
+    const tree = this.treeOwner.tileTree as MapTileTree;
+    if (undefined !== tree) {
+      const tileTreeRef = this.getLayerImageryTreeRef(index);
+      const treeId = tileTreeRef?.treeOwner.tileTree?.id;
+      if (treeId !== undefined) {
+        const visibility = tree.getLayerVisibility(treeId);
+        if (visibility !== undefined)
+          return visibility.getState();
+      }
+    }
+    return ImageryTileTreeVisibilityState.Unknown;
   }
 
   public initializeLayers(context: SceneContext): boolean {

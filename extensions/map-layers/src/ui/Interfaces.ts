@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent } from "@itwin/core-bentley";
-import { MapSubLayerProps } from "@itwin/core-common";
-import { HitDetail, MapLayerImageryProvider } from "@itwin/core-frontend";
+import {  MapSubLayerProps } from "@itwin/core-common";
+import { HitDetail, ImageryMapTileTree, ImageryMapTileTreeVisibility, ImageryTileTreeVisibilityState, MapLayerImageryProvider } from "@itwin/core-frontend";
 
 export interface StyleMapLayerSettings {
   /** Name */
@@ -13,6 +13,7 @@ export interface StyleMapLayerSettings {
   source: string;
   /** Controls visibility of layer */
   visible: boolean;
+  treeVisibility: ImageryTileTreeVisibilityState;
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
   transparency: number;
   /** Transparent background */
@@ -25,6 +26,7 @@ export interface StyleMapLayerSettings {
   showSubLayers: boolean;
   /** Some format can publish only a single layer at a time (i.e WMTS) */
   provider?: MapLayerImageryProvider;
+  layerId?: {mapTreeId: string, layerTreeId: string};
 }
 
 export interface MapTypesOptions {

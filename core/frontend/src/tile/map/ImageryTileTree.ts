@@ -53,9 +53,14 @@ export class ImageryMapTile extends RealityTile {
 
   public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
-    if (this.isLeaf || (this.rectangle.xLength() / this.maximumSize) < drapePixelSize || this._anyChildNotFound) {
-      if (this.isDisplayable && !this.isNotFound && !this.isOutOfLodRange)
+    const isSmallerThanDrape = (this.rectangle.xLength() / this.maximumSize) < drapePixelSize;
+    if (isSmallerThanDrape || this._anyChildNotFound) {
+      if (this.isOutOfLodRange) {
         drapeTiles.push(this);
+        this.setIsReady();
+      } else {
+        drapeTiles.push(this);
+      }
       return TileTreeLoadStatus.Loaded;
     }
 
@@ -139,6 +144,42 @@ export class ImageryMapTile extends RealityTile {
   public override dispose() {
     this._mapTileUsageCount = 0;
     super.dispose();
+  }
+}
+
+/** @internal */
+export enum ImageryTileTreeVisibilityState {
+  Unknown = 0,
+  Visible,
+  Hidden,
+  Partial
+}
+
+/** @internal */
+export class ImageryMapTileTreeVisibility {
+  private _visibility: ImageryTileTreeVisibilityState;
+  public getState() {return this._visibility;}
+
+  constructor() {
+    this._visibility = ImageryTileTreeVisibilityState.Unknown;
+  }
+
+  public clone() {
+    const clone = new ImageryMapTileTreeVisibility();
+    clone._visibility = this._visibility;
+    return clone;
+  }
+
+  public reset() {
+    this._visibility = ImageryTileTreeVisibilityState.Unknown;
+  }
+
+  public setVisibility(visible: boolean) {
+    if (this._visibility === ImageryTileTreeVisibilityState.Unknown) {
+      this._visibility = (visible ? ImageryTileTreeVisibilityState.Visible : ImageryTileTreeVisibilityState.Hidden);
+    } else if ((visible && this._visibility === ImageryTileTreeVisibilityState.Hidden) || (!visible && this._visibility === ImageryTileTreeVisibilityState.Visible)) {
+      this._visibility = ImageryTileTreeVisibilityState.Partial;
+    }
   }
 }
 

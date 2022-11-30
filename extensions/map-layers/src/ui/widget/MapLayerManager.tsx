@@ -10,7 +10,7 @@
 import { assert, BentleyError } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import {
-  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
+  ImageryMapTileTree, ImageryTileTreeVisibilityState, IModelApp, MapLayerImageryProvider, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
@@ -66,9 +66,12 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
     const layerSettings = displayStyleLayers[layerIdx];
     const isOverlay = !getBackgroundMap;
     const layerProvider = viewport.getMapLayerImageryProvider(layerIdx, isOverlay);
+    const layerId = viewport.getMapLayerTreeIds(layerIdx, isOverlay);
+    const treeVisibility = viewport.getMapLayerVisibilityRangeState(layerIdx, isOverlay);
     const popSubLayers = populateSubLayers && (layerSettings instanceof ImageMapLayerSettings);
     layers.push({
       visible: layerSettings.visible,
+      treeVisibility,
       name: layerSettings.name,
       source: layerSettings.source,
       transparency: layerSettings.transparency,
@@ -77,6 +80,8 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
       showSubLayers: false,
       isOverlay,
       provider: layerProvider,
+      layerId,
+
     });
   }
 
@@ -146,6 +151,30 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     };
 
   }, [activeViewport, loadMapLayerSettingsFromViewport]);
+
+  React.useEffect(() => {
+    const handleLayerVisibilityChanged = (mapTreeId: string, layerTreeId: string, treeVisibility: ImageryTileTreeVisibilityState) => {
+      const updateLayers = (array: StyleMapLayerSettings[] | undefined) => {
+        if (array) {
+          return array.map((layer) =>
+            layer.layerId?.mapTreeId === mapTreeId && layer.layerId.layerTreeId === layerTreeId
+              ? {...layer, treeVisibility} : layer
+          );
+        }
+        return undefined;
+      };
+      setBackgroundMapLayers(updateLayers(backgroundMapLayers));
+      setOverlayMapLayers(updateLayers(overlayMapLayers));
+
+    };
+
+    activeViewport.onLayerVisibilityChanged.addListener(handleLayerVisibilityChanged);
+
+    return () => {
+      activeViewport.onLayerVisibilityChanged.removeListener(handleLayerVisibilityChanged);
+    };
+
+  }, [activeViewport, backgroundMapLayers, loadMapLayerSettingsFromViewport, overlayMapLayers]);
 
   // Setup onMapImageryChanged events listening.
 

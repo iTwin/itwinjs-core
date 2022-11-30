@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, ImageryMapTileTreeVisibility, ImageryTileTreeVisibilityState, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTree, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -291,6 +291,8 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
+
+  public readonly onLayerVisibilityChanged = new BeEvent<(mapTreeId: Id64String, layerTreeId: Id64String, visibility: ImageryTileTreeVisibilityState) => void>();
 
   /** @internal */
   protected _hasMissingTiles = false;
@@ -789,6 +791,28 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** @internal */
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
+
+  /** @beta */
+  public getMapLayerVisibilityRangeState(index: number, isOverlay: boolean): ImageryTileTreeVisibilityState {
+    const treeRef = ( isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
+    if (treeRef) {
+      return treeRef.getMapLayerVisibilityRangeState(index);
+
+    }
+    return ImageryTileTreeVisibilityState.Unknown;
+  }
+  /** @beta */
+  public getMapLayerTreeIds(index: number, isOverlay: boolean): {mapTreeId: Id64String, layerTreeId: Id64String} | undefined {
+    const treeRef = ( isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
+    const mapTreeId = treeRef?.treeOwner.tileTree?.id;
+    if (mapTreeId) {
+      const imageryTreeRef = treeRef.getLayerImageryTreeRef(index);
+      const layerTreeId = imageryTreeRef?.treeOwner.tileTree?.id;
+      if (layerTreeId)
+        return {mapTreeId, layerTreeId};
+    }
+    return undefined;
+  }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }

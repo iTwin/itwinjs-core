@@ -9,7 +9,7 @@
 
 import * as React from "react";
 import { Draggable, DraggableChildrenFn, Droppable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
-import { MapLayerImageryProviderStatus, ScreenViewport } from "@itwin/core-frontend";
+import { ImageryTileTreeVisibilityState, MapLayerImageryProviderStatus, ScreenViewport } from "@itwin/core-frontend";
 import { Icon } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { ModalDialogManager } from "@itwin/appui-react";
@@ -46,19 +46,29 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
   const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.NoBackgroundLayers"));
   const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.NoOverlayLayers"));
   const [dropLayerLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.DropLayerLabel"));
+  const [outOfRangeTitle] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.layerOutOfRange"));
 
   const renderItem: DraggableChildrenFn = (dragProvided, _, rubric) => {
     assert(props.layersList !== undefined);
     const activeLayer = props.layersList[rubric.source.index];
+    const outOfRange = activeLayer.treeVisibility === ImageryTileTreeVisibilityState.Hidden;
 
     return (
       <div className="map-manager-source-item" data-id={rubric.source.index} key={activeLayer.name}
         {...dragProvided.draggableProps}
         ref={dragProvided.innerRef} >
+        {/* Visibility icon */}
         <Button disabled={props.disabled} size="small" styleType="borderless" className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { props.onItemVisibilityToggleClicked(activeLayer); }}>
           <Icon iconSpec={activeLayer.visible ? "icon-visibility" : "icon-visibility-hide-2"} />
         </Button>
-        <span className={props.disabled ? "map-manager-item-label-disabled" : "map-manager-item-label"} {...dragProvided.dragHandleProps}>{activeLayer.name}</span>
+        {/* Label */}
+        <span className={props.disabled||outOfRange ? "map-manager-item-label-disabled" : "map-manager-item-label"}
+          title = {outOfRange ? outOfRangeTitle : undefined }
+          {...dragProvided.dragHandleProps}
+
+        >
+          {activeLayer.name}
+        </span>
         <div className="map-manager-item-sub-layer-container">
           {activeLayer.subLayers && activeLayer.subLayers.length > 1 &&
             <SubLayersPopupButton mapLayerSettings={activeLayer} activeViewport={props.activeViewport} />

@@ -11,7 +11,7 @@ import {
   TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useTreeModel,
 } from "@itwin/components-react";
 import { ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
-import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { ImageryTileTreeVisibilityState, IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@itwin/core-react";
 import { Button, Input } from "@itwin/itwinui-react";
 import * as React from "react";
@@ -100,7 +100,7 @@ function getSubLayerProps(subLayerSettings: MapSubLayerSettings[]): MapSubLayerP
   return subLayerSettings.map((subLayer) => subLayer.toJSON());
 }
 
-function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: boolean): StyleMapLayerSettings {
+function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: boolean, treeVisibility: ImageryTileTreeVisibilityState): StyleMapLayerSettings {
   return {
     visible: settings.visible,
     name: settings.name,
@@ -111,6 +111,7 @@ function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: bo
     showSubLayers: true,
     isOverlay,
     provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(settings),
+    treeVisibility,
   };
 }
 
@@ -155,8 +156,11 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
       vp.invalidateRenderPlan();
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
       if (updatedMapLayer) {
-        if (updatedMapLayer instanceof ImageMapLayerSettings)
-          setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay));
+        if (updatedMapLayer instanceof ImageMapLayerSettings) {
+          const treeVisibility = vp.getMapLayerVisibilityRangeState(indexInDisplayStyle, mapLayer.isOverlay);
+          setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay, treeVisibility));
+        }
+
       }
     }
   }, [mapLayer]);
@@ -169,7 +173,8 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
       displayStyle.changeMapSubLayerProps({ visible: false }, -1, indexInDisplayStyle, mapLayer.isOverlay);
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
       if (updatedMapLayer && updatedMapLayer instanceof ImageMapLayerSettings) {
-        setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay));
+        const treeVisibility = vp.getMapLayerVisibilityRangeState(indexInDisplayStyle, mapLayer.isOverlay);
+        setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay, treeVisibility));
       }
       vp.invalidateRenderPlan();
     }
