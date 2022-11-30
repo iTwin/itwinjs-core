@@ -31,7 +31,6 @@ describe("ViewDetails", () => {
       }
     }
 
-    const emptyClipProps: ClipVectorProps = [];
     const clipProps: ClipVectorProps = [{
       shape: {
         points: [
@@ -78,7 +77,7 @@ describe("ViewDetails", () => {
     });
 
     it("treats empty and undefined as equivalent", () => {
-      let details = new TestDetails();
+      const details = new TestDetails();
       expect(details.clipVector).to.be.undefined;
       expect(details.storedClip).not.to.be.undefined;
       expect(details.storedClip!.isValid).to.be.false;
