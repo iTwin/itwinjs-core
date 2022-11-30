@@ -197,7 +197,7 @@ describe("TableDataProvider", () => {
       provider.filterExpression = "test";
       expect(await provider.getDescriptorOverrides()).to.deep.eq({
         displayType: provider.displayType,
-        filterExpression: "test",
+        fieldsFilterExpression: "test",
       });
     });
 

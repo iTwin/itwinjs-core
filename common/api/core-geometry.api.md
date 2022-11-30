@@ -288,6 +288,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: false, result?: CurveLocationDetail): CurveLocationDetail;
     otherArcAsLocalVectors(other: Arc3d): ArcVectors | undefined;
     get perpendicularVector(): Vector3d;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     static readonly quadratureGuassCount = 5;
     static readonly quadratureIntervalAngleDegrees = 10;
     quickEccentricity(): number;
@@ -575,6 +576,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     get order(): number;
     protected _polygon: Bezier1dNd;
     polygonLength(): number;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     quickLength(): number;
     reverseInPlace(): void;
     saturateInPlace(knotVector: KnotVector, spanIndex: number): boolean;
@@ -830,6 +832,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     get numSpan(): number;
     get order(): number;
     poleIndexToDataIndex(poleIndex: number): number | undefined;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     reverseInPlace(): void;
     setWrappable(value: BSplineWrapMode): void;
     startPoint(): Point3d;
@@ -1504,6 +1507,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     isSameGeometryClass(other: GeometryQuery): boolean;
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     get path(): CurveChain;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     quickLength(): number;
     reverseInPlace(): void;
     startPoint(result?: Point3d): Point3d;
@@ -1532,6 +1536,7 @@ export abstract class CurveCollection extends GeometryQuery {
     isInner: boolean;
     get isOpenPath(): boolean;
     maxGap(): number;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     sumLengths(): number;
     abstract tryAddChild(child: AnyCurve | undefined): boolean;
     tryTransformInPlace(transform: Transform): boolean;
@@ -1729,6 +1734,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     protected moveSignedDistanceFromFractionGeneric(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     parent?: any;
+    projectedParameterRange(_ray: Vector3d | Ray3d, _lowHigh?: Range1d): Range1d | undefined;
     abstract quickLength(): number;
     rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     rangeBetweenFractionsByClone(fraction0: number, fraction1: number, transform?: Transform): Range3d;
@@ -3192,6 +3198,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     isSameGeometryClass(other: GeometryQuery): boolean;
     get point0Ref(): Point3d;
     get point1Ref(): Point3d;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     quickLength(): number;
     rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
     reverseInPlace(): void;
@@ -3287,6 +3294,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     get pointIndices(): GrowableFloat64Array | undefined;
     get points(): Point3d[];
     popPoint(): void;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     quickLength(): number;
     quickUnitNormal(result?: Vector3d): Vector3d | undefined;
     rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
@@ -4655,6 +4663,7 @@ export abstract class ProxyCurve extends CurvePrimitive {
     fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     get proxyCurve(): CurvePrimitive;
     // (undocumented)
     protected _proxyCurve: CurvePrimitive;
@@ -5100,6 +5109,7 @@ export class RegionOps {
     };
     static computeXYArea(root: AnyRegion): number | undefined;
     static computeXYAreaMoments(root: AnyRegion): MomentData | undefined;
+    static computeXYAreaTolerance(range: Range3d, distanceTolerance?: number): number;
     static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;
     static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
     // @alpha
@@ -5739,6 +5749,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     static interpolateCurvatureR0R1(r0: number, fraction: number, r1: number): number;
     get localToWorld(): Transform;
     protected _localToWorld: Transform;
+    projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     static radius0LengthSweepRadiansToRadius1(radius0: number, arcLength: number, sweepRadians: number): number;
     static radius1LengthSweepRadiansToRadius0(radius1: number, arcLength: number, sweepRadians: number): number;
     static radiusRadiusLengthToSweepRadians(radius0: number, radius1: number, arcLength: number): number;
@@ -5934,7 +5945,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     dotProductStartEnd(pointA: XAndY, pointB: XAndY): number;
     fractionOfProjectionToVector(target: Vector2d, defaultFraction?: number): number;
     static fromJSON(json?: XYProps): Vector2d;
-    interpolate(fraction: number, right: Vector2d, result?: Vector2d): Vector2d;
+    interpolate(fraction: number, vectorB: Vector2d, result?: Vector2d): Vector2d;
     isParallelTo(other: Vector2d, oppositeIsParallel?: boolean, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
     isPerpendicularTo(other: Vector2d, returnValueIfAnInputIsZeroLength?: boolean, options?: PerpParallelOptions): boolean;
     minus(vector: XAndY, result?: Vector2d): Vector2d;
@@ -5972,6 +5983,7 @@ export class Vector3d extends XYZ {
     static createCrossProduct(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d): Vector3d;
     static createCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d;
     static createFrom(data: XYAndZ | XAndY | Float64Array | number[], result?: Vector3d): Vector3d;
+    static createNormalized(x?: number, y?: number, z?: number, result?: Vector3d): Vector3d | undefined;
     static createPolar(r: number, theta: Angle, z?: number): Vector3d;
     static createRotateVectorAroundVector(vector: Vector3d, axis: Vector3d, angle?: Angle): Vector3d | undefined;
     static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d;
@@ -6017,6 +6029,7 @@ export class Vector3d extends XYZ {
     radiansTo(vectorB: Vector3d): number;
     rotate90Around(axis: Vector3d, result?: Vector3d): Vector3d | undefined;
     rotate90CCWXY(result?: Vector3d): Vector3d;
+    rotate90CWXY(result?: Vector3d): Vector3d;
     rotate90Towards(target: Vector3d, result?: Vector3d): Vector3d | undefined;
     rotateXY(angle: Angle, result?: Vector3d): Vector3d;
     safeDivideOrNull(denominator: number, result?: Vector3d): Vector3d | undefined;
@@ -6084,12 +6097,14 @@ export type XAndY = Readonly<WritableXAndY>;
 // @public
 export class XY implements XAndY {
     protected constructor(x?: number, y?: number);
+    at(index: number): number;
     static crossProductToPoints(origin: XAndY, targetA: XAndY, targetB: XAndY): number;
     distance(other: XAndY): number;
     distanceSquared(other: XAndY): number;
     freeze(): Readonly<this>;
+    indexOfMaxAbs(): number;
     isAlmostEqual(other: XAndY, tol?: number): boolean;
-    isAlmostEqualMetric(other: XAndY): boolean;
+    isAlmostEqualMetric(other: XAndY, distanceTol?: number): boolean;
     isAlmostEqualXY(x: number, y: number, tol?: number): boolean;
     get isAlmostZero(): boolean;
     isExactEqual(other: XAndY): boolean;
@@ -6098,12 +6113,13 @@ export class XY implements XAndY {
     maxAbs(): number;
     maxDiff(other: XAndY): number;
     set(x?: number, y?: number): void;
+    setAt(index: number, value: number): void;
     setFrom(other?: XAndY): void;
     setFromJSON(json?: XYProps): void;
     setZero(): void;
     toJSON(): XYProps;
     toJSONXY(): XYProps;
-    unitVectorTo(target: XAndY, result?: Vector2d): Vector2d | undefined;
+    unitVectorTo(other: XAndY, result?: Vector2d): Vector2d | undefined;
     vectorTo(other: XAndY, result?: Vector2d): Vector2d;
     x: number;
     y: number;

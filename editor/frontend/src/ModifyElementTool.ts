@@ -138,12 +138,16 @@ export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool im
       return; // Don't need to create graphic if dynamics aren't yet active...
 
     const geometry = this.getGeometryProps(ev, false);
-    if (undefined === geometry)
+    if (undefined === geometry) {
+      this.clearGraphics();
       return;
+    }
 
     const elemProps = this.getElementProps(ev);
-    if (undefined === elemProps?.placement)
+    if (undefined === elemProps?.placement) {
+      this.clearGraphics();
       return;
+    }
 
     if (undefined === this._graphicsProvider) {
       if (this._firstResult) {

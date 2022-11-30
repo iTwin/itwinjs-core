@@ -17,11 +17,16 @@ Table of contents:
   - [@itwin/map-layers-formats](#itwinmap-layers-formats)
 - [Geometry](#geometry)
   - [Polyface](#polyface)
+  - [Curves](#curves)
 - [Deprecations](#deprecations)
+  - [@itwin/appui-layout-react](#itwinappui-layout-react)
+  - [@itwin/appui-react](#itwinappui-react)
   - [@itwin/components-react](#itwincomponents-react)
   - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-common](#itwincore-common)
   - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
+  - [@itwin/presentation-backend](#itwinpresentation-backend)
 
 ## Display system
 
@@ -44,7 +49,7 @@ Functions like [ViewState.lookAtVolume]($frontend) and [Viewport.zoomToElements]
 Now, [MarginOptions]($frontend) has an alternative way to specify how to adjust the size of the viewed volume, using [MarginOptions.paddingPercent]($frontend). Like [MarginPercent]($frontend), a [PaddingPercent]($frontend) specifies the extra space as a percentage of the original volume's space on each side - though it may also specify a single padding to be applied to all four sides, or omit any side that should have no padding applied. For example,
 
 ```
-{paddingPercent: {{left: .2, right: .2, top: .2, bottom: .2}}
+{paddingPercent: {left: .2, right: .2, top: .2, bottom: .2}}
 // is equivalent to
 {paddingPercent: .2}
 ```
@@ -157,7 +162,51 @@ To use this package, you must initialize it by calling [MapLayersFormats.initial
 
 The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
 
+### Curves
+
+The methods [CurveCollection.projectedParameterRange]($core-geometry) and [CurvePrimitive.projectedParameterRange]($core-geometry) have been added for computing the range of fractional projection parameters of the instance curve(s) onto a `Ray3d`. The default implementation of the latter method returns undefined to avoid a circular dependency, so extenders of [CurvePrimitive]($core-geometry) should override as appropriate.
+
 ## Deprecations
+
+### @itwin/appui-layout-react
+
+All non-internal components are deprecated with their corresponding replacements available in `@itwin/appui-react` package. Going forward `@itwin/appui-layout-react` package is considered as internal implementation detail of the `@itwin/appui-react` package and should not be used directly.
+
+| Deprecated        | Replacement                                        |
+| ----------------- | -------------------------------------------------- |
+| `Dialog`          | [StatusBarDialog]($appui-react)                    |
+| `FooterIndicator` | [StatusBarIndicator]($appui-react)                 |
+| `FooterPopup`     | `popup` prop of [StatusBarIndicator]($appui-react) |
+| `FooterSeparator` | [StatusBarSeparator]($appui-react)                 |
+| `SafeAreaInsets`  | [SafeAreaInsets]($appui-react)                     |
+| `TitleBar`        | [StatusBarDialog.TitleBar]($appui-react)           |
+
+### @itwin/appui-react
+
+A number of **UI1.0** related APIs and components are deprecated and will be removed in the next `@itwin/appui-react` major version:
+`FrameworkVersion`, `FrameworkVersionContext`, `FrameworkVersionId`, `FrameworkVersionProps`, `ListPickerBase`, `useFrameworkVersion`,
+`NineZoneChangeHandler`, `StagePanelChangeHandler`, `WidgetStateFunc`, `ZoneDefProvider`, `Zone`, `ZoneDef`.
+
+Pseudo components used by the [FrontstageProvider]($appui-react) are deprecated and replaced by corresponding configuration interfaces:
+
+| Component    | Replacement                      |
+| ------------ | -------------------------------- |
+| `Frontstage` | [FrontstageConfig]($appui-react) |
+| `Widget`     | [WidgetConfig]($appui-react)     |
+| `StagePanel` | [StagePanelConfig]($appui-react) |
+
+Other deprecations and their replacements:
+
+| Deprecated             | Replacement                                |
+| ---------------------- | ------------------------------------------ |
+| `ActionItemButton`     | [ActionButton]($appui-abstract)            |
+| `ActivityMessagePopup` | Activity messages are set-up automatically |
+| `Backstage`            | [BackstageComposer]($appui-react)          |
+| `BackstageEvent`       | [BackstageManager.onToggled]($appui-react) |
+| `GroupButton`          | [GroupButton]($appui-abstract)             |
+| `Indicator`            | [StatusBarIndicator]($appui-react)         |
+| `ToolButton`           | [CommonToolbarItem]($appui-abstract)       |
+| `withSafeArea`         | [SafeAreaContext]($appui-react)            |
 
 ### @itwin/components-react
 
@@ -170,6 +219,10 @@ The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated 
 The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
  The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
 
+### @itwin/core-common
+
+[Localization.getLocalizedStringWithNamespace]($common) is deprecated in favor of using [Localization.getLocalizedString]($common) and providing either a key with a namespace `<namespace>:<key>` or including `{ ns: <namespace> }` in the options.
+
 ### @itwin/core-geometry
 
 The method [PathFragment.childFractionTChainDistance]($core-geometry) has been deprecated in favor of the correctly spelled method [PathFragment.childFractionToChainDistance]($core-geometry).
@@ -177,3 +230,7 @@ The method [PathFragment.childFractionTChainDistance]($core-geometry) has been d
 ### @itwin/core-transformer
 
 [IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).
+
+### @itwin/presentation-backend
+
+[PresentationManagerProps.mode]($presentation-backend) has been deprecated because there is no performance difference between [PresentationManager]($presentation-backend) working in `ReadOnly` or `ReadWrite` modes.

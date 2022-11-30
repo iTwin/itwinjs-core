@@ -30,7 +30,6 @@ import { HierarchyUpdateRecord } from '@itwin/presentation-common';
 import { HighlightableTreeProps } from '@itwin/components-react';
 import { IContentVisitor } from '@itwin/presentation-common';
 import { Id64Arg } from '@itwin/core-bentley';
-import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { InstanceFilterDefinition } from '@itwin/presentation-common';
@@ -212,7 +211,9 @@ export interface DiagnosticsProps {
     // @internal
     devDiagnostics?: {
         severity?: DiagnosticsLoggerSeverity;
-        perf?: boolean;
+        perf?: boolean | {
+            minimumDuration: number;
+        };
         backendVersion?: boolean;
         handler: ClientDiagnosticsHandler;
     };
@@ -371,6 +372,8 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps): JSX.El
 export interface InstanceFilterBuilderProps {
     // (undocumented)
     classes: ClassInfo[];
+    // (undocumented)
+    isDisabled?: boolean;
     // (undocumented)
     onClassDeselected: (selectedClass: ClassInfo) => void;
     // (undocumented)
@@ -538,6 +541,12 @@ export interface PresentationInstanceFilterConditionGroup {
 
 // @alpha (undocumented)
 export function PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PresentationInstanceFilterPropertyProps {
+    // (undocumented)
+    instanceFilterPropertyInfo: InstanceFilterPropertyInfo;
+}
 
 // @public
 export class PresentationLabelsProvider implements IPresentationLabelsProvider {
@@ -846,15 +855,16 @@ export function useNavigationPropertyEditingContext(imodel: IModelConnection, da
 export function useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>, activeMatchIndex?: number): HighlightableTreeProps | undefined;
 
 // @alpha (undocumented)
-export function usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider): {
+export function usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection): {
     onPropertySelected: (property: PropertyDescription) => void;
     onClearClasses: () => void;
     onClassDeselected: (classInfo: ClassInfo) => void;
-    onClassSelected: (classInfo: ClassInfo) => void;
+    onClassSelected: (info: ClassInfo) => void;
     propertyRenderer: (name: string) => JSX.Element;
     properties: PropertyDescription[];
     classes: ClassInfo[];
     selectedClasses: ClassInfo[];
+    isDisabled: boolean;
 };
 
 // @public

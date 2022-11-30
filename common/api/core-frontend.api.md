@@ -87,6 +87,7 @@ import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementGeometryChange } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadOptions } from '@itwin/core-common';
+import { ElementMeshRequestProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
 import { Ellipsoid } from '@itwin/core-geometry';
 import { EllipsoidPatch } from '@itwin/core-geometry';
@@ -1228,7 +1229,7 @@ export class ArcGisUtilities {
     static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<any>;
     // (undocumented)
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
-    static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number): {
+    static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
         minLod?: number;
         maxLod?: number;
     };
@@ -4557,6 +4558,8 @@ export class ImageryMapTile extends RealityTile {
     // (undocumented)
     get isDisplayable(): boolean;
     // (undocumented)
+    get isOutOfLodRange(): boolean;
+    // (undocumented)
     protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void;
     // (undocumented)
     markMapTileUsage(): void;
@@ -4839,6 +4842,8 @@ export abstract class IModelConnection extends IModel {
     fontMap?: FontMap;
     // @internal
     protected _gcsDisabled: boolean;
+    // @beta
+    generateElementMeshes(requestProps: ElementMeshRequestProps): Promise<Uint8Array>;
     // @internal
     get geodeticToSeaLevel(): number | undefined;
     // @internal
@@ -4869,6 +4874,8 @@ export abstract class IModelConnection extends IModel {
     static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
+    // @internal
+    readonly onDisplayedExtentsExpansion: BeEvent<() => void>;
     // @internal
     readonly onMapElevationLoaded: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
@@ -10869,6 +10876,8 @@ export abstract class Tile {
     protected _isLeaf: boolean;
     get isLoading(): boolean;
     get isNotFound(): boolean;
+    // @alpha
+    get isOutOfLodRange(): boolean;
     // @internal (undocumented)
     get isParentDisplayable(): boolean;
     get isQueued(): boolean;

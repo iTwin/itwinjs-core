@@ -12,14 +12,13 @@ import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from 
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName, UiItemsManager } from "@itwin/appui-abstract";
-import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import { TargetOptions, TargetOptionsContext } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/target/TargetOptions";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, BackstageComposer, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
   IModelViewportControl,
   InitialAppUiSettings,
-  ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
+  ModalFrontstageClosedEventArgs, SafeAreaContext, SafeAreaInsets, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
@@ -192,7 +191,7 @@ export class SampleAppIModelApp {
 
       const rpcParams: BentleyCloudRpcParams =
         undefined !== process.env.IMJS_UITESTAPP_GP_BACKEND ?
-          { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
+          { info: { title: "imodel/rpc", version: "" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
           : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
 
@@ -269,6 +268,7 @@ export class SampleAppIModelApp {
       widgetOpacity: 0.8,
       showWidgetIcon: true,
       autoCollapseUnpinnedPanels: false,
+      toolbarOpacity: 0.5,
     };
 
     // initialize any settings providers that may need to have defaults set by iModelApp
@@ -571,7 +571,7 @@ function AppDragInteractionComponent(props: { dragInteraction: boolean, children
 
 function AppFrameworkVersionComponent(props: { frameworkVersion: string, children: React.ReactNode }) {
   return (
-    <FrameworkVersion>
+    <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
       {props.children}
     </FrameworkVersion>
   );
@@ -643,7 +643,6 @@ const SampleAppViewer2 = () => {
   return (
     <Provider store={SampleAppIModelApp.store} >
       <ThemeManager>
-        {/* eslint-disable-next-line deprecation/deprecation */}
         <SafeAreaContext.Provider value={SafeAreaInsets.All}>
           <AppDragInteraction>
             <AppFrameworkVersion>

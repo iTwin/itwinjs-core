@@ -8,6 +8,8 @@ The following domains lay out the [Common layer](../guide/intro/bis-organization
 
 ### [DistributionSystems](./DistributionSystems.ecschema.md)
 
+### [DocumentMetadata](./DocumentMetadata.ecschema.md)
+
 <!-- TODO: Enable once Grids schema is released
 ### [Grids](./Grids.ecschema.md)
 -->

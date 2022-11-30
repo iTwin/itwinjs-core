@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
+// cspell:word CWXY
 
 import { Geometry, PerpParallelOptions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
@@ -244,7 +245,7 @@ export class XYZ implements XYAndZ {
     return this.y;
   }
   /**
-   * Return the x,y, z component corresponding to 0,1,2.
+   * Set value at index 0 or 1 or 2.
    */
   public setAt(index: number, value: number): void {
     if (index < 0.5)
@@ -498,15 +499,19 @@ export class Point3d extends XYZ {
    * *  the magnitude of the vector is twice the area of the triangle.
    */
   public crossProductToPoints(pointA: Point3d, pointB: Point3d, result?: Vector3d): Vector3d {
-    return Vector3d.createCrossProduct(pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
+    return Vector3d.createCrossProduct(
+      pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
       pointB.x - this.x, pointB.y - this.y, pointB.z - this.z,
-      result);
+      result
+    );
   }
   /** Return the magnitude of the cross product of the vectors from this to pointA and pointB
    */
   public crossProductToPointsMagnitude(pointA: Point3d, pointB: Point3d): number {
-    return Geometry.crossProductMagnitude(pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
-      pointB.x - this.x, pointB.y - this.y, pointB.z - this.z);
+    return Geometry.crossProductMagnitude(
+      pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
+      pointB.x - this.x, pointB.y - this.y, pointB.z - this.z
+    );
   }
   /** Return the triple product of the vectors from this to pointA, pointB, pointC
    *
@@ -514,9 +519,11 @@ export class Point3d extends XYZ {
    * * This is 6 times the (signed) volume of the tetrahedron on the 4 points.
    */
   public tripleProductToPoints(pointA: Point3d, pointB: Point3d, pointC: Point3d): number {
-    return Geometry.tripleProduct(pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
+    return Geometry.tripleProduct(
+      pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
       pointB.x - this.x, pointB.y - this.y, pointB.z - this.z,
-      pointC.x - this.x, pointC.y - this.y, pointC.z - this.z);
+      pointC.x - this.x, pointC.y - this.y, pointC.z - this.z
+    );
   }
   /** Return the cross product of the vectors from this to pointA and pointB
    *
@@ -527,25 +534,34 @@ export class Point3d extends XYZ {
   public crossProductToPointsXY(pointA: Point3d, pointB: Point3d): number {
     return Geometry.crossProductXYXY(pointA.x - this.x, pointA.y - this.y, pointB.x - this.x, pointB.y - this.y);
   }
-  /** Return a point interpolated between this point and the right param. */
+  /**
+   * Return a point interpolated between `this` point and the `other` point.
+   * * fraction specifies where the interpolated point is located on the line passing `this` and `other`.
+   * */
   public interpolate(fraction: number, other: XYAndZ, result?: Point3d): Point3d {
     if (fraction <= 0.5)
-      return Point3d.create(this.x + fraction * (other.x - this.x),
+      return Point3d.create(
+        this.x + fraction * (other.x - this.x),
         this.y + fraction * (other.y - this.y),
         this.z + fraction * (other.z - this.z),
-        result);
+        result
+      );
     const t: number = fraction - 1.0;
-    return Point3d.create(other.x + t * (other.x - this.x),
+    return Point3d.create(
+      other.x + t * (other.x - this.x),
       other.y + t * (other.y - this.y),
       other.z + t * (other.z - this.z),
-      result);
+      result
+    );
   }
   /** Return a point with independent x,y,z fractional interpolation. */
   public interpolateXYZ(fractionX: number, fractionY: number, fractionZ: number, other: Point3d, result?: Point3d): Point3d {
-    return Point3d.create(Geometry.interpolate(this.x, fractionX, other.x),
+    return Point3d.create(
+      Geometry.interpolate(this.x, fractionX, other.x),
       Geometry.interpolate(this.y, fractionY, other.y),
       Geometry.interpolate(this.z, fractionZ, other.z),
-      result);
+      result
+    );
   }
   /** Interpolate between points, then add a shift in the xy plane by a fraction of the XY projection perpendicular. */
   public interpolatePerpendicularXY(fraction: number, pointB: Point3d, fractionXYPerp: number, result?: Point3d): Point3d {
@@ -573,14 +589,16 @@ export class Point3d extends XYZ {
     return Point3d.create(this.x + vector.x * scaleFactor,
       this.y + vector.y * scaleFactor,
       this.z + vector.z * scaleFactor,
-      result);
+      result
+    );
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB */
   public plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYZ, scalarB: number, result?: Point3d): Point3d {
     return Point3d.create(this.x + vectorA.x * scalarA + vectorB.x * scalarB,
       this.y + vectorA.y * scalarA + vectorB.y * scalarB,
       this.z + vectorA.z * scalarA + vectorB.z * scalarB,
-      result);
+      result
+    );
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB + vectorC * scalarC */
   public plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Point3d): Point3d {
@@ -588,7 +606,8 @@ export class Point3d extends XYZ {
       this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC,
       this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC,
       this.z + vectorA.z * scalarA + vectorB.z * scalarB + vectorC.z * scalarC,
-      result);
+      result
+    );
   }
   /**
    * Return a point that is scaled from the source point.
@@ -902,8 +921,31 @@ export class Vector3d extends XYZ {
     this.z *= a;
     return true;
   }
-  /** Return the fractional projection of spaceVector onto this */
+  /** Create a normalized vector from the inputs.
+   * @param result optional result
+   * @returns undefined if and only if normalization fails
+  */
+  public static createNormalized(x: number = 0, y: number = 0, z: number = 0, result?: Vector3d): Vector3d | undefined {
+    if (undefined === result)
+      result = Vector3d.create(x, y, z);
+    else
+      result.set(x, y, z);
+    if (result.normalizeInPlace())
+      return result;
+    return undefined;
+  }
+  /**
+   * Return fractional projection of target vector onto this
+   * * It's returning the signed projection magnitude divided by the target magnitude. In other words,
+   * it's returning the length of the projection as a fraction of the target magnitude.
+   * @param target the target vector
+   * @param defaultFraction the returned value in case magnitude square of target vector is very small
+   * */
   public fractionOfProjectionToVector(target: Vector3d, defaultFraction: number = 0): number {
+    /*
+     * projection length is (this.target)/||target||
+     * but here we return (this.target)/||target||^2
+     */
     const numerator = this.dotProduct(target);
     const denominator = target.magnitudeSquared();
     if (denominator < Geometry.smallMetricDistanceSquared)
@@ -931,6 +973,17 @@ export class Vector3d extends XYZ {
     result.z = this.z;
     return result;
   }
+  /** Return a vector same length as this but rotated 90 degrees clockwise */
+  public rotate90CWXY(result?: Vector3d): Vector3d {
+    result = result ? result : new Vector3d();
+    // save x,y to allow aliasing ("this" can be passed to the function as "result")
+    const xx: number = this.x;
+    const yy: number = this.y;
+    result.x = yy;
+    result.y = -xx;
+    result.z = this.z;
+    return result;
+  }
   /**
    * Return a vector which is in the xy plane, perpendicular ot the xy part of this vector, and of unit length.
    * * If the xy part is 00, the return is the rotated (but not normalized) xy parts of this vector.
@@ -940,6 +993,7 @@ export class Vector3d extends XYZ {
     result = result ? result : new Vector3d();
     const xx: number = this.x;
     const yy: number = this.y;
+    // save x,y to allow aliasing ("this" can be passed to the function as "result")
     result.x = -yy;
     result.y = xx;
     result.z = 0.0;
@@ -1000,6 +1054,10 @@ export class Vector3d extends XYZ {
    */
   public interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
+    /*
+     * For best last-bit behavior, if fraction is below 0.5, use this as base point.
+     * If above 0.5, use vectorB as base point.
+     */
     if (fraction <= 0.5) {
       result.x = this.x + fraction * (vectorB.x - this.x);
       result.y = this.y + fraction * (vectorB.y - this.y);
@@ -1161,7 +1219,8 @@ export class Vector3d extends XYZ {
     return true;
   }
   /**
-   * Compute cross product with `vectorB`.
+   * Compute cross product with `vectorB`
+   * * cross product vector will have the given length.
    * @param vectorB second vector for cross product.
    * @param productLength desired length of result vector.
    * @param result optional preallocated vector
@@ -1308,7 +1367,7 @@ export class Vector3d extends XYZ {
  * * The returned angle is always positive and no larger than 180 degrees (PI radians)
  * * The returned angle is "in the plane containing the two vectors"
  * * Use `planarRadiansTo` and `signedRadiansTo` to take have angle measured in specific plane.
- * @param vectorB target vector of rotation.
+ * @param vectorB target vector.
  */
   public radiansTo(vectorB: Vector3d): number {
     // ||axb|| = ||a|| ||b|| |sin(t)| and a.b = ||a|| ||b|| cos(t) ==>
@@ -1320,7 +1379,7 @@ export class Vector3d extends XYZ {
    * * The returned angle is always positive and no larger than 180 degrees (PI radians)
    * * The returned angle is "in the plane containing the two vectors"
    * * Use `planarAngleTo` and `signedAngleTo` to take have angle measured in specific plane.
-   * @param vectorB target vector of rotation.
+   * @param vectorB target vector.
    */
   public angleTo(vectorB: Vector3d): Angle {
     return Angle.createRadians(this.radiansTo(vectorB));
@@ -1340,7 +1399,7 @@ export class Vector3d extends XYZ {
    * * The returned angle can range from negative 180 degrees (negative PI radians) to positive 180
    * * degrees (positive PI radians), not closed on the negative side.
    * * Use `planarAngleTo` and `signedAngleTo` to take have angle measured in other planes.
-   * @param vectorB target vector of rotation.
+   * @param vectorB target vector.
    */
   public angleToXY(vectorB: Vector3d): Angle {
     return Angle.createAtan2(this.crossProductXY(vectorB), this.dotProductXY(vectorB));
@@ -1352,7 +1411,8 @@ export class Vector3d extends XYZ {
  * * The returned angle is "in the plane containing the two vectors"
  * * The returned angle has the same sign as vectorW dot product (thisVector cross vectorB)
  * * vectorW does not have to be perpendicular to the plane.
- * @param vectorB target vector of rotation.
+ * * Use planarRadiansTo to measure the angle between vectors that are projected to another plane.
+ * @param vectorB target vector.
  * @param vectorW distinguishes between the sides of the plane.
  */
   public signedRadiansTo(vectorB: Vector3d, vectorW: Vector3d): number {
@@ -1371,34 +1431,39 @@ export class Vector3d extends XYZ {
  * * The returned angle is "in the plane containing the two vectors"
  * * `vectorW` distinguishes between the sides of the plane, but does not have to be perpendicular.
  * * The returned angle has the same sign as vectorW dot product (thisVector cross vectorB)
- * @param vectorB target vector of rotation.
+ * * Use planarRadiansTo to measure the angle between vectors that are projected to another plane.
+ * @param vectorB target vector.
  * @param vectorW distinguishes between the sides of the plane.
  */
   public signedAngleTo(vectorB: Vector3d, vectorW: Vector3d): Angle {
     return Angle.createRadians(this.signedRadiansTo(vectorB, vectorW));
   }
   /**
-   * Return the (radians as a simple number, not strongly typed Angle) radians from this vector to vectorB.
+   * Return the radians (as a simple number, not strongly typed Angle) from this vector to vectorB,
+   * measured between their projections to the plane with the given normal.
    * * The returned angle can be positive or negative, with magnitude no larger than PI radians
-   * * Use signedRadiansTo` to take have angle measured in other planes.
-   * @param vectorB target vector of rotation.
-   * @param planeNormal a normal vector to the plane.
+   * @param vectorB target vector
+   * @param planeNormal the normal vector to the plane.
    */
   public planarRadiansTo(vectorB: Vector3d, planeNormal: Vector3d): number {
     const square = planeNormal.dotProduct(planeNormal);
     if (square === 0.0)
       return 0.0;
     const factor = 1.0 / square;
-    const projection0: Vector3d = this.plusScaled(planeNormal, -this.dotProduct(planeNormal) * factor);
-    const projection1: Vector3d = vectorB.plusScaled(planeNormal, -vectorB.dotProduct(planeNormal) * factor);
-    return projection0.signedRadiansTo(projection1, planeNormal);
+    /*
+     * projection of vector 'v' on normal 'n' is given by vProj = [dot(v,n)/||n||^2]*n
+     * and projection of 'v' on the plane is given by 'v - vProj'
+    */
+    const thisProj: Vector3d = this.plusScaled(planeNormal, -this.dotProduct(planeNormal) * factor);
+    const vectorBProj: Vector3d = vectorB.plusScaled(planeNormal, -vectorB.dotProduct(planeNormal) * factor);
+    return thisProj.signedRadiansTo(vectorBProj, planeNormal);
   }
   /**
-   * Return the (as strongly typed Angle) Angle from this vector to vectorB.
+   * Return the angle (as strongly typed Angle) from this vector to vectorB,
+   * measured between their projections to the plane with the given normal.
    * * The returned angle can range from negative PI to positive PI (not closed on negative side)
-   * * Use signedRadiansTo` to take have angle measured in other planes.
-   * @param vectorB target vector of rotation.
-   * @param planeNormal a normal vector to the plane.
+   * @param vectorB target vector.
+   * @param planeNormal the normal vector to the plane.
    */
   public planarAngleTo(vectorB: Vector3d, planeNormal: Vector3d): Angle {
     return Angle.createRadians(this.planarRadiansTo(vectorB, planeNormal));
