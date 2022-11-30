@@ -16,6 +16,7 @@ import {
   TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("TileAdmin", () => {
   describe("memory limit configuration", () => {
@@ -258,7 +259,7 @@ describe("TileAdmin", () => {
     let imodel2: IModelConnection;
 
     beforeEach(async () => {
-      await MockRender.App.startup();
+      await MockRender.App.startup({ localization: new EmptyLocalization() });
       IModelApp.stopEventLoop();
       imodel1 = createBlankConnection("imodel1");
       imodel2 = createBlankConnection("imodel2");

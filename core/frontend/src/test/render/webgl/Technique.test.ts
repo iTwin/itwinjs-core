@@ -16,6 +16,7 @@ import { Target } from "../../../render/webgl/Target";
 import { TechniqueId } from "../../../render/webgl/TechniqueId";
 import { ViewportQuadGeometry } from "../../../render/webgl/CachedGeometry";
 import { Logger, LogLevel } from "@itwin/core-bentley";
+import { EmptyLocalization } from "@itwin/core-common";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
@@ -55,7 +56,10 @@ describe("Techniques", () => {
     const useWebGL2 = webGLVersion === 2;
     describe(`WebGL ${webGLVersion}`, () => {
       before(async () => {
-        await IModelApp.startup({ renderSys: { useWebGL2, errorOnMissingUniform: true } });
+        await IModelApp.startup({
+          renderSys: { useWebGL2, errorOnMissingUniform: true },
+          localization: new EmptyLocalization()
+        });
         Logger.initializeToConsole();
         Logger.setLevel("core-frontend.Render", LogLevel.Error);
       });
@@ -106,6 +110,7 @@ describe("Techniques", () => {
               errorOnMissingUniform: true,
               disabledExtensions: [disabledExtension],
             },
+            localization: new EmptyLocalization()
           });
           Logger.initializeToConsole();
           Logger.setLevel("core-frontend.Render", LogLevel.Error);
@@ -116,7 +121,10 @@ describe("Techniques", () => {
         if (disabledExtension) {
           // Reset render system to previous state
           await IModelApp.shutdown();
-          await IModelApp.startup({ renderSys: { useWebGL2: false, errorOnMissingUniform: true } });
+          await IModelApp.startup({
+            renderSys: { useWebGL2: false, errorOnMissingUniform: true },
+            localization: new EmptyLocalization()
+          });
           Logger.initializeToConsole();
           Logger.setLevel("core-frontend.Render", LogLevel.Error);
         }

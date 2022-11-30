@@ -9,6 +9,7 @@ import { RenderSystem } from "../../../render/RenderSystem";
 import { IModelApp } from "../../../IModelApp";
 import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
+import { EmptyLocalization } from "@itwin/core-common";
 
 class TestSystem extends System {
   private static _simulateBug = true;
@@ -22,6 +23,7 @@ class TestSystem extends System {
     this._simulateBug = simulateBug;
     return IModelApp.startup({
       renderSys: this.create({ preserveShaderSourceCode: true }),
+      localization: new EmptyLocalization()
     });
   }
 }

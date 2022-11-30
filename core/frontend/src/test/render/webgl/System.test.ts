@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
+  EmptyLocalization,
   Gradient, ImageSource, ImageSourceFormat, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
@@ -74,6 +75,7 @@ describe("Instancing", () => {
       await IModelApp.startup({
         renderSys: renderSysOpts,
         tileAdmin: tileAdminProps,
+        localization: new EmptyLocalization()
       });
 
       expect(IModelApp.tileAdmin.enableInstancing).to.equal(expectEnabled);
@@ -113,6 +115,7 @@ describe("ExternalTextures", () => {
       await IModelApp.startup({
         renderSys: renderSysOpts,
         tileAdmin: tileAdminProps,
+        localization: new EmptyLocalization()
       });
 
       expect(IModelApp.tileAdmin.enableExternalTextures).to.equal(expectEnabled);
@@ -197,6 +200,7 @@ describe("System", () => {
     before(async () => {
       await IModelApp.startup({
         renderSys: TestSystem.create(),
+        localization: new EmptyLocalization()
       });
     });
 
@@ -371,7 +375,7 @@ describe("System", () => {
   describe("createRenderMaterial", () => {
     let iModel: IModelConnection;
     beforeEach(async () => {
-      await IModelApp.startup();
+      await IModelApp.startup({ localization: new EmptyLocalization() });
       iModel = createBlankConnection();
     });
 
@@ -522,7 +526,7 @@ describe("System", () => {
     const contextLossHandler = RenderSystem.contextLossHandler;
 
     beforeEach(async () => {
-      await IModelApp.startup();
+      await IModelApp.startup({ localization: new EmptyLocalization() });
     });
 
     afterEach(async () => {

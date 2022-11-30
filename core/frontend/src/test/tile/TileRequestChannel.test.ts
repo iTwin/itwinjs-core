@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { ServerTimeoutError } from "@itwin/core-common";
+import { EmptyLocalization, ServerTimeoutError } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { Viewport } from "../../Viewport";
@@ -300,7 +300,7 @@ describe("TileRequestChannel", () => {
   let imodel: IModelConnection;
 
   beforeEach(async () => {
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection();
   });
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
-import { ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
+import { ColorIndex, EmptyLocalization, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
 import { MeshArgs, Point3dList } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
@@ -48,7 +48,7 @@ class FakeTexture extends RenderTexture {
 }
 
 describe("VertexLUT", () => {
-  before(async () => MockRender.App.startup());
+  before(async () => MockRender.App.startup({ localization: new EmptyLocalization() }));
   after(async () => MockRender.App.shutdown());
 
   it("should produce correct VertexLUT.Params from quantized MeshArgs", () => {

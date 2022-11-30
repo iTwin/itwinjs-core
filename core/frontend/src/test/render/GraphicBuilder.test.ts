@@ -6,9 +6,9 @@ import { expect } from "chai";
 import {
   Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
 } from "@itwin/core-geometry";
-import { ColorByName, ColorIndex, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
+import { ColorByName, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
 import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
-import { IModelApp } from "../../IModelApp";
+import { IModelApp, IModelAppOptions } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
 import { RenderSystem } from "../../render/RenderSystem";
@@ -25,8 +25,12 @@ describe("GraphicBuilder", () => {
   let viewport: ScreenViewport;
 
   before(async () => {
-    // One test wants to confirm number of segment and silhouette edges produced - disable indexed edges.
-    await IModelApp.startup({ tileAdmin: { enableIndexedEdges: false } });
+    const opts: IModelAppOptions = {
+      // One test wants to confirm number of segment and silhouette edges produced - disable indexed edges.
+      tileAdmin: { enableIndexedEdges: false },
+      localization: new EmptyLocalization()
+    }
+    await IModelApp.startup(opts);
     imodel = createBlankConnection();
   });
 

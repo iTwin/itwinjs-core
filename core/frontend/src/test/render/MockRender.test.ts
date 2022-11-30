@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { EmptyLocalization } from "@itwin/core-common";
 import { expect } from "chai";
 import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../render/MockRender";
@@ -20,7 +21,7 @@ class MySystem extends MockRender.System {
 describe("MockRender", () => {
   before(async () => {
     MockRender.App.systemFactory = () => new MySystem();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => MockRender.App.shutdown());

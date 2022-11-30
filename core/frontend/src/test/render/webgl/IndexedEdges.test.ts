@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
-import { ColorIndex, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, PolylineData, QPoint3dList } from "@itwin/core-common";
+import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, PolylineData, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
 import { VertexIndices } from "../../../render/primitives/VertexTable";
@@ -84,7 +84,10 @@ describe("IndexedEdgeParams", () => {
     });
 
     it("are not produced if unsupported by client device", async () => {
-      await IModelApp.startup({ renderSys: { useWebGL2: false } });
+      await IModelApp.startup({
+        renderSys: { useWebGL2: false },
+        localization: new EmptyLocalization()
+      });
       expect(IModelApp.renderSystem.supportsIndexedEdges).to.be.false;
       expect(IModelApp.tileAdmin.enableIndexedEdges).to.be.false;
 
@@ -98,7 +101,10 @@ describe("IndexedEdgeParams", () => {
     });
 
     it("are not produced if explicitly disabled by TileAdmin", async () => {
-      await IModelApp.startup({ tileAdmin: { enableIndexedEdges: false } });
+      await IModelApp.startup({
+        tileAdmin: { enableIndexedEdges: false },
+        localization: new EmptyLocalization()
+      });
       expect(IModelApp.renderSystem.supportsIndexedEdges).to.be.true;
       expect(IModelApp.tileAdmin.enableIndexedEdges).to.be.false;
 
@@ -114,7 +120,7 @@ describe("IndexedEdgeParams", () => {
 
   describe("when enabled", () => {
     before(async () => {
-      await IModelApp.startup();
+      await IModelApp.startup({ localization: new EmptyLocalization() });
     });
 
     after(async () => {

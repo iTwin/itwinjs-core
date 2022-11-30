@@ -8,6 +8,7 @@ import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { ClipStack } from "../../../render/webgl/ClipStack";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { IModelApp } from "../../../IModelApp";
+import { EmptyLocalization } from "@itwin/core-common";
 
 for (let i = 0; i < 2; i++) {
   let renderSys: RenderSystem.Options | undefined;
@@ -27,7 +28,10 @@ for (let i = 0; i < 2; i++) {
 
   describe(`ClipStack (${useFloat ? "floating point texture" : "encoded floats"})`, async () => {
     before(async () => {
-      await IModelApp.startup({ renderSys });
+      await IModelApp.startup({
+        renderSys,
+        localization: new EmptyLocalization()
+      });
     });
 
     after(async () => {
