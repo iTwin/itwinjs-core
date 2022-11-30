@@ -19,7 +19,7 @@ import { IPresentationTableDataProvider } from "./DataProvider";
 /**
  * Props that are injected to the TableWithUnifiedSelection HOC component.
  * @public
- * @deprecated used by [[tableWithUnifiedSelection]] which is deprecated
+ * @deprecated Used by [[tableWithUnifiedSelection]] which is deprecated
  */
 export interface TableWithUnifiedSelectionProps {
   /** The data provider used by the property grid. */
@@ -57,7 +57,7 @@ export interface TableWithUnifiedSelectionProps {
  * **Note:** it is required for the table to use [[PresentationTableDataProvider]]
  *
  * @public
- * @deprecated based on [Table]($components-react) component which is deprecated
+ * @deprecated Based on [Table]($components-react) component which is deprecated
  */
 export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableWithUnifiedSelectionProps> {
 
