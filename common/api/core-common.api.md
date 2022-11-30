@@ -5764,7 +5764,7 @@ export class NonUniformColor {
 
 // @beta
 export interface NormalMapParams {
-    flipY?: boolean;
+    greenDown?: boolean;
     normalMap?: RenderTexture;
     scale?: number;
 }
