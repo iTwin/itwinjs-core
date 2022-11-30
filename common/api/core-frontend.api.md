@@ -196,6 +196,7 @@ import { MonochromeMode } from '@itwin/core-common';
 import { Mutable } from '@itwin/core-bentley';
 import { NativeAppFunctions } from '@itwin/core-common';
 import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
+import { NormalMapParams } from '@itwin/core-common';
 import { ObservableSet } from '@itwin/core-bentley';
 import { OctEncodedNormal } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
@@ -3814,7 +3815,7 @@ export abstract class GltfReader {
     protected readonly _deduplicateVertices: boolean;
     defaultWrapMode: GltfWrapMode;
     // (undocumented)
-    protected findTextureMapping(id: string, isTransparent: boolean): TextureMapping | undefined;
+    protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined): TextureMapping | undefined;
     // (undocumented)
     getBufferView(json: {
         [k: string]: any;
@@ -6484,6 +6485,7 @@ export interface MaterialSpecularProps {
 // @public
 export interface MaterialTextureMappingProps {
     mode?: TextureMapping.Mode;
+    normalMapParams?: NormalMapParams;
     texture: RenderTexture;
     transform?: TextureMapping.Trans2x3;
     weight?: number;
@@ -9252,6 +9254,8 @@ export interface RenderTargetDebugControl {
     // (undocumented)
     displayDrapeFrustum: boolean;
     // (undocumented)
+    displayNormalMaps: boolean;
+    // (undocumented)
     displayRealityTilePreload: boolean;
     // (undocumented)
     displayRealityTileRanges: boolean;
@@ -10454,6 +10458,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly decorationsState: BranchState;
     // (undocumented)
     displayDrapeFrustum: boolean;
+    // (undocumented)
+    displayNormalMaps: boolean;
     // (undocumented)
     displayRealityTilePreload: boolean;
     // (undocumented)
