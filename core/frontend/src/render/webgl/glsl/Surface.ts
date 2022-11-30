@@ -513,7 +513,7 @@ function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: Is
             undefined !== params.geometry.materialInfo.textureMapping &&
             undefined !== params.geometry.materialInfo.textureMapping.normalMapParams) {
           normalMapScale = params.geometry.materialInfo.textureMapping.normalMapParams.scale ?? 1.0;
-          if (params.geometry.materialInfo.textureMapping.normalMapParams.flipY)
+          if (!params.geometry.materialInfo.textureMapping.normalMapParams.greenDown)
             normalMapScale = -normalMapScale;
         }
         uniform.setUniform1f(normalMapScale);

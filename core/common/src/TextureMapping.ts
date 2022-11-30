@@ -15,8 +15,8 @@ import { RenderTexture } from "./RenderTexture";
 export interface NormalMapParams {
   /** The texture to use as a normal map. If not present then the pattern map texture will be used as a normal map. */
   normalMap?: RenderTexture;
-  /** True if need to flip Y component of the normal map texture. */
-  flipY?: boolean;
+  /** True if this normal map has the green channel pointing down (+Y is down). */
+  greenDown?: boolean;
   /** Scale factor to strengthen or weaken the normal map. */
   scale?: number;
 }
