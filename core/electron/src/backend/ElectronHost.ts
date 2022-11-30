@@ -126,23 +126,25 @@ export class ElectronHost {
   }
 
   private static _openWindow(options?: ElectronHostWindowOptions) {
+    const webPreferences: WebPreferences & { nativeWindowOpen: true } = { // nativeWindowOpen was removed starting Electron 18
+      ...options?.webPreferences,
+
+      // These web preference variables should not be overriden by the ElectronHostWindowOptions
+      preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
+      experimentalFeatures: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
+      nativeWindowOpen: true,
+      nodeIntegrationInWorker: false,
+      nodeIntegrationInSubFrames: false,
+    };
+
     const opts: BrowserWindowConstructorOptions = {
       ...options,
       autoHideMenuBar: true,
       icon: this.appIconPath,
-      webPreferences: {
-        ...options?.webPreferences,
-
-        // These web preference variables should not be overriden by the ElectronHostWindowOptions
-        preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
-        experimentalFeatures: false,
-        nodeIntegration: false,
-        contextIsolation: true,
-        sandbox: true,
-        nativeWindowOpen: true,
-        nodeIntegrationInWorker: false,
-        nodeIntegrationInSubFrames: false,
-      } as WebPreferences, // nativeWindowOpen was removed starting Electron 18
+      webPreferences,
     };
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);
