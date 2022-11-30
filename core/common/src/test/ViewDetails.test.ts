@@ -90,6 +90,30 @@ describe("ViewDetails", () => {
     });
 
     it("should do nothing if equivalent clip is assigned", () => {
+      const details = new TestDetails();
+      expect(details.clipChanged).to.be.false;
+
+      details.clipVector = ClipVector.createEmpty();
+      expect(details.clipChanged).to.be.false;
+
+      details.clipVector = undefined;
+      expect(details.clipChanged).to.be.false;
+
+      const clip = ClipVector.fromJSON(clipProps);
+      details.clipVector = clip;
+      expect(details.clipChanged).to.be.true;
+
+      details.clipVector = clip;
+      expect(details.clipChanged).to.be.false;
+
+      details.clipVector = clip.clone();
+      expect(details.clipChanged).to.be.true;
+
+      details.clipVector = undefined;
+      expect(details.clipChanged).to.be.true;
+
+      details.clipVector = undefined;
+      expect(details.clipChanged).to.be.false;
     });
 
     it("does not save empty clip vector in JSON", () => {
