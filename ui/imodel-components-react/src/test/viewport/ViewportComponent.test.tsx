@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@itwin/core-geometry";
-import { Frustum, SpatialViewDefinitionProps } from "@itwin/core-common";
+import { EmptyLocalization, Frustum, SpatialViewDefinitionProps } from "@itwin/core-common";
 import {
   CategorySelectorState, DisplayStyle3dState, EntityState, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ScreenViewport,
   SpatialViewState, StandardViewId, TentativePoint, ViewManager, Viewport, ViewRect, ViewState,
@@ -64,7 +64,7 @@ describe("ViewportComponent", () => {
     });
     ViewportComponentEvents.terminate();
     await TestUtils.initializeUiIModelComponents();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

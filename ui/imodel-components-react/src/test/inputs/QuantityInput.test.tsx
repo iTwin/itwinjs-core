@@ -10,6 +10,7 @@ import { IModelApp, MockRender, QuantityType } from "@itwin/core-frontend";
 import { QuantityInput } from "../../imodel-components-react/inputs/QuantityInput";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { TestUtils } from "../TestUtils";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("QuantityInput", () => {
   const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;
@@ -21,7 +22,7 @@ describe("QuantityInput", () => {
       get: () => requestNextAnimation,
     });
     await TestUtils.initializeUiIModelComponents();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {
