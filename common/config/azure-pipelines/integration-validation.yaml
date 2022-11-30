@@ -1,4 +1,4 @@
-# iTwin.js Core Integration Validation Build
+# iModel.js Core Integration Validation Build
 #
 # This integration test job currently runs on all supported operating systems and node versions of iTwin.js.
 # Runs against master on a weekly schedule, in the future this should be a required check before bumping versions.
@@ -14,13 +14,12 @@ schedules:
     - master
 
 variables:
-  - group: iTwin.js non-secret config variables
-  - group: iTwin.js Integration Test Users
+  - group: iModel.js non-secret config variables
+  - group: iModel.js Integration Test Users
 
 jobs:
   - job: Integration_Tests_Full
     strategy:
-      maxParallel: 3
       matrix:
         Linux_node_12_7:
           imageName: ubuntu-latest
