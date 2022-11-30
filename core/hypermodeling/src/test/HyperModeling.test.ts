@@ -41,7 +41,7 @@ describe("Package initialization", () => {
 
 describe("Package configuration", () => {
   before(async () => {
-    await IModelApp.startup({ localization: new EmptyLocalization() });
+    await IModelApp.startup();
     await HyperModeling.initialize();
   });
 
