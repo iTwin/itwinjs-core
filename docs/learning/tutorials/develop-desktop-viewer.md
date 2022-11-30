@@ -24,7 +24,7 @@
   10. Enter **Post logout Redirect URI**: `http://localhost:3000`.
   11. Click the **Save** button
 
-Once your new application is saved a client ID is generated, add the client ID and redirect uri to the the following variables in the `.env` file within the application's root directory: `ITWIN_VIEWER_CLIENT_ID` and `ITWIN_VIEWER_REDIRECT_URI`.
+Once your new application is saved and a client ID is generated, add the client ID and redirect uri to the following variables in the `.env` file within the application's root directory: `ITWIN_VIEWER_CLIENT_ID` and `ITWIN_VIEWER_REDIRECT_URI`.
 
 - From a terminal at your application's root directory, `npm start`. This will serve the application with live reloading.
 
