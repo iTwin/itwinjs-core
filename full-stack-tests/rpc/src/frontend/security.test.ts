@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
@@ -18,7 +19,10 @@ describe("CSRF Protection (Enabled)", () => {
       await IModelApp.shutdown();
     }
 
-    await IModelApp.startup({ security: { csrfProtection: { enabled: true } } });
+    await IModelApp.startup({
+      security: { csrfProtection: { enabled: true } },
+      localization: new EmptyLocalization()
+    });
 
     const client = TestRpcInterface.getClient();
     await client.startCSRFTest();
@@ -39,7 +43,7 @@ describe("CSRF Protection (Disabled)", () => {
       await IModelApp.shutdown();
     }
 
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
 
     const client = TestRpcInterface.getClient();
     await client.startCSRFTest();
