@@ -9,9 +9,11 @@ import { ViewDetails } from "../ViewDetails";
 describe("ViewDetails", () => {
   describe("clipVector", () => {
     class TestDetails extends ViewDetails {
+      private _clipChanged = false;
+
       public constructor(clip?: ClipVectorProps) {
-        const jsonProps = clip ? { viewDetails: { clip } } : { };
-        super(jsonProps);
+        super(clip ? { viewDetails: { clip } } : { });
+        this.onClipVectorChanged.addListener(() => this._clipChanged = true);
       }
 
       public get storedClip(): ClipVector | undefined {
@@ -20,6 +22,12 @@ describe("ViewDetails", () => {
 
       public get storedClipProps(): ClipVectorProps | undefined {
         return this._json.clip;
+      }
+
+      public get clipChanged() {
+        const changed = this._clipChanged;
+        this._clipChanged = false;
+        return changed;
       }
     }
 
@@ -52,18 +60,52 @@ describe("ViewDetails", () => {
     });
 
     it("should raise event when changed", () => {
+      const details = new TestDetails();
+      expect(details.clipChanged).to.be.false;
+
+      details.clipVector = ClipVector.fromJSON(clipProps);
+      expect(details.clipChanged).to.be.true;
+      expect(details.clipChanged).to.be.false;
+
+      details.clipVector = undefined;
+      expect(details.clipChanged).to.be.true;
+
+      details.clipVector = ClipVector.fromJSON(clipProps);
+      expect(details.clipChanged).to.be.true;
+
+      details.clipVector = ClipVector.createEmpty();
+      expect(details.clipChanged).to.be.true;
     });
 
-    it("should do nothing if same clip is assigned", () => {
+    it("treats empty and undefined as equivalent", () => {
+      let details = new TestDetails();
+      expect(details.clipVector).to.be.undefined;
+      expect(details.storedClip).not.to.be.undefined;
+      expect(details.storedClip!.isValid).to.be.false;
+
+      details.clipVector = ClipVector.createEmpty();
+      expect(details.clipVector).to.be.undefined;
+      expect(details.storedClip).not.to.be.undefined;
+      expect(details.storedClip!.isValid).to.be.false;
     });
 
-    it("setter treats empty and undefined as equal", () => {
+    it("should do nothing if equivalent clip is assigned", () => {
     });
 
     it("does not save empty clip vector in JSON", () => {
+      const details = new TestDetails();
+      details.clipVector = ClipVector.createEmpty();
+      expect(details.storedClip).not.to.be.undefined;
+      expect(details.storedClipProps).to.be.undefined;
     });
 
     it("getter allocates on first call", () => {
+      const details = new TestDetails(clipProps);
+      expect(details.storedClip).to.be.undefined;
+      expect(details.storedClipProps).not.to.be.undefined;
+
+      expect(details.clipVector).not.to.be.undefined;
+      expect(details.storedClip).not.to.be.undefined;
     });
   });
 });
