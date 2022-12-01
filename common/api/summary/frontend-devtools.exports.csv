@@ -198,6 +198,7 @@ beta;ToggleDPIForLODTool
 beta;ToggleDrapeFrustumTool 
 beta;ToggleDrawingGraphicsTool 
 beta;ToggleFrustumSnapshotTool 
+beta;ToggleNormalMaps 
 beta;ToggleOSMBuildingDisplay 
 beta;TogglePrimitiveVisibilityTool 
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean

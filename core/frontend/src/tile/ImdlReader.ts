@@ -726,6 +726,7 @@ export class ImdlReader {
       worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
     };
 
+    // TODO: Need to extract normal map properties from json once they're sent by the backend.
     return new TextureMapping(texture, new TextureMapping.Params(paramProps));
   }
 
