@@ -7,11 +7,12 @@ import chaiSubset from "chai-subset";
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { buildPropertyFilter, PropertyFilterBuilder } from "../../components-react/filter-builder/FilterBuilder";
 import { PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup } from "../../components-react/filter-builder/FilterBuilderState";
 import { PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "../../components-react/filter-builder/Operators";
 import TestUtils from "../TestUtils";
+import { PropertyFilter } from "../../components-react/filter-builder/Types";
 
 chai.use(chaiSubset);
 
@@ -24,10 +25,80 @@ describe("PropertyFilterBuilder", () => {
     TestUtils.terminateUiComponents();
   });
 
-  it("call onFilterChanged with empty filter if rule is not setup", () => {
+  it("call onFilterChanged with filter after new rule is setup", async () => {
     const spy = sinon.spy();
-    render(<PropertyFilterBuilder properties={[]} onFilterChanged={spy} />);
-    expect(spy).to.be.calledOnceWith(undefined);
+    const { container, getByText, getByDisplayValue } = render(<PropertyFilterBuilder properties={[{ name: "propertyField1", displayLabel: "Prop1", typename: "boolean" }]} onFilterChanged={spy} />);
+    const propertySelector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
+    expect(propertySelector).to.not.be.null;
+    propertySelector?.focus();
+    fireEvent.click(getByText("Prop1"));
+    // wait until property is selected
+    await waitFor(() => getByDisplayValue("Prop1"));
+
+    expect(spy).to.be.calledOnceWith({
+      property: {
+        name: "propertyField1",
+        displayLabel: "Prop1",
+        typename: "boolean",
+      },
+      operator: 0,
+      value: undefined,
+    });
+  });
+
+  it("renders propertyFilterBuilder with single rule correctly", async () => {
+    const propertyFilter: PropertyFilter = {
+      property: {
+        name: "propertyField1",
+        displayLabel: "Prop1",
+        typename: "string",
+      },
+      operator: PropertyFilterRuleOperator.IsNull,
+      value: undefined,
+    };
+    const spy = sinon.spy();
+    const { container, queryByDisplayValue } = render(<PropertyFilterBuilder properties={[{ name: "propertyField1", displayLabel: "Prop1", typename: "string" }]} onFilterChanged={spy} initialFilter={propertyFilter} />);
+
+    const rules = container.querySelectorAll(".rule-property");
+    expect(rules.length).to.be.eq(1);
+    const rule1 = queryByDisplayValue("Prop1");
+    expect(rule1).to.not.be.null;
+  });
+
+  it("renders propertyFilterBuilder with multiple rules correctly", async () => {
+    const propertyFilter: PropertyFilter = {
+      operator: PropertyFilterRuleGroupOperator.And,
+      rules: [{
+        operator: PropertyFilterRuleGroupOperator.And,
+        rules: [{
+          property: {
+            name: "propertyField1",
+            displayLabel: "Prop1",
+            typename: "string",
+          },
+          operator: PropertyFilterRuleOperator.IsNull,
+          value: undefined,
+        },
+        {
+          property: {
+            name: "propertyField2",
+            displayLabel: "Prop2",
+            typename: "string",
+          },
+          operator: PropertyFilterRuleOperator.IsNull,
+          value: undefined,
+        }],
+      }],
+    };
+    const spy = sinon.spy();
+    const { container, queryByDisplayValue } = render(<PropertyFilterBuilder properties={[{ name: "propertyField1", displayLabel: "Prop1", typename: "string" }, { name: "propertyField2", displayLabel: "Prop2", typename: "string" }]} onFilterChanged={spy} initialFilter={propertyFilter} />);
+
+    const rules = container.querySelectorAll(".rule-property");
+    expect(rules.length).to.be.eq(2);
+    const rule1 = queryByDisplayValue("Prop1");
+    expect(rule1).to.not.be.null;
+    const rule2 = queryByDisplayValue("Prop2");
+    expect(rule2).to.not.be.null;
   });
 
   it("marks rule group as active on mouse over", () => {

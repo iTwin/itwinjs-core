@@ -46,11 +46,12 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
   }, [descriptor, onInstanceFilterChanged, filteringProps.selectedClasses]);
 
   const contextValue = useFilterBuilderNavigationPropertyEditorContext(imodel, descriptor);
+  const [initialPropertyFilter] = React.useState(convertPresentationFilterToPropertyFilter(descriptor, initialFilter?.filter));
 
   return <navigationPropertyEditorContext.Provider value={contextValue}>
     <InstanceFilterBuilder
       {...filteringProps}
-      initialFilter={initialFilter ? convertPresentationFilterToPropertyFilter(descriptor, initialFilter.filter) : undefined}
+      initialFilter={initialPropertyFilter}
       onFilterChanged={onFilterChanged}
       ruleGroupDepthLimit={ruleGroupDepthLimit}
     />

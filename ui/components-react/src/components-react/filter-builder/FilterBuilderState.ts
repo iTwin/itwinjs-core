@@ -118,8 +118,8 @@ export function isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRule
 }
 
 /** @alpha */
-export function usePropertyFilterBuilderState(initialState?: PropertyFilterBuilderState) {
-  const [state, setState] = React.useState<PropertyFilterBuilderState>(initialState ? initialState : () => ({
+export function usePropertyFilterBuilderState(initialFilter?: PropertyFilter) {
+  const [state, setState] = React.useState<PropertyFilterBuilderState>(initialFilter ? convertFilterToState(initialFilter) : () => ({
     rootGroup: createEmptyRuleGroup(),
   }));
   const [actions] = React.useState(() => new PropertyFilterBuilderActions(setState));
@@ -193,10 +193,7 @@ function getSingleRuleItem(filter: PropertyFilterRule, parentId: string) {
   };
 }
 
-/** @alpha */
-export function convertFilterToState(filter?: PropertyFilter): PropertyFilterBuilderState | undefined {
-  if (!filter)
-    return undefined;
+function convertFilterToState(filter: PropertyFilter): PropertyFilterBuilderState {
   const id = Guid.createValue();
   if (isPropertyFilterRuleGroup(filter)) {
     return {

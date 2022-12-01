@@ -112,15 +112,13 @@ describe("PresentationInstanceFilter", () => {
     imodelMock.reset();
   });
 
-  it("invokes 'onInstanceFilterChanged' without filter", async () => {
+  it("invokes 'onInstanceFilterChanged' with filter", async () => {
     const spy = sinon.spy();
     const { container, getByText, getByDisplayValue } = render(<PresentationInstanceFilterBuilder
       imodel={imodelMock.object}
       descriptor={descriptor}
       onInstanceFilterChanged={spy}
     />);
-    expect(spy).to.be.calledOnceWith(undefined);
-    spy.resetHistory();
 
     // select property
     const propertySelector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
@@ -152,44 +150,20 @@ describe("PresentationInstanceFilter", () => {
     );
   });
 
-  it("invokes 'onInstanceFilterChanged' with filter", async () => {
+  it("renders with initial filter correctly' ", async () => {
     const spy = sinon.spy();
-    const { container, getByText, getByDisplayValue } = render(<PresentationInstanceFilterBuilder
+    const { container, queryByDisplayValue } = render(<PresentationInstanceFilterBuilder
       imodel={imodelMock.object}
       descriptor={descriptor}
       onInstanceFilterChanged={spy}
       initialFilter={initialFilter}
     />);
-    expect(spy).to.be.calledOnceWith(initialFilter);
-    spy.resetHistory();
-
-    // select property
-    await waitFor(() => expect(container.querySelector<HTMLInputElement>(".rule-property .iui-input")?.hasAttribute("disabled")).to.be.false);
-    const propertySelector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
-    expect(propertySelector).to.not.be.null;
-    propertySelector?.focus();
-    fireEvent.click(getByText(propertiesField3.label));
-
-    // wait until property is changed
-    await waitFor(() => getByDisplayValue(propertiesField3.label));
-
-    expect(spy).to.be.calledWith({
-      filter: {
-        operator: PropertyFilterRuleGroupOperator.And,
-        conditions: [{
-          field: propertiesField3,
-          operator: PropertyFilterRuleOperator.IsNull,
-          value: undefined,
-        },
-        {
-          field: propertiesField2,
-          operator: PropertyFilterRuleOperator.IsNull,
-          value: undefined,
-        }],
-      },
-      usedClasses: [classInfo],
-    }
-    );
+    const rules = container.querySelectorAll(".rule-property");
+    expect(rules.length).to.be.eq(2);
+    const rule1 = queryByDisplayValue(propertiesField.label);
+    expect(rule1).to.not.be.null;
+    const rule2 = queryByDisplayValue(propertiesField2.label);
+    expect(rule2).to.not.be.null;
   });
 });
 

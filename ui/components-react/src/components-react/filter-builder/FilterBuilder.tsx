@@ -8,7 +8,6 @@ import { ActiveRuleGroupContext, PropertyFilterBuilderRuleGroupRenderer } from "
 import { PropertyFilterBuilderRuleOperatorProps } from "./FilterBuilderRuleOperator";
 import { PropertyFilterBuilderRuleValueProps } from "./FilterBuilderRuleValue";
 import {
-  convertFilterToState,
   isPropertyFilterBuilderRuleGroup, PropertyFilterBuilderActions, PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup,
   PropertyFilterBuilderRuleGroupItem, usePropertyFilterBuilderState,
 } from "./FilterBuilderState";
@@ -55,12 +54,15 @@ const ROOT_GROUP_PATH: string[] = [];
 /** @alpha */
 export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
   const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer, disablePropertySelection, initialFilter } = props;
-  const { state, actions } = usePropertyFilterBuilderState(convertFilterToState(initialFilter));
+  const { state, actions } = usePropertyFilterBuilderState(initialFilter);
   const rootRef = React.useRef<HTMLDivElement>(null);
 
+  const firstRender = React.useRef(true);
   const filter = React.useMemo(() => buildPropertyFilter(state.rootGroup), [state]);
   React.useEffect(() => {
-    onFilterChanged(filter);
+    if (!firstRender.current)
+      onFilterChanged(filter);
+    firstRender.current = false;
   }, [filter, onFilterChanged]);
 
   const contextValue = React.useMemo<PropertyFilterBuilderContextProps>(

@@ -13,7 +13,7 @@ import {
   convertPresentationFilterToPropertyFilter,
   createInstanceFilterPropertyInfos, createPresentationInstanceFilter, INSTANCE_FILTER_FIELD_SEPARATOR,
 } from "../../presentation-components/instance-filter-builder/Utils";
-import { PresentationInstanceFilter } from "../../presentation-components";
+import { PresentationInstanceFilter } from "../../presentation-components/instance-filter-builder/Types";
 
 function getPropertyDescriptionName(field: Field) {
   return `${INSTANCE_FILTER_FIELD_SEPARATOR}${field.name}`;

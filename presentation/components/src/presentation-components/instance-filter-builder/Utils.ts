@@ -13,7 +13,7 @@ import {
 } from "@itwin/presentation-common";
 import { createPropertyDescriptionFromFieldInfo } from "../common/ContentBuilder";
 import { findField } from "../common/Utils";
-import { InstanceFilterPropertyInfo, isPresentationInstanceFilterConditionGroup, PresentationInstanceFilter, PresentationInstanceFilterCondition } from "./Types";
+import { InstanceFilterPropertyInfo, isPresentationInstanceFilterConditionGroup, PresentationInstanceFilter, PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup } from "./Types";
 
 /** @alpha */
 export function createInstanceFilterPropertyInfos(descriptor: Descriptor): InstanceFilterPropertyInfo[] {
@@ -86,7 +86,7 @@ function createPropertyInfos(field: Field): InstanceFilterPropertyInfo[] {
   }
   // istanbul ignore else
   if (field.isPropertiesField()) {
-    return [createPropertyInfosFromPropertiesField(field)];
+    return [createPropertyInfoFromPropertiesField(field)];
   }
   // istanbul ignore next
   return [];
@@ -97,13 +97,13 @@ interface CategoryInfo {
   label?: string;
 }
 
-function getCategoryInfo(parentCategory: CategoryDescription, categoryInfo: CategoryInfo): CategoryInfo {
-  if (!parentCategory.parent)
+function getCategoryInfo(category: CategoryDescription, categoryInfo: CategoryInfo): CategoryInfo {
+  if (!category.parent)
     return categoryInfo;
-  return getCategoryInfo(parentCategory.parent,
+  return getCategoryInfo(category.parent,
     {
-      name: categoryInfo.name ? `${parentCategory.name}/${categoryInfo.name}` : `${parentCategory.name}`,
-      label: categoryInfo.label ? `${parentCategory.label} | ${categoryInfo.label}` : `${parentCategory.label}`,
+      name: categoryInfo.name ? `${category.name}/${categoryInfo.name}` : `${category.name}`,
+      label: categoryInfo.label ? `${category.label} | ${categoryInfo.label}` : `${category.label}`,
     });
 }
 
@@ -146,35 +146,36 @@ function getPrefixedFieldName(str: string, prefix: string) {
   return `${prefix}${FIELD_NAMES_SEPARATOR}${str}`;
 }
 
+function convertPresentationInstanceFilterCondition(filter: PresentationInstanceFilterCondition, descriptor: Descriptor) {
+  const field = descriptor.getFieldByName(filter.field.name, true);
+  if (!field || !field.isPropertiesField())
+    return undefined;
+  return {
+    property: createPropertyInfoFromPropertiesField(field).propertyDescription,
+    operator: filter.operator,
+    value: filter.value,
+  };
+}
+
+function convertPresentationInstanceFilterConditionGroup(filter: PresentationInstanceFilterConditionGroup, descriptor: Descriptor) {
+  const rules: PropertyFilter[] = [];
+  for (const condition of filter.conditions) {
+    const rule = convertPresentationFilterToPropertyFilter(descriptor, condition);
+    if (!rule)
+      return undefined;
+    rules.push(rule);
+  }
+  return {
+    operator: filter.operator,
+    rules,
+  };
+}
+
 /** @alpha */
 export function convertPresentationFilterToPropertyFilter(descriptor: Descriptor, filter?: PresentationInstanceFilter): PropertyFilter | undefined {
   if (!filter)
     return undefined;
-  return PresentationFilterToPropertyFilter(filter, descriptor);
-}
-
-/** @alpha */
-function presentationFilterToPropertyFilter(filter: PresentationInstanceFilter, descriptor: Descriptor): PropertyFilter | undefined {
-  if (isPresentationInstanceFilterConditionGroup(filter)) {
-    const rules: PropertyFilter[] = [];
-    for (const condition of filter.conditions) {
-      const rule = PresentationFilterToPropertyFilter(condition, descriptor);
-      if (!rule)
-        return undefined;
-      rules.push(rule);
-    }
-    return {
-      operator: filter.operator,
-      rules,
-    };
-  } else {
-    const field = descriptor.getFieldByName(filter.field.name, true);
-    if (!field || !field.isPropertiesField())
-      return undefined;
-    return {
-      property: createPropertyInfosFromPropertiesField(field).propertyDescription,
-      operator: filter.operator,
-      value: filter.value,
-    };
-  }
+  if (isPresentationInstanceFilterConditionGroup(filter))
+    return convertPresentationInstanceFilterConditionGroup(filter, descriptor);
+  return convertPresentationInstanceFilterCondition(filter, descriptor);
 }

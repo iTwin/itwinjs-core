@@ -7,13 +7,10 @@ import chaiSubset from "chai-subset";
 import { PropertyDescription, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 import { renderHook } from "@testing-library/react-hooks";
 import {
-  convertFilterToState,
-  isPropertyFilterBuilderRuleGroup,
-  PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup, PropertyFilterBuilderState, usePropertyFilterBuilderState,
+  PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup, usePropertyFilterBuilderState,
 } from "../../components-react/filter-builder/FilterBuilderState";
 import { PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "../../components-react/filter-builder/Operators";
 import TestUtils from "../TestUtils";
-import { PropertyFilter } from "../../components-react/filter-builder/Types";
 
 chai.use(chaiSubset);
 
@@ -35,29 +32,6 @@ describe("usePropertyFilterBuilderState", () => {
         groupId: state.rootGroup.id,
       }],
     });
-  });
-
-  it("initializes group with initial state", () => {
-    const initialState: PropertyFilterBuilderState = {
-      rootGroup: {
-        id: "groupId",
-        operator: PropertyFilterRuleGroupOperator.And,
-        items: [{
-          property: {
-            name: "propertyField1",
-            displayLabel: "Prop1",
-            typename: "string",
-          },
-          id: "testId",
-          groupId: "groupId",
-          operator: PropertyFilterRuleOperator.IsNull,
-        }],
-      },
-    };
-
-    const { result } = renderHook(() => usePropertyFilterBuilderState(initialState));
-    const { state } = result.current;
-    expect(state).to.be.eq(initialState);
   });
 
   it("adds rule to root group", () => {
@@ -375,63 +349,5 @@ describe("usePropertyFilterBuilderState", () => {
 
       expect(getNestingRule()).to.be.undefined;
     });
-  });
-});
-
-describe("conver to filter builder state", () => {
-  const property1: PropertyDescription = {
-    name: "propertyField1",
-    displayLabel: "Prop1",
-    typename: "string",
-  };
-  const property2: PropertyDescription = {
-    name: "propertyField2",
-    displayLabel: "Prop2",
-    typename: "string",
-  };
-
-  it("converts property filter with single rule to state correctly", () => {
-    const propertyFilter: PropertyFilter = {
-      property: property1,
-      operator: PropertyFilterRuleOperator.IsNull,
-      value: undefined,
-    };
-    const result = convertFilterToState(propertyFilter);
-    expect(result?.rootGroup.operator).to.be.eq(PropertyFilterRuleGroupOperator.And);
-    const item = result?.rootGroup.items[0];
-    expect(item && !isPropertyFilterBuilderRuleGroup(item)).to.be.true;
-    expect((item as PropertyFilterBuilderRule).property).to.be.eq(property1);
-    expect(item?.operator).to.be.eq(PropertyFilterRuleOperator.IsNull);
-  });
-
-  it("converts property filter with multiple rules to state correctly", () => {
-    const propertyFilter: PropertyFilter = {
-      operator: PropertyFilterRuleGroupOperator.And,
-      rules: [{
-        operator: PropertyFilterRuleGroupOperator.And,
-        rules: [{
-          property: property1,
-          operator: PropertyFilterRuleOperator.IsNull,
-          value: undefined,
-        },
-        {
-          property: property2,
-          operator: PropertyFilterRuleOperator.IsNull,
-          value: undefined,
-        }],
-      }],
-    };
-    const result = convertFilterToState(propertyFilter);
-    expect(result?.rootGroup.operator).to.be.eq(PropertyFilterRuleGroupOperator.And);
-    const item1 = result?.rootGroup.items[0];
-    expect(item1?.operator).to.be.eq(PropertyFilterRuleGroupOperator.And);
-    const item2 = (item1 as PropertyFilterBuilderRuleGroup).items[0];
-    expect(item2 && !isPropertyFilterBuilderRuleGroup(item2)).to.be.true;
-    expect((item2 as PropertyFilterBuilderRule).property).to.be.eq(property1);
-    expect(item2?.operator).to.be.eq(PropertyFilterRuleOperator.IsNull);
-    const item3 = (item1 as PropertyFilterBuilderRuleGroup).items[1];
-    expect(item3 && !isPropertyFilterBuilderRuleGroup(item3)).to.be.true;
-    expect((item3 as PropertyFilterBuilderRule).property).to.be.eq(property2);
-    expect(item3?.operator).to.be.eq(PropertyFilterRuleOperator.IsNull);
   });
 });
