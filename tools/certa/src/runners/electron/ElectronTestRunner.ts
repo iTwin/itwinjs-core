@@ -31,7 +31,6 @@ export class ElectronTestRunner {
       show: config.debug,
       webPreferences: {
         nodeIntegration: true,
-        sandbox: true,
         enableRemoteModule: true,
       },
     });
