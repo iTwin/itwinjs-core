@@ -146,7 +146,7 @@ describe("PresentationInstanceFilter", () => {
     );
   });
 
-  it("renders with initial filter correctly' ", async () => {
+  it("renders with initial filter", async () => {
     const spy = sinon.spy();
     const { container, queryByDisplayValue } = render(<PresentationInstanceFilterBuilder
       imodel={imodelMock.object}
