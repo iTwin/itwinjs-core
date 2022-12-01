@@ -68,7 +68,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/plant-custom-attributes-schema",

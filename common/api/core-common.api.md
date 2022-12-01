@@ -5762,6 +5762,13 @@ export class NonUniformColor {
     readonly isOpaque: boolean;
 }
 
+// @beta
+export interface NormalMapParams {
+    greenDown?: boolean;
+    normalMap?: RenderTexture;
+    scale?: number;
+}
+
 // @public
 export enum Npc {
     _000 = 0,
@@ -9074,6 +9081,8 @@ export class TextureMapping {
     constructor(tx: RenderTexture, params: TextureMapping.Params);
     // @internal (undocumented)
     computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
+    // @beta
+    normalMapParams?: NormalMapParams;
     readonly params: TextureMapping.Params;
     readonly texture: RenderTexture;
 }
@@ -9666,6 +9675,7 @@ export enum TypeOfChange {
     Geometry = 2,
     Hidden = 16,
     Indirect = 8,
+    Parent = 32,
     Placement = 4,
     Property = 1
 }
