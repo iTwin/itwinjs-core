@@ -2711,6 +2711,8 @@ export class HubMock {
         range?: ChangesetRange;
     }): Promise<ChangesetProps[]>;
     // (undocumented)
+    static queryCurrentOrPrecedingV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    // (undocumented)
     static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     // (undocumented)
     static queryV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
