@@ -1,5 +1,3 @@
-#! /usr/bin/env node
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -14,9 +12,9 @@ const path = require("path");
 // example usage
 // betools copy-assets --nodeModulesDir=../../../../
 
-const packageJsonDir = (argv.packageJsonDir === undefined) ? "." : argv.packageJsonDir;
-const nodeModulesDir = (argv.nodeModulesDir === undefined) ? "." : argv.nodeModulesDir;
-const destinationDir = (argv.destinationDir === undefined) ? "./lib/assets" : argv.destinationDir;
+const packageJsonDir = argv.packageJsonDir ?? ".";
+const nodeModulesDir = argv.nodeModulesDir ?? ".";
+const destinationDir = argv.destinationDir ?? "./lib/assets";
 
 // find all dependencies that should have their assets copied from
 // currently this logic will find only packages with the @itwin or @bentley scope
@@ -49,7 +47,7 @@ const copySync = (fromPath, toPath) => {
 // finds all applicable dependences with assets and copies them into the destination folder
 const copyBentleyPackageDepAssets = () => {
 	if (!fs.existsSync(destinationDir)) {
-		fs.mkdirSync(destinationDir);
+		fs.mkdirSync(destinationDir, { recursive: true });
 	}
 
 	// check for assets found in lib as well as lib/cjs
