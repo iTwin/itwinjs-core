@@ -19,42 +19,42 @@ const destinationDir = argv.destinationDir ?? "./lib/assets";
 // find all dependencies that should have their assets copied from
 // currently this logic will find only packages with the @itwin or @bentley scope
 const getBentleyPackageDeps = () => {
-	const packageJsonPath = `${packageJsonDir}/package.json`;
-	const packageJsonRaw = fs.readFileSync(packageJsonPath);
-	const packageJson = JSON.parse(packageJsonRaw);
-	const deps = new Set();
+  const packageJsonPath = `${packageJsonDir}/package.json`;
+  const packageJsonRaw = fs.readFileSync(packageJsonPath);
+  const packageJson = JSON.parse(packageJsonRaw);
+  const deps = new Set();
 
-	for (const packageName in packageJson.dependencies) {
-		if (packageName.includes("@itwin") || packageName.includes("@bentley")) {
-			deps.add(packageName);
-		}
-	}
+  for (const packageName in packageJson.dependencies) {
+    if (packageName.includes("@itwin") || packageName.includes("@bentley")) {
+      deps.add(packageName);
+    }
+  }
 
-	return Array.from(deps);
+  return Array.from(deps);
 }
 
 const copySync = (fromPath, toPath) => {
-	if (fs.existsSync(fromPath)) {
-		try {
-			fs.copySync(fromPath, toPath);
-			console.log(`successfully copied from ${fromPath} to ${toPath}`)
-		} catch (ex) {
-			console.error(`failed to copy from ${fromPath} to ${toPath}`, ex);
-		}
-	}
+  if (fs.existsSync(fromPath)) {
+    try {
+      fs.copySync(fromPath, toPath);
+      console.log(`successfully copied from ${fromPath} to ${toPath}`)
+    } catch (ex) {
+      console.error(`failed to copy from ${fromPath} to ${toPath}`, ex);
+    }
+  }
 }
 
 // finds all applicable dependences with assets and copies them into the destination folder
 const copyBentleyPackageDepAssets = () => {
-	if (!fs.existsSync(destinationDir)) {
-		fs.mkdirSync(destinationDir, { recursive: true });
-	}
+  if (!fs.existsSync(destinationDir)) {
+    fs.mkdirSync(destinationDir, { recursive: true });
+  }
 
-	// check for assets found in lib as well as lib/cjs
-	for (const target of getBentleyPackageDeps()) {
-		copySync(path.join(nodeModulesDir, "node_modules", target, "lib/assets"), destinationDir);
-		copySync(path.join(nodeModulesDir, "node_modules", target, "lib/cjs/assets"), destinationDir);
-	}
+  // check for assets found in lib as well as lib/cjs
+  for (const target of getBentleyPackageDeps()) {
+    copySync(path.join(nodeModulesDir, "node_modules", target, "lib/assets"), destinationDir);
+    copySync(path.join(nodeModulesDir, "node_modules", target, "lib/cjs/assets"), destinationDir);
+  }
 }
 
 copyBentleyPackageDepAssets();
