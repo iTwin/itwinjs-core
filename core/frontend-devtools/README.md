@@ -145,12 +145,14 @@ This package provides several keyins to control the display of background maps, 
 #### Specific map layer formats
 
 Several keyins enable attaching map layers of a particular format. Each takes the following arguments -- only the URL is required:
+
 * `URL` - The URL for the map layer.
 * `name` - The map layer name. (if not supplied the URL is used)
 * `username` - User Name (only required if credentials are required by server)
 * `password` - Password (only required if credentials are required by server)
 
 These keyins take the form `fdt attach <format> maplayer <arguments>` where `format` is one of the following:
+
 * `wms` - a very common OGC standard Web Map Service that produces images on demand.
 * `wmts` - a Web Map Tile Service that produces cached tiles.
 * `arcgis` - uses the ArcGIS REST API directly. The URL typically ends with "MapServer".
@@ -254,7 +256,7 @@ These keysins control the planar masking of reality models.
   * "symbology=0|1" where `1` indicates detailed symbology information should be included in the output;
   * "placement=0|1" where `1` indicates detailed geometric element placement should be included; and
   * "verbosity=0|1|2" controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note `verbosity=2` can produce megabytes of data for certain types of geometric primitives like large meshes.
-  * "refs=0|1" where `1` indicates that if the element is a geometry part, the output should include a list of all geometric elements which reference that geometry part. This is **extremely** inefficient and may take a very long time to process in iModels containing many geometric elements.
+  * "refs=0|1" where `1` indicates that if the element is a geometry part, the output should include a list of all geometric elements which reference that geometry part. This is __extremely__ inefficient and may take a very long time to process in iModels containing many geometric elements.
   * "modal=0|1" where `1` indicates the output should be displayed in a modal dialog.
   * "copy=0|1" where `1` indicates the output should be copied to the system clipboard.
   * "explodeparts=0|1" where `1` indicates that a summary of the geometry of each geometry part reference should also be output.
@@ -312,9 +314,9 @@ These keysins control the planar masking of reality models.
 * `fdt compile shaders` - Compile all un-compiled registered shader programs and report whether any errors occurred. Useful for testing/debugging platform-specific shader issues.
 * `fdt animation interval` - Changes the `IModelApp.animationInterval` settings. Specify milliseconds in non-negative milliseconds; or anything not parseable as an integer to disable the interval callback entirely.
 * `fdt query schedule script` - Queries the schedule script associated with the RenderTimeline or DisplayStyle element specified by Id. All arguments are optional:
-  - "id=<Id>": The Id of the element hosting the script. If omitted, obtains the Id from the schedule script applied to the active viewport.
-  - "action=<break|copy>": Specifies what to do after obtaining the script. "break" causes execution to pause in the debugger. "copy" (the default) copies the script JSON to the clipboard.
-  - "elementIds=<include|count|expand>": Specifies what to do with the list of element Ids in the script. By default, they are omitted.
+  * "id=<Id>": The Id of the element hosting the script. If omitted, obtains the Id from the schedule script applied to the active viewport.
+  * "action=<break|copy>": Specifies what to do after obtaining the script. "break" causes execution to pause in the debugger. "copy" (the default) copies the script JSON to the clipboard.
+  * "elementIds=<include|count|expand>": Specifies what to do with the list of element Ids in the script. By default, they are omitted.
     * "include": Include the Ids as they are stored in the script - possibly in compressed format.
     * "expand": Include the Ids, decompressing them if they are in compressed format.
     * "count": Replace each list of Ids with the number of Ids in that list.
@@ -349,3 +351,4 @@ These keysins control the planar masking of reality models.
 * `fdt aasamples <nSamples>` - Sets the number of antialias samples for the current viewport where nSamples is the number of samples to use; if 1 or less then antialiasing is turned off, if > 1 then antialiasing is turned on and it will attempt to use that many samples (restricted by the given hardware constraints)
 The following arguments can also be supplied:
   * `all`: (optional) sets it for all open viewports as well as all future viewports
+* `fdt toggle normalmaps` - toggles the display of normal maps.

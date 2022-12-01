@@ -2261,6 +2261,14 @@ export class ToggleFrustumSnapshotTool extends Tool {
 }
 
 // @beta
+export class ToggleNormalMaps extends RenderTargetDebugControlToggleTool {
+    // (undocumented)
+    get aspect(): DebugControlBoolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ToggleOSMBuildingDisplay extends Tool {
     // (undocumented)
     static get maxArgs(): number;
