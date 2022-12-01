@@ -43,7 +43,7 @@ describe("TableDataProvider", async () => {
 
   let imodel: IModelConnection;
   let instances: MeaningfulInstances;
-  let provider: PresentationTableDataProvider;
+  let provider: PresentationTableDataProvider; // eslint-disable-line deprecation/deprecation
 
   before(async () => {
     await initialize();
@@ -53,7 +53,7 @@ describe("TableDataProvider", async () => {
   });
 
   beforeEach(async () => {
-    provider = new PresentationTableDataProvider({ imodel, ruleset: RULESET, pageSize: 10 });
+    provider = new PresentationTableDataProvider({ imodel, ruleset: RULESET, pageSize: 10 }); // eslint-disable-line deprecation/deprecation
   });
 
   after(async () => {
@@ -119,7 +119,7 @@ describe("TableDataProvider", async () => {
     }
 
     it("returns row with merged cells from instances which have SameInstance relationshipMeaning and more than one value in it", async () => {
-      provider = new PresentationTableDataProvider({
+      provider = new PresentationTableDataProvider({ // eslint-disable-line deprecation/deprecation
         imodel,
         ruleset: {
           id: "test",

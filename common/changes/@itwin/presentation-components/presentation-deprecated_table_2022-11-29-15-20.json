@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Deprecated `PresentationTableDataProvider` and `Table` related code that uses deprecated `Table` component from `@itwin/components-react` package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}
