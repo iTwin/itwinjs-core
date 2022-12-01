@@ -10,6 +10,7 @@ import {
 import { SpecialKey, StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
 import { NumberInput, RectangleProps } from "@itwin/core-react";
 import { Button, Input, Select, SelectOption } from "@itwin/itwinui-react";
+import { ApplicationLayoutContext, ApplicationMode } from "../ApplicationLayout";
 
 function usePanelDef(location: StagePanelLocation) {
   const frontstageDef = useActiveFrontstageDef();
@@ -258,9 +259,19 @@ function WidgetInfo({
 }
 
 function FrontstageControls() {
+  const applicationLayout = React.useContext(ApplicationLayoutContext);
+  const newMode: ApplicationMode = applicationLayout?.mode === "app" ? "portal" : "app";
   return (
     <>
       <h2 style={{ gridColumnStart: 1, gridColumnEnd: 3 }}>Frontstage controls</h2>
+      {applicationLayout ? <>
+        <span>Application layout</span>
+        <div>
+          <Button onClick={() => {
+            applicationLayout.onChanged(newMode);
+          }}>setMode(&quot;{newMode}&quot;)</Button>
+        </div>
+      </> : null}
       <span>Frontstage layout</span>
       <div>
         <Button onClick={() => {
