@@ -363,6 +363,8 @@ export interface BackendHubAccess {
     queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
     queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
     queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
+    // @internal
+    queryCurrentOrPrecedingV2Checkpoint?: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
     // @internal
     queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
