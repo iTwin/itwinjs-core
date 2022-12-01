@@ -3,3 +3,4 @@
 
 ## half-angle using the dot products to find ellipse semi-axis
 ![>](./figs/Angle/ellipseHalfAngle.jpg)
+

@@ -390,16 +390,16 @@ export class AngleSweep implements BeJSONFunctions {
   public toJSON(): any {
     return [this.startDegrees, this.endDegrees];
   }
-  /** test if this and other angle sweeps match with radians tolerance.
+  /** test if this angle sweep and other angle sweep match with radians tolerance.
    * * Period shifts are allowed.
    */
   public isAlmostEqualAllowPeriodShift(other: AngleSweep): boolean {
     // We compare angle sweeps by checking if start angle and sweep match. We cannot compare start and end because for
     // example (0, 90) and (360, 90) have the same start (we allow period shift) and end but are not same angle sweeps.
     return Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians0, other._radians0)
-      && Angle.isAlmostEqualRadiansNoPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0);
+      && Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0);
   }
-  /** test if start angle and sweep match with radians tolerance.
+  /** test if this angle sweep and other angle sweep match with radians tolerance.
    * * Period shifts are not allowed.
    */
   public isAlmostEqualNoPeriodShift(other: AngleSweep): boolean {
