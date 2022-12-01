@@ -23,6 +23,8 @@ import { DiagnosticsProps } from "../common/Diagnostics";
 import { Page, PageContainer } from "../common/PageContainer";
 import { createLabelRecord, translate } from "../common/Utils";
 
+/* eslint-disable deprecation/deprecation */
+
 interface PromisedPage<TItem> extends Page<TItem> {
   promise?: Promise<void>;
 }
@@ -30,18 +32,21 @@ interface PromisedPage<TItem> extends Page<TItem> {
 /**
  * The default number of rows in a single page requested by [[PresentationTableDataProvider]]
  * @public
+ * @deprecated Used by [[PresentationTableDataProvider]] which is deprecated
  */
 export const TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20;
 
 /**
  * The default number of pages cached by [[PresentationTableDataProvider]]
  * @public
+ * @deprecated Used by [[PresentationTableDataProvider]] which is deprecated
  */
 export const TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5;
 
 /**
  * Interface for presentation rules-driven table data provider.
  * @public
+ * @deprecated Used by [[PresentationTableDataProvider]] which is deprecated
  */
 export type IPresentationTableDataProvider = ITableDataProvider & IContentDataProvider & {
   /** Get key of ECInstance that's represented by the supplied row */
@@ -51,6 +56,7 @@ export type IPresentationTableDataProvider = ITableDataProvider & IContentDataPr
 /**
  * Initialization properties for [[PresentationTableDataProvider]]
  * @public
+ * @deprecated Used by [[PresentationTableDataProvider]] which is deprecated
  */
 export interface PresentationTableDataProviderProps extends DiagnosticsProps {
   /** IModel to pull data from */
@@ -78,6 +84,7 @@ export interface PresentationTableDataProviderProps extends DiagnosticsProps {
 /**
  * Presentation Rules-driven table data provider.
  * @public
+ * @deprecated Based on [Table]($components-react) component which is deprecated
  */
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
   private _sortColumnKey: string | undefined;
@@ -193,8 +200,9 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
         direction: (this._sortDirection === UiSortDirection.Descending) ? SortDirection.Descending : SortDirection.Ascending,
       };
     }
-    if (this._filterExpression)
-      overrides.filterExpression = this._filterExpression;
+    if (this._filterExpression) {
+      overrides.fieldsFilterExpression = this._filterExpression;
+    }
     return overrides;
   }
 
@@ -390,7 +398,7 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>, sameI
     throw new PresentationError(PresentationStatus.InvalidArgument, "item.primaryKeys");
   }
   const { mergedFieldsCounts: mergedCellsCounts, updatedValues } = extractValues(item.values, Object.values(sameInstanceFieldsMap).map((field) => (field.name)));
-  const updatedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, updatedValues, item.displayValues, item.mergedFieldNames, item.extendedData); // eslint-disable-line deprecation/deprecation
+  const updatedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, updatedValues, item.displayValues, item.mergedFieldNames, item.extendedData);
 
   const key = JSON.stringify(item.primaryKeys[0]);
   if (descriptor.displayType === DefaultContentDisplayTypes.List) {

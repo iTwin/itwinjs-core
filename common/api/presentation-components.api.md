@@ -30,9 +30,9 @@ import { HierarchyUpdateRecord } from '@itwin/presentation-common';
 import { HighlightableTreeProps } from '@itwin/components-react';
 import { IContentVisitor } from '@itwin/presentation-common';
 import { Id64Arg } from '@itwin/core-bentley';
-import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
+import { InstanceFilterDefinition } from '@itwin/presentation-common';
 import { InstanceKey } from '@itwin/presentation-common';
 import { IPropertyDataProvider } from '@itwin/components-react';
 import { IPropertyValueRenderer } from '@itwin/components-react';
@@ -52,6 +52,7 @@ import { Paged } from '@itwin/presentation-common';
 import { PagedTreeNodeLoader } from '@itwin/components-react';
 import { PageOptions } from '@itwin/presentation-common';
 import { PageOptions as PageOptions_2 } from '@itwin/components-react';
+import { PrimitiveValue } from '@itwin/appui-abstract';
 import { ProcessFieldHierarchiesProps } from '@itwin/presentation-common';
 import { ProcessMergedValueProps } from '@itwin/presentation-common';
 import { ProcessPrimitiveValueProps } from '@itwin/presentation-common';
@@ -164,6 +165,9 @@ export interface ControlledPresentationTreeFilteringProps {
     nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
 }
 
+// @alpha (undocumented)
+export function convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise<InstanceFilterDefinition>;
+
 // @alpha
 export function createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined;
 
@@ -186,7 +190,7 @@ export function createPresentationInstanceFilter(descriptor: Descriptor, filter:
 // @internal (undocumented)
 export function createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription;
 
-// @public
+// @public @deprecated
 export class DataProvidersFactory {
     constructor(props?: DataProvidersFactoryProps);
     createSimilarInstancesTableDataProvider(propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord, props: Omit_2<PresentationTableDataProviderProps, "imodel" | "ruleset">): Promise<IPresentationTableDataProvider & {
@@ -194,7 +198,7 @@ export class DataProvidersFactory {
     }>;
 }
 
-// @public
+// @public @deprecated
 export interface DataProvidersFactoryProps {
     rulesetsFactory?: RulesetsFactory;
 }
@@ -207,7 +211,9 @@ export interface DiagnosticsProps {
     // @internal
     devDiagnostics?: {
         severity?: DiagnosticsLoggerSeverity;
-        perf?: boolean;
+        perf?: boolean | {
+            minimumDuration: number;
+        };
         backendVersion?: boolean;
         handler: ClientDiagnosticsHandler;
     };
@@ -367,6 +373,8 @@ export interface InstanceFilterBuilderProps {
     // (undocumented)
     classes: ClassInfo[];
     // (undocumented)
+    isDisabled?: boolean;
+    // (undocumented)
     onClassDeselected: (selectedClass: ClassInfo) => void;
     // (undocumented)
     onClassSelected: (selectedClass: ClassInfo) => void;
@@ -397,7 +405,7 @@ export interface InstanceFilterPropertyInfo {
     // (undocumented)
     propertyDescription: PropertyDescription;
     // (undocumented)
-    sourceClassIds: ClassId[];
+    sourceClassId: ClassId;
 }
 
 // @beta
@@ -424,7 +432,7 @@ export interface IPresentationLabelsProvider {
 // @public
 export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
 
-// @public
+// @public @deprecated
 export type IPresentationTableDataProvider = TableDataProvider & IContentDataProvider & {
     getRowKey: (row: RowItem) => InstanceKey;
 };
@@ -520,7 +528,7 @@ export interface PresentationInstanceFilterCondition {
     // (undocumented)
     operator: PropertyFilterRuleOperator;
     // (undocumented)
-    value?: PropertyValue;
+    value?: PrimitiveValue;
 }
 
 // @alpha (undocumented)
@@ -533,6 +541,12 @@ export interface PresentationInstanceFilterConditionGroup {
 
 // @alpha (undocumented)
 export function PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PresentationInstanceFilterPropertyProps {
+    // (undocumented)
+    instanceFilterPropertyInfo: InstanceFilterPropertyInfo;
+}
 
 // @public
 export class PresentationLabelsProvider implements IPresentationLabelsProvider {
@@ -582,7 +596,7 @@ export interface PresentationPropertyDataProviderProps extends DiagnosticsProps 
     ruleset?: string | Ruleset;
 }
 
-// @public
+// @public @deprecated
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
     constructor(props: PresentationTableDataProviderProps);
     get filterExpression(): string | undefined;
@@ -605,7 +619,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     get sortDirection(): SortDirection;
 }
 
-// @public
+// @public @deprecated
 export interface PresentationTableDataProviderProps extends DiagnosticsProps {
     cachedPagesCount?: number;
     displayType?: string;
@@ -742,16 +756,16 @@ export interface ReloadedHierarchyPart {
 // @internal (undocumented)
 export function reloadVisibleHierarchyParts(visibleNodes: VisibleTreeNodes, renderedItems: RenderedItemsRange, dataProvider: IPresentationTreeDataProvider): Promise<ReloadedHierarchyPart[]>;
 
-// @public
+// @public @deprecated
 export const TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5;
 
-// @public
+// @public @deprecated
 export const TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20;
 
-// @public
+// @public @deprecated
 export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React_2.ComponentType<P>): React_2.ComponentType<P & TableWithUnifiedSelectionProps>;
 
-// @public
+// @public @deprecated
 export interface TableWithUnifiedSelectionProps {
     dataProvider: IPresentationTableDataProvider;
     // @internal (undocumented)
@@ -841,15 +855,16 @@ export function useNavigationPropertyEditingContext(imodel: IModelConnection, da
 export function useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>, activeMatchIndex?: number): HighlightableTreeProps | undefined;
 
 // @alpha (undocumented)
-export function usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider, enableClassFiltering?: boolean): {
+export function usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection): {
     onPropertySelected: (property: PropertyDescription) => void;
     onClearClasses: () => void;
     onClassDeselected: (classInfo: ClassInfo) => void;
-    onClassSelected: (classInfo: ClassInfo) => void;
+    onClassSelected: (info: ClassInfo) => void;
     propertyRenderer: (name: string) => JSX.Element;
     properties: PropertyDescription[];
     classes: ClassInfo[];
     selectedClasses: ClassInfo[];
+    isDisabled: boolean;
 };
 
 // @public

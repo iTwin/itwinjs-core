@@ -8,7 +8,6 @@ import * as moq from "typemoq";
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
-import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 import { BeEvent } from "@itwin/core-bentley";
 import sinon from "sinon";
 import { join } from "path";
@@ -35,7 +34,6 @@ describe("default NativePlatform", () => {
     const TNativePlatform = createDefaultNativePlatform({
       id: faker.random.uuid(),
       taskAllocationsMap: {},
-      mode: PresentationManagerMode.ReadOnly,
       isChangeTrackingEnabled: false,
     });
     nativePlatform = new TNativePlatform();

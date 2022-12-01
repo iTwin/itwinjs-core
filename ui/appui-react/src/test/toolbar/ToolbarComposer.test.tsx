@@ -160,9 +160,9 @@ describe("<ToolbarComposer  />", async () => {
       return Frontstage1.stageId;
     }
 
-    public get frontstage(): React.ReactElement<FrontstageProps> {
+    public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
       return (
-        <Frontstage
+        <Frontstage // eslint-disable-line deprecation/deprecation
           id={this.id}
           defaultTool={CoreTools.selectElementCommand}
           contentGroup={TestUtils.TestContentGroup1}
@@ -208,7 +208,7 @@ describe("<ToolbarComposer  />", async () => {
     it("should render with specified items", async () => {
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
@@ -232,7 +232,7 @@ describe("<ToolbarComposer  />", async () => {
 
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={ToolbarHelper.createToolbarItemsFromItemDefs([tool2, group1, custom1])} />
@@ -245,7 +245,7 @@ describe("<ToolbarComposer  />", async () => {
 
       renderedComponent.rerender(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={ToolbarHelper.createToolbarItemsFromItemDefs([tool2a, tool2b])} />
@@ -272,7 +272,7 @@ describe("<ToolbarComposer  />", async () => {
 
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={ToolbarHelper.createToolbarItemsFromItemDefs([tool2, group1, custom1, tool2, group1, custom1])} />
@@ -304,7 +304,7 @@ describe("<ToolbarComposer  />", async () => {
     it("should render with specified items", async () => {
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
@@ -318,7 +318,7 @@ describe("<ToolbarComposer  />", async () => {
     it("should render", async () => {
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2])} />
@@ -330,7 +330,7 @@ describe("<ToolbarComposer  />", async () => {
     it("should render with specified items", async () => {
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
@@ -342,7 +342,7 @@ describe("<ToolbarComposer  />", async () => {
     it("should render with updated items", async () => {
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
@@ -353,7 +353,7 @@ describe("<ToolbarComposer  />", async () => {
       expect(renderedComponent.queryByTitle("Tool_Group")).not.to.be.null;
       renderedComponent.rerender(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, group1])} />
@@ -366,7 +366,7 @@ describe("<ToolbarComposer  />", async () => {
     it("sync event should not refresh if no items updated", () => {
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2])} />
@@ -387,7 +387,7 @@ describe("<ToolbarComposer  />", async () => {
 
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={items} />
@@ -410,7 +410,7 @@ describe("<ToolbarComposer  />", async () => {
       const fakeTimers = sinon.useFakeTimers();
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1])} />
@@ -430,11 +430,11 @@ describe("<ToolbarComposer  />", async () => {
       // new frontstage should trigger refresh
 
       /** Id for the Frontstage */
-      const oldProps: FrontstageProps = { id: "old", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+      const oldProps: FrontstageProps = { id: "old", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
       const oldStageDef = new FrontstageDef();
       await oldStageDef.initializeFromProps(oldProps);
 
-      const newProps: FrontstageProps = { id: "new", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+      const newProps: FrontstageProps = { id: "new", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
       const newStageDef = new FrontstageDef();
       await newStageDef.initializeFromProps(newProps);
 
@@ -453,7 +453,7 @@ describe("<ToolbarComposer  />", async () => {
 
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={items} />
@@ -480,7 +480,7 @@ describe("<ToolbarComposer  />", async () => {
 
       const renderedComponent = render(
         <Provider store={TestUtils.store}>
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
               orientation={ToolbarOrientation.Horizontal}
               items={[]} />

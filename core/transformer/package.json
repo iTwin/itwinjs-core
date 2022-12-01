@@ -1,12 +1,12 @@
 {
   "name": "@itwin/core-transformer",
-  "version": "3.5.0-dev.8",
+  "version": "3.6.0-dev.0",
   "description": "API for exporting an iModel's parts and also importing them into another iModel",
   "main": "lib/cjs/core-transformer.js",
   "typings": "lib/cjs/core-transformer",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 < 19.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s copy:test-assets",
@@ -36,11 +36,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^3.5.0-dev.8",
-    "@itwin/core-bentley": "workspace:^3.5.0-dev.8",
-    "@itwin/core-common": "workspace:^3.5.0-dev.8",
-    "@itwin/core-geometry": "workspace:^3.5.0-dev.8",
-    "@itwin/ecschema-metadata": "workspace:^3.5.0-dev.8"
+    "@itwin/core-backend": "workspace:^3.6.0-dev.0",
+    "@itwin/core-bentley": "workspace:^3.6.0-dev.0",
+    "@itwin/core-common": "workspace:^3.6.0-dev.0",
+    "@itwin/core-geometry": "workspace:^3.6.0-dev.0",
+    "@itwin/ecschema-metadata": "workspace:^3.6.0-dev.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -57,7 +57,7 @@
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.59",
+    "@types/node": "18.11.5",
     "@types/semver": "7.3.10",
     "@types/sinon": "^9.0.0",
     "chai": "^4.1.2",

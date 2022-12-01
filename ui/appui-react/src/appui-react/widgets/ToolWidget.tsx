@@ -25,7 +25,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase { // eslint-disable-line
   private _reactNode: React.ReactNode;
   private _backstageLabel = UiFramework.translate("buttons.openBackstageMenu");
 
-  constructor(props: ToolWidgetProps) {
+  constructor(props: ToolWidgetProps) { // eslint-disable-line deprecation/deprecation
     super(props);
 
     this._appButton = props.appButton;
@@ -66,7 +66,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase { // eslint-disable-line
  * @public
  * @deprecated use [ToolWidgetComposer]($appui-react) instead
  */
-export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
+export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps { // eslint-disable-line deprecation/deprecation
   button?: React.ReactNode;
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;

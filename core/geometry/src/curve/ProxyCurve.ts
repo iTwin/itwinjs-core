@@ -8,13 +8,14 @@
  */
 
 import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
+
+import type { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
+import type { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import type { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import type { Ray3d } from "../geometry3d/Ray3d";
+import type { Transform } from "../geometry3d/Transform";
+import type { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import type { Range1d, Range3d } from "../geometry3d/Range";
 import type { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import type { LineString3d } from "./LineString3d";
 import type { StrokeOptions } from "./StrokeOptions";
@@ -35,7 +36,7 @@ import type { StrokeOptions } from "./StrokeOptions";
  *
  * @public
  */
-export abstract class ProxyCurve extends CurvePrimitive{
+export abstract class ProxyCurve extends CurvePrimitive {
   public dispatchToGeometryHandler(handler: GeometryHandler) {
     return this._proxyCurve.dispatchToGeometryHandler(handler);
   }
@@ -120,5 +121,10 @@ export abstract class ProxyCurve extends CurvePrimitive{
   /** Implement by proxyCurve */
   public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
     return this._proxyCurve.constructOffsetXY(offsetDistanceOrOptions);
+  }
+
+  /** Implement by proxyCurve */
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return this._proxyCurve.projectedParameterRange(ray, lowHigh);
   }
 }

@@ -182,6 +182,7 @@ export class ByteStream {
     nextUint32s(numUint32s: number): Uint32Array;
     get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
+    get remainingLength(): number;
     reset(): void;
     rewind(numBytes: number): boolean;
 }
@@ -197,6 +198,7 @@ export enum ChangeSetStatus {
     ChangeTrackingNotEnabled = 90114,
     CorruptedChangeStream = 90115,
     CouldNotOpenDgnDb = 90131,
+    DownloadCancelled = 90138,
     FileNotFound = 90116,
     FileWriteError = 90117,
     HasLocalChanges = 90118,
@@ -1144,6 +1146,8 @@ export class Logger {
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logInfo: LogFunction | undefined;
+    // @internal (undocumented)
+    static logLevelChangedFn?: VoidFunction;
     static logTrace(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logTrace: LogFunction | undefined;
@@ -1275,6 +1279,9 @@ export class ObservableSet<T> extends Set<T> {
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
 
+// @public
+export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]>;
+
 // @beta
 export class OneAtATimeAction<T> {
     constructor(run: (...args: any[]) => Promise<T>, msg?: string);
@@ -1343,6 +1350,11 @@ export class PerfLogger implements IDisposable {
     // (undocumented)
     dispose(): void;
 }
+
+// @public
+export type PickAsyncMethods<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never;
+};
 
 // @public
 export class PriorityQueue<T> implements Iterable<T> {
@@ -1556,6 +1568,25 @@ export class Tracing {
 // @public
 export class TransientIdSequence {
     get next(): Id64String;
+}
+
+// @public
+export class TupleKeyedMap<K extends readonly any[], V> {
+    // (undocumented)
+    [Symbol.iterator](): IterableIterator<[K, V]>;
+    // (undocumented)
+    get [Symbol.toStringTag](): string;
+    constructor(entries?: readonly (readonly [K, V])[] | null);
+    // (undocumented)
+    clear(): void;
+    // (undocumented)
+    get(key: K): V | undefined;
+    // (undocumented)
+    has(key: K): boolean;
+    // (undocumented)
+    set(key: K, value: V): this;
+    // (undocumented)
+    get size(): number;
 }
 
 // @public

@@ -544,10 +544,18 @@ export abstract class ViewState extends ElementState {
     //
   }
 
-  /** @internal */
+  /** Capture a copy of this view's viewed volume.
+   * @see [[applyPose]] to apply the pose to this or another view.
+   * @public
+   * @extensions
+   */
   public abstract savePose(): ViewPose;
 
-  /** @internal */
+  /** Apply a pose to this view to change the viewed volume.
+   * @see [[savePose]] to capture the view's pose.
+   * @public
+   * @extensions
+   */
   public abstract applyPose(props: ViewPose): this;
 
   /** @internal */
@@ -1027,14 +1035,32 @@ export abstract class ViewState extends ElementState {
       newDelta.z = minimumDepth;
     }
 
-    const margin = options?.marginPercent;
-
     if (this.is3d() && this.isCameraOn) {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
       // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
       // the front or back of the view. For this reason, don't attempt to add any "margin" to camera views.
-    } else if (margin) {
+    } else if (undefined !== options?.paddingPercent) {
+      let left, right, top, bottom;
+      const padding = options.paddingPercent;
+      if (typeof padding === "number"){
+        left = right = top = bottom = padding;
+      } else {
+        left = padding.left ?? 0;
+        right = padding.right ?? 0;
+        top = padding.top ?? 0;
+        bottom = padding.bottom ?? 0;
+      }
+
+      const width = newDelta.x;
+      const height = newDelta.y;
+
+      newOrigin.x -= left * width;
+      newDelta.x += (right + left) * width;
+      newOrigin.y -= bottom * height;
+      newDelta.y += (top + bottom) * height;
+    } else if (options?.marginPercent) {
       // compute how much space we'll need for both of X and Y margins in root coordinates
+      const margin = options.marginPercent;
       const wPercent = margin.left + margin.right;
       const hPercent = margin.top + margin.bottom;
 
@@ -1415,17 +1441,20 @@ export abstract class ViewState3d extends ViewState {
     return -1 !== index ? this._modelClips[index] : undefined;
   }
 
-  /** @internal */
-  public savePose(): ViewPose { return new ViewPose3d(this); }
+  /** Capture a copy of the viewed volume and camera parameters. */
+  public savePose(): ViewPose3d { return new ViewPose3d(this); }
 
-  /** @internal */
-  public applyPose(val: ViewPose3d): this {
-    this._cameraOn = val.cameraOn;
-    this.setOrigin(val.origin);
-    this.setExtents(val.extents);
-    this.rotation.setFrom(val.rotation);
-    this.camera.setFrom(val.camera);
-    this._updateMaxGlobalScopeFactor();
+  /** @internal override */
+  public applyPose(val: ViewPose): this {
+    if (val instanceof ViewPose3d) {
+      this._cameraOn = val.cameraOn;
+      this.setOrigin(val.origin);
+      this.setExtents(val.extents);
+      this.rotation.setFrom(val.rotation);
+      this.camera.setFrom(val.camera);
+      this._updateMaxGlobalScopeFactor();
+    }
+
     return this;
   }
 
@@ -2267,14 +2296,17 @@ export abstract class ViewState2d extends ViewState {
   /** @internal */
   public isSpatialView(): this is SpatialViewState { return false; }
 
-  /** @internal */
-  public savePose(): ViewPose { return new ViewPose2d(this); }
+  /** Capture a copy of the viewed area. */
+  public savePose(): ViewPose2d { return new ViewPose2d(this); }
 
-  /** @internal */
-  public applyPose(val: ViewPose2d) {
-    this.setOrigin(val.origin);
-    this.setExtents(val.delta);
-    this.angle.setFrom(val.angle);
+  /** @internal override */
+  public applyPose(val: ViewPose) {
+    if (val instanceof ViewPose2d) {
+      this.setOrigin(val.origin);
+      this.setExtents(val.delta);
+      this.angle.setFrom(val.angle);
+    }
+
     return this;
   }
 

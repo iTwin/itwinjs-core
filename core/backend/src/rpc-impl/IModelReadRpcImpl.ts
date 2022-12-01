@@ -6,25 +6,84 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, CompressedId64Set, GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import {
+  AccessToken, assert, BeDuration, BentleyStatus, CompressedId64Set, GuidString, Id64, Id64String, IModelStatus, Logger,
+} from "@itwin/core-bentley";
 import {
   Code, CodeProps, CustomViewState3dCreatorOptions, CustomViewState3dProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps,
-  ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
+  ElementMeshRequestProps, ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel,
   IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps,
-  IModelRpcProps, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps,
-  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps,ViewStateProps,
+  IModelRpcProps, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps,
+  ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps, SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps,
+  ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
-import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import { Range3dProps } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
 import { ConcurrentQuery } from "../ConcurrentQuery";
 import { generateGeometrySummaries } from "../GeometrySummary";
 import { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
-import { RpcTrace } from "../RpcBackend";
+import { RpcTrace } from "../rpc/tracing";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
 import { ViewStateHydrator } from "../ViewStateHydrator";
+import { PromiseMemoizer } from "../PromiseMemoizer";
+
+interface ViewStateRequestProps {
+  accessToken: AccessToken;
+  tokenProps: IModelRpcProps;
+  options: CustomViewState3dCreatorOptions;
+}
+
+class ViewStateRequestMemoizer extends PromiseMemoizer<CustomViewState3dProps> {
+  private readonly _timeoutMs: number;
+  private static _instance?: ViewStateRequestMemoizer;
+
+  public static async perform(props: ViewStateRequestProps): Promise<CustomViewState3dProps> {
+    if (!this._instance)
+      this._instance = new ViewStateRequestMemoizer();
+
+    return this._instance.perform(props);
+  }
+
+  private constructor() {
+    const memoize = async (props: ViewStateRequestProps) => {
+      const db = await RpcBriefcaseUtility.findOpenIModel(props.accessToken, props.tokenProps);
+      const viewCreator = new CustomViewState3dCreator(db);
+      return viewCreator.getCustomViewState3dData(props.options);
+    };
+
+    const stringify = (props: ViewStateRequestProps) => {
+      const token = props.tokenProps;
+      const modelIds = props.options.modelIds;
+      return `${token.key}-${token.iTwinId}-${token.iModelId}-${token.changeset?.id}:${modelIds}`;
+    };
+
+    super(memoize, stringify);
+    this._timeoutMs = 20 * 1000;
+  }
+
+  private async perform(props: ViewStateRequestProps): Promise<CustomViewState3dProps> {
+    const memo = this.memoize(props);
+
+    // Rejections must be caught so that the memoization entry is deleted.
+    await BeDuration.race(this._timeoutMs, memo.promise).catch(() => undefined);
+
+    if (memo.isPending)
+      throw new RpcPendingResponse();
+
+    this.deleteMemoized(props);
+
+    if (memo.isFulfilled) {
+      assert(undefined !== memo.result);
+      return memo.result;
+    }
+
+    assert(memo.isRejected);
+    throw memo.error; // eslint-disable-line no-throw-literal
+  }
+}
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -38,9 +97,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getCustomViewState3dData(tokenProps: IModelRpcProps, options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const viewCreator = new CustomViewState3dCreator(iModelDb);
-    return viewCreator.getCustomViewState3dData(options);
+    const accessToken = RpcTrace.expectCurrentActivity.accessToken;
+    return ViewStateRequestMemoizer.perform({ accessToken, tokenProps, options });
   }
 
   public async hydrateViewState(tokenProps: IModelRpcProps, options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
@@ -63,6 +121,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     }
     return ConcurrentQuery.executeQueryRequest(iModelDb.nativeDb, request);
   }
+
   public async queryBlob(tokenProps: IModelRpcProps, request: DbBlobRequest): Promise<DbBlobResponse> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     if (iModelDb.isReadonly && request.usePrimaryConn === true) {
@@ -71,25 +130,18 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     }
     return ConcurrentQuery.executeBlobRequest(iModelDb.nativeDb, request);
   }
-  public async queryModelRanges(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<Range3dProps[]> {
-    const modelIds = new Set(modelIdsList);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const ranges: Range3dProps[] = [];
-    for (const id of modelIds) {
-      try {
-        ranges.push(iModelDb.nativeDb.queryModelExtents({ id }).modelExtents);
-      } catch (err: any) {
-        if ((err as IModelError).errorNumber === IModelStatus.NoGeometry) { // if there was no geometry, just return null range
-          ranges.push(new Range3d());
-          continue;
-        }
 
-        if (modelIds.size === 1)
-          throw err; // if they're asking for more than one model, don't throw on error.
-        continue;
-      }
-    }
-    return ranges;
+  public async queryModelRanges(tokenProps: IModelRpcProps, modelIds: Id64String[]): Promise<Range3dProps[]> {
+    const results = await this.queryModelExtents(tokenProps, modelIds);
+    if (results.length === 1 && results[0].status !== IModelStatus.Success)
+      throw new IModelError(results[0].status, "error querying model range");
+
+    return results.filter((x) => x.status === IModelStatus.Success).map((x) => x.extents);
+  }
+
+  public async queryModelExtents(tokenProps: IModelRpcProps, modelIds: Id64String[]): Promise<ModelExtentsProps[]> {
+    const iModel = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+    return iModel.models.queryExtents(modelIds);
   }
 
   public async getModelProps(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<ModelProps[]> {
@@ -186,7 +238,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getViewStateData(tokenProps: IModelRpcProps, viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    return iModelDb.views.getViewStateData(viewDefinitionId, options);
+    return iModelDb.views.getViewStateProps(viewDefinitionId, options);
   }
 
   public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> {
@@ -300,5 +352,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async queryTextureData(tokenProps: IModelRpcProps, textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
     const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return db.queryTextureData(textureLoadProps);
+  }
+
+  public async generateElementMeshes(iModelToken: IModelRpcProps, props: ElementMeshRequestProps): Promise<Uint8Array> {
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, iModelToken);
+    return db.nativeDb.generateElementMeshes(props);
   }
 }

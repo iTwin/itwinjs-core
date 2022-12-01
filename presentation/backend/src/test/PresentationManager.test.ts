@@ -16,10 +16,10 @@ import {
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
   FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
   HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
-  LabelDefinitionJSON,
-  MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
-  PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON,
-  SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  LabelDefinitionJSON, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError,
+  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo,
+  SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription,
+  VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
@@ -31,7 +31,7 @@ import {
 import { PRESENTATION_BACKEND_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
 import {
-  HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
+  HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps,
 } from "../presentation-backend/PresentationManager";
 import { getKeysForContentRequest } from "../presentation-backend/PresentationManagerDetail";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
@@ -91,10 +91,10 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -124,13 +124,13 @@ describe("PresentationManager", () => {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
           workerThreadsCount: testThreadsCount,
-          mode: PresentationManagerMode.ReadWrite,
           updatesPollInterval: 1,
           caching: {
             hierarchies: hierarchyCacheConfig,
             content: {
               size: 999,
             },
+            workerConnectionCacheSize: 123,
           },
           useMmap: 666,
           defaultFormats: {
@@ -145,10 +145,10 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: props.id,
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 999 },
-            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
+            workerConnectionCacheSize: 123,
             defaultFormats: {
               length: { unitSystems: [NativePresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) },
             },
@@ -164,10 +164,10 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -176,6 +176,7 @@ describe("PresentationManager", () => {
         const cacheConfig = {
           mode: HierarchyCacheMode.Disk,
           directory: faker.random.word(),
+          memoryCacheSize: 123,
         };
         const expectedConfig = { ...cacheConfig, directory: path.resolve(cacheConfig.directory) };
         using(new PresentationManager({ caching: { hierarchies: cacheConfig } }), (manager) => {
@@ -183,10 +184,10 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -200,10 +201,10 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -214,6 +215,7 @@ describe("PresentationManager", () => {
           disk: {
             mode: HierarchyCacheMode.Disk,
             directory: faker.random.word(),
+            memoryCacheSize: 456,
           },
         };
         const expectedConfig = {
@@ -224,10 +226,10 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -311,11 +313,11 @@ describe("PresentationManager", () => {
         });
       });
 
-      it("creates an `UpdateTracker` when in read-write mode, `updatesPollInterval` is specified and IPC host is available", () => {
+      it("creates an `UpdateTracker` when `updatesPollInterval` is specified and IPC host is available", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
         const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
         const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
-        using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
+        using(new PresentationManager({ addon: addon.object, updatesPollInterval: 123 }), (_) => {
           expect(stub).to.be.calledOnceWith(sinon.match({ pollInterval: 123 }));
           expect(tracker.dispose).to.not.be.called; // eslint-disable-line @typescript-eslint/unbound-method
         });
@@ -325,7 +327,7 @@ describe("PresentationManager", () => {
       it("doesn't create an `UpdateTracker` when IPC host is unavailable", () => {
         sinon.stub(IpcHost, "isValid").get(() => false);
         const stub = sinon.stub(UpdatesTracker, "create");
-        using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
+        using(new PresentationManager({ addon: addon.object, updatesPollInterval: 123 }), (_) => {
           expect(stub).to.not.be.called;
         });
       });

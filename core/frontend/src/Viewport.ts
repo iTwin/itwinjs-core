@@ -811,8 +811,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.changeView(newView, options); // switch this viewport to use new ViewState2d
 
     if (options && options.doFit) { // optionally fit view to the extents of the new model
-      const range = await this.iModel.models.queryModelRanges([baseModelId]);
-      this.zoomToVolume(Range3d.fromJSON(range[0]), options);
+      const range = await this.iModel.models.queryExtents([baseModelId]);
+      this.zoomToVolume(Range3d.fromJSON(range[0]?.extents), options);
     }
   }
 
@@ -1068,6 +1068,10 @@ export abstract class Viewport implements IDisposable, TileUser {
       removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
         this.synchWithView();
       }));
+
+      removals.push(this.iModel.onDisplayedExtentsExpansion.addListener(() => {
+        this.invalidateController();
+      }));
     }
   }
 
@@ -1096,6 +1100,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
+    removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
 
     removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {

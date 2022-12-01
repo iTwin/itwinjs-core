@@ -9,6 +9,7 @@ import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
+import { MobileMessenger } from "./FileOpen";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { signIn } from "./signIn";
 import { Surface } from "./Surface";
@@ -70,7 +71,7 @@ const getFrontendConfig = async (useRPC = false) => {
   };
   Object.assign(configuration, configurationOverrides);
 
-  console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
+  console.log("Configuration", configuration); // eslint-disable-line no-console
 };
 
 async function openFile(props: OpenIModelProps): Promise<IModelConnection> {
@@ -190,6 +191,10 @@ const dtaFrontendMain = async () => {
     if (undefined !== iModelName) {
       const writable = configuration.openReadWrite ?? false;
       iModel = await openFile({ fileName: iModelName, writable });
+      if (ProcessDetector.isMobileAppFrontend) {
+        // attempt to send message to mobile that the model was opened
+        MobileMessenger.postMessage("modelOpened", iModelName);
+      }
       setTitle(iModel);
     } else {
       const origStandalone = configuration.standalone;

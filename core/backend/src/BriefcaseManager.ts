@@ -67,7 +67,12 @@ export interface ToChangesetArgs extends TokenArg {
 /** Arguments for [[BriefcaseManager.pullAndApplyChangesets]]
  * @public
  */
-export type PullChangesArgs = ToChangesetArgs;
+export type PullChangesArgs = ToChangesetArgs & {
+  /** If present, a function called periodically during the download to indicate progress.
+   * @note return non-zero from this function to abort the download.
+   */
+  onProgress?: ProgressFunction;
+};
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
  * @public
@@ -199,8 +204,8 @@ export class BriefcaseManager {
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
    */
   public static async downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
-    const briefcaseId = arg.briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId(arg);
-    const fileName = arg.fileName ?? this.getFileName(arg as BriefcaseProps);
+    const briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId(arg);
+    const fileName = arg.fileName ?? this.getFileName({ ...arg, briefcaseId });
 
     if (IModelJsFs.existsSync(fileName))
       throw new IModelError(IModelStatus.FileAlreadyExists, `Briefcase "${fileName}" already exists`);
@@ -209,7 +214,15 @@ export class BriefcaseManager {
     const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ ...arg, version: IModelVersion.fromJSON(asOf) });
     const checkpoint: CheckpointProps = { ...arg, changeset };
 
-    await CheckpointManager.downloadCheckpoint({ localFile: fileName, checkpoint, onProgress: arg.onProgress });
+    try {
+      await CheckpointManager.downloadCheckpoint({ localFile: fileName, checkpoint, onProgress: arg.onProgress });
+    } catch (error: unknown) {
+      if (arg.accessToken && arg.briefcaseId === undefined)
+        await this.releaseBriefcase(arg.accessToken, { briefcaseId, iModelId: arg.iModelId });
+
+      throw error;
+    }
+
     const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
     const response: LocalBriefcaseProps = {
       fileName,
@@ -380,7 +393,7 @@ export class BriefcaseManager {
   }
 
   /** @internal */
-  public static async pullAndApplyChangesets(db: IModelDb, arg: ToChangesetArgs): Promise<void> {
+  public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
     if (!db.isOpen || db.nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
 
@@ -396,6 +409,7 @@ export class BriefcaseManager {
       iModelId: db.iModelId,
       range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex }, // eslint-disable-line @typescript-eslint/no-non-null-assertion
       targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId),
+      progressCallback: arg.onProgress,
     });
 
     if (changesets.length === 0)

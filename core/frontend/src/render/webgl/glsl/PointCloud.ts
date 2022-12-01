@@ -17,6 +17,7 @@ import { addModelViewProjectionMatrix } from "./Vertex";
 import { addViewportTransformation } from "./Viewport";
 import { addThematicDisplay } from "./Thematic";
 import { addTexture } from "./Surface";
+import { assignFragColor } from "./Fragment";
 
 // Revert components if color format is BGR instead of RGB.
 const computeColor = `
@@ -107,7 +108,7 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
 
   if (IsThematic.Yes === thematic) {
     addThematicDisplay(builder, true);
-    addTexture(builder, IsAnimated.No, IsThematic.Yes, true);
+    addTexture(builder, IsAnimated.No, IsThematic.Yes, true, false);
   }
 
   return builder;
@@ -116,9 +117,12 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
 /** @internal */
 export function createPointCloudHiliter(classified: IsClassified): ProgramBuilder {
   const builder = createBuilder();
-  addUniformHiliter(builder);
-  if (classified)
+  if (classified) {
     addHilitePlanarClassifier(builder, false);
+    builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+  } else {
+    addUniformHiliter(builder);
+  }
 
   return builder;
 }

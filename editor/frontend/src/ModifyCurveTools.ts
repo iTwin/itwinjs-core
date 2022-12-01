@@ -2,14 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, ElementSetTool, FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp, LengthDescription, LocateResponse, NotifyMessageDetails, OutputMessagePriority, ToolAssistanceInstruction, Viewport } from "@itwin/core-frontend";
-import { BentleyError, Code, ElementGeometry, ElementGeometryInfo, ElementGeometryOpcode, FeatureAppearance, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, JsonGeometryStream } from "@itwin/core-common";
-import { EditTools } from "./EditTool";
-import { AngleSweep, Arc3d, AxisOrder, CurveCollection, CurvePrimitive, FrameBuilder, Geometry, JointOptions, LineSegment3d, LineString3d, Loop, Matrix3d, Path, RegionOps, Vector3d } from "@itwin/core-geometry";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
-import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool";
+
 import { DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper } from "@itwin/appui-abstract";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
+import {
+  BentleyError, Code, ElementGeometry, ElementGeometryInfo, ElementGeometryOpcode, FlatBufferGeometryStream, GeometricElementProps,
+  GeometryParams, JsonGeometryStream,
+} from "@itwin/core-common";
+import {
+  AccuDrawHintBuilder, BeButtonEvent, IModelApp,
+  LengthDescription, NotifyMessageDetails, OutputMessagePriority, ToolAssistanceInstruction,
+} from "@itwin/core-frontend";
+import {
+  AngleSweep, Arc3d, AxisOrder, CurveChainWithDistanceIndex, CurveCollection, CurveLocationDetail, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, JointOptions, LineSegment3d, LineString3d, Loop, Matrix3d,
+  Path, Point3d, RegionOps, Vector3d,
+} from "@itwin/core-geometry";
+import { editorBuiltInCmdIds } from "@itwin/editor-common";
+import { EditTools } from "./EditTool";
+import { basicManipulationIpc } from "./EditToolIpc";
+import { ModifyElementWithDynamicsTool } from "./ModifyElementTool";
 
 /** @alpha */
 export class CurveData {
@@ -24,100 +35,15 @@ export class CurveData {
   }
 }
 
-/** @alpha Base class for applying an offset to path and loops. */
-export abstract class ModifyCurveTool extends ElementSetTool implements FeatureOverrideProvider {
+/** @alpha Base class for modifying all types of curve geometry. */
+export abstract class ModifyCurveTool extends ModifyElementWithDynamicsTool {
   protected _startedCmd?: string;
-  protected readonly _checkedIds = new Map<Id64String, boolean>();
   protected curveData?: CurveData;
-  protected _graphicsProvider?: DynamicGraphicsProvider;
-  protected _firstResult = true;
-  protected _agendaAppearanceDefault?: FeatureAppearance;
-  protected _agendaAppearanceDynamic?: FeatureAppearance;
-
-  protected allowView(_vp: Viewport) { return true; }
-  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
 
   protected async startCommand(): Promise<string> {
     if (undefined !== this._startedCmd)
       return this._startedCmd;
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
-  }
-
-  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
-  }
-
-  protected agendaAppearance(isDynamics: boolean): FeatureAppearance {
-    if (isDynamics) {
-      if (undefined === this._agendaAppearanceDynamic)
-        this._agendaAppearanceDynamic = FeatureAppearance.fromTransparency(0.0);
-
-      return this._agendaAppearanceDynamic;
-    }
-
-    if (undefined === this._agendaAppearanceDefault)
-      this._agendaAppearanceDefault = FeatureAppearance.fromTransparency(0.9);
-
-    return this._agendaAppearanceDefault;
-  }
-
-  protected get wantAgendaAppearanceOverride(): boolean { return false; }
-
-  public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void {
-    if (this.agenda.isEmpty)
-      return;
-
-    const appearance = this.agendaAppearance(false);
-    this.agenda.elements.forEach((elementId) => overrides.override({ elementId, appearance }));
-  }
-
-  protected updateAgendaAppearanceProvider(drop?: true): void {
-    if (!this.wantAgendaAppearanceOverride)
-      return;
-
-    for (const vp of IModelApp.viewManager) {
-      if (!this.allowView(vp))
-        continue;
-
-      if (drop || this.agenda.isEmpty)
-        vp.dropFeatureOverrideProvider(this);
-      else if (!vp.addFeatureOverrideProvider(this))
-        vp.setFeatureOverrideProviderChanged();
-    }
-  }
-
-  protected clearGraphics(): void {
-    if (undefined === this._graphicsProvider)
-      return;
-    this._graphicsProvider.cleanupGraphic();
-    this._graphicsProvider = undefined;
-  }
-
-  protected async createGraphics(ev: BeButtonEvent): Promise<void> {
-    if (!IModelApp.viewManager.inDynamicsMode)
-      return; // Don't need to create graphic if dynamics aren't yet active...
-
-    const geometry = this.getGeometryProps(ev, false);
-    if (undefined === geometry)
-      return;
-
-    const elemProps = this.getElementProps(ev);
-    if (undefined === elemProps?.placement)
-      return;
-
-    if (undefined === this._graphicsProvider) {
-      if (this._firstResult) {
-        this.updateAgendaAppearanceProvider();
-        this._firstResult = false;
-      }
-      this._graphicsProvider = new DynamicGraphicsProvider(this.iModel, this.toolId);
-    }
-
-    // Set chord tolerance for non-linear curve primitives...
-    if (ev.viewport)
-      this._graphicsProvider.chordTolerance = computeChordToleranceFromPoint(ev.viewport, ev.point);
-
-    await this._graphicsProvider.createGraphic(elemProps.category, elemProps.placement, geometry);
   }
 
   public static isSingleCurve(info: ElementGeometryInfo): { curve: CurveCollection | CurvePrimitive, params: GeometryParams } | undefined {
@@ -142,13 +68,13 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
   }
 
   protected acceptCurve(_curve: CurveCollection | CurvePrimitive): boolean { return true; }
-  protected modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): CurveCollection | CurvePrimitive | undefined { return undefined; }
+  protected modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): GeometryQuery | undefined { return undefined; }
 
   protected async getCurveData(id: Id64String): Promise<CurveData | undefined> {
     try {
       this._startedCmd = await this.startCommand();
-      const reject: ElementGeometryOpcode[] = [ElementGeometryOpcode.Polyface, ElementGeometryOpcode.SolidPrimitive, ElementGeometryOpcode.BsplineSurface, ElementGeometryOpcode.BRep ];
-      const info = await ModifyCurveTool.callCommand("requestElementGeometry", id, { maxDisplayable: 1, reject, geometry: { curves: true, surfaces: true, solids: false } });
+      const reject: ElementGeometryOpcode[] = [ElementGeometryOpcode.Polyface, ElementGeometryOpcode.SolidPrimitive, ElementGeometryOpcode.BsplineSurface, ElementGeometryOpcode.BRep];
+      const info = await basicManipulationIpc.requestElementGeometry(id, { maxDisplayable: 1, reject, geometry: { curves: true, surfaces: true, solids: false } });
       if (undefined === info)
         return undefined;
 
@@ -170,30 +96,8 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     }
   }
 
-  protected onGeometryFilterChanged(): void { this._checkedIds.clear(); }
-
-  protected async acceptElementForOperation(id: Id64String): Promise<boolean> {
-    if (Id64.isInvalid(id) || Id64.isTransient(id))
-      return false;
-
-    let accept = this._checkedIds.get(id);
-
-    if (undefined === accept) {
-      if (this.agenda.isEmpty && this._checkedIds.size > 1000)
-        this._checkedIds.clear(); // Limit auto-locate cache size to something reasonable...
-
-      accept = (undefined !== await this.getCurveData(id));
-      this._checkedIds.set(id, accept);
-    }
-
-    return accept;
-  }
-
-  protected override async isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean> {
-    if (!await super.isElementValidForOperation(hit, out))
-      return false;
-
-    return this.acceptElementForOperation(hit.sourceId);
+  protected override async doAcceptElementForOperation(id: Id64String): Promise<boolean> {
+    return (undefined !== await this.getCurveData(id));
   }
 
   protected override async onAgendaModified(): Promise<void> {
@@ -201,37 +105,23 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     if (this.agenda.isEmpty)
       return;
 
-    const id = this.agenda.elements[this.agenda.length-1];
+    const id = this.agenda.elements[this.agenda.length - 1];
     this.curveData = await this.getCurveData(id);
   }
 
-  public override onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
-    if (undefined !== this._graphicsProvider)
-      this._graphicsProvider.addGraphic(context);
-  }
-
-  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
-    return this.createGraphics(ev);
-  }
-
-  protected setupAccuDraw(): void {
+  protected override setupAccuDraw(): void {
     const hints = new AccuDrawHintBuilder();
 
     hints.enableSmartRotation = true;
     hints.sendHints(false);
   }
 
-  protected override setupAndPromptForNextAction(): void {
-    this.setupAccuDraw();
-    super.setupAndPromptForNextAction();
-  }
-
   protected getGeometryProps(ev: BeButtonEvent, isAccept: boolean): JsonGeometryStream | FlatBufferGeometryStream | undefined {
     if (undefined === this.curveData)
       return;
 
-    const offset = this.modifyCurve(ev, isAccept);
-    if (undefined === offset)
+    const geom = this.modifyCurve(ev, isAccept);
+    if (undefined === geom)
       return;
 
     const builder = new ElementGeometry.Builder();
@@ -240,7 +130,7 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     if (!builder.appendGeometryParamsChange(this.curveData.params))
       return;
 
-    if (!builder.appendGeometryQuery(offset))
+    if (!builder.appendGeometryQuery(geom))
       return;
 
     return { format: "flatbuffer", data: builder.entries };
@@ -259,20 +149,7 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     return this.curveData.props;
   }
 
-  protected async applyAgendaOperation(ev: BeButtonEvent): Promise<boolean> {
-    const geometry = this.getGeometryProps(ev, true);
-    if (undefined === geometry)
-      return false;
-
-    const elemProps = this.getElementProps(ev);
-    if (undefined === elemProps)
-      return false;
-
-    if ("flatbuffer" === geometry.format)
-      elemProps.elementGeometryBuilderParams = { entryArray: geometry.data };
-    else
-      elemProps.geom = geometry.data;
-
+  protected override async doUpdateElement(elemProps: GeometricElementProps): Promise<boolean> {
     try {
       this._startedCmd = await this.startCommand();
       if (undefined === elemProps.id) {
@@ -280,23 +157,18 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
         if (repeatOperation)
           this.agenda.clear();
 
-        const newId = await ModifyCurveTool.callCommand("insertGeometricElement", elemProps);
+        const newId = await basicManipulationIpc.insertGeometricElement(elemProps);
 
         if (repeatOperation && this.agenda.add(newId))
           await this.onAgendaModified();
       } else {
-        await ModifyCurveTool.callCommand("updateGeometricElement", elemProps);
+        await basicManipulationIpc.updateGeometricElement(elemProps);
       }
       return true;
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
       return false;
     }
-  }
-
-  public override async processAgenda(ev: BeButtonEvent): Promise<void> {
-    if (await this.applyAgendaOperation(ev))
-      return this.saveChanges();
   }
 
   protected get wantModifyOriginal(): boolean { return true; }
@@ -308,39 +180,12 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
       return;
     return super.onProcessComplete();
   }
-
-  public override async onUnsuspend(): Promise<void> {
-    if (!this._firstResult)
-      this.updateAgendaAppearanceProvider();
-    return super.onUnsuspend();
-  }
-
-  public override async onSuspend(): Promise<void> {
-    if (!this._firstResult)
-      this.updateAgendaAppearanceProvider(true);
-    return super.onSuspend();
-  }
-
-  public override async onPostInstall(): Promise<void> {
-    await super.onPostInstall();
-    if (this.wantAgendaAppearanceOverride)
-      this.agenda.manageHiliteState = false;
-  }
-
-  public override async onCleanup(): Promise<void> {
-    this.clearGraphics();
-    this.updateAgendaAppearanceProvider(true);
-    return super.onCleanup();
-  }
 }
 
 /** @alpha Tool for applying an offset to paths and loops. */
 export class OffsetCurveTool extends ModifyCurveTool {
   public static override toolId = "OffsetCurve";
   public static override iconSpec = "icon-scale"; // Need better icon...
-
-  protected override get wantAccuSnap(): boolean { return true; }
-  protected override get wantDynamics(): boolean { return true; }
 
   private _useDistanceProperty: DialogProperty<boolean> | undefined;
   public get useDistanceProperty() {
@@ -409,7 +254,7 @@ export class OffsetCurveTool extends ModifyCurveTool {
     }
   }
 
-  protected override modifyCurve(ev: BeButtonEvent, isAccept: boolean): CurveCollection | CurvePrimitive | undefined {
+  protected override modifyCurve(ev: BeButtonEvent, isAccept: boolean): GeometryQuery | undefined {
     if (undefined === ev.viewport)
       return undefined;
 
@@ -553,7 +398,7 @@ export class BreakCurveTool extends ModifyCurveTool {
   protected resultB?: CurveCollection | CurvePrimitive;
   protected modifyOriginal = true;
 
-  protected override get wantAccuSnap(): boolean { return true; }
+  protected override get wantDynamics(): boolean { return false; }
   protected override get wantModifyOriginal(): boolean { return this.modifyOriginal; }
 
   protected override acceptCurve(curve: CurveCollection | CurvePrimitive): boolean {
@@ -596,7 +441,7 @@ export class BreakCurveTool extends ModifyCurveTool {
       return;
     } else if (geom instanceof Path) {
       const firstCurve = geom.children[0];
-      const lastCurve = geom.children[geom.children.length-1];
+      const lastCurve = geom.children[geom.children.length - 1];
 
       if ((closeDetail.curve === firstCurve && selectedStart) || (closeDetail.curve === lastCurve && selectedEnd))
         return; // split is no-op...
@@ -667,7 +512,7 @@ export class BreakCurveTool extends ModifyCurveTool {
     }
   }
 
-  protected override modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): CurveCollection | CurvePrimitive | undefined {
+  protected override modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): GeometryQuery | undefined {
     return (this.wantModifyOriginal ? this.resultA : this.resultB);
   }
 
@@ -698,44 +543,24 @@ export class BreakCurveTool extends ModifyCurveTool {
   }
 }
 
-/** @alpha Tool for extending/shortening curves. */
+/** @alpha Tool to extend or trim a path or open curve */
 export class ExtendCurveTool extends ModifyCurveTool {
   public static override toolId = "ExtendCurve";
   public static override iconSpec = "icon-scale"; // Need better icon...
 
-  protected override get wantAccuSnap(): boolean { return true; }
-  protected override get wantDynamics(): boolean { return true; }
+  protected modifyingEnd?: CurvePrimitive;
+
   protected override get wantAgendaAppearanceOverride(): boolean { return true; }
 
   protected override acceptCurve(curve: CurveCollection | CurvePrimitive): boolean {
-    if ("curvePrimitive" !== curve.geometryCategory)
-      return false;
+    if ("curvePrimitive" === curve.geometryCategory)
+      return curve.isExtensibleFractionSpace;
 
-    return curve.isExtensibleFractionSpace;
+    return ("path" === curve.curveCollectionType);
   }
 
-  protected override modifyCurve(ev: BeButtonEvent, _isAccept: boolean): CurveCollection | CurvePrimitive | undefined {
-    if (undefined === ev.viewport || undefined === this.anchorPoint)
-      return undefined;
-
-    const geom = this.curveData?.geom;
-    if (undefined === geom)
-      return undefined;
-
-    const matrix = AccuDrawHintBuilder.getCurrentRotation(ev.viewport, true, true);
-    const localToWorld = FrameBuilder.createRightHandedFrame(matrix?.getColumn(2), geom);
-    if (undefined === localToWorld)
-      return undefined;
-
-    const worldToLocal = localToWorld.inverse();
-    if (undefined === worldToLocal)
-      return undefined;
-
-    const spacePoint = AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, localToWorld.getOrigin(), localToWorld.matrix.getColumn(2), ev.viewport);
-    if (undefined === spacePoint)
-      return undefined;
-
-    const pickDetail = geom.closestPoint(this.anchorPoint, false);
+  protected extendCurve(geom: CurvePrimitive, pickPoint: Point3d, spacePoint: Point3d): CurvePrimitive | undefined {
+    const pickDetail = geom.closestPoint(pickPoint, false);
     if (undefined === pickDetail?.curve)
       return undefined;
 
@@ -759,7 +584,98 @@ export class ExtendCurveTool extends ModifyCurveTool {
       }
     }
 
-    return closeDetail.curve.clonePartialCurve(pickDetail.fraction > 0.5 ? 0.0 : 1.0, closeDetail.fraction);
+    return geom.clonePartialCurve(pickDetail.fraction > 0.5 ? 0.0 : 1.0, closeDetail.fraction);
+  }
+
+  protected extendPathEnd(geom: Path, closeDetail: CurveLocationDetail, isStart: boolean): Path | undefined {
+    if (undefined === closeDetail.curve)
+      return undefined;
+
+    const curve = closeDetail.curve.clonePartialCurve(isStart ? closeDetail.fraction : 0.0, isStart ? 1.0 : closeDetail.fraction);
+    if (undefined === curve)
+      return undefined;
+
+    if (curve instanceof Arc3d && closeDetail.curve instanceof Arc3d && (curve.sweep.isCCW !== closeDetail.curve.sweep.isCCW))
+      curve.sweep.cloneComplement(true, curve.sweep); // Preserve current sweep direction...
+
+    const result = geom.clone() as Path;
+    result.children[isStart ? 0 : geom.children.length - 1] = curve;
+
+    return result;
+  }
+
+  protected extendPath(geom: Path, pickPoint: Point3d, spacePoint: Point3d): Path | CurvePrimitive | undefined {
+    if (geom.children.length < 2)
+      return this.extendCurve(geom.children[0], pickPoint, spacePoint);
+
+    const pathAsPrimitive = CurveChainWithDistanceIndex.createCapture(geom);
+    const closeDetail = pathAsPrimitive.closestPoint(spacePoint, true);
+    if (undefined === closeDetail?.curve || undefined === closeDetail.childDetail?.curve)
+      return undefined;
+
+    if (undefined !== this.modifyingEnd) {
+      if (closeDetail.childDetail.curve === this.modifyingEnd) {
+        this.modifyingEnd = undefined; // Ok to unlock extending first/last curve in path...
+      } else {
+        const pathEndDetail = this.modifyingEnd.closestPoint(spacePoint, true);
+        if (undefined === pathEndDetail?.curve)
+          return undefined;
+        return this.extendPathEnd(geom, pathEndDetail, (pathEndDetail.curve === geom.children[0]));
+      }
+    }
+
+    // NOTE: Special case extend instead of using CurveChainWithDistanceIndex.clonePartialCurve...
+    if (closeDetail.fraction < 0.0) {
+      this.modifyingEnd = closeDetail.childDetail.curve;
+      return this.extendPathEnd(geom, closeDetail.childDetail, true);
+    } else if (closeDetail.fraction > 1.0) {
+      this.modifyingEnd = closeDetail.childDetail.curve;
+      return this.extendPathEnd(geom, closeDetail.childDetail, false);
+    }
+
+    const pickDetail = pathAsPrimitive.closestPoint(pickPoint, false);
+    if (undefined === pickDetail?.curve)
+      return undefined;
+
+    const result = pathAsPrimitive.clonePartialCurve(pickDetail.fraction > 0.5 ? 0.0 : 1.0, closeDetail.fraction);
+    if (undefined === result)
+      return undefined;
+
+    return Path.create(...result.path.children);
+  }
+
+  protected override modifyCurve(ev: BeButtonEvent, _isAccept: boolean): GeometryQuery | undefined {
+    if (undefined === ev.viewport || undefined === this.anchorPoint)
+      return undefined;
+
+    const geom = this.curveData?.geom;
+    if (undefined === geom)
+      return undefined;
+
+    const matrix = AccuDrawHintBuilder.getCurrentRotation(ev.viewport, true, true);
+    const localToWorld = FrameBuilder.createRightHandedFrame(matrix?.getColumn(2), geom);
+    if (undefined === localToWorld)
+      return undefined;
+
+    const worldToLocal = localToWorld.inverse();
+    if (undefined === worldToLocal)
+      return undefined;
+
+    const spacePoint = AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, localToWorld.getOrigin(), localToWorld.matrix.getColumn(2), ev.viewport);
+    if (undefined === spacePoint)
+      return undefined;
+
+    if (geom instanceof CurvePrimitive)
+      return this.extendCurve(geom, this.anchorPoint, spacePoint);
+    else if (geom instanceof Path)
+      return this.extendPath(geom, this.anchorPoint, spacePoint);
+
+    return undefined;
+  }
+
+  protected override async onAgendaModified(): Promise<void> {
+    IModelApp.accuSnap.neverFlash(this.agenda.elements); // Don't flash snapped segment for better preview when trimming curve/path...
+    return super.onAgendaModified();
   }
 
   protected override setupAccuDraw(): void {
@@ -769,29 +685,39 @@ export class ExtendCurveTool extends ModifyCurveTool {
       hints.enableSmartRotation = true;
     } else {
       const geom = this.curveData?.geom;
-      if (undefined === geom || "curvePrimitive" !== geom.geometryCategory)
+      if (undefined === geom || undefined === this.anchorPoint)
         return;
 
-      if (geom instanceof Arc3d) {
-        const matrix = geom.matrixClone();
-        matrix.normalizeColumnsInPlace();
+      let pickDetail;
+      if (geom instanceof CurvePrimitive)
+        pickDetail = geom.closestPoint(this.anchorPoint, false);
+      else if (geom instanceof Path)
+        pickDetail = CurveChainWithDistanceIndex.createCapture(geom).closestPoint(this.anchorPoint, false);
+      if (undefined === pickDetail?.curve)
+        return;
 
-        hints.setOrigin(geom.center);
+      const curve = (undefined !== pickDetail.childDetail?.curve ? pickDetail.childDetail?.curve : pickDetail.curve);
+
+      if (curve instanceof Arc3d) {
+        const matrix = curve.matrixClone();
+        matrix.normalizeColumnsInPlace();
+        hints.setOrigin(curve.center);
         hints.setMatrix(matrix);
         hints.setModePolar();
-      } else if (geom instanceof LineSegment3d) {
-        const pickDetail = (undefined !== this.anchorPoint ? geom.closestPoint(this.anchorPoint, false) : undefined);
-        if (undefined !== pickDetail?.curve) {
-          hints.setOrigin(pickDetail.fraction > 0.5 ? geom.point0Ref : geom.point1Ref);
-          hints.setXAxis(Vector3d.createStartEnd(pickDetail.fraction > 0.5 ? geom.point0Ref : geom.point1Ref, pickDetail.fraction > 0.5 ? geom.point1Ref : geom.point0Ref));
+      } else if (curve instanceof LineSegment3d) {
+        hints.setOrigin(pickDetail.fraction > 0.5 ? curve.point0Ref : curve.point1Ref);
+        hints.setXAxis(Vector3d.createStartEnd(pickDetail.fraction > 0.5 ? curve.point0Ref : curve.point1Ref, pickDetail.fraction > 0.5 ? curve.point1Ref : curve.point0Ref));
+        hints.setModeRectangular();
+      } else if (curve instanceof LineString3d) {
+        if (curve.numPoints() > 1) {
+          hints.setOrigin(curve.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? curve.numPoints() - 2 : 1));
+          hints.setXAxis(Vector3d.createStartEnd(curve.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? curve.numPoints() - 2 : 1), curve.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? curve.numPoints() - 1 : 0)));
         }
         hints.setModeRectangular();
-      } else if (geom instanceof LineString3d) {
-        const pickDetail = (undefined !== this.anchorPoint ? geom.closestPoint(this.anchorPoint, false) : undefined);
-        if (undefined !== pickDetail?.curve && geom.numPoints() > 1) {
-          hints.setOrigin(geom.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? geom.numPoints()-2 : 1));
-          hints.setXAxis(Vector3d.createStartEnd(geom.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? geom.numPoints()-2 : 1), geom.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? geom.numPoints()-1 : 0)));
-        }
+      } else {
+        const ray = curve.fractionToPointAndUnitTangent(pickDetail.fraction > 0.5 ? 0.0 : 1.0);
+        hints.setOrigin(ray.origin);
+        hints.setXAxis(ray.direction);
         hints.setModeRectangular();
       }
     }

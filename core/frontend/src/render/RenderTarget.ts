@@ -59,6 +59,7 @@ export interface RenderTargetDebugControl {
   displayRealityTilePreload: boolean;
   displayRealityTileRanges: boolean;
   logRealityTiles: boolean;
+  displayNormalMaps: boolean;
   freezeRealityTiles: boolean;
   /** Obtain a summary of the render commands required to draw the scene currently displayed.
    * Each entry specifies  the type of command and the number of such commands required by the current scene.

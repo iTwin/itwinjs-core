@@ -100,10 +100,46 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
     it("renders with property renderer", () => {
       const actions = new PropertyFilterBuilderActions(sinon.spy());
       const propertyRendererSpy = sinon.spy();
-      renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />,
+      const { container } = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />,
         { actions, properties: [defaultProperty] }, { propertyRenderer: propertyRendererSpy });
 
+      // open property selector menu
+      const selector = container.querySelector<HTMLInputElement>(".rule-property input");
+      expect(selector).to.not.be.null;
+      fireEvent.focus(selector!);
+
       expect(propertyRendererSpy).to.be.calledWith(defaultProperty.name);
+    });
+
+    it("opens property selector menu", () => {
+      const actions = new PropertyFilterBuilderActions(sinon.spy());
+      const { container, queryByText } = renderWithContext(
+        <PropertyFilterBuilderRuleRenderer {...defaultProps} />,
+        { actions, properties: [defaultProperty] },
+      );
+
+      // open property selector
+      const selector = container.querySelector<HTMLInputElement>(".rule-property input");
+      expect(selector).to.not.be.null;
+      fireEvent.focus(selector!);
+
+      expect(queryByText(defaultProperty.displayLabel)).to.not.be.null;
+    });
+
+    it("does not open property selector menu when property selection is disabled", () => {
+      const actions = new PropertyFilterBuilderActions(sinon.spy());
+      const { container, queryByText } = renderWithContext(
+        <PropertyFilterBuilderRuleRenderer {...defaultProps} />,
+        { actions, properties: [defaultProperty] },
+        { disablePropertySelection: true }
+      );
+
+      // attempt to open property selector
+      const selector = container.querySelector<HTMLInputElement>(".rule-property input");
+      expect(selector).to.not.be.null;
+      fireEvent.focus(selector!);
+
+      expect(queryByText(defaultProperty.displayLabel)).to.be.null;
     });
   });
 

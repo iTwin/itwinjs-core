@@ -61,6 +61,7 @@ export class SurfaceGeometry extends MeshGeometry {
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isTexturedType() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get hasTexture() { return this.isTexturedType && undefined !== this.texture; }
+  public get hasNormalMap() { return this.isLit && this.isTexturedType && undefined !== this.normalMap; }
   public get isGlyph() { return this.mesh.isGlyph; }
   public override get alwaysRenderTranslucent() { return this.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
@@ -107,7 +108,6 @@ export class SurfaceGeometry extends MeshGeometry {
   public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
   public override get isLitSurface() { return this.isLit; }
   public override get hasBakedLighting() { return this.mesh.hasBakedLighting; }
-  public override get hasFixedNormals() { return this.mesh.hasFixedNormals; }
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
@@ -207,6 +207,10 @@ export class SurfaceGeometry extends MeshGeometry {
     return this.wantTextures(params.target, this.hasTexture);
   }
 
+  public useNormalMap(params: ShaderProgramParams): boolean {
+    return this.wantNormalMaps(params.target, this.hasNormalMap);
+  }
+
   public computeSurfaceFlags(params: ShaderProgramParams, flags: Int32Array): void {
     const target = params.target;
     const vf = target.currentViewFlags;
@@ -216,15 +220,11 @@ export class SurfaceGeometry extends MeshGeometry {
     flags[SurfaceBitIndex.HasMaterialAtlas] = useMaterial && this.hasMaterialAtlas ? 1 : 0;
 
     flags[SurfaceBitIndex.ApplyLighting] = 0;
-    flags[SurfaceBitIndex.NoFaceFront] = 0;
     flags[SurfaceBitIndex.HasColorAndNormal] = 0;
     if (this.isLit) {
       flags[SurfaceBitIndex.HasNormals] = 1;
-      if (wantLighting(vf)) {
+      if (wantLighting(vf))
         flags[SurfaceBitIndex.ApplyLighting] = 1;
-        if (this.hasFixedNormals)
-          flags[SurfaceBitIndex.NoFaceFront] = 1;
-      }
 
       // Textured meshes store normal in place of color index.
       // Untextured lit meshes store normal where textured meshes would store UV coords.
@@ -237,6 +237,7 @@ export class SurfaceGeometry extends MeshGeometry {
     }
 
     flags[SurfaceBitIndex.HasTexture] = this.useTexture(params) ? 1 : 0;
+    flags[SurfaceBitIndex.HasNormalMap] = this.useNormalMap(params) ? 1 : 0;
 
     // The transparency threshold controls how transparent a surface must be to allow light to pass through; more opaque surfaces cast shadows.
     flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;
@@ -297,6 +298,20 @@ export class SurfaceGeometry extends MeshGeometry {
         return FillFlags.Always === (fill & FillFlags.Always) || (flags.fill && FillFlags.ByView === (fill & FillFlags.ByView));
       default:
         return FillFlags.Always === (fill & FillFlags.Always);
+    }
+  }
+
+  private wantNormalMaps(target: Target, normalMapExists: boolean): boolean {
+    if (!normalMapExists || !target.displayNormalMaps)
+      return false;
+
+    const flags = target.currentViewFlags;
+
+    switch (flags.renderMode) {
+      case RenderMode.SmoothShade:
+        return flags.textures;
+      default:
+        return false;
     }
   }
 }
