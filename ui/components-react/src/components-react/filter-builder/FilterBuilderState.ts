@@ -178,9 +178,9 @@ function getRuleGroupItem(filter: PropertyFilter, parentId: string): PropertyFil
       id,
       groupId: parentId,
       operator: filter.operator,
-      items: filter.rules.map((rule) => getGroupRuleItem(rule, id)),
+      items: filter.rules.map((rule) => getRuleGroupItem(rule, id)),
     };
-  return getSingleRuleItem(filter, id);
+  return getRuleItem(filter, id);
 }
 
 function getRuleItem(filter: PropertyFilterRule, parentId: string) {
@@ -200,7 +200,7 @@ function convertFilterToState(filter: PropertyFilter): PropertyFilterBuilderStat
       rootGroup: {
         id,
         operator: filter.operator,
-        items: filter.rules.map((rule) => getGroupRuleItem(rule, id)),
+        items: filter.rules.map((rule) => getRuleGroupItem(rule, id)),
       },
     };
   }
@@ -208,7 +208,7 @@ function convertFilterToState(filter: PropertyFilter): PropertyFilterBuilderStat
     rootGroup: {
       id,
       operator: PropertyFilterRuleGroupOperator.And,
-      items: [getSingleRuleItem(filter, id)],
+      items: [getRuleItem(filter, id)],
     },
   };
 }
