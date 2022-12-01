@@ -58,7 +58,7 @@ import {
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool } from "./tools/RenderSystemTools";
 import {
-  SetAASamplesTool, ToggleDrapeFrustumTool, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze,
+  SetAASamplesTool, ToggleDrapeFrustumTool, ToggleNormalMaps, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze,
   ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect,
 } from "./tools/RenderTargetTools";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
@@ -180,6 +180,7 @@ export class FrontendDevTools {
       ToggleDPIForLODTool,
       ToggleDrapeFrustumTool,
       ToggleFrustumSnapshotTool,
+      ToggleNormalMaps,
       TogglePrimitiveVisibilityTool,
       ToggleProjectExtentsTool,
       ToggleReadPixelsTool,

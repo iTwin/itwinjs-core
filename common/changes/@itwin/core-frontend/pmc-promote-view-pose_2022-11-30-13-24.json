@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "",
+      "comment": "Promote ViewPose-related APIs to public.",
       "type": "none"
     }
   ],
