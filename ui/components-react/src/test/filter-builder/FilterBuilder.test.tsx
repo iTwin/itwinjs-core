@@ -6,7 +6,7 @@ import chai, { expect } from "chai";
 import chaiSubset from "chai-subset";
 import * as React from "react";
 import sinon from "sinon";
-import { PropertyValueFormat } from "@itwin/appui-abstract";
+import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { buildPropertyFilter, PropertyFilterBuilder } from "../../components-react/filter-builder/FilterBuilder";
 import { PropertyFilterBuilderRule, PropertyFilterBuilderRuleGroup } from "../../components-react/filter-builder/FilterBuilderState";
@@ -17,6 +17,17 @@ import { PropertyFilter } from "../../components-react/filter-builder/Types";
 chai.use(chaiSubset);
 
 describe("PropertyFilterBuilder", () => {
+  const property1: PropertyDescription = {
+    name: "propertyField1",
+    displayLabel: "Prop1",
+    typename: "boolean",
+  };
+  const property2: PropertyDescription = {
+    name: "propertyField2",
+    displayLabel: "Prop2",
+    typename: "string",
+  };
+
   before(async () => {
     await TestUtils.initializeUiComponents();
   });
@@ -27,7 +38,7 @@ describe("PropertyFilterBuilder", () => {
 
   it("call onFilterChanged with filter after new rule is setup", async () => {
     const spy = sinon.spy();
-    const { container, getByText, getByDisplayValue } = render(<PropertyFilterBuilder properties={[{ name: "propertyField1", displayLabel: "Prop1", typename: "boolean" }]} onFilterChanged={spy} />);
+    const { container, getByText, getByDisplayValue } = render(<PropertyFilterBuilder properties={[property1]} onFilterChanged={spy} />);
     const propertySelector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
     expect(propertySelector).to.not.be.null;
     propertySelector?.focus();
@@ -36,11 +47,7 @@ describe("PropertyFilterBuilder", () => {
     await waitFor(() => getByDisplayValue("Prop1"));
 
     expect(spy).to.be.calledOnceWith({
-      property: {
-        name: "propertyField1",
-        displayLabel: "Prop1",
-        typename: "boolean",
-      },
+      property: property1,
       operator: 0,
       value: undefined,
     });
@@ -48,20 +55,16 @@ describe("PropertyFilterBuilder", () => {
 
   it("renders propertyFilterBuilder with single rule correctly", async () => {
     const propertyFilter: PropertyFilter = {
-      property: {
-        name: "propertyField1",
-        displayLabel: "Prop1",
-        typename: "string",
-      },
+      property: property1,
       operator: PropertyFilterRuleOperator.IsNull,
       value: undefined,
     };
     const spy = sinon.spy();
-    const { container, queryByDisplayValue } = render(<PropertyFilterBuilder properties={[{ name: "propertyField1", displayLabel: "Prop1", typename: "string" }]} onFilterChanged={spy} initialFilter={propertyFilter} />);
+    const { container, queryByDisplayValue } = render(<PropertyFilterBuilder properties={[property1]} onFilterChanged={spy} initialFilter={propertyFilter} />);
 
     const rules = container.querySelectorAll(".rule-property");
     expect(rules.length).to.be.eq(1);
-    const rule1 = queryByDisplayValue("Prop1");
+    const rule1 = queryByDisplayValue(property1.displayLabel);
     expect(rule1).to.not.be.null;
   });
 
@@ -71,33 +74,25 @@ describe("PropertyFilterBuilder", () => {
       rules: [{
         operator: PropertyFilterRuleGroupOperator.And,
         rules: [{
-          property: {
-            name: "propertyField1",
-            displayLabel: "Prop1",
-            typename: "string",
-          },
-          operator: PropertyFilterRuleOperator.IsNull,
+          property: property1,
+          operator: PropertyFilterRuleOperator.IsTrue,
           value: undefined,
         },
         {
-          property: {
-            name: "propertyField2",
-            displayLabel: "Prop2",
-            typename: "string",
-          },
+          property: property2,
           operator: PropertyFilterRuleOperator.IsNull,
           value: undefined,
         }],
       }],
     };
     const spy = sinon.spy();
-    const { container, queryByDisplayValue } = render(<PropertyFilterBuilder properties={[{ name: "propertyField1", displayLabel: "Prop1", typename: "string" }, { name: "propertyField2", displayLabel: "Prop2", typename: "string" }]} onFilterChanged={spy} initialFilter={propertyFilter} />);
+    const { container, queryByDisplayValue } = render(<PropertyFilterBuilder properties={[property1, property2]} onFilterChanged={spy} initialFilter={propertyFilter} />);
 
     const rules = container.querySelectorAll(".rule-property");
     expect(rules.length).to.be.eq(2);
-    const rule1 = queryByDisplayValue("Prop1");
+    const rule1 = queryByDisplayValue(property1.displayLabel);
     expect(rule1).to.not.be.null;
-    const rule2 = queryByDisplayValue("Prop2");
+    const rule2 = queryByDisplayValue(property2.displayLabel);
     expect(rule2).to.not.be.null;
   });
 

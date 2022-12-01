@@ -172,9 +172,7 @@ function convertPresentationInstanceFilterConditionGroup(filter: PresentationIns
 }
 
 /** @alpha */
-export function convertPresentationFilterToPropertyFilter(descriptor: Descriptor, filter?: PresentationInstanceFilter): PropertyFilter | undefined {
-  if (!filter)
-    return undefined;
+export function convertPresentationFilterToPropertyFilter(descriptor: Descriptor, filter: PresentationInstanceFilter): PropertyFilter | undefined {
   if (isPresentationInstanceFilterConditionGroup(filter))
     return convertPresentationInstanceFilterConditionGroup(filter, descriptor);
   return convertPresentationInstanceFilterCondition(filter, descriptor);

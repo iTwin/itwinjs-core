@@ -219,7 +219,8 @@ describe("convertPresentationInstanceFilterToInstanceFilter", () => {
     };
 
     const presentationFilter = createPresentationInstanceFilter(descriptor, filter);
-    const result = convertPresentationFilterToPropertyFilter(descriptor, presentationFilter);
+    expect(presentationFilter).to.not.be.undefined;
+    const result = presentationFilter ? convertPresentationFilterToPropertyFilter(descriptor, presentationFilter) : undefined;
     expect(result).to.be.deep.eq(filter);
   });
 
@@ -273,11 +274,6 @@ describe("convertPresentationInstanceFilterToInstanceFilter", () => {
 
     const result = convertPresentationFilterToPropertyFilter(descriptor, presentationFilter);
     expect(result).to.be.deep.eq(propertyFilter);
-  });
-
-  it("returns undefined if filter is not passed", () => {
-    const result = convertPresentationFilterToPropertyFilter(descriptor);
-    expect(result).to.be.undefined;
   });
 
   it("returns undefined if property used in filter is not found in descriptor", () => {
