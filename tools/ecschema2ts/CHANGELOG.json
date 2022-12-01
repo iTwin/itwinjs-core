@@ -2,6 +2,12 @@
   "name": "@bentley/ecschema2ts",
   "entries": [
     {
+      "version": "2.19.48",
+      "tag": "@bentley/ecschema2ts_v2.19.48",
+      "date": "Thu, 01 Dec 2022 13:57:12 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.47",
       "tag": "@bentley/ecschema2ts_v2.19.47",
       "date": "Tue, 25 Oct 2022 16:10:36 GMT",

@@ -1,6 +1,11 @@
 # Change Log - @bentley/electron-manager
 
-This log was last generated on Tue, 25 Oct 2022 16:10:36 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Dec 2022 13:57:12 GMT and should not be manually modified.
+
+## 2.19.48
+Thu, 01 Dec 2022 13:57:12 GMT
+
+_Version update only_
 
 ## 2.19.47
 Tue, 25 Oct 2022 16:10:36 GMT

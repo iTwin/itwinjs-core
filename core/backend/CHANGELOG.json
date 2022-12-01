@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.19.48",
+      "tag": "@bentley/imodeljs-backend_v2.19.48",
+      "date": "Thu, 01 Dec 2022 13:57:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@2.19.45"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.47",
       "tag": "@bentley/imodeljs-backend_v2.19.47",
       "date": "Tue, 25 Oct 2022 16:10:36 GMT",
