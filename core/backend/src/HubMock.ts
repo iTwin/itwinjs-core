@@ -217,6 +217,10 @@ export class HubMock {
     return undefined;
   }
 
+  public static async queryCurrentOrPrecedingV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
+    return undefined;
+  }
+
   // eslint-disable-next-line deprecation/deprecation
   public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });

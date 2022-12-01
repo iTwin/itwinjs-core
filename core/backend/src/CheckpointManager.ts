@@ -225,7 +225,12 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     const request = job.request;
-    const v2props = await IModelHost.hubAccess.queryV2Checkpoint(request.checkpoint);
+    let v2props: V2CheckpointAccessProps | undefined;
+    if (IModelHost.hubAccess.queryCurrentOrPrecedingV2Checkpoint) {
+      v2props = await IModelHost.hubAccess.queryCurrentOrPrecedingV2Checkpoint(request.checkpoint);
+    } else {
+      v2props = await IModelHost.hubAccess.queryV2Checkpoint(request.checkpoint);
+    }
     if (!v2props)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
