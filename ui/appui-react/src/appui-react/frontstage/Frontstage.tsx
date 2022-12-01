@@ -32,12 +32,15 @@ import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
 import { FrontstageActivatedEventArgs, FrontstageManager } from "./FrontstageManager";
 
 /** Properties for a [[Frontstage]] component.
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface FrontstageProps extends CommonProps {
   /** Id for the Frontstage */
   id: string;
-  /** Tool that is started once the Frontstage is activated */
+  /** Tool that is started once the Frontstage is activated.
+   * Use [FrontstageManager.onFrontstageReadyEvent] instead.
+   */
   defaultTool: ToolItemDef;
   /** The Content Group providing the Content Views */
   contentGroup: ContentGroup | ContentGroupProvider;
@@ -119,6 +122,7 @@ interface FrontstageState {
 
 /** Frontstage React component.
  * A Frontstage is a full-screen configuration designed to enable the user to accomplish a task.
+ * @deprecated Use [FrontstageConfig] instead.
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {

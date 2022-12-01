@@ -8,7 +8,7 @@
 
 import { SnapMode } from "@itwin/core-frontend";
 import { ActionsUnion, createAction } from "../redux/redux-ts";
-import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
+import { SYSTEM_PREFERRED_COLOR_THEME, TOOLBAR_OPACITY_DEFAULT, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
 import { FrameworkVersionId } from "../UiFramework";
 
 // cSpell:ignore configurableui snapmode toolprompt
@@ -29,6 +29,7 @@ export enum ConfigurableUiActionId {
   SetViewOverlayDisplay = "configurableui:set-view-overlay-display",
   AnimateToolSettings = "configurableui:set-animate-tool-settings",
   UseToolAsToolSettingsLabel = "configurableui:set-use-tool-as-tool-settings-label",
+  SetToolbarOpacity = "configurableui:set-toolbar-opacity",
 }
 
 /** The portion of state managed by the ConfigurableUiReducer.
@@ -46,6 +47,7 @@ export interface ConfigurableUiState {
   viewOverlayDisplay: boolean;
   animateToolSettings: boolean;
   useToolAsToolSettingsLabel: boolean;
+  toolbarOpacity: number;
 }
 
 /** used on first call of ConfigurableUiReducer */
@@ -61,6 +63,7 @@ const initialState: ConfigurableUiState = {
   viewOverlayDisplay: true,
   animateToolSettings: false,
   useToolAsToolSettingsLabel: false,
+  toolbarOpacity: TOOLBAR_OPACITY_DEFAULT,
 };
 
 /** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer.
@@ -84,6 +87,7 @@ export const ConfigurableUiActions = {   // eslint-disable-line @typescript-esli
   setViewOverlayDisplay: (displayViewOverlay: boolean) => createAction(ConfigurableUiActionId.SetViewOverlayDisplay, displayViewOverlay),
   setAnimateToolSettings: (animateToolSettings: boolean) => createAction(ConfigurableUiActionId.AnimateToolSettings, animateToolSettings),
   setUseToolAsToolSettingsLabel: (useToolAsToolSettingsLabel: boolean) => createAction(ConfigurableUiActionId.UseToolAsToolSettingsLabel, useToolAsToolSettingsLabel),
+  setToolbarOpacity: (opacity: number) => createAction(ConfigurableUiActionId.SetToolbarOpacity, opacity),
 };
 
 /** Union of ConfigurableUi Redux actions
@@ -131,6 +135,9 @@ export function ConfigurableUiReducer(state: ConfigurableUiState = initialState,
     }
     case ConfigurableUiActionId.UseToolAsToolSettingsLabel: {
       return { ...state, useToolAsToolSettingsLabel: action.payload };
+    }
+    case ConfigurableUiActionId.SetToolbarOpacity: {
+      return { ...state, toolbarOpacity: action.payload };
     }
   }
   return outState;

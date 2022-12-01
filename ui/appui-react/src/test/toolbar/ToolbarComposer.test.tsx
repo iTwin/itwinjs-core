@@ -160,9 +160,9 @@ describe("<ToolbarComposer  />", async () => {
       return Frontstage1.stageId;
     }
 
-    public get frontstage(): React.ReactElement<FrontstageProps> {
+    public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
       return (
-        <Frontstage
+        <Frontstage // eslint-disable-line deprecation/deprecation
           id={this.id}
           defaultTool={CoreTools.selectElementCommand}
           contentGroup={TestUtils.TestContentGroup1}
@@ -430,11 +430,11 @@ describe("<ToolbarComposer  />", async () => {
       // new frontstage should trigger refresh
 
       /** Id for the Frontstage */
-      const oldProps: FrontstageProps = { id: "old", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+      const oldProps: FrontstageProps = { id: "old", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
       const oldStageDef = new FrontstageDef();
       await oldStageDef.initializeFromProps(oldProps);
 
-      const newProps: FrontstageProps = { id: "new", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+      const newProps: FrontstageProps = { id: "new", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
       const newStageDef = new FrontstageDef();
       await newStageDef.initializeFromProps(newProps);
 

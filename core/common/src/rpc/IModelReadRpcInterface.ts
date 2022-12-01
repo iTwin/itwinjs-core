@@ -27,6 +27,7 @@ import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 import { TextureData, TextureLoadProps } from "../TextureProps";
+import { ElementMeshRequestProps } from "../ElementMesh";
 import { CustomViewState3dCreatorOptions, CustomViewState3dProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SubCategoryResultRow, ViewStateLoadProps, ViewStateProps } from "../ViewProps";
 import { RpcNotFoundResponse } from "./core/RpcControl";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
@@ -78,7 +79,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelReadRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "3.4.0";
+  public static interfaceVersion = "3.5.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -126,6 +127,9 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
   public async queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> { return this.forward(arguments); }
   public async loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined> {
+    return this.forward(arguments);
+  }
+  public async generateElementMeshes(_iModelToken: IModelRpcProps, _props: ElementMeshRequestProps): Promise<Uint8Array> {
     return this.forward(arguments);
   }
 }

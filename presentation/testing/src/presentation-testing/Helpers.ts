@@ -49,6 +49,7 @@ export const getTestOutputDir = (): string => {
   return testOutputDir ?? defaultTestOutputDir;
 };
 
+// eslint-disable-next-line deprecation/deprecation
 export { HierarchyCacheMode, PresentationManagerMode, PresentationBackendProps };
 
 /** @public */

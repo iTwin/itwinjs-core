@@ -348,6 +348,7 @@ export class SampleAppIModelApp {
         widgetOpacity: 0.8,
         showWidgetIcon: true,
         autoCollapseUnpinnedPanels: false,
+        toolbarOpacity: 0.5,
       };
 
       // initialize any settings providers that may need to have defaults set by iModelApp

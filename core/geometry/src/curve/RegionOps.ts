@@ -99,8 +99,9 @@ export class RegionOps {
    * @param distanceTolerance optional absolute distance tolerance
   */
   public static computeXYAreaTolerance(range: Range3d, distanceTolerance: number=Geometry.smallMetricDistance): number {
-    // if A = bh and e is distance tolerance, then A' := (b+e)(h+e) = A + e(b+h+e), so A'-A = e(b+h+e).
-    return distanceTolerance * (range.xLength() + range.yLength() + distanceTolerance);
+    // if A = bh and e is distance tolerance, then A' := (b+e/2)(h+e/2) = A + e/2(b+h+e/2), so A'-A = e/2(b+h+e/2).
+    const halfDistTol = 0.5 * distanceTolerance;
+    return halfDistTol * (range.xLength() + range.yLength() + halfDistTol);
   }
   /**
    * Return an xy area for a loop, parity region, or union region.
