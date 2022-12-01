@@ -15,7 +15,7 @@ jobs:
   - job: Node_14_x
     condition: succeeded()
     pool:
-      vmImage: ubuntu-latest
+      vmImage: ubuntu-20.04
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
