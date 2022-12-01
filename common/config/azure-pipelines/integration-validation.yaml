@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         Linux_node_12_7:
-          imageName: ubuntu-latest20.04
+          imageName: ubuntu-20.04
           nodeVersion: 12.17.0
         Linux_node_12_x:
           imageName: ubuntu-20.04
