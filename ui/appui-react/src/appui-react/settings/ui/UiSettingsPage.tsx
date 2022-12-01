@@ -94,9 +94,6 @@ export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean
       "configurableui:set-auto-collapse-unpinned-panels", "configurableui:set-animate-tool-settings",
       "configurableui:set-use-tool-as-tool-settings-label", "configurableui:set-toolbar-opacity", SyncUiEventId.ShowHideManagerSettingChange];
 
-    /**
-     *
-     */
     const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       // istanbul ignore else
       if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
