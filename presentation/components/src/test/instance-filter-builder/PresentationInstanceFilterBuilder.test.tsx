@@ -98,12 +98,8 @@ describe("PresentationInstanceFilter", () => {
     imodelMock.setup((x) => x.key).returns(() => "test_imodel");
     imodelMock.setup((x) => x.onClose).returns(() => onCloseEvent);
     const metadataProvider = getIModelMetadataProvider(imodelMock.object);
-    sinon.stub(metadataProvider, "getECClassInfo").callsFake(async (id) => {
-      switch (id) {
-        case classInfo.id:
-          return new ECClassInfo(classInfo.id, classInfo.name, classInfo.label, new Set(), new Set());
-      }
-      return undefined;
+    sinon.stub(metadataProvider, "getECClassInfo").callsFake(async () => {
+      return new ECClassInfo(classInfo.id, classInfo.name, classInfo.label, new Set(), new Set());
     });
   });
 
@@ -150,7 +146,7 @@ describe("PresentationInstanceFilter", () => {
     );
   });
 
-  it("renders with initial filter correctly' ", async () => {
+  it("renders with initial filter", async () => {
     const spy = sinon.spy();
     const { container, queryByDisplayValue } = render(<PresentationInstanceFilterBuilder
       imodel={imodelMock.object}

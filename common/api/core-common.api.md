@@ -36,6 +36,7 @@ import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelJson } from '@itwin/core-geometry';
 import { IModelStatus } from '@itwin/core-bentley';
+import { IndexedPolyface } from '@itwin/core-geometry';
 import { IndexedPolyfaceVisitor } from '@itwin/core-geometry';
 import { IndexedValue } from '@itwin/core-bentley';
 import { IndexMap } from '@itwin/core-bentley';
@@ -529,6 +530,8 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
 
 // @public
 export interface BaseReaderOptions {
+    // @internal
+    delay?: number;
     priority?: number;
     quota?: QueryQuota;
     restartToken?: string;
@@ -647,15 +650,13 @@ export class BlobOptionsBuilder {
     constructor(_options?: BlobOptions);
     // (undocumented)
     getOptions(): BlobOptions;
-    // (undocumented)
+    // @internal
+    setDelay(val: number): this;
+    // @internal
     setPriority(val: number): this;
-    // (undocumented)
     setQuota(val: QueryQuota): this;
-    // (undocumented)
     setRange(val: BlobRange): this;
-    // (undocumented)
     setRestartToken(val: string): this;
-    // (undocumented)
     setUsePrimaryConnection(val: boolean): this;
 }
 
@@ -1811,6 +1812,20 @@ export interface DbBlobResponse extends DbResponse {
     rawBlobSize: number;
 }
 
+// @internal (undocumented)
+export interface DbQueryConfig {
+    // (undocumented)
+    globalQuota?: QueryQuota;
+    // (undocumented)
+    ignoreDelay?: boolean;
+    // (undocumented)
+    ignorePriority?: boolean;
+    // (undocumented)
+    requestQueueSize?: number;
+    // (undocumented)
+    workerThreads?: number;
+}
+
 // @public (undocumented)
 export class DbQueryError extends BentleyError {
     constructor(response: any, request?: any, rc?: DbResult);
@@ -2726,6 +2741,18 @@ export interface ElementLoadProps extends ElementLoadOptions {
     federationGuid?: GuidString;
     // (undocumented)
     id?: Id64String;
+}
+
+// @beta
+export interface ElementMeshOptions {
+    angleTolerance?: number;
+    chordTolerance?: number;
+    minBRepFeatureSize?: number;
+}
+
+// @beta
+export interface ElementMeshRequestProps extends ElementMeshOptions {
+    source: Id64String;
 }
 
 // @public
@@ -4688,6 +4715,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void>;
     // (undocumented)
+    generateElementMeshes(_iModelToken: IModelRpcProps, _props: ElementMeshRequestProps): Promise<Uint8Array>;
+    // (undocumented)
     getAllCodeSpecs(_iModelToken: IModelRpcProps): Promise<any[]>;
     // (undocumented)
     getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]>;
@@ -5731,6 +5760,13 @@ export class NonUniformColor {
     readonly indices: Uint16Array;
     // (undocumented)
     readonly isOpaque: boolean;
+}
+
+// @beta
+export interface NormalMapParams {
+    greenDown?: boolean;
+    normalMap?: RenderTexture;
+    scale?: number;
 }
 
 // @public
@@ -6806,33 +6842,20 @@ export namespace Quantization {
     export function unquantize(qpos: number, origin: number, scale: number): number;
 }
 
-// @public (undocumented)
+// @public
 export class QueryBinder {
-    // (undocumented)
     bindBlob(indexOrName: string | number, val: Uint8Array): this;
-    // (undocumented)
     bindBoolean(indexOrName: string | number, val: boolean): this;
-    // (undocumented)
     bindDouble(indexOrName: string | number, val: number): this;
-    // (undocumented)
     bindId(indexOrName: string | number, val: Id64String): this;
-    // (undocumented)
     bindIdSet(indexOrName: string | number, val: OrderedId64Iterable): this;
-    // (undocumented)
     bindInt(indexOrName: string | number, val: number): this;
-    // (undocumented)
     bindLong(indexOrName: string | number, val: number): this;
-    // (undocumented)
     bindNull(indexOrName: string | number): this;
-    // (undocumented)
     bindPoint2d(indexOrName: string | number, val: Point2d): this;
-    // (undocumented)
     bindPoint3d(indexOrName: string | number, val: Point3d): this;
-    // (undocumented)
     bindString(indexOrName: string | number, val: string): this;
-    // (undocumented)
     bindStruct(indexOrName: string | number, val: object): this;
-    // (undocumented)
     static from(args: any[] | object | undefined): QueryBinder;
     // (undocumented)
     serialize(): object;
@@ -6859,23 +6882,17 @@ export class QueryOptionsBuilder {
     constructor(_options?: QueryOptions);
     // (undocumented)
     getOptions(): QueryOptions;
-    // (undocumented)
     setAbbreviateBlobs(val: boolean): this;
-    // (undocumented)
     setConvertClassIdsToNames(val: boolean): this;
-    // (undocumented)
+    // @internal
+    setDelay(val: number): this;
     setLimit(val: QueryLimit): this;
-    // (undocumented)
+    // @internal
     setPriority(val: number): this;
-    // (undocumented)
     setQuota(val: QueryQuota): this;
-    // (undocumented)
     setRestartToken(val: string): this;
-    // (undocumented)
     setRowFormat(val: QueryRowFormat): this;
-    // (undocumented)
     setSuppressLogErrors(val: boolean): this;
-    // (undocumented)
     setUsePrimaryConnection(val: boolean): this;
 }
 
@@ -6958,6 +6975,9 @@ export interface ReadableFormData extends BackendReadable {
         [key: string]: any;
     };
 }
+
+// @beta
+export function readElementMeshes(data: Uint8Array): IndexedPolyface[];
 
 // @internal
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
@@ -9061,6 +9081,8 @@ export class TextureMapping {
     constructor(tx: RenderTexture, params: TextureMapping.Params);
     // @internal (undocumented)
     computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
+    // @beta
+    normalMapParams?: NormalMapParams;
     readonly params: TextureMapping.Params;
     readonly texture: RenderTexture;
 }
@@ -9653,6 +9675,7 @@ export enum TypeOfChange {
     Geometry = 2,
     Hidden = 16,
     Indirect = 8,
+    Parent = 32,
     Placement = 4,
     Property = 1
 }
