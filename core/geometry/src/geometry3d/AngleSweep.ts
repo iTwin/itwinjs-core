@@ -155,7 +155,7 @@ export class AngleSweep implements BeJSONFunctions {
     startRadians = startRadians ? startRadians : 0.0;
     return new AngleSweep(startRadians, startRadians + 2.0 * Math.PI);
   }
-  /** create a sweep from the south pole to the north pole (-180 to +180). */
+  /** create a sweep from the south pole to the north pole (-90 to +90). */
   public static createFullLatitude() {
     return AngleSweep.createStartEndRadians(-0.5 * Math.PI, 0.5 * Math.PI);
   }
@@ -390,14 +390,16 @@ export class AngleSweep implements BeJSONFunctions {
   public toJSON(): any {
     return [this.startDegrees, this.endDegrees];
   }
-  /** test if start and end angles match with radians tolerance.
+  /** test if this and other angle sweeps match with radians tolerance.
    * * Period shifts are allowed.
    */
   public isAlmostEqualAllowPeriodShift(other: AngleSweep): boolean {
+    // We compare angle sweeps by checking if start angle and sweep match. We cannot compare start and end because for
+    // example (0, 90) and (360, 90) have the same start (we allow period shift) and end but are not same angle sweeps.
     return Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians0, other._radians0)
-      && Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0);
+      && Angle.isAlmostEqualRadiansNoPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0);
   }
-  /** test if start and end angles match with radians tolerance.
+  /** test if start angle and sweep match with radians tolerance.
    * * Period shifts are not allowed.
    */
   public isAlmostEqualNoPeriodShift(other: AngleSweep): boolean {

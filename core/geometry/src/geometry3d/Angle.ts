@@ -445,17 +445,24 @@ export class Angle implements BeJSONFunctions {
     return value;
   }
   /**
-   * Return the half angle cosine, sine, and radians for given dot products between vectors.
-   * @param dotUU dot product of vectorU with itself
-   * @param dotVV dot product of vectorV with itself
-   * @param dotUV dot product of vectorU with vectorV
-   */
+     * Return the half angle cosine, sine, and radians for given dot products between vectors. The vectors define
+     * an ellipse using x(t) = c + U cos(t) + V sin(t) so U and V are at angle t=0 degree and t=90 degree. The
+     * half angle t0 is an angle such that x(t0) is one of the ellipse semi-axis.
+     * * This construction arises e.g. in `Arc3d.toScaledMatrix3d`.
+     * * Given ellipse x(t) = c + U cos(t) + V sin(t), find t0 such that radial vector W(t0) = x(t0) - c is
+     * perpendicular to the ellipse.
+     * * Then 0 = W(t0).x'(t0) = (U cos(t0) + V sin(t0)).(V cos(t0) - U sin(t0)) = U.V cos(2t0) + 0.5 (V.V - U.U) sin(2t0)
+     * implies sin(2t0) / cos(2t0) = 2 U.V / (U.U - V.V), i.e., t0 can be computed given the three dot products on the RHS.
+     * @param dotUU dot product of vectorU with itself
+     * @param dotVV dot product of vectorV with itself
+     * @param dotUV dot product of vectorU with vectorV
+     */
   public static dotProductsToHalfAngleTrigValues(dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true): TrigValues {
-    const rCos2A = dotUU - dotVV; // cos2A = cosA^2 - sinA^2
-    const rSin2A = 2.0 * dotUV;   // sin2A = 2 * sinA * cosA
-    if (favorZero && Math.abs(rSin2A) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
-      return { c: 1.0, s: 0.0, radians: 0.0 }; // angle = 0
-    return Angle.trigValuesToHalfAngleTrigValues(rCos2A, rSin2A);
+    const cos2t0 = dotUU - dotVV;
+    const sin2t0 = 2.0 * dotUV;
+    if (favorZero && Math.abs(sin2t0) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
+      return { c: 1.0, s: 0.0, radians: 0.0 };
+    return Angle.trigValuesToHalfAngleTrigValues(cos2t0, sin2t0);
   }
   /**
    * * Returns the angle between two vectors, with the vectors given as xyz components

@@ -205,7 +205,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
 
   /**
-   * Creat an arc by center with vectors to points at 0 and 90 degrees in parameter space.
+   * Create an arc by center with vectors to points at 0 and 90 degrees in parameter space.
    * @param center arc center
    * @param vector0 vector to 0 degrees (commonly major axis)
    * @param vector90 vector to 90 degree point (commonly minor axis)

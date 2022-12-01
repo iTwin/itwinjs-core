@@ -4,11 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { AngleSweepProps, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // allow _radians and _degrees as property names
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -825,4 +830,56 @@ describe("Angle.radiansToSignedPeriodicFraction", () => {
       const expectedFraction = 0.5; // (385-30 + 0.5*10)/(20-30) = 360/10 ==> 0/10 = 0 ==> 0.5 + 0 = 0.5
       assert.isOk(Geometry.isSameCoordinate(expectedFraction, outputFraction));
     });
+});
+
+describe("Angle.dotProductsToHalfAngleTrigValues", () => {
+  it("Angle.SquareEllipseAxes", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const c = Point3d.createZero(); // the center of ellipse
+    // u and v are 2 random vectors which define vector basis for the ellipse x(t) = c + U cos(t) + V sin(t)
+    const U = Vector3d.create(3, 1);
+    const V = Vector3d.create(2, 2);
+    const sweep = AngleSweep.createStartEndRadians(2 / 5 * Math.PI, 4 / 3 * Math.PI); // a radom sweep on the ellipse
+    const arc0 = Arc3d.create(c, U, V, sweep); // the arc on the ellipse (limited by the sweep)
+    // uSeg0 and vSeg0 are the 2 ellipse vector basis (they have the same direction as U and V)
+    const uSeg0 = LineSegment3d.create(arc0.center, arc0.center.plus(arc0.vector0));
+    const vSeg0 = LineSegment3d.create(arc0.center, arc0.center.plus(arc0.vector90));
+    const arc0full = arc0.clone();
+    arc0full.sweep = AngleSweep.create360(arc0full.sweep.startRadians);  // the full ellipse created by c, u, and v
+    const dotUU = U.dotProduct(U);
+    const dotVV = V.dotProduct(V);
+    const dotUV = U.dotProduct(V);
+    const t = Angle.dotProductsToHalfAngleTrigValues(dotUU, dotVV, dotUV); // the angle at which one of the ellipse semi-axis is located
+    // perpSeg is one of the ellipse semi-axis
+    const perpSeg = LineSegment3d.create(arc0.center, arc0.angleToPointAndDerivative(Angle.createRadians(t.radians)).origin);
+    const arc1json = arc0.toScaledMatrix3d(); // toScaledMatrix3d internally calls dotProductsToHalfAngleTrigValues
+    // arc1 is the squared arc (created by 2 perpendicular vector basis). arc1 is same as arc0 but arc1 is
+    // created by the 2 semi-axis (2 perpendicular vector basis) while arc0 is created by 2 random vector basis.
+    // note that toScaledMatrix3d returns unit axis so we have to apply scale (r0 and r90)
+    const arc1 = Arc3d.create(arc1json.center, arc1json.axes.columnX().scale(arc1json.r0), arc1json.axes.columnY().scale(arc1json.r90), arc1json.sweep);
+    // uSeg0 and vSeg0 are the 2 ellipse semi-axis. note that uSeg1 is same as perpSeg
+    const uSeg1 = LineSegment3d.create(arc1.center, arc1.center.plus(arc1.vector0));
+    const vSeg1 = LineSegment3d.create(arc1.center, arc1.center.plus(arc1.vector90));
+    ck.testPoint3d(arc0.startPoint(), arc1.startPoint(), "arc and squared arc start point same");
+    ck.testPoint3d(arc0.endPoint(), arc1.endPoint(), "arc and squared arc end point same");
+    ck.testCoordinate(arc0.curveLength(), arc1.curveLength(), "arc and squared arc lengths same");
+    ck.testPoint3d(
+      perpSeg.startPoint(),
+      uSeg1.startPoint(),
+      "the radial segment at angle t in the original arc has the same start point as the semi-axis at angle 0 in the squared arc"
+    );
+    ck.testPoint3d(
+      perpSeg.endPoint(),
+      uSeg1.endPoint(),
+      "the radial segment at angle t in the original arc has the same end point as the semi-axis at angle 0 in the squared arc"
+    );
+    ck.testPoint3d(perpSeg.point1Ref, arc1.center.plusScaled(arc1.vector0, 1.0), "point at angle t in arc equals point at angle 0 in squared arc");
+    ck.testFalse(arc0.vector0.angleTo(arc1.vector0).isAlmostEqual(Angle.createRadians(t.radians)), "angle t is NOT measured from u to perpSeg");
+
+    // for visualization in MicroStation
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arc0, arc0full, uSeg0, vSeg0, perpSeg, arc1, uSeg1, vSeg1]);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Angle", "SquareEllipseAxes");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
