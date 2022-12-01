@@ -128,7 +128,7 @@ function useProperties(propertyInfos: InstanceFilterPropertyInfo[], selectedClas
 }
 
 function useSelectedClasses(classes: ClassInfo[], imodel: IModelConnection, initialClasses?: ClassInfo[]) {
-  const [selectedClasses, setSelectedClasses] = React.useState<ClassInfo[]>(initialClasses ? initialClasses : []);
+  const [selectedClasses, setSelectedClasses] = React.useState<ClassInfo[]>(initialClasses ?? []);
   const [isFilteringClasses, setIsFilteringClasses] = React.useState(false);
   const disposedRef = React.useRef(false);
   React.useEffect(() => () => { disposedRef.current = true; }, []);
