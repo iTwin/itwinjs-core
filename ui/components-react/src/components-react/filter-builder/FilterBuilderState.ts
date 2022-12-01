@@ -171,7 +171,7 @@ function findRule(rootGroup: PropertyFilterBuilderRuleGroup, path: string[]): Pr
   return currentItem;
 }
 
-function getGroupRuleItem(filter: PropertyFilter, parentId: string): PropertyFilterBuilderRuleGroupItem {
+function getRuleGroupItem(filter: PropertyFilter, parentId: string): PropertyFilterBuilderRuleGroupItem {
   const id = Guid.createValue();
   if (isPropertyFilterRuleGroup(filter))
     return {
@@ -183,7 +183,7 @@ function getGroupRuleItem(filter: PropertyFilter, parentId: string): PropertyFil
   return getSingleRuleItem(filter, id);
 }
 
-function getSingleRuleItem(filter: PropertyFilterRule, parentId: string) {
+function getRuleItem(filter: PropertyFilterRule, parentId: string) {
   return {
     id: Guid.createValue(),
     groupId: parentId,
