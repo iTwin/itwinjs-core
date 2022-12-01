@@ -110,7 +110,7 @@ describe("ModalSettingsStage", () => {
   it("will display settings because they are registered", async () => {
     const settingsManager = UiFramework.settingsManager;
 
-    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
     const frontstageDef = new FrontstageDef();
     await frontstageDef.initializeFromProps(dummy);
     sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
@@ -147,7 +147,7 @@ describe("ModalSettingsStage", () => {
   it("set initial stage via tab-id", async () => {
     const settingsManager = UiFramework.settingsManager;
 
-    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
     const frontstageDef = new FrontstageDef();
     await frontstageDef.initializeFromProps(dummy);
     sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
@@ -170,7 +170,7 @@ describe("ModalSettingsStage", () => {
   it("set initial stage via tab name", async () => {
     const settingsManager = UiFramework.settingsManager;
 
-    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+    const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
     const frontstageDef = new FrontstageDef();
     await frontstageDef.initializeFromProps(dummy);
     sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);

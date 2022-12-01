@@ -68,7 +68,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/plant-custom-attributes-schema",
@@ -492,7 +492,7 @@
     },
     {
       "name": "buffer",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "cache-require-paths",
@@ -767,10 +767,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "istanbul-instrumenter-loader",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "js-base64",
       "allowedCategories": [ "backend", "common" ]
     },
@@ -979,10 +975,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "recursive-readdir",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "redux",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -1045,10 +1037,6 @@
     {
       "name": "stream-http",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "string_decoder",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "superagent",

@@ -10,6 +10,7 @@
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Geometry, PlaneAltitudeEvaluator } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -21,6 +22,7 @@ import { Arc3d } from "../Arc3d";
 import { GeometryQuery } from "../GeometryQuery";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
+import { StrokeOptions } from "../StrokeOptions";
 
 /**
  * Accumulator context for searching for extrema of geometry along a plane.
@@ -74,16 +76,26 @@ export class PlaneAltitudeRangeContext extends RecurseToCurvesGeometryHandler {
     this.announcePoints(lineString.packedPoints);
   }
 
+  private _strokeOptions?: StrokeOptions;
+  private initStrokeOptions() {
+    // TODO: compute the exact extrema; until then stroke aggressively
+    if (undefined === this._strokeOptions) {
+      this._strokeOptions = new StrokeOptions();
+      this._strokeOptions.angleTol = Angle.createDegrees(1);
+    }
+  }
   public override handleBSplineCurve3d(bcurve: BSplineCurve3d) {
     // ugh.   The point MUST be on the curve -- usual excess-range of poles is not ok.
+    this.initStrokeOptions();
     const ls = LineString3d.create();
-    bcurve.emitStrokes(ls);
+    bcurve.emitStrokes(ls, this._strokeOptions);
     this.handleLineString3d(ls);
   }
   public override handleBSplineCurve3dH(bcurve: BSplineCurve3dH) {
     // ugh.   The point MUST be on the curve -- usual excess-range of poles is not ok.
+    this.initStrokeOptions();
     const ls = LineString3d.create();
-    bcurve.emitStrokes(ls);
+    bcurve.emitStrokes(ls, this._strokeOptions);
     this.handleLineString3d(ls);
   }
 

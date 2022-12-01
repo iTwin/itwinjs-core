@@ -922,6 +922,19 @@ export class Vector3d extends XYZ {
     this.z *= a;
     return true;
   }
+  /** Create a normalized vector from the inputs.
+   * @param result optional result
+   * @returns undefined if and only if normalization fails
+  */
+  public static createNormalized(x: number = 0, y: number = 0, z: number = 0, result?: Vector3d): Vector3d | undefined {
+    if (undefined === result)
+      result = Vector3d.create(x, y, z);
+    else
+      result.set(x, y, z);
+    if (result.normalizeInPlace())
+      return result;
+    return undefined;
+  }
   /**
    * Return fractional projection of target vector onto this
    * * It's returning the signed projection magnitude divided by the target magnitude. In other words,

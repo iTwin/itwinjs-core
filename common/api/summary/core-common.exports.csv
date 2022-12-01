@@ -163,6 +163,7 @@ public;CutStyleProps
 public;DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm"
 internal;DbBlobRequest 
 internal;DbBlobResponse 
+internal;DbQueryConfig
 public;DbQueryError 
 internal;DbQueryRequest 
 internal;DbQueryResponse 
@@ -230,6 +231,8 @@ public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGra
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions
 public;ElementLoadProps 
+beta;ElementMeshOptions
+beta;ElementMeshRequestProps 
 public;ElementPlanarClipMaskArgs 
 public;ElementProps 
 public;EmphasizeElementsProps
@@ -486,6 +489,7 @@ public;nextHighestPowerOfTwo(num: number): number
 internal;nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d
 public;NoContentError 
 internal;NonUniformColor
+beta;NormalMapParams
 public;Npc
 public;NpcCenter: Point3d
 public;NpcCorners: Point3d[]
@@ -590,6 +594,7 @@ beta;QueryStats
 beta;QueryValueType = any
 public;Rank
 internal;ReadableFormData 
+beta;readElementMeshes(data: Uint8Array): IndexedPolyface[]
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 beta;RealityData
 beta;RealityDataAccess

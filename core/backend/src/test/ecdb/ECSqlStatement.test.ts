@@ -11,6 +11,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 import { ECDbTestHelper } from "./ECDbTestHelper";
+import { ConcurrentQuery } from "../../ConcurrentQuery";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();
@@ -190,7 +191,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it.skip("should restart query", async () => { // Issue #4355 @khanaffan
+  it("should restart query", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "cancelquery.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -207,13 +208,18 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       }
       ecdb.saveChanges();
+      ConcurrentQuery.resetConfig(ecdb.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
+
       let cancelled = 0;
       let successful = 0;
       let rowCount = 0;
-      const cb = async () => {
+      const scheduleQuery = async (delay: number) => {
         return new Promise<void>(async (resolve, reject) => {
           try {
-            for await (const _row of ecdb.query("SELECT * FROM ts.Foo", undefined, new QueryOptionsBuilder().setRestartToken("tag").setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions())) {
+            const options = new QueryOptionsBuilder();
+            options.setDelay(delay);
+            options.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+            for await (const _row of ecdb.restartQuery("tag", "SELECT * FROM ts.Foo", undefined, options.getOptions())) {
               rowCount++;
             }
             successful++;
@@ -224,16 +230,16 @@ describe("ECSqlStatement", () => {
               cancelled++;
               resolve();
             } else {
-              reject();
+              reject(new Error("rejected"));
             }
           }
         });
       };
 
       const queries = [];
-      for (let i = 0; i < 20; i++) {
-        queries.push(cb());
-      }
+      queries.push(scheduleQuery(5000));
+      queries.push(scheduleQuery(0));
+
       await Promise.all(queries);
       // We expect at least one query to be cancelled
       assert.isAtLeast(cancelled, 1);

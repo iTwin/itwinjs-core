@@ -420,12 +420,23 @@ describe("Vector3d.scaleToLength", () => {
   });
 });
 
-describe("Vector3d.normalizeWithDefault", () => {
+describe("Vector3d.normalize", () => {
   it("Vector3d.normalizeWithDefault", () => {
     const thisVector: Vector3d = Vector3d.create(0, 0, 0);
     const expectedVector: Vector3d = Vector3d.create(1, 0, 0);
     const output: Vector3d = thisVector.normalizeWithDefault(0, 0, 0);
     expect(output).to.deep.equal(expectedVector);
+  });
+
+  it("Vector3d.createNormalized", () => {
+    const ck = new bsiChecker.Checker();
+    const unitVec = Vector3d.create(Math.SQRT1_2, Math.SQRT1_2);
+    const vec = Vector3d.createNormalized(3, 3)!;
+    ck.testVector3d(unitVec, vec, "expect normalized vector");
+    vec.setZero();
+    ck.testVector3d(unitVec, Vector3d.createNormalized(1, 1, 0, vec)!, "expect normalized vector with initialized result");
+    ck.testUndefined(Vector3d.createNormalized(), "expect undefined when input is zero vector");
+    expect(ck.getNumErrors()).equals(0);
   });
 });
 
