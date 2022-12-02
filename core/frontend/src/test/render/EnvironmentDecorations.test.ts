@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { ColorDef, Environment, EnvironmentProps, ImageSource, ImageSourceFormat, RenderTexture, SkyBox, SkyBoxImageType } from "@itwin/core-common";
+import { ColorDef, Environment, EnvironmentProps, Gradient, ImageSource, ImageSourceFormat, RenderTexture, SkyBox, SkyBoxImageType } from "@itwin/core-common";
 import { EnvironmentDecorations } from "../../EnvironmentDecorations";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { SpatialViewState } from "../../SpatialViewState";
@@ -81,12 +81,18 @@ describe.only("EnvironmentDecorations", () => {
       format: ImageSourceFormat.Png,
     };
 
-    const createTexture = () => {
-      return {} as unknown as RenderTexture;
+    const createdTexturesById = new Map<string | Gradient.Symb, RenderTexture>();
+    const createTexture = (id?: string | Gradient.Symb) => {
+      const texture = {} as unknown as RenderTexture;
+      if (undefined !== id)
+        createdTexturesById.set(id, texture);
+
+      return texture;
     };
 
-    IModelApp.renderSystem.createTextureFromCubeImages = createTexture;
-    IModelApp.renderSystem.createTexture = createTexture;
+    IModelApp.renderSystem.findTexture = (key?: string | Gradient.Symb) => undefined !== key ? createdTexturesById.get(key) : undefined;
+    IModelApp.renderSystem.createTextureFromCubeImages = (_a, _b, _c, _d, _e, _f, _g, params) => createTexture(params.key);
+    IModelApp.renderSystem.createTexture = (args) => createTexture(args.ownership && "external" !== args.ownership ? args.ownership.key : undefined);
     IModelApp.renderSystem.loadTextureImage = async () => Promise.resolve(textureImage);
 
     iModel = createBlankConnection();
