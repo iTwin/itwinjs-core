@@ -25,7 +25,9 @@ export interface GroundPlaneDecorations {
 }
 
 interface SkyBoxParamsLoader {
+  // Invoke to obtain sky box params.
   load(): RenderSkyBoxParams | undefined;
+  // If defined, await before invoking load().
   preload?: Promise<boolean>;
 }
 
