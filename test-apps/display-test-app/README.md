@@ -237,7 +237,10 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `d=dimensions` - the desired width and height of the image in pixels. The image will be square. e.g. `d=768`.
   * `c=0|1` - if `1`, instead of opening a new window to display the image, the image will be copied to the clipboard. NOTE: this probably doesn't work in Firefox.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
-* `dta zoom selected` - zoom the selected viewport to the elements in the selection set.
+* `dta zoom selected` - zoom the selected viewport to the elements in the selection set. Optional arguments specify the margin or padding percent as follows:
+  * `l=` `r=` `t=` `b=` followed by a number indicating the left, right, top, and/or bottom padding or margin percent.
+  * `m=0|1` where zero indicates padding should be applied and 1 indicates margin should be applied.
+  * `p=` followed by a number indicating the single value to use for top, left, right, and bottom.
 * `dta incident markers` - toggle incident marker demo in the selected viewport.
 * `dta path decoration` - toggle drawing a small path decoration in the selected viewport for testing purposes.
 * `dta markup` - toggle markup on the selected viewport.

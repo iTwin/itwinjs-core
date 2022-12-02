@@ -8,16 +8,44 @@
 
 import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex,
-  ChangesetIndexAndId, IModelConnectionProps, IModelError, OpenBriefcaseProps, StandaloneOpenOptions,
+  ChangesetIndex, ChangesetIndexAndId, getPullChangesIpcChannel, IModelConnectionProps, IModelError,
+  PullChangesOptions as IpcAppPullChangesOptions, OpenBriefcaseProps, StandaloneOpenOptions,
 } from "@itwin/core-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
+import { ProgressCallback } from "./request/Request";
 import { disposeTileTreesForGeometricModels } from "./tile/internal";
 import { Viewport } from "./Viewport";
+
+/**
+ * Partial interface of AbortSignal.
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
+ * @alpha
+ */
+export interface GenericAbortSignal {
+  /** Add Listener for abort signal. */
+  addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
+  /** Remove Listener for abort signal. */
+  removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
+}
+
+/**
+ * Options for pulling iModel changes.
+ * @public
+ */
+export interface PullChangesOptions {
+  /** Function called regularly to report progress of changes download. */
+  progressCallback?: ProgressCallback;
+  /** Interval for calling progress callback (in milliseconds). */
+  progressInterval?: number;
+  /** Signal for cancelling the download.
+   * @alpha
+   */
+  abortSignal?: GenericAbortSignal;
+}
 
 /** Keeps track of changes to models, buffering them until synchronization points.
  * While a GraphicalEditingScope is open, the changes are buffered until the scope exits, at which point they are processed.
@@ -285,11 +313,35 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
    * @param toIndex The changeset index to pull changes to. If `undefined`, pull all changes.
+   * @param options Options for pulling changes.
    * @see [[BriefcaseTxns.onChangesPulled]] for the event dispatched after changes are pulled.
    */
-  public async pullChanges(toIndex?: ChangesetIndex): Promise<void> {
+  public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
+    const removeListeners: VoidFunction[] = [];
+    if (options?.progressCallback) {
+      const removeProgressListener = IpcApp.addListener(
+        getPullChangesIpcChannel(this.iModelId),
+        (_evt: Event, data: { loaded: number, total: number }) => options?.progressCallback?.(data),
+      );
+      removeListeners.push(removeProgressListener);
+    }
+    if (options?.abortSignal) {
+      const abort = () => void IpcApp.appFunctionIpc.cancelPullChangesRequest(this.key);
+      options?.abortSignal.addEventListener("abort", abort);
+      removeListeners.push(() => options?.abortSignal?.removeEventListener("abort", abort));
+    }
+
     this.requireTimeline();
-    this.changeset = await IpcApp.appFunctionIpc.pullChanges(this.key, toIndex);
+    const ipcAppOptions: IpcAppPullChangesOptions = {
+      reportProgress: !!options?.progressCallback,
+      progressInterval: options?.progressInterval,
+      enableCancellation: !!options?.abortSignal,
+    };
+    try {
+      this.changeset = await IpcApp.appFunctionIpc.pullChanges(this.key, toIndex, ipcAppOptions);
+    } finally {
+      removeListeners.forEach((remove) => remove());
+    }
   }
 
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.

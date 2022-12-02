@@ -8,7 +8,8 @@
 
 import { request } from "../../request/Request";
 import { assert, compareStrings, Dictionary } from "@itwin/core-bentley";
-import { QuadId } from "../internal";
+import { ArcGisUtilities, MapLayerAccessClient, QuadId } from "../internal";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 
 const nonVisibleChildren = [false, false, false, false];
 /** @internal */
@@ -19,15 +20,34 @@ export class ArcGISTileMap {
   private _callQueues: Array<Promise<boolean[]>> | undefined;
   private _tilesCache = new Dictionary<string, boolean>((lhs, rhs) => compareStrings(lhs, rhs));
   private _restBaseUrl: string;
-  constructor(restBaseUrl: string, nbLods?: number) {
+  private _accessClient: MapLayerAccessClient|undefined;
+  private _settings: ImageMapLayerSettings;
+
+  constructor(restBaseUrl: string, settings: ImageMapLayerSettings, nbLods?: number, accessClient?: MapLayerAccessClient) {
     this._restBaseUrl = restBaseUrl;
+    this._accessClient = accessClient;
+    this._settings = settings;
     if (nbLods !== undefined && nbLods > 0) {
       this._callQueues = new Array<Promise<boolean[]>>(nbLods).fill(Promise.resolve<boolean[]>(nonVisibleChildren));
     }
 
   }
   protected async fetchTileMapFromServer(level: number, row: number, column: number, width: number, height: number): Promise<any> {
-    const data = await request(`${this._restBaseUrl}/tilemap/${level}/${row}/${column}/${width}/${height}?f=json`, {
+    const tmpUrl = `${this._restBaseUrl}/tilemap/${level}/${row}/${column}/${width}/${height}?f=json`;
+    const urlObj = new URL(tmpUrl);
+    try {
+      if (this._accessClient) {
+        await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {
+          mapLayerUrl: new URL(this._settings.url),
+          userName: this._settings.userName,
+          password: this._settings.password,
+        });
+      }
+
+    } catch {
+    }
+
+    const data = await request(urlObj.toString() , {
       method: "GET",
       responseType: "json",
     });

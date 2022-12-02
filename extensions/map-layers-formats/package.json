@@ -1,0 +1,102 @@
+{
+  "name": "@itwin/map-layers-formats",
+  "version": "3.6.0-dev.1",
+  "description": "Enables additional map-layers formats in iTwin.js",
+  "main": "lib/cjs/map-layers-formats.js",
+  "module": "lib/esm/map-layers-formats.js",
+  "typings": "lib/cjs/map-layers-formats",
+  "license": "MIT",
+  "scripts": {
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "cover": "nyc npm -s test",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/map-layers-formats/file.json --tsIndexFile=./map-layers-formats.ts --onlyJson --excludes=**/ArcGisFeature/*.ts,**/*.gen.ts",
+    "extract-api": "betools extract-api --entry=map-layers-formats",
+    "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
+    "test": "mocha \"./lib/cjs/test/**/*.test.js\" --reporter-option maxDiffSize=0",
+    "rebuild": "npm run -s clean && npm run -s build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/extensions/map-layers-formats"
+  },
+  "keywords": [
+    "iModel",
+    "BIM",
+    "maps",
+    "extension"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "devDependencies": {
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@types/chai": "4.3.1",
+    "@types/chai-as-promised": "^7",
+    "@types/google-protobuf": "~3.15.6",
+    "@types/mocha": "^8.2.2",
+    "@types/sinon": "^9.0.0",
+    "@types/sinon-chai": "^3.2.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "eslint": "^7.11.0",
+    "jsdom": "^19.0.0",
+    "jsdom-global": "3.0.2",
+    "mocha": "^10.0.0",
+    "nyc": "^15.1.0",
+    "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
+    "sinon-chai": "^3.2.0",
+    "source-map-support": "^0.5.6",
+    "typescript": "~4.4.0"
+  },
+  "peerDependencies": {
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*"
+  },
+  "dependencies": {
+    "google-protobuf": "~3.20.1"
+  },
+  "nyc": {
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
+    "check-coverage": false
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@itwin"
+    ],
+    "extends": "plugin:@itwin/itwinjs-recommended"
+  },
+  "mocha": {
+    "require": [
+      "raf/polyfill",
+      "source-map-support/register",
+      "jsdom-global/register",
+      "ignore-styles"
+    ],
+    "checkLeaks": true,
+    "timeout": 60000,
+    "file": [],
+    "exclude": [
+      "lib/cjs/test/coverage/**/*"
+    ],
+    "reporter": [
+      "node_modules/@itwin/build-tools/mocha-reporter"
+    ],
+    "reporterOptions": [
+      "mochaFile=lib/test/junit_results.xml"
+    ]
+  }
+}

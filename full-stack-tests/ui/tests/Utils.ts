@@ -100,3 +100,11 @@ export async function expectTabInPanelSection(tab: Locator, side: PanelSide, sec
   await expect(panel).toHaveClass(new RegExp(`nz-${side}`));
   await expect(section, `expected tab to be in section '${sectionId}'`).toBeVisible();
 }
+
+export async function openFrontstage(page: Page, frontstageId: string) {
+  const toggleBackstage = page.locator(`.nz-app-button button`);
+  await toggleBackstage.click();
+
+  const backstageItem = page.locator(`[data-item-type="backstage-item"][data-item-id="${frontstageId}"]`);
+  await backstageItem.click();
+}

@@ -234,7 +234,7 @@ public;class InformationRecordElement
 public;InformationRecordModel 
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
-internal;initializeRpcBackend(enableOpenTelemetry?: boolean): void
+internal;initializeTracing(enableOpenTelemetry?: boolean): void
 beta;InstanceChange
 public;class IpcHandler
 public;IpcHost
@@ -303,7 +303,7 @@ public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
 public;ProgressStatus
 alpha;PropertyStore
 alpha;PropertyStore
-public;PullChangesArgs = ToChangesetArgs
+public;PullChangesArgs = ToChangesetArgs &
 public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
 public;Relationship 
@@ -379,6 +379,7 @@ public;TextAnnotation2d
 public;TextAnnotation3d 
 public;Texture 
 internal;TextureCreateProps 
+internal;throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction
 public;TitleText 
 public;ToChangesetArgs 
 public;TokenArg

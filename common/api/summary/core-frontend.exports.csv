@@ -37,6 +37,7 @@ internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
+internal;class ArcGISImageryProvider 
 internal;ArcGISMapLayerImageryProvider 
 internal;ArcGISTileMap
 internal;ArcGisUtilities
@@ -192,6 +193,7 @@ public;FrustumAnimator
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
+alpha;GenericAbortSignal
 internal;GeoConverter
 beta;GeographicTilingScheme 
 public;GeometricModel2dState 
@@ -280,7 +282,7 @@ public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCa
 public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
-internal;ImageryMapLayerFormat 
+beta;ImageryMapLayerFormat 
 internal;ImageryMapLayerTreeReference 
 internal;ImageryMapTile 
 internal;ImageryMapTileTree 
@@ -358,7 +360,7 @@ internal;MapLayerFormatEntry
 beta;MapLayerFormatRegistry
 beta;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
-internal;MapLayerImageryProviderStatus
+beta;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 public;MapLayerSource
 internal;MapLayerSources
@@ -434,6 +436,7 @@ public;OutputMessagePriority
 public;OutputMessageType
 public;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
+public;PaddingPercent
 public;PanViewTool 
 public;ParseAndRunResult
 public;ParsedKeyin
@@ -462,6 +465,7 @@ beta;PreferenceKeyArg
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
 alpha;PublisherProductInfo
+public;PullChangesOptions
 beta;QuadId
 public;QuantityFormatOverridesChangedArgs
 public;QuantityFormatsChangedArgs
@@ -491,7 +495,9 @@ internal;createCesiumIonAssetKey(osmAssetId: number, requestKey: string): Realit
 alpha;createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined
-alpha;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
+alpha;fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
+alpha;RealityDataSourceProvider
+alpha;RealityDataSourceProviderRegistry
 internal;RealityMeshGraphicParams
 beta;RealityMeshParams
 beta;RealityMeshParams
@@ -733,8 +739,8 @@ public;class Viewport
 public;ViewportDecorator
 public;ViewportGraphicBuilderOptions 
 public;class ViewPose
-internal;ViewPose2d 
-internal;ViewPose3d 
+public;ViewPose2d 
+public;ViewPose3d 
 public;ViewRect
 public;ViewRedoTool 
 public;class ViewState 

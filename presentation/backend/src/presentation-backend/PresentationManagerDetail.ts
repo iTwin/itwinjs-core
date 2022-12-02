@@ -14,13 +14,13 @@ import {
   KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset,
   RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
-import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
+import { PRESENTATION_BACKEND_ASSETS_ROOT } from "./Constants";
 import { buildElementsProperties } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
 } from "./NativePlatform";
-import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
+import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
@@ -39,16 +39,15 @@ export class PresentationManagerDetail implements IDisposable {
   constructor(params: PresentationManagerProps) {
     this._disposed = false;
 
-    const presentationAssetsRoot = params.presentationAssetsRoot ?? {
-      common: PRESENTATION_COMMON_ASSETS_ROOT,
-      backend: PRESENTATION_BACKEND_ASSETS_ROOT,
-    };
-    const mode = params.mode ?? PresentationManagerMode.ReadWrite;
-    const changeTrackingEnabled = mode === PresentationManagerMode.ReadWrite && !!params.updatesPollInterval;
+    const backendAssetsRoot = ((typeof params.presentationAssetsRoot === "string")
+      ? params.presentationAssetsRoot
+      : params.presentationAssetsRoot?.backend
+    ) ?? PRESENTATION_BACKEND_ASSETS_ROOT;
+
+    const changeTrackingEnabled = !!params.updatesPollInterval;
     this._nativePlatform = params.addon ?? createNativePlatform(
       params.id ?? "",
       params.workerThreadsCount ?? 2,
-      mode,
       changeTrackingEnabled,
       params.caching,
       params.defaultFormats,
@@ -67,7 +66,7 @@ export class PresentationManagerDetail implements IDisposable {
 
     setupRulesetDirectories(
       this._nativePlatform,
-      typeof presentationAssetsRoot === "string" ? presentationAssetsRoot : presentationAssetsRoot.backend,
+      backendAssetsRoot,
       params.supplementalRulesetDirectories ?? [],
       params.rulesetDirectories ?? [],
     );
@@ -447,7 +446,6 @@ interface UnitFormatMap {
 function createNativePlatform(
   id: string,
   workerThreadsCount: number,
-  mode: PresentationManagerMode,
   changeTrackingEnabled: boolean,
   caching: PresentationManagerProps["caching"],
   defaultFormats: UnitFormatMap | undefined,
@@ -456,7 +454,6 @@ function createNativePlatform(
   return new (createDefaultNativePlatform({
     id,
     taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: workerThreadsCount },
-    mode,
     isChangeTrackingEnabled: changeTrackingEnabled,
     cacheConfig: createCacheConfig(caching?.hierarchies),
     contentCacheSize: caching?.content?.size,

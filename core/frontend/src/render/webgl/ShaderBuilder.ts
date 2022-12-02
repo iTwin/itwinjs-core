@@ -930,6 +930,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Override render order to be output to pick buffers.
   // float overrideRenderOrder(float renderOrder)
   OverrideRenderOrder,
+  // (Optional) Override normal
+  // float finalizeNormal()
+  FinalizeNormal,
   COUNT,
 }
 
@@ -991,6 +994,12 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (undefined !== checkForEarlyDiscard) {
       prelude.addFunction("bool checkForEarlyDiscard()", checkForEarlyDiscard);
       main.addline("  if (checkForEarlyDiscard()) { discard; return; }");
+    }
+
+    const finalizeNormal = this.get(FragmentShaderComponent.FinalizeNormal);
+    if (undefined !== finalizeNormal) {
+      prelude.addFunction("vec3 finalizeNormal()", finalizeNormal);
+      main.addline("  g_normal = finalizeNormal();");
     }
 
     main.addline("  vec4 baseColor = computeBaseColor();");

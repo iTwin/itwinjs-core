@@ -183,6 +183,9 @@ export enum TextureUnit {
 
   // Lookup table for indexed edges - used only if WebGL 2 is available.
   EdgeLUT = WebGLRenderingContext.TEXTURE12,
+
+  // Normal map texture - used only if WebGL 2 is available.
+  NormalMap = WebGLRenderingContext.TEXTURE13,
 }
 
 /**
@@ -242,7 +245,7 @@ export const enum SurfaceBitIndex {
   BackgroundFill,
   HasColorAndNormal,
   OverrideRgb,
-  NoFaceFront,
+  HasNormalMap,
   HasMaterialAtlas,
   Count,
 }
@@ -272,7 +275,7 @@ export const enum SurfaceFlags {
   // For textured meshes, use rgb from v_color instead of from texture.
   OverrideRgb = 1 << SurfaceBitIndex.OverrideRgb,
   // For geometry with fixed normals (terrain meshes) we must avoid front facing normal reversal or skirts will be incorrectly lit.
-  NoFaceFront = 1 << SurfaceBitIndex.NoFaceFront,
+  HasNormalMap = 1 << SurfaceBitIndex.HasNormalMap,
   HasMaterialAtlas = 1 << SurfaceBitIndex.HasMaterialAtlas,
 }
 
