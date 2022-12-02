@@ -28,7 +28,7 @@ export abstract class RenderTargetDebugControlTool extends Tool {
 
 type DebugControlBoolean =
   "displayDrapeFrustum" | "drawForReadPixels" | "displayRealityTileRanges" | "displayRealityTileRanges" |
-  "displayRealityTilePreload" | "freezeRealityTiles" | "logRealityTiles" | "vcSupportIntersectingVolumes";
+  "displayRealityTilePreload" | "freezeRealityTiles" | "logRealityTiles" | "vcSupportIntersectingVolumes" | "displayNormalMaps";
 
 /** Toggles some aspect of a RenderTargetDebugControl for the selected viewport.
  * @beta
@@ -177,4 +177,12 @@ export class SetAASamplesTool extends RenderTargetDebugControlTool {
 
     return this.run(args);
   }
+}
+
+/** Toggles support for normal maps.
+ * @beta
+ */
+export class ToggleNormalMaps extends RenderTargetDebugControlToggleTool {
+  public static override toolId = "ToggleNormalMaps";
+  public get aspect(): DebugControlBoolean { return "displayNormalMaps"; }
 }

@@ -18,6 +18,9 @@
     "ToggleDrapeFrustum": {
       "keyin": "fdt toggle drapefrustum"
     },
+    "ToggleNormalMaps": {
+      "keyin": "fdt toggle normalmaps"
+    },
     "ReportWebGLCompatibility": {
       "keyin": "fdt webgl report compatibility"
     },
