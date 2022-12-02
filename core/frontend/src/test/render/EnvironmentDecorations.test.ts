@@ -262,7 +262,15 @@ describe.only("EnvironmentDecorations", () => {
     const params = dec.sky.params;
     expect(params).not.to.be.undefined;
 
-    dec.setEnvironment(dec.environment.clone({ sky: SkyBox.fromJSON({ twoColor: true }) }));
+    dec.setEnvironment(dec.environment.clone({
+      sky: SkyBox.fromJSON({
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: "0xabc",
+        },
+      })
+    }));
+
     expect(dec.sky.params).to.equal(params);
     expect(dec.sky.promise).not.to.be.undefined;
 
@@ -299,6 +307,43 @@ describe.only("EnvironmentDecorations", () => {
     }));
 
     expect(dec.sky.params!.type).to.equal("cube");
+  });
+
+  it("loads synchronously if texture(s) were previously cached by RenderSystem", async () => {
+    // Asynchronously load sphere image
+    const dec = new Decorations(createView({
+      sky: {
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: "0xdef",
+        },
+      },
+    }));
+
+    expect(dec.sky.promise).not.to.be.undefined;
+    await dec.load();
+    expect(dec.sky.promise).to.be.undefined;
+    expect(dec.sky.params!.type).to.equal("sphere");
+
+    const firstSphere = dec.sky.params;
+
+    // Change to gradient (synchronous)
+    dec.setEnvironment(dec.environment.clone({ sky: SkyBox.fromJSON(undefined) }));
+    expect(dec.sky.params!.type).to.equal("gradient");
+
+    // Change back to same sphere image - synchronous this time.
+    dec.setEnvironment(dec.environment.clone({
+      sky: SkyBox.fromJSON({
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: "0xdef",
+        },
+      }),
+    }));
+
+    expect(dec.sky.promise).to.be.undefined;
+    expect(dec.sky.params!.type).to.equal("sphere");
+    expect(dec.sky.params).not.to.equal(firstSphere);
   });
 
   it("falls back to sky gradient on error", async () => {
