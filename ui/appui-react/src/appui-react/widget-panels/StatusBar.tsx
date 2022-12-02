@@ -18,7 +18,7 @@ import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
 /** @internal */
 export function WidgetPanelsStatusBar(props: CommonProps) {
   const frontstageDef = useActiveFrontstageDef();
-  const zone = frontstageDef?.bottomCenter;
+  const zone = frontstageDef?.bottomCenter; // eslint-disable-line deprecation/deprecation
   let widget = frontstageDef?.statusBar;
   if (zone && zone.isStatusBar) {
     widget = zone.getSingleWidgetDef();
