@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent } from "@itwin/core-bentley";
 import {  MapSubLayerProps } from "@itwin/core-common";
-import { HitDetail, ImageryMapTileTree, ImageryMapTileTreeVisibility, ImageryTileTreeVisibilityState, MapLayerImageryProvider } from "@itwin/core-frontend";
+import { HitDetail,  ImageryTileTreeVisibilityState, MapLayerImageryProvider } from "@itwin/core-frontend";
 
 export interface StyleMapLayerSettings {
   /** Name */
@@ -20,13 +20,14 @@ export interface StyleMapLayerSettings {
   transparentBackground: boolean;
   /** set map as underlay or overlay */
   isOverlay: boolean;
+  /** layer index in the viewport */
+  layerIndex: number;
   /** Available map sub-layer */
   subLayers?: MapSubLayerProps[];
   /** sub-layer panel displayed. */
   showSubLayers: boolean;
   /** Some format can publish only a single layer at a time (i.e WMTS) */
   provider?: MapLayerImageryProvider;
-  layerId?: {mapTreeId: string, layerTreeId: string};
 }
 
 export interface MapTypesOptions {

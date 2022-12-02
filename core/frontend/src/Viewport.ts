@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, ImageryMapTileTreeVisibility, ImageryTileTreeVisibilityState, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTree, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, ImageryMapTileTreeVisibility, ImageryTileTreeVisibilityState, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider, MapTileTree, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -220,6 +220,11 @@ export interface ReadImageBufferArgs {
   upsideDown?: boolean;
 }
 
+export interface MapLayerScaleRangeVisibility {
+  index: MapLayerIndex;
+  newState: ImageryTileTreeVisibilityState;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -292,7 +297,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
-  public readonly onLayerVisibilityChanged = new BeEvent<(mapTreeId: Id64String, layerTreeId: Id64String, visibility: ImageryTileTreeVisibilityState) => void>();
+  public readonly onMapLayerScaleRangeVisibilityChanged = new BeEvent<(layerIndexes: MapLayerScaleRangeVisibility[]) => void>();
 
   /** @internal */
   protected _hasMissingTiles = false;
@@ -812,6 +817,13 @@ export abstract class Viewport implements IDisposable, TileUser {
         return {mapTreeId, layerTreeId};
     }
     return undefined;
+  }
+  public getMapLayerIndexFromIds(mapTreeId: Id64String, layerTreeId: Id64String): {index: number, isOverlay: boolean}[] {
+    if (this._mapTiledGraphicsProvider)
+      return this._mapTiledGraphicsProvider?.getMapLayerIndexFromIds(mapTreeId, layerTreeId);
+
+    return [];
+
   }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */

@@ -10,7 +10,7 @@
 import { assert, BentleyError } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import {
-  ImageryMapTileTree, ImageryTileTreeVisibilityState, IModelApp, MapLayerImageryProvider, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
+  ImageryMapTileTree, ImageryTileTreeVisibilityState, IModelApp, MapLayerImageryProvider, MapLayerScaleRangeVisibility, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
@@ -62,12 +62,11 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
   const layers = new Array<StyleMapLayerSettings>();
 
   const displayStyleLayers = (getBackgroundMap ? displayStyle.backgroundMapLayers : displayStyle.overlayMapLayers);
-  for (let layerIdx = 0; layerIdx < displayStyleLayers.length; layerIdx++) {
-    const layerSettings = displayStyleLayers[layerIdx];
+  for (let layerIndex = 0; layerIndex < displayStyleLayers.length; layerIndex++) {
+    const layerSettings = displayStyleLayers[layerIndex];
     const isOverlay = !getBackgroundMap;
-    const layerProvider = viewport.getMapLayerImageryProvider(layerIdx, isOverlay);
-    const layerId = viewport.getMapLayerTreeIds(layerIdx, isOverlay);
-    const treeVisibility = viewport.getMapLayerVisibilityRangeState(layerIdx, isOverlay);
+    const layerProvider = viewport.getMapLayerImageryProvider(layerIndex, isOverlay);
+    const treeVisibility = viewport.getMapLayerVisibilityRangeState(layerIndex, isOverlay);
     const popSubLayers = populateSubLayers && (layerSettings instanceof ImageMapLayerSettings);
     layers.push({
       visible: layerSettings.visible,
@@ -79,9 +78,8 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
       subLayers: popSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
       showSubLayers: false,
       isOverlay,
+      layerIndex,
       provider: layerProvider,
-      layerId,
-
     });
   }
 
@@ -153,25 +151,28 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   }, [activeViewport, loadMapLayerSettingsFromViewport]);
 
   React.useEffect(() => {
-    const handleLayerVisibilityChanged = (mapTreeId: string, layerTreeId: string, treeVisibility: ImageryTileTreeVisibilityState) => {
+    const handleScaleRangeVisibilityChanged = (layerIndexes: MapLayerScaleRangeVisibility[]) => {
       const updateLayers = (array: StyleMapLayerSettings[] | undefined) => {
-        if (array) {
-          return array.map((layer) =>
-            layer.layerId?.mapTreeId === mapTreeId && layer.layerId.layerTreeId === layerTreeId
-              ? {...layer, treeVisibility} : layer
-          );
-        }
-        return undefined;
+        if (array === undefined)
+          return undefined;
+
+        return array.map((curStyledLayer) => {
+          const foundScaleRangeVisibility = layerIndexes.find((layerIdx)=> layerIdx.index.index === curStyledLayer.layerIndex && layerIdx.index.isOverlay === curStyledLayer.isOverlay);
+          if (undefined === foundScaleRangeVisibility)
+            return curStyledLayer;
+          else
+            return {...curStyledLayer, treeVisibility:foundScaleRangeVisibility.newState};
+        });
+
       };
       setBackgroundMapLayers(updateLayers(backgroundMapLayers));
       setOverlayMapLayers(updateLayers(overlayMapLayers));
 
     };
-
-    activeViewport.onLayerVisibilityChanged.addListener(handleLayerVisibilityChanged);
+    activeViewport.onMapLayerScaleRangeVisibilityChanged.addListener(handleScaleRangeVisibilityChanged);
 
     return () => {
-      activeViewport.onLayerVisibilityChanged.removeListener(handleLayerVisibilityChanged);
+      activeViewport.onMapLayerScaleRangeVisibilityChanged.removeListener(handleScaleRangeVisibilityChanged);
     };
 
   }, [activeViewport, backgroundMapLayers, loadMapLayerSettingsFromViewport, overlayMapLayers]);

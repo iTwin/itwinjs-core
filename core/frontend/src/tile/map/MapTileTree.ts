@@ -22,7 +22,7 @@ import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
 import { SceneContext } from "../../ViewContext";
-import { ScreenViewport } from "../../Viewport";
+import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
   GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryMapTileTreeVisibility, ImageryTileTreeVisibilityState, MapCartoRectangle, MapLayerFeatureInfo,
@@ -438,63 +438,73 @@ export class MapTileTree extends RealityTileTree {
 
     const layersVisibilityBefore =  this.cloneLayerVisibility();
 
-    if (layersVisibilityBefore) {
-      for (const [treeId] of layersVisibilityBefore) {
-        const treeVisibility = this.getLayerVisibility(treeId);
-        if (treeVisibility) {
-          treeVisibility.reset();
-        }
+    const changes =  new Array<MapLayerScaleRangeVisibility> ();
+
+    if (!layersVisibilityBefore)
+      return;
+
+    for (const [treeId] of layersVisibilityBefore) {
+      const treeVisibility = this.getLayerVisibility(treeId);
+      if (treeVisibility) {
+        treeVisibility.reset();
       }
+    }
 
-      const out: string[] = [];
-      const vis: string[] = [];
+    const out: string[] = [];
+    const vis: string[] = [];
 
-      let allTilesRead = true;
-      for (const selectedTile of selected) {
-        if (selectedTile instanceof MapTile) {
-          if (!selectedTile.isReady)
-            allTilesRead = false;
-          const selectedImageryTiles = selectedTile.imageryTiles;
-          if (selectedImageryTiles) {
-            for (const selectedImageryTile of selectedImageryTiles) {
-              const treeVisibility = this.getLayerVisibility(selectedImageryTile.tree.id);
-              if (treeVisibility) {
-                if (selectedImageryTile.isOutOfLodRange) {
-                  out.push(selectedImageryTile.contentId);
-                  treeVisibility.setVisibility(false);
-                } else {
-                  treeVisibility.setVisibility(true);
-                  vis.push(selectedImageryTile.contentId);
-                }
-                // treeVisibility.setVisibility(selectedImageryTile.isOutOfLodRange !== true);
+    let allTilesRead = true;
+    for (const selectedTile of selected) {
+      if (selectedTile instanceof MapTile) {
+        if (!selectedTile.isReady)
+          allTilesRead = false;
+        const selectedImageryTiles = selectedTile.imageryTiles;
+        if (selectedImageryTiles) {
+          for (const selectedImageryTile of selectedImageryTiles) {
+            const treeVisibility = this.getLayerVisibility(selectedImageryTile.tree.id);
+            if (treeVisibility) {
+              if (selectedImageryTile.isOutOfLodRange) {
+                out.push(selectedImageryTile.contentId);
+                treeVisibility.setVisibility(false);
+              } else {
+                treeVisibility.setVisibility(true);
+                vis.push(selectedImageryTile.contentId);
               }
-
+              // treeVisibility.setVisibility(selectedImageryTile.isOutOfLodRange !== true);
             }
-          }
-        }
-      }
-
-      if (!allTilesRead)
-        return;
-
-      for (const [treeId, prevVisibility] of layersVisibilityBefore) {
-        const newVisibility = this.getLayerVisibility(treeId);
-        if (newVisibility) {
-
-          const prevState = prevVisibility.getState();
-          const newState = newVisibility.getState();
-          if ( prevState !== newState) {
-            // console.log(`Visible : '${vis.join(", ")}'`);
-            // console.log(`Out : '${out.join(", ")}'`);
-            console.log(`ImageryTileTree '${treeId}' changed prev state: '${ImageryTileTreeVisibilityState[prevState]}' new state: '${ImageryTileTreeVisibilityState[newState]}'`);
-
-            // const settings = this.mapTree.getLayerSettings(treeId);
-            args.context.viewport.onLayerVisibilityChanged.raiseEvent(this.id, treeId, newVisibility.getState());
 
           }
         }
       }
     }
+
+    if (!allTilesRead)
+      changes;
+
+    for (const [treeId, prevVisibility] of layersVisibilityBefore) {
+      const newVisibility = this.getLayerVisibility(treeId);
+      if (newVisibility) {
+
+        const prevState = prevVisibility.getState();
+        const newState = newVisibility.getState();
+        if ( prevState !== newState) {
+          // console.log(`Visible : '${vis.join(", ")}'`);
+          // console.log(`Out : '${out.join(", ")}'`);
+          console.log(`ImageryTileTree '${treeId}' changed prev state: '${ImageryTileTreeVisibilityState[prevState]}' new state: '${ImageryTileTreeVisibilityState[newState]}'`);
+
+          const mapLayersIndexes = args.context.viewport.getMapLayerIndexFromIds(this.id, treeId);
+          for (const index of mapLayersIndexes ) {
+            changes.push({index, newState:newVisibility.getState()});
+          }
+
+        }
+      }
+    }
+
+    if (changes.length !== 0) {
+      args.context.viewport.onMapLayerScaleRangeVisibilityChanged.raiseEvent(changes);
+    }
+
   }
 
   /** @internal */
@@ -908,7 +918,10 @@ export class MapTileTreeReference extends TileTreeReference {
 
     for (; treeIndex < this._layerTrees.length; treeIndex++) {
       const layerTreeRef = this._layerTrees[treeIndex];
-      if (layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus && layerTreeRef.layerSettings.visible && !layerTreeRef.layerSettings.allSubLayersInvisible) {
+      if (layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus
+        // && layerTreeRef.layerSettings.visible
+        && !layerTreeRef.layerSettings.allSubLayersInvisible
+      ) {
         const layerTree = layerTreeRef.treeOwner.load();
         if (undefined === layerTree)
           return false; // Not loaded yet.

@@ -100,7 +100,7 @@ function getSubLayerProps(subLayerSettings: MapSubLayerSettings[]): MapSubLayerP
   return subLayerSettings.map((subLayer) => subLayer.toJSON());
 }
 
-function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: boolean, treeVisibility: ImageryTileTreeVisibilityState): StyleMapLayerSettings {
+function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: boolean, layerIndex: number, treeVisibility: ImageryTileTreeVisibilityState): StyleMapLayerSettings {
   return {
     visible: settings.visible,
     name: settings.name,
@@ -110,6 +110,7 @@ function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: bo
     subLayers: settings.subLayers ? getSubLayerProps(settings.subLayers) : undefined,
     showSubLayers: true,
     isOverlay,
+    layerIndex,
     provider: IModelApp.mapLayerFormatRegistry.createImageryProvider(settings),
     treeVisibility,
   };
@@ -158,7 +159,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
       if (updatedMapLayer) {
         if (updatedMapLayer instanceof ImageMapLayerSettings) {
           const treeVisibility = vp.getMapLayerVisibilityRangeState(indexInDisplayStyle, mapLayer.isOverlay);
-          setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay, treeVisibility));
+          setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay, indexInDisplayStyle, treeVisibility));
         }
 
       }
@@ -174,7 +175,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
       if (updatedMapLayer && updatedMapLayer instanceof ImageMapLayerSettings) {
         const treeVisibility = vp.getMapLayerVisibilityRangeState(indexInDisplayStyle, mapLayer.isOverlay);
-        setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay, treeVisibility));
+        setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay, indexInDisplayStyle, treeVisibility));
       }
       vp.invalidateRenderPlan();
     }

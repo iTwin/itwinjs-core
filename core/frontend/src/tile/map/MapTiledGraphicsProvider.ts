@@ -13,6 +13,11 @@ import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, TileTreeReference } from "../internal";
 
+export interface MapLayerIndex {
+  isOverlay: boolean;
+  index: number;
+}
+
 /** @internal */
 export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   public readonly backgroundMap: MapTileTreeReference;
@@ -81,6 +86,26 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined {
     const imageryTreeRef = isOverlay ? this.overlayMap.getLayerImageryTreeRef(index) : this.backgroundMap.getLayerImageryTreeRef(index);
     return imageryTreeRef?.imageryProvider;
+  }
+
+  /** @internal */
+  public getMapLayerIndexFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
+    // let layers:[{index: number, isOverlay: boolean}];
+    const layers = new Array<MapLayerIndex>();
+    if (mapTreeId === this.backgroundMap.treeOwner.tileTree?.id) {
+      for (let i = 0; i < this.backgroundMap.layerSettings.length; i++) {
+        if (this.backgroundMap.getLayerImageryTreeRef(i)?.treeOwner.tileTree?.id === layerTreeId) {
+          layers.push({index: i, isOverlay:false});
+        }
+      }
+    } else if (mapTreeId === this.overlayMap.treeOwner.tileTree?.id) {
+      for (let i = 0; i < this.overlayMap.layerSettings.length; i++) {
+        if (this.overlayMap.getLayerImageryTreeRef(i)?.treeOwner.tileTree?.id === layerTreeId) {
+          layers.push({index: i, isOverlay:true});
+        }
+      }
+    }
+    return layers;
   }
 
   /** @internal */
