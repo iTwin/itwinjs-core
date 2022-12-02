@@ -2,6 +2,9 @@
 # and running a step to combine everything.
 
 parameters:
+  - name: checkout
+    type: string
+    default: self
   - name: workingDir
     type: string
     default: $(Pipeline.Workspace)/itwinjs-core
@@ -18,13 +21,6 @@ parameters:
     type: boolean
     default: false
 
-resources:
-  repositories:
-    - repository: itwinjs-core
-      type: github
-      endpoint: iModelJs
-      name: iTwin/itwinjs-core
-
 jobs:
   - job:
     workspace:
@@ -34,7 +30,7 @@ jobs:
       demands: Agent.OS -equals Windows_NT
 
     steps:
-      - checkout: itwinjs-core
+      - checkout: ${{ parameters.checkout }}
         path: itwinjs-core
         clean: true
 
