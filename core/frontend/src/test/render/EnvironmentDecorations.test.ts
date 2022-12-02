@@ -11,9 +11,10 @@ import { imageElementFromImageSource } from "../../ImageUtil";
 import { SpatialViewState } from "../../SpatialViewState";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
+import { RenderSkyBoxParams } from "../../render/RenderSystem";
 import { createBlankConnection } from "../createBlankConnection";
 
-describe("EnvironmentDecorations", () => {
+describe.only("EnvironmentDecorations", () => {
   let iModel: IModelConnection;
 
   function createView(env?: EnvironmentProps): SpatialViewState {
@@ -24,8 +25,23 @@ describe("EnvironmentDecorations", () => {
     return view;
   }
 
+  interface TestSky {
+    params?: RenderSkyBoxParams;
+    promise?: Promise<boolean>;
+  }
+
   class Decorations extends EnvironmentDecorations {
-    public get sky() { return this._sky; }
+    public get sky(): TestSky {
+      if (!this._sky)
+        return { };
+
+      if (this._sky.type !== "loader")
+        return { params: this._sky };
+
+      expect(this._sky.preload).not.to.be.undefined;
+      return { promise: this._sky.preload };
+    }
+
     public get ground() { return this._ground; }
     public get environment() { return this._environment; }
 
@@ -44,7 +60,10 @@ describe("EnvironmentDecorations", () => {
         return;
 
       await this.sky.promise;
-      return BeDuration.wait(1);
+      return BeDuration.wait(1).then(() => {
+        expect(this.sky.promise).to.be.undefined;
+        expect(this.sky.params).not.to.be.undefined;
+      });
     }
   }
 
@@ -156,8 +175,7 @@ describe("EnvironmentDecorations", () => {
     const dec = new Decorations(createView({ ground: { display: true } }), undefined, () => disposed = true);
     expect(disposed).to.be.false;
     expect(dec.ground).not.to.be.undefined;
-    expect(dec.sky.promise).not.to.be.undefined;
-    expect(dec.sky.params).to.be.undefined;
+    expect(dec.sky.params).not.to.be.undefined;
 
     await dec.load();
     expect(disposed).to.be.false;
@@ -200,8 +218,8 @@ describe("EnvironmentDecorations", () => {
 
   it("always loads sky", async () => {
     const dec = new Decorations(createView({ sky: { display: false } }));
-    expect(dec.sky.params).to.be.undefined;
-    expect(dec.sky.promise).not.to.be.undefined;
+    expect(dec.sky.params).not.to.be.undefined;
+    expect(dec.sky.promise).to.be.undefined;
 
     await dec.load();
     expect(dec.sky.params).not.to.be.undefined;

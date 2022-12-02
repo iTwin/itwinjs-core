@@ -8,6 +8,7 @@ import { ScreenViewport } from "../../../Viewport";
 import { IModelApp } from "../../../IModelApp";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { createBlankConnection } from "../../createBlankConnection";
+import { RenderSkyBoxParams } from "../../../render/RenderSystem";
 import { expectColors, expectNotTheseColors } from "../../ExpectColors";
 import { BeDuration } from "@itwin/core-bentley";
 import { EnvironmentDecorations } from "../../../EnvironmentDecorations";
@@ -15,7 +16,7 @@ import { imageElementFromImageSource } from "../../../ImageUtil";
 import { expect } from "chai";
 import { Texture2DHandle, TextureCubeHandle } from "../../../webgl";
 
-describe("Sky rendering", () => {
+describe.only("Sky rendering", () => {
   let iModel: IModelConnection;
   let viewport: ScreenViewport;
 
@@ -31,8 +32,23 @@ describe("Sky rendering", () => {
     return view;
   }
 
+  interface TestSky {
+    params?: RenderSkyBoxParams;
+    promise?: Promise<boolean>;
+  }
+
   class Decorations extends EnvironmentDecorations {
-    public get sky() { return this._sky; }
+    public get sky(): TestSky {
+      if (!this._sky)
+        return { };
+
+      if (this._sky.type !== "loader")
+        return { params: this._sky };
+
+      expect(this._sky.preload).not.to.be.undefined;
+      return { promise: this._sky.preload };
+    }
+
     public get ground() { return this._ground; }
     public get environment() { return this._environment; }
 
@@ -51,7 +67,10 @@ describe("Sky rendering", () => {
         return;
 
       await this.sky.promise;
-      return BeDuration.wait(1);
+      return BeDuration.wait(1).then(() => {
+        expect(this.sky.promise).to.be.undefined;
+        expect(this.sky.params).not.to.be.undefined;
+      });
     }
   }
 

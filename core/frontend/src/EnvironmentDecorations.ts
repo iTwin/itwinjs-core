@@ -25,12 +25,8 @@ export interface GroundPlaneDecorations {
 }
 
 /** @internal */
-export interface SkyBoxDecorations {
-  params?: RenderSkyBoxParams | undefined;
-  promise?: Promise<RenderSkyBoxParams | undefined>;
-}
-
-interface SkyBoxParamsLoader {
+export interface SkyBoxParamsLoader {
+  type: "loader";
   load(): RenderSkyBoxParams | undefined;
   preload?: Promise<boolean>;
 }
@@ -42,7 +38,7 @@ export class EnvironmentDecorations {
   protected readonly _onDispose: () => void;
   protected _environment: Environment;
   protected _ground?: GroundPlaneDecorations;
-  protected _sky: SkyBoxDecorations;
+  protected _sky?: RenderSkyBoxParams | SkyBoxParamsLoader;
 
   public constructor(view: ViewState3d, onLoaded: () => void, onDispose: () => void) {
     this._environment = view.displayStyle.environment;
@@ -50,16 +46,14 @@ export class EnvironmentDecorations {
     this._onLoaded = onLoaded;
     this._onDispose = onDispose;
 
-    this._sky = { };
-    this.loadSky();
+    this.loadSkyBox();
     if (this._environment.displayGround)
       this.loadGround();
   }
 
   public dispose(): void {
     this._ground = undefined;
-
-    this._sky.promise = this._sky.params = undefined;
+    this._sky = undefined;
 
     this._onDispose();
   }
@@ -80,13 +74,13 @@ export class EnvironmentDecorations {
 
     // Update sky box
     if (env.sky !== prev.sky)
-      this.loadSky();
+      this.loadSkyBox();
   }
 
   public decorate(context: DecorateContext): void {
     const env = this._environment;
-    if (env.displaySky && this._sky.params) {
-      const sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
+    if (env.displaySky && this._sky && this._sky.type !== "loader") {
+      const sky = IModelApp.renderSystem.createSkyBox(this._sky);
       if (sky)
         context.setSkyBox(sky);
     }
@@ -164,83 +158,26 @@ export class EnvironmentDecorations {
     return params;
   }
 
-  private loadSky(): void {
-    const promise = this.loadSkyParams();
-    this._sky.promise = promise;
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    promise.then((params) => {
-      if (promise === this._sky.promise)
-        this.setSky(params ?? this.createSkyGradientParams());
-    });
-
-    promise.catch(() => {
-      if (this._sky.promise === promise)
-        this.setSky(this.createSkyGradientParams());
-    });
-  }
-
-  private setSky(params: RenderSkyBoxParams): void {
-    this._sky.promise = undefined;
-    this._sky.params = params;
-    this._onLoaded();
-  }
-
-  private async loadSkyParams(): Promise<RenderSkyBoxParams | undefined> {
-    const sky = this._environment.sky;
-    if (sky instanceof SkyCube) {
-      const key = this.createCubeImageKey(sky);
-      const existingTexture = IModelApp.renderSystem.findTexture(key, this._view.iModel);
-      if (existingTexture)
-        return { type: "cube", texture: existingTexture };
-
-      // Some faces may use the same image. Only request each image once.
-      const specs = new Set<string>([sky.images.front, sky.images.back, sky.images.left, sky.images.right, sky.images.top, sky.images.bottom]);
-      const promises = [];
-      for (const spec of specs)
-        promises.push(this.imageFromSpec(spec));
-
-      return Promise.all(promises).then((images) => {
-        const idToImage = new Map<TextureImageSpec, HTMLImageElement>();
-        let index = 0;
-        for (const spec of specs) {
-          const image = images[index++];
-          if (!image)
-            return undefined;
-          else
-            idToImage.set(spec, image);
-        }
-
-        // eslint-disable-next-line deprecation/deprecation
-        const params = new RenderTexture.Params(key, RenderTexture.Type.SkyBox);
-        const txImgs = [
-          idToImage.get(sky.images.front)!, idToImage.get(sky.images.back)!, idToImage.get(sky.images.top)!,
-          idToImage.get(sky.images.bottom)!, idToImage.get(sky.images.right)!, idToImage.get(sky.images.left)!,
-        ];
-
-        const texture = IModelApp.renderSystem.createTextureFromCubeImages(txImgs[0], txImgs[1], txImgs[2], txImgs[3], txImgs[4], txImgs[5], this._view.iModel, params);
-        return texture ? { type: "cube", texture } : undefined;
-      });
-    } else if (sky instanceof SkySphere) {
-      const rotation = 0; // ###TODO where is this supposed to come from?
-      let texture = IModelApp.renderSystem.findTexture(sky.image, this._view.iModel);
-      if (!texture) {
-        const image = await this.imageFromSpec(sky.image);
-        if (image) {
-          texture = IModelApp.renderSystem.createTexture({
-            image: { source: image },
-            ownership: { iModel: this._view.iModel, key: sky.image },
-          });
-        }
-      }
-
-      if (!texture)
-        return undefined;
-
-      return { type: "sphere", texture, rotation, zOffset: this._view.iModel.globalOrigin.z };
-    } else {
-      return this.createSkyGradientParams();
+  private loadSkyBox(): void {
+    const loader = this.loadSkyBoxParams();
+    if (undefined === loader.preload) {
+      this.setSky(loader.load());
+      return;
     }
+
+    this._sky = loader;
+    loader.preload.then((loaded) => {
+      if (loader === this._sky)
+        this.setSky(loaded ? loader.load() : undefined);
+    }).catch(() => {
+      if (loader === this._sky)
+        this.setSky(undefined);
+    });
+  }
+
+  private setSky(params: RenderSkyBoxParams | undefined): void {
+    this._sky = params ?? this.createSkyGradientParams();
+    this._onLoaded();
   }
 
   private loadSkyBoxParams(): SkyBoxParamsLoader {
@@ -309,7 +246,11 @@ export class EnvironmentDecorations {
       load = () => this.createSkyGradientParams();
     }
 
-    return { load, preload };
+    return {
+      type: "loader",
+      load,
+      preload,
+    };
   }
 
   private createCubeImageKey(sky: SkyCube): string {
@@ -318,7 +259,11 @@ export class EnvironmentDecorations {
   }
 
   private createSkyGradientParams(): RenderSkyBoxParams {
-    return { type: "gradient", gradient: this._environment.sky.gradient, zOffset: this._view.iModel.globalOrigin.z };
+    return {
+      type: "gradient",
+      gradient: this._environment.sky.gradient,
+      zOffset: this._view.iModel.globalOrigin.z,
+    };
   }
 
   private async imageFromSpec(spec: TextureImageSpec): Promise<HTMLImageElement | undefined> {
