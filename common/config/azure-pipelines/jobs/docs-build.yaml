@@ -18,6 +18,13 @@ parameters:
     type: boolean
     default: false
 
+resources:
+  repositories:
+    - repository: itwinjs-core
+      type: github
+      endpoint: iModelJs
+      name: iTwin/itwinjs-core
+
 jobs:
   - job:
     workspace:
@@ -27,7 +34,7 @@ jobs:
       demands: Agent.OS -equals Windows_NT
 
     steps:
-      - checkout: self
+      - checkout: itwinjs-core
         path: itwinjs-core
         clean: true
 
