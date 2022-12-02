@@ -1031,11 +1031,17 @@ export class FrontstageDef {
     if (!this.nineZoneState || !(floatingWidgetId in this.nineZoneState.floatingWidgets.byId))
       return false;
 
-    this.nineZoneState = FrameworkStateReducer(this.nineZoneState, {
+    let state = FrameworkStateReducer(this.nineZoneState, {
       type: "FLOATING_WIDGET_SET_BOUNDS",
       id: floatingWidgetId,
       bounds,
     }, this);
+    state = FrameworkStateReducer(state, {
+      type: "FLOATING_WIDGET_SET_USER_SIZED",
+      id: floatingWidgetId,
+      userSized: true,
+    }, this);
+    this.nineZoneState = state;
     return true;
   }
 

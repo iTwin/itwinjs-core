@@ -10,14 +10,14 @@ import "./FloatingWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
-import { Point, Rectangle, useRefs } from "@itwin/core-react";
+import { Point, Rectangle, useRefs, useResizeObserver } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { DragManagerContext, useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { FloatingWidgetNodeContext, MeasureContext, NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from "../base/NineZone";
 import { FloatingWidgetState, WidgetState } from "../state/WidgetState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
-import { Widget, WidgetComponent, WidgetProvider, WidgetStateContext } from "./Widget";
+import { Widget, WidgetProvider, WidgetStateContext } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
 import { WidgetTarget } from "../target/WidgetTarget";
@@ -92,7 +92,6 @@ export function FloatingWidget(props: FloatingWidgetProps) {
   }), [id]);
   const dragged = useIsDraggedItem(item);
   const ref = useHandleAutoSize(dragged);
-
   const className = classnames(
     "nz-widget-floatingWidget",
     dragged && "nz-dragged",
@@ -147,11 +146,12 @@ function useHandleAutoSize(dragged: boolean) {
   const dragManager = React.useContext(DragManagerContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   const measureNz = React.useContext(MeasureContext);
-  const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
-  assert(!!floatingWidgetId);
+  const floatingWidget = React.useContext(FloatingWidgetContext);
+  assert(!!floatingWidget);
+  const { id, userSized }= floatingWidget;
 
   const updatePosition = React.useRef(true);
-  const ref = React.useRef<WidgetComponent>(null);
+  const ref = React.useRef<HTMLDivElement>(null);
 
   React.useLayoutEffect(() => {
     if (!updatePosition.current)
@@ -163,7 +163,7 @@ function useHandleAutoSize(dragged: boolean) {
     if (!ref.current)
       return;
 
-    let bounds = ref.current.measure();
+    let bounds = Rectangle.create(ref.current.getBoundingClientRect());
     const nzBounds = measureNz();
     const pointerPosition = dragManager.draggedItem.info.pointerPosition;
 
@@ -181,12 +181,35 @@ function useHandleAutoSize(dragged: boolean) {
 
     dispatch({
       type: "FLOATING_WIDGET_SET_BOUNDS",
-      id: floatingWidgetId,
+      id,
       bounds: bounds.toProps(),
     });
+    dispatch({
+      type: "FLOATING_WIDGET_SET_USER_SIZED",
+      id,
+      userSized: true,
+    });
     updatePosition.current = false;
-  }, [dragged, dragManager, dispatch, floatingWidgetId, measureNz]);
-  return ref;
+  }, [dragged, dragManager, dispatch, id, measureNz]);
+  const handleResize = React.useCallback(() => {
+    if (!ref.current)
+      return;
+    if (dragged)
+      return;
+    if (userSized)
+      return;
+
+    const bounds = Rectangle.create(ref.current.getBoundingClientRect());
+    console.log(id, bounds);
+    dispatch({
+      type: "FLOATING_WIDGET_SET_BOUNDS",
+      id,
+      bounds,
+    });
+  }, [dispatch, id, userSized]);
+  const roRef = useResizeObserver(handleResize);
+  const refs = useRefs(ref, roRef);
+  return refs;
 }
 
 interface FloatingWidgetHandleProps {

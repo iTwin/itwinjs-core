@@ -20,7 +20,7 @@ import { isDockedToolSettingsState, toolSettingsTabId } from "./ToolSettingsStat
 import { updatePanelState } from "./internal/PanelStateHelpers";
 import { createDraggedTabState } from "./internal/TabStateHelpers";
 import { initSizeProps, isToolSettingsFloatingWidget, setPointProps, setRectangleProps, setSizeProps, updateHomeOfToolSettingsWidget } from "./internal/NineZoneStateHelpers";
-import { addWidgetState, floatingWidgetClearUserSizedFlag, removeFloatingWidget, removePanelWidget, removeWidget, setWidgetActiveTabId, updateFloatingWidgetState, updateWidgetState } from "./internal/WidgetStateHelpers";
+import { addWidgetState, removeFloatingWidget, removePanelWidget, removeWidget, setWidgetActiveTabId, updateFloatingWidgetState, updateWidgetState } from "./internal/WidgetStateHelpers";
 
 /** @internal */
 export function NineZoneStateReducer(state: NineZoneState, action: NineZoneAction): NineZoneState {
@@ -213,11 +213,22 @@ export function NineZoneStateReducer(state: NineZoneState, action: NineZoneActio
       const bounds = Rectangle.create(action.bounds).containIn(nzBounds);
       return updateFloatingWidgetState(state, action.id, {
         bounds: bounds.toProps(),
-        userSized: true,
       });
     }
     case "FLOATING_WIDGET_CLEAR_USER_SIZED": {
-      return floatingWidgetClearUserSizedFlag(state, action.id);
+      return produce(state, (draft) => {
+        const floatingWidget = draft.floatingWidgets.byId[action.id];
+        floatingWidget.userSized = false;
+        const widget = draft.widgets[action.id];
+        const tab = draft.tabs[widget.activeTabId];
+        tab.userSized = false;
+      });
+    }
+    case "FLOATING_WIDGET_SET_USER_SIZED": {
+      return produce(state, (draft) => {
+        const floatingWidget = draft.floatingWidgets.byId[action.id];
+        floatingWidget.userSized = action.userSized;
+      });
     }
     case "FLOATING_WIDGET_BRING_TO_FRONT": {
       return floatingWidgetBringToFront(state, action.id);
