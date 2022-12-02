@@ -33,7 +33,7 @@ export interface SkyBoxParamsLoader {
 /** @internal */
 export interface SkyBoxDecorations {
   params?: RenderSkyBoxParams;
-  loader?: SkyBoxParamsLoader;
+  promise?: Promise<boolean>;
 }
 
 /** @internal */
@@ -59,7 +59,7 @@ export class EnvironmentDecorations {
 
   public dispose(): void {
     this._ground = undefined;
-    this._sky.params = this._sky.loader = undefined;
+    this._sky.params = this._sky.promise = undefined;
 
     this._onDispose();
   }
@@ -171,18 +171,19 @@ export class EnvironmentDecorations {
       return;
     }
 
-    this._sky.loader = loader;
+    const promise = loader.preload;
+    this._sky.promise = promise;
     loader.preload.then((loaded) => {
-      if (loader === this._sky.loader)
+      if (promise === this._sky.promise)
         this.setSky(loaded ? loader.load() : undefined);
     }).catch(() => {
-      if (loader === this._sky.loader)
+      if (promise === this._sky.promise)
         this.setSky(undefined);
     });
   }
 
   private setSky(params: RenderSkyBoxParams | undefined): void {
-    this._sky.loader = undefined;
+    this._sky.promise = undefined;
     this._sky.params = params ?? this.createSkyGradientParams();
     this._onLoaded();
   }

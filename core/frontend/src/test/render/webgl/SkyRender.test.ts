@@ -38,13 +38,7 @@ describe.only("Sky rendering", () => {
   }
 
   class Decorations extends EnvironmentDecorations {
-    public get sky(): TestSky {
-      return {
-        params: this._sky.params,
-        promise: this._sky.loader?.preload,
-      };
-    }
-
+    public get sky() { return this._sky; }
     public get ground() { return this._ground; }
     public get environment() { return this._environment; }
 
