@@ -253,7 +253,7 @@ export class EnvironmentDecorations {
       load = () => this.createSkyGradientParams();
     }
 
-    return { load, preload, };
+    return { load, preload };
   }
 
   private createCubeImageKey(sky: SkyCube): string {

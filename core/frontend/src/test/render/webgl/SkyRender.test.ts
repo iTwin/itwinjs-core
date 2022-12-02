@@ -8,7 +8,6 @@ import { ScreenViewport } from "../../../Viewport";
 import { IModelApp } from "../../../IModelApp";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { createBlankConnection } from "../../createBlankConnection";
-import { RenderSkyBoxParams } from "../../../render/RenderSystem";
 import { expectColors, expectNotTheseColors } from "../../ExpectColors";
 import { BeDuration } from "@itwin/core-bentley";
 import { EnvironmentDecorations } from "../../../EnvironmentDecorations";
@@ -16,7 +15,7 @@ import { imageElementFromImageSource } from "../../../ImageUtil";
 import { expect } from "chai";
 import { Texture2DHandle, TextureCubeHandle } from "../../../webgl";
 
-describe.only("Sky rendering", () => {
+describe("Sky rendering", () => {
   let iModel: IModelConnection;
   let viewport: ScreenViewport;
 
@@ -30,11 +29,6 @@ describe.only("Sky rendering", () => {
       view.displayStyle.environment = Environment.fromJSON(env);
 
     return view;
-  }
-
-  interface TestSky {
-    params?: RenderSkyBoxParams;
-    promise?: Promise<boolean>;
   }
 
   class Decorations extends EnvironmentDecorations {

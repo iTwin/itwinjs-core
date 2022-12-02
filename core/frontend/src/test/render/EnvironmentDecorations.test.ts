@@ -11,10 +11,9 @@ import { imageElementFromImageSource } from "../../ImageUtil";
 import { SpatialViewState } from "../../SpatialViewState";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { RenderSkyBoxParams } from "../../render/RenderSystem";
 import { createBlankConnection } from "../createBlankConnection";
 
-describe.only("EnvironmentDecorations", () => {
+describe("EnvironmentDecorations", () => {
   let iModel: IModelConnection;
 
   function createView(env?: EnvironmentProps): SpatialViewState {
@@ -234,7 +233,7 @@ describe.only("EnvironmentDecorations", () => {
           type: SkyBoxImageType.Spherical,
           texture: "0x987",
         },
-      })
+      }),
     }));
 
     expect(loaded).to.be.false;
@@ -253,7 +252,7 @@ describe.only("EnvironmentDecorations", () => {
           type: SkyBoxImageType.Spherical,
           texture: "0xabc",
         },
-      })
+      }),
     }));
 
     expect(dec.sky.params).to.equal(params);
