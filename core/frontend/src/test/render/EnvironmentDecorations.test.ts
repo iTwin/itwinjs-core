@@ -232,15 +232,26 @@ describe.only("EnvironmentDecorations", () => {
     expect(dec.sky.promise).to.be.undefined;
   });
 
-  it("notifies when asynchronous loading completes", async () => {
+  it("notifies when loading completes", async () => {
     let loaded = false;
+
+    // default gradient sky loads immediately.
     const dec = new Decorations(undefined, () => loaded = true);
-    expect(loaded).to.be.false;
-    await dec.load();
+    expect(loaded).to.be.true;
     expect(loaded).to.be.true;
 
     loaded = false;
-    dec.setEnvironment(dec.environment.clone({ sky: SkyBox.fromJSON({ twoColor: true }) }));
+
+    // textured sky sphere loads asynchronously the first time (must query texture image from backend)
+    dec.setEnvironment(dec.environment.clone({
+      sky: SkyBox.fromJSON({
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: "0x987",
+        },
+      })
+    }));
+
     expect(loaded).to.be.false;
     await dec.load();
     expect(loaded).to.be.true;
