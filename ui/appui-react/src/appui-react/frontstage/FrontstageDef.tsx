@@ -97,22 +97,33 @@ export class FrontstageDef {
   private _savedWidgetDefs?: SavedWidgets;
 
   public get id(): string { return this._id; }
+  /** @deprecated */
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
+  /** @deprecated */
   public get defaultContentId(): string { return this._defaultContentId; }
   public get isInFooterMode(): boolean { return this._isInFooterMode; }
+  /** @deprecated */
   public get applicationData(): any | undefined { return this._applicationData; }
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
   public get version(): number { return this._version; }
   public get contentGroupProvider(): ContentGroupProvider | undefined { return this._contentGroupProvider; }
   public get floatingContentControls() { return this._floatingContentControls; }
 
+  /** @deprecated Use [[FrontstageDef.contentManipulation]] instead. */
   public get topLeft(): ZoneDef | undefined { return this._topLeft; }
+  /** @deprecated Use [[FrontstageDef.toolSettings]] instead. */
   public get topCenter(): ZoneDef | undefined { return this._topCenter; }
+  /** @deprecated Use [[FrontstageDef.viewNavigation]] instead. */
   public get topRight(): ZoneDef | undefined { return this._topRight; }
+  /** @deprecated Use [[FrontstageDef.leftPanel]] instead. */
   public get centerLeft(): ZoneDef | undefined { return this._centerLeft; }
+  /** @deprecated Use [[FrontstageDef.rightPanel]] instead. */
   public get centerRight(): ZoneDef | undefined { return this._centerRight; }
+  /** @deprecated Use [[FrontstageDef.leftPanel]] instead. */
   public get bottomLeft(): ZoneDef | undefined { return this._bottomLeft; }
+  /** @deprecated Use [[FrontstageDef.statusBar]] instead. */
   public get bottomCenter(): ZoneDef | undefined { return this._bottomCenter; }
+  /** @deprecated Use [[FrontstageDef.rightPanel]] instead. */
   public get bottomRight(): ZoneDef | undefined { return this._bottomRight; }
 
   /** @beta */
@@ -396,7 +407,9 @@ export class FrontstageDef {
     this._onFrontstageReady();
   }
 
-  /** Starts the default tool for the Frontstage */
+  /** Starts the default tool for the Frontstage.
+   * @deprecated
+   */
   public startDefaultTool(): void {
     // Start the default tool
     // istanbul ignore next
@@ -462,7 +475,9 @@ export class FrontstageDef {
     return false;
   }
 
-  /** Gets a [[ZoneDef]] based on a given zone id */
+  /** Gets a [[ZoneDef]] based on a given zone id.
+   * @deprecated UI1.0 is deprecated.
+   */
   public getZoneDef(zoneId: number): ZoneDef | undefined {
     let zoneDef;
 
@@ -501,7 +516,9 @@ export class FrontstageDef {
     return zoneDef;
   }
 
-  /** Gets a list of [[ZoneDef]]s */
+  /** Gets a list of [[ZoneDef]]s.
+   * @deprecated UI1.0 is deprecated.
+   */
   public get zoneDefs(): ZoneDef[] {
     const zones = [1, 2, 3, 4, 6, 7, 8, 9];
     const zoneDefs: ZoneDef[] = [];

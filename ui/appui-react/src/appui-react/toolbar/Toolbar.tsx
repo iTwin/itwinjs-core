@@ -63,8 +63,8 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
     itemList.forEach((item: ItemDefBase) => {
       if (item instanceof GroupItemDef) {
         // istanbul ignore else
-        if (!item.directionExplicit && this.props.expandsTo !== undefined)
-          item.direction = this.props.expandsTo;
+        if (!item.directionExplicit && this.props.expandsTo !== undefined) // eslint-disable-line deprecation/deprecation
+          item.direction = this.props.expandsTo; // eslint-disable-line deprecation/deprecation
       }
     });
 
@@ -245,7 +245,7 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
 
     // istanbul ignore next - currently unsure how to trigger sizing/resizing so overflow is never populated
     if (overflowItemDef)
-      toolbarItems.push(overflowItemDef.toolbarReactNode());
+      toolbarItems.push(overflowItemDef.toolbarReactNode()); // eslint-disable-line deprecation/deprecation
 
     return toolbarItems;
   }

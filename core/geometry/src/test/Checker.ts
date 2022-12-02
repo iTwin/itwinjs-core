@@ -554,8 +554,8 @@ export class Checker {
     Checker._transform.multiplyTransformTransform(Transform.createTranslationXYZ(dx, dy, dz), Checker._transform);
   }
   public static moveTo(dx: number, dy: number, dz: number = 0) {
-      Checker._transform = Transform.createTranslationXYZ(dx, dy, dz), Checker._transform;
-    }
+    Checker._transform = Transform.createTranslationXYZ(dx, dy, dz), Checker._transform;
+  }
 
   // ===================================================================================
   // Output
