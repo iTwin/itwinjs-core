@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { InstanceKey, Key, KeySet, PresentationError } from "../presentation-common";
+import { InstanceKey, Key, KeySet, KeySetJSON, PresentationError } from "../presentation-common";
 import { createTestECInstanceKey } from "./_helpers/EC";
 import {
   createRandomECInstanceId, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomEntityProps, createRandomId,
@@ -927,6 +927,18 @@ describe("KeySet", () => {
       const deserialized = KeySet.fromJSON(json);
       expect(deserialized.size).to.eq(1);
       expect(deserialized.has(key)).to.be.true;
+    });
+
+    it("deserializes JSON with instance key ids", () => {
+      const ids = ["0x5", "0x9"];
+      const json: KeySetJSON = {
+        instanceKeys: [["class name", ids as any]],
+        nodeKeys: [],
+      };
+      const deserialized = KeySet.fromJSON(json);
+      expect(deserialized.size).to.eq(2);
+      expect(deserialized.has({ className: "class name", id: ids[0] })).to.be.true;
+      expect(deserialized.has({ className: "class name", id: ids[1] })).to.be.true;
     });
 
     it("doesn't serialize instance classes without ids", () => {
