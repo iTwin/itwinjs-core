@@ -16,7 +16,7 @@ import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import {
   dockWidgetContainer,
   floatWidget, getTabLocation, getWidgetLocation, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation, isPopoutWidgetLocation,
-  NineZoneManagerProps, NineZoneState, PanelSide, panelSides, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
+  NineZoneManagerProps, NineZoneState, PanelSide, panelSides, popoutWidgetToChildWindow,
 } from "@itwin/appui-layout-react";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
@@ -36,7 +36,7 @@ import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
-import { SavedWidgets } from "../widget-panels/Frontstage";
+import { FrameworkStateReducer, SavedWidgets } from "../widget-panels/Frontstage";
 import { assert, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
 import { ContentDialogManager } from "../dialog/ContentDialogManager";
 import { FrontstageConfig } from "./FrontstageConfig";
@@ -987,18 +987,6 @@ export class FrontstageDef {
     widgetDef.popoutBounds = bounds;
   }
 
-  /** @internal */
-  public setFloatingWidgetBoundsInternal(floatingWidgetId: string, bounds: RectangleProps, inhibitNineZoneStateChangedEvent = false) {
-    // istanbul ignore else
-    if (this.nineZoneState) {
-      const newState = setFloatingWidgetContainerBounds(this.nineZoneState, floatingWidgetId, bounds);
-      if (inhibitNineZoneStateChangedEvent)
-        this._nineZoneState = newState; // set without triggering new render
-      else
-        this.nineZoneState = newState;
-    }
-  }
-
   /** Method used to possibly change a Popout Widget back to a docked widget if the user was the one closing the popout's child
    * window (i.e. UiFramework.childWindowManager.isClosingChildWindow === false).
    *  @internal
@@ -1043,7 +1031,11 @@ export class FrontstageDef {
     if (!this.nineZoneState || !(floatingWidgetId in this.nineZoneState.floatingWidgets.byId))
       return false;
 
-    this.setFloatingWidgetBoundsInternal(floatingWidgetId, bounds);
+    this.nineZoneState = FrameworkStateReducer(this.nineZoneState, {
+      type: "FLOATING_WIDGET_SET_BOUNDS",
+      id: floatingWidgetId,
+      bounds,
+    }, this);
     return true;
   }
 

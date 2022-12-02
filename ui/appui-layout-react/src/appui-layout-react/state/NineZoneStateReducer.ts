@@ -208,6 +208,14 @@ export function NineZoneStateReducer(state: NineZoneState, action: NineZoneActio
         tab.userSized = true;
       });
     }
+    case "FLOATING_WIDGET_SET_BOUNDS": {
+      const nzBounds = Rectangle.createFromSize(state.size);
+      const bounds = Rectangle.create(action.bounds).containIn(nzBounds);
+      return updateFloatingWidgetState(state, action.id, {
+        bounds: bounds.toProps(),
+        userSized: true,
+      });
+    }
     case "FLOATING_WIDGET_CLEAR_USER_SIZED": {
       return floatingWidgetClearUserSizedFlag(state, action.id);
     }
