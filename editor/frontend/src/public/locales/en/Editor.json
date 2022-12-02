@@ -238,6 +238,22 @@
         "AxisDirection": "Define axis direction"
       }
     },
+    "RegionBoolean": {
+      "keyin": "editor region boolean",
+      "flyover": "Perform boolean on selected regions",
+      "Label": {
+        "Mode": "Mode",
+        "KeepOriginal": "Keep Original"
+      },
+      "Mode": {
+        "Unite": "Unite",
+        "Subtract": "Subtract",
+        "Intersect": "Intersect"
+      },
+      "Error": {
+        "NonCoplanar": "Regions are non coplanar"
+      }
+    },
     "UniteSolids": {
       "keyin": "editor unite solids",
       "flyover": "Unite selected solids"
