@@ -24,8 +24,7 @@ export interface GroundPlaneDecorations {
   readonly belowParams: GraphicParams;
 }
 
-/** @internal */
-export interface SkyBoxParamsLoader {
+interface SkyBoxParamsLoader {
   load(): RenderSkyBoxParams | undefined;
   preload?: Promise<boolean>;
 }
