@@ -43,19 +43,12 @@ export namespace Key { // eslint-disable-line @typescript-eslint/no-redeclare
 export type Keys = ReadonlyArray<Key> | Readonly<KeySet>;
 
 /**
- * An array of tuples `[class name, compressed instance ids]` or
- * `[class name, instance keys array]`.
- * @public
- */
-export type InstanceKeysJSON = Array<[string, string | string[]]>;
-
-/**
  * A data structure of serialized [[KeySet]]
  * @public
  */
 export interface KeySetJSON {
   /** JSON representation of a list of instance keys */
-  instanceKeys: InstanceKeysJSON;
+  instanceKeys: Array<[string, string]>;
   /** An array of serialized node keys */
   nodeKeys: NodeKeyJSON[];
 }
@@ -190,12 +183,13 @@ export class KeySet {
       this._nodeKeys.add(JSON.stringify(key));
     for (const entry of keyset.instanceKeys) {
       const lcClassName = entry["0"].toLowerCase();
-      const ids =
-        typeof entry["1"] === "string"
-          ? entry["1"] === Id64.invalid
+      const idsJson: string | Id64String[] = entry["1"];
+      const ids: Set<Id64String> =
+        typeof idsJson === "string"
+          ? idsJson === Id64.invalid
             ? new Set([Id64.invalid])
-            : CompressedId64Set.decompressSet(entry["1"])
-          : new Set(entry["1"]);
+            : CompressedId64Set.decompressSet(idsJson)
+          : new Set(idsJson);
       this._instanceKeys.set(lcClassName, ids);
       this._lowerCaseMap.set(lcClassName, entry["0"]);
     }

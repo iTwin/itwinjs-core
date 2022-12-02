@@ -932,7 +932,7 @@ describe("KeySet", () => {
     it("deserializes JSON with instance key ids", () => {
       const ids = ["0x5", "0x9"];
       const json: KeySetJSON = {
-        instanceKeys: [["class name", ids]],
+        instanceKeys: [["class name", ids as any]],
         nodeKeys: [],
       };
       const deserialized = KeySet.fromJSON(json);

@@ -1264,9 +1264,6 @@ export interface InstanceKeyJSON {
 }
 
 // @public
-export type InstanceKeysJSON = Array<[string, string | string[]]>;
-
-// @public
 export interface InstanceLabelOverride extends RuleBase {
     class: SingleSchemaClassSpecification;
     ruleType: RuleTypes.InstanceLabelOverride;
@@ -1495,7 +1492,7 @@ export class KeySet {
 
 // @public
 export interface KeySetJSON {
-    instanceKeys: InstanceKeysJSON;
+    instanceKeys: Array<[string, string]>;
     nodeKeys: NodeKeyJSON[];
 }
 

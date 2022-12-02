@@ -174,7 +174,6 @@ public;InstanceId = Id64String
 public;InstanceKey
 public;InstanceKey
 public;InstanceKeyJSON
-public;InstanceKeysJSON = Array
 public;InstanceLabelOverride 
 public;InstanceLabelOverrideBriefcaseIdSpecification 
 public;InstanceLabelOverrideClassLabelSpecification 
