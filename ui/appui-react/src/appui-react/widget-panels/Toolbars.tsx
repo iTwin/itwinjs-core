@@ -15,13 +15,13 @@ export function WidgetPanelsToolbars() {
   const frontstageDef = useActiveFrontstageDef();
 
   let toolsWidget = frontstageDef?.contentManipulation;
-  if (frontstageDef?.topLeft) {
-    toolsWidget = frontstageDef?.topLeft.getSingleWidgetDef();
+  if (frontstageDef?.topLeft) { // eslint-disable-line deprecation/deprecation
+    toolsWidget = frontstageDef?.topLeft.getSingleWidgetDef(); // eslint-disable-line deprecation/deprecation
   }
 
   let navigationWidget = frontstageDef?.viewNavigation;
-  if (frontstageDef?.topRight) {
-    navigationWidget = frontstageDef?.topRight.getSingleWidgetDef();
+  if (frontstageDef?.topRight) { // eslint-disable-line deprecation/deprecation
+    navigationWidget = frontstageDef?.topRight.getSingleWidgetDef(); // eslint-disable-line deprecation/deprecation
   }
   const tools = toolsWidget?.reactNode;
   const navigation = navigationWidget?.reactNode;
