@@ -104,7 +104,7 @@ export class ConfigurableUiManager {
    * [[NavigationAidControl]],
    * [[StatusBarWidgetControl]],
    * [[WidgetControl]] or
-   * [ToolUiProvider]($appui-react).
+   * [[ToolUiProvider]].
    * @param classId the class id of the control to register
    * @param constructor the constructor of the control to register
    */

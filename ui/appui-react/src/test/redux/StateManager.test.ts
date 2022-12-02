@@ -215,8 +215,8 @@ describe("ConfigurableUiReducer", () => {
     outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setSnapMode(SnapMode.Center));
     expect(outState.snapMode).to.be.eql(SnapMode.Center);
 
-    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setFrameworkVersion("1"));
-    expect(outState.frameworkVersion).to.be.eql("1");
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setFrameworkVersion("1")); // eslint-disable-line deprecation/deprecation
+    expect(outState.frameworkVersion).to.be.eql("1"); // eslint-disable-line deprecation/deprecation
 
     outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setShowWidgetIcon(false));
     expect(outState.showWidgetIcon).to.be.eql(false);
