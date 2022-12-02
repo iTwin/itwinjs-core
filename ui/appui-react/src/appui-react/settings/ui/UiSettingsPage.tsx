@@ -33,7 +33,20 @@ import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react
  *
  * @beta
  */
-export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettingUiFrameworkVersion: boolean }) {
+export function UiSettingsPage(): JSX.Element;
+
+/**
+ * @deprecated Framework version is deprecated, only UI2.0 is supported.
+ * @beta
+ */
+export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettingUiFrameworkVersion: boolean }): JSX.Element; // eslint-disable-line @typescript-eslint/unified-signatures
+
+/**
+ * @deprecated
+ * @beta
+ */
+export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean }) {
+  const { allowSettingUiFrameworkVersion } = props || {};
   const themeTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeTitle"));
   const themeDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.themeDescription"));
   const autoHideTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoHideTitle"));
@@ -63,7 +76,7 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
   const toolbarOpacityDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.toolbarOpacityDescription"));
 
   const [theme, setTheme] = React.useState(() => UiFramework.getColorTheme());
-  const [uiVersion, setUiVersion] = React.useState(() => UiFramework.uiVersion);
+  const [uiVersion, setUiVersion] = React.useState(() => UiFramework.uiVersion); // eslint-disable-line deprecation/deprecation
   const [useDragInteraction, setUseDragInteraction] = React.useState(() => UiFramework.useDragInteraction);
   const [showWidgetIcon, setShowWidgetIcon] = React.useState(() => UiFramework.showWidgetIcon);
   const [autoCollapseUnpinnedPanels, setAutoCollapseUnpinnedPanels] = React.useState(() => UiFramework.autoCollapseUnpinnedPanels);
@@ -88,8 +101,8 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
           setTheme(UiFramework.getColorTheme());
         if (UiShowHideManager.autoHideUi !== autoHideUi)
           setAutoHideUi(UiShowHideManager.autoHideUi);
-        if (UiFramework.uiVersion !== uiVersion)
-          setUiVersion(UiFramework.uiVersion);
+        if (UiFramework.uiVersion !== uiVersion) // eslint-disable-line deprecation/deprecation
+          setUiVersion(UiFramework.uiVersion); // eslint-disable-line deprecation/deprecation
         if (UiFramework.useDragInteraction !== useDragInteraction)
           setUseDragInteraction(UiFramework.useDragInteraction);
         if (UiFramework.showWidgetIcon !== showWidgetIcon)
@@ -154,7 +167,7 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
     }
   }, []);
   const onToggleFrameworkVersion = React.useCallback(async () => {
-    UiFramework.setUiVersion(uiVersion === "2" ? "1" : "2");
+    UiFramework.setUiVersion(uiVersion === "2" ? "1" : "2"); // eslint-disable-line deprecation/deprecation
   }, [uiVersion]);
 
   const onToggleDragInteraction = React.useCallback(async () => {
@@ -196,8 +209,9 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
         settingUi={<ToggleSwitch checked={autoHideUi} onChange={onAutoHideChange} />}
       />
       {allowSettingUiFrameworkVersion && <SettingsItem title={useNewUiTitle.current} description={useNewUiDescription.current}
-        settingUi={<ToggleSwitch checked={UiFramework.uiVersion === "2"} onChange={onToggleFrameworkVersion} />}
+        settingUi={<ToggleSwitch checked={UiFramework.uiVersion === "2"} onChange={onToggleFrameworkVersion} />} // eslint-disable-line deprecation/deprecation
       />}
+      {/* eslint-disable-next-line deprecation/deprecation */}
       {UiFramework.uiVersion === "2" && <>
         <SettingsItem title={dragInteractionTitle.current} description={dragInteractionDescription.current}
           settingUi={<ToggleSwitch checked={useDragInteraction} onChange={onToggleDragInteraction} />}
@@ -265,12 +279,24 @@ function SettingsItem(props: SettingsItemProps) {
  * @param itemPriority - Used to define the order of the entry in the Settings Stage
  * @beta
  */
+export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntry;
+
+/**
+ * @deprecated Framework version is deprecated, only UI2.0 is supported. Use `getUiSettingsManagerEntry(itemPriority)` instead.
+ * @beta
+ */
+export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry; // eslint-disable-line @typescript-eslint/unified-signatures
+
+/**
+ * @deprecated
+ * @beta
+ */
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry {
   return {
     itemPriority, tabId: "uifw:UiStateStorage",
     label: UiFramework.translate("settings.uiSettingsPage.label"),
     icon: IconSpecUtilities.createWebComponentIconSpec(widowSettingsIconSvg),
-    page: <UiSettingsPage allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />,
+    page: <UiSettingsPage allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />, // eslint-disable-line deprecation/deprecation
     isDisabled: false,
     tooltip: UiFramework.translate("settings.uiSettingsPage.tooltip"),
   };

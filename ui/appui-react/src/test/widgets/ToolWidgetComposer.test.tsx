@@ -101,7 +101,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
     });
 
     it("BackstageAppButton should render in 1.0 mode", async () => {
-      UiFramework.setUiVersion("1");
+      UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
       mount(
         <Provider store={TestUtils.store} >
@@ -110,7 +110,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
           </FrameworkVersion>
         </Provider>
       );
-      UiFramework.setUiVersion("2");
+      UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     });
 
   });

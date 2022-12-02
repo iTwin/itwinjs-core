@@ -349,7 +349,9 @@ export class FrontstageManager {
   /** @internal */
   public static readonly onPanelSizeChangedEvent = new PanelSizeChangedEvent();
 
-  /** Get Nine-zone State Manager. */
+  /** Get Nine-zone State Manager.
+   * @deprecated Used in UI1.0 only.
+   */
   public static get NineZoneManager() {
     const id = FrontstageManager.activeFrontstageId;
     let manager = FrontstageManager._nineZoneManagers.get(id);
