@@ -2,6 +2,9 @@
 # and running a step to combine everything.
 
 parameters:
+  - name: checkout
+    type: string
+    default: self
   - name: workingDir
     type: string
     default: $(Pipeline.Workspace)/itwinjs-core
@@ -27,7 +30,7 @@ jobs:
       demands: Agent.OS -equals Windows_NT
 
     steps:
-      - checkout: self
+      - checkout: ${{ parameters.checkout }}
         path: itwinjs-core
         clean: true
 
