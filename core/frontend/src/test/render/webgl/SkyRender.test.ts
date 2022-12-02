@@ -39,14 +39,10 @@ describe.only("Sky rendering", () => {
 
   class Decorations extends EnvironmentDecorations {
     public get sky(): TestSky {
-      if (!this._sky)
-        return { };
-
-      if (this._sky.type !== "loader")
-        return { params: this._sky };
-
-      expect(this._sky.preload).not.to.be.undefined;
-      return { promise: this._sky.preload };
+      return {
+        params: this._sky.params,
+        promise: this._sky.loader?.preload,
+      };
     }
 
     public get ground() { return this._ground; }

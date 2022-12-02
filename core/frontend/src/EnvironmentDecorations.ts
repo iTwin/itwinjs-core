@@ -26,9 +26,14 @@ export interface GroundPlaneDecorations {
 
 /** @internal */
 export interface SkyBoxParamsLoader {
-  type: "loader";
   load(): RenderSkyBoxParams | undefined;
   preload?: Promise<boolean>;
+}
+
+/** @internal */
+export interface SkyBoxDecorations {
+  params?: RenderSkyBoxParams;
+  loader?: SkyBoxParamsLoader;
 }
 
 /** @internal */
@@ -38,7 +43,7 @@ export class EnvironmentDecorations {
   protected readonly _onDispose: () => void;
   protected _environment: Environment;
   protected _ground?: GroundPlaneDecorations;
-  protected _sky?: RenderSkyBoxParams | SkyBoxParamsLoader;
+  protected _sky: SkyBoxDecorations;
 
   public constructor(view: ViewState3d, onLoaded: () => void, onDispose: () => void) {
     this._environment = view.displayStyle.environment;
@@ -46,6 +51,7 @@ export class EnvironmentDecorations {
     this._onLoaded = onLoaded;
     this._onDispose = onDispose;
 
+    this._sky = { };
     this.loadSkyBox();
     if (this._environment.displayGround)
       this.loadGround();
@@ -53,7 +59,7 @@ export class EnvironmentDecorations {
 
   public dispose(): void {
     this._ground = undefined;
-    this._sky = undefined;
+    this._sky.params = this._sky.loader = undefined;
 
     this._onDispose();
   }
@@ -79,8 +85,8 @@ export class EnvironmentDecorations {
 
   public decorate(context: DecorateContext): void {
     const env = this._environment;
-    if (env.displaySky && this._sky && this._sky.type !== "loader") {
-      const sky = IModelApp.renderSystem.createSkyBox(this._sky);
+    if (env.displaySky && this._sky.params) {
+      const sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
       if (sky)
         context.setSkyBox(sky);
     }
@@ -165,18 +171,19 @@ export class EnvironmentDecorations {
       return;
     }
 
-    this._sky = loader;
+    this._sky.loader = loader;
     loader.preload.then((loaded) => {
-      if (loader === this._sky)
+      if (loader === this._sky.loader)
         this.setSky(loaded ? loader.load() : undefined);
     }).catch(() => {
-      if (loader === this._sky)
+      if (loader === this._sky.loader)
         this.setSky(undefined);
     });
   }
 
   private setSky(params: RenderSkyBoxParams | undefined): void {
-    this._sky = params ?? this.createSkyGradientParams();
+    this._sky.loader = undefined;
+    this._sky.params = params ?? this.createSkyGradientParams();
     this._onLoaded();
   }
 
@@ -246,11 +253,7 @@ export class EnvironmentDecorations {
       load = () => this.createSkyGradientParams();
     }
 
-    return {
-      type: "loader",
-      load,
-      preload,
-    };
+    return { load, preload, };
   }
 
   private createCubeImageKey(sky: SkyCube): string {
