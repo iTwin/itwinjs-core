@@ -114,13 +114,13 @@ export class PointCloudDisplaySettings {
   public readonly edlMode: PointCloudEDLMode;
   /** A strength value for the Eye Dome Lighting (EDL) effect.
    * The strength is expected to be a positive floating point number.
-   * Default: 5
+   * Default: 5.0
    */
   public readonly edlStrength: number;
   /** A radius value for the Eye Dome Lighting (EDL) effect.
    * The radius is expected to be a positive floating point number
    * It is used to deterimine how far away in pixels to sample for depth change
-   * Default: 1.0
+   * Default: 2.0
    */
   public readonly edlRadius: number;
   /** A flag for whether or not to apply filtering pass in the Eye Dome Lighting (EDL) effect.
@@ -161,7 +161,7 @@ export class PointCloudDisplaySettings {
     this.maxPixelsPerVoxel = props?.maxPixelsPerVoxel ?? 20;
     this.edlMode = props?.edlMode ?? "off";
     this.edlStrength = props?.edlStrength ?? 5;
-    this.edlRadius = props?.edlRadius ?? 1;
+    this.edlRadius = props?.edlRadius ?? 2;
     this.edlFilter = props?.edlFilter ?? 1;
     this.edlMixWts1 = props?.edlMixWts1 ?? 1.0;
     this.edlMixWts2 = props?.edlMixWts2 ?? 0.5;

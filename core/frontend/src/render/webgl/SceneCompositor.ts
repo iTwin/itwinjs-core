@@ -45,6 +45,7 @@ import { RenderBufferMultiSample } from "./RenderBuffer";
 import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { EDLMode, EyeDomeLighting } from "./EDL";
+import { FrustumUniformType } from "./FrustumUniforms";
 
 export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -2142,6 +2143,10 @@ class MRTCompositor extends Compositor {
         ++pushDepth;
         if (pushDepth === 1) {
           pcs = cmd.branch.branch.realityModelDisplaySettings?.pointCloud;
+          const is3d = FrustumUniformType.Perspective === this.target.uniforms.frustum.type;
+          this.target.uniforms.realityModel.pointCloud.updateRange (cmd.branch.branch.realityModelRange,
+            this.target.uniforms.frustum.nearPlane, this.target.uniforms.frustum.farPlane,
+            cmd.branch.localToWorldTransform.matrix, is3d);
           pointClouds.push(curPC = { pcs, cmds: [cmd] });
         } else {
           assert (undefined !== curPC);
