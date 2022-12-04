@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Prevent flickering skybox in synchronized viewports.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
