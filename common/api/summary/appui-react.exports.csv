@@ -252,6 +252,7 @@ beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 public;FrameworkState
+internal;FrameworkStateReducer(state: NineZoneState, action: NineZoneAction, frontstageDef: FrontstageDef): NineZoneState
 alpha;FrameworkToolAdmin 
 public;FrameworkUiAdmin 
 public;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
