@@ -44,7 +44,7 @@ interface IndicatorProps extends CommonProps {
 }
 
 /** General-purpose [[Footer]] indicator. Shows an icon and supports an optional popup dialog.
- * @deprecated Use [StatusBarIndicator] or [StatusBarLabelIndicator] instead.
+ * @deprecated Use [[StatusBarIndicator]] or [[StatusBarLabelIndicator]] instead.
  * @beta
  */
 export function Indicator(props: IndicatorProps) {

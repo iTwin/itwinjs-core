@@ -27,7 +27,7 @@ describe("WidgetDef", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     // need to set to UI 1 so widget state is independent of NineZoneState.
-    UiFramework.setUiVersion("1");
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
     ConfigurableUiManager.registerControl("WidgetDefTest", TestWidget);
   });
 
@@ -60,12 +60,12 @@ describe("WidgetDef", () => {
     expect(widgetDef.isActive).to.eq(true);
     expect(widgetDef.isFloating).to.eq(false);
     expect(widgetDef.priority).to.eq(100);
-    expect(widgetDef.isFreeform).to.eq(true);
+    expect(widgetDef.isFreeform).to.eq(true); // eslint-disable-line deprecation/deprecation
     expect(widgetDef.isFloatingStateSupported).to.eq(true);
     expect(widgetDef.isFloatingStateWindowResizable).to.eq(false);
     expect(widgetDef.isToolSettings).to.eq(true);
     expect(widgetDef.isStatusBar).to.eq(true);
-    expect(widgetDef.fillZone).to.eq(true);
+    expect(widgetDef.fillZone).to.eq(true); // eslint-disable-line deprecation/deprecation
     expect(widgetDef.applicationData).to.eq("AppData");
 
     expect(widgetDef.label).to.eq("label");

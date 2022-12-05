@@ -28,7 +28,7 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
 
     // eslint-disable-next-line deprecation/deprecation
     if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.CenterRight) ||
-      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start && "1" !== UiFramework.uiVersion)) {
+      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start && "1" !== UiFramework.uiVersion)) { // eslint-disable-line deprecation/deprecation
       widgets.push({
         id: "map-layers:mapLayersWidget",
         label: MapLayersUI.localization.getLocalizedString("mapLayers:Widget.Label"),

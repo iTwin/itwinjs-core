@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Deprecate UI1.0 related properties.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
