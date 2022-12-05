@@ -80,7 +80,6 @@ describe("WidgetTitleBar", () => {
     sinon.assert.calledOnceWithExactly(dispatch, {
       type: "FLOATING_WIDGET_CLEAR_USER_SIZED",
       id: "w1",
-      userSized: false,
     });
   });
 
