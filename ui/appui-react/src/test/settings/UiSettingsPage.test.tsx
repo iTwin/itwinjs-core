@@ -28,7 +28,7 @@ describe("UiSettingsPage", () => {
     // create a new mock each run so there are no "stored values"
     localStorageMock = storageMock();
     await TestUtils.initializeUiFramework();
-    UiFramework.setUiVersion("1");
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
     Object.defineProperty(window, "localStorage", {
       get: () => localStorageMock,
@@ -49,7 +49,7 @@ describe("UiSettingsPage", () => {
   }
 
   it("renders using getUiSettingsManagerEntry (V1)", async () => {
-    const tabEntry = getUiSettingsManagerEntry(10, false);
+    const tabEntry = getUiSettingsManagerEntry(10, false); // eslint-disable-line deprecation/deprecation
     const wrapper = render(tabEntry.page);
     expect(wrapper).not.to.be.undefined;
     expect(wrapper.container.querySelectorAll("span.title").length).to.eq(3);
@@ -63,7 +63,7 @@ describe("UiSettingsPage", () => {
   // }
 
   it("renders without version option (V1) set theme", async () => {
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
 
     // const themeSpan = wrapper.getByText("settings.uiSettingsPage.themeTitle");
@@ -89,10 +89,10 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders without version option (V1) set widget opacity", async () => {
-    UiFramework.setUiVersion("1");
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
 
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     const thumb = wrapper.container.ownerDocument.querySelector(".iui-slider-thumb");
     expect(thumb).to.exist;
@@ -110,10 +110,10 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders without version option (V2) set toolbar opacity", async () => {
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
 
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     const thumb = wrapper.container.ownerDocument.querySelectorAll(".iui-slider-thumb");
     expect(thumb[0]).to.exist;
@@ -131,10 +131,10 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders without version option (V1) toggle auto-hide", async () => {
-    UiFramework.setUiVersion("1");
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
 
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     const autoHideSpan = wrapper.getByText("settings.uiSettingsPage.autoHideTitle");
     const checkbox = getInputBySpanTitle(autoHideSpan);
@@ -150,10 +150,10 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders with version option (V1)", async () => {
-    UiFramework.setUiVersion("1");
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
 
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     expect(wrapper.container.querySelectorAll("span.title").length).to.eq(4);
 
@@ -168,9 +168,9 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders without version option (V2) toggle drag interaction", async () => {
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
 
     const titleSpan = wrapper.getByText("settings.uiSettingsPage.dragInteractionTitle");
@@ -185,9 +185,9 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders without version option (V2) toggle useProximityOpacity", async () => {
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
 
     const titleSpan = wrapper.getByText("settings.uiSettingsPage.useProximityOpacityTitle");
@@ -202,9 +202,9 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders without version option (V2) toggle snapWidgetOpacity", async () => {
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
 
     const titleSpan = wrapper.getByText("settings.uiSettingsPage.snapWidgetOpacityTitle");
@@ -219,9 +219,9 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders showWidgetIcon toggle", async () => {
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
 
     const titleSpan = wrapper.getByText("settings.uiSettingsPage.widgetIconTitle");
@@ -236,9 +236,9 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders with version option (V2) toggle ui-version", async () => {
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     expect(wrapper.container.querySelectorAll("span.title").length).to.eq(12);
     const uiVersionSpan = wrapper.getByText("settings.uiSettingsPage.newUiTitle");
@@ -256,9 +256,9 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders animateToolSettings toggle", async () => {
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
 
     const titleSpan = wrapper.getByText("settings.uiSettingsPage.animateToolSettingsTitle");
@@ -273,9 +273,9 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders useToolAsToolSettingsLabel toggle", async () => {
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
 
     const titleSpan = wrapper.getByText("settings.uiSettingsPage.useToolAsToolSettingsLabelTitle");

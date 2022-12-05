@@ -342,7 +342,7 @@ export class SampleAppIModelApp {
   }
 
   public static getUiFrameworkProperty(): string {
-    return SampleAppIModelApp.store.getState().frameworkState.configurableUiState.frameworkVersion;
+    return SampleAppIModelApp.store.getState().frameworkState.configurableUiState.frameworkVersion; // eslint-disable-line deprecation/deprecation
   }
 
   public static saveAnimationViewId(value: string, immediateSync = false) {
@@ -403,7 +403,7 @@ function mapDragInteractionStateToProps(state: RootState) {
 }
 
 function mapFrameworkVersionStateToProps(state: RootState) {
-  return { frameworkVersion: state.frameworkState.configurableUiState.frameworkVersion };
+  return { frameworkVersion: state.frameworkState.configurableUiState.frameworkVersion }; // eslint-disable-line deprecation/deprecation
 }
 
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);

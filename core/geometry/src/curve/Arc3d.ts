@@ -55,7 +55,7 @@ export interface ArcVectors {
  *
  * * The angle to point equation is:
  *
- * **  `X = center + cos(theta) * vector0 + sin(theta) * vector90`
+ * *  `X = center + cos(theta) * vector0 + sin(theta) * vector90`
  * * When the two vectors are perpendicular and have equal length, it is a true circle.
  * * Non-perpendicular vectors are always elliptic.
  * *  vectors of unequal length are always elliptic.
@@ -205,7 +205,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
 
   /**
-   * Creat an arc by center with vectors to points at 0 and 90 degrees in parameter space.
+   * Create an arc by center with vectors to points at 0 and 90 degrees in parameter space.
    * @param center arc center
    * @param vector0 vector to 0 degrees (commonly major axis)
    * @param vector90 vector to 90 degree point (commonly minor axis)
@@ -666,14 +666,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param transform optional transform to apply to the arc.
    */
   public extendRange(range: Range3d, transform?: Transform): void {
-    this.extendRangeInSweep (range, this._sweep, transform);
+    this.extendRangeInSweep(range, this._sweep, transform);
   }
   /**
    * Extend a range to include the range of the arc, using specified range in place of the arc range.
    * @param range range being extended.
    * @param transform optional transform to apply to the arc.
    */
-   public  extendRangeInSweep(range: Range3d, sweep: AngleSweep, transform?: Transform): void {
+  public extendRangeInSweep(range: Range3d, sweep: AngleSweep, transform?: Transform): void {
     const trigForm = new SineCosinePolynomial(0, 0, 0);
     const center = this._center.clone(Arc3d._workPointA);
     const vectorU = this._matrix.columnX(Arc3d._workVectorU);
@@ -695,14 +695,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     range.extend(lowPoint);
     range.extend(highPoint);
   }
-    /**
-   * Returns a (high accuracy) range of the curve between fractional positions
-   * * Default implementation returns teh range of the curve from clonePartialCurve
-   */
+  /**
+ * Returns a (high accuracy) range of the curve between fractional positions
+ * * Default implementation returns teh range of the curve from clonePartialCurve
+ */
   public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
-    const sweep = AngleSweep.createStartEndRadians (this.sweep.fractionToRadians (fraction0), this.sweep.fractionToRadians (fraction1));
-    const range = Range3d.create ();
-    this.extendRangeInSweep (range, sweep, transform);
+    const sweep = AngleSweep.createStartEndRadians(this.sweep.fractionToRadians(fraction0), this.sweep.fractionToRadians(fraction1));
+    const range = Range3d.create();
+    this.extendRangeInSweep(range, sweep, transform);
     return range;
   }
 

@@ -120,7 +120,7 @@ function WidgetSelect({
       return;
     }
     const newOptions = [];
-    for (const zoneDef of frontstageDef.zoneDefs) {
+    for (const zoneDef of frontstageDef.zoneDefs) { // eslint-disable-line deprecation/deprecation
       newOptions.push(...zoneDef.widgetDefs.map((w) => ({ label: w.id, value: w.id })));
     }
     for (const panelDef of frontstageDef.panelDefs) {

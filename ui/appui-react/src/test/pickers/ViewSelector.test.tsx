@@ -19,13 +19,13 @@ describe("ViewSelector", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    UiFramework.setUiVersion("1");
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
   });
 
   after(async () => {
   // restore to default "2" setting
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
     TestUtils.terminateUiFramework();
   });

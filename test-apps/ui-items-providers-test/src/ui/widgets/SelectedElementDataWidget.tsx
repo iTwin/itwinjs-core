@@ -40,7 +40,7 @@ export function SelectedElementDataWidgetComponent() {
   const widgetDef = useSpecificWidgetDef("ui-item-provider-test:elementDataListWidget");
 
   React.useEffect(() => {
-    if (UiFramework.uiVersion === "1")
+    if (UiFramework.uiVersion === "1") // eslint-disable-line deprecation/deprecation
       return;
 
     // using setTimeout to give time for frontstage to load before calling setWidgetState

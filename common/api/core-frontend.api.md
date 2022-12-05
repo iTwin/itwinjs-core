@@ -9972,9 +9972,9 @@ export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
 // @internal (undocumented)
 export interface SkyBoxDecorations {
     // (undocumented)
-    params?: RenderSkyBoxParams | undefined;
+    params?: RenderSkyBoxParams;
     // (undocumented)
-    promise?: Promise<RenderSkyBoxParams | undefined>;
+    promise?: Promise<boolean>;
 }
 
 // @public
