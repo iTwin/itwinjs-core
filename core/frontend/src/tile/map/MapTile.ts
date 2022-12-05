@@ -131,6 +131,7 @@ const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.crea
 export class MapTile extends RealityTile {
   private static _maxParentHeightDepth = 4;
   private _imageryTiles?: ImageryMapTile[];
+  private _hiddenTiles?: ImageryMapTile[];
   /** @internal */
   public everLoaded = false;                    // If the tile is only required for availability metadata, load it once and then allow it to be unloaded.
   /** @internal */
@@ -159,6 +160,7 @@ export class MapTile extends RealityTile {
   public get isPlanar(): boolean { return this._patch instanceof PlanarTilePatch; }
   /** @internal */
   public get imageryTiles(): ImageryMapTile[] | undefined { return this._imageryTiles; }
+  public get hiddenImageryTiles(): ImageryMapTile[] | undefined { return this._hiddenTiles; }
   /** The [[MapTileTree]] to which this tile belongs. */
   public readonly mapTree: MapTileTree;
   /** Uniquely identifies this tile within its [[mapTree]]. */
@@ -497,6 +499,9 @@ export class MapTile extends RealityTile {
       this._imageryTiles.forEach((tile) => tile.releaseMapTileUsage());
       this._imageryTiles = undefined;
     }
+    if (this._hiddenTiles) {
+      this._hiddenTiles = undefined;
+    }
   }
 
   /** @internal */
@@ -583,20 +588,20 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   public get baseImageryIsReady(): boolean {
-    if (undefined !== this.mapTree.baseColor || 0 === this.mapTree.imageryTrees.length)
+    if (undefined !== this.mapTree.baseColor || 0 === this.mapTree.layerImageryTrees.length)
       return true;
 
     if (undefined === this._imageryTiles)
       return false;
 
-    const baseTreeId = this.mapTree.imageryTrees[0].modelId;
+    const baseTreeId = this.mapTree.layerImageryTrees[0].tree.modelId;
     return this._imageryTiles.every((imageryTile) => imageryTile.imageryTree.modelId !== baseTreeId || imageryTile.isReady);
   }
 
   /** @internal */
   public get imageryIsReady(): boolean {
     if (undefined === this._imageryTiles)
-      return 0 === this.mapTree.imageryTrees.length;
+      return 0 === this.mapTree.layerImageryTrees.length;
 
     return this._imageryTiles.every((tile) => tile.isReady);
   }
@@ -605,24 +610,36 @@ export class MapTile extends RealityTile {
    * @internal
    */
   public override selectSecondaryTiles(args: TileDrawArgs, context: TraversalSelectionContext) {
-    if (0 === this.mapTree.imageryTrees.length || this.imageryIsReady)
+    if (0 === this.mapTree.layerImageryTrees.length || this.imageryIsReady)
       return;
 
     this.clearImageryTiles();
     this._imageryTiles = new Array<ImageryMapTile>();
-    for (const imageryTree of this.mapTree.imageryTrees) {
-      if (TileTreeLoadStatus.Loaded !== imageryTree.selectCartoDrapeTiles(this._imageryTiles, this, args)) {
+    this._hiddenTiles = new Array<ImageryMapTile>();
+    for (const layerImageryTree of this.mapTree.layerImageryTrees) {
+      const tmpTiles = new Array<ImageryMapTile>();
+      if (TileTreeLoadStatus.Loaded !== layerImageryTree.tree.selectCartoDrapeTiles(tmpTiles, this, args)) {
         this._imageryTiles = undefined;
         return;
       }
-    }
 
-    for (const imageryTile of this._imageryTiles) {
-      imageryTile.markMapTileUsage();
-      if (imageryTile.isReady)
-        args.markReady(imageryTile);
-      else
-        context.missing.push(imageryTile);
+      // MapTileTree might include a non-visible imagery tree, we need to check for that.
+      if (layerImageryTree.settings.visible && !layerImageryTree.settings.allSubLayersInvisible) {
+        for (const imageryTile of tmpTiles) {
+          imageryTile.markMapTileUsage();
+          if (imageryTile.isReady)
+            args.markReady(imageryTile);
+          else
+            context.missing.push(imageryTile);
+          this._imageryTiles.push(imageryTile);
+        }
+      } else {
+        // Even though those selected imagery tile are not visible,
+        // we keep track of them for scale range reporting.
+        for (const imageryTile of tmpTiles) {
+          this._hiddenTiles.push(imageryTile);
+        }
+      }
     }
   }
 

@@ -36,6 +36,14 @@ const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.crea
 const scratchCorner = Point3d.createZero();
 const scratchZNormal = Vector3d.create(0, 0, 1);
 
+/** Utility interface that ties an imagery tile tree to its corresponding map-layer settings object.
+ * @internal
+ */
+interface MapLayerTreeSetting {
+  tree: ImageryMapTileTree;
+  settings: MapLayerSettings;
+}
+
 /** A [quad tree](https://en.wikipedia.org/wiki/Quadtree) consisting of [[MapTile]]s representing the map imagery draped onto the surface of the Earth.
  * A `MapTileTree` enables display of a globe or planar map with [map imagery](https://en.wikipedia.org/wiki/Tiled_web_map) obtained from any number of sources, such as
  * [Bing](https://learn.microsoft.com/en-us/bingmaps/), [OpenStreetMap](https://wiki.openstreetmap.org/wiki/API), and [GIS servers](https://wiki.openstreetmap.org/wiki/API).
@@ -45,6 +53,7 @@ const scratchZNormal = Vector3d.create(0, 0, 1);
  * The terrain displayed in a [[Viewport]] is determined by its [TerrainSettings]($common).
  * @beta
  */
+
 export class MapTileTree extends RealityTileTree {
   /** @internal */
   public ecefToDb: Transform;
@@ -83,7 +92,7 @@ export class MapTileTree extends RealityTileTree {
   /** @internal */
   public produceGeometry?: boolean;
   /** @internal */
-  public imageryTrees: ImageryMapTileTree[] = [];
+  public layerImageryTrees: MapLayerTreeSetting[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
   private _layerVisibility = new Map<Id64String, ImageryMapTileTreeVisibility>();
   private _modelIdToIndex = new Map<Id64String, number>();
@@ -158,10 +167,6 @@ export class MapTileTree extends RealityTileTree {
     return clone;
   }
 
-  public getLayerSettings(treeId: string) {
-    return this._layerSettings.get(treeId);
-  }
-
   /** @internal */
   public tileFromQuadId(quadId: QuadId): MapTile | undefined {
     return (this._rootTile as MapTile).tileFromQuadId(quadId);
@@ -169,7 +174,7 @@ export class MapTileTree extends RealityTileTree {
 
   /** @internal */
   public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number) {
-    this.imageryTrees.push(tree);
+    this.layerImageryTrees.push({tree, settings});
     this._layerSettings.set(tree.modelId, settings);
     if (!this._layerVisibility.has(tree.modelId))
       this._layerVisibility.set(tree.modelId, new ImageryMapTileTreeVisibility());
@@ -196,7 +201,7 @@ export class MapTileTree extends RealityTileTree {
 
   /** @internal */
   public clearImageryTreesAndClassifiers() {
-    this.imageryTrees.length = 0;
+    this.layerImageryTrees.length = 0;
     this._layerSettings.clear();
     this._modelIdToIndex.clear();
     this.layerClassifiers.clear();
@@ -210,7 +215,7 @@ export class MapTileTree extends RealityTileTree {
   /** @internal */
   public override get maxDepth() {
     let maxDepth = this.loader.maxDepth;
-    this.imageryTrees?.forEach((imageryTree) => maxDepth = Math.max(maxDepth, imageryTree.maxDepth));
+    this.layerImageryTrees?.forEach((layerImageryTree) => maxDepth = Math.max(maxDepth, layerImageryTree.tree.maxDepth));
 
     return maxDepth;
   }
@@ -458,7 +463,10 @@ export class MapTileTree extends RealityTileTree {
       if (selectedTile instanceof MapTile) {
         if (!selectedTile.isReady)
           allTilesRead = false;
-        const selectedImageryTiles = selectedTile.imageryTiles;
+        let selectedImageryTiles = selectedTile.imageryTiles;
+        if (selectedTile.hiddenImageryTiles) {
+          selectedImageryTiles = selectedImageryTiles ? [...selectedImageryTiles, ...selectedTile.hiddenImageryTiles] : selectedTile.hiddenImageryTiles;
+        }
         if (selectedImageryTiles) {
           for (const selectedImageryTile of selectedImageryTiles) {
             const treeVisibility = this.getLayerVisibility(selectedImageryTile.tree.id);
@@ -904,7 +912,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === tree)
       return false;     // Not loaded yet.
 
-    tree.imageryTrees.length = 0;
+    tree.layerImageryTrees.length = 0;
     if (0 === this._layerTrees.length)
       return !this.isOverlay;
 
@@ -918,7 +926,10 @@ export class MapTileTreeReference extends TileTreeReference {
 
     for (; treeIndex < this._layerTrees.length; treeIndex++) {
       const layerTreeRef = this._layerTrees[treeIndex];
-      if (layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus && layerTreeRef.layerSettings.visible && !layerTreeRef.layerSettings.allSubLayersInvisible) {
+      // Load tile tree for each configured layer.
+      // Note: Non-visible layer are also added to allow proper tile tree scale range visibility reporting.
+      if (layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus
+        && !layerTreeRef.layerSettings.allSubLayersInvisible) {
         const layerTree = layerTreeRef.treeOwner.load();
         if (undefined === layerTree)
           return false; // Not loaded yet.
