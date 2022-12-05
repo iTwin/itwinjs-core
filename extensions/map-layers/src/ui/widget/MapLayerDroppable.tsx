@@ -9,7 +9,7 @@
 
 import * as React from "react";
 import { Draggable, DraggableChildrenFn, Droppable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
-import { ImageryTileTreeVisibilityState, MapLayerImageryProviderStatus, ScreenViewport } from "@itwin/core-frontend";
+import { MapLayerImageryProviderStatus, MapTileTreeScaleRangeVisibility, ScreenViewport } from "@itwin/core-frontend";
 import { Icon } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { ModalDialogManager } from "@itwin/appui-react";
@@ -51,7 +51,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
   const renderItem: DraggableChildrenFn = (dragProvided, _, rubric) => {
     assert(props.layersList !== undefined);
     const activeLayer = props.layersList[rubric.source.index];
-    const outOfRange = activeLayer.treeVisibility === ImageryTileTreeVisibilityState.Hidden;
+    const outOfRange = activeLayer.treeVisibility === MapTileTreeScaleRangeVisibility.Hidden;
 
     return (
       <div className="map-manager-source-item" data-id={rubric.source.index} key={activeLayer.name}

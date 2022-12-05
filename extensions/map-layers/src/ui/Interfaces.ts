@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent } from "@itwin/core-bentley";
 import {  MapSubLayerProps } from "@itwin/core-common";
-import { HitDetail,  ImageryTileTreeVisibilityState, MapLayerImageryProvider } from "@itwin/core-frontend";
+import { HitDetail,  MapLayerImageryProvider, MapTileTreeScaleRangeVisibility } from "@itwin/core-frontend";
 
 export interface StyleMapLayerSettings {
   /** Name */
@@ -13,7 +13,7 @@ export interface StyleMapLayerSettings {
   source: string;
   /** Controls visibility of layer */
   visible: boolean;
-  treeVisibility: ImageryTileTreeVisibilityState;
+  treeVisibility: MapTileTreeScaleRangeVisibility;
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
   transparency: number;
   /** Transparent background */

@@ -25,8 +25,8 @@ import { SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
-  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryMapTileTreeVisibility, ImageryTileTreeVisibilityState, MapCartoRectangle, MapLayerFeatureInfo,
-  MapLayerTileTreeReference, MapTile, MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
+  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerTileTreeReference, MapTile,
+  MapTileLoader, MapTileTreeState, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
 } from "../internal";
@@ -42,6 +42,15 @@ const scratchZNormal = Vector3d.create(0, 0, 1);
 interface MapLayerTreeSetting {
   tree: ImageryMapTileTree;
   settings: MapLayerSettings;
+}
+
+/**
+ * @beta */
+export enum MapTileTreeScaleRangeVisibility {
+  Unknown = 0,
+  Visible,
+  Hidden,
+  Partial
 }
 
 /** A [quad tree](https://en.wikipedia.org/wiki/Quadtree) consisting of [[MapTile]]s representing the map imagery draped onto the surface of the Earth.
@@ -94,7 +103,7 @@ export class MapTileTree extends RealityTileTree {
   /** @internal */
   public layerImageryTrees: MapLayerTreeSetting[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
-  private _layerVisibility = new Map<Id64String, ImageryMapTileTreeVisibility>();
+  private _treeState = new Map<Id64String, MapTileTreeState>();
   private _modelIdToIndex = new Map<Id64String, number>();
   /** @internal */
   public layerClassifiers = new Map<number, RenderPlanarClassifier>();
@@ -154,15 +163,15 @@ export class MapTileTree extends RealityTileTree {
     // by depth so that painters algorithm will approximate correct depth display.
     return this.useDepthBuffer ? this.loader.parentsAndChildrenExclusive : false;
   }
-  public getLayerVisibility(treeId: string) {
-    return this._layerVisibility.get(treeId);
+  public getTreeState(treeId: string) {
+    return this._treeState.get(treeId);
   }
 
-  public cloneLayerVisibility() {
+  public cloneTreeState() {
 
-    const clone = new Map<Id64String, ImageryMapTileTreeVisibility>();
-    for (const [treeId, visibility] of this._layerVisibility) {
-      clone.set(treeId, visibility.clone());
+    const clone = new Map<Id64String, MapTileTreeState>();
+    for (const [treeId, state] of this._treeState) {
+      clone.set(treeId, state.clone());
     }
     return clone;
   }
@@ -176,8 +185,8 @@ export class MapTileTree extends RealityTileTree {
   public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number) {
     this.layerImageryTrees.push({tree, settings});
     this._layerSettings.set(tree.modelId, settings);
-    if (!this._layerVisibility.has(tree.modelId))
-      this._layerVisibility.set(tree.modelId, new ImageryMapTileTreeVisibility());
+    if (!this._treeState.has(tree.modelId))
+      this._treeState.set(tree.modelId, new MapTileTreeState());
     this._modelIdToIndex.set(tree.modelId, index);
   }
 
@@ -441,7 +450,7 @@ export class MapTileTree extends RealityTileTree {
   /** @internal */
   public override reportTileVisibility(args: TileDrawArgs, selected: RealityTile[]) {
 
-    const layersVisibilityBefore =  this.cloneLayerVisibility();
+    const layersVisibilityBefore =  this.cloneTreeState();
 
     const changes =  new Array<MapLayerScaleRangeVisibility> ();
 
@@ -449,7 +458,7 @@ export class MapTileTree extends RealityTileTree {
       return;
 
     for (const [treeId] of layersVisibilityBefore) {
-      const treeVisibility = this.getLayerVisibility(treeId);
+      const treeVisibility = this.getTreeState(treeId);
       if (treeVisibility) {
         treeVisibility.reset();
       }
@@ -469,16 +478,15 @@ export class MapTileTree extends RealityTileTree {
         }
         if (selectedImageryTiles) {
           for (const selectedImageryTile of selectedImageryTiles) {
-            const treeVisibility = this.getLayerVisibility(selectedImageryTile.tree.id);
-            if (treeVisibility) {
+            const treeState = this.getTreeState(selectedImageryTile.tree.id);
+            if (treeState) {
               if (selectedImageryTile.isOutOfLodRange) {
                 out.push(selectedImageryTile.contentId);
-                treeVisibility.setVisibility(false);
+                treeState.setScaleRangeVisibility(false);
               } else {
-                treeVisibility.setVisibility(true);
+                treeState.setScaleRangeVisibility(true);
                 vis.push(selectedImageryTile.contentId);
               }
-              // treeVisibility.setVisibility(selectedImageryTile.isOutOfLodRange !== true);
             }
 
           }
@@ -489,20 +497,20 @@ export class MapTileTree extends RealityTileTree {
     if (!allTilesRead)
       changes;
 
-    for (const [treeId, prevVisibility] of layersVisibilityBefore) {
-      const newVisibility = this.getLayerVisibility(treeId);
-      if (newVisibility) {
+    for (const [treeId, prevState] of layersVisibilityBefore) {
+      const newState = this.getTreeState(treeId);
+      if (newState) {
 
-        const prevState = prevVisibility.getState();
-        const newState = newVisibility.getState();
-        if ( prevState !== newState) {
+        const prevVisibility = prevState.getScaleRangeVisibility();
+        const visibility = newState.getScaleRangeVisibility();
+        if ( prevVisibility !== visibility) {
           // console.log(`Visible : '${vis.join(", ")}'`);
           // console.log(`Out : '${out.join(", ")}'`);
-          console.log(`ImageryTileTree '${treeId}' changed prev state: '${ImageryTileTreeVisibilityState[prevState]}' new state: '${ImageryTileTreeVisibilityState[newState]}'`);
+          console.log(`ImageryTileTree '${treeId}' changed prev state: '${MapTileTreeScaleRangeVisibility[prevVisibility]}' new state: '${MapTileTreeScaleRangeVisibility[visibility]}'`);
 
-          const mapLayersIndexes = args.context.viewport.getMapLayerIndexFromIds(this.id, treeId);
+          const mapLayersIndexes = args.context.viewport.getMapLayerIndexesFromIds(this.id, treeId);
           for (const index of mapLayersIndexes ) {
-            changes.push({index, newState:newVisibility.getState()});
+            changes.push({index, visibility});
           }
 
         }
@@ -893,18 +901,18 @@ export class MapTileTreeReference extends TileTreeReference {
     return index < 0 || treeIndex >= this._layerTrees.length ? undefined : this._layerTrees[treeIndex];
   }
 
-  public getMapLayerVisibilityRangeState(index: number): ImageryTileTreeVisibilityState {
+  public getMapLayerScaleRangeVisibility(index: number): MapTileTreeScaleRangeVisibility {
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (undefined !== tree) {
       const tileTreeRef = this.getLayerImageryTreeRef(index);
       const treeId = tileTreeRef?.treeOwner.tileTree?.id;
       if (treeId !== undefined) {
-        const visibility = tree.getLayerVisibility(treeId);
-        if (visibility !== undefined)
-          return visibility.getState();
+        const treeState = tree.getTreeState(treeId);
+        if (treeState !== undefined)
+          return treeState.getScaleRangeVisibility();
       }
     }
-    return ImageryTileTreeVisibilityState.Unknown;
+    return MapTileTreeScaleRangeVisibility.Unknown;
   }
 
   public initializeLayers(context: SceneContext): boolean {

@@ -10,7 +10,7 @@
 import { assert, BentleyError } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import {
-  ImageryMapTileTree, ImageryTileTreeVisibilityState, IModelApp, MapLayerImageryProvider, MapLayerScaleRangeVisibility, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
+  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerScaleRangeVisibility, MapLayerSource, MapLayerSources, MapTileTreeScaleRangeVisibility, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
@@ -66,7 +66,7 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
     const layerSettings = displayStyleLayers[layerIndex];
     const isOverlay = !getBackgroundMap;
     const layerProvider = viewport.getMapLayerImageryProvider(layerIndex, isOverlay);
-    const treeVisibility = viewport.getMapLayerVisibilityRangeState(layerIndex, isOverlay);
+    const treeVisibility = viewport.getMapLayerScaleRangeVisibility(layerIndex, isOverlay);
     const popSubLayers = populateSubLayers && (layerSettings instanceof ImageMapLayerSettings);
     layers.push({
       visible: layerSettings.visible,
@@ -161,7 +161,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
           if (undefined === foundScaleRangeVisibility)
             return curStyledLayer;
           else
-            return {...curStyledLayer, treeVisibility:foundScaleRangeVisibility.newState};
+            return {...curStyledLayer, treeVisibility:foundScaleRangeVisibility.visibility};
         });
 
       };

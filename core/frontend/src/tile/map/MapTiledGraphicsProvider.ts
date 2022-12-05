@@ -89,8 +89,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   }
 
   /** @internal */
-  public getMapLayerIndexFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
-    // let layers:[{index: number, isOverlay: boolean}];
+  public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
     const layers = new Array<MapLayerIndex>();
     if (mapTreeId === this.backgroundMap.treeOwner.tileTree?.id) {
       for (let i = 0; i < this.backgroundMap.layerSettings.length; i++) {

@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, ImageryMapTileTreeVisibility, ImageryTileTreeVisibilityState, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider, MapTileTree, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider, MapTileTree, MapTileTreeReference, MapTileTreeScaleRangeVisibility, MapTileTreeState, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -220,9 +220,12 @@ export interface ReadImageBufferArgs {
   upsideDown?: boolean;
 }
 
+/** MapLayer visibility based on its scale range definition.
+ * @beta
+ */
 export interface MapLayerScaleRangeVisibility {
   index: MapLayerIndex;
-  newState: ImageryTileTreeVisibilityState;
+  visibility: MapTileTreeScaleRangeVisibility;
 }
 
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
@@ -798,13 +801,13 @@ export abstract class Viewport implements IDisposable, TileUser {
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
 
   /** @beta */
-  public getMapLayerVisibilityRangeState(index: number, isOverlay: boolean): ImageryTileTreeVisibilityState {
+  public getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility {
     const treeRef = ( isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
     if (treeRef) {
-      return treeRef.getMapLayerVisibilityRangeState(index);
+      return treeRef.getMapLayerScaleRangeVisibility(index);
 
     }
-    return ImageryTileTreeVisibilityState.Unknown;
+    return MapTileTreeScaleRangeVisibility.Unknown;
   }
   /** @beta */
   public getMapLayerTreeIds(index: number, isOverlay: boolean): {mapTreeId: Id64String, layerTreeId: Id64String} | undefined {
@@ -818,9 +821,12 @@ export abstract class Viewport implements IDisposable, TileUser {
     }
     return undefined;
   }
-  public getMapLayerIndexFromIds(mapTreeId: Id64String, layerTreeId: Id64String): {index: number, isOverlay: boolean}[] {
+  /** Return a list of maplayer indexes match a given  MapTile tree Id and a layer imagery tree id.
+   * Note: This returns a list because layer imagery  trees can be shared for multiples layers.
+   * @internal */
+  public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): {index: number, isOverlay: boolean}[] {
     if (this._mapTiledGraphicsProvider)
-      return this._mapTiledGraphicsProvider?.getMapLayerIndexFromIds(mapTreeId, layerTreeId);
+      return this._mapTiledGraphicsProvider?.getMapLayerIndexesFromIds(mapTreeId, layerTreeId);
 
     return [];
 

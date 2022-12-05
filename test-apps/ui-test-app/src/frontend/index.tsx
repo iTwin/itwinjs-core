@@ -72,6 +72,7 @@ import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { InspectUiItemInfoTool } from "./tools/InspectTool";
+import { MichelTestPrefs } from "./MichelTestPrefs";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -333,7 +334,7 @@ export class SampleAppIModelApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
+    await MapLayersUI.initialize({ iTwinConfig: new MichelTestPrefs(), featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
     MapLayersFormats.initialize();
 
     AppSettingsTabsProvider.initializeAppSettingProvider();

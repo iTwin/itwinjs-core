@@ -15,7 +15,7 @@ import { RenderMemory } from "../../render/RenderMemory";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import {
-  MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
+  MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTileTreeScaleRangeVisibility, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
   TileTreeSupplier,
 } from "../internal";
@@ -147,38 +147,31 @@ export class ImageryMapTile extends RealityTile {
   }
 }
 
-/** @internal */
-export enum ImageryTileTreeVisibilityState {
-  Unknown = 0,
-  Visible,
-  Hidden,
-  Partial
-}
-
-/** @internal */
-export class ImageryMapTileTreeVisibility {
-  private _visibility: ImageryTileTreeVisibilityState;
-  public getState() {return this._visibility;}
+/** Object that holds various state values for a MapTileTree
+ * @internal */
+export class MapTileTreeState {
+  private _scaleRangeVis: MapTileTreeScaleRangeVisibility;
+  public getScaleRangeVisibility() {return this._scaleRangeVis;}
 
   constructor() {
-    this._visibility = ImageryTileTreeVisibilityState.Unknown;
+    this._scaleRangeVis = MapTileTreeScaleRangeVisibility.Unknown;
   }
 
   public clone() {
-    const clone = new ImageryMapTileTreeVisibility();
-    clone._visibility = this._visibility;
+    const clone = new MapTileTreeState();
+    clone._scaleRangeVis = this._scaleRangeVis;
     return clone;
   }
 
   public reset() {
-    this._visibility = ImageryTileTreeVisibilityState.Unknown;
+    this._scaleRangeVis = MapTileTreeScaleRangeVisibility.Unknown;
   }
 
-  public setVisibility(visible: boolean) {
-    if (this._visibility === ImageryTileTreeVisibilityState.Unknown) {
-      this._visibility = (visible ? ImageryTileTreeVisibilityState.Visible : ImageryTileTreeVisibilityState.Hidden);
-    } else if ((visible && this._visibility === ImageryTileTreeVisibilityState.Hidden) || (!visible && this._visibility === ImageryTileTreeVisibilityState.Visible)) {
-      this._visibility = ImageryTileTreeVisibilityState.Partial;
+  public setScaleRangeVisibility(visible: boolean) {
+    if (this._scaleRangeVis === MapTileTreeScaleRangeVisibility.Unknown) {
+      this._scaleRangeVis = (visible ? MapTileTreeScaleRangeVisibility.Visible : MapTileTreeScaleRangeVisibility.Hidden);
+    } else if ((visible && this._scaleRangeVis === MapTileTreeScaleRangeVisibility.Hidden) || (!visible && this._scaleRangeVis === MapTileTreeScaleRangeVisibility.Visible)) {
+      this._scaleRangeVis = MapTileTreeScaleRangeVisibility.Partial;
     }
   }
 }

@@ -11,7 +11,7 @@ import {
   TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useTreeModel,
 } from "@itwin/components-react";
 import { ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
-import { ImageryTileTreeVisibilityState, IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { IModelApp, MapTileTreeScaleRangeVisibility, ScreenViewport } from "@itwin/core-frontend";
 import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@itwin/core-react";
 import { Button, Input } from "@itwin/itwinui-react";
 import * as React from "react";
@@ -100,7 +100,7 @@ function getSubLayerProps(subLayerSettings: MapSubLayerSettings[]): MapSubLayerP
   return subLayerSettings.map((subLayer) => subLayer.toJSON());
 }
 
-function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: boolean, layerIndex: number, treeVisibility: ImageryTileTreeVisibilityState): StyleMapLayerSettings {
+function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: boolean, layerIndex: number, treeVisibility: MapTileTreeScaleRangeVisibility): StyleMapLayerSettings {
   return {
     visible: settings.visible,
     name: settings.name,
@@ -158,7 +158,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
       if (updatedMapLayer) {
         if (updatedMapLayer instanceof ImageMapLayerSettings) {
-          const treeVisibility = vp.getMapLayerVisibilityRangeState(indexInDisplayStyle, mapLayer.isOverlay);
+          const treeVisibility = vp.getMapLayerScaleRangeVisibility(indexInDisplayStyle, mapLayer.isOverlay);
           setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay, indexInDisplayStyle, treeVisibility));
         }
 
@@ -174,7 +174,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
       displayStyle.changeMapSubLayerProps({ visible: false }, -1, indexInDisplayStyle, mapLayer.isOverlay);
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
       if (updatedMapLayer && updatedMapLayer instanceof ImageMapLayerSettings) {
-        const treeVisibility = vp.getMapLayerVisibilityRangeState(indexInDisplayStyle, mapLayer.isOverlay);
+        const treeVisibility = vp.getMapLayerScaleRangeVisibility(indexInDisplayStyle, mapLayer.isOverlay);
         setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay, indexInDisplayStyle, treeVisibility));
       }
       vp.invalidateRenderPlan();
