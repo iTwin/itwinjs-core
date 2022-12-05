@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Angle } from "../../geometry3d/Angle";
+
 import { PerpParallelOptions } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";

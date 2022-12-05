@@ -743,8 +743,8 @@ public;class Viewport
 public;ViewportDecorator
 public;ViewportGraphicBuilderOptions 
 public;class ViewPose
-internal;ViewPose2d 
-internal;ViewPose3d 
+public;ViewPose2d 
+public;ViewPose3d 
 public;ViewRect
 public;ViewRedoTool 
 public;class ViewState 

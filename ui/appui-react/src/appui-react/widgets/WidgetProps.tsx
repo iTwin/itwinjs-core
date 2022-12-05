@@ -11,10 +11,10 @@ import { AbstractWidgetProps } from "@itwin/appui-abstract";
 import { IconProps } from "@itwin/core-react";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
-/** Properties for a [Widget]($appui-react) component.
+/** Properties for a [[Widget]] component.
+ * @deprecated Props of a deprecated component.
  * @public
  */
-// export interface WidgetProps extends IconProps {
 export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps {
   /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
   labelKey?: string;

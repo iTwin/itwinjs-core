@@ -160,9 +160,9 @@ describe("<ToolbarComposer  />", async () => {
       return Frontstage1.stageId;
     }
 
-    public get frontstage(): React.ReactElement<FrontstageProps> {
+    public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
       return (
-        <Frontstage
+        <Frontstage // eslint-disable-line deprecation/deprecation
           id={this.id}
           defaultTool={CoreTools.selectElementCommand}
           contentGroup={TestUtils.TestContentGroup1}
@@ -197,7 +197,7 @@ describe("<ToolbarComposer  />", async () => {
     const sandbox = sinon.createSandbox();
 
     before(async () => {
-      UiFramework.setUiVersion("2");
+      UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
     });
 
@@ -217,7 +217,7 @@ describe("<ToolbarComposer  />", async () => {
 
       expect(renderedComponent).not.to.be.undefined;
       expect(renderedComponent.container.querySelector("div.components-toolbar-overflow-sizer.components-horizontal")).to.not.be.null;
-      expect(UiFramework.uiVersion).to.eql("2");
+      expect(UiFramework.uiVersion).to.eql("2"); // eslint-disable-line deprecation/deprecation
     });
 
     it("should render with updated items", async () => {
@@ -291,13 +291,13 @@ describe("<ToolbarComposer  />", async () => {
 
   describe("<UI 1.0 />", async () => {
     before(async () => {
-      UiFramework.setUiVersion("1");
+      UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
     });
 
     after(async () => {
       // restore to default "2" setting
-      UiFramework.setUiVersion("2");
+      UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
     });
 
@@ -312,7 +312,7 @@ describe("<ToolbarComposer  />", async () => {
         </Provider>);
       expect(renderedComponent).not.to.be.undefined;
       expect(renderedComponent.container.querySelector("div.nz-toolbar-toolbar.nz-direction-bottom.nz-horizontal.nz-panel-alignment-start")).to.not.be.null;
-      expect(UiFramework.uiVersion).to.eql("1");
+      expect(UiFramework.uiVersion).to.eql("1"); // eslint-disable-line deprecation/deprecation
     });
 
     it("should render", async () => {
@@ -430,11 +430,11 @@ describe("<ToolbarComposer  />", async () => {
       // new frontstage should trigger refresh
 
       /** Id for the Frontstage */
-      const oldProps: FrontstageProps = { id: "old", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+      const oldProps: FrontstageProps = { id: "old", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
       const oldStageDef = new FrontstageDef();
       await oldStageDef.initializeFromProps(oldProps);
 
-      const newProps: FrontstageProps = { id: "new", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+      const newProps: FrontstageProps = { id: "new", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
       const newStageDef = new FrontstageDef();
       await newStageDef.initializeFromProps(newProps);
 

@@ -41,7 +41,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
     before(async () => {
       await NoRenderApp.startup();
       await TestUtils.initializeUiFramework();
-      UiFramework.setUiVersion("1");
+      UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
     });
 
@@ -50,7 +50,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
       await IModelApp.shutdown();
     });
 
-    const widgetProps: AnyWidgetProps = {
+    const widgetProps: AnyWidgetProps = { // eslint-disable-line deprecation/deprecation
       id: "navigationWidget",
       classId: "NavigationWidget",
       defaultState: WidgetState.Open,
@@ -206,7 +206,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
     });
 
     it("NavigationAidHost should render in 2.0 mode",  async () => {
-      UiFramework.setUiVersion("2");
+      UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
 
       mount(

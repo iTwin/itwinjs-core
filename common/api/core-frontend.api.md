@@ -87,6 +87,7 @@ import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementGeometryChange } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadOptions } from '@itwin/core-common';
+import { ElementMeshRequestProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
 import { Ellipsoid } from '@itwin/core-geometry';
 import { EllipsoidPatch } from '@itwin/core-geometry';
@@ -195,6 +196,7 @@ import { MonochromeMode } from '@itwin/core-common';
 import { Mutable } from '@itwin/core-bentley';
 import { NativeAppFunctions } from '@itwin/core-common';
 import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
+import { NormalMapParams } from '@itwin/core-common';
 import { ObservableSet } from '@itwin/core-bentley';
 import { OctEncodedNormal } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
@@ -3813,7 +3815,7 @@ export abstract class GltfReader {
     protected readonly _deduplicateVertices: boolean;
     defaultWrapMode: GltfWrapMode;
     // (undocumented)
-    protected findTextureMapping(id: string, isTransparent: boolean): TextureMapping | undefined;
+    protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined): TextureMapping | undefined;
     // (undocumented)
     getBufferView(json: {
         [k: string]: any;
@@ -4841,6 +4843,8 @@ export abstract class IModelConnection extends IModel {
     fontMap?: FontMap;
     // @internal
     protected _gcsDisabled: boolean;
+    // @beta
+    generateElementMeshes(requestProps: ElementMeshRequestProps): Promise<Uint8Array>;
     // @internal
     get geodeticToSeaLevel(): number | undefined;
     // @internal
@@ -6534,6 +6538,7 @@ export interface MaterialSpecularProps {
 // @public
 export interface MaterialTextureMappingProps {
     mode?: TextureMapping.Mode;
+    normalMapParams?: NormalMapParams;
     texture: RenderTexture;
     transform?: TextureMapping.Trans2x3;
     weight?: number;
@@ -9304,6 +9309,8 @@ export interface RenderTargetDebugControl {
     // (undocumented)
     displayDrapeFrustum: boolean;
     // (undocumented)
+    displayNormalMaps: boolean;
+    // (undocumented)
     displayRealityTilePreload: boolean;
     // (undocumented)
     displayRealityTileRanges: boolean;
@@ -10020,9 +10027,9 @@ export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
 // @internal (undocumented)
 export interface SkyBoxDecorations {
     // (undocumented)
-    params?: RenderSkyBoxParams | undefined;
+    params?: RenderSkyBoxParams;
     // (undocumented)
-    promise?: Promise<RenderSkyBoxParams | undefined>;
+    promise?: Promise<boolean>;
 }
 
 // @public
@@ -10506,6 +10513,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly decorationsState: BranchState;
     // (undocumented)
     displayDrapeFrustum: boolean;
+    // (undocumented)
+    displayNormalMaps: boolean;
     // (undocumented)
     displayRealityTilePreload: boolean;
     // (undocumented)
@@ -13629,65 +13638,51 @@ export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
 // @public
 export abstract class ViewPose {
     constructor(cameraOn: boolean);
-    // (undocumented)
     cameraOn: boolean;
-    // (undocumented)
     get center(): Point3d;
-    // (undocumented)
     abstract equal(other: ViewPose): boolean;
-    // (undocumented)
     abstract equalState(view: ViewState): boolean;
-    // (undocumented)
     abstract extents: Vector3d;
-    // (undocumented)
     abstract origin: Point3d;
-    // (undocumented)
     abstract rotation: Matrix3d;
-    // (undocumented)
     get target(): Point3d;
-    // (undocumented)
     undoTime?: BeTimePoint;
-    // (undocumented)
     get zVec(): Vector3d;
 }
 
-// @internal (undocumented)
+// @public
 export class ViewPose2d extends ViewPose {
     constructor(view: ViewState2d);
-    // (undocumented)
     readonly angle: Angle;
-    // (undocumented)
     readonly delta: Point2d;
-    // (undocumented)
-    equal(other: ViewPose2d): boolean;
-    // (undocumented)
-    equalState(view: ViewState2d): boolean;
-    // (undocumented)
+    // @internal
+    equal(other: ViewPose): boolean;
+    // @internal
+    equalState(view: ViewState): boolean;
+    // @internal
     get extents(): Vector3d;
-    // (undocumented)
+    // @internal
     get origin(): Point3d;
-    // (undocumented)
-    readonly origin2: Point2d;
-    // (undocumented)
+    readonly origin2d: Point2d;
+    // @internal
     get rotation(): Matrix3d;
 }
 
-// @internal (undocumented)
+// @public
 export class ViewPose3d extends ViewPose {
     constructor(view: ViewState3d);
-    // (undocumented)
     readonly camera: Camera;
-    // (undocumented)
-    equal(other: ViewPose3d): boolean;
-    // (undocumented)
-    equalState(view: ViewState3d): boolean;
-    // (undocumented)
+    // @internal
+    equal(other: ViewPose): boolean;
+    // @internal
+    equalState(view: ViewState): boolean;
+    // @internal
     readonly extents: Vector3d;
-    // (undocumented)
+    // @internal
     readonly origin: Point3d;
-    // (undocumented)
+    // @internal
     readonly rotation: Matrix3d;
-    // (undocumented)
+    // @internal
     get target(): Point3d;
 }
 
@@ -13747,7 +13742,6 @@ export abstract class ViewState extends ElementState {
     adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: OnViewExtentsError): ViewStatus;
     abstract allow3dManipulations(): boolean;
     get analysisStyle(): AnalysisStyle | undefined;
-    // @internal (undocumented)
     abstract applyPose(props: ViewPose): this;
     get areAllTileTreesLoaded(): boolean;
     // @internal
@@ -13866,7 +13860,6 @@ export abstract class ViewState extends ElementState {
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;
     resetExtentLimits(): void;
-    // @internal (undocumented)
     abstract savePose(): ViewPose;
     get scheduleScript(): RenderSchedule.Script | undefined;
     // @internal (undocumented)
@@ -13905,8 +13898,8 @@ export abstract class ViewState2d extends ViewState {
     allow3dManipulations(): boolean;
     // (undocumented)
     readonly angle: Angle;
-    // @internal (undocumented)
-    applyPose(val: ViewPose2d): this;
+    // @internal
+    applyPose(val: ViewPose): this;
     // (undocumented)
     get baseModelId(): Id64String;
     // (undocumented)
@@ -13942,8 +13935,7 @@ export abstract class ViewState2d extends ViewState {
     protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
     // @internal (undocumented)
     protected preload(hydrateRequest: HydrateViewStateRequestProps): void;
-    // @internal (undocumented)
-    savePose(): ViewPose;
+    savePose(): ViewPose2d;
     // (undocumented)
     setExtents(delta: XAndY): void;
     // (undocumented)
@@ -13966,8 +13958,8 @@ export abstract class ViewState3d extends ViewState {
     alignToGlobe(target: Point3d, transition?: boolean): ViewStatus;
     // (undocumented)
     allow3dManipulations(): boolean;
-    // @internal (undocumented)
-    applyPose(val: ViewPose3d): this;
+    // @internal
+    applyPose(val: ViewPose): this;
     // @internal (undocumented)
     attachToViewport(args: AttachToViewportArgs): void;
     calcLensAngle(): Angle;
@@ -14054,8 +14046,7 @@ export abstract class ViewState3d extends ViewState {
     rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus;
     readonly rotation: Matrix3d;
-    // @internal (undocumented)
-    savePose(): ViewPose;
+    savePose(): ViewPose3d;
     setAllow3dManipulations(allow: boolean): void;
     // (undocumented)
     setExtents(extents: XYAndZ): void;

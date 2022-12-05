@@ -9,7 +9,7 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { PointProps, StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
+import { PointProps, StagePanelLocation, UiError, WidgetState } from "@itwin/appui-abstract";
 import { CommonProps, Rectangle, RectangleProps } from "@itwin/core-react";
 import {
   getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, ResizeHandle, StagePanelsManager, StagePanelType,
@@ -349,7 +349,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     if (this._frontstageDef) {
       // istanbul ignore else
       if (this._frontstageDef.frontstageProvider) {
-        const frontstageRuntimeProps: FrontstageRuntimeProps = {
+        const runtimeProps: FrontstageRuntimeProps = {
           frontstageDef: this._frontstageDef,
           nineZone: this.state.nineZone,
           nineZoneChangeHandler: this,
@@ -359,7 +359,11 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           targetChangeHandler: this,
           zoneDefProvider: this,
         };
-        content = React.cloneElement(this._frontstageDef.frontstageProvider.frontstage, { runtimeProps: frontstageRuntimeProps });
+        if (!React.isValidElement(this._frontstageDef.frontstageProvider.frontstage)) {
+          throw new UiError(UiFramework.loggerCategory(this), "Frontstage provider should return a <Frontstage /> element in UI1.0");
+        }
+
+        content = React.cloneElement(this._frontstageDef.frontstageProvider.frontstage, { runtimeProps });
       } else {
         Logger.logError(UiFramework.loggerCategory(this), "FrontstageDef has no FrontstageProvider");
         content = null;

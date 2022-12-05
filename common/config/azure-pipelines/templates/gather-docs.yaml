@@ -14,25 +14,27 @@ parameters:
 
 steps:
   - script: |
-      mkdir ${{ parameters.stagingDir }}/reference/
+      mkdir ${{ parameters.stagingDir }}\reference\
       echo Copying all reference files to staging
-      robocopy /E generated-docs/core/ ${{ parameters.stagingDir }}/reference/
-      robocopy /E generated-docs/ui/ ${{ parameters.stagingDir }}/reference/
-      robocopy /E generated-docs/presentation/ ${{ parameters.stagingDir }}/reference/
-      robocopy /E generated-docs/domains/ ${{ parameters.stagingDir }}/reference/
+      robocopy /E generated-docs\core\ ${{ parameters.stagingDir }}\reference\
+      if %errorlevel% GEQ 8 exit 1
+      robocopy /E generated-docs\ui\ ${{ parameters.stagingDir }}\reference\
+      if %errorlevel% GEQ 8 exit 1
+      robocopy /E generated-docs\presentation\ ${{ parameters.stagingDir }}\reference\
+      if %errorlevel% GEQ 8 exit 1
+      robocopy /E generated-docs\domains\ ${{ parameters.stagingDir }}\reference\
+      if %errorlevel% GEQ 8 exit 1
       echo Copying extracted code to staging
-      mkdir ${{ parameters.stagingDir }}/extract/
-      robocopy /E generated-docs/extract/ ${{ parameters.stagingDir }}/extract/
+      mkdir ${{ parameters.stagingDir }}\extract\
+      robocopy /E generated-docs\extract\ ${{ parameters.stagingDir }}\extract\
+      if %errorlevel% GEQ 8 exit 1
+
       echo Copying all files from \docs folder
-      robocopy /E docs/ ${{ parameters.stagingDir }}/
+      robocopy /E docs\ ${{ parameters.stagingDir }}\
+      if %errorlevel% GEQ 8 exit 1
+      exit 0
     workingDirectory: ${{ parameters.workingDir }}
     displayName: Copy Reference files to Staging
-    failOnStderr: false
-    continueOnError: true
-
-  - script: dir /S
-    workingDirectory: ${{ parameters.stagingDir }}
-    displayName: Log files
 
   # BIS Docs are pulled from a separate internal build
   - task: DownloadBuildArtifacts@0
@@ -69,8 +71,9 @@ steps:
     inputs:
       buildType: specific
       project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
-      definition: 1734
+      definition: 7436 # iTwin.js/Docs/iTwin.js Docs - YAML
       allowPartiallySucceededBuilds: true
       buildVersionToDownload: latestFromBranch
+      branchName: refs/heads/master
       artifactName: .updated.json
       targetPath: ${{ parameters.stagingDir }}/config/

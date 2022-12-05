@@ -8,7 +8,7 @@
 
 import { SnapMode } from "@itwin/core-frontend";
 import { ActionsUnion, createAction } from "../redux/redux-ts";
-import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
+import { SYSTEM_PREFERRED_COLOR_THEME, TOOLBAR_OPACITY_DEFAULT, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
 import { FrameworkVersionId } from "../UiFramework";
 
 // cSpell:ignore configurableui snapmode toolprompt
@@ -23,12 +23,14 @@ export enum ConfigurableUiActionId {
   SetToolPrompt = "configurableui:set_toolprompt",
   SetWidgetOpacity = "configurableui:set_widget_opacity",
   SetDragInteraction = "configurableui:set-drag-interaction",
+  /** @deprecated UI1.0 is deprecated. */
   SetFrameworkVersion = "configurableui:set-framework-version",
   SetShowWidgetIcon = "configurableui:set-show-widget-icon",
   AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
   SetViewOverlayDisplay = "configurableui:set-view-overlay-display",
   AnimateToolSettings = "configurableui:set-animate-tool-settings",
   UseToolAsToolSettingsLabel = "configurableui:set-use-tool-as-tool-settings-label",
+  SetToolbarOpacity = "configurableui:set-toolbar-opacity",
 }
 
 /** The portion of state managed by the ConfigurableUiReducer.
@@ -40,12 +42,14 @@ export interface ConfigurableUiState {
   theme: string;
   widgetOpacity: number;
   useDragInteraction: boolean;
+  /** @deprecated UI1.0 is deprecated. */
   frameworkVersion: FrameworkVersionId; // eslint-disable-line deprecation/deprecation
   showWidgetIcon: boolean;
   autoCollapseUnpinnedPanels: boolean;
   viewOverlayDisplay: boolean;
   animateToolSettings: boolean;
   useToolAsToolSettingsLabel: boolean;
+  toolbarOpacity: number;
 }
 
 /** used on first call of ConfigurableUiReducer */
@@ -61,6 +65,7 @@ const initialState: ConfigurableUiState = {
   viewOverlayDisplay: true,
   animateToolSettings: false,
   useToolAsToolSettingsLabel: false,
+  toolbarOpacity: TOOLBAR_OPACITY_DEFAULT,
 };
 
 /** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer.
@@ -78,12 +83,14 @@ export const ConfigurableUiActions = {   // eslint-disable-line @typescript-esli
     // istanbul ignore next
     (opacity: number) => createAction(ConfigurableUiActionId.SetWidgetOpacity, opacity),
   setDragInteraction: (dragInteraction: boolean) => createAction(ConfigurableUiActionId.SetDragInteraction, dragInteraction),
+  /** @deprecated UI1.0 is deprecated. */
   setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => createAction(ConfigurableUiActionId.SetFrameworkVersion, frameworkVersion), // eslint-disable-line deprecation/deprecation
   setShowWidgetIcon: (showWidgetIcon: boolean) => createAction(ConfigurableUiActionId.SetShowWidgetIcon, showWidgetIcon),
   setAutoCollapseUnpinnedPanels: (autoCollapse: boolean) => createAction(ConfigurableUiActionId.AutoCollapseUnpinnedPanels, autoCollapse),
   setViewOverlayDisplay: (displayViewOverlay: boolean) => createAction(ConfigurableUiActionId.SetViewOverlayDisplay, displayViewOverlay),
   setAnimateToolSettings: (animateToolSettings: boolean) => createAction(ConfigurableUiActionId.AnimateToolSettings, animateToolSettings),
   setUseToolAsToolSettingsLabel: (useToolAsToolSettingsLabel: boolean) => createAction(ConfigurableUiActionId.UseToolAsToolSettingsLabel, useToolAsToolSettingsLabel),
+  setToolbarOpacity: (opacity: number) => createAction(ConfigurableUiActionId.SetToolbarOpacity, opacity),
 };
 
 /** Union of ConfigurableUi Redux actions
@@ -113,7 +120,7 @@ export function ConfigurableUiReducer(state: ConfigurableUiState = initialState,
     case ConfigurableUiActionId.SetDragInteraction: {
       return { ...state, useDragInteraction: action.payload };
     }
-    case ConfigurableUiActionId.SetFrameworkVersion: {
+    case ConfigurableUiActionId.SetFrameworkVersion: { // eslint-disable-line deprecation/deprecation
       const frameworkVersion = (action.payload);
       return { ...state, frameworkVersion };
     }
@@ -131,6 +138,9 @@ export function ConfigurableUiReducer(state: ConfigurableUiState = initialState,
     }
     case ConfigurableUiActionId.UseToolAsToolSettingsLabel: {
       return { ...state, useToolAsToolSettingsLabel: action.payload };
+    }
+    case ConfigurableUiActionId.SetToolbarOpacity: {
+      return { ...state, toolbarOpacity: action.payload };
     }
   }
   return outState;
