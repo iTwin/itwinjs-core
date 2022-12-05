@@ -13,6 +13,8 @@ import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, TileTreeReference } from "../internal";
 
+/** Position of a map-layer in the viewport
+ * @beta */
 export interface MapLayerIndex {
   isOverlay: boolean;
   index: number;

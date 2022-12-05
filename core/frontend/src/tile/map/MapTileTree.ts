@@ -103,7 +103,7 @@ export class MapTileTree extends RealityTileTree {
   /** @internal */
   public layerImageryTrees: MapLayerTreeSetting[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
-  private _treeState = new Map<Id64String, MapTileTreeState>();
+  private _imageryTreeState = new Map<Id64String, MapTileTreeState>();
   private _modelIdToIndex = new Map<Id64String, number>();
   /** @internal */
   public layerClassifiers = new Map<number, RenderPlanarClassifier>();
@@ -163,14 +163,16 @@ export class MapTileTree extends RealityTileTree {
     // by depth so that painters algorithm will approximate correct depth display.
     return this.useDepthBuffer ? this.loader.parentsAndChildrenExclusive : false;
   }
-  public getTreeState(treeId: string) {
-    return this._treeState.get(treeId);
+
+  /** @internal */
+  public getImageryTreeState(imageryTreeId: string) {
+    return this._imageryTreeState.get(imageryTreeId);
   }
 
-  public cloneTreeState() {
-
+  /** @internal */
+  public cloneImageryTreeState() {
     const clone = new Map<Id64String, MapTileTreeState>();
-    for (const [treeId, state] of this._treeState) {
+    for (const [treeId, state] of this._imageryTreeState) {
       clone.set(treeId, state.clone());
     }
     return clone;
@@ -185,8 +187,8 @@ export class MapTileTree extends RealityTileTree {
   public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number) {
     this.layerImageryTrees.push({tree, settings});
     this._layerSettings.set(tree.modelId, settings);
-    if (!this._treeState.has(tree.modelId))
-      this._treeState.set(tree.modelId, new MapTileTreeState());
+    if (!this._imageryTreeState.has(tree.modelId))
+      this._imageryTreeState.set(tree.modelId, new MapTileTreeState());
     this._modelIdToIndex.set(tree.modelId, index);
   }
 
@@ -450,7 +452,7 @@ export class MapTileTree extends RealityTileTree {
   /** @internal */
   public override reportTileVisibility(args: TileDrawArgs, selected: RealityTile[]) {
 
-    const layersVisibilityBefore =  this.cloneTreeState();
+    const layersVisibilityBefore =  this.cloneImageryTreeState();
 
     const changes =  new Array<MapLayerScaleRangeVisibility> ();
 
@@ -458,7 +460,7 @@ export class MapTileTree extends RealityTileTree {
       return;
 
     for (const [treeId] of layersVisibilityBefore) {
-      const treeVisibility = this.getTreeState(treeId);
+      const treeVisibility = this.getImageryTreeState(treeId);
       if (treeVisibility) {
         treeVisibility.reset();
       }
@@ -478,7 +480,7 @@ export class MapTileTree extends RealityTileTree {
         }
         if (selectedImageryTiles) {
           for (const selectedImageryTile of selectedImageryTiles) {
-            const treeState = this.getTreeState(selectedImageryTile.tree.id);
+            const treeState = this.getImageryTreeState(selectedImageryTile.tree.id);
             if (treeState) {
               if (selectedImageryTile.isOutOfLodRange) {
                 out.push(selectedImageryTile.contentId);
@@ -498,7 +500,7 @@ export class MapTileTree extends RealityTileTree {
       changes;
 
     for (const [treeId, prevState] of layersVisibilityBefore) {
-      const newState = this.getTreeState(treeId);
+      const newState = this.getImageryTreeState(treeId);
       if (newState) {
 
         const prevVisibility = prevState.getScaleRangeVisibility();
@@ -907,7 +909,7 @@ export class MapTileTreeReference extends TileTreeReference {
       const tileTreeRef = this.getLayerImageryTreeRef(index);
       const treeId = tileTreeRef?.treeOwner.tileTree?.id;
       if (treeId !== undefined) {
-        const treeState = tree.getTreeState(treeId);
+        const treeState = tree.getImageryTreeState(treeId);
         if (treeState !== undefined)
           return treeState.getScaleRangeVisibility();
       }

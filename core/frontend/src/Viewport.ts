@@ -300,6 +300,9 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
+  /** Event indicating when a map-layer scale range visibility change for the current viewport scale.
+ * @beta
+ */
   public readonly onMapLayerScaleRangeVisibilityChanged = new BeEvent<(layerIndexes: MapLayerScaleRangeVisibility[]) => void>();
 
   /** @internal */
@@ -821,10 +824,10 @@ export abstract class Viewport implements IDisposable, TileUser {
     }
     return undefined;
   }
-  /** Return a list of maplayer indexes match a given  MapTile tree Id and a layer imagery tree id.
-   * Note: This returns a list because layer imagery  trees can be shared for multiples layers.
+  /** Return a list of map-layers indexes match a given  MapTile tree Id and a layer imagery tree id.
+   * Note: A imagery tree can be shared for multiple map-layers.
    * @internal */
-  public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): {index: number, isOverlay: boolean}[] {
+  public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
     if (this._mapTiledGraphicsProvider)
       return this._mapTiledGraphicsProvider?.getMapLayerIndexesFromIds(mapTreeId, layerTreeId);
 
