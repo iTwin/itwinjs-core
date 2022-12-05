@@ -45,7 +45,6 @@ import { WidgetConfig } from "../widgets/WidgetConfig";
 import { StagePanel, StagePanelProps, StagePanelZonesProps } from "../stagepanels/StagePanel";
 import { StagePanelConfig } from "../stagepanels/StagePanelConfig";
 import { WidgetProps } from "../widgets/WidgetProps";
-import { CoreTools } from "../tools/CoreToolDefinitions";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -655,7 +654,7 @@ export class FrontstageDef {
   public async initializeFromProps(props: FrontstageProps): Promise<void> {
     this._id = props.id;
     this._initialProps = props;
-    this._defaultTool = props.defaultTool;
+    this._defaultTool = props.defaultTool as FrontstageProps["defaultTool"] | undefined; // Might be `undefined`, see `toFrontstageProps`.
 
     if (props.defaultContentId !== undefined)
       this._defaultContentId = props.defaultContentId;
@@ -1116,7 +1115,7 @@ function toFrontstageProps(config: FrontstageConfig): FrontstageProps {
   const { contentManipulation, viewNavigation, toolSettings, statusBar, topPanel, leftPanel, bottomPanel, rightPanel, ...other } = config;
   const props: FrontstageProps = {
     ...other,
-    defaultTool: CoreTools.selectElementCommand,
+    defaultTool: undefined as any, // importing `ToolItemDef` causes a runtime circular dependency issue. We'll fall back to `IModelApp.toolAdmin.defaultToolId` instead.
     toolSettings: toolSettings ? toZoneElement(toolSettings) : undefined,
     statusBar: statusBar ? toZoneElement(statusBar) : undefined,
     contentManipulationTools: contentManipulation ? toZoneElement(contentManipulation) : undefined,
