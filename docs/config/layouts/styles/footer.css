@@ -99,17 +99,6 @@ footer a:hover {
     padding: 10px;
   }
 
-  footer.cooked {
-    z-index: var(--zzz-top);
-    position: absolute;
-    bottom: 0;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    background: none;
-  }
-
   footer .spacer {
     margin-top: 5px;
     margin-bottom: 15px;

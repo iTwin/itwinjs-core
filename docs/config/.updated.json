@@ -1,8 +1,8 @@
 {
   "index.html": {
     "filename": "index.html",
-    "hash": "10f746a78a940d16c3bdd2eb9657a9005d932d0e",
-    "updated": "2022-11-29T20:44:27.664Z"
+    "hash": "e35c9759a2b0ed810c30d318d367c844fd7d26c2",
+    "updated": "2022-12-05T18:51:14.319Z"
   },
   "bis\\.vscode\\settings.json": {
     "filename": "bis\\.vscode\\settings.json",
@@ -196,13 +196,13 @@
   },
   "bis\\guide\\media\\external-sources.cmap": {
     "filename": "bis\\guide\\media\\external-sources.cmap",
-    "hash": "eabdd80f6f4d5568caaf1007c3f03b65b4f39efe",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "ffd910d0f13df27fd2928a44c48ad8d53c25f8f2",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "bis\\guide\\media\\external-sources.png": {
     "filename": "bis\\guide\\media\\external-sources.png",
-    "hash": "697756515d824df603dda2687b5fca5e9602d5b4",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "362b3234440c7aa9c7eef93e3647d90610d1469f",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "bis\\guide\\media\\functional-hierarchy.cmap": {
     "filename": "bis\\guide\\media\\functional-hierarchy.cmap",
@@ -3176,8 +3176,8 @@
   },
   "reference\\index\\index.html": {
     "filename": "reference\\index\\index.html",
-    "hash": "2f4dfd5f65d342657beddd79a8729581dec1c98d",
-    "updated": "2022-11-30T22:49:45.332Z"
+    "hash": "7b14e71b75608759dfcd737fc69facd5f33b91e7",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "getting-started\\leftnav\\index.html": {
     "filename": "getting-started\\leftnav\\index.html",
@@ -3211,8 +3211,8 @@
   },
   "bis\\index\\index.html": {
     "filename": "bis\\index\\index.html",
-    "hash": "816f3e28b4aa608eefe841cfc1e99bd7269ef43f",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "4d82c3aada12f995cbd8c3c868c54c20cd9d7b25",
+    "updated": "2022-12-05T16:17:04.657Z"
   },
   "bis\\leftnav\\index.html": {
     "filename": "bis\\leftnav\\index.html",
@@ -3341,13 +3341,13 @@
   },
   "bis\\domains\\common-domains\\index.html": {
     "filename": "bis\\domains\\common-domains\\index.html",
-    "hash": "64e773419df06bb0451bc3e71a587f606f79286f",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "1643fbc804dc3aa9d7f25f5820e4ce65c860daee",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "bis\\domains\\core-domains\\index.html": {
     "filename": "bis\\domains\\core-domains\\index.html",
-    "hash": "d25c3e73a9703a917bc4986f64228e48d627067a",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "df46d2280143198a252201a9503df2b2ef31c3bf",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "bis\\domains\\discipline-other-domains\\index.html": {
     "filename": "bis\\domains\\discipline-other-domains\\index.html",
@@ -3401,8 +3401,8 @@
   },
   "bis\\guide\\data-organization\\information-hierarchy\\index.html": {
     "filename": "bis\\guide\\data-organization\\information-hierarchy\\index.html",
-    "hash": "9b0aa825b6c7d78b469d5d3af53244bb62a98a85",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "16684360a3a185169b56322acaac2ed91dc6fe0c",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "bis\\guide\\data-organization\\modeling-perspectives\\index.html": {
     "filename": "bis\\guide\\data-organization\\modeling-perspectives\\index.html",
@@ -3461,13 +3461,13 @@
   },
   "bis\\guide\\fundamentals\\element-fundamentals\\index.html": {
     "filename": "bis\\guide\\fundamentals\\element-fundamentals\\index.html",
-    "hash": "6c3b8e4c2ea3a4ad35521dc9cf9980dc4566d6ba",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "1c39316dce4ed73b29a110a4641e741e33bebbb8",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "bis\\guide\\fundamentals\\elementaspect-fundamentals\\index.html": {
     "filename": "bis\\guide\\fundamentals\\elementaspect-fundamentals\\index.html",
-    "hash": "5bd27bbad120ef194017cb4e1967ccd6fa8fb557",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "4249c200363898661ce8301d01b15c379270daf5",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "bis\\guide\\fundamentals\\index\\index.html": {
     "filename": "bis\\guide\\fundamentals\\index\\index.html",
@@ -3521,8 +3521,8 @@
   },
   "bis\\guide\\intro\\modeling-with-bis\\index.html": {
     "filename": "bis\\guide\\intro\\modeling-with-bis\\index.html",
-    "hash": "9a1cb9984689370892d28210df3de4652564e67e",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "cfb6bad7321d2b25cbbe3b72e740f7ceac851f53",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "bis\\guide\\intro\\overview\\index.html": {
     "filename": "bis\\guide\\intro\\overview\\index.html",
@@ -3881,8 +3881,8 @@
   },
   "changehistory\\nextversion\\index.html": {
     "filename": "changehistory\\nextversion\\index.html",
-    "hash": "585635ad0b853f1889b69365c9d2fdbb91c2c27f",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "489a43739f0e68934116527ea60dc9c913bf30a9",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "changehistory\\roadmap\\index.html": {
     "filename": "changehistory\\roadmap\\index.html",
@@ -3891,18 +3891,18 @@
   },
   "changehistory\\index\\index.html": {
     "filename": "changehistory\\index\\index.html",
-    "hash": "1b31003e4f6ab484ab11b24e7edbef4bb96bea43",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "96f6e6d6167d8cf5b38393ecb5cb1792db83aaa3",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "changehistory\\leftnav\\index.html": {
     "filename": "changehistory\\leftnav\\index.html",
-    "hash": "d5c1777b5fc6981ef83c4498200963a8209908fb",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "3d202f5f28aefba043336d743e8fd006f44a8412",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "changehistory\\migration-guides\\migratingbuildsystems\\index.html": {
     "filename": "changehistory\\migration-guides\\migratingbuildsystems\\index.html",
-    "hash": "27c8084befb57c6d34aedc7de1d9bf0bd6de1665",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "73f816279c40c738cb8b495e89be2f59e49f2dc3",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "presentation\\multischemaclassesspecification\\index.html": {
     "filename": "presentation\\multischemaclassesspecification\\index.html",
@@ -4031,8 +4031,8 @@
   },
   "presentation\\hierarchies\\infinitehierarchiesprevention\\index.html": {
     "filename": "presentation\\hierarchies\\infinitehierarchiesprevention\\index.html",
-    "hash": "2899e7ead97f57a0f1a5e3b2f2c81adfe7c8367c",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "995a19b14537c0f791c98499bc1aa9c088df0e96",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "presentation\\hierarchies\\instancenodesofspecificclasses\\index.html": {
     "filename": "presentation\\hierarchies\\instancenodesofspecificclasses\\index.html",
@@ -4111,8 +4111,8 @@
   },
   "presentation\\advanced\\index\\index.html": {
     "filename": "presentation\\advanced\\index\\index.html",
-    "hash": "8bfaef9eeba60d8e8431a8899d198baa1712ae6d",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "ee00faf428f001e29520954b0f0e7982e957f180",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "presentation\\content\\calculatedpropertiesspecification\\index.html": {
     "filename": "presentation\\content\\calculatedpropertiesspecification\\index.html",
@@ -4281,8 +4281,8 @@
   },
   "learning\\implementadynamicschema\\index.html": {
     "filename": "learning\\implementadynamicschema\\index.html",
-    "hash": "c139d742d37d796c5593d8063bbbb111d5bd8305",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "fa101214be3874ab62277efd9206699a92429ce0",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "learning\\nativeapps\\index.html": {
     "filename": "learning\\nativeapps\\index.html",
@@ -4291,8 +4291,8 @@
   },
   "learning\\ipcinterface\\index.html": {
     "filename": "learning\\ipcinterface\\index.html",
-    "hash": "80e70411deb3d6ff4cd68afd3f70bc009ec61120",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "c08789f040535f5538fcde239d11df062d2ffab7",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "learning\\packageanddeploytotheweb\\index.html": {
     "filename": "learning\\packageanddeploytotheweb\\index.html",
@@ -4331,8 +4331,8 @@
   },
   "learning\\supportedplatforms\\index.html": {
     "filename": "learning\\supportedplatforms\\index.html",
-    "hash": "cdfd7fce511214d00d9405d2b6000dfc80a3de29",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "981a935a53a07a0c42bf4da6c0b861cfb66f6be3",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "learning\\wireformat\\index.html": {
     "filename": "learning\\wireformat\\index.html",
@@ -4341,8 +4341,8 @@
   },
   "learning\\writeaconnector\\index.html": {
     "filename": "learning\\writeaconnector\\index.html",
-    "hash": "4f8129566eb92dc6a6ce7fc0107be9da6d1f764d",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "6365e64e0a11a1d3959076c6d0f6a2e006b30ffb",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "learning\\writeawebagent\\index.html": {
     "filename": "learning\\writeawebagent\\index.html",
@@ -4687,7 +4687,7 @@
   "learning\\guidelines\\typescript-coding-guidelines\\index.html": {
     "filename": "learning\\guidelines\\typescript-coding-guidelines\\index.html",
     "hash": "acc93cb3c786e3fb1a9e5edd9558b205eff56a5e",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "updated": "2022-12-02T23:25:43.430Z"
   },
   "learning\\transformer\\branching-imodels\\index.html": {
     "filename": "learning\\transformer\\branching-imodels\\index.html",
@@ -4926,8 +4926,8 @@
   },
   "learning\\tutorials\\develop-desktop-viewer\\index.html": {
     "filename": "learning\\tutorials\\develop-desktop-viewer\\index.html",
-    "hash": "bc81370de4736a25a21521462325061a3dc95181",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "f0dc3e8bade29f5680d09b445905ee03e9c15e80",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "learning\\tutorials\\develop-web-viewer\\index.html": {
     "filename": "learning\\tutorials\\develop-web-viewer\\index.html",
@@ -5146,8 +5146,8 @@
   },
   "learning\\ui\\appui-react\\statusbar\\index.html": {
     "filename": "learning\\ui\\appui-react\\statusbar\\index.html",
-    "hash": "70b07392d959e46e1d314554417acabaf64b593b",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "653c16ed9f4f08473dc1049c48aed706dbcf516f",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "learning\\ui\\appui-react\\syncui\\index.html": {
     "filename": "learning\\ui\\appui-react\\syncui\\index.html",
@@ -5351,8 +5351,8 @@
   },
   "learning\\geometry\\pointvector\\index.html": {
     "filename": "learning\\geometry\\pointvector\\index.html",
-    "hash": "5665182166dc23e7d18da255cc59303591b4cf54",
-    "updated": "2022-10-07T15:22:54.737Z"
+    "hash": "e4afec3265bcff013219c15b3b694ec1a0424e52",
+    "updated": "2022-12-02T19:53:19.103Z"
   },
   "learning\\geometry\\polyfaceauxdata\\index.html": {
     "filename": "learning\\geometry\\polyfaceauxdata\\index.html",
@@ -5428,5 +5428,105 @@
     "filename": "reference\\leftnav_\\index.html",
     "hash": "c9fcb6c7afc8e449f548a27e2af5b1e266dbd375",
     "updated": "2022-11-30T22:16:20.254Z"
+  },
+  "bis\\guide\\media\\elementaspect-base-classes.png": {
+    "filename": "bis\\guide\\media\\elementaspect-base-classes.png",
+    "hash": "7be6ca5a65d14049ea355ecc7a203f2bedb2305e",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\guide\\media\\elementaspect-fundamentals.cmap": {
+    "filename": "bis\\guide\\media\\elementaspect-fundamentals.cmap",
+    "hash": "ebd5e99a0ea688667e12d22123e07646841dc900",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\guide\\media\\elementaspect-fundamentals.png": {
+    "filename": "bis\\guide\\media\\elementaspect-fundamentals.png",
+    "hash": "c362f0c20a176c9debc92dcda972992c8503fe63",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\guide\\media\\elementaspect-shapeaspect-hierarchy.png": {
+    "filename": "bis\\guide\\media\\elementaspect-shapeaspect-hierarchy.png",
+    "hash": "3156c38d2eb4a759086bac159157b0e96170b629",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\guide\\media\\external-source-example.png": {
+    "filename": "bis\\guide\\media\\external-source-example.png",
+    "hash": "a1e05930ad29978617bfd3ebe9136620c72f1b68",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\guide\\media\\external-source-group.png": {
+    "filename": "bis\\guide\\media\\external-source-group.png",
+    "hash": "271275e2f307fe293a86b84714a6bbce1b86b9ad",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\guide\\media\\external-sources-classes-synclink.png": {
+    "filename": "bis\\guide\\media\\external-sources-classes-synclink.png",
+    "hash": "8e15d6850e3409ddce8d120c49e26a4c7e5f863f",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\guide\\media\\external-sources-classes.png": {
+    "filename": "bis\\guide\\media\\external-sources-classes.png",
+    "hash": "d655a9547ae9c673f9b51fbb06311b2105ac3d72",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\guide\\media\\external-sources-synclink.png": {
+    "filename": "bis\\guide\\media\\external-sources-synclink.png",
+    "hash": "29ba20ede53d28f2cd0292d4395386a4715d9bcc",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\guide\\media\\external-sources-classes.cmap": {
+    "filename": "bis\\guide\\media\\external-sources-classes.cmap",
+    "hash": "489a0ad86ee495809cf6425d5ba911d0cc12df15",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\guide\\media\\physical-systems.cmap": {
+    "filename": "bis\\guide\\media\\physical-systems.cmap",
+    "hash": "2013071fe375175c53be67471010f5e5ac0baeca",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\guide\\media\\physical-systems.png": {
+    "filename": "bis\\guide\\media\\physical-systems.png",
+    "hash": "3d022541aaed654fc56308102a773f04f7a480b3",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "learning\\geometry\\figs\\angle\\anglesweepfraction.jpg": {
+    "filename": "learning\\geometry\\figs\\angle\\anglesweepfraction.jpg",
+    "hash": "f5b62f031bea25e8ab7b291d0e4d502226295349",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "learning\\geometry\\figs\\angle\\ellipsehalfangle.jpg": {
+    "filename": "learning\\geometry\\figs\\angle\\ellipsehalfangle.jpg",
+    "hash": "264b14071793b356d3c34372b8830bbfd5bde699",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "learning\\geometry\\figs\\pointvector\\bisector.jpg": {
+    "filename": "learning\\geometry\\figs\\pointvector\\bisector.jpg",
+    "hash": "90857e90c469ec95c5970e76a515f80f3f83ff19",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "learning\\geometry\\figs\\pointvector\\projectvectoronplane.jpg": {
+    "filename": "learning\\geometry\\figs\\pointvector\\projectvectoronplane.jpg",
+    "hash": "08619c395d52bdfd1b9004164e864cbe1158b5a4",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "bis\\domains\\provenance-in-bis\\index.html": {
+    "filename": "bis\\domains\\provenance-in-bis\\index.html",
+    "hash": "f0cce3aa942fde4fe28eb83b7c3057674e309404",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "changehistory\\3.4.0\\index.html": {
+    "filename": "changehistory\\3.4.0\\index.html",
+    "hash": "96f6e6d6167d8cf5b38393ecb5cb1792db83aaa3",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "presentation\\advanced\\caching\\index.html": {
+    "filename": "presentation\\advanced\\caching\\index.html",
+    "hash": "12f3e746bbc0dcbcf5727f019dc5cd445804dada",
+    "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "learning\\geometry\\angle\\index.html": {
+    "filename": "learning\\geometry\\angle\\index.html",
+    "hash": "356744bd5e1d44aee28ca02b96bd12f4e49d75a7",
+    "updated": "2022-12-02T19:53:19.103Z"
   }
 }

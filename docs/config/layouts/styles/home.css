@@ -8,21 +8,19 @@
   --space-unit: 20px;
   --left-margin: 150px;
   --section-heading-size: 36px;
-
   --header-nav-height: 54px;
-
   --itwin-gradient: linear-gradient(90deg,
       #32b1d1 4.349046015712743%,
       #30f1cf 92.31200897867573%);
   --itwin-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.2);
+  --section-vertical-padding: 20px;
 
   /* colors */
-
   --orange: #e28413;
   --bright-orange: #ff9900;
   --grey: #f2f2f2;
+  --darkGrey: #c1c1c1;
   --black: #000;
-
   --white: #fff;
 
   /* stack */
@@ -93,6 +91,14 @@ h1.gradient-text {
   align-items: center;
 }
 
+/*
+* "be" so as not to conflcit with bootstrap
+* (bootstrap removal pending)
+*/
+
+.be-row {
+  width: 100%;
+}
 
 
 /* body/main formatting */
@@ -114,7 +120,7 @@ main {
 
 main>section {
   width: 100%;
-  margin: var(--space-unit) auto;
+  margin: 0 auto;
   padding: 45px 0 90px 0;
 
   display: -webkit-box;
@@ -206,7 +212,12 @@ main>section {
 
 #main-banner .iui-button.orange {
   background-color: var(--orange);
+
+
+  /* border-color: #005e3f; */
   margin-right: 16px;
+  /* border-width: 2px; */
+  /* background: #005e3fa1; */
 }
 
 #main-banner .iui-button.transparent {
@@ -220,9 +231,10 @@ main>section {
 }
 
 ul.joined-blocklist {
-  list-style-type: none;
+  width: 100%;
   padding: 0;
   margin: 14px 0;
+  list-style-type: none;
   -webkit-box-shadow: var(--itwin-shadow);
   box-shadow: var(--itwin-shadow);
   display: -webkit-box;
@@ -238,6 +250,13 @@ ul.joined-blocklist {
 }
 
 ul.joined-blocklist li {
+  flex: 1;
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  border-right: 1px solid #dce0e3;
+}
+
+ul.joined-blocklist li a {
   margin: 0;
   padding: 30px 20px;
   display: -webkit-box;
@@ -253,18 +272,32 @@ ul.joined-blocklist li {
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
-  flex: 1;
-  -webkit-box-flex: 1;
-  -ms-flex: 1;
   font-size: 14px;
-  border-right: 1px solid #dce0e3;
+  text-decoration: none;
 }
 
-ul.joined-blocklist li:hover {
+ul.joined-blocklist li a:hover {
   cursor: pointer;
   background: rgba(94, 176, 206, 0.16);
   transition-property: background;
   transition-duration: 300ms;
+  text-decoration: none;
+}
+
+ul.joined-blocklist li:first-of-type {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
 }
 
 ul.joined-blocklist li:first-of-type,
@@ -312,9 +345,8 @@ ul.joined-blocklist li img {
 ul.next-steps {
   list-style-type: none;
   padding: 0;
-  margin: 20px 0 14px 0;
+  margin: 80px 0 14px 0;
   width: 100%;
-  margin-top: var(--space-unit);
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -322,15 +354,13 @@ ul.next-steps {
   -webkit-box-direction: normal;
   -ms-flex-direction: row;
   flex-direction: row;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
+  -webkit-box-pack: space-between;
+  -ms-flex-pack: space-between;
+  justify-content: space-between;
 }
 
 li.next-step {
-  -webkit-box-shadow: var(--itwin-shadow);
-  box-shadow: var(--itwin-shadow);
-  padding: 30px 43px 50px 33px;
+  flex-basis: 33%;
   margin-right: 50px;
 }
 
@@ -343,9 +373,9 @@ li.next-step header {
   display: -ms-flexbox;
   display: flex;
   height: 50px;
-  -webkit-box-align: end;
-  -ms-flex-align: end;
-  align-items: flex-end;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
   margin-bottom: 8px;
 }
 
@@ -364,12 +394,13 @@ li.next-step h2 {
 }
 
 li.next-step p {
-  max-width: 290px;
+  /* max-width: 290px; */
   font-size: 14px;
   margin-top: 25px;
 }
 
 section#community {
+  padding-top: 90px;
   background-color: var(--grey);
 }
 
@@ -418,7 +449,7 @@ section#community ul li {
   padding: 30px 0px 0px 0px;
   margin-right: 20px;
   border: 1px solid #c7ccd1;
-  border-radius: 12px;
+  /* border-radius: 12px; */
   background: rgba(255, 255, 255, 0.5);
   display: -webkit-box;
   display: -ms-flexbox;
@@ -586,7 +617,7 @@ section#what-is-itwin .feature-list li.accountable h2::before {
 section#what-is-itwin .feature-list li.approachable h2::before {
   background-image: url("../assets/bullet-approachable.svg");
   left: -40px;
-  top: 2px;
+  top: 4px;
 }
 
 section#what-is-itwin .feature-list li.amazing h2::before {
@@ -604,148 +635,6 @@ section#what-is-itwin .feature-list p {
   :root {
     --space-unit: 15px;
   }
-
-  ul.joined-blocklist li:first-of-type,
-  ul.joined-blocklist li:last-of-type {
-    padding: 30px;
-  }
-
-  li.next-step {
-    padding: 20px 10px 10px 10px;
-  }
-
-  li.next-step h2 {
-    font-size: 16px;
-  }
-
-  li.next-step header {
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-  }
-
-  li.next-step img {
-    height: 40px;
-    margin-right: 10px;
-  }
-
-  /* header #search-component input[type="search"] {
-    display: none;
-  }
-
-  header #search-component input[type="search"]::placeholder {
-    color: transparent;
-  } */
-
-}
-
-@media screen and (max-width: 768px) {
-  :root {
-    --left-margin: 20px;
-    --space-unit: 10px;
-  }
-
-  .center-column {
-    width: 100%;
-  }
-
-  body.cooked {
-    overflow: hidden;
-    height: 100%;
-  }
-
-  html.cooked {
-    position: static;
-    overflow: hidden;
-  }
-
-  main>section {
-    padding: 20px 0 5px 0;
-  }
-
-  /* header */
-
-  #main-nav {
-    display: none;
-  }
-
-  #main-nav.cooked {
-    background: var(--itwin-gradient);
-
-
-    width: 100%;
-    height: 100%;
-
-    padding-left: 20px;
-    padding-top: 10px;
-
-    display: -webkit-box;
-
-    display: -ms-flexbox;
-
-    display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    justify-items: flex-start;
-    -webkit-box-align: start;
-    -ms-flex-align: start;
-    align-items: flex-start;
-
-    position: fixed;
-    top: var(--header-nav-height);
-    left: 0;
-    z-index: var(--zzz-top);
-  }
-
-  #main-nav.cooked a {
-    font-size: 16px;
-  }
-
-  #burger-nav {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-item-align: center;
-    -ms-grid-row-align: center;
-    align-self: center;
-    -ms-grid-column-align: center;
-    justify-self: center;
-    font-size: 25px;
-  }
-
-  #burger-nav .icon-svg {
-    background-color: #fff;
-    height: 23px;
-    width: 23px;
-    cursor: pointer;
-  }
-
-
-  #itwin-branding a .itwin-logo {
-    text-indent: -9999px;
-    margin: 0;
-  }
-
-  /* main banner*/
-  #main-banner {
-    min-height: 300px;
-  }
-
-  #main-banner p {
-    font-size: 16px;
-  }
-
-  #main-banner hgroup {
-    width: 100%;
-  }
-
-  /* start building */
 
   ul.joined-blocklist {
     -webkit-box-orient: horizontal;
@@ -777,15 +666,8 @@ section#what-is-itwin .feature-list p {
     margin-left: 10px;
   }
 
-  ul.joined-blocklist li {
-    border-bottom: 1px solid #dce0e3;
-    -ms-flex-preferred-size: 50%;
-    flex-basis: 50%;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-
-    padding: 30px 10px;
-    margin: 0px;
+  ul.joined-blocklist li:first-of-type {
+    padding: 10px;
   }
 
   ul.next-steps {
@@ -793,14 +675,13 @@ section#what-is-itwin .feature-list p {
     -webkit-box-direction: normal;
     -ms-flex-direction: column;
     flex-direction: column;
-
   }
 
   ul.next-steps li.next-step {
     margin-right: 0px;
     margin-bottom: 20px;
     margin-top: 10px;
-    padding: 15px 20px;
+    padding: 15px 0px;
     -webkit-box-align: start;
     -ms-flex-align: start;
     align-items: flex-start;
@@ -841,6 +722,94 @@ section#what-is-itwin .feature-list p {
     max-width: 100%;
   }
 
+  li.next-step img {
+    height: 40px;
+    margin-right: 10px;
+  }
+
+  li.next-step::after {
+    content: "";
+    height: 1px;
+    width: 100%;
+    background: var(--darkGrey);
+    display: block;
+    margin: 0 auto;
+    position: relative;
+    top: 30px;
+  }
+
+}
+
+@media screen and (max-width: 768px) {
+  :root {
+    --left-margin: 20px;
+    --space-unit: 10px;
+    --section-vertical-space-top: 20px;
+    --section-vertical-space-bottom: 40px;
+  }
+
+  .center-column {
+    width: 100%;
+  }
+
+  main>section {
+    padding: var(--section-vertical-space-top) 0 5px 0;
+  }
+
+  /* main banner*/
+  #main-banner {
+    min-height: 300px;
+  }
+
+  #main-banner p {
+    font-size: 16px;
+  }
+
+  #main-banner hgroup {
+    width: 100%;
+  }
+
+  /* start building */
+
+
+  ul.joined-blocklist li {
+    border-bottom: 1px solid #dce0e3;
+    -ms-flex-preferred-size: 50%;
+    flex-basis: 50%;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+
+
+  ul.joined-blocklist li a {
+    padding: 30px 10px;
+    margin: 0px;
+  }
+
+  ul.joined-blocklist li:last-of-type {
+    padding: 0;
+  }
+
+  ul.joined-blocklist li:last-of-type a {
+    padding: 30px 10px;
+  }
+
+  ul.next-steps {
+    margin-top: var(--section-vertical-space-top);
+    margin-bottom: var(--section-vertical-space-bottom);
+  }
+
+
+
+  li.next-step:last-of-type:after {
+    display: none;
+  }
+
+  section#community {
+    padding-top: var(--section-vertical-space-top);
+    background-color: var(--grey);
+  }
+
   /* Community section */
   section#community h1 {
     margin: revert;
@@ -854,7 +823,7 @@ section#what-is-itwin .feature-list p {
   }
 
   section#community ul li {
-    margin-bottom: 20px;
+    margin-bottom: var(--section-vertical-space-bottom);
     margin-right: 0px;
   }
 
@@ -863,6 +832,12 @@ section#what-is-itwin .feature-list p {
   }
 
   /* iTwinJS - What does it mean?? */
+
+  section#what-is-itwin {
+    margin-top: var(--section-vertical-space-top);
+    margin-bottom: var(--section-vertical-space-bottom)
+  }
+
   section#what-is-itwin h1 {
     margin-top: 0px;
     background-size: 75%;
@@ -901,11 +876,6 @@ section#what-is-itwin .feature-list p {
     height: auto;
   }
 
-  body.cooked>section {
-    min-height: 0px;
-    height: 0px;
-    display: none;
-  }
 }
 
 #return-to-top,
