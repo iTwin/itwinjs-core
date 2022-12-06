@@ -10,7 +10,8 @@ import {
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/render/webgl/System";
 import {
-  convertHexToRgb, createCheckBox, createColorInput, createRadioBox, createSlider,
+  ComboBoxEntry,
+  convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createRadioBox, createSlider,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { ToolBarDropDown } from "./ToolBar";
@@ -174,7 +175,7 @@ function createRealityModelSettingsPanel(model: RealityModel, element: HTMLEleme
       const isOn = mode !== "off";
       const isFull = mode === "full";
       updatePointCloud({ edlMode: isOn ? (isFull ? "full" : "on") : "off" }),
-      edlFilter.style.display = isFull ? "" : "none";
+        edlFilter.style.display = isFull ? "" : "none";
       edlMixWt1Slider.style.display = isFull ? "" : "none";
       edlMixWt2Slider.style.display = isFull ? "" : "none";
       edlMixWt4Slider.style.display = isFull ? "" : "none";
@@ -382,15 +383,26 @@ export class OpenRealityModelSettingsTool extends Tool {
   }
 }
 
+function clearElement(element: HTMLElement): void {
+  while (element.hasChildNodes())
+    element.removeChild(element.firstChild!);
+}
+
 export class RealityModelSettingsPanel extends ToolBarDropDown {
   private readonly _vp: ScreenViewport;
   private readonly _parent: HTMLElement;
   private readonly _element: HTMLElement;
+  private _realityModelListDiv: HTMLDivElement;
+  private _selectedRealityModelIndex: number = 0;
+  private _realityModels: Array<{ realityModel: RealityModel, modelName: string }> = [];
 
   public constructor(vp: ScreenViewport, parent: HTMLElement) {
     super();
     this._vp = vp;
     this._parent = parent;
+
+    this._realityModelListDiv = document.createElement("div");
+    this._realityModelListDiv.style.display = "block";
 
     this._element = document.createElement("div");
     this._element.className = "toolMenu";
@@ -400,30 +412,71 @@ export class RealityModelSettingsPanel extends ToolBarDropDown {
     const width = winSize.width * 0.98;
     this._element.style.width = `${width}px`;
     parent.appendChild(this._element);
+    this._element.appendChild(this._realityModelListDiv);
   }
 
   public override get onViewChanged(): Promise<void> | undefined {
+    return this.remakePanelWithSelection(0);
+  }
+
+  private async remakePanelWithSelection(ndx: number) {
     while (this._element.hasChildNodes())
       this._element.removeChild(this._element.firstChild!);
+    this._selectedRealityModelIndex = ndx;
+    this._realityModelListDiv = document.createElement("div");
+    this._realityModelListDiv.style.display = "block";
+    this._element.appendChild(this._realityModelListDiv);
     return this.populate();
+  }
+
+  private populateRealityModelList(): void {
+    this._realityModels = [];
+    this._vp.view.displayStyle.forEachRealityModel((x) => {
+      const realityModel = new ContextModel(x);
+      this._realityModels.push({ realityModel, modelName: realityModel.name });
+    });
+    if (this._vp.view.isSpatialView()) {
+      for (const modelId of this._vp.view.modelSelector.models) {
+        const model = this._vp.iModel.models.getLoaded(modelId);
+        if (model instanceof SpatialModelState && model.isRealityModel) {
+          const realityModel = new PersistentModel(model, this._vp.view.displayStyle.settings);
+          this._realityModels.push({ realityModel, modelName: realityModel.name });
+        }
+      }
+    }
+    // create list of entries
+    const entries = this._realityModels.map((realityModel, i) => {
+      return ({ name: realityModel.modelName, value: i } as ComboBoxEntry);
+    });
+
+    clearElement(this._realityModelListDiv);
+    const activeIndex = this._selectedRealityModelIndex;
+    createComboBox({
+      parent: this._realityModelListDiv,
+      id: "Point Cloud Selection Box",
+      name: "Reality Models: ",
+      value: activeIndex,
+      handler: (select) => {
+        const valueIndex = Number.parseInt(select.value, 10);
+        this.remakePanelWithSelection(valueIndex);
+      },
+      entries,
+    });
+    createButton({
+      parent: this._realityModelListDiv,
+      id: "Point Cloud Scan Button",
+      value: "Rescan for Reality Models",
+      handler: () => {
+        this.populateRealityModelList();
+      }
+    });
   }
 
   public async populate(): Promise<void> {
     if (!this._vp || !this._vp.view.isSpatialView())
       return;
-    let realityModel: RealityModel | undefined;
-    this._vp.view.displayStyle.forEachRealityModel((x) => {
-      realityModel = realityModel ?? new ContextModel(x);
-    });
-    if (!realityModel) {
-      for (const modelId of this._vp.view.modelSelector.models) {
-        const model = this._vp.iModel.models.getLoaded(modelId);
-        if (model instanceof SpatialModelState && model.isRealityModel) {
-          realityModel = new PersistentModel(model, this._vp.view.displayStyle.settings);
-          break;
-        }
-      }
-    }
+    this.populateRealityModelList();
+    const realityModel = this._realityModels.at(this._selectedRealityModelIndex)?.realityModel;
     if (undefined === realityModel)
       return;
 
