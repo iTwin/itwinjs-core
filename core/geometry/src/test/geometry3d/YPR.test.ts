@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // import { Sample } from "../serialization/GeometrySamples";
 import { assert, expect } from "chai";
+
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -109,4 +110,20 @@ describe("YPR", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+});
+
+describe("YawPitchRollAngles", () => {
+  it("HelloWorld", () => {
+    const ck = new bsiChecker.Checker();
+    const ypr0 = YawPitchRollAngles.createDegrees(10, 20, 30);
+    const matrix0: Matrix3d = ypr0.toMatrix3d();
+    // console.log(ypr0);
+    // console.log(matrix0);
+    const ypr1 = YawPitchRollAngles.createFromMatrix3d(matrix0);
+    // console.log (ypr1);
+    if (ypr1)
+      expect(ypr0.maxDiffRadians(ypr1)).lessThan(Geometry.smallAngleRadians);
+    ck.checkpoint("YawPitchRollAngles.Hello world");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

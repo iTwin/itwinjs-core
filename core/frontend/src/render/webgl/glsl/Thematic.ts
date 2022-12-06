@@ -69,7 +69,7 @@ const fwidthWhenAvailable = `\nfloat _universal_fwidth(float coord) { return fwi
 const fwidthWhenNotAvailable = `\nfloat _universal_fwidth(float coord) { return coord; }\n`; // ###TODO: can we do something reasonable in this case?
 
 const slopeAndHillShadeShader = ` else if (kThematicDisplayMode_Slope == u_thematicDisplayMode) {
-    float d = dot(v_n, u_thematicAxis);
+    float d = dot(g_normal, u_thematicAxis);
     if (d < 0.0)
       d = -d;
 
@@ -87,11 +87,7 @@ const slopeAndHillShadeShader = ` else if (kThematicDisplayMode_Slope == u_thema
 
     ndx = d;
   } else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
-    float d = dot(v_n, u_thematicSunDirection);
-
-    // In the case of HillShade, v_thematicIndex contains the normal's z in world space.
-    if (!gl_FrontFacing && v_thematicIndex < 0.0)
-      d = -d;
+    float d = dot(g_normal, u_thematicSunDirection);
 
     ndx = max(0.0, d);
   }`;

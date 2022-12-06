@@ -190,7 +190,7 @@ export function createPresentationInstanceFilter(descriptor: Descriptor, filter:
 // @internal (undocumented)
 export function createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription;
 
-// @public
+// @public @deprecated
 export class DataProvidersFactory {
     constructor(props?: DataProvidersFactoryProps);
     createSimilarInstancesTableDataProvider(propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord, props: Omit_2<PresentationTableDataProviderProps, "imodel" | "ruleset">): Promise<IPresentationTableDataProvider & {
@@ -198,7 +198,7 @@ export class DataProvidersFactory {
     }>;
 }
 
-// @public
+// @public @deprecated
 export interface DataProvidersFactoryProps {
     rulesetsFactory?: RulesetsFactory;
 }
@@ -432,7 +432,7 @@ export interface IPresentationLabelsProvider {
 // @public
 export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
 
-// @public
+// @public @deprecated
 export type IPresentationTableDataProvider = TableDataProvider & IContentDataProvider & {
     getRowKey: (row: RowItem) => InstanceKey;
 };
@@ -596,7 +596,7 @@ export interface PresentationPropertyDataProviderProps extends DiagnosticsProps 
     ruleset?: string | Ruleset;
 }
 
-// @public
+// @public @deprecated
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
     constructor(props: PresentationTableDataProviderProps);
     get filterExpression(): string | undefined;
@@ -619,7 +619,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     get sortDirection(): SortDirection;
 }
 
-// @public
+// @public @deprecated
 export interface PresentationTableDataProviderProps extends DiagnosticsProps {
     cachedPagesCount?: number;
     displayType?: string;
@@ -756,16 +756,16 @@ export interface ReloadedHierarchyPart {
 // @internal (undocumented)
 export function reloadVisibleHierarchyParts(visibleNodes: VisibleTreeNodes, renderedItems: RenderedItemsRange, dataProvider: IPresentationTreeDataProvider): Promise<ReloadedHierarchyPart[]>;
 
-// @public
+// @public @deprecated
 export const TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5;
 
-// @public
+// @public @deprecated
 export const TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20;
 
-// @public
+// @public @deprecated
 export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React_2.ComponentType<P>): React_2.ComponentType<P & TableWithUnifiedSelectionProps>;
 
-// @public
+// @public @deprecated
 export interface TableWithUnifiedSelectionProps {
     dataProvider: IPresentationTableDataProvider;
     // @internal (undocumented)
