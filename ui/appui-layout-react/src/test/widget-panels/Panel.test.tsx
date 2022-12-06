@@ -6,7 +6,6 @@ import { should } from "chai";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Rectangle } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
@@ -595,20 +594,16 @@ describe("useAnimatePanelWidgets", () => {
       wrapper,
     });
 
-    const w1 = {
-      measure: () => new Rectangle(),
-    };
-    const w2 = {
-      measure: () => new Rectangle(),
-    };
-    sinon.stub(w1, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 600 }))
+    const w1 = document.createElement("div");
+    const w2 = document.createElement("div");
+    sinon.stub(w1, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 600 }))
       .onSecondCall().callsFake(() => {
         // New widget ref is only set in layout effect
         setRefValue(result.current.getRef("w2"), w2);
-        return Rectangle.createFromSize({ width: 0, height: 400 });
+        return DOMRect.fromRect({ width: 0, height: 400 });
       });
-    sinon.stub(w2, "measure").returns(Rectangle.createFromSize({ width: 0, height: 200 }));
+    sinon.stub(w2, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 0, height: 200 }));
 
     setRefValue(result.current.getRef("w1"), w1);
 
@@ -647,22 +642,16 @@ describe("useAnimatePanelWidgets", () => {
       wrapper,
     });
 
-    const w1 = {
-      measure: () => new Rectangle(),
-    };
-    const w2 = {
-      measure: () => new Rectangle(),
-    };
-    const w3 = {
-      measure: () => new Rectangle(),
-    };
-    sinon.stub(w1, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
-    sinon.stub(w2, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
-    sinon.stub(w3, "measure").returns(Rectangle.createFromSize({ width: 0, height: 300 }));
+    const w1 = document.createElement("div");
+    const w2 = document.createElement("div");
+    const w3 = document.createElement("div");
+    sinon.stub(w1, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 300 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 200 }));
+    sinon.stub(w2, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 300 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 700 }));
+    sinon.stub(w3, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 0, height: 300 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -694,22 +683,16 @@ describe("useAnimatePanelWidgets", () => {
       wrapper,
     });
 
-    const w1 = {
-      measure: () => new Rectangle(),
-    };
-    const w2 = {
-      measure: () => new Rectangle(),
-    };
-    const w3 = {
-      measure: () => new Rectangle(),
-    };
-    sinon.stub(w1, "measure").returns(Rectangle.createFromSize({ width: 300, height: 0 }));
-    sinon.stub(w2, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 300, height: 0 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 700, height: 0 }));
-    sinon.stub(w3, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 300, height: 0 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 200, height: 0 }));
+    const w1 = document.createElement("div");
+    const w2 = document.createElement("div");
+    const w3 = document.createElement("div");
+    sinon.stub(w1, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 300, height: 0 }));
+    sinon.stub(w2, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 300, height: 0 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 700, height: 0 }));
+    sinon.stub(w3, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 300, height: 0 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 200, height: 0 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -742,22 +725,16 @@ describe("useAnimatePanelWidgets", () => {
       wrapper,
     });
 
-    const w1 = {
-      measure: () => new Rectangle(),
-    };
-    const w2 = {
-      measure: () => new Rectangle(),
-    };
-    const w3 = {
-      measure: () => new Rectangle(),
-    };
-    sinon.stub(w1, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
-    sinon.stub(w2, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
-    sinon.stub(w3, "measure").returns(Rectangle.createFromSize({ width: 0, height: 300 }));
+    const w1 = document.createElement("div");
+    const w2 = document.createElement("div");
+    const w3 = document.createElement("div");
+    sinon.stub(w1, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 300 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 200 }));
+    sinon.stub(w2, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 300 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 700 }));
+    sinon.stub(w3, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 0, height: 300 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -787,23 +764,17 @@ describe("useAnimatePanelWidgets", () => {
       wrapper,
     });
 
-    const w1 = {
-      measure: () => new Rectangle(),
-    };
-    const w2 = {
-      measure: () => new Rectangle(),
-    };
-    const w3 = {
-      measure: () => new Rectangle(),
-    };
-    sinon.stub(w1, "measure").returns(Rectangle.createFromSize({ width: 0, height: 300 }));
+    const w1 = document.createElement("div");
+    const w2 = document.createElement("div");
+    const w3 = document.createElement("div");
+    sinon.stub(w1, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 0, height: 300 }));
 
-    sinon.stub(w2, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
-    sinon.stub(w3, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
+    sinon.stub(w2, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 300 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 700 }));
+    sinon.stub(w3, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 300 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 200 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -830,9 +801,7 @@ describe("useAnimatePanelWidgets", () => {
       wrapper,
     });
 
-    const w1 = {
-      measure: () => new Rectangle(),
-    };
+    const w1 = document.createElement("div");
 
     setRefValue(result.current.getRef("w1"), w1);
 
@@ -857,22 +826,16 @@ describe("useAnimatePanelWidgets", () => {
       wrapper,
     });
 
-    const w1 = {
-      measure: () => new Rectangle(),
-    };
-    const w2 = {
-      measure: () => new Rectangle(),
-    };
-    const w3 = {
-      measure: () => new Rectangle(),
-    };
-    sinon.stub(w1, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }));
-    sinon.stub(w2, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 600 }));
-    sinon.stub(w3, "measure").returns(Rectangle.createFromSize({ width: 0, height: 300 }));
+    const w1 = document.createElement("div");
+    const w2 = document.createElement("div");
+    const w3 = document.createElement("div");
+    sinon.stub(w1, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 300 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 300 }));
+    sinon.stub(w2, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 300 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 600 }));
+    sinon.stub(w3, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 0, height: 300 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -902,18 +865,14 @@ describe("useAnimatePanelWidgets", () => {
       wrapper,
     });
 
-    const w1 = {
-      measure: () => new Rectangle(),
-    };
-    const w2 = {
-      measure: () => new Rectangle(),
-    };
-    sinon.stub(w1, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
-    sinon.stub(w2, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 600 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
+    const w1 = document.createElement("div");
+    const w2 = document.createElement("div");
+    sinon.stub(w1, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 300 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 200 }));
+    sinon.stub(w2, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 600 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 700 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -941,18 +900,14 @@ describe("useAnimatePanelWidgets", () => {
       wrapper,
     });
 
-    const w1 = {
-      measure: () => new Rectangle(),
-    };
-    const w2 = {
-      measure: () => new Rectangle(),
-    };
-    sinon.stub(w1, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
-    sinon.stub(w2, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 600 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
+    const w1 = document.createElement("div");
+    const w2 = document.createElement("div");
+    sinon.stub(w1, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 300 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 200 }));
+    sinon.stub(w2, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 600 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 700 }));
 
     setRefValue(result.current.getRef("w1"), w1);
 
@@ -976,18 +931,14 @@ describe("useAnimatePanelWidgets", () => {
       wrapper,
     });
 
-    const w1 = {
-      measure: () => new Rectangle(),
-    };
-    const w2 = {
-      measure: () => new Rectangle(),
-    };
-    sinon.stub(w1, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
-    sinon.stub(w2, "measure")
-      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 600 }))
-      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
+    const w1 = document.createElement("div");
+    const w2 = document.createElement("div");
+    sinon.stub(w1, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 300 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 200 }));
+    sinon.stub(w2, "getBoundingClientRect")
+      .onFirstCall().returns(DOMRect.fromRect({ width: 0, height: 600 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0, height: 700 }));
 
     setRefValue(result.current.getRef("w1"), w1);
 
@@ -1011,12 +962,8 @@ describe("useAnimatePanelWidgets", () => {
       wrapper,
     });
 
-    const w1 = {
-      measure: () => new Rectangle(),
-    };
-    const w2 = {
-      measure: () => new Rectangle(),
-    };
+    const w1 = document.createElement("div");
+    const w2 = document.createElement("div");
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
 
@@ -1029,7 +976,7 @@ describe("useAnimatePanelWidgets", () => {
       result.current.handleBeforeTransition();
     };
 
-    const spy = sinon.spy(w1, "measure");
+    const spy = sinon.spy(w1, "getBoundingClientRect");
     rerender({ state, onAfterRender });
 
     sinon.assert.notCalled(spy);
