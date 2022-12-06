@@ -5308,6 +5308,7 @@ export interface Localization {
     getLanguageList(): readonly string[];
     getLocalizedKeys(inputString: string): string;
     getLocalizedString(key: string | string[], options?: TranslationOptions): string;
+    // @deprecated
     getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
     // @internal (undocumented)
     getNamespacePromise(name: string): Promise<void> | undefined;
@@ -9665,6 +9666,7 @@ export enum TypeOfChange {
     Geometry = 2,
     Hidden = 16,
     Indirect = 8,
+    Parent = 32,
     Placement = 4,
     Property = 1
 }

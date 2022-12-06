@@ -1229,7 +1229,7 @@ export class ArcGisUtilities {
     static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<any>;
     // (undocumented)
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
-    static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number): {
+    static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
         minLod?: number;
         maxLod?: number;
     };

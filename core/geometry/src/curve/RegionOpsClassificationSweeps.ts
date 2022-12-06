@@ -28,6 +28,7 @@ import { Range2d, Range3d } from "../geometry3d/Range";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { GeometryQuery } from "./GeometryQuery";
+import { Ray3d } from "../geometry3d/Ray3d";
 
 /**
  * base class for callbacks during region sweeps.
@@ -69,10 +70,10 @@ type AnnounceClassifiedFace = (graph: HalfEdgeGraph, faceSeed: HalfEdge, faceTyp
  * Implementation of `RegionOpsFaceToFaceSearchCallbacks` for binary boolean sweep with polygonal regions.
  * * For this linear-boundary case the boundary geometry is carried entirely from the coordinates in the half edges.
  * * This assumes the each node in the graph has edgeTag set to:
- *   * `edgeTag === undefined` if the edge crossing the edge does not change classification.
+ *   * `edgeTag === undefined` if the edge crossing does not change classification.
  *     * for example, an edge added by regularization
  *   * `edgeTag === 1` if this is a boundary for the first of the boolean input regions
- *   * `edgeTag === 2` if this is a boundary for the first of the boolean input regions
+ *   * `edgeTag === 2` if this is a boundary for the second of the boolean input regions
  * * constructor
  *    * takes caller-supplied function to decide whether to accept a face given its state relative to the two boolean terms.
  *    * sets the in/out status of both terms to false.
@@ -408,7 +409,7 @@ export class RegionGroup {
 }
 /**
  * A `RegionBooleanContext` carries structure and operations for binary operations between two sets of regions.
- * * In the binary operation (union, intersection, parity, difference), the left and right operands
+ * * In the binary operation OP (union, intersection, parity, difference), the left and right operands
  *     are each a composite union, difference, or parity among multiple inputs, i.e.
  *   * (operationA among Ai) OP (operationB among Bi)
  *   * where the Ai are one set of regions, being combined by operationA
@@ -458,47 +459,60 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     // if (doConnectives !== 0)
       this.addConnectives();
   }
+
+  private _workSegment?: LineSegment3d;
+  private static _bridgeDirection = Vector3d.createNormalized(1.0, -0.12328974132467)!; // magic unit direction to minimize vertex hits
   /**
    * The sweep operations require access to all geometry by edge crossings and face walk.
    * If input loops are non-overlapping, there may be disconnected islands not reachable.
-   * This method
+   * This method:
    * * finds the total range
-   * * for each loop, create a horizontal line from a far-to-the-right point to beyond the overall range.
-   * * places those lines in the extraGeometry group.
+   * * creates parallel rays from the extreme point of each loop and extending beyond the overall range
+   * * places those lines in the extraGeometry group
    */
   public addConnectives() {
     const rangeA = this.groupA.range();
     const rangeB = this.groupB.range();
     const rangeAB = rangeA.union(rangeB);
-    const maxXPoints: Point3d[] = [];
-    const direction = Vector3d.unitX();
+    const areaTol = RegionOps.computeXYAreaTolerance(rangeAB);
+    let margin = 0.1;
+    this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(rangeAB.corners(), RegionBooleanContext._bridgeDirection, this._workSegment);
+    if (this._workSegment)
+      margin *= this._workSegment.point0Ref.distanceXY(this._workSegment.point1Ref);  // how much further to extend each bridge ray
+
+    const maxPoints: Point3d[] = [];
+    const findExtremePointsInLoop = (region: Loop) => {
+      const area = RegionOps.computeXYArea(region);
+      if (area === undefined || Math.abs(area) < areaTol)
+        return;   // avoid bridging trivial faces
+      this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(region, RegionBooleanContext._bridgeDirection, this._workSegment);
+      if (this._workSegment)
+        maxPoints.push(this._workSegment.point1Ref);
+    };
+
     for (const groupMembers of [this.groupA.members, this.groupB.members]) {
       for (const m of groupMembers) {
         if (m.region instanceof Loop) {
-          const lowHigh = PlaneAltitudeRangeContext.findExtremePointsInDirection(m.region, direction);
-          if (lowHigh && lowHigh.length === 2)
-            maxXPoints.push(lowHigh[1]);
+          findExtremePointsInLoop(m.region);
         } else if (m.region instanceof ParityRegion) {
-          for (const loop of m.region.children) {
-            const lowHigh = PlaneAltitudeRangeContext.findExtremePointsInDirection(loop, direction);
-            if (lowHigh && lowHigh.length === 2)
-              maxXPoints.push(lowHigh[1]);
-          }
+          for (const loop of m.region.children)
+            findExtremePointsInLoop(loop);
         }
       }
     }
-    const xOut = Geometry.interpolate(rangeAB.low.x, 1.5, rangeAB.high.x);
-    const xShift = 0;
-    const yShift = -0.12328974132467 * rangeAB.yLength();
-    for (const p of maxXPoints) {
-      // Make a line from .  .
-      // 1) exactly the max point of the loops to
-      // 2) a point clearly outside the big range, with y shifted down a bit.
-      // if p came from some inner loop this will . . ..
-      // 1 create a bridge from the inner loop through any containing loops (always)
-      // 2) avoid crossing any containing loop at a vertex. (with high probability, but not absolutely always)
-      const line = LineSegment3d.createXYXY(p.x - xShift, p.y, xOut, p.y + yShift);
-      this.extraGeometry.addMember(line, true);
+
+    const ray = Ray3d.createZero();
+    for (const p of maxPoints) {
+      // Make a line from...
+      //  1) exactly the max point of the loops to
+      //  2) a point clearly outside the big range
+      // If p came from some inner loop this will...
+      //  1) create a bridge from the inner loop through any containing loops (always)
+      //  2) avoid crossing any containing loop at a vertex. (with high probability, but not absolutely always)
+      const bridgeLength = margin + Ray3d.create(p, RegionBooleanContext._bridgeDirection, ray).intersectionWithRange3d(rangeAB).high;
+      const outside = Point3d.createAdd2Scaled(p, 1.0, RegionBooleanContext._bridgeDirection, bridgeLength);
+      const bridgeLine = LineSegment3d.createXYXY(p.x, p.y, outside.x, outside.y);
+      this.extraGeometry.addMember(bridgeLine, true);
     }
   }
 
@@ -551,16 +565,15 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const componentArray = GraphComponentArray.create(this.graph);
     for (const component of componentArray.components) {
       const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(component.faces, this.faceAreaFunction);
-      if (exteriorHalfEdge){
-      const exteriorMask = HalfEdgeMask.EXTERIOR;
-      const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
-      this.graph.clearMask(allMasksToClear);
+      if (exteriorHalfEdge) {
+        const exteriorMask = HalfEdgeMask.EXTERIOR;
+        const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
+        this.graph.clearMask(allMasksToClear);
         RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this);
       }
     }
     this.graph.dropMask(faceHasBeenVisitedMask);
     this.graph.dropMask(nodeHasBeenVisitedMask);
-
   }
   // search the graph for faces with
   // .. exactly 2 edges
@@ -579,7 +592,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
         }
       }
     }
-
   }
   private getInOut(): boolean {
     if (this.binaryOp === RegionBinaryOpType.Union)
@@ -606,25 +618,26 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    * @param delta
    */
   private recordTransitionAcrossEdge(node: HalfEdge, delta: number): RegionGroupMember | undefined {
-    const data = node.edgeTag;
-    if (data instanceof RegionGroupMember) {
+    const updateRegionGroupMemberState = (member: RegionGroupMember): RegionGroupMember => {
+      if (member.parentGroup.groupOpType === RegionGroupOpType.NonBounding)
+        return member;  // no transition across a bridge edge
       if (delta !== 0) {
-        const oldSweepState = data.sweepState;
-        data.sweepState += delta;
-        data.parentGroup.recordMemberStateChange(oldSweepState, data.sweepState);
+        const oldSweepState = member.sweepState;
+        member.sweepState += delta;
+        member.parentGroup.recordMemberStateChange(oldSweepState, member.sweepState);
       }
-      return data;
-    } else if (data instanceof CurveLocationDetail) {
+      return member;
+    };
+
+    const data = node.edgeTag;
+    if (data instanceof RegionGroupMember)
+      return updateRegionGroupMemberState(data);
+
+    if (data instanceof CurveLocationDetail) {
       // We trust that the caller has linked from the graph node to a curve which has a RegionGroupMember as its parent.
       const member = data.curve!.parent;
-      if (member instanceof RegionGroupMember) {
-        if (delta !== 0) {
-          const oldSweepState = member.sweepState;
-          member.sweepState += delta;
-          member.parentGroup.recordMemberStateChange(oldSweepState, member.sweepState);
-        }
-        return member;
-      }
+      if (member instanceof RegionGroupMember)
+        return updateRegionGroupMemberState(member);
     }
     return undefined;
   }
@@ -642,8 +655,9 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   }
   /** Announce entry to a graph face.
    * * Both both sides of a graph edge are from the same RegionGroupMember.
-   * * Hence "crossing that edge" jumps from changes the parity count for the RegionGroupMember that owns that edge by 1.
+   * * Hence "crossing that edge" changes the parity count for the RegionGroupMember that owns that edge by 1.
    * * The parity count for other RegionGroupMembers are never affected by this crossing.
+   * * Crossing a bridge edge does not change the parity count.
    */
   public enterFace(_facePathStack: HalfEdge[], newFaceNode: HalfEdge): boolean {
     this.recordTransitionAcrossEdge(newFaceNode, 1);
@@ -655,8 +669,8 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     return true;
   }
   /** Announce face exit */
-  public leaveFace(_facePathStack: HalfEdge[], _oldFaceNode: HalfEdge): boolean {
-    this.recordTransitionAcrossEdge(_oldFaceNode, -1);
+  public leaveFace(_facePathStack: HalfEdge[], oldFaceNode: HalfEdge): boolean {
+    this.recordTransitionAcrossEdge(oldFaceNode, -1);
     return true;
   }
 }

@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import {
   calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateToolbarOpacity, CommonProps, getToolbarBackdropFilter, getToolbarBackgroundColor,
-  getToolbarBoxShadow, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
+  getToolbarBoxShadow, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT,
 } from "@itwin/core-react";
 
 /** Properties of [[ToolbarButton]] component.
@@ -43,7 +43,7 @@ export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
     };
 
     if (this.props.small) {
-      let backgroundOpacity = TOOLBAR_OPACITY_DEFAULT;
+      let backgroundOpacity = Number(document.documentElement.style.getPropertyValue("--buic-toolbar-opacity"));
       let boxShadowOpacity = TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT;
       let filterBlur = TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT;
 

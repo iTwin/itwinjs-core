@@ -24,11 +24,13 @@ export interface BackstageEventArgs {
 }
 
 /** Backstage Event class.
+ * @deprecated Use [BackstageManager.onToggled]($appui-react) instead.
  * @public
  */
 export class BackstageEvent extends UiEvent<BackstageEventArgs> { } // eslint-disable-line deprecation/deprecation
 
 /** Properties for the [[Backstage]] React component.
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface BackstageProps extends CommonProps {
@@ -46,11 +48,12 @@ interface BackstageState {
 }
 
 /** Backstage React component.
+ * @deprecated Use [BackstageComposer]($appui-react) instead.
  * @public
  */
 export class Backstage extends React.Component<BackstageProps, BackstageState> { // eslint-disable-line deprecation/deprecation
 
-  public static readonly onBackstageEvent = new BackstageEvent();
+  public static readonly onBackstageEvent = new BackstageEvent(); // eslint-disable-line deprecation/deprecation
   public static isBackstageVisible: boolean;
 
   /** Shows the Backstage */

@@ -55,6 +55,7 @@ alpha;PresentationInstanceFilterBuilderProps
 alpha;PresentationInstanceFilterCondition
 alpha;PresentationInstanceFilterConditionGroup
 alpha;PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps): JSX.Element
+alpha;PresentationInstanceFilterPropertyProps
 public;PresentationLabelsProvider 
 public;PresentationLabelsProviderProps
 public;PresentationPropertyDataProvider 
@@ -88,7 +89,7 @@ internal;useFilterBuilderNavigationPropertyEditorContext(imodel: IModelConnectio
 internal;useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider
 alpha;useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext
 internal;useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider
-alpha;usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider):
+alpha;usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection):
 public;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult
 public;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): UsePropertyDataProviderWithUnifiedSelectionResult
 public;UsePropertyDataProviderWithUnifiedSelectionResult

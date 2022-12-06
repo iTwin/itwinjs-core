@@ -207,7 +207,12 @@ export interface MultiElementPropertiesResponse {
 export interface PresentationAssetsRootConfig {
   /** Path to `presentation-backend` assets */
   backend: string;
-  /** Path to `presentation-common` assets */
+
+  /**
+   * Path to `presentation-common` assets.
+   *
+   * @deprecated This path is not used anymore
+   */
   common: string;
 }
 
@@ -217,33 +222,21 @@ export interface PresentationAssetsRootConfig {
  */
 export interface PresentationManagerProps {
   /**
-   * Path overrides for presentation assets. Need to be overriden by application if it puts these assets someplace else than the default.
+   * Path overrides for presentation backend assets. Need to be overriden by application if it puts these assets someplace else than the default.
    *
-   * By default paths to asset directories are determined during the call of [[Presentation.initialize]] using this algorithm:
+   * By default the path to assets directory is determined during the call of [[Presentation.initialize]] using this algorithm:
    *
-   * - for `presentation-backend` assets:
+   * - if path of `.js` file that contains [[PresentationManager]] definition contains "presentation-backend", assume the package is in `node_modules` and the directory structure is:
+   *   - `assets/*\*\/*`
+   *   - `presentation-backend/{presentation-backend source files}`
    *
-   *   - if path of `.js` file that contains [[PresentationManager]] definition contains "presentation-backend", assume the package is in `node_modules` and the directory structure is:
-   *     - `assets/*\*\/*`
-   *     - `presentation-backend/{presentation-backend source files}`
+   *   which means the assets can be found through a relative path `../assets/` from the JS file being executed.
    *
-   *     which means the assets can be found through a relative path `../assets/` from the JS file being executed.
-   *
-   * - for `presentation-common` assets:
-   *
-   *   - if path of `.js` files of `presentation-common` package contain "presentation-common", assume the package is in `node_modules` and the directory structure is:
-   *     - `assets/*\*\/*`
-   *     - `presentation-common/{presentation-common source files}`
-   *
-   *     which means the assets can be found through a relative path `../assets/` from the package's source files.
-   *
-   * - in both cases, if we determine that source files are not in `node_modules`, assume the backend is webpacked into a single file with assets next to it:
+   * - else, assume the backend is webpacked into a single file with assets next to it:
    *   - `assets/*\*\/*`
    *   - `{source file being executed}.js`
    *
    *   which means the assets can be found through a relative path `./assets/` from the `{source file being executed}`.
-   *
-   * The overrides can be specified as a single path (when assets of both `presentation-backend` and `presentation-common` packages are merged into a single directory) or as an object with two separate paths for each package.
    */
   presentationAssetsRoot?: string | PresentationAssetsRootConfig;
 

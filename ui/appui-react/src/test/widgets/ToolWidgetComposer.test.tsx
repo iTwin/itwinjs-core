@@ -66,7 +66,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
     it("BackstageAppButton should render in 2.0 mode", () => {
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <BackstageAppButton icon={"icon-test"} />
           </FrameworkVersion>
         </Provider>);
@@ -76,7 +76,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
       const spy = sinon.spy();
       const component = render(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <BackstageAppButton icon={"icon-test"} execute={spy} label="Hello" />
           </FrameworkVersion>
         </Provider>);
@@ -91,7 +91,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
       const spy = sinon.spy(UiFramework.backstageManager, "toggle");
       const component = render(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <BackstageAppButton />
           </FrameworkVersion>
         </Provider>);
@@ -105,7 +105,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
       await TestUtils.flushAsyncOperations();
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <BackstageAppButton icon={"icon-test"} />
           </FrameworkVersion>
         </Provider>

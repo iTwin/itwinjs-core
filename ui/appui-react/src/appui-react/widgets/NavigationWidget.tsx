@@ -33,7 +33,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase { // eslint-disabl
   private _navigationAidControl: NavigationAidControl | undefined;
   private _reactNode: React.ReactNode;
 
-  constructor(props: NavigationWidgetProps) {
+  constructor(props: NavigationWidgetProps) { // eslint-disable-line deprecation/deprecation
     super(props);
 
     this.widgetType = WidgetType.Navigation;
@@ -101,7 +101,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase { // eslint-disabl
  * @public
  * @deprecated use NavigationWidgetComposer instead
  */
-export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
+export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps { // eslint-disable-line deprecation/deprecation
   iModelConnection?: IModelConnection;
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;

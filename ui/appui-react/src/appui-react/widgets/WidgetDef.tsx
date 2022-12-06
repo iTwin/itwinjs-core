@@ -66,9 +66,10 @@ export enum WidgetType {
 }
 
 /** Properties for a Toolbar Widget.
+ * @deprecated
  * @public
  */
-export interface ToolbarWidgetProps extends WidgetProps {
+export interface ToolbarWidgetProps extends WidgetProps { // eslint-disable-line deprecation/deprecation
   horizontalDirection?: Direction; // eslint-disable-line deprecation/deprecation
   verticalDirection?: Direction; // eslint-disable-line deprecation/deprecation
 
@@ -77,25 +78,29 @@ export interface ToolbarWidgetProps extends WidgetProps {
 }
 
 /** Properties for a Tool Widget.
+ * @deprecated
  * @public
  */
-export interface ToolWidgetProps extends ToolbarWidgetProps {
+export interface ToolWidgetProps extends ToolbarWidgetProps { // eslint-disable-line deprecation/deprecation
   appButton?: CommandItemDef;
 }
 
 /** Properties for a Navigation Widget.
+ * @deprecated
  * @public
  */
-export interface NavigationWidgetProps extends ToolbarWidgetProps {
+export interface NavigationWidgetProps extends ToolbarWidgetProps { // eslint-disable-line deprecation/deprecation
   navigationAidId?: string;
 }
 
 /** Union of all Widget properties.
+ * @deprecated
  * @public
  */
-export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
+export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps; // eslint-disable-line deprecation/deprecation
 
 /** Prototype for WidgetDef StateFunc (UI 1.0 only deprecate ???)
+ * @deprecated Used in UI1.0 only.
  * @public
  */
 export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;
@@ -133,7 +138,7 @@ export class WidgetDef {
   private _stateChanged: boolean = false;
   private _fillZone: boolean = false;
   private _syncEventIds: string[] = [];
-  private _stateFunc?: WidgetStateFunc;
+  private _stateFunc?: WidgetStateFunc; // eslint-disable-line deprecation/deprecation
   private _widgetType: WidgetType = WidgetType.Rectangular;
   private _applicationData?: any;
   private _iconSpec?: string | ConditionalStringValue | React.ReactNode;
@@ -150,7 +155,7 @@ export class WidgetDef {
 
   private _hideWithUiWhenFloating?: boolean;
   private _allowedPanelTargets?: ReadonlyArray<"left"|"right"|"bottom"|"top">;
-  private _initialProps?: WidgetProps;
+  private _initialProps?: WidgetProps; // eslint-disable-line deprecation/deprecation
 
   private _tabLocation?: TabLocation;
   private _defaultTabLocation: TabLocation = {
@@ -186,13 +191,13 @@ export class WidgetDef {
   public get stateChanged(): boolean { return this._stateChanged; }
   public get fillZone(): boolean { return this._fillZone; }
   public get syncEventIds(): string[] { return this._syncEventIds; }
-  public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; }
+  public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; } // eslint-disable-line deprecation/deprecation
   public get applicationData(): any | undefined { return this._applicationData; }
   public get isFloating(): boolean { return this.state === WidgetState.Floating; }
   public get iconSpec(): IconSpec { return this._iconSpec === IconHelper.reactIconKey ? IconHelper.getIconReactNode(this._iconSpec, this._internalData) : this._iconSpec; }
   public set iconSpec(spec: IconSpec) { this._iconSpec = this._internalData ? IconHelper.getIconData(spec, this._internalData) : spec; }
   public get badgeType(): BadgeType | undefined { return this._badgeType; }
-  public get initialProps(): WidgetProps | undefined { return this._initialProps; }
+  public get initialProps(): WidgetProps | undefined { return this._initialProps; } // eslint-disable-line deprecation/deprecation
 
   public get widgetType(): WidgetType { return this._widgetType; }
   public set widgetType(type: WidgetType) { this._widgetType = type; }
@@ -219,19 +224,27 @@ export class WidgetDef {
   public get popoutBounds() { return this._popoutBounds; }
   public set popoutBounds(bounds: Rectangle | undefined) { this._popoutBounds = bounds; }
 
-  constructor(widgetProps: WidgetProps) {
-    if (widgetProps.id !== undefined)
-      this._id = widgetProps.id;
-    else {
-      WidgetDef._sId++;
-      this._id = `Widget-${WidgetDef._sId}`;
-    }
+  constructor();
 
-    WidgetDef.initializeFromWidgetProps(widgetProps, this);
+  /** @deprecated */
+  constructor(props: WidgetProps); // eslint-disable-line @typescript-eslint/unified-signatures, deprecation/deprecation
+
+  /** @internal */
+  constructor(widgetProps?: WidgetProps) { // eslint-disable-line deprecation/deprecation
+    WidgetDef._sId++;
+    this._id = `Widget-${WidgetDef._sId}`;
+
+    if (widgetProps)
+      WidgetDef.initializeFromWidgetProps(widgetProps, this); // eslint-disable-line deprecation/deprecation
   }
 
-  public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) {
+  /** @deprecated */
+  public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) { // eslint-disable-line deprecation/deprecation
     me._initialProps = widgetProps;
+
+    if (widgetProps.id !== undefined)
+      me._id = widgetProps.id;
+
     if (widgetProps.label)
       me.setLabel(widgetProps.label);
     else if (widgetProps.labelKey)
@@ -304,16 +317,18 @@ export class WidgetDef {
     me._saveTransientState = widgetProps.saveTransientState;
     me._restoreTransientState = widgetProps.restoreTransientState;
 
-    me.setUpSyncSupport(widgetProps);
+    me.setUpSyncSupport(widgetProps); // eslint-disable-line deprecation/deprecation
   }
 
-  public static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps {
-    const widgetProps: WidgetProps = abstractWidgetProps;
+  /** @deprecated */
+  public static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps { // eslint-disable-line deprecation/deprecation
+    const widgetProps: WidgetProps = abstractWidgetProps; // eslint-disable-line deprecation/deprecation
     widgetProps.element = abstractWidgetProps.getWidgetContent();
     return widgetProps;
   }
 
-  public setUpSyncSupport(props: WidgetProps) {
+  /** @deprecated */
+  public setUpSyncSupport(props: WidgetProps) { // eslint-disable-line deprecation/deprecation
     if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) { // eslint-disable-line deprecation/deprecation
       this._syncEventIds = props.syncEventIds;
       this._stateFunc = props.stateFunc; // eslint-disable-line deprecation/deprecation
