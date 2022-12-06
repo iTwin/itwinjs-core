@@ -146,6 +146,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public displayRealityTilePreload = false;
   public displayRealityTileRanges = false;
   public logRealityTiles = false;
+  public displayNormalMaps = true;
 
   public freezeRealityTiles = false;
   public get shadowFrustum(): Frustum | undefined {

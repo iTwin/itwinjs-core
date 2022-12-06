@@ -35,6 +35,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get colorInfo(): ColorInfo { return this.mesh.lut.colorInfo; }
   public get uniformColor(): FloatRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
   public get texture() { return this.mesh.texture; }
+  public get normalMap() { return this.mesh.normalMap; }
   public override get hasBakedLighting() { return this.mesh.hasBakedLighting; }
   public get lut() { return this.mesh.lut; }
   public get hasScalarAnimation() { return this.mesh.lut.hasScalarAnimation; }

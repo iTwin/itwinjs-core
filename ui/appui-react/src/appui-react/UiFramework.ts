@@ -135,6 +135,21 @@ export class UiFramework {
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    * @param startInUi1Mode Used for legacy applications to start up in the deprecated UI 1 mode. This should not set by newer applications.
    */
+  public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
+
+  /**
+   * @deprecated UI1.0 is deprecated. Use an overload without a `startInUi1Mode` argument instead.
+   */
+
+  public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void>;  // eslint-disable-line @typescript-eslint/unified-signatures
+
+  /**
+   * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore.
+   * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
+   * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
+   * @param startInUi1Mode Used for legacy applications to start up in the deprecated UI 1 mode. This should not set by newer applications.
+   * @deprecated
+   */
   public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void> {
     return this.initializeEx(store, frameworkStateKey, startInUi1Mode);
   }
@@ -164,7 +179,7 @@ export class UiFramework {
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
 
     if (startInUi1Mode)
-      UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetFrameworkVersion, payload: "1" });
+      UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetFrameworkVersion, payload: "1" }); // eslint-disable-line deprecation/deprecation
 
     // set up namespace and register all tools from package
     const frameworkNamespace = IModelApp.localization?.registerNamespace(UiFramework.localizationNamespace);
@@ -519,17 +534,19 @@ export class UiFramework {
   }
 
   /** Returns the Ui Version.
+   * @deprecated UI1.0 is deprecated.
    * @public
    */
   public static get uiVersion(): FrameworkVersionId { // eslint-disable-line deprecation/deprecation
-    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion;
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion; // eslint-disable-line deprecation/deprecation
   }
 
+  /** @deprecated UI1.0 is deprecated. */
   public static setUiVersion(version: FrameworkVersionId) { // eslint-disable-line deprecation/deprecation
-    if (UiFramework.uiVersion === version)
+    if (UiFramework.uiVersion === version) // eslint-disable-line deprecation/deprecation
       return;
 
-    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1" ? "1" : "2", true);
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1" ? "1" : "2", true); // eslint-disable-line deprecation/deprecation
   }
 
   public static get showWidgetIcon(): boolean {

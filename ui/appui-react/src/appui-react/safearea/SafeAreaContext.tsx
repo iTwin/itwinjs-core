@@ -22,7 +22,7 @@ interface InjectedWithSafeAreaProps {
 }
 
 /** HOC that injects SafeAreaInsets.
- * @deprecated Use [SafeAreaContext] instead.
+ * @deprecated Use [[SafeAreaContext]] instead.
  * @public
  */
 export const withSafeArea = <P extends InjectedWithSafeAreaProps, C>(
