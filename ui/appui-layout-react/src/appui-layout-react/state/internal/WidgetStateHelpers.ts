@@ -227,17 +227,6 @@ export function setWidgetActiveTabId(state: NineZoneState, widgetId: WidgetState
 }
 
 /** @internal */
-export function floatingWidgetClearUserSizedFlag(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]) {
-  return produce(state, (draft) => {
-    const floatingWidget = draft.floatingWidgets.byId[floatingWidgetId];
-    floatingWidget.userSized = false;
-    const widget = draft.widgets[floatingWidgetId];
-    const tab = draft.tabs[widget.activeTabId];
-    tab.userSized = false;
-  });
-}
-
-/** @internal */
 export function getNewFloatingWidgetBounds(state: NineZoneState): RectangleProps {
   // Matches min size (to handle auto-sized floating widgets correctly).
   const size = { height: 120, width: 200 };
