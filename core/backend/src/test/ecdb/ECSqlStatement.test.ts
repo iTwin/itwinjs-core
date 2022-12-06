@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@itwin/core-bentley";
 import { NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { ECDb, ECEnumValue, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../core-backend";
+import { ECDb, ECEnumValue, ECSqlColumnInfo, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
@@ -2847,6 +2847,47 @@ describe("ECSqlStatement", () => {
       ecdb.saveChanges();
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       assert.equal(r.id, "0x1");
+    });
+  });
+
+  it("check column info", async () => {
+    await using(ECDbTestHelper.createECDb(outDir, "columnInfo.ecdb",
+      `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="MyClass" modifier="Sealed">
+          <ECProperty propertyName="MyProperty" typeName="string"/>
+       </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+
+      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.MyClass(MyProperty) VALUES('Value')", (stmt: ECSqlStatement) => {
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(res.id);
+        return res.id!;
+      });
+
+      ecdb.withPreparedStatement("SELECT MyProperty as MyAlias, 1 as MyGenerated FROM test.MyClass WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+        stmt.bindId(1, id);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        // getRow just returns the enum values
+        const row: any = stmt.getRow();
+        assert.equal(row.myAlias, "Value");
+        assert.equal(row.myGenerated, 1);
+
+        const val0: ECSqlValue = stmt.getValue(0);
+        const colInfo0: ECSqlColumnInfo = val0.columnInfo;
+
+        assert.equal(colInfo0.getPropertyName(), "MyAlias");
+        assert.isTrue(colInfo0.hasOriginProperty());
+        assert.equal(colInfo0.getOriginPropertyName(), "MyProperty");
+
+        const val1: ECSqlValue = stmt.getValue(1);
+        const colInfo1: ECSqlColumnInfo = val1.columnInfo;
+
+        assert.equal(colInfo1.getPropertyName(), "MyGenerated");
+        assert.isFalse(colInfo1.hasOriginProperty());
+        assert.throw(() => colInfo1.getOriginPropertyName());
+      });
     });
   });
 });
