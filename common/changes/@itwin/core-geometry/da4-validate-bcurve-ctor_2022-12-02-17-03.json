@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "BSplineCurve3d.create validates input knots",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
