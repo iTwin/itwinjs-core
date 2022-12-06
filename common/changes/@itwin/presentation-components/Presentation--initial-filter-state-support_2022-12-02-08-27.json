@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-components",
-      "comment": "Added initial filter to instance filter builder",
+      "comment": "Added support for initial filter to presentation instance filter builder",
       "type": "none"
     }
   ],
