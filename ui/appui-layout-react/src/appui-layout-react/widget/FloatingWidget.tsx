@@ -200,13 +200,12 @@ function useHandleAutoSize(dragged: boolean) {
       return;
 
     const bounds = Rectangle.create(ref.current.getBoundingClientRect());
-    console.log(id, bounds);
     dispatch({
       type: "FLOATING_WIDGET_SET_BOUNDS",
       id,
       bounds,
     });
-  }, [dispatch, id, userSized]);
+  }, [dispatch, dragged, id, userSized]);
   const roRef = useResizeObserver(handleResize);
   const refs = useRefs(ref, roRef);
   return refs;
