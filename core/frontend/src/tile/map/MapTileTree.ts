@@ -452,6 +452,8 @@ export class MapTileTree extends RealityTileTree {
   /** @internal */
   public override reportTileVisibility(args: TileDrawArgs, selected: RealityTile[]) {
 
+    const debugControl = args.context.target.debugControl;
+
     const layersVisibilityBefore =  this.cloneImageryTreeState();
 
     const changes =  new Array<MapLayerScaleRangeVisibility> ();
@@ -506,9 +508,11 @@ export class MapTileTree extends RealityTileTree {
         const prevVisibility = prevState.getScaleRangeVisibility();
         const visibility = newState.getScaleRangeVisibility();
         if ( prevVisibility !== visibility) {
-          // console.log(`Visible : '${vis.join(", ")}'`);
-          // console.log(`Out : '${out.join(", ")}'`);
-          console.log(`ImageryTileTree '${treeId}' changed prev state: '${MapTileTreeScaleRangeVisibility[prevVisibility]}' new state: '${MapTileTreeScaleRangeVisibility[visibility]}'`);
+
+          if (debugControl && debugControl.logRealityTiles) {
+            // eslint-disable-next-line no-console
+            console.log(`ImageryTileTree '${treeId}' changed prev state: '${MapTileTreeScaleRangeVisibility[prevVisibility]}' new state: '${MapTileTreeScaleRangeVisibility[visibility]}'`);
+          }
 
           const mapLayersIndexes = args.context.viewport.getMapLayerIndexesFromIds(this.id, treeId);
           for (const index of mapLayersIndexes ) {

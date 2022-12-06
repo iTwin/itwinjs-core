@@ -54,7 +54,11 @@ export class ImageryMapTile extends RealityTile {
   public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     const isSmallerThanDrape = (this.rectangle.xLength() / this.maximumSize) < drapePixelSize;
-    if (isSmallerThanDrape || this._anyChildNotFound) {
+    if (  this.isLeaf           // Include leaves so tiles get stretched past max LOD levels.
+      || isSmallerThanDrape
+      || this._anyChildNotFound) {
+      if (this.isOutOfLodRange) {
+      }
       if (this.isOutOfLodRange) {
         drapeTiles.push(this);
         this.setIsReady();
