@@ -1552,11 +1552,13 @@ export class ECSqlBinder {
 // @public
 export interface ECSqlColumnInfo {
     getAccessString(): string;
+    getOriginPropertyName(): string;
     getPropertyName(): string;
     getRootClassAlias(): string;
     getRootClassName(): string;
     getRootClassTableSpace(): string;
     getType(): ECSqlValueType;
+    hasOriginProperty(): boolean;
     isEnum(): boolean;
     isGeneratedProperty(): boolean;
     isSystemProperty(): boolean;
