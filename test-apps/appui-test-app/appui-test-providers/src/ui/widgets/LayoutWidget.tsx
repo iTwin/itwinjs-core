@@ -10,6 +10,7 @@ import {
 import { SpecialKey, StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
 import { NumberInput, RectangleProps } from "@itwin/core-react";
 import { Button, Input, Select, SelectOption } from "@itwin/itwinui-react";
+import { ApplicationLayoutContext, ApplicationMode } from "../ApplicationLayout";
 
 function usePanelDef(location: StagePanelLocation) {
   const frontstageDef = useActiveFrontstageDef();
@@ -62,7 +63,6 @@ function usePanelInfo(location: StagePanelLocation) {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function PanelInfo({
   location,
 }: {
@@ -79,7 +79,6 @@ function PanelInfo({
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function PanelSelect({
   location,
   onChange,
@@ -94,7 +93,7 @@ function PanelSelect({
     { label: StagePanelLocation[StagePanelLocation.Bottom], value: StagePanelLocation[StagePanelLocation.Bottom] },
   ]);
   return (
-    <Select style={{ width: "160px" }}
+    <Select
       options={options}
       value={StagePanelLocation[location]}
       onChange={(value) => {
@@ -106,7 +105,6 @@ function PanelSelect({
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function WidgetSelect({
   id,
   onChange,
@@ -131,7 +129,7 @@ function WidgetSelect({
     setOptions(newOptions);
   }, [frontstageDef]);
   return (
-    <Select style={{ width: "160px" }}
+    <Select
       options={options}
       value={id}
       onChange={(value) => {
@@ -142,7 +140,6 @@ function WidgetSelect({
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function SelectPanelInfo() {
   const [location, setLocation] = React.useState(StagePanelLocation.Right);
   return (
@@ -157,7 +154,6 @@ function SelectPanelInfo() {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function SelectWidgetInfo() {
   const [id, setId] = React.useState("RightStart2");
   return (
@@ -193,7 +189,6 @@ function useWidgetState(id: string) {
   return state;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function WidgetInfo({
   id,
 }: {
@@ -263,21 +258,31 @@ function WidgetInfo({
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function FrontstageControls() {
+  const applicationLayout = React.useContext(ApplicationLayoutContext);
+  const newMode: ApplicationMode = applicationLayout?.mode === "app" ? "portal" : "app";
   return (
     <>
-      <b>Frontstage controls</b>
-      <br />
-      <button onClick={() => {
-        const frontstageDef = FrontstageManager.activeFrontstageDef;
-        frontstageDef?.restoreLayout();
-      }}>Restore layout</button>
+      <h2 style={{ gridColumnStart: 1, gridColumnEnd: 3 }}>Frontstage controls</h2>
+      {applicationLayout ? <>
+        <span>Application layout</span>
+        <div>
+          <Button onClick={() => {
+            applicationLayout.onChanged(newMode);
+          }}>setMode(&quot;{newMode}&quot;)</Button>
+        </div>
+      </> : null}
+      <span>Frontstage layout</span>
+      <div>
+        <Button onClick={() => {
+          const frontstageDef = FrontstageManager.activeFrontstageDef;
+          frontstageDef?.restoreLayout();
+        }}>Restore layout</Button>
+      </div>
     </>
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function PanelStateSelect({
   state,
   onChange,
@@ -291,7 +296,7 @@ function PanelStateSelect({
     { label: StagePanelState[StagePanelState.Off], value: StagePanelState[StagePanelState.Off] },
   ]);
   return (
-    <Select style={{ width: "160px" }}
+    <Select
       placeholder="State"
       options={options}
       value={state === undefined ? "placeholder" : StagePanelState[state]}
@@ -304,7 +309,6 @@ function PanelStateSelect({
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function WidgetStateSelect({
   state,
   onChange,
@@ -320,7 +324,7 @@ function WidgetStateSelect({
     { label: WidgetState[WidgetState.Unloaded], value: WidgetState[WidgetState.Unloaded] },
   ]);
   return (
-    <Select style={{ width: "160px" }}
+    <Select
       placeholder="State"
       options={options}
       value={state === undefined ? "placeholder" : WidgetState[state]}
@@ -333,7 +337,6 @@ function WidgetStateSelect({
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function PanelControls({
   location,
 }: {
@@ -353,6 +356,7 @@ function PanelControls({
   };
   return (
     <>
+      <span>Panel size</span>
       <Input
         type="number"
         placeholder="Size"
@@ -379,14 +383,15 @@ function PanelControls({
           }
         }}
       />
-      <button onClick={() => {
+      <span>Reset panel size</span>
+      <Button onClick={() => {
         const frontstageDef = FrontstageManager.activeFrontstageDef;
         const panelDef = frontstageDef?.getStagePanelDef(location);
         if (!panelDef)
           return;
         panelDef.size = undefined;
-      }}>setSize(undefined)</button>
-      <br />
+      }}>setSize(undefined)</Button>
+      <span>Panel state</span>
       <PanelStateSelect
         state={state}
         onChange={(newState) => {
@@ -402,7 +407,6 @@ function PanelControls({
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function WidgetControls({
   id,
 }: {
@@ -411,6 +415,7 @@ function WidgetControls({
   const [state, setState] = React.useState<WidgetState | undefined>(undefined);
   return (
     <>
+      <span>Widget state</span>
       <WidgetStateSelect
         state={state}
         onChange={(s) => {
@@ -420,48 +425,48 @@ function WidgetControls({
           widgetDef?.setWidgetState(s);
         }}
       />
-      <br />
-      <button onClick={() => {
-        const frontstageDef = FrontstageManager.activeFrontstageDef;
-        const widgetDef = frontstageDef?.findWidgetDef(id);
-        widgetDef?.show();
-      }}>Show</button>
-      <button onClick={() => {
-        const frontstageDef = FrontstageManager.activeFrontstageDef;
-        const widgetDef = frontstageDef?.findWidgetDef(id);
-        widgetDef?.expand();
-      }}>Expand</button>
+      <span>Widget actions</span>
+      <div style={{display: "flex", gap: "12px" }}>
+        <Button onClick={() => {
+          const frontstageDef = FrontstageManager.activeFrontstageDef;
+          const widgetDef = frontstageDef?.findWidgetDef(id);
+          widgetDef?.show();
+        }}>Show</Button>
+        <Button onClick={() => {
+          const frontstageDef = FrontstageManager.activeFrontstageDef;
+          const widgetDef = frontstageDef?.findWidgetDef(id);
+          widgetDef?.expand();
+        }}>Expand</Button>
+      </div>
     </>
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function SelectPanelControls() {
   const [location, setLocation] = React.useState(StagePanelLocation.Right);
   return (
     <>
+      <h2 style={{ gridColumnStart: 1, gridColumnEnd: 3 }}>Panel controls</h2>
+      <span>Panel side</span>
       <PanelSelect
         location={location}
         onChange={(l) => setLocation(l)}
       />
-      <b> panel controls</b>
-      <br />
       <PanelControls location={location} />
     </>
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function SelectWidgetControls() {
   const [id, setId] = React.useState("RightStart2");
   return (
     <>
+      <h2 style={{ gridColumnStart: 1, gridColumnEnd: 3 }}>Widget controls</h2>
+      <span>Widget id</span>
       <WidgetSelect
         id={id}
         onChange={(i) => setId(i)}
       />
-      <b> widget controls</b>
-      <br />
       <WidgetControls id={id} />
     </>
   );
@@ -472,31 +477,32 @@ const widgetContentStyle: React.CSSProperties = {
   boxSizing: "border-box",
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function WidgetContent(props: React.PropsWithChildren<{}>) {
+function WidgetContent(props: React.PropsWithChildren<{ style?: React.CSSProperties }>) {
   return (
-    <div style={widgetContentStyle}>
+    <div style={{
+      ...widgetContentStyle,
+      ...props.style,
+    }}>
       {props.children}
     </div>
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function LayoutControls() {
   return (
-    <WidgetContent>
-      <SelectPanelControls />
-      <br />
-      <br />
-      <SelectWidgetControls />
-      <br />
-      <br />
+    <WidgetContent style={{
+      display: "grid",
+      gridTemplateColumns: "auto 1fr",
+      gap: "12px",
+      alignItems: "center",
+    }}>
       <FrontstageControls />
+      <SelectPanelControls />
+      <SelectWidgetControls />
     </WidgetContent>
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function LayoutInfo() {
   return (
     <WidgetContent>
@@ -507,7 +513,6 @@ export function LayoutInfo() {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function FloatingWidgetSelect({
   id,
   onChange,
@@ -532,7 +537,7 @@ function FloatingWidgetSelect({
   }, [allIds]);
 
   return (
-    <Select style={{ width: "360px" }}
+    <Select
       options={options}
       value={id}
       onChange={(value) => {
@@ -549,7 +554,6 @@ function getFloatingWidgetContainerBounds(frontstageDef: FrontstageDef | undefin
   return foundBounds ?? defaultBounds;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function FloatingLayoutInfo() {
   const frontstageDef = useActiveFrontstageDef();
   const [floatingIds, setFloatingIds] = React.useState(() => frontstageDef ? frontstageDef.getFloatingWidgetContainerIds() : []);
