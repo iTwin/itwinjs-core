@@ -98,6 +98,29 @@ export type HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMa
  * @internal
  */
 export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
+/** Non-topological data members in a half edge.
+ * These are not part of adjacency and masking logic.
+*/
+export interface HalfEdgeUserData {
+  /** Vertex x coordinate */
+  x: number;
+  /** Vertex y coordinate */
+  y: number;
+  /** Vertex z coordinate */
+  z: number;
+  /** angle used for sort-around-vertex */
+  sortAngle?: number;  // used in sorting around vertex.
+  /** numeric value for application-specific tagging (e.g. sorting) */
+  sortData?: number;
+  /** application-specific data for the edge identifier.
+   * * edge split operations are expected to copy this to new sub-edges.
+   */
+  edgeTag?: any;
+  /** application-specific data for the face loop
+   * * edge split operations are expected to copy this to new sub-edges.
+   */
+  faceTag?: any;
+}
 /**
  *
  * * A HalfEdge is "one side of an edge" in a structure of faces, edges and vertices.  From a node there are navigational links to:
@@ -114,7 +137,7 @@ export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolea
  *      of graph manipulation.
  * @internal
  */
-export class HalfEdge {
+export class HalfEdge implements HalfEdgeUserData {
   /** Vertex index in some parent object's numbering. */
   public i: number;
   /** bitmask bits, used to mark nodes as part of a triangle(idx 0) or visited when flipping(idx 1) */
@@ -136,8 +159,8 @@ export class HalfEdge {
   /** application-specific data for the face loop
    * * edge split operations are expected to copy this to new sub-edges.
    */
-   public faceTag?: any;
-   private _id: any;   // immutable id useful for debugging.
+  public faceTag?: any;
+  private _id: any;   // immutable id useful for debugging.
   /** id assigned sequentially during construction --- useful for debugging. */
   public get id() { return this._id; }
   private _facePredecessor: HalfEdge;
@@ -261,6 +284,39 @@ export class HalfEdge {
     }
     return newA;
   }
+  /**
+   * * Create a new sliver face "inside" an existing edge.
+   * * Insert it "within" the base edge.
+   * * This requires two new half edges.
+   * * if the base is undefined, create a single-edge loop.
+   * * This (unlike pinch) breaks the edgeMate pairing of the base edge.
+   * * This preserves xyz and i properties at all existing vertices.
+   * * The two new half edges are a sliver face (via their predecessor and successor)
+   * * Each new edge mates to one existing edge.
+   * @returns Returns the reference to the half edge created.
+   */
+  public static splitEdgeCreateSliverFace(
+    baseA: HalfEdge,
+    heArray: HalfEdge[] | undefined): HalfEdge {
+    // raw edges ...
+    const newA = new HalfEdge();
+    const newB = new HalfEdge();
+    const baseB = baseA.edgeMate;
+    if (heArray) {
+      heArray.push(newA);
+      heArray.push(newB);
+    }
+    newA._faceSuccessor = newA._facePredecessor = newB;
+    newB._faceSuccessor = newB._facePredecessor = newA;
+    // newA is in vertex loop with baseA etc.
+    // newA mates to baseB
+    HalfEdge.setEdgeMates(newA, baseB);
+    HalfEdge.setEdgeMates(newB, baseA);
+    newA.copyDataFrom(baseA, true, true, false, false);
+    newB.copyDataFrom(baseB, true, true, false, false);
+    return newA;
+  }
+
   private static _edgePropertyMasks: HalfEdgeMask[] = [HalfEdgeMask.BOUNDARY_EDGE, HalfEdgeMask.EXTERIOR, HalfEdgeMask.PRIMARY_EDGE, HalfEdgeMask.NULL_FACE];
   /**
    * Copy "edge based" content of fromNode to toNode
@@ -515,6 +571,15 @@ export class HalfEdge {
     } while (node !== this);
     return undefined;
   }
+  /** Returns the first node with given mask value on this edge (i.e. examining this and this.mate)  */
+  public findMaskAroundEdge(mask: HalfEdgeMask, value: boolean = true): HalfEdge | undefined {
+    if (this.isMaskSet(mask) === value)
+      return this;
+    const mate = this.edgeMate;
+    if (mate.isMaskSet(mask) === value)
+      return mate;
+    return undefined;
+  }
 
   /** Set a mask, and return prior value.
    * @param mask mask to apply
@@ -538,7 +603,7 @@ export class HalfEdge {
    * Set (copy) the this.x, this.y, this.z from xyz.x, xyz.y, xyz.z
    * @param node source with x,y,z properties
    */
-   public setXYZ(xyz: XYAndZ) {
+  public setXYZ(xyz: XYAndZ) {
     this.x = xyz.x;
     this.y = xyz.y;
     this.z = xyz.z;
@@ -770,7 +835,7 @@ export class HalfEdge {
   /**
    * @return whether the face is convex.
    */
-   // eslint-disable-next-line @itwin/prefer-get
+  // eslint-disable-next-line @itwin/prefer-get
   public isFaceConvex(): boolean {
     let node: HalfEdge = this;
     do {
@@ -852,29 +917,29 @@ export class HalfEdge {
     } while (node !== this);
     return nodes;
   }
-    /**
-     * search around a vertex for nodes that have a specified mask setting.
-     * @param vertexSeed first node to search
-     * @param mask target mask
-     * @param value target value for mask on half edges.
-     * @param collectedNodes optional array to be cleared and receive masked nodes
-     */
-     public collectMaskedEdgesAroundVertex(
-      mask: HalfEdgeMask,
-      value: boolean = true,
-      result?: HalfEdge[]): HalfEdge[]{
-      if (result === undefined)
-          result = [];
-      else
-          result.length = 0;
-      let node: HalfEdge = this;
-      do {
-         if (node.isMaskSet (mask) === value)
-            result.push (node);
-          node = node.vertexSuccessor;
-         } while (node !== this);
-      return result;
-      }
+  /**
+   * search around a vertex for nodes that have a specified mask setting.
+   * @param vertexSeed first node to search
+   * @param mask target mask
+   * @param value target value for mask on half edges.
+   * @param collectedNodes optional array to be cleared and receive masked nodes
+   */
+  public collectMaskedEdgesAroundVertex(
+    mask: HalfEdgeMask,
+    value: boolean = true,
+    result?: HalfEdge[]): HalfEdge[] {
+    if (result === undefined)
+      result = [];
+    else
+      result.length = 0;
+    let node: HalfEdge = this;
+    do {
+      if (node.isMaskSet(mask) === value)
+        result.push(node);
+      node = node.vertexSuccessor;
+    } while (node !== this);
+    return result;
+  }
 
   /**
    *
@@ -1088,8 +1153,7 @@ export class HalfEdge {
    * * If the edge is horizontal with (approximate) identical y, return the node.
    * * If the edge is horizontal with different y, return undefined.
    * * If the edge is not horizontal, return the fractional position (possibly outside 0..1) of the intersection.
-   * @param nodeA Base node of edge
-   * @param result optional preallocated result
+   * @param node0 Base node of edge
    */
   public static horizontalScanFraction(node0: HalfEdge, y: number): number | undefined | HalfEdge {
     const node1 = node0.faceSuccessor;
@@ -1105,8 +1169,7 @@ export class HalfEdge {
    * * Compute fractional coordinates of the intersection of a horizontal line with an edge.
    * * If the edge is horizontal return undefined (no test for horizontal at y!!!)
    * * If the edge is not horizontal and y is between its end y's, return the fraction
-   * @param nodeA Base node of edge
-   * @param result optional preallocated result
+   * @param node0 Base node of edge
    */
   public static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined {
     const node1 = node0.faceSuccessor;
@@ -1120,7 +1183,33 @@ export class HalfEdge {
       return fraction;
     return undefined;
   }
+  /**
+   * Copy various data from source to this.
+   * @param source other half edge.
+   * @param XYZ copy simple coordinates
+   * @param copyVertexData true to copy data belonging to the vertex. (i.e. the "i" member)
+   * @param copyVertexData true to copy data belonging to the edge. (i.e. call transferEdgeData)
+   * @param copyFaceData true to copy faceTag
+   */
+  public copyDataFrom(source: HalfEdge, copyXYZ: boolean, copyVertexData: boolean, copyEdgeData: boolean, copyFaceData: boolean) {
+    if (copyXYZ) {
+      this.x = source.x;
+      this.y = source.y;
+      this.z = source.z;
+    }
+    if (copyVertexData) {
+      this.i = source.i;
+    }
+    if (copyEdgeData) {
+      HalfEdge.transferEdgeProperties(source, this);
+      this.edgeTag = source.edgeTag;
+    }
+    if (copyFaceData) {
+      this.faceTag = source.faceTag;
+    }
+  }
 }
+
 /**
  * A HalfEdgeGraph has:
  * * An array of (pointers to ) HalfEdge objects.
@@ -1178,7 +1267,7 @@ export class HalfEdgeGraph {
    * * ids are installed in the two half edges.
    * @returns Return pointer to the first half edge created.  (This has idA as its id.)
    */
-   public createEdgeIdId(iA: number = 0, iB: number = 0): HalfEdge {
+  public createEdgeIdId(iA: number = 0, iB: number = 0): HalfEdge {
     const a = HalfEdge.createHalfEdgePairWithCoordinates(0.0, 0.0, 0.0, iA, 0.0, 0.0, 0.0, iB, this.allHalfEdges);
     return a;
   }
@@ -1237,6 +1326,21 @@ export class HalfEdgeGraph {
   public splitEdge(base: undefined | HalfEdge,
     xA: number = 0, yA: number = 0, zA: number = 0, iA: number = 0): HalfEdge {
     const he = HalfEdge.splitEdge(base, xA, yA, zA, iA, this.allHalfEdges);
+    return he;
+  }
+
+  /**
+   * * Create a sliver face "within" an edge.
+   * * this creates two half edges.
+   * * The existing edges both stay in their same face loops and retain coordinates and i value.
+   * * Each existing edge's mate is a new edge (rather than original mate)
+   * * Coordinates are copied to the new edges at respective vertices.
+   * * New faceTag and edgeTag undefined.
+   * * i members are copied around their respective vertices.
+   * @returns Returns the reference to the half edge created.
+   */
+  public splitEdgeCreateSliverFace(base: HalfEdge): HalfEdge {
+    const he = HalfEdge.splitEdgeCreateSliverFace(base, this.allHalfEdges);
     return he;
   }
 
@@ -1383,26 +1487,26 @@ export class HalfEdgeGraph {
         break;
     }
   }
-/**
-   * * Visit each edge of the graph once.
-   * * Call the announceEdge function.
-   * * the edge mate will NOT appear in an announceEdge call.
-   * * continue search if announceEdge(graph, node) returns true
-   * * terminate search if announceEdge (graph, node) returns false
-   * @param  announceEdge function to apply at one node of each edge.
-   */
- public announceEdges(announceEdge: GraphNodeFunction) {
-  this.clearMask(HalfEdgeMask.VISITED);
-  for (const node of this.allHalfEdges) {
-    if (node.getMask(HalfEdgeMask.VISITED))
-      continue;
-    const mate = node.edgeMate;
-    node.setMask (HalfEdgeMask.VISITED);
-    mate.setMask (HalfEdgeMask.VISITED);
-    if (!announceEdge(this, node))
-      break;
+  /**
+     * * Visit each edge of the graph once.
+     * * Call the announceEdge function.
+     * * the edge mate will NOT appear in an announceEdge call.
+     * * continue search if announceEdge(graph, node) returns true
+     * * terminate search if announceEdge (graph, node) returns false
+     * @param  announceEdge function to apply at one node of each edge.
+     */
+  public announceEdges(announceEdge: GraphNodeFunction) {
+    this.clearMask(HalfEdgeMask.VISITED);
+    for (const node of this.allHalfEdges) {
+      if (node.getMask(HalfEdgeMask.VISITED))
+        continue;
+      const mate = node.edgeMate;
+      node.setMask(HalfEdgeMask.VISITED);
+      mate.setMask(HalfEdgeMask.VISITED);
+      if (!announceEdge(this, node))
+        break;
+    }
   }
-}
 
   /**
    * * Visit each vertex loop of the graph once.

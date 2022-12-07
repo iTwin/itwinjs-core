@@ -69,12 +69,18 @@ export interface HoleFillOptions {
   public smoothSingleDihedralAngle: Angle;
   /** max accumulation of dihedral angles to be considered smooth */
   public smoothAccumulatedDihedralAngle: Angle;
+  /** When crossing an edge, this turn angle (typically 90 degrees) triggers a chamfer */
+  public chamferTurnAngle: Angle;
+  // selector for beta method:
+  public method?: number;
   /** Constructor -- CAPTURE parameters ... */
   private constructor(
     smoothSingleDihedralAngle: Angle = Angle.createDegrees (20),
-    smoothAccumulatedDihedralAngle: Angle = Angle.createDegrees (60)){
+    smoothAccumulatedDihedralAngle: Angle = Angle.createDegrees (60),
+    chamferTurnAngle: Angle = Angle.createDegrees (90)){
     this.smoothSingleDihedralAngle = smoothSingleDihedralAngle.clone ();
     this.smoothAccumulatedDihedralAngle = smoothAccumulatedDihedralAngle.clone ();
+    this.chamferTurnAngle = chamferTurnAngle;
     }
   /** construct and return an OffsetMeshOptions with given parameters.
    * * Angles are forced to minimum values.
@@ -82,15 +88,19 @@ export interface HoleFillOptions {
    */
   public static create(
     smoothSingleDihedralAngle: Angle = Angle.createDegrees (20),
-    smoothAccumulatedDihedralAngle: Angle = Angle.createDegrees (60)){
+    smoothAccumulatedDihedralAngle: Angle = Angle.createDegrees (60),
+    chamferTurnAngle: Angle = Angle.createDegrees (90)){
 
     const mySmoothSingleDihedralAngle = smoothSingleDihedralAngle.clone ();
     const mySmoothAccumulatedDihedralAngle = smoothAccumulatedDihedralAngle.clone ();
+    const myChamferTurnAngle = chamferTurnAngle.clone ();
     if (mySmoothSingleDihedralAngle.degrees < 1)
       mySmoothAccumulatedDihedralAngle.setDegrees(1.0);
     if (mySmoothAccumulatedDihedralAngle.degrees < 1.0)
       mySmoothAccumulatedDihedralAngle.setDegrees(1.0);
-    return new OffsetMeshOptions (mySmoothSingleDihedralAngle, mySmoothAccumulatedDihedralAngle);
+    if (mySmoothAccumulatedDihedralAngle.degrees < 15.0)
+      mySmoothAccumulatedDihedralAngle.setDegrees(15.0);
+    return new OffsetMeshOptions (mySmoothSingleDihedralAngle, mySmoothAccumulatedDihedralAngle, myChamferTurnAngle);
     }
   }
 
@@ -1338,7 +1348,10 @@ export class PolyfaceQuery {
     offsetOptions: OffsetMeshOptions = OffsetMeshOptions.create()): Polyface {
     const strokeOptions = StrokeOptions.createForFacets();
     const offsetBuilder = PolyfaceBuilder.create(strokeOptions);
-    OffsetMeshContext.buildOffsetMesh (source, offsetBuilder, signedOffsetDistance, offsetOptions);
+    if (offsetOptions.method === undefined)
+      OffsetMeshContext.buildOffsetMesh (source, offsetBuilder, signedOffsetDistance, offsetOptions);
+    else if (offsetOptions.method === 1)
+    OffsetMeshContext.buildOffsetMeshWithEdgeChamfers (source, offsetBuilder, signedOffsetDistance, offsetOptions);
     return offsetBuilder.claimPolyface ();
   }
 

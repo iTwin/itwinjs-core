@@ -22,7 +22,8 @@ import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { GraphChecker } from "../topology/Graph.test";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { OffsetMeshOptions, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 
 function cleanupZero(a: number, tol: number = 1.0e-12): number {
   return Math.abs (a) > tol ? a : 0.0;
@@ -54,7 +55,7 @@ function offsetDebugFunction(message: string, graph: HalfEdgeGraph,
 // import { GraphChecker } from "../topology/Graph.test";
 describe("OffsetMeshContext", () => {
 
-  it("OffsetPyramids", () => {
+  it.only("OffsetPyramids", () => {
     const ck = new Checker();
 
     const allGeometry: GeometryQuery[] = [];
@@ -65,7 +66,7 @@ describe("OffsetMeshContext", () => {
     const signs: number[]= [1.0, -1.0];
     OffsetMeshContext.graphDebugFunction = offsetDebugFunction;
     for (const xScale of [2.0]){
-      for (const height of [0.05, 3.0, 0.02, 2.0]){
+      for (const height of [2.0, 0.05, 3.0, 0.02, 2.0]){
         for (const numEdge of [3,4,6]){
           const builder = PolyfaceBuilder.create(options);
           const strokes = LineString3d.create();
@@ -140,7 +141,37 @@ it("OffsetsFanToLine", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
-it("OffsetDTM", () => {
+it.only("OffsetsWithConeApron", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const options = StrokeOptions.createForFacets();
+  let x0 = 0.0;
+  const xA = 3.0; // point A (xA,0,0) is on x axis to right.  This is the tip of the strong chamfer
+  const yB = 1.0; // point B (0, yB, 0) is on Y axis above, with image at (0,-yB,0).  These are start and end of ellipse apron
+  const xC = -3.0; // point C (xC, 0, zC) is an extreme point of the ellipse apron.
+  const zC = 2.0;
+  for (const zCone of [4.0, 10.0]){  // height of cone point.
+    for (const numApronEdges of [2, 4, 8]){
+      const builder = PolyfaceBuilder.create(options);
+      const arc = Arc3d.createXYZXYZXYZ (0,0,0,   0, yB, 0,   xC, 0, zC, AngleSweep.createStartEndDegrees (0, 180));
+      const strokes = LineString3d.create();
+      const conePoint = Point3d.create(0, 0, zCone);
+      strokes.addPointXYZ (xA, 0, 0);
+      for (let i = 0; i <= numApronEdges; i++){
+          strokes.addPoint (arc.fractionToPoint (i / numApronEdges));
+          }
+      strokes.addClosurePoint ();
+      builder.addTriangleFan(conePoint, strokes, false);
+      const polyface = builder.claimPolyface();
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry, strokes, x0, -8.0);
+      x0 = testOffsets (ck, allGeometry, polyface, [0.5], [1.0], x0);
+    }
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetsWithConeApron");
+  expect(ck.getNumErrors()).equals(0);
+});
+
+it.only("OffsetDTM", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   let x0 = 0.0;
@@ -172,7 +203,7 @@ it("OffsetDTM", () => {
   GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetDTM");
   expect(ck.getNumErrors()).equals(0);
 });
-it("OffsetSampler", () => {
+it.only("OffsetSampler", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   let x0 = 0.0;
@@ -198,15 +229,18 @@ function testOffsets(_ck: Checker, allGeometry: GeometryQuery[], polyface: Index
   let y0 = 0;
   let x0 = xStart;
   const range = polyface.data.point.getRange ();
-  const xStep = 3.0 * range.xLength();
-  const yStepA = range.yLength ();
+  const xStep = Math.max (20.0, 3.0 * range.xLength());
+  const yStepA = Math.max (range.yLength (), 10.0);
   const yStepB = 3.0 * yStepA;
+  const yStepC = yStepA;
+  const offsetOptions = OffsetMeshOptions.create();
+  offsetOptions.method = 1;
 for (const offsetSign of signs){
     x0 = xStart;
     for (const offset of offsets){
       GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, x0, y0);
-      const offsetMesh = PolyfaceQuery.cloneOffset (polyface, offsetSign * offset);
-      GeometryCoreTestIO.captureCloneGeometry (allGeometry, offsetMesh, x0, y0 + yStepA);
+      const offsetMesh = PolyfaceQuery.cloneOffset (polyface, offsetSign * offset, offsetOptions);
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry, offsetMesh, x0, y0 + yStepC);
       x0 += xStep;
       }
     y0 += yStepB;
