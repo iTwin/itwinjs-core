@@ -2,6 +2,18 @@
   "name": "@itwin/rpcinterface-full-stack-tests",
   "entries": [
     {
+      "version": "3.5.0",
+      "tag": "@itwin/rpcinterface-full-stack-tests_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Increase version of imodels-clients packages to 2.2.0 ."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.7",
       "tag": "@itwin/rpcinterface-full-stack-tests_v3.4.7",
       "date": "Wed, 30 Nov 2022 14:28:19 GMT",

@@ -98,17 +98,12 @@ exports[`WidgetPanelProvider should render captured 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -215,17 +210,12 @@ exports[`WidgetPanelProvider should render collapsed 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -332,17 +322,12 @@ exports[`WidgetPanelProvider should render horizontal 1`] = `
       class="nz-widgetPanels-grip nz-top nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -505,17 +490,12 @@ exports[`WidgetPanelProvider should render multiple widgets 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -622,17 +602,12 @@ exports[`WidgetPanelProvider should render spanned 1`] = `
       class="nz-widgetPanels-grip nz-top nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -739,17 +714,12 @@ exports[`WidgetPanelProvider should render vertical 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -856,17 +826,12 @@ exports[`WidgetPanelProvider should render with span bottom 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -973,17 +938,12 @@ exports[`WidgetPanelProvider should render with top spanned 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
