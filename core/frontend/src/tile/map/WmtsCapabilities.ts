@@ -8,7 +8,6 @@
 
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import { request, RequestBasicCredentials, RequestOptions } from "../../request/Request";
-import { xml2json } from "xml-js";
 import { MapCartoRectangle, WmsUtilities } from "../internal"; // WmsUtilities needed for getBaseUrl
 
 /**
@@ -16,7 +15,7 @@ import { MapCartoRectangle, WmsUtilities } from "../internal"; // WmsUtilities n
  * @param url server URL to address the request
  * @internal
  */
-async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<any> {
+async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<string|undefined> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "text",
@@ -27,6 +26,17 @@ async function getXml(url: string, credentials?: RequestBasicCredentials): Promi
   const data = await request(url, options);
   return data.text;
 }
+
+const getElementTextContent = (elem: Element, qualifiedName: string, defaultText?: string) => {
+  let text: string|undefined, found = false;
+  const tmpElem = elem.getElementsByTagName(qualifiedName);
+  if (tmpElem.length > 0) {
+    text = tmpElem[0].textContent ?? defaultText;
+    found = true;
+  }
+
+  return {found, text};
+};
 
 /** Encapsulation of the capabilities for an WMTS server
  * @internal
@@ -97,29 +107,42 @@ export namespace WmtsCapability {
     public readonly title?: string;
     public readonly keywords?: string[];
 
-    constructor(json: any) {
-      this.abstract = json[OwsConstants.ABSTRACT_XMLTAG]?._text;
-      this.serviceType = json[OwsConstants.SERVICETYPE_XMLTAG]?._text;
-      this.serviceTypeVersion = json[OwsConstants.SERVICETYPEVERSION_XMLTAG]?._text;
-      this.title = json[OwsConstants.TITLE_XMLTAG]?._text;
+    constructor(elem: Element) {
+      const abstract = getElementTextContent(elem, OwsConstants.ABSTRACT_XMLTAG);
+      if (abstract.found)
+        this.abstract = abstract.text;
 
-      const keywords = json[OwsConstants.KEYWORDS_XMLTAG]?.[OwsConstants.KEYWORD_XMLTAG];
-      if (keywords !== undefined) {
+      const serviceType = getElementTextContent(elem, OwsConstants.SERVICETYPE_XMLTAG, "");
+      if (serviceType.found)
+        this.serviceType = serviceType.text;
+
+      const serviceTypeVersion = getElementTextContent(elem, OwsConstants.SERVICETYPEVERSION_XMLTAG, "");
+      if (serviceTypeVersion.found)
+        this.serviceTypeVersion = serviceTypeVersion.text;
+
+      const title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG);
+      if (title.found)
+        this.title = title.text;
+
+      const keywords = elem.getElementsByTagName(OwsConstants.KEYWORDS_XMLTAG);
+      if (keywords.length > 0) {
+        const keyword =  keywords[0].getElementsByTagName(OwsConstants.KEYWORD_XMLTAG);
         this.keywords = [];
-
-        if (Array.isArray(keywords)) {
-          for (const keyword of keywords) {
-            if (keyword !== undefined) {
-              this.keywords.push(keyword._text);
-            }
-          }
-        } else {
-          this.keywords.push(keywords._text);
+        for (const keyworkElem of keyword) {
+          const keyWordText = keyworkElem.textContent;
+          if (keyWordText)
+            this.keywords.push(keyWordText);
         }
       }
 
-      this.accessConstraints = json[OwsConstants.ACCESSCONSTRAINTS_XMLTAG]?._text;
-      this.fees = json[OwsConstants.FEES_XMLTAG]?._text;
+      const accessConstraints = getElementTextContent(elem, OwsConstants.ACCESSCONSTRAINTS_XMLTAG, "");
+      if (accessConstraints.found) {
+        this.accessConstraints = accessConstraints.text;
+      }
+
+      const fees = getElementTextContent(elem, OwsConstants.FEES_XMLTAG);
+      if (fees.found)
+        this.fees = fees.text;
     }
   }
 
@@ -133,24 +156,25 @@ export namespace WmtsCapability {
     private _getTile?: Operation;
     public get getTile(): Operation | undefined { return this._getTile; }
 
-    private readOperation(op: any) {
-      if (op?._attributes?.name === XmlConstants.GETCAPABILITIES)
+    private readOperation(op: Element) {
+      const nameAttr = op.attributes.getNamedItem("name");
+      if (!nameAttr)
+        return;
+
+      if (nameAttr.textContent === XmlConstants.GETCAPABILITIES) {
         this._getCapabilities = new Operation(op);
-      else if (op?._attributes?.name === XmlConstants.GETTILE)
+      } else if (nameAttr.textContent === XmlConstants.GETTILE) {
         this._getTile = new Operation(op);
-      else if (op?._attributes?.name === XmlConstants.GETFEATUREINFO)
+      } else if (nameAttr.textContent === XmlConstants.GETFEATUREINFO) {
         this._getFeatureInfo = new Operation(op);
+      }
     }
 
-    constructor(json: any) {
-      const operation = (json ? json[OwsConstants.OPERATION_XMLTAG] : undefined);
-      if (operation) {
-        if (Array.isArray(operation)) {
-          operation.forEach((op: any) => {
-            this.readOperation(op);
-          });
-        } else {
-          this.readOperation(operation);
+    constructor(elem: Element) {
+      const operation = elem.getElementsByTagName(OwsConstants.OPERATION_XMLTAG);
+      if (operation.length > 0) {
+        for (const op of operation) {
+          this.readOperation(op);
         }
       }
     }
@@ -165,11 +189,24 @@ export namespace WmtsCapability {
     // We make sure the constraint name is 'encoding' related.
     public readonly encoding?: string;
 
-    constructor(json: any) {
-      this.url = json?._attributes[XmlConstants.XLINK_HREF];
-      this.constraintName = (json ? json[OwsConstants.CONSTRAINT_XMLTAG]?._attributes?.name : undefined);
-      if (this.constraintName?.endsWith(XmlConstants.CONSTRAINT_NAME_FILTER))
-        this.encoding = json[OwsConstants.CONSTRAINT_XMLTAG]?.[OwsConstants.ALLOWEDVALUES_XMLTAG]?.[OwsConstants.VALUE_XMLTAG]?._text;
+    constructor(elem: Element) {
+      const url = elem.getAttribute(WmtsCapability.XmlConstants.XLINK_HREF);
+      if (url)
+        this.url = url ?? "";
+
+      const constraint = elem.getElementsByTagName(WmtsCapability.OwsConstants.CONSTRAINT_XMLTAG);
+      if (constraint.length > 0) {
+        this.constraintName = constraint[0].getAttribute("name") ?? "";
+        if (this.constraintName?.endsWith(WmtsCapability.XmlConstants.CONSTRAINT_NAME_FILTER)) {
+          const allowedValues = constraint[0].getElementsByTagName(WmtsCapability.OwsConstants.ALLOWEDVALUES_XMLTAG);
+          if (allowedValues.length > 0) {
+            const value = getElementTextContent(allowedValues[0], WmtsCapability.OwsConstants.VALUE_XMLTAG);
+            if (value.found) {
+              this.encoding = value.text;
+            }
+          }
+        }
+      }
     }
   }
 
@@ -180,89 +217,78 @@ export namespace WmtsCapability {
     private _postDcpHttp?: HttpDcp[];
     public get postDcpHttp(): HttpDcp[] | undefined { return this._postDcpHttp; }
 
-    constructor(json: any) {
-      this.name = json?._attributes?.name;
+    constructor(elem: Element) {
+      const name = elem.getAttribute("name");
+      if (name)
+        this.name = name;
 
-      const dcpHttp = (json ? json[OwsConstants.DCP_XMLTAG]?.[OwsConstants.HTTP_XMLTAG] : undefined);
-      if (!dcpHttp)
+      const dcp = elem.getElementsByTagName(WmtsCapability.OwsConstants.DCP_XMLTAG);
+      if (!dcp || dcp.length === 0)
         return;
 
-      const get = dcpHttp[OwsConstants.GET_XMLTAG];
-      if (get) {
+      const dcpHttp = dcp[0].getElementsByTagName(WmtsCapability.OwsConstants.HTTP_XMLTAG);
+      if (!dcpHttp || dcpHttp.length === 0)
+        return;
+
+      const get = dcpHttp[0].getElementsByTagName(WmtsCapability.OwsConstants.GET_XMLTAG);
+      if (get.length > 0) {
         this._getDcpHttp = [];
 
-        if (Array.isArray(get)) {
-          get.forEach((getItem: any) => {
-            this._getDcpHttp?.push(new WmtsCapability.HttpDcp(getItem));
-          });
-        } else {
-          this._getDcpHttp?.push(new WmtsCapability.HttpDcp(get));
+        for (const getItem of get) {
+          this._getDcpHttp?.push(new HttpDcp(getItem));
         }
       }
 
-      const post = dcpHttp[OwsConstants.POST_XMLTAG];
-      if (post) {
+      const post = dcpHttp[0].getElementsByTagName(WmtsCapability.OwsConstants.POST_XMLTAG);
+      if (post.length > 0) {
         this._postDcpHttp = [];
 
-        if (Array.isArray(post)) {
-          post.forEach((postItem: any) => {
-            this._postDcpHttp?.push(new WmtsCapability.HttpDcp(postItem));
-          });
-        } else {
-          this._postDcpHttp?.push(new WmtsCapability.HttpDcp(post));
+        for (const postItem of post) {
+          this._postDcpHttp?.push(new HttpDcp(postItem));
         }
       }
     }
   }
 
   export class Contents {
-    public readonly layers: WmtsCapability.Layer[] = [];
-    public readonly tileMatrixSets: WmtsCapability.TileMatrixSet[] = [];
+    public readonly layers: Layer[] = [];
+    public readonly tileMatrixSets: TileMatrixSet[] = [];
 
-    constructor(private _json: any) {
-
+    constructor(elem: Element) {
       // Layers
-      const jsonLayer = _json?.Layer;
-      if (jsonLayer) {
-        if (Array.isArray(jsonLayer)) {
-          jsonLayer.forEach((layer: any) => {
-            this.layers.push(new WmtsCapability.Layer(layer));
-          });
-        } else {
-          this.layers.push(new WmtsCapability.Layer(jsonLayer));
-        }
+      const layer = elem.getElementsByTagName("Layer");
+      if (layer) {
+        for (const layerElem of layer)
+          this.layers.push(new Layer(layerElem));
       }
 
       // TileMatrixSet
-      const jsonTileMatrixSet = _json?.TileMatrixSet;
-      if (jsonTileMatrixSet) {
-        if (Array.isArray(jsonTileMatrixSet)) {
-          jsonTileMatrixSet.forEach((matrixSet: any) => {
-            this.tileMatrixSets.push(new WmtsCapability.TileMatrixSet(matrixSet));
-          });
-        } else {
-          this.tileMatrixSets.push(new WmtsCapability.TileMatrixSet(jsonTileMatrixSet));
-        }
+      const tms = elem.querySelectorAll("Contents > TileMatrixSet");
+      if (tms) {
+        for (const tmsElem of tms)
+          this.tileMatrixSets.push(new TileMatrixSet(tmsElem));
       }
+
     }
 
-    public getGoogleMapsCompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[] {
-      const googleMapsTms: WmtsCapability.TileMatrixSet[] = [];
+    public getGoogleMapsCompatibleTileMatrixSet(): TileMatrixSet[] {
+      const googleMapsTms: TileMatrixSet[] = [];
       this.tileMatrixSets.forEach((tms) => {
-        if (tms.wellKnownScaleSet?.toLowerCase().includes(Constants.GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME))
+        if (tms.wellKnownScaleSet?.toLowerCase().includes(WmtsCapability.Constants.GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME))
           googleMapsTms.push(tms);
 
         // In case wellKnownScaleSet was not been set properly, infer from scaleDenominator
         // Note: some servers are quite inaccurate in their scale values, hence I used a delta value of 1.
-        else if (tms.tileMatrix.length > 0
-          && Math.abs(tms.tileMatrix[0].scaleDenominator - Constants.GOOGLEMAPS_LEVEL0_SCALE_DENOM) < 1
-          && (tms.supportedCrs.includes("3857") || tms.supportedCrs.includes("900913")))
+        else if (   tms.tileMatrix.length > 0
+                && Math.abs(tms.tileMatrix[0].scaleDenominator - WmtsCapability.Constants.GOOGLEMAPS_LEVEL0_SCALE_DENOM) < 1
+                && (tms.supportedCrs.includes("3857") || tms.supportedCrs.includes("900913"))
+        )
           googleMapsTms.push(tms);
       });
       return googleMapsTms;
     }
 
-    public getEpsg4326CompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[] {
+    public getEpsg4326CompatibleTileMatrixSet(): TileMatrixSet[] {
       return this.tileMatrixSets.filter((tms) => tms.supportedCrs.includes("4326"));
     }
   }
@@ -273,27 +299,39 @@ export namespace WmtsCapability {
     public readonly identifier?: string;
     // TODO: LegendURL
 
-    constructor(private _json: any) {
-      if (!_json)
+    constructor(elem: Element) {
+      if (!elem)
         return;
 
-      if (_json._attributes?.isDefault)
-        this.isDefault = _json._attributes.isDefault.toLowerCase() === "true";
+      const isDefault = elem.getAttribute("isDefault");
+      if (isDefault)
+        this.isDefault = isDefault.toLowerCase() === "true";
 
-      this.title = _json[OwsConstants.TITLE_XMLTAG]?._text;
-      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG]?._text;
+      const title = getElementTextContent(elem, WmtsCapability.OwsConstants.TITLE_XMLTAG);
+      if (title.found)
+        this.title = title.text;
+
+      const identifier = getElementTextContent(elem, WmtsCapability.OwsConstants.IDENTIFIER_XMLTAG);
+      if (identifier.found)
+        this.identifier = identifier.text;
     }
   }
+
   export class BoundingBox {
     public readonly crs?: string;
     public readonly range?: Range2d;
 
-    constructor(_json: any) {
-      this.crs = _json._attributes?.crs;
-      const lowerCorner = _json[OwsConstants.LOWERCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
-      const upperCorner = _json[OwsConstants.UPPERCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
-      if (lowerCorner.length === 2 && upperCorner.length === 2)
-        this.range = Range2d.createXYXY(lowerCorner[0], lowerCorner[1], upperCorner[0], upperCorner[1]);
+    constructor(elem: Element) {
+      this.crs = elem.getAttribute("crs") ?? undefined;
+
+      const lowerCorner = getElementTextContent(elem, WmtsCapability.OwsConstants.LOWERCORNER_XMLTAG);
+      const upperCorner = getElementTextContent(elem, WmtsCapability.OwsConstants.UPPERCORNER_XMLTAG);
+      if (lowerCorner.found && upperCorner.found) {
+        const lowerCornerArray = lowerCorner.text?.split(" ").map((x: string) => +x);
+        const upperCornerArray = upperCorner.text?.split(" ").map((x: string) => +x);
+        if (lowerCornerArray && lowerCornerArray.length === 2 && upperCornerArray && upperCornerArray.length === 2)
+          this.range = Range2d.createXYXY(lowerCornerArray[0], lowerCornerArray[1], upperCornerArray[0], upperCornerArray[1]);
+      }
     }
   }
 
@@ -301,10 +339,18 @@ export namespace WmtsCapability {
     public limits?: Range2d;
     public tileMatrix?: string;
 
-    constructor(_json: any) {
-      this.tileMatrix = _json.TileMatrix;
-      if (_json.MinTileRow !== undefined && _json.MaxTileRow !== undefined && _json.MinTileCol !== undefined && _json.MaxTileCol)
-        this.limits = Range2d.createXYXY(Number(_json.MinTileCol._text), Number(_json.MinTileRow._text), Number(_json.MaxTileCol._text), Number(_json.MaxTileRow._text));
+    constructor(elem: Element) {
+      const tileMatrix = getElementTextContent(elem, "TileMatrix");
+      if (tileMatrix.found)
+        this.tileMatrix = tileMatrix.text;
+
+      const minTileRow = getElementTextContent(elem, "MinTileRow");
+      const maxTileRow = getElementTextContent(elem, "MaxTileRow");
+      const minTileCol = getElementTextContent(elem, "MinTileCol");
+      const maxTileCol = getElementTextContent(elem, "MaxTileCol");
+
+      if (minTileRow.text !== undefined && maxTileRow.text !== undefined && minTileCol.text !== undefined && maxTileCol.text )
+        this.limits = Range2d.createXYXY(Number(minTileCol.text), Number(minTileRow.text), Number(maxTileCol.text), Number(maxTileRow.text));
     }
   }
 
@@ -312,11 +358,17 @@ export namespace WmtsCapability {
     public readonly tileMatrixSet: string;
     public readonly tileMatrixSetLimits = new Array<TileMatrixSetLimits>();
 
-    constructor(_json: any) {
-      this.tileMatrixSet = (_json?.TileMatrixSet?._text ? _json.TileMatrixSet._text : "");
-      const tileMatrixLimits  = _json?.TileMatrixSetLimits?.TileMatrixLimits;
-      if (Array.isArray(tileMatrixLimits))
-        tileMatrixLimits.forEach((tml: any) => this.tileMatrixSetLimits.push(new TileMatrixSetLimits(tml)));
+    constructor(elem: Element) {
+      const tileMatrixSet = getElementTextContent(elem, "TileMatrixSet", "");
+      this.tileMatrixSet = tileMatrixSet.text ? tileMatrixSet.text : "";
+
+      const tileMatrixLimitsRoot = elem.getElementsByTagName("TileMatrixSetLimits");
+      if (tileMatrixLimitsRoot.length > 0) {
+        const tileMatrixLimits = tileMatrixLimitsRoot[0].getElementsByTagName("TileMatrixSetLimits");
+        for (const tmsl of tileMatrixLimits) {
+          this.tileMatrixSetLimits.push(new TileMatrixSetLimits(tmsl));
+        }
+      }
     }
   }
 
@@ -328,31 +380,32 @@ export namespace WmtsCapability {
     public readonly wellKnownScaleSet: string;
     public readonly tileMatrix: TileMatrix[] = [];
 
-    constructor(_json: any) {
-      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG]?._text;
-      if (!this.identifier)
+    constructor(elem: Element) {
+      const identifier = getElementTextContent(elem, WmtsCapability.OwsConstants.IDENTIFIER_XMLTAG, "");
+      if (identifier.found)
+        this.identifier = identifier.text!;
+      else
         throw new Error("No Identifier found.");
 
-      this.title = _json[OwsConstants.TITLE_XMLTAG]?._text;
-      this.abstract = _json[OwsConstants.ABSTRACT_XMLTAG]?._text;
-      this.supportedCrs = _json[OwsConstants.SUPPORTEDCRS_XMLTAG]?._text;
-      if (!this.supportedCrs)
+      this.title = getElementTextContent(elem, WmtsCapability.OwsConstants.TITLE_XMLTAG).text;
+      this.abstract =  getElementTextContent(elem, WmtsCapability.OwsConstants.ABSTRACT_XMLTAG).text;
+      const supportedCrs = getElementTextContent(elem, WmtsCapability.OwsConstants.SUPPORTEDCRS_XMLTAG, "");
+
+      if (supportedCrs.found)
+        this.supportedCrs = supportedCrs.text!;
+      else
         throw new Error("No supported CRS found.");
 
-      this.wellKnownScaleSet = _json[XmlConstants.WELLKNOWNSCALESET_XMLTAG]?._text;
+      this.wellKnownScaleSet = getElementTextContent(elem, WmtsCapability.XmlConstants.WELLKNOWNSCALESET_XMLTAG).text ?? "";
 
       // TileMatrix:
       // TileMatrix is mandatory on TileMatrixSet, if it doesn't exists, something is OFF with the capability.
-      const tileMatrix = _json[XmlConstants.TILEMATRIX_XMLTAG];
-      if (!tileMatrix)
+      const tileMatrix = elem.getElementsByTagName( WmtsCapability.XmlConstants.TILEMATRIX_XMLTAG);
+      if (tileMatrix.length === 0)
         throw new Error("No matrix set link found for WMTS layer");
 
-      if (Array.isArray(tileMatrix)) {
-        tileMatrix.forEach((tm: any) => {
-          this.tileMatrix.push(new TileMatrix(tm));
-        });
-      } else {
-        this.tileMatrix.push(new TileMatrix(tileMatrix));
+      for (const tm of tileMatrix) {
+        this.tileMatrix.push(new TileMatrix(tm));
       }
     }
   }
@@ -368,52 +421,51 @@ export namespace WmtsCapability {
     public readonly matrixWidth: number;
     public readonly matrixHeight: number;
 
-    constructor(_json: any) {
-      if (!_json)
-        throw new Error("Invalid json data provided");
-
-      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG]?._text;
-      if (!this.identifier)
+    constructor(elem: Element) {
+      const identifier = getElementTextContent(elem, WmtsCapability.OwsConstants.IDENTIFIER_XMLTAG, "");
+      if (identifier.found)
+        this.identifier = identifier.text!;
+      else
         throw new Error("No Identifier found.");
 
-      this.title = _json[OwsConstants.TITLE_XMLTAG]?._text;
-      this.abstract = _json[OwsConstants.ABSTRACT_XMLTAG]?._text;
+      this.title = getElementTextContent(elem, WmtsCapability.OwsConstants.TITLE_XMLTAG).text;
+      this.abstract = getElementTextContent(elem, WmtsCapability.OwsConstants.ABSTRACT_XMLTAG).text;
 
       // Scale denominator
-      const scaleDenomStr = _json[XmlConstants.SCALEDENOMINATOR_XMLTAG]?._text;
-      if (!scaleDenomStr)
+      const scaleDenom = getElementTextContent(elem, WmtsCapability.XmlConstants.SCALEDENOMINATOR_XMLTAG, "");
+      if (!scaleDenom.found)
         throw new Error("No scale denominator found on TileMatrix.");
-      this.scaleDenominator = +scaleDenomStr;
+      this.scaleDenominator = +scaleDenom.text!;
 
       // Top left corner
-      const topLeftCorner = _json[XmlConstants.TOPLEFTCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
+      const topLeftCorner = getElementTextContent(elem, WmtsCapability.XmlConstants.TOPLEFTCORNER_XMLTAG, "").text?.split(" ").map((x: string) => +x);
       if (topLeftCorner?.length !== 2)
         throw new Error("No TopLeftCorner found on TileMatrix.");
       this.topLeftCorner = Point2d.create(topLeftCorner[0], topLeftCorner[1]);
 
       // Tile Width
-      const tileWidthStr = _json[XmlConstants.TILEWIDTH_XMLTAG]?._text;
-      if (!tileWidthStr)
+      const tileWidth = getElementTextContent(elem, XmlConstants.TILEWIDTH_XMLTAG, "");
+      if (!tileWidth.found)
         throw new Error("No tile width found on TileMatrix.");
-      this.tileWidth = +tileWidthStr;
+      this.tileWidth = +tileWidth.text!;
 
       // Tile Height
-      const tileHeightStr = _json[XmlConstants.TILEHEIGHT_XMLTAG]?._text;
-      if (!tileHeightStr)
-        throw new Error("No tile eight found on TileMatrix.");
-      this.tileHeight = +tileHeightStr;
+      const tileHeight = getElementTextContent(elem, XmlConstants.TILEHEIGHT_XMLTAG, "");
+      if (!tileHeight.found)
+        throw new Error("No tile height found on TileMatrix.");
+      this.tileHeight = +tileHeight.text!;
 
       // Matrix Width
-      const matrixWidthStr = _json[XmlConstants.MATRIXWIDTH_XMLTAG]?._text;
-      if (!matrixWidthStr)
+      const matrixWidth = getElementTextContent(elem, XmlConstants.MATRIXWIDTH_XMLTAG, "");
+      if (!matrixWidth.found)
         throw new Error("No tile width found on TileMatrix.");
-      this.matrixWidth = +matrixWidthStr;
+      this.matrixWidth = +matrixWidth.text!;
 
       // Matrix Height
-      const matrixHeightStr = _json[XmlConstants.MATRIXHEIGHT_XMLTAG]?._text;
-      if (!matrixHeightStr)
-        throw new Error("No tile eight found on TileMatrix.");
-      this.matrixHeight = +matrixHeightStr;
+      const matrixHeight = getElementTextContent(elem, XmlConstants.MATRIXHEIGHT_XMLTAG, "");
+      if (!matrixHeight.found)
+        throw new Error("No tile height found on TileMatrix.");
+      this.matrixHeight = +matrixHeight.text!;
     }
   }
 
@@ -427,22 +479,31 @@ export namespace WmtsCapability {
     public readonly styles: Style[] = [];
     public readonly tileMatrixSetLinks: TileMatrixSetLink[] = [];
 
-    constructor(_json: any) {
-      if (!_json)
-        throw new Error("Invalid json data provided");
+    constructor(elem: Element) {
 
-      this.identifier = _json[OwsConstants.IDENTIFIER_XMLTAG]?._text;
-      this.title = _json[OwsConstants.TITLE_XMLTAG]?._text;
-      this.format = _json.Format?._text;
+      const identifier = getElementTextContent(elem, WmtsCapability.OwsConstants.IDENTIFIER_XMLTAG, "");
+      if (identifier.found)
+        this.identifier = identifier.text!;
+      else
+        throw new Error("No Identifier found.");
+
+      this.title = getElementTextContent(elem, WmtsCapability.OwsConstants.TITLE_XMLTAG).text;
+      this.format = getElementTextContent(elem, "Format").text;
 
       // BoundingBox
-      this.boundingBox = (_json[OwsConstants.BOUNDINGBOX_XMLTAG] ? new BoundingBox(_json[OwsConstants.BOUNDINGBOX_XMLTAG]) : undefined);
+      const boundingBox = elem.getElementsByTagName(WmtsCapability.OwsConstants.BOUNDINGBOX_XMLTAG);
+      if (boundingBox.length > 0 )
+        this.boundingBox =  new BoundingBox(boundingBox[0]);
 
-      // WSG84 BoundingBox
-      const lowerCorner = _json[OwsConstants.WGS84BOUNDINGBOX_XMLTAG]?.[OwsConstants.LOWERCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
-      const upperCorner = _json[OwsConstants.WGS84BOUNDINGBOX_XMLTAG]?.[OwsConstants.UPPERCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
-      if (lowerCorner?.length === 2 && upperCorner?.length === 2)
-        this.wsg84BoundingBox = MapCartoRectangle.fromDegrees(lowerCorner[0], lowerCorner[1], upperCorner[0], upperCorner[1]);
+      let lowerCornerArray: number[]|undefined, upperCornerArray: number[]|undefined;
+      const bbox = elem.getElementsByTagName(WmtsCapability.OwsConstants.WGS84BOUNDINGBOX_XMLTAG);
+      if (bbox.length > 0) {
+        lowerCornerArray = getElementTextContent(bbox[0], WmtsCapability.OwsConstants.LOWERCORNER_XMLTAG).text?.split(" ").map((x: string) => +x);
+        upperCornerArray = getElementTextContent(bbox[0], WmtsCapability.OwsConstants.UPPERCORNER_XMLTAG).text?.split(" ").map((x: string) => +x);
+      }
+
+      if (lowerCornerArray?.length === 2 && upperCornerArray?.length === 2)
+        this.wsg84BoundingBox = MapCartoRectangle.fromDegrees(lowerCornerArray[0], lowerCornerArray[1], upperCornerArray[0], upperCornerArray[1]);
 
       // If we could not initialized WSG84 bounding box, attempt to initialized it from Bounding Box
       if (!this.wsg84BoundingBox && (this.boundingBox?.crs?.includes("EPSG:4326") || this.boundingBox?.crs?.includes("CRS:84"))) {
@@ -454,37 +515,27 @@ export namespace WmtsCapability {
       }
 
       // Style
-      if (Array.isArray(_json.Style)) {
-        _json.Style.forEach((style: any) => {
-          this.styles.push(new Style(style));
-        });
-      } else if (_json.Style) {
-        this.styles.push(new Style(_json.Style));
+      const style  = elem.getElementsByTagName("Style");
+      if (style.length > 0) {
+        for (const styleElem of style)
+          this.styles.push(new Style(styleElem));
       }
 
       // TileMatrixSetLink
       // TileMatrixSetLink is mandatory on Layer, if it doesn't exists, something is OFF with the capability.
-      const tileMatrixSetLink = _json[XmlConstants.TILEMATRIXSETLINK_XMLTAG];
+      const tileMatrixSetLink = elem.getElementsByTagName( WmtsCapability.XmlConstants.TILEMATRIXSETLINK_XMLTAG);
 
-      if (!tileMatrixSetLink)
+      if (tileMatrixSetLink.length === 0)
         throw new Error("No matrix set link found for WMTS layer");
 
-      if (Array.isArray(tileMatrixSetLink)) {
-        tileMatrixSetLink.forEach((tmsl: any) => {
-          this.tileMatrixSetLinks.push(new TileMatrixSetLink(tmsl));
-        });
-      } else {
-        this.tileMatrixSetLinks.push(new TileMatrixSetLink(tileMatrixSetLink));
-      }
+      for (const tmsl of tileMatrixSetLink)
+        this.tileMatrixSetLinks.push(new TileMatrixSetLink(tmsl));
     }
   }
 }
-
 /** @internal */
 export class WmtsCapabilities {
   private static _capabilitiesCache = new Map<string, WmtsCapabilities | undefined>();
-
-  public get json() { return this._json; }
 
   public readonly version?: string;
   public readonly serviceIdentification?: WmtsCapability.ServiceIdentification;
@@ -492,27 +543,34 @@ export class WmtsCapabilities {
 
   public readonly operationsMetadata?: WmtsCapability.OperationMetadata;
 
-  constructor(private _json: any) {
-    // Capabilities version
-    this.version = _json?.Capabilities?._attributes.version;
+  constructor(xmlDoc: Document) {
 
-    // Service Identification
-    if (_json?.Capabilities?.[WmtsCapability.OwsConstants.SERVICEIDENTIFICATION_XMLTAG])
-      this.serviceIdentification = new WmtsCapability.ServiceIdentification(_json?.Capabilities?.[WmtsCapability.OwsConstants.SERVICEIDENTIFICATION_XMLTAG]);
+    const capabilities = xmlDoc.getElementsByTagName("Capabilities");
+    if (capabilities.length !== 0) {
+      const capability = capabilities[0];
+      this.version = capability.getAttribute("version") ?? undefined;
 
-    // Operations metadata
-    if (_json?.Capabilities?.[WmtsCapability.OwsConstants.OPERATIONSMETADATA_XMLTAG])
-      this.operationsMetadata = new WmtsCapability.OperationMetadata(_json?.Capabilities?.[WmtsCapability.OwsConstants.OPERATIONSMETADATA_XMLTAG]);
+      // Service Identification
+      const serviceIdentification = capability.getElementsByTagName(WmtsCapability.OwsConstants.SERVICEIDENTIFICATION_XMLTAG);
+      if (serviceIdentification.length > 0)
+        this.serviceIdentification = new WmtsCapability.ServiceIdentification(serviceIdentification[0]);
 
-    // Contents
-    if (_json.Capabilities?.Contents)
-      this.contents = new WmtsCapability.Contents(_json.Capabilities?.Contents);
+      // Operations metadata
+      const operationsMetadata = capability.getElementsByTagName(WmtsCapability.OwsConstants.OPERATIONSMETADATA_XMLTAG);
+      if (operationsMetadata.length > 0)
+        this.operationsMetadata = new WmtsCapability.OperationMetadata(operationsMetadata[0]);
+
+      // Contents
+      const content = capability.getElementsByTagName("Contents");
+      if (content.length > 0)
+        this.contents = new WmtsCapability.Contents(content[0]);
+    }
   }
 
   public static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined {
-    const jsonCapabilities = xml2json(xmlCapabilities, { compact: true, nativeType: false, ignoreComment: true });
-    const capabilities = JSON.parse(jsonCapabilities);
-    return new WmtsCapabilities(capabilities);
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlCapabilities,"text/xml");
+    return new WmtsCapabilities(xmlDoc);
   }
 
   public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmtsCapabilities | undefined> {
@@ -523,7 +581,6 @@ export class WmtsCapabilities {
     }
 
     const xmlCapabilities = await getXml(`${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMTS`, credentials);
-
     if (!xmlCapabilities)
       return undefined;
 

@@ -14299,15 +14299,13 @@ export class WmsUtilities {
 
 // @internal (undocumented)
 export class WmtsCapabilities {
-    constructor(_json: any);
+    constructor(xmlDoc: Document);
     // (undocumented)
     readonly contents?: WmtsCapability.Contents;
     // (undocumented)
     static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmtsCapabilities | undefined>;
     // (undocumented)
     static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined;
-    // (undocumented)
-    get json(): any;
     // (undocumented)
     readonly operationsMetadata?: WmtsCapability.OperationMetadata;
     // (undocumented)
@@ -14320,7 +14318,7 @@ export class WmtsCapabilities {
 export namespace WmtsCapability {
     // (undocumented)
     export class BoundingBox {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly crs?: string;
         // (undocumented)
@@ -14335,19 +14333,19 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class Contents {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
-        getEpsg4326CompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[];
+        getEpsg4326CompatibleTileMatrixSet(): TileMatrixSet[];
         // (undocumented)
-        getGoogleMapsCompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[];
+        getGoogleMapsCompatibleTileMatrixSet(): TileMatrixSet[];
         // (undocumented)
-        readonly layers: WmtsCapability.Layer[];
+        readonly layers: Layer[];
         // (undocumented)
-        readonly tileMatrixSets: WmtsCapability.TileMatrixSet[];
+        readonly tileMatrixSets: TileMatrixSet[];
     }
     // (undocumented)
     export class HttpDcp {
-        constructor(json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly constraintName?: string;
         // (undocumented)
@@ -14357,7 +14355,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class Layer {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly abstract?: string;
         // (undocumented)
@@ -14377,7 +14375,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class Operation {
-        constructor(json: any);
+        constructor(elem: Element);
         // (undocumented)
         get getDcpHttp(): HttpDcp[] | undefined;
         // (undocumented)
@@ -14387,7 +14385,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class OperationMetadata {
-        constructor(json: any);
+        constructor(elem: Element);
         // (undocumented)
         get getCapabilities(): Operation | undefined;
         // (undocumented)
@@ -14448,7 +14446,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class ServiceIdentification {
-        constructor(json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly abstract?: string;
         // (undocumented)
@@ -14466,7 +14464,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class Style {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly identifier?: string;
         // (undocumented)
@@ -14476,7 +14474,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class TileMatrix {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly abstract?: string;
         // (undocumented)
@@ -14498,7 +14496,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class TileMatrixSet {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly abstract?: string;
         // (undocumented)
@@ -14514,7 +14512,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class TileMatrixSetLimits {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         limits?: Range2d;
         // (undocumented)
@@ -14522,7 +14520,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class TileMatrixSetLink {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly tileMatrixSet: string;
         // (undocumented)
