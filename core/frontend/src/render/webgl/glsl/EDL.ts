@@ -17,7 +17,8 @@ import { createViewportQuadBuilder } from "./ViewportQuad";
 
 // This shader calculates a more basic version of EDL, and only for the original size, so single pass
 const calcBasicEDL = `
-    float strength = u_pointCloudEDL1.x * u_pointCloudEDL1.z;
+    float strength = u_pointCloudEDL1.x;
+    float scaleFactor = u_pointCloudEDL1.z;
     float pixRadius = u_pointCloudEDL1.y;
     vec2 invTexSize = u_texInfo.xy;
     float is3d = u_pointCloudEDL1.w;
@@ -41,7 +42,7 @@ const calcBasicEDL = `
             sum += max(0.0, (is3d > 0.5) ? depth - zN : log (depth/zN));
         }
         float f = sum / 8.0;
-        f = exp(-f * 33.5 * strength); // 33.5 factor to aim for a typical (unfactored) strength of 5
+        f = exp(-f * 33.5 * strength * scaleFactor); // 33.5 factor to aim for a typical (unfactored) strength of 5
         return vec4(f * color.rgb, 1.0);
     }
 `;
@@ -90,7 +91,8 @@ export function createEDLCalcBasicProgram(context: WebGLContext): ShaderProgram 
 
 // This shader calculates the full version of EDL, and can be run at full, 1/2 and 1/4 scale
 const calcFullEDL = `
-    float strength = u_pointCloudEDL1.x * u_pointCloudEDL1.z;
+    float strength = u_pointCloudEDL1.x;
+    float scaleFactor = u_pointCloudEDL1.z;
     float pixRadius = u_pointCloudEDL1.y;
     float scale = u_texInfo.z;  // 1, 2, 4
     vec2 invTexSize = u_texInfo.xy;
@@ -112,11 +114,10 @@ const calcFullEDL = `
             vec2 nRelPos = posScale * neighbors[c];
             vec2 nPos = v_texCoord + nRelPos;
             float zN = TEXTURE(u_depthTexture, nPos).r;  // neighbor depth
-            sum += max(0.0, depth - zN) / scale;
             sum += max(0.0, (is3d > 0.5) ? depth - zN : log (depth/zN)) / scale;
         }
         float f = sum / 8.0;
-        f = exp(-f * 33.5 * strength); // 33.5 factor to aim for a typical (unfactored) strength of 5
+        f = exp(-f * 33.5 * strength * scaleFactor); // 33.5 factor to aim for a typical (unfactored) strength of 5
         return vec4(f * color.rgb, 1.0);
     }
 `;

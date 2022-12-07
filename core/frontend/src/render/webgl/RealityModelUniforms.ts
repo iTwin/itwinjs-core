@@ -10,7 +10,9 @@
 import { PointCloudDisplaySettings, RealityModelDisplaySettings } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
-import { Matrix3d, Range3d, Vector3d } from "@itwin/core-geometry";
+import { Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Target } from "./Target";
+import { Plane } from "./FrustumUniforms";
 
 /** A Target keeps track of the current settings for drawing point clouds.
  * Pushing a Branch may *replace* the current settings. Popping the Branch does not reset them. It is expected that every Branch containing
@@ -22,7 +24,7 @@ import { Matrix3d, Range3d, Vector3d } from "@itwin/core-geometry";
 export class PointCloudUniforms {
   public syncKey = 0;
   private _settings = PointCloudDisplaySettings.defaults;
-  private _rangeFactor = 1.0;
+  private _scaleFactor = 8.0;
   private _is3d = true;
 
   // vec3 u_pointSize
@@ -52,20 +54,39 @@ export class PointCloudUniforms {
     this.initialize(settings);
   }
 
-  public updateRange(range: Range3d | undefined, near: number, far: number, scale: Matrix3d, is3d: boolean): void {
+  public updateRange(range: Range3d | undefined, target: Target, xform: Transform, is3d: boolean): void {
     let rangeFactor = 8.0;  // default to min scale factor of 8
+    const near = target.uniforms.frustum.nearPlane;
+    const far = target.uniforms.frustum.farPlane;
+    const viewDepth = far - near;
     if (range !== undefined) {
+      const scale = xform.matrix;
       // calculate a "normalized" strength factor based on the size of the point cloud versus the current viewing depth
       //   from the matrix, only care about scaling factor here (entries 0,4,8) to scale the range lengths
       //   then use the largest length component as the reference for the size of the point cloud
       const rangeScale = Vector3d.create(scale.coffs[0] * range.xLength(), scale.coffs[4] * range.xLength(), scale.coffs[8] * range.xLength()).maxAbs();
-      const viewDepth = far - near;
       // limit the viewDepth/rangeScale ratio to min of 10 to still get reasonable factors when close to and inside the model
-      rangeFactor = Math.log (Math.max (10, viewDepth / rangeScale)) + Math.log (far / near);
+      rangeFactor = Math.log (Math.max (10, viewDepth / rangeScale));
     }
-    if (this._rangeFactor === rangeFactor && this._is3d === is3d)
+    // calculate a second factor to compensate for zoom level
+    let zoomFactor;
+    if (is3d) {
+      zoomFactor = far / near;
+    } else {
+      const left = target.uniforms.frustum.planes[Plane.kLeft];
+      const right = target.uniforms.frustum.planes[Plane.kRight];
+      const pixWidth = target.uniforms.viewRect.width;
+      zoomFactor = viewDepth * pixWidth / (right - left);
+    }
+    const scaleFactor = rangeFactor + Math.log (zoomFactor);
+    console.log (`sf = ${(scaleFactor * 33.5).toPrecision(7)} rf ${rangeFactor.toPrecision(7)}, vwD ${viewDepth.toPrecision(7)}, n ${near.toPrecision(7)}, f ${far.toPrecision(7)}, zf ${Math.log(zoomFactor).toPrecision(7)}`); // TODO remove this debug
+    if (!is3d) {
+      const vwWidth = target.uniforms.frustum.planes[3] - target.uniforms.frustum.planes[2];
+      console.log (`  Orth: fp width = ${vwWidth.toPrecision(7)} left ${target.uniforms.frustum.planes[2].toPrecision(7)} right ${target.uniforms.frustum.planes[3].toPrecision(7)}`);
+    }
+    if (this._scaleFactor === scaleFactor && this._is3d === is3d)
       return;
-    this._rangeFactor = rangeFactor;
+    this._scaleFactor = scaleFactor;
     this._is3d = is3d;
     desync(this);
     this.initialize(this._settings);
@@ -94,7 +115,7 @@ export class PointCloudUniforms {
 
     this._edl1[0] = settings.edlStrength;
     this._edl1[1] = settings.edlRadius;
-    this._edl1[2] = this._rangeFactor;
+    this._edl1[2] = this._scaleFactor;
     this._edl1[3] = this._is3d ? 1 : 0;
 
     this._edl2[0] = settings?.edlMixWts1 ?? 1.0;

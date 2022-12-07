@@ -2145,8 +2145,7 @@ class MRTCompositor extends Compositor {
           pcs = cmd.branch.branch.realityModelDisplaySettings?.pointCloud;
           const is3d = FrustumUniformType.Perspective === this.target.uniforms.frustum.type;
           this.target.uniforms.realityModel.pointCloud.updateRange (cmd.branch.branch.realityModelRange,
-            this.target.uniforms.frustum.nearPlane, this.target.uniforms.frustum.farPlane,
-            cmd.branch.localToWorldTransform.matrix, is3d);
+            this.target, cmd.branch.localToWorldTransform, is3d);
           pointClouds.push(curPC = { pcs, cmds: [cmd] });
         } else {
           assert (undefined !== curPC);
