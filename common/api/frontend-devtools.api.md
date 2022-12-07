@@ -118,6 +118,13 @@ export class ApplyViewTool extends Tool {
 }
 
 // @beta
+export class AttachArcGISFeatureMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
+    constructor();
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class AttachArcGISMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
     constructor();
     // (undocumented)
@@ -2249,6 +2256,14 @@ export class ToggleFrustumSnapshotTool extends Tool {
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
     run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersections?: boolean): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleNormalMaps extends RenderTargetDebugControlToggleTool {
+    // (undocumented)
+    get aspect(): DebugControlBoolean;
     // (undocumented)
     static toolId: string;
 }

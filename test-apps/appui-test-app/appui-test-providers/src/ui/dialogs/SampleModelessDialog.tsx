@@ -5,7 +5,7 @@
 import * as React from "react";
 import { IModelApp, MessageBoxIconType, MessageBoxType } from "@itwin/core-frontend";
 import { ModelessDialog, ModelessDialogManager } from "@itwin/appui-react";
-import { Button } from "@itwin/itwinui-react";
+import { Button, ComboBox } from "@itwin/itwinui-react";
 import "./SampleModelessDialog.scss";
 
 export interface SampleModelessDialogProps {
@@ -35,7 +35,7 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
         opened={this.state.opened}
         dialogId={this.props.dialogId}
         width={450}
-        height={150}
+        height={250}
         onClose={this._handleCancel}
         onEscape={this._handleCancel}
         movable={true}
@@ -44,6 +44,28 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
           <div>
                         To demonstrate messagebox behaviour in modeless dialog
           </div>
+          <ComboBox
+            value={"hello"}
+            inputProps={{
+              placeholder: "localized1 placeholder",
+            }}
+            // onChange={(value: string) => memoizedOnViewDefinitionSelected(value)}
+            options={
+
+              [{
+                disabled: false,
+                label: "mm",
+                sublabel: "Millimeter",
+                value: "MM",
+              },
+              {
+                disabled: false,
+                label: "cm",
+                sublabel: "Centimeter",
+                value: "CM",
+              }]}
+          />
+
           <div className="sample-grid">
             <Button styleType="cta" onClick={this._onShowMessageBox}>Show Message box</Button>
             <Button styleType="cta" onClick={this._handleCancel}>Close</Button>

@@ -12,13 +12,12 @@ import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from 
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
-import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import { TargetOptions, TargetOptionsContext } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/target/TargetOptions";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
   InitialAppUiSettings,
-  ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
+  ModalFrontstageClosedEventArgs, SafeAreaContext, SafeAreaInsets, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiStateStorageContext, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { BeDragDropContext } from "@itwin/components-react";
@@ -37,6 +36,7 @@ import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
 import { ArcGisAccessClient } from "@itwin/map-layers-auth";
+import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { ArcGisOauthRedirect } from "./appui/ArcGisOauthRedirect";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
@@ -238,7 +238,7 @@ export class SampleAppIModelApp {
 
       const rpcParams: BentleyCloudRpcParams =
         undefined !== process.env.IMJS_UITESTAPP_GP_BACKEND ?
-          { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
+          { info: { title: "imodel/rpc", version: "" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
           : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
 
@@ -276,7 +276,7 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    await UiFramework.initialize(undefined, undefined, useUi1Mode);
+    await UiFramework.initialize(undefined, undefined, useUi1Mode); // eslint-disable-line deprecation/deprecation
 
     // initialize Presentation
     await Presentation.initialize({
@@ -334,6 +334,7 @@ export class SampleAppIModelApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
+    MapLayersFormats.initialize();
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
@@ -347,6 +348,7 @@ export class SampleAppIModelApp {
         widgetOpacity: 0.8,
         showWidgetIcon: true,
         autoCollapseUnpinnedPanels: false,
+        toolbarOpacity: 0.5,
       };
 
       // initialize any settings providers that may need to have defaults set by iModelApp
@@ -366,11 +368,12 @@ export class SampleAppIModelApp {
       redirectUri: "http://localhost:3000/esri-oauth2-callback",
       clientIds: {
         arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
-        enterpriseClientIds: [{serviceBaseUrl: "", clientId: "Bentley_TestApp"}],
+        enterpriseClientIds: [{ serviceBaseUrl: "", clientId: "Bentley_TestApp" }],
       },
     });
 
     IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
+    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGISFeature", accessClient);
     assert(initStatus === true);
 
     // try starting up event loop if not yet started so key-in palette can be opened
@@ -626,7 +629,7 @@ export class SampleAppIModelApp {
   }
 
   public static getUiFrameworkProperty(): string {
-    return SampleAppIModelApp.store.getState().frameworkState.configurableUiState.frameworkVersion;
+    return SampleAppIModelApp.store.getState().frameworkState.configurableUiState.frameworkVersion; // eslint-disable-line deprecation/deprecation
   }
 
   public static saveAnimationViewId(value: string, immediateSync = false) {
@@ -671,7 +674,7 @@ function AppDragInteractionComponent(props: { dragInteraction: boolean, children
 
 function AppFrameworkVersionComponent(props: { frameworkVersion: string, children: React.ReactNode }) {
   return (
-    <FrameworkVersion>
+    <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
       {props.children}
     </FrameworkVersion>
   );
@@ -682,7 +685,7 @@ function mapDragInteractionStateToProps(state: RootState) {
 }
 
 function mapFrameworkVersionStateToProps(state: RootState) {
-  return { frameworkVersion: state.frameworkState.configurableUiState.frameworkVersion };
+  return { frameworkVersion: state.frameworkState.configurableUiState.frameworkVersion }; // eslint-disable-line deprecation/deprecation
 }
 
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);

@@ -544,10 +544,18 @@ export abstract class ViewState extends ElementState {
     //
   }
 
-  /** @internal */
+  /** Capture a copy of this view's viewed volume.
+   * @see [[applyPose]] to apply the pose to this or another view.
+   * @public
+   * @extensions
+   */
   public abstract savePose(): ViewPose;
 
-  /** @internal */
+  /** Apply a pose to this view to change the viewed volume.
+   * @see [[savePose]] to capture the view's pose.
+   * @public
+   * @extensions
+   */
   public abstract applyPose(props: ViewPose): this;
 
   /** @internal */
@@ -1433,17 +1441,20 @@ export abstract class ViewState3d extends ViewState {
     return -1 !== index ? this._modelClips[index] : undefined;
   }
 
-  /** @internal */
-  public savePose(): ViewPose { return new ViewPose3d(this); }
+  /** Capture a copy of the viewed volume and camera parameters. */
+  public savePose(): ViewPose3d { return new ViewPose3d(this); }
 
-  /** @internal */
-  public applyPose(val: ViewPose3d): this {
-    this._cameraOn = val.cameraOn;
-    this.setOrigin(val.origin);
-    this.setExtents(val.extents);
-    this.rotation.setFrom(val.rotation);
-    this.camera.setFrom(val.camera);
-    this._updateMaxGlobalScopeFactor();
+  /** @internal override */
+  public applyPose(val: ViewPose): this {
+    if (val instanceof ViewPose3d) {
+      this._cameraOn = val.cameraOn;
+      this.setOrigin(val.origin);
+      this.setExtents(val.extents);
+      this.rotation.setFrom(val.rotation);
+      this.camera.setFrom(val.camera);
+      this._updateMaxGlobalScopeFactor();
+    }
+
     return this;
   }
 
@@ -2285,14 +2296,17 @@ export abstract class ViewState2d extends ViewState {
   /** @internal */
   public isSpatialView(): this is SpatialViewState { return false; }
 
-  /** @internal */
-  public savePose(): ViewPose { return new ViewPose2d(this); }
+  /** Capture a copy of the viewed area. */
+  public savePose(): ViewPose2d { return new ViewPose2d(this); }
 
-  /** @internal */
-  public applyPose(val: ViewPose2d) {
-    this.setOrigin(val.origin);
-    this.setExtents(val.delta);
-    this.angle.setFrom(val.angle);
+  /** @internal override */
+  public applyPose(val: ViewPose) {
+    if (val instanceof ViewPose2d) {
+      this.setOrigin(val.origin);
+      this.setExtents(val.delta);
+      this.angle.setFrom(val.angle);
+    }
+
     return this;
   }
 

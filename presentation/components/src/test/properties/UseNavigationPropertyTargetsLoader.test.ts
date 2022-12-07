@@ -113,7 +113,7 @@ describe("UseNavigationPropertyTargetsLoader", () => {
     await result.current("testFilter", []);
     expect(getContentStub).to.be.calledOnce;
     const descriptor = getContentStub.getCall(0).args[0].descriptor;
-    expect(descriptor.filterExpression).to.contain("testFilter");
+    expect(descriptor.fieldsFilterExpression).to.contain("testFilter");
   });
 });
 

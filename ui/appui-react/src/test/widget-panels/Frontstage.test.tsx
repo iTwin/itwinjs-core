@@ -961,7 +961,7 @@ describe("Frontstage local storage wrapper", () => {
         const frontstageDef = new FrontstageDef();
         frontstageDef.nineZoneState = undefined;
         renderHook(() => useFrontstageManager(frontstageDef));
-        const widgetDef = new WidgetDef({});
+        const widgetDef = new WidgetDef();
         FrontstageManager.onWidgetStateChangedEvent.emit({
           widgetDef,
           widgetState: WidgetState.Open,
@@ -1752,7 +1752,7 @@ describe("Frontstage local storage wrapper", () => {
 
       it("should restore tabs", () => {
         const frontstageDef = new FrontstageDef();
-        const widgetDef = new WidgetDef({});
+        const widgetDef = new WidgetDef();
         sinon.stub(frontstageDef, "findWidgetDef").returns(widgetDef);
         const savedState = {
           ...createSavedNineZoneState(),

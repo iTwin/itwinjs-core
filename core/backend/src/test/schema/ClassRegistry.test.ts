@@ -103,13 +103,89 @@ describe("Class Registry", () => {
   });
 });
 
+describe("Class Registry - getRootMetaData", () => {
+  let imodel: SnapshotDb;
+
+  before(async () => {
+    const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "GetRootMetaData.bim");
+    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    assert.exists(imodel);
+    await imodel.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+
+          <ECEntityClass typeName="TestBase">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="TestDerived">
+            <BaseClass>TestBase</BaseClass>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ITestMixinForAspectsBase">
+            <ECCustomAttributes>
+              <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+                <AppliesToEntityClass>bis:ElementUniqueAspect</AppliesToEntityClass>
+              </IsMixin>
+            </ECCustomAttributes>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ITestMixinForAspectsDerived">
+            <BaseClass>ITestMixinForAspectsBase</BaseClass>
+            <ECCustomAttributes>
+              <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+                <AppliesToEntityClass>bis:ElementUniqueAspect</AppliesToEntityClass>
+              </IsMixin>
+            </ECCustomAttributes>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ITestMixinForElements" modifier="Abstract">
+            <ECCustomAttributes>
+              <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+                <AppliesToEntityClass>bis:Element</AppliesToEntityClass>
+              </IsMixin>
+            </ECCustomAttributes>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="TestMixedInAndDerived">
+            <BaseClass>TestBase</BaseClass>
+            <BaseClass>ITestMixinForElements</BaseClass>
+          </ECEntityClass>
+
+        </ECSchema>
+      `,
+    ]); // will throw an exception if import fails
+  });
+
+  after(() => {
+    imodel?.close();
+  });
+
+  it("should get the root metadata", async () => {
+    for (const [testClass, expectedRoot] of [
+      ["TestSchema1.TestBase", "BisCore:Element"],
+      ["TestSchema1.TestDerived", "BisCore:Element"],
+      ["TestSchema1.ITestMixinForAspectsBase", "BisCore:ElementAspect"],
+      ["TestSchema1.ITestMixinForAspectsDerived", "BisCore:ElementAspect"],
+      ["TestSchema1.ITestMixinForElements", "BisCore:Element"],
+      ["TestSchema1.TestMixedInAndDerived", "BisCore:Element"],
+    ] as const) {
+      const rootMetaData = ClassRegistry.getRootEntity(imodel, testClass);
+      expect(rootMetaData.replace(".", ":")).to.equal(expectedRoot);
+    }
+  });
+});
+
 describe("Class Registry - generated classes", () => {
   let imodel: SnapshotDb;
   const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
 
   before(async () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
-    const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "ClassRegistryTest.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "GeneratedClasses.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails

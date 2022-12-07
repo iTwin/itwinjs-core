@@ -17,6 +17,7 @@ import { RowItem } from "../TableDataProvider";
 import { FilterableTable, FilterOperator, OperatorValueFilterDescriptor } from "./ColumnFiltering";
 import { ColumnFilteringUtilities } from "./ColumnFilteringUtilities";
 import { NumericRangeData } from "./DataGridFilterParser";
+/* eslint-disable deprecation/deprecation */
 
 /** Represents a filtering descriptor.
  * @internal

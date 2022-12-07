@@ -22,7 +22,7 @@ export class AppSettingsTabsProvider implements SettingsTabsProvider {
         icon: "icon-paintbrush",
         tooltip: "Accudraw Settings",
       },
-      getUiSettingsManagerEntry(30, false),
+      getUiSettingsManagerEntry(30, false), // eslint-disable-line deprecation/deprecation
     ];
   }
 

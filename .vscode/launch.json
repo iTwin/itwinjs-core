@@ -46,7 +46,7 @@
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/{backend,common,geometry}/lib/**/*.js"
+        "${workspaceFolder}/core/*/lib/**/*.js"
       ]
     },
     {
@@ -223,6 +223,23 @@
       ],
       "outFiles": [
         "${workspaceFolder}/extensions/map-layers-auth/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "MapLayers Formats Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/extensions/map-layers-formats/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/extensions/map-layers-formats/lib/**/*.js"
       ]
     },
     { /* PARTIAL */
@@ -1529,7 +1546,7 @@
       ]
     },
     {
-      "name": "eslint rule test @bentley/no-internal-barrel-imports",
+      "name": "eslint rule test @itwin/no-internal-barrel-imports",
       "presentation": {
         "group": "6_Misc"
       },
