@@ -1,0 +1,110 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/appui-layout-react/lib/cjs/appui-layout-react/footer/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+@keyframes uifw-indicator-fadeIn {
+  0% {
+    opacity: 0;
+    -webkit-transform: scale(.5);
+    transform: scale(.5);
+  }
+
+  50% {
+    -webkit-transform: scale(1.5);
+    transform: scale(1.5);
+  }
+
+  100% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+    opacity: 1;
+  }
+}
+
+@keyframes uifw-indicator-fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.uifw-statusbar-indicator {
+  visibility: visible;
+  gap: 8px;
+
+  &.uifw-action {
+    cursor: pointer;
+
+    &:hover {
+      color: $buic-foreground-primary;
+    }
+  }
+
+  &.uifw-indicator-fade-in {
+    animation: uifw-indicator-fadeIn 1s linear;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &.uifw-indicator-fade-out {
+    animation: uifw-indicator-fadeOut 500ms linear;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  >.nz-balloon-container {
+    height: 100%;
+    position: relative;
+    display: grid;
+    align-content: center;
+
+    >.nz-balloon {
+      background-color: $buic-text-color;
+      text-align: center;
+      cursor: pointer;
+      min-width: $min-balloon-width;
+      min-height: $min-balloon-height;
+      border-radius: 50%;
+      padding: $balloon-padding;
+      filter: $icon-shadow;
+      position: relative;
+      align-self: center;
+
+      >.nz-arrow {
+        position: absolute;
+        width: 0;
+        bottom: -3px;
+        left: 0;
+        display: block;
+        border-width: 0;
+        border-bottom-width: $balloon-arrow-height;
+        border-left-width: $balloon-arrow-width;
+        border-style: solid;
+        border-color: transparent $buic-text-color;
+        transform: rotate(25deg);
+      }
+
+      >.nz-content {
+        position: relative;
+        color: #FFFFFF;
+        line-height: $min-balloon-height;
+        font-size: 11px;
+      }
+    }
+
+    >.nz-dialog {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 50%;
+    }
+  }
+}

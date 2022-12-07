@@ -40,7 +40,7 @@ function TsLabel({ children }: { children: React.ReactNode }) {
 export function WidgetPanelsToolSettings() {
   const frontstageDef = useActiveFrontstageDef();
   const toolSettings = React.useContext(ToolSettingsStateContext);
-  const topCenterZone = frontstageDef?.topCenter;
+  const topCenterZone = frontstageDef?.topCenter; // eslint-disable-line deprecation/deprecation
   if (!topCenterZone || !topCenterZone.isToolSettings || toolSettings.type === "widget")
     return null;
   return (

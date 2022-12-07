@@ -459,7 +459,9 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     // if (doConnectives !== 0)
       this.addConnectives();
   }
+
   private _workSegment?: LineSegment3d;
+  private static _bridgeDirection = Vector3d.createNormalized(1.0, -0.12328974132467)!; // magic unit direction to minimize vertex hits
   /**
    * The sweep operations require access to all geometry by edge crossings and face walk.
    * If input loops are non-overlapping, there may be disconnected islands not reachable.
@@ -473,9 +475,8 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const rangeB = this.groupB.range();
     const rangeAB = rangeA.union(rangeB);
     const areaTol = RegionOps.computeXYAreaTolerance(rangeAB);
-    const direction = Vector3d.create(1.0, -0.12328974132467);
     let margin = 0.1;
-    this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(rangeAB.corners(), direction, this._workSegment);
+    this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(rangeAB.corners(), RegionBooleanContext._bridgeDirection, this._workSegment);
     if (this._workSegment)
       margin *= this._workSegment.point0Ref.distanceXY(this._workSegment.point1Ref);  // how much further to extend each bridge ray
 
@@ -484,7 +485,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       const area = RegionOps.computeXYArea(region);
       if (area === undefined || Math.abs(area) < areaTol)
         return;   // avoid bridging trivial faces
-      this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(region, direction, this._workSegment);
+      this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(region, RegionBooleanContext._bridgeDirection, this._workSegment);
       if (this._workSegment)
         maxPoints.push(this._workSegment.point1Ref);
     };
@@ -501,7 +502,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     }
 
     const ray = Ray3d.createZero();
-    direction.normalizeInPlace();
     for (const p of maxPoints) {
       // Make a line from...
       //  1) exactly the max point of the loops to
@@ -509,8 +509,8 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       // If p came from some inner loop this will...
       //  1) create a bridge from the inner loop through any containing loops (always)
       //  2) avoid crossing any containing loop at a vertex. (with high probability, but not absolutely always)
-      const bridgeLength = margin + Ray3d.create(p, direction, ray).intersectionWithRange3d(rangeAB).high;
-      const outside = Point3d.createAdd2Scaled(p, 1.0, direction, bridgeLength);
+      const bridgeLength = margin + Ray3d.create(p, RegionBooleanContext._bridgeDirection, ray).intersectionWithRange3d(rangeAB).high;
+      const outside = Point3d.createAdd2Scaled(p, 1.0, RegionBooleanContext._bridgeDirection, bridgeLength);
       const bridgeLine = LineSegment3d.createXYXY(p.x, p.y, outside.x, outside.y);
       this.extraGeometry.addMember(bridgeLine, true);
     }

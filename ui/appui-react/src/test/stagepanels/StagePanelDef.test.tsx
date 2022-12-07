@@ -152,9 +152,9 @@ describe("StagePanelDef", () => {
     const panelZonesDef = new StagePanelZonesDef();
     const start = new StagePanelZoneDef();
     const end = new StagePanelZoneDef();
-    const s1 = new WidgetDef({});
-    const e1 = new WidgetDef({});
-    const e2 = new WidgetDef({});
+    const s1 = new WidgetDef();
+    const e1 = new WidgetDef();
+    const e2 = new WidgetDef();
     sinon.stub(panelZonesDef, "start").get(() => start);
     sinon.stub(panelZonesDef, "end").get(() => end);
 

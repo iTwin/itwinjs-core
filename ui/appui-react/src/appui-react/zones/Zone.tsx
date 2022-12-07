@@ -41,6 +41,7 @@ export enum ZoneLocation {
 }
 
 /** Properties of a [[Zone]] component
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface ZoneProps extends CommonProps {
@@ -88,7 +89,7 @@ export interface ZoneRuntimeProps {
 }
 
 /** @internal */
-export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string) {
+export function getStableWidgetProps<T extends { id?: string }>(widgetProps: T, stableId: string) {
   let props = widgetProps;
   if (props.id === undefined)
     props = {
@@ -100,6 +101,7 @@ export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string)
 
 /** Zone React component.
  * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
+ * @deprecated Use [[WidgetConfig]] or [[StagePanelConfig]] instead.
  * @public
  */
 export class Zone extends React.Component<ZoneProps> {

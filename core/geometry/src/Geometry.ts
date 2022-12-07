@@ -7,13 +7,13 @@
  * @module CartesianGeometry
  */
 
-// import { Point2d } from "./Geometry2d";
 import { AngleSweep } from "./geometry3d/AngleSweep";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Point2d, Vector2d, XY } from "./geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
 import { XAndY } from "./geometry3d/XYZProps";
 import { Point4d } from "./geometry4d/Point4d";
+
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
 /** Enumeration of the 6 possible orderings of XYZ axis order
  * @public
@@ -227,7 +227,9 @@ export class Geometry {
  * If `a` is large enough for safe division, return `1/a`, using Geometry.smallMetricDistance as the tolerance for declaring it as divide by zero.  Otherwise return `undefined`.
  * @param a denominator of division
  */
-  public static inverseMetricDistance(a: number): number | undefined { return (Math.abs(a) <= Geometry.smallMetricDistance) ? undefined : 1.0 / a; }
+  public static inverseMetricDistance(a: number): number | undefined {
+    return (Math.abs(a) <= Geometry.smallMetricDistance) ? undefined : 1.0 / a;
+  }
   /**
    * If `a` is large enough, return `1/a`, using the square of Geometry.smallMetricDistance as the tolerance for declaring it as divide by zero.  Otherwise return `undefined`.
    * @param a denominator of division
@@ -328,9 +330,13 @@ export class Geometry {
   /** Test if `value` is small compared to `smallAngleRadians`.
    * * This is appropriate if `value` is know to be a typical 0..1 fraction.
    */
-  public static isSmallRelative(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
+  public static isSmallRelative(value: number): boolean {
+    return Math.abs(value) < Geometry.smallAngleRadians;
+  }
   /** Test if `value` is small compared to `smallAngleRadians` */
-  public static isSmallAngleRadians(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
+  public static isSmallAngleRadians(value: number): boolean {
+    return Math.abs(value) < Geometry.smallAngleRadians;
+  }
   /** Returns true if both values are undefined or if both are defined and almost equal within tolerance.
    * If one is undefined and the other is not then false is returned.
   */
@@ -360,7 +366,8 @@ export class Geometry {
     return Math.abs(a.x - b.x) <= tolerance && Math.abs(a.y - b.y) <= tolerance;
   }
 
-  /** Toleranced equality test, using caller-supplied tolerance.
+  /**
+   * Toleranced equality test, using caller-supplied tolerance.
    * If no tolerance is given, use smallMetricDistance
    */
   public static isDistanceWithinTol(distance: number, tol?: number): boolean {
@@ -611,6 +618,7 @@ export class Geometry {
   }
   /**
    * Clamp to (min(a,b), max(a,b))
+   * * always returns a number between a and b
    * @param x
    * @param a
    * @param b
@@ -736,18 +744,15 @@ export class Geometry {
       return a;
     return defaultResult;
   }
-  /** For a line f(x) whose function values at x0 and x1 are f0 and f1, return the x value at which f(x)=fTarget;
-   */
-  public static inverseInterpolate(x0: number, f0: number, x1: number, f1: number,
-    targetF: number = 0,
+  /** For a line f(x) whose function values at x0 and x1 are f0 and f1, return the x value at which f(x)=fTarget; */
+  public static inverseInterpolate(x0: number, f0: number, x1: number, f1: number, targetF: number = 0,
     defaultResult?: number): number | undefined {
     const g = Geometry.conditionalDivideFraction(targetF - f0, f1 - f0);
     if (g)
       return Geometry.interpolate(x0, g, x1);
     return defaultResult;
   }
-  /** For a line f(x) whose function values at x=0 and x=1 are f0 and f1, return the x value at which f(x)=fTarget;
-   */
+  /** For a line f(x) whose function values at x=0 and x=1 are f0 and f1, return the x value at which f(x)=fTarget; */
   public static inverseInterpolate01(f0: number, f1: number, targetF: number = 0): number | undefined {
     return Geometry.conditionalDivideFraction(targetF - f0, f1 - f0);
   }

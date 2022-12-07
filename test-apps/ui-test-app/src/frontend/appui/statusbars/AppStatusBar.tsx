@@ -7,10 +7,9 @@ import * as React from "react";
 import { ConditionalBooleanValue, StatusBarSection } from "@itwin/appui-abstract";
 import {
   ActivityCenterField, ClearEmphasisStatusField, ConfigurableUiManager, MessageCenterField, SectionsStatusField, SelectionInfoField,
-  SelectionScopeField, SnapModeField, StatusBarComposer, StatusBarItem, StatusBarItemUtilities, StatusBarWidgetControl, StatusBarWidgetControlArgs,
+  SelectionScopeField, SnapModeField, StatusBarComposer, StatusBarItem, StatusBarItemUtilities, StatusBarSeparator, StatusBarWidgetControl, StatusBarWidgetControlArgs,
   TileLoadingIndicator, ToolAssistanceField, ViewAttributesStatusField,
 } from "@itwin/appui-react";
-import { FooterSeparator } from "@itwin/appui-layout-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { DisplayStyleField } from "../statusfields/DisplayStyleField";
 
@@ -23,9 +22,9 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
 
       this._statusBarItems = [
         StatusBarItemUtilities.createStatusBarItem("ToolAssistance", StatusBarSection.Left, 10, <ToolAssistanceField style={{ minWidth: "21em" }} />),
-        StatusBarItemUtilities.createStatusBarItem("ToolAssistanceSeparator", StatusBarSection.Left, 15, (<FooterSeparator />)),
+        StatusBarItemUtilities.createStatusBarItem("ToolAssistanceSeparator", StatusBarSection.Left, 15, <StatusBarSeparator />),
         StatusBarItemUtilities.createStatusBarItem("MessageCenter", StatusBarSection.Left, 20, <MessageCenterField />),
-        StatusBarItemUtilities.createStatusBarItem("MessageCenterSeparator", StatusBarSection.Left, 25, (<FooterSeparator />)),
+        StatusBarItemUtilities.createStatusBarItem("MessageCenterSeparator", StatusBarSection.Left, 25, <StatusBarSeparator />),
         StatusBarItemUtilities.createStatusBarItem("DisplayStyle", StatusBarSection.Center, 40, <DisplayStyleField />),
         StatusBarItemUtilities.createStatusBarItem("ActivityCenter", StatusBarSection.Center, 10, <ActivityCenterField />),
         StatusBarItemUtilities.createStatusBarItem("ViewAttributes", StatusBarSection.Center, 60, <ViewAttributesStatusField />),

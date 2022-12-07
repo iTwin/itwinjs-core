@@ -47,9 +47,9 @@ describe("ContentControl", () => {
         return Frontstage1.stageId;
       }
 
-      public get frontstage(): React.ReactElement<FrontstageProps> {
+      public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
         return (
-          <Frontstage
+          <Frontstage // eslint-disable-line deprecation/deprecation
             id={this.id}
             defaultTool={CoreTools.selectElementCommand}
             contentGroup={myContentGroup}
@@ -103,9 +103,9 @@ describe("ContentControl", () => {
         return Frontstage2.stageId;
       }
 
-      public get frontstage(): React.ReactElement<FrontstageProps> {
+      public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
         return (
-          <Frontstage
+          <Frontstage // eslint-disable-line deprecation/deprecation
             id={this.id}
             defaultTool={CoreTools.selectElementCommand}
             contentGroup={contentGroup2}

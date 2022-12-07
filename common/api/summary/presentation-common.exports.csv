@@ -263,7 +263,6 @@ public;PartialHierarchyModification
 public;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
 public;PartialNode = AllOrNone
 public;PartialNodeJSON = AllOrNone
-internal;PRESENTATION_COMMON_ROOT: string
 internal;PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface"
 public;PresentationError 
 alpha;PresentationIpcEvents

@@ -44,7 +44,7 @@ export class FeatureInfoUiItemsProvider implements UiItemsProvider {
 
     // eslint-disable-next-line deprecation/deprecation
     if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.BottomRight) ||
-      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) {
+      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) { // eslint-disable-line deprecation/deprecation
       widgets.push({
         id: FeatureInfoUiItemsProvider.widgetId,
         label: MapLayersUI.localization.getLocalizedString("mapLayers:FeatureInfoWidget.Label"),

@@ -5,17 +5,12 @@ exports[`WidgetPanelGrip should not start resize w/o pointer down 1`] = `
   class="nz-widgetPanels-grip nz-left"
 >
   <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
+    class="nz-line-grip"
+  >
+    <div
+      class="nz-line-grip-detail"
+    />
+  </div>
   <div
     class="nz-handle"
   />
@@ -27,17 +22,12 @@ exports[`WidgetPanelGrip should render resizing 1`] = `
   class="nz-widgetPanels-grip nz-left nz-active nz-resizing"
 >
   <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
+    class="nz-line-grip"
+  >
+    <div
+      class="nz-line-grip-detail"
+    />
+  </div>
   <div
     class="nz-handle"
   />
@@ -49,17 +39,12 @@ exports[`WidgetPanelGrip should reset initial position on pointer up 1`] = `
   class="nz-widgetPanels-grip nz-left"
 >
   <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
+    class="nz-line-grip"
+  >
+    <div
+      class="nz-line-grip-detail"
+    />
+  </div>
   <div
     class="nz-handle"
   />
