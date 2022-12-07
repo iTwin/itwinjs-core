@@ -545,7 +545,6 @@ importers:
       typescript: ~4.4.0
       webpack: ^5.64.4
       wms-capabilities: 0.4.0
-      xml-js: ~1.6.11
     dependencies:
       '@itwin/cloud-agnostic-core': 1.4.0
       '@itwin/core-i18n': link:../i18n
@@ -562,7 +561,6 @@ importers:
       semver: 7.3.8
       superagent: 7.1.5
       wms-capabilities: 0.4.0
-      xml-js: 1.6.11
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/build-tools': link:../../tools/build
@@ -23109,13 +23107,6 @@ packages:
   /wtfnode/0.9.1:
     resolution: {integrity: sha512-Ip6C2KeQPl/F3aP1EfOnPoQk14Udd9lffpoqWDNH3Xt78svxPbv53ngtmtfI0q2Te3oTq79XKTnRNXVIn/GsPA==}
     hasBin: true
-    dev: false
-
-  /xml-js/1.6.11:
-    resolution: {integrity: sha512-7rVi2KMfwfWFl+GpPg6m80IVMWXLRjO+PxTq7V2CDhoGak0wzYzFgUY2m4XJ47OGdXd8eLE8EmwfAmdjw7lC1g==}
-    hasBin: true
-    dependencies:
-      sax: 1.2.4
     dev: false
 
   /xml-name-validator/3.0.0:
