@@ -462,14 +462,6 @@ export class RealityModelSettingsPanel extends ToolBarDropDown {
       },
       entries,
     });
-    createButton({
-      parent: this._realityModelListDiv,
-      id: "Point Cloud Scan Button",
-      value: "Rescan for Reality Models",
-      handler: () => {
-        this.populateRealityModelList();
-      }
-    });
   }
 
   public async populate(): Promise<void> {
