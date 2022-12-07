@@ -605,10 +605,10 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
    *  points from succeeding U rows packed together in one array.  Use `createGrid` if the points are in
    *  a row-by-row grid structure
    * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omitted (undefined).
-   * *  When knots are given, two knot count conditions are recognized:
-   * * + If poleArray.length + order == knotArray.length, the first and last are assumed to be the
+   * * When knots are given, two knot count conditions are recognized:
+   *     * If poleArray.length + order == knotArray.length, the first and last are assumed to be the
    *      extraneous knots of classic clamping.
-   * * + If poleArray.length + order == knotArray.length + 2, the knots are in modern form that does not have
+   *     * If poleArray.length + order == knotArray.length + 2, the knots are in modern form that does not have
    *      the classic unused first and last knot.
    * @param controlPointArray Array of points, ordered along the U direction.
    * @param numPoleU number of poles in each row in the U direction.
@@ -660,18 +660,16 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
 
   /** Create a bspline surface.
    * * This `create` variant takes control points in a "grid" array, with the points from
-   * each grid row `[rowIndex]` being an independent array `points[rowIndex][indexAlongRow][x,y,z]`
+   *   each grid row `[rowIndex]` being an independent array `points[rowIndex][indexAlongRow][x,y,z]`
    * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omitted (undefined).
-   * *  When knots are given, two knot count conditions are recognized:
-   * * + If poleArray.length + order == knotArray.length, the first and last are assumed to be the
+   * * When knots are given, two knot count conditions are recognized in each direction:
+   *    * If poleArray.length + order == knotArray.length, the first and last are assumed to be the
    *      extraneous knots of classic clamping.
-   * * + If poleArray.length + order == knotArray.length + 2, the knots are in modern form that does not have
+   *    * If poleArray.length + order == knotArray.length + 2, the knots are in modern form that does not have
    *      the classic unused first and last knot.
-   * @param controlPointArray Array of points, ordered along the U direction.
-   * @param numPoleU number of poles in each row in the U direction.
+   * @param points Array of points, ordered along the U direction.
    * @param orderU order for the U direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
    * @param knotArrayU knots for the V direction.  See note above about knot counts.
-   * @param numPoleV number of poles in each column in the V direction (the number of rows).
    * @param orderV order for the V direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
    * @param knotArrayV knots for the V direction.  See note above about knot counts.
    */
@@ -683,20 +681,24 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     const numPolesV = points.length;
     const numPolesU = points[0].length;
     const numPoles = numPolesU * numPolesV;
+    if (3 !== points[0][0].length)
+      return undefined;
+    if (!this.validOrderAndPoleCounts(orderU, numPolesU, orderV, numPolesV, numPoles))
+      return undefined;
+
     // shift knots-of-interest limits for overclamped case ...
     const numKnotsU = knotArrayU ? knotArrayU.length : numPolesU + orderU - 2;
     const numKnotsV = knotArrayV ? knotArrayV.length : numPolesV + orderV - 2;
     const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
     const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);
-    if (!this.validOrderAndPoleCounts(orderU, numPolesU, orderV, numPolesV, numPoles))
-      return undefined;
 
     const knotsU = knotArrayU ?
       KnotVector.create(knotArrayU, orderU - 1, skipFirstAndLastU) :
       KnotVector.createUniformClamped(numPolesU, orderU - 1, 0.0, 1.0);
     const knotsV = knotArrayV ?
       KnotVector.create(knotArrayV, orderV - 1, skipFirstAndLastV) :
-      KnotVector.createUniformClamped(numPolesU, orderU - 1, 0.0, 1.0);
+      KnotVector.createUniformClamped(numPolesV, orderV - 1, 0.0, 1.0);
+
     const coffs = new Float64Array(3 * numPolesU * numPolesV);
     let i = 0;
     for (const row of points) {
@@ -706,9 +708,9 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
         coffs[i++] = xyz[2];
       }
     }
-    const surface = new BSplineSurface3d(numPolesU, numPolesV, knotsU, knotsV, coffs);
-    return surface;
+    return new BSplineSurface3d(numPolesU, numPolesV, knotsU, knotsV, coffs);
   }
+
   /**
    * Return a complete copy of the bspline surface.
    */
@@ -850,7 +852,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     }
     return result;
   }
-  /** unpack from xyzw xyzw ... to packed xyz, optionally unweighted
+  /** unpack from xyzw xyzw ... to packed weights
    */
   public copyWeightsToFloat64Array(): Float64Array {
     const numPoints = Math.floor(this.coffs.length / 4);
@@ -868,22 +870,20 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
    */
   public copyKnots(select: UVSelect, includeExtraEndKnot: boolean): number[] { return this.knots[select].copyKnots(includeExtraEndKnot); }
 
-  /** Create a weighted bspline surface, with control points and weights each organized as flattened array of points continuing from one U row to the next.
-   * * This `create` variant takes control points in a "flattened" array, with
-   *  points from succeeding U rows packed together in one array.  Use `createGrid` if the points are in
-   *  a deeper grid array structure.
+  /** Create a weighted bspline surface, with control points and weights each organized as flattened arrays continuing from one U row to the next.
+   * * Use `createGrid` if the control points are in a deeper grid array structure.
    * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omitted (undefined).
-   * *  When knots are given, two knot count conditions are recognized:
-   * * * If poleArray.length + order == knotArray.length, the first and last are assumed to be the
+   * * When knots are given, two knot count conditions are recognized:
+   *    * If poleArray.length + order == knotArray.length, the first and last are assumed to be the
    *      extraneous knots of classic clamping.
-   * * * If poleArray.length + order == knotArray.length + 2, the knots are in modern form that does not have
+   *    * If poleArray.length + order == knotArray.length + 2, the knots are in modern form that does not have
    *      the classic unused first and last knot.
-   * @param controlPointArray Array of points, ordered along the U direction.
+   * @param controlPointArray Array of [wx,wy,wz] points, ordered along the U direction.
    * @param weightArray array of weights, ordered along the U direction.
-   * @param numPoleU number of poles in each row in the U direction.
+   * @param numPolesU number of poles in each row in the U direction.
    * @param orderU order for the U direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
    * @param knotArrayU optional knots for the V direction.  See note above about knot counts.
-   * @param numPoleV number of poles in each column in the V direction (the number of rows).
+   * @param numPolesV number of poles in each column in the V direction (the number of rows).
    * @param orderV order for the V direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
    * @param knotArrayV optional knots for the V direction.  See note above about knot counts.
    */
@@ -918,67 +918,93 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     return surface;
   }
 
-  /** Create a bspline with given knots.
-   *
-   *   Two count conditions are recognized in each direction:
-   *
-   * ** If poleArray.length + order == knotArray.length, the first and last are assumed to be the
+  /** Create a bspline surface with given knots.
+   * * This `create` variant takes control points in a "grid" array, with the points from
+   *   each grid row `[rowIndex]` being an independent array `points[rowIndex][indexAlongRow][x,y,z,w]`
+   * * knotArrayU and knotArrayV are optional -- uniform knots are implied if they are omitted (undefined).
+   * * When knots are given, two count conditions are recognized in each direction:
+   *    * If poleArray.length + order == knotArray.length, the first and last are assumed to be the
    *      extraneous knots of classic clamping.
-   * ** If poleArray.length + order == knotArray.length + 2, the knots are in modern form.
-   *
+   *    * If poleArray.length + order == knotArray.length + 2, the knots are in modern form that does not have
+   *      the classic unused first and last knot.
+   * @param xyzwGrid Array of points, ordered along the U direction.
+   * @param weightStyle how the points are weighted
+   * @param orderU order for the U direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
+   * @param knotArrayU knots for the V direction.  See note above about knot counts.
+   * @param orderV order for the V direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
+   * @param knotArrayV knots for the V direction.  See note above about knot counts.
    */
   public static createGrid(
     xyzwGrid: number[][][],
     weightStyle: WeightStyle,
     orderU: number,
-    knotArrayU: number[],
+    knotArrayU: number[] | Float64Array | undefined,
     orderV: number,
-    knotArrayV: number[]): BSplineSurface3dH | undefined {
+    knotArrayV: number[] | Float64Array | undefined): BSplineSurface3dH | undefined {
     const numPolesV = xyzwGrid.length;
     const numPolesU = xyzwGrid[0].length;
     const numPoles = numPolesU * numPolesV;
+    if (4 !== xyzwGrid[0][0].length)
+      return undefined;
     if (!this.validOrderAndPoleCounts(orderU, numPolesU, orderV, numPolesV, numPoles))
       return undefined;
 
-    // const numPoles = numPolesU * numPolesV;
     // shift knots-of-interest limits for overclamped case ...
-    const numKnotsU = knotArrayU.length;
-    const numKnotsV = knotArrayV.length;
+    const numKnotsU = knotArrayU ? knotArrayU.length : numPolesU + orderU - 2;
+    const numKnotsV = knotArrayV ? knotArrayV.length : numPolesV + orderV - 2;
     const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
     const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);
 
-    const knotsU = KnotVector.create(knotArrayU, orderU - 1, skipFirstAndLastU);
-    const knotsV = KnotVector.create(knotArrayV, orderV - 1, skipFirstAndLastV);
+    const knotsU = knotArrayU ?
+      KnotVector.create(knotArrayU, orderU - 1, skipFirstAndLastU) :
+      KnotVector.createUniformClamped(numPolesU, orderU - 1, 0.0, 1.0);
+    const knotsV = knotArrayV ?
+      KnotVector.create(knotArrayV, orderV - 1, skipFirstAndLastV) :
+      KnotVector.createUniformClamped(numPolesV, orderV - 1, 0.0, 1.0);
 
     const coffs = new Float64Array(4 * numPoles);
-    if (weightStyle === WeightStyle.WeightsSeparateFromCoordinates) {
-      let i = 0;
-      for (const row of xyzwGrid) {
-        for (const point of row) {
-          const w = point[3];
-          coffs[i++] = point[0] * w;
-          coffs[i++] = point[1] * w;
-          coffs[i++] = point[2] * w;
-          coffs[i++] = point[3];
+    let i = 0;
+    switch (weightStyle) {
+      case WeightStyle.WeightsSeparateFromCoordinates: {
+        for (const row of xyzwGrid) {
+          for (const point of row) {
+            const w = point[3];
+            coffs[i++] = point[0] * w;
+            coffs[i++] = point[1] * w;
+            coffs[i++] = point[2] * w;
+            coffs[i++] = point[3];
+          }
         }
+        break;
       }
-    } else {
-      // implicit WeightStyle.WeightsAlreadyAppliedToCoordinates
-      let i = 0;
-      for (const row of xyzwGrid) {
-        for (const point of row) {
-          coffs[i++] = point[0];
-          coffs[i++] = point[1];
-          coffs[i++] = point[2];
-          coffs[i++] = point[3];
+      case WeightStyle.WeightsAlreadyAppliedToCoordinates: {
+        for (const row of xyzwGrid) {
+          for (const point of row) {
+            coffs[i++] = point[0];
+            coffs[i++] = point[1];
+            coffs[i++] = point[2];
+            coffs[i++] = point[3];
+          }
         }
+        break;
       }
+      case WeightStyle.UnWeighted: {
+        for (const row of xyzwGrid) {
+          for (const point of row) {
+            coffs[i++] = point[0];
+            coffs[i++] = point[1];
+            coffs[i++] = point[2];
+            coffs[i++] = 1.0;
+          }
+        }
+        break;
+      }
+      default:
+        return undefined; // unrecognized WeightStyle
     }
-
-    const surface = new BSplineSurface3dH(numPolesU, numPolesV, knotsU, knotsV, coffs);
-
-    return surface;
+    return new BSplineSurface3dH(numPolesU, numPolesV, knotsU, knotsV, coffs);
   }
+
   /** Return a deep clone */
   public clone(): BSplineSurface3dH {
     const knotVector1U = this.knots[0].clone();

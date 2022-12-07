@@ -535,35 +535,53 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   }
 
   /** Create a bspline with given knots.
+   * * The poles have several variants:
+   *    * Float64Array(3 * numPoles) in blocks of [x,y,z]
+   *    * Point3d[]
+   *    * number[][], with inner dimension 3
    *
-   * *  Two count conditions are recognized:
-   *
-   * ** If poleArray.length + order == knotArray.length, the first and last are assumed to be the
+   * * Two count conditions are recognized:
+   *    * If poleArray.length + order == knotArray.length, the first and last are assumed to be the
    *      extraneous knots of classic clamping.
-   * ** If poleArray.length + order == knotArray.length + 2, the knots are in modern form.
-   *
+   *    * If poleArray.length + order == knotArray.length + 2, the knots are in modern form.
    */
-  public static create(poleArray: Float64Array | Point3d[], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined {
+  public static create(poleArray: Float64Array | Point3d[] | number[][], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined {
+    if (order < 2)
+      return undefined;
+
     let numPoles = poleArray.length;
-    if (poleArray instanceof Float64Array) {
-      numPoles /= 3;  // blocked as xyz
-    }
+    if (poleArray instanceof Float64Array)
+      numPoles = Math.floor(numPoles / 3);  // blocked as xyz
+    if (numPoles < order)
+      return undefined;
+
     const numKnots = knotArray.length;
     // shift knots-of-interest limits for overclamped case ...
     const skipFirstAndLast = (numPoles + order === numKnots);
-    if (order < 2 || numPoles < order)
-      return undefined;
     const knots = KnotVector.create(knotArray, order - 1, skipFirstAndLast);
+
     const curve = new BSplineCurve3d(numPoles, order, knots);
+
+    let i = 0;
     if (poleArray instanceof Float64Array) {
-      let i = 0;
-      for (const coordinate of poleArray) { curve._bcurve.packedData[i++] = coordinate; }
+      for (const coordinate of poleArray)
+        curve._bcurve.packedData[i++] = coordinate;
+    } else if (poleArray[0] instanceof Point3d) {
+      for (const p of poleArray as Point3d[]) {
+        curve._bcurve.packedData[i++] = p.x;
+        curve._bcurve.packedData[i++] = p.y;
+        curve._bcurve.packedData[i++] = p.z;
+      }
+    } else if (Array.isArray(poleArray[0]) && poleArray[0].length === 3) {
+      for (const point of poleArray as number[][])
+        for (const coord of point)
+          curve._bcurve.packedData[i++] = coord;
     } else {
-      let i = 0;
-      for (const p of poleArray) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; }
+      return undefined; // unexpected poleArray type
     }
     return curve;
   }
+
   /** Return a deep clone */
   public override clone(): BSplineCurve3d {
     const knotVector1 = this._bcurve.knots.clone();

@@ -266,40 +266,35 @@ export class Vector3dArray {
  * @public
  */
 export class Point4dArray {
-  /** pack each point and its corresponding weight into a buffer of xyzw xyzw ... */
-  public static packPointsAndWeightsToFloat64Array(data: Point3d[] | Float64Array | number[], weights: number[] | Float64Array,
-    result?: Float64Array): Float64Array | undefined {
+  /** pack each weighted point and its corresponding weight into a buffer of xyzw xyzw ... */
+  public static packPointsAndWeightsToFloat64Array(data: Point3d[] | Float64Array | number[], weights: number[] | Float64Array, result?: Float64Array): Float64Array | undefined {
+    let points: Point3d[] | Float64Array | number[];
     if (Array.isArray(data) && data[0] instanceof Point3d) {
-      const points = data as Point3d[];
+      points = data as Point3d[];
       if (points.length !== weights.length)
         return undefined;
       result = result ? result : new Float64Array(4 * points.length);
-      let i = 0;
-      let k = 0;
-      for (k = 0; k < points.length; k++) {
+      for (let i = 0, k = 0; k < points.length; k++) {
         result[i++] = points[k].x;
         result[i++] = points[k].y;
         result[i++] = points[k].z;
         result[i++] = weights[k];
       }
       return result;
-    } else {
-      const points = data as (Float64Array | number[]);
-      const numPoints = weights.length;
-      if (points.length !== 3 * numPoints)
-        return undefined;
-      let i = 0; let k;
-      result = result ? result : new Float64Array(4 * numPoints);
-      for (k = 0; k < numPoints; k++) {
-        const k0 = 3 * k;
-        result[i++] = points[k0];
-        result[i++] = points[k0 + 1];
-        result[i++] = points[k0 + 2];
-        result[i++] = weights[k];
-      }
-      return result;
     }
-    return undefined;
+    points = data as (Float64Array | number[]);
+    const numPoints = weights.length;
+    if (points.length !== 3 * numPoints)
+      return undefined;
+    result = result ? result : new Float64Array(4 * numPoints);
+    for (let i = 0, k = 0; k < numPoints; k++) {
+      const k0 = 3 * k;
+      result[i++] = points[k0];
+      result[i++] = points[k0 + 1];
+      result[i++] = points[k0 + 2];
+      result[i++] = weights[k];
+    }
+    return result;
   }
 
   /** pack x,y,z,w in Float64Array. */

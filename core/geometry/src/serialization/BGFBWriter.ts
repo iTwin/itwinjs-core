@@ -188,6 +188,7 @@ export class BGFBWriter {
     }
 
   public writeBsplineCurve3dAsFBVariantGeometry(bcurve: BSplineCurve3d): number | undefined {
+    // TODO: call SerializationHelpers.Export.collectBSplineCurveData
     const order = bcurve.order;
     const closed = false;   // typescript bcurves are not closed.  There is API to impose wrapping . . .
     const weightsOffset = 0;
@@ -201,14 +202,15 @@ export class BGFBWriter {
   }
 
   public writeBSplineSurfaceAsFBVariantGeometry(bsurf: BSplineSurface3d | BSplineSurface3dH): number | undefined {
+    // TODO: call SerializationHelpers.Export.collectBSplineSurfaceData
     const orderU = bsurf.orderUV(UVSelect.uDirection);
     const orderV = bsurf.orderUV(UVSelect.vDirection);
     const numPolesU = bsurf.numPolesUV(UVSelect.uDirection);
     const numPolesV = bsurf.numPolesUV(UVSelect.vDirection);
-    const closedU = false;  // typescript bsurfs are not closed.  There is API to impose wrapping . . .
+    const closedU = false;
     const closedV = false;
     const holeOrigin = 0;
-    const boundariesOffset = 0;
+    const boundariesOffset = 0;   // TypeScript B-spline surfaces have no boundaries (yet)
     let polesOffset = 0;
     let weightsOffset = 0;
     if (bsurf instanceof BSplineSurface3d) {
@@ -226,6 +228,7 @@ export class BGFBWriter {
   }
 
   public writeBsplineCurve3dHAsFBVariantGeometry(bcurve: BSplineCurve3dH): number | undefined {
+    // TODO: call SerializationHelpers.Export.collectBSplineCurveData
     const order = bcurve.order;
     const closed = false;   // typescript bcurves are not closed.  There is API to impose wrapping . . .
     const polesOffset = this.writeDoubleArray(bcurve.copyXYZFloat64Array(false));
