@@ -1,6 +1,19 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Wed, 30 Nov 2022 14:28:19 GMT and should not be manually modified.
+This log was last generated on Wed, 07 Dec 2022 19:12:37 GMT and should not be manually modified.
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:37 GMT
+
+### Updates
+
+- extended clonePartial for LineString3d, CurveChainWithDistanceIndex
+- fix arc and fitCurve projection-to-ray bugs
+- non-coplanar line-arc intersection bug fix
+- refactor cloneWithMaximalPlanarFacets to leave input mesh unchanged
+- regionBooleanXY bridge edge and tolerance fixes
+- report TorusPipe radii in world coords
+- Point3dVector3D: clean up src and add more test coverage
 
 ## 3.4.7
 Wed, 30 Nov 2022 14:28:19 GMT

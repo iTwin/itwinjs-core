@@ -2,6 +2,18 @@
   "name": "@itwin/frontend-devtools",
   "entries": [
     {
+      "version": "3.5.0",
+      "tag": "@itwin/frontend-devtools_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added ability to display normal maps"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.7",
       "tag": "@itwin/frontend-devtools_v3.4.7",
       "date": "Wed, 30 Nov 2022 14:28:19 GMT",

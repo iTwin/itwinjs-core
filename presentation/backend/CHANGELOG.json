@@ -2,6 +2,24 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "3.5.0",
+      "tag": "@itwin/presentation-backend_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecated PresentationManagerProps.mode property"
+          },
+          {
+            "comment": "Deprecate unused `PresentationAssetsRootConfig.common`."
+          },
+          {
+            "comment": "Fix `PresentationRpcImpl` cancelling requests when it's configured to not use a request timeout at all"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.7",
       "tag": "@itwin/presentation-backend_v3.4.7",
       "date": "Wed, 30 Nov 2022 14:28:19 GMT",

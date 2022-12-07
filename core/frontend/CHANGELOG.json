@@ -2,6 +2,57 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "3.5.0",
+      "tag": "@itwin/core-frontend_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added a tolerance parameter to ArcgisUtilities.getZoomLevelsScales"
+          },
+          {
+            "comment": "Added support for ImageryTileTree with an incomplete tile tree definition (minLOD)"
+          },
+          {
+            "comment": "Support for reporting progress and cancelling 'BriefcaseConnection.pullChanges'."
+          },
+          {
+            "comment": "Added ability to display normal maps"
+          },
+          {
+            "comment": "Fix for tools that supply hints to override the default AccuDraw origin."
+          },
+          {
+            "comment": "Add preliminary alpha support for custom reality data providers."
+          },
+          {
+            "comment": "Add IModelConnection.generateElementMeshes."
+          },
+          {
+            "comment": "Fix an exception when adding an invalid map layer to a viewport."
+          },
+          {
+            "comment": "Fix emphasis and hilite effects applied to point clouds."
+          },
+          {
+            "comment": "Add support for customized reality model display."
+          },
+          {
+            "comment": "Promote ViewPose-related APIs to public."
+          },
+          {
+            "comment": "requestElementGraphics uses relative positions by default to address precision issues with coordinates far from the origin."
+          },
+          {
+            "comment": "Add MarginOptions.paddingPercent for a more straightforward way to pad out a viewed volume."
+          },
+          {
+            "comment": "Replace inline type definitions in CreateRenderMaterialArgs with named and documented interfaces."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.7",
       "tag": "@itwin/core-frontend_v3.4.7",
       "date": "Wed, 30 Nov 2022 14:28:19 GMT",
