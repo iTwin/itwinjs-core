@@ -121,12 +121,6 @@ jobs:
           artifactName: .updated.json
           targetPath: ${{ parameters.stagingDir }}/config/
 
-      - task: CopyFiles@2
-        displayName: Copy .updated.json to staging
-        inputs:
-          SourceFolder: "$(Pipeline.Workspace)/itwinjs-docs/.updated.json"
-          TargetFolder: ${{ parameters.stagingDir }}/config/
-
       # Currently BeMetalsmith is an internal only tool
       - script: npm install @bentley/bemetalsmith@4.x
         displayName: Install BeMetalsmith
