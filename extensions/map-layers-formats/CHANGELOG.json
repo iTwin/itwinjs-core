@@ -1,0 +1,20 @@
+{
+  "name": "@itwin/map-layers-formats",
+  "entries": [
+    {
+      "version": "3.5.0",
+      "tag": "@itwin/map-layers-formats_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improved ArcGIS feature for support servers older than version 11"
+          },
+          {
+            "comment": "Enabled min LOD for ArcGisFeature format."
+          }
+        ]
+      }
+    }
+  ]
+}

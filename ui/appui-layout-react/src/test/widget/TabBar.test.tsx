@@ -77,10 +77,10 @@ describe("WidgetTitleBar", () => {
       fireEvent.mouseUp(handle);
       fakeTimers.tick(300);
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledOnceWithExactly(dispatch, {
       type: "FLOATING_WIDGET_CLEAR_USER_SIZED",
       id: "w1",
-    })).should.true;
+    });
   });
 
   it("should dispatch WIDGET_DRAG_END with tab target", () => {
@@ -156,7 +156,7 @@ describe("WidgetTitleBar", () => {
       dispatch.reset();
       fireEvent.mouseUp(document);
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledOnceWithExactly(dispatch, {
       type: "WIDGET_DRAG_END",
       floatingWidgetId: "w1",
       target: {
@@ -164,7 +164,7 @@ describe("WidgetTitleBar", () => {
         side: "right",
         type: "panel",
       },
-    })).should.true;
+    });
   });
 
   it("should dispatch FLOATING_WIDGET_BRING_TO_FRONT", () => {
@@ -190,10 +190,10 @@ describe("WidgetTitleBar", () => {
         touches: [{}],
       });
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledWithExactly(dispatch, {
       type: "FLOATING_WIDGET_BRING_TO_FRONT",
       id: "w1",
-    })).should.true;
+    });
   });
 });
 

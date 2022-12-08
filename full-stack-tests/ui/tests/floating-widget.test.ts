@@ -60,4 +60,79 @@ test.describe("floating widget", () => {
     const newBounds = await floatingWidget.boundingBox();
     expect(newBounds).toEqual(bounds);
   });
+
+  test("should drag a floating widget", async ({ page }) => {
+    const tab = tabLocator(page, "FW-1");
+    const widget = widgetLocator({ tab });
+    const titleBarHandle = titleBarHandleLocator(widget);
+    const body = page.locator("body");
+
+    const initialBounds = (await widget.boundingBox())!;
+    await titleBarHandle.dispatchEvent("mousedown", { clientX: initialBounds.x, clientY: initialBounds.y });
+    await body.dispatchEvent("mousemove", { clientX: initialBounds.x + 1, clientY: initialBounds.y + 1 });
+    await body.dispatchEvent("mousemove", { clientX: initialBounds.x + 21, clientY: initialBounds.y + 31 });
+    await body.dispatchEvent("mouseup");
+
+    const bounds = (await widget.boundingBox())!;
+    expect(bounds.x).toEqual(initialBounds.x + 20);
+    expect(bounds.y).toEqual(initialBounds.y + 30);
+  });
+
+  test("should drag a floating widget (in 'portal/header' mode)", async ({ page }) => {
+    const tab = tabLocator(page, "FW-1");
+    const widget = widgetLocator({ tab });
+    const titleBarHandle = titleBarHandleLocator(widget);
+    const body = page.locator("body");
+
+    const setPortalMode = page.locator(`text=setMode("portal")`);
+    await setPortalMode.click();
+
+    const initialBounds = (await widget.boundingBox())!;
+    await titleBarHandle.dispatchEvent("mousedown", { clientX: initialBounds.x, clientY: initialBounds.y });
+    await body.dispatchEvent("mousemove", { clientX: initialBounds.x + 1, clientY: initialBounds.y + 1 });
+    await body.dispatchEvent("mousemove", { clientX: initialBounds.x + 21, clientY: initialBounds.y + 31 });
+    await body.dispatchEvent("mouseup");
+
+    const bounds = (await widget.boundingBox())!;
+    expect(bounds.x).toEqual(initialBounds.x + 20);
+    expect(bounds.y).toEqual(initialBounds.y + 30);
+  });
+
+  test("should contain floating widget (user sized)", async ({ page }) => {
+    const tab = tabLocator(page, "FW-1");
+    const widget = widgetLocator({ tab });
+    const titleBarHandle = titleBarHandleLocator(widget);
+    const body = page.locator("body");
+    const frontstage = frontstageLocator(page);
+    const frontstageBounds = (await frontstage.boundingBox())!;
+
+    const initialBounds = (await widget.boundingBox())!;
+    await titleBarHandle.dispatchEvent("mousedown", { clientX: initialBounds.x, clientY: initialBounds.y });
+    await titleBarHandle.dispatchEvent("mousemove", { clientX: initialBounds.x + 1, clientY: initialBounds.y + 1 });
+    await body.dispatchEvent("mousemove", { clientX: frontstageBounds.width - 30, clientY: frontstageBounds.height - 30 });
+    await body.dispatchEvent("mouseup");
+
+    const bounds = (await widget.boundingBox())!;
+    expect(bounds.x + bounds.width).toEqual(frontstageBounds.width);
+    expect(bounds.y + bounds.height).toEqual(frontstageBounds.height);
+  });
+
+  test("should contain floating widget (auto sized)", async ({ page }) => {
+    const tab = tabLocator(page, "View Attributes");
+    const widget = widgetLocator({ tab });
+    const titleBarHandle = titleBarHandleLocator(widget);
+    const body = page.locator("body");
+    const frontstage = frontstageLocator(page);
+    const frontstageBounds = (await frontstage.boundingBox())!;
+
+    const initialBounds = (await widget.boundingBox())!;
+    await titleBarHandle.dispatchEvent("mousedown", { clientX: initialBounds.x, clientY: initialBounds.y });
+    await titleBarHandle.dispatchEvent("mousemove", { clientX: initialBounds.x + 1, clientY: initialBounds.y + 1 });
+    await body.dispatchEvent("mousemove", { clientX: frontstageBounds.width - 30, clientY: frontstageBounds.height - 30 });
+    await body.dispatchEvent("mouseup");
+
+    const bounds = (await widget.boundingBox())!;
+    expect(bounds.x + bounds.width).toEqual(frontstageBounds.width);
+    expect(bounds.y + bounds.height).toEqual(frontstageBounds.height);
+  });
 });
