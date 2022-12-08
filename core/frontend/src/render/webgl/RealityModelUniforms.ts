@@ -12,7 +12,6 @@ import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 import { Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Target } from "./Target";
-import { Plane } from "./FrustumUniforms";
 
 /** A Target keeps track of the current settings for drawing point clouds.
  * Pushing a Branch may *replace* the current settings. Popping the Branch does not reset them. It is expected that every Branch containing

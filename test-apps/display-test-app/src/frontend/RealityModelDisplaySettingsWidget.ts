@@ -11,7 +11,7 @@ import {
 import { System } from "@itwin/core-frontend/lib/cjs/render/webgl/System";
 import {
   ComboBoxEntry,
-  convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createRadioBox, createSlider,
+  convertHexToRgb, createCheckBox, createColorInput, createComboBox, createRadioBox, createSlider,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { ToolBarDropDown } from "./ToolBar";
@@ -174,8 +174,8 @@ function createRealityModelSettingsPanel(model: RealityModel, element: HTMLEleme
     const setEDLMode = (mode: string) => {
       const isOn = mode !== "off";
       const isFull = mode === "full";
-      updatePointCloud({ edlMode: isOn ? (isFull ? "full" : "on") : "off" }),
-        edlFilter.style.display = isFull ? "" : "none";
+      updatePointCloud({ edlMode: isOn ? (isFull ? "full" : "on") : "off" });
+      edlFilter.style.display = isFull ? "" : "none";
       edlMixWt1Slider.style.display = isFull ? "" : "none";
       edlMixWt2Slider.style.display = isFull ? "" : "none";
       edlMixWt4Slider.style.display = isFull ? "" : "none";
@@ -458,7 +458,7 @@ export class RealityModelSettingsPanel extends ToolBarDropDown {
       value: activeIndex,
       handler: (select) => {
         const valueIndex = Number.parseInt(select.value, 10);
-        this.remakePanelWithSelection(valueIndex);
+        void this.remakePanelWithSelection(valueIndex);
       },
       entries,
     });
