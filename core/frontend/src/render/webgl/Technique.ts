@@ -881,10 +881,16 @@ export class Techniques implements WebGLDisposable {
   public compileShaders(): boolean {
     let allCompiled = true;
 
+    let techNdx = 0;
     for (const tech of this._list) {
+      if (!System.instance.isWebGL2 && (TechniqueId.EDLCalcBasic === techNdx || TechniqueId.EDLCalcFull === techNdx || TechniqueId.EDLFilter === techNdx || TechniqueId.EDLMix === techNdx)) {
+        techNdx++;
+        continue;
+      }
       if (!tech.compileShaders()) {
         allCompiled = false;
       }
+      techNdx++;
     }
 
     return allCompiled;
