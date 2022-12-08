@@ -85,7 +85,7 @@ jobs:
 
       - publish: ${{ parameters.outputDir }}
         artifact: DocsBuild
-        displayName: Publish Pipeline Artifact -  DocsBuild
+        displayName: Publish Pipeline Artifact - DocsBuild
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
       - powershell: |
