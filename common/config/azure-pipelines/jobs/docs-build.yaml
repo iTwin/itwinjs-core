@@ -95,7 +95,7 @@ jobs:
         displayName: Copy Reference files to Staging
 
       # Download bis docs artifact
-      - {{ if eq(parameters.useCurrentBisDocsArtifact, true) }}:
+      - ${{ if eq(parameters.useCurrentBisDocsArtifact, true) }}:
         - download: current
           artifact: Bis Docs
           displayName: Download Bis Docs Artifact
@@ -106,7 +106,7 @@ jobs:
             SourceFolder: $(Pipeline.Workspace)/Bis Docs
             TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
-      - {{ else }}:
+      - ${{ else }}:
         - download: bis-docs
           artifact: Bis Docs
           displayName: Download Bis Docs Artifact
