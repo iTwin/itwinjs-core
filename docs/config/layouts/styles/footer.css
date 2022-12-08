@@ -34,14 +34,14 @@ footer div.spacer {
 
 footer nav {
   margin-right: 36px;
-}
-
-footer nav#footer-social-media {
+  width: 140px;
+  justify-content: space-around;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   -webkit-box-align: center;
   -ms-flex-align: center;
+  flex-direction: row;
   align-items: center;
 }
 
