@@ -120,7 +120,7 @@ jobs:
       # The .updated.json is cached to track when the docs were last updated
       - download: itwinjs-docs
         artifact: .updated.json
-        name: Download .updated.json
+        displayName: Download .updated.json
 
       - task: CopyFiles@2
         displayName: Copy .updated.json to staging
