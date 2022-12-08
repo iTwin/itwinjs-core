@@ -279,7 +279,7 @@ export namespace WmtsCapability {
 
         // In case wellKnownScaleSet was not been set properly, infer from scaleDenominator
         // Note: some servers are quite inaccurate in their scale values, hence I used a delta value of 1.
-        else if (   tms.tileMatrix.length > 0
+        else if (tms.tileMatrix.length > 0
                 && Math.abs(tms.tileMatrix[0].scaleDenominator - WmtsCapability.Constants.GOOGLEMAPS_LEVEL0_SCALE_DENOM) < 1
                 && (tms.supportedCrs.includes("3857") || tms.supportedCrs.includes("900913"))
         )
