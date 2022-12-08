@@ -21,15 +21,6 @@ parameters:
     type: boolean
     default: false
 
-resources:
-  pipelines:
-  - pipeline: itwinjs-docs
-    source: iTwin.js/Docs/iTwin.js Docs - YAML
-    branch: master
-  - pipeline: bis-docs
-    source: BIS/Generate-Schema-Markdown-(GitHub)
-    branch: master
-
 jobs:
   - job:
     workspace:
@@ -95,7 +86,7 @@ jobs:
         displayName: Copy Reference files to Staging
 
       # Download bis docs artifact
-      - {{ if parameters.useCurrentBisDocsArtifact }}:
+      - {{ if eq(parameters.useCurrentBisDocsArtifact, true) }}:
         - download: current
           artifact: Bis Docs
           displayName: Download Bis Docs Artifact
