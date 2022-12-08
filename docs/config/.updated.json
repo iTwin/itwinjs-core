@@ -3211,8 +3211,8 @@
   },
   "bis\\index\\index.html": {
     "filename": "bis\\index\\index.html",
-    "hash": "4d82c3aada12f995cbd8c3c868c54c20cd9d7b25",
-    "updated": "2022-12-05T16:17:04.657Z"
+    "hash": "816f3e28b4aa608eefe841cfc1e99bd7269ef43f",
+    "updated": "2022-12-08T19:56:07.350Z"
   },
   "bis\\leftnav\\index.html": {
     "filename": "bis\\leftnav\\index.html",
@@ -3891,13 +3891,13 @@
   },
   "changehistory\\index\\index.html": {
     "filename": "changehistory\\index\\index.html",
-    "hash": "96f6e6d6167d8cf5b38393ecb5cb1792db83aaa3",
-    "updated": "2022-12-02T19:53:19.103Z"
+    "hash": "bafde71b6c5fab24abd78d2a2f7962fa56ddedad",
+    "updated": "2022-12-08T19:56:07.350Z"
   },
   "changehistory\\leftnav\\index.html": {
     "filename": "changehistory\\leftnav\\index.html",
-    "hash": "3d202f5f28aefba043336d743e8fd006f44a8412",
-    "updated": "2022-12-02T19:53:19.103Z"
+    "hash": "8f7d020a4fa94d433e7fdf8bda94ca45f144d810",
+    "updated": "2022-12-08T19:56:07.350Z"
   },
   "changehistory\\migration-guides\\migratingbuildsystems\\index.html": {
     "filename": "changehistory\\migration-guides\\migratingbuildsystems\\index.html",
@@ -5528,5 +5528,10 @@
     "filename": "learning\\geometry\\angle\\index.html",
     "hash": "356744bd5e1d44aee28ca02b96bd12f4e49d75a7",
     "updated": "2022-12-02T19:53:19.103Z"
+  },
+  "changehistory\\3.5.0\\index.html": {
+    "filename": "changehistory\\3.5.0\\index.html",
+    "hash": "bafde71b6c5fab24abd78d2a2f7962fa56ddedad",
+    "updated": "2022-12-08T19:56:07.350Z"
   }
 }
