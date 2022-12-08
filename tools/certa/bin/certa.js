@@ -39,6 +39,12 @@ yargs.strict(true)
       type: "boolean",
       default: undefined
     },
+    "debug-electron": {
+      describe: `Run in debug mode (alias to '--debug').`,
+      type: "boolean",
+      default: undefined,
+      hidden: true
+    },
     "testBundle": {
       alias: "t",
       describe: `The path to a javascript file containing all mocha tests to be run.`,
@@ -70,7 +76,7 @@ const { certa } = require("../lib/CertaCore");
 const { CertaConfig } = require("../lib/CertaConfig");
 
 const opts = {
-  debug: yargs.argv.debug,
+  debug: yargs.argv.debug || yargs.argv["debug-electron"],
   cover: yargs.argv.cover,
   testBundle: yargs.argv.testBundle,
   backendInitModule: yargs.argv.backend,
