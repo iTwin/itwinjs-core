@@ -1,6 +1,18 @@
 # Change Log - @itwin/components-react
 
-This log was last generated on Wed, 30 Nov 2022 14:28:19 GMT and should not be manually modified.
+This log was last generated on Wed, 07 Dec 2022 19:12:36 GMT and should not be manually modified.
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:36 GMT
+
+### Updates
+
+- Enabled virtualization in FilterBuilder property selector
+- Add ability to disable property selection in `PropertyFilterBuilder` component
+- Deprecating Table related components
+- Unpin classnames package
+- `ControlledTree`: Add ability to mark nodes as not selectable
+- Use --buic-toolbar-opacity to set the opacity of toolbar items.
 
 ## 3.4.7
 Wed, 30 Nov 2022 14:28:19 GMT

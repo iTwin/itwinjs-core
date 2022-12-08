@@ -2,6 +2,27 @@
   "name": "@itwin/core-bentley",
   "entries": [
     {
+      "version": "3.5.0",
+      "tag": "@itwin/core-bentley_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add EntityReferences"
+          },
+          {
+            "comment": "add PickAsyncMethods utility type"
+          },
+          {
+            "comment": "Add new ChangeSetStatus.DownloadCancelled error code."
+          },
+          {
+            "comment": "Add ByteStream.remainingLength."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.7",
       "tag": "@itwin/core-bentley_v3.4.7",
       "date": "Wed, 30 Nov 2022 14:28:19 GMT",
