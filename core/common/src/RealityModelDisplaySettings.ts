@@ -76,6 +76,9 @@ export interface RealityModelDisplayProps {
 
 /** Settings that control how a point cloud reality model is displayed within a [Viewport]($frontend).
  * @note This is an immutable type - to modify its properties, use [[clone]].
+ * Eye-Dome Lighting (EDL) is a non-photorealistic, image-based shading technique that was designed to improve depth
+ * perception in scientific visualization. It is particularly useful for visualizing monochrome point cloud data, but
+ * also can be useful for point clouds with color information.
  * @note EDL mode is ignored (off) if the view is not perspective (camera is off)
  * @see [[RealityModelDisplaySettings.pointCloud]].
  * @beta
