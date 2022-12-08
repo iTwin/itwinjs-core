@@ -76,7 +76,7 @@ export interface RealityModelDisplayProps {
 
 /** Settings that control how a point cloud reality model is displayed within a [Viewport]($frontend).
  * @note This is an immutable type - to modify its properties, use [[clone]].
- * @note EDL mode is ignored (off) if the view is orthographic
+ * @note EDL mode is ignored (off) if the view is not perspective (camera is off)
  * @see [[RealityModelDisplaySettings.pointCloud]].
  * @beta
  */
@@ -111,7 +111,7 @@ export class PointCloudDisplaySettings {
   public readonly maxPixelsPerVoxel: number;
   /** The mode for the Eye-Dome Lighting (EDL) effect.
    * Default: "off"
-   * @note EDL mode is ignored (off) if the view is orthographic
+   * @note EDL mode is ignored (off) if the view is not perspective (camera is off)
    */
   public readonly edlMode: PointCloudEDLMode;
   /** A strength value for the Eye Dome Lighting (EDL) effect.
