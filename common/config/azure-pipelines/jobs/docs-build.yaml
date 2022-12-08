@@ -91,27 +91,35 @@ jobs:
           artifact: Bis Docs
           displayName: Download Bis Docs Artifact
 
-        - task: CopyFiles@2
-          displayName: Copy Bis Docs to staging
-          inputs:
-            SourceFolder: $(Pipeline.Workspace)/Bis Docs
-            TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
-
       - ${{ else }}:
-        - download: bis-docs
-          artifact: Bis Docs
+        - task: DownloadPipelineArtifact@2
           displayName: Download Bis Docs Artifact
-
-        - task: CopyFiles@2
-          displayName: Copy Bis Docs to staging
           inputs:
-            SourceFolder: "$(Pipeline.Workspace)/bis-docs/Bis Docs"
-            TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
+            buildType: specific
+            project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
+            pipeline: 6075
+            buildVersionToDownload: latestFromBranch
+            branchName: refs/heads/master
+            artifactName: Bis Docs
+            targetPath: $(Pipeline.Workspace)/Bis Docs
+
+      - task: CopyFiles@2
+        displayName: Copy Bis Docs to staging
+        inputs:
+          SourceFolder: $(Pipeline.Workspace)/Bis Docs
+          TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
       # The .updated.json is cached to track when the docs were last updated
-      - download: itwinjs-docs
-        artifact: .updated.json
+      - task: DownloadPipelineArtifact@2
         displayName: Download .updated.json
+        inputs:
+          buildType: specific
+          project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
+          pipeline: 7436 # iTwin.js/Docs/iTwin.js Docs - YAML
+          buildVersionToDownload: latestFromBranch
+          branchName: refs/heads/master
+          artifactName: .updated.json
+          targetPath: ${{ parameters.stagingDir }}/config/
 
       - task: CopyFiles@2
         displayName: Copy .updated.json to staging
