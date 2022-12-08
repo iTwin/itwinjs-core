@@ -13,7 +13,6 @@ import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 import { EntityReferences } from "./EntityReferences";
 import * as assert from "assert";
-import type { EntityClassProps, MixinProps, RelationshipClassProps } from "@itwin/ecschema-metadata";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
@@ -73,13 +72,13 @@ export class ClassRegistry {
     const schemaItemJson = iModel.nativeDb.getSchemaItem(classSchema, className);
     if (schemaItemJson.error)
       throw new IModelError(schemaItemJson.error, `failed to get schema item '${ecTypeQualifier}'`);
-    const schemaItem = JSON.parse(schemaItemJson.result as string) as EntityClassProps | MixinProps;
+    const schemaItem = JSON.parse(schemaItemJson.result as string);
     if (!("appliesTo" in schemaItem) && schemaItem.baseClass === undefined) {
       return ecTypeQualifier;
     }
     // typescript doesn't understand that the inverse of the above condition is
     // ("appliesTo" in rootclassMetaData || rootClassMetaData.baseClass !== undefined)
-    const parentItemQualifier = (schemaItem as MixinProps).appliesTo ?? schemaItem.baseClass as string;
+    const parentItemQualifier = schemaItem.appliesTo ?? schemaItem.baseClass as string;
     return this.getRootEntity(iModel, parentItemQualifier);
   }
 
@@ -145,7 +144,7 @@ export class ClassRegistry {
           assert(prop.relationshipClass);
           const maybeMetaData = iModel.nativeDb.getSchemaItem(...prop.relationshipClass.split(":") as [string, string]);
           assert(maybeMetaData.result !== undefined, "The nav props relationship metadata was not found");
-          const relMetaData: RelationshipClassProps = JSON.parse(maybeMetaData.result);
+          const relMetaData = JSON.parse(maybeMetaData.result);
           const rootClassMetaData = ClassRegistry.getRootEntity(iModel, relMetaData.target.constraintClasses[0]);
           // root class must be in BisCore so should be loaded since biscore classes will never get this
           // generated implementation

@@ -2,6 +2,72 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "3.5.0",
+      "tag": "@itwin/core-common_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "update RenderScheduleScript.discloseIds to use EntityReferences"
+          },
+          {
+            "comment": "add setTimeout override"
+          },
+          {
+            "comment": "add setTimeout override"
+          },
+          {
+            "comment": "Removing node (runtime) dependencies from core-common"
+          },
+          {
+            "comment": "Deprecate Localization.getLocalizedStringWithNamespace"
+          },
+          {
+            "comment": "Update TypeOfChange with Parent changes"
+          },
+          {
+            "comment": "Support for reporting progress and cancelling 'pullChanges' in IpcApp."
+          },
+          {
+            "comment": "Added ability to display normal maps"
+          },
+          {
+            "comment": "Reject an EcefLocation with an origin at the center of the Earth."
+          },
+          {
+            "comment": "Add Rpc method for obtaining meshes from elements."
+          },
+          {
+            "comment": "Add RealityModelDisplaySettings for customization of reality model display."
+          },
+          {
+            "comment": "Avoid raising ViewDetails.onClipVectorChanged if the clip did not actually change."
+          },
+          {
+            "comment": "Add GraphicsRequestProps.useAbsolutePositions to address precision issues with coordinates far from the origin."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.7",
+      "tag": "@itwin/core-common_v3.4.7",
+      "date": "Wed, 30 Nov 2022 14:28:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.6",
+      "tag": "@itwin/core-common_v3.4.6",
+      "date": "Tue, 22 Nov 2022 14:24:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.5",
+      "tag": "@itwin/core-common_v3.4.5",
+      "date": "Thu, 17 Nov 2022 21:32:50 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.4.4",
       "tag": "@itwin/core-common_v3.4.4",
       "date": "Thu, 10 Nov 2022 19:32:17 GMT",

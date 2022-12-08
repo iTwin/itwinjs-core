@@ -710,6 +710,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         textureWeight: args.textureMapping.weight,
         worldMapping: args.textureMapping.worldMapping,
       }));
+      params.textureMapping.normalMapParams = args.textureMapping.normalMapParams;
     }
 
     if (args.source) {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { test, expect, Page } from '@playwright/test';
 import assert from 'assert';
-import { activeTabLocator, expectSavedFrontstageState, expectTabInPanelSection, floatingWidgetLocator, panelLocator, runKeyin, tabLocator, widgetLocator } from './Utils';
+import { activeTabLocator, expectSavedFrontstageState, expectTabInPanelSection, floatingWidgetLocator, openFrontstage, panelLocator, runKeyin, tabLocator, widgetLocator } from './Utils';
 
 enum WidgetState {
   Open = 0,
@@ -134,6 +134,22 @@ test.describe("widget state", () => {
     await setWidgetState(page, "FW-1", WidgetState.Open);
     const newWidgetBounds = await widget.boundingBox();
     expect(newWidgetBounds).toEqual(widgetBounds);
+  });
+
+  test("should maintain location of a hidden panel widget (after frontstage change)", async ({ context, page }) => {
+    const tab = tabLocator(page, "WT-2");
+    await expectTabInPanelSection(tab, "top", 1);
+
+    await setWidgetState(page, "WT-2", WidgetState.Hidden);
+    await expectSavedFrontstageState(context, (state) => {
+      return !!state.widgets.find((w) => w.id === "WT-2");
+    });
+
+    await openFrontstage(page, "appui-test-app:main-stage");
+
+    await openFrontstage(page, "appui-test-providers:WidgetApi");
+    await setWidgetState(page, "WT-2", WidgetState.Open);
+    await expectTabInPanelSection(tab, "top", 1);
   });
 
   test("should maintain location of a panel widget (after reload)", async ({ context, page }) => {

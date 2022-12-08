@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
+// cspell:word CWXY
 
 import { Geometry, PerpParallelOptions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
@@ -244,7 +245,7 @@ export class XYZ implements XYAndZ {
     return this.y;
   }
   /**
-   * Return the x,y, z component corresponding to 0,1,2.
+   * Set value at index 0 or 1 or 2.
    */
   public setAt(index: number, value: number): void {
     if (index < 0.5)
@@ -498,15 +499,19 @@ export class Point3d extends XYZ {
    * *  the magnitude of the vector is twice the area of the triangle.
    */
   public crossProductToPoints(pointA: Point3d, pointB: Point3d, result?: Vector3d): Vector3d {
-    return Vector3d.createCrossProduct(pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
+    return Vector3d.createCrossProduct(
+      pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
       pointB.x - this.x, pointB.y - this.y, pointB.z - this.z,
-      result);
+      result
+    );
   }
   /** Return the magnitude of the cross product of the vectors from this to pointA and pointB
    */
   public crossProductToPointsMagnitude(pointA: Point3d, pointB: Point3d): number {
-    return Geometry.crossProductMagnitude(pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
-      pointB.x - this.x, pointB.y - this.y, pointB.z - this.z);
+    return Geometry.crossProductMagnitude(
+      pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
+      pointB.x - this.x, pointB.y - this.y, pointB.z - this.z
+    );
   }
   /** Return the triple product of the vectors from this to pointA, pointB, pointC
    *
@@ -514,9 +519,11 @@ export class Point3d extends XYZ {
    * * This is 6 times the (signed) volume of the tetrahedron on the 4 points.
    */
   public tripleProductToPoints(pointA: Point3d, pointB: Point3d, pointC: Point3d): number {
-    return Geometry.tripleProduct(pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
+    return Geometry.tripleProduct(
+      pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
       pointB.x - this.x, pointB.y - this.y, pointB.z - this.z,
-      pointC.x - this.x, pointC.y - this.y, pointC.z - this.z);
+      pointC.x - this.x, pointC.y - this.y, pointC.z - this.z
+    );
   }
   /** Return the cross product of the vectors from this to pointA and pointB
    *
@@ -537,20 +544,24 @@ export class Point3d extends XYZ {
         this.x + fraction * (other.x - this.x),
         this.y + fraction * (other.y - this.y),
         this.z + fraction * (other.z - this.z),
-        result);
+        result
+      );
     const t: number = fraction - 1.0;
     return Point3d.create(
       other.x + t * (other.x - this.x),
       other.y + t * (other.y - this.y),
       other.z + t * (other.z - this.z),
-      result);
+      result
+    );
   }
   /** Return a point with independent x,y,z fractional interpolation. */
   public interpolateXYZ(fractionX: number, fractionY: number, fractionZ: number, other: Point3d, result?: Point3d): Point3d {
-    return Point3d.create(Geometry.interpolate(this.x, fractionX, other.x),
+    return Point3d.create(
+      Geometry.interpolate(this.x, fractionX, other.x),
       Geometry.interpolate(this.y, fractionY, other.y),
       Geometry.interpolate(this.z, fractionZ, other.z),
-      result);
+      result
+    );
   }
   /** Interpolate between points, then add a shift in the xy plane by a fraction of the XY projection perpendicular. */
   public interpolatePerpendicularXY(fraction: number, pointB: Point3d, fractionXYPerp: number, result?: Point3d): Point3d {
@@ -578,14 +589,16 @@ export class Point3d extends XYZ {
     return Point3d.create(this.x + vector.x * scaleFactor,
       this.y + vector.y * scaleFactor,
       this.z + vector.z * scaleFactor,
-      result);
+      result
+    );
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB */
   public plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYZ, scalarB: number, result?: Point3d): Point3d {
     return Point3d.create(this.x + vectorA.x * scalarA + vectorB.x * scalarB,
       this.y + vectorA.y * scalarA + vectorB.y * scalarB,
       this.z + vectorA.z * scalarA + vectorB.z * scalarB,
-      result);
+      result
+    );
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB + vectorC * scalarC */
   public plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Point3d): Point3d {
@@ -593,7 +606,8 @@ export class Point3d extends XYZ {
       this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC,
       this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC,
       this.z + vectorA.z * scalarA + vectorB.z * scalarB + vectorC.z * scalarC,
-      result);
+      result
+    );
   }
   /**
    * Return a point that is scaled from the source point.
@@ -907,6 +921,19 @@ export class Vector3d extends XYZ {
     this.z *= a;
     return true;
   }
+  /** Create a normalized vector from the inputs.
+   * @param result optional result
+   * @returns undefined if and only if normalization fails
+  */
+  public static createNormalized(x: number = 0, y: number = 0, z: number = 0, result?: Vector3d): Vector3d | undefined {
+    if (undefined === result)
+      result = Vector3d.create(x, y, z);
+    else
+      result.set(x, y, z);
+    if (result.normalizeInPlace())
+      return result;
+    return undefined;
+  }
   /**
    * Return fractional projection of target vector onto this
    * * It's returning the signed projection magnitude divided by the target magnitude. In other words,
@@ -946,6 +973,17 @@ export class Vector3d extends XYZ {
     result.z = this.z;
     return result;
   }
+  /** Return a vector same length as this but rotated 90 degrees clockwise */
+  public rotate90CWXY(result?: Vector3d): Vector3d {
+    result = result ? result : new Vector3d();
+    // save x,y to allow aliasing ("this" can be passed to the function as "result")
+    const xx: number = this.x;
+    const yy: number = this.y;
+    result.x = yy;
+    result.y = -xx;
+    result.z = this.z;
+    return result;
+  }
   /**
    * Return a vector which is in the xy plane, perpendicular ot the xy part of this vector, and of unit length.
    * * If the xy part is 00, the return is the rotated (but not normalized) xy parts of this vector.
@@ -955,6 +993,7 @@ export class Vector3d extends XYZ {
     result = result ? result : new Vector3d();
     const xx: number = this.x;
     const yy: number = this.y;
+    // save x,y to allow aliasing ("this" can be passed to the function as "result")
     result.x = -yy;
     result.y = xx;
     result.z = 0.0;
@@ -1015,6 +1054,10 @@ export class Vector3d extends XYZ {
    */
   public interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
+    /*
+     * For best last-bit behavior, if fraction is below 0.5, use this as base point.
+     * If above 0.5, use vectorB as base point.
+     */
     if (fraction <= 0.5) {
       result.x = this.x + fraction * (vectorB.x - this.x);
       result.y = this.y + fraction * (vectorB.y - this.y);

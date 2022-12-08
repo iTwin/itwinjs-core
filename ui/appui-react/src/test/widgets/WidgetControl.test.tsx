@@ -21,21 +21,21 @@ describe("WidgetControl", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     // need to set to UI 1 so widget state is independent of NineZoneState.
-    UiFramework.setUiVersion("1");
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
   });
 
-  const widgetProps: WidgetProps = {
+  const widgetProps: WidgetProps = { // eslint-disable-line deprecation/deprecation
     id: "test-widget",
     classId: TestWidget,
     defaultState: WidgetState.Hidden,
   };
 
   it("registerControl & widgetControl using same classId", () => {
-    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps); // eslint-disable-line deprecation/deprecation
     const widgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.Widget);
 
     expect(widgetControl).to.not.be.undefined;
@@ -50,7 +50,7 @@ describe("WidgetControl", () => {
   });
 
   it("setWidgetState", () => {
-    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps); // eslint-disable-line deprecation/deprecation
     const widgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.Widget);
 
     expect(widgetControl).to.not.be.undefined;

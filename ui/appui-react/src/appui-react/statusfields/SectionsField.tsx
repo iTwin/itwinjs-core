@@ -10,12 +10,13 @@ import "./SectionsField.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ClipEventType, IModelApp, ViewClipClearTool, ViewClipDecoration, ViewClipDecorationProvider, Viewport } from "@itwin/core-frontend";
-import { Dialog, FooterPopup, TitleBar } from "@itwin/appui-layout-react";
+import { FooterPopup } from "@itwin/appui-layout-react";
 import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { useActiveViewport } from "../hooks/useActiveViewport";
 import { UiFramework } from "../UiFramework";
 import { Indicator } from "./Indicator";
 import { StatusFieldProps } from "./StatusFieldProps";
+import { StatusBarDialog } from "../statusbar/dialog/Dialog";
 
 /** Sections Status Field Props
  * @beta
@@ -79,7 +80,7 @@ export function SectionsStatusField(props: SectionsStatusFieldProps) {
       {showIndicator &&
         <>
           <div ref={targetDiv} title={toolTip}>
-            <Indicator className={classes}
+            <Indicator className={classes} // eslint-disable-line deprecation/deprecation
               iconName="icon-section-tool"
               onClick={() => setPopupOpen(!isPopupOpen)}
               opened={isPopupOpen}
@@ -87,13 +88,13 @@ export function SectionsStatusField(props: SectionsStatusFieldProps) {
               isInFooterMode={props.isInFooterMode ?? true}
             />
           </div>
-          <FooterPopup
+          <FooterPopup // eslint-disable-line deprecation/deprecation
             target={targetDiv.current}
             onClose={() => setPopupOpen(false)}
             isOpen={isPopupOpen}>
-            <Dialog
+            <StatusBarDialog
               titleBar={
-                <TitleBar title={toolTip} />
+                <StatusBarDialog.TitleBar title={toolTip} />
               }>
               <div className="uifw-sections-footer-contents">
                 <Button onClick={handleClear}>{clearLabel}</Button>
@@ -102,7 +103,7 @@ export function SectionsStatusField(props: SectionsStatusFieldProps) {
                   <ToggleSwitch className="uifw-sections-toggle" onChange={toggleManipulators} checked={hasManipulatorsShown} />
                 </div>
               </div>
-            </Dialog>
+            </StatusBarDialog>
           </FooterPopup>
         </>
       }

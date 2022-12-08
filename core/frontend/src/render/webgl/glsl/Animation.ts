@@ -10,6 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { AnalysisStyleDisplacement, AnalysisStyleThematic, ThematicGradientSettings } from "@itwin/core-common";
 import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
 import { DrawParams } from "../DrawCommand";
+import { System } from "../System";
 import { TextureUnit } from "../RenderFlags";
 import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { IsThematic } from "../TechniqueFlags";
@@ -272,7 +273,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
       });
     });
 
-    if (isThematic === IsThematic.No) {
+    if (isThematic === IsThematic.No || System.instance.capabilities.isWebGL2) {
       vert.addUniform("u_animScalarParams", VariableType.Vec3, (prog) => {
         prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
           const scalars = getScalarChannel(params);

@@ -20,15 +20,14 @@ static def copyFile(srcFile, destDir) {
 task copyAssets {
     doLast {
         def dtaDir = "${rootDir}/../.."
-        println "dtaDir ${new File(dtaDir).canonicalPath}"
         def assetsDir = "${rootDir}/app/src/main/assets"
-        println "assetsDir ${new File(assetsDir).canonicalPath}"
 
         Map itemsToCopy = [
-                "${dtaDir}/lib/mobile/main.js": "${assetsDir}/backend",
-                "${dtaDir}/lib/mobile/assets": "${assetsDir}/backend/Assets",
-                "${dtaDir}/build": "${assetsDir}/frontend",
-                "${assetsDir}/frontend/locales/en": "${assetsDir}/frontend/locales/en-US"
+            "${dtaDir}/lib/mobile/main.js": "${assetsDir}/backend",
+            "${dtaDir}/lib/mobile/assets": "${assetsDir}/backend/Assets",
+            "${dtaDir}/build": "${assetsDir}/frontend",
+            "${assetsDir}/frontend/locales/en": "${assetsDir}/frontend/locales/en-US",
+            "${dtaDir}/lib/mobile/env.json": "${assetsDir}"
         ]
 
         for (def entry in itemsToCopy) {

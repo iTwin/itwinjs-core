@@ -466,11 +466,14 @@ describe("BsplineCurve", () => {
       0, 1, 1,
       0, 2, 2]);
     const myKnots = [0, 0, 0, 1, 2, 2, 2];
+    const myKnotsClassic = [0, ...myKnots, 2];
     const bcurve = BSplineCurve3d.create(poleBuffer, myKnots, 4)!;
     const bcurveB = BSplineCurve3d.createUniformKnots(poleBuffer, 4);
     ck.testFalse(bcurve.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane()));
     ck.testUndefined(BSplineCurve3d.createUniformKnots(poleBuffer, 10));
     ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 10));
+    ck.testUndefined(BSplineCurve3d.create(poleBuffer, [], 4));
+    ck.testDefined(BSplineCurve3d.create(poleBuffer, myKnotsClassic, 4));
     ck.testPointer(bcurveB);
     const poleBufferA = bcurve.copyPointsFloat64Array();
     const poleArray = bcurve.copyPoints();
@@ -541,7 +544,7 @@ describe("BsplineCurve", () => {
       const wrappedPoleArray = [];
       for (const p of poleArray) wrappedPoleArray.push(p.clone());
       for (let i = 0; i + 1 < order; i++) wrappedPoleArray.push(poleArray[i].clone());
-      const myKnots = buildWrappableSteppedKnots(poleArray.length, order, 1.0);
+      const myKnots = buildWrappableSteppedKnots(wrappedPoleArray.length, order, 1.0);
       const bcurve3d = BSplineCurve3d.create(wrappedPoleArray, myKnots, order)!;
       bcurve3d.setWrappable(BSplineWrapMode.OpenByAddingControlPoints);
       const bcurve4d = BSplineCurve3dH.create(wrappedPoleArray, myKnots, order)!;

@@ -68,6 +68,8 @@ beta;ProjectLocationHideTool
 beta;ProjectLocationSaveTool 
 beta;ProjectLocationShowTool 
 alpha;RedoTool 
+alpha;RegionBooleanMode
+alpha;RegionBooleanTool 
 alpha;RevolveCurveTool 
 alpha;RotateAbout
 alpha;RotateElementsTool 

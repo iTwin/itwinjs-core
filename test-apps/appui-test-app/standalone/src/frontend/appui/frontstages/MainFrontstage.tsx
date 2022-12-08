@@ -95,7 +95,7 @@ export class InitialIModelContentStageProvider extends ContentGroupProvider {
     return { ...contentGroupProps, contents: newContentsArray };
   }
 
-  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     const viewIdsSelected = SampleAppIModelApp.getInitialViewIds();
     const iModelConnection = UiFramework.getIModelConnection();
 
