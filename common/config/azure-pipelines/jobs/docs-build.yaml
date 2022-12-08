@@ -141,7 +141,7 @@ jobs:
       - publish: ${{ parameters.stagingDir }}/config/.updated.json
         artifact: .updated.json
         displayName: Publish .updated.json
-        condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
       - publish: ${{ parameters.outputDir }}
         artifact: DocsBuild
