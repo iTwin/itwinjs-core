@@ -61,7 +61,7 @@ jobs:
         displayName: rush docs
         workingDirectory: ${{ parameters.workingDir }}
 
-      # Gather all the pieces to run BeMetalsmith
+      # Gathers all the pieces to run BeMetalsmith
       - template: ../templates/gather-docs.yaml
         parameters:
           workingDir: ${{ parameters.workingDir }}
