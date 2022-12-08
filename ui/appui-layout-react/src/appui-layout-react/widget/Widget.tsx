@@ -9,7 +9,7 @@
 import "./Widget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Rectangle, SizeProps } from "@itwin/core-react";
+import { CommonProps, Rectangle, SizeProps, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, MeasureContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
@@ -40,18 +40,15 @@ export const WidgetProvider = React.memo<WidgetProviderProps>(function WidgetPro
 /** @internal */
 export interface WidgetProps extends CommonProps {
   children?: React.ReactNode;
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
   onTransitionEnd?(): void;
   widgetId?: string;
 }
 
 /** @internal */
-export interface WidgetComponent {
-  measure: () => Rectangle;
-}
-
-/** @internal */
 export const Widget = React.memo( // eslint-disable-line react/display-name, @typescript-eslint/naming-convention
-  React.forwardRef<WidgetComponent, WidgetProps>(
+  React.forwardRef<HTMLDivElement, WidgetProps>(
     function Widget(props, ref) { // eslint-disable-line @typescript-eslint/naming-convention
       const dispatch = React.useContext(NineZoneDispatchContext);
       const side = React.useContext(PanelSideContext);
@@ -125,9 +122,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
       const widgetContextValue = React.useMemo<WidgetContextArgs>(() => ({
         measure,
       }), [measure]);
-      React.useImperativeHandle(ref, () => ({
-        measure,
-      }), [measure]);
+      const refs = useRefs(ref, elementRef);
       const className = classnames(
         "nz-widget-widget",
         props.className,
@@ -136,8 +131,10 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
         <WidgetContext.Provider value={widgetContextValue}>
           <div
             className={className}
+            onMouseEnter={props.onMouseEnter}
+            onMouseLeave={props.onMouseLeave}
             onTransitionEnd={props.onTransitionEnd}
-            ref={elementRef}
+            ref={refs}
             style={props.style}
             data-widget-id={props.widgetId}
           >

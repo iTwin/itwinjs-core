@@ -60,9 +60,9 @@ describe("ContentLayout", () => {
       return TestFrontstage2.stageId;
     }
 
-    public get frontstage(): React.ReactElement<FrontstageProps> {
+    public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
       return (
-        <Frontstage id={this.id} defaultTool={CoreTools.selectElementCommand}
+        <Frontstage id={this.id} defaultTool={CoreTools.selectElementCommand} // eslint-disable-line deprecation/deprecation
           contentGroup={fourContentGroup} />
       );
     }
@@ -322,9 +322,9 @@ describe("SingleContentLayout", () => {
       return TestFrontstage1.stageId;
     }
 
-    public get frontstage(): React.ReactElement<FrontstageProps> {
+    public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
       return (
-        <Frontstage id={this.id} defaultTool={CoreTools.selectElementCommand}
+        <Frontstage id={this.id} defaultTool={CoreTools.selectElementCommand} // eslint-disable-line deprecation/deprecation
           contentGroup={myContentGroup} />
       );
     }

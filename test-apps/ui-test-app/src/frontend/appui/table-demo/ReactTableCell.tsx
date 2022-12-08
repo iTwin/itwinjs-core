@@ -5,6 +5,7 @@
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { CellItem, RowItem, TableDataProvider, TypeConverterManager } from "@itwin/components-react";
+/* eslint-disable deprecation/deprecation */
 
 export interface TableCellProps {
   tableDataProvider: TableDataProvider;

@@ -7,20 +7,19 @@
  */
 
 import { assert, BeEvent } from "@itwin/core-bentley";
-import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { Base64EncodedString, Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import { ScreenViewport } from "../../Viewport";
 import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 
+/** @internal */
 const tileImageSize = 256, untiledImageSize = 256;
 const earthRadius = 6378137;
-
 const doDebugToolTips = false;
 
-/** @internal */
+/** @beta */
 export enum MapLayerImageryProviderStatus {
   Valid,
   RequireAuth,
@@ -33,17 +32,28 @@ export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;
   public status: MapLayerImageryProviderStatus = MapLayerImageryProviderStatus.Valid;
   public readonly onStatusChanged = new BeEvent<(provider: MapLayerImageryProvider) => void>();
+
+  /** @internal */
   private readonly _mercatorTilingScheme = new WebMercatorTilingScheme();
+  /** @internal */
   private readonly _geographicTilingScheme = new GeographicTilingScheme();
 
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
   public get maximumScreenSize() { return 2 * this.tileSize; }
-  public get minimumZoomLevel(): number { return 0; }
-  public get maximumZoomLevel(): number { return 22; }
+  public get minimumZoomLevel(): number { return this.defaultMinimumZoomLevel; }
+  public get maximumZoomLevel(): number { return this.defaultMaximumZoomLevel; }
   public get usesCachedTiles() { return this._usesCachedTiles; }
   public get mutualExclusiveSubLayer(): boolean { return false; }
   public get useGeographicTilingScheme() { return false;}
   public cartoRange?: MapCartoRectangle;
+
+  // Those values are used internally for various computation, this should not get overriden.
+  /** @internal */
+  protected readonly defaultMinimumZoomLevel = 0;
+  /** @internal */
+  protected readonly defaultMaximumZoomLevel = 22;
+
+  /** @internal */
   protected get _filterByCartoRange() { return true; }
   constructor(protected readonly _settings: ImageMapLayerSettings, protected _usesCachedTiles: boolean) {
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
@@ -51,14 +61,18 @@ export abstract class MapLayerImageryProvider {
   }
 
   public async initialize(): Promise<void> {
-    this.loadTile(0, 0, 22).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.loadTile(0, 0, this.defaultMaximumZoomLevel).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       if (tileData !== undefined)
         this._missingTileData = tileData.data as Uint8Array;
     });
   }
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
   public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme;  }
+
+  /** @internal */
   public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
+
+  /** @internal */
   protected _missingTileData?: Uint8Array;
   public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
 
@@ -93,34 +107,34 @@ export abstract class MapLayerImageryProvider {
     featureInfos.push({layerName: this._settings.name});
   }
 
-  protected getRequestAuthorization(): RequestBasicCredentials | undefined {
-    return (this._settings.userName && this._settings.password) ? { user: this._settings.userName, password: this._settings.password } : undefined;
-  }
-
-  protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {
-    const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
+  /** @internal */
+  protected async getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {
+    const arrayBuffer = await tileResponse.arrayBuffer();
+    const byteArray: Uint8Array = new Uint8Array(arrayBuffer);
     if (!byteArray || (byteArray.length === 0))
       return undefined;
     if (this.matchesMissingTile(byteArray) && zoomLevel > 8)
       return undefined;
 
-    let imageFormat: ImageSourceFormat;
-
-    // Note: 'includes' is used here instead of exact comparison because we encountered
-    // some servers that would give content type such as 'image/png;charset=UTF-8'.
-    const contentType: string = tileResponse.header["content-type"].toLowerCase();
-    if (contentType.includes("image/jpeg")){
-      imageFormat = ImageSourceFormat.Jpeg;
-    } else if (contentType.includes("image/png")){
-      imageFormat = ImageSourceFormat.Png;
-    } else {
-      assert(false, "Invalid tile content type");
-      return undefined;
+    const contentType = tileResponse.headers.get("content-type")?.toLowerCase();
+    let imageFormat: ImageSourceFormat | undefined;
+    if (contentType) {
+      // Note: 'includes' is used here instead of exact comparison because we encountered
+      // some servers that would give content type such as 'image/png;charset=UTF-8'.
+      if (contentType.includes("image/jpeg"))
+        imageFormat = ImageSourceFormat.Jpeg;
+      else if (contentType.includes("image/png"))
+        imageFormat = ImageSourceFormat.Png;
     }
 
-    return new ImageSource(byteArray, imageFormat);
+    if (imageFormat !== undefined)
+      return new ImageSource(byteArray, imageFormat);
+
+    assert(false, "Invalid tile content type");
+    return undefined;
   }
 
+  /** @internal */
   public setStatus(status: MapLayerImageryProviderStatus) {
     if (this.status !== status) {
       this.status = status;
@@ -128,10 +142,20 @@ export abstract class MapLayerImageryProvider {
     }
   }
 
+  /** @internal */
+  protected setRequestAuthorization(headers: Headers){
+    if  (this._settings.userName && this._settings.password) {
+      headers.set("Authorization", `Basic ${  Base64EncodedString.encode(`${this._settings.userName  }:${  this._settings.password}`)}`);
+    }
+  }
+  /** @internal */
   public async makeTileRequest(url: string) {
-    const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
-    tileRequestOptions.auth = this.getRequestAuthorization();
-    return request(url, tileRequestOptions);
+    let headers: Headers|undefined;
+    if  (this._settings.userName && this._settings.password) {
+      headers = new Headers();
+      this.setRequestAuthorization(headers);
+    }
+    return fetch(url, { method: "GET", headers });
   }
 
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
@@ -147,7 +171,7 @@ export abstract class MapLayerImageryProvider {
         this._hasSuccessfullyFetchedTile = true;
       }
 
-      return this.getImageFromTileResponse(tileResponse, zoomLevel);
+      return await this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error: any) {
       if (error?.status === 401) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
@@ -165,31 +189,22 @@ export abstract class MapLayerImageryProvider {
     }
   }
 
+  /** @internal */
   protected async toolTipFromUrl(strings: string[], url: string): Promise<void> {
-
-    const requestOptions: RequestOptions = {
-      method: "GET",
-      responseType: "text",
-      auth: this.getRequestAuthorization(),
-    }; // spell-checker: disable-line
+    const headers = new Headers();
+    this.setRequestAuthorization(headers);
 
     try {
-      const response: Response = await request(url, requestOptions);
-      if (undefined !== response.text) {
-        strings.push(response.text);
+      const response = await fetch(url, { method: "GET", headers });
+      const text = await response.text();
+      if (undefined !== text) {
+        strings.push(text);
       }
     } catch {
     }
   }
-  protected async toolTipFromJsonUrl(_strings: string[], url: string): Promise<void> {
-    try {
-      const json = await getJson(url);
-      if (undefined !== json) {
 
-      }
-    } catch { }
-  }
-
+  /** @internal */
   public matchesMissingTile(tileData: Uint8Array): boolean {
     if (!this._missingTileData)
       return false;
@@ -202,47 +217,55 @@ export abstract class MapLayerImageryProvider {
     }
     return true;
   }
+
+  /** @internal */
   // calculates the projected x cartesian coordinate in EPSG:3857from the longitude in EPSG:4326 (WGS84)
   public getEPSG3857X(longitude: number): number {
     return longitude * 20037508.34 / 180.0;
   }
 
+  /** @internal */
   // calculates the projected y cartesian coordinate in EPSG:3857from the latitude in EPSG:4326 (WGS84)
   public getEPSG3857Y(latitude: number): number {
     const y = Math.log(Math.tan((90.0 + latitude) * Math.PI / 360.0)) / (Math.PI / 180.0);
     return y * 20037508.34 / 180.0;
   }
 
+  /** @internal */
   // calculates the longitude in EPSG:4326 (WGS84) from the projected x cartesian coordinate in EPSG:3857
   public getEPSG4326Lon(x3857: number): number {
     return Angle.radiansToDegrees(x3857/earthRadius);
   }
 
+  /** @internal */
   // calculates the latitude in EPSG:4326 (WGS84) from the projected y cartesian coordinate in EPSG:3857
   public getEPSG4326Lat(y3857: number): number {
     const y = 2 * Math.atan(Math.exp(y3857 / earthRadius)) - (Math.PI/2);
     return Angle.radiansToDegrees(y);
   }
 
+  /** @internal */
   // Map tile providers like Bing and Mapbox allow the URL to be constructed directory from the zoom level and tile coordinates.
   // However, WMS-based servers take a bounding box instead. This method can help get that bounding box from a tile.
-
   public getEPSG4326Extent(row: number, column: number, zoomLevel: number): { longitudeLeft: number, longitudeRight: number, latitudeTop: number, latitudeBottom: number } {
-    const mapSize = 256 << zoomLevel;
-    const leftGrid = 256 * column;
-    const topGrid = 256 * row;
+    // Shift left (this.tileSize << zoomLevel) overflow when using 512 pixels tile at higher resolution,
+    // so use Math.pow instead (I assume the performance lost to be minimal)
+    const mapSize = this.tileSize*Math.pow(2,zoomLevel);
+    const leftGrid = this.tileSize  * column;
+    const topGrid = this.tileSize  * row;
 
     const longitudeLeft = 360 * ((leftGrid / mapSize) - 0.5);
-    const y0 = 0.5 - ((topGrid + 256) / mapSize);
+    const y0 = 0.5 - ((topGrid + this.tileSize ) / mapSize);
     const latitudeBottom = 90.0 - 360.0 * Math.atan(Math.exp(-y0 * 2 * Math.PI)) / Math.PI;
 
-    const longitudeRight = 360 * (((leftGrid + 256) / mapSize) - 0.5);
+    const longitudeRight = 360 * (((leftGrid + this.tileSize) / mapSize) - 0.5);
     const y1 = 0.5 - (topGrid / mapSize);
     const latitudeTop = 90.0 - 360.0 * Math.atan(Math.exp(-y1 * 2 * Math.PI)) / Math.PI;
 
     return { longitudeLeft, longitudeRight, latitudeTop, latitudeBottom };
   }
 
+  /** @internal */
   public getEPSG3857Extent(row: number, column: number, zoomLevel: number): { left: number, right: number, top: number, bottom: number } {
     const epsg4326Extent = this.getEPSG4326Extent(row, column, zoomLevel);
 
@@ -254,11 +277,13 @@ export abstract class MapLayerImageryProvider {
     return { left, right, bottom, top };
   }
 
+  /** @internal */
   public getEPSG3857ExtentString(row: number, column: number, zoomLevel: number) {
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
     return `${tileExtent.left.toFixed(2)},${tileExtent.bottom.toFixed(2)},${tileExtent.right.toFixed(2)},${tileExtent.top.toFixed(2)}`;
   }
 
+  /** @internal */
   public getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean) {
     const tileExtent = this.getEPSG4326Extent(row, column, zoomLevel);
     if (latLongAxisOrdering) {

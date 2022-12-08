@@ -19,6 +19,7 @@ The iTwin.js library is organized into the following separately downloadable [np
   - ($webgl-compatibility)
   - ($hypermodeling)
   - ($markup)
+  - ($map-layers-formats)
 - Backend
   - ($backend)
   - ($transformer)

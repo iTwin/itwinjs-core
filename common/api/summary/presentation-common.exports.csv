@@ -165,6 +165,11 @@ public;Id64sRulesetVariableJSON
 public;IdCategoryIdentifier
 public;ImageIdOverride 
 deprecated;ImageIdOverride 
+alpha;InstanceFilterDefinition
+alpha;InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInstancePath & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias)
+alpha;InstanceFilterRelatedInstancePath
+alpha;InstanceFilterRelatedInstanceRelationshipAlias
+alpha;InstanceFilterRelatedInstanceTargetAlias
 public;InstanceId = Id64String
 public;InstanceKey
 public;InstanceKey
@@ -258,7 +263,6 @@ public;PartialHierarchyModification
 public;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
 public;PartialNode = AllOrNone
 public;PartialNodeJSON = AllOrNone
-internal;PRESENTATION_COMMON_ROOT: string
 internal;PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface"
 public;PresentationError 
 alpha;PresentationIpcEvents

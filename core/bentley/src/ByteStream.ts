@@ -62,15 +62,28 @@ export class ByteStream {
   }
 
   /** The number of bytes in this stream */
-  public get length(): number { return this._view.byteLength; }
+  public get length(): number {
+    return this._view.byteLength;
+  }
+
+  /** The number of bytes remaining to be read, from [[curPos]] to the end of the stream. */
+  public get remainingLength(): number {
+    return this.length - this.curPos;
+  }
+
   /** Returns true if the current read position has been advanced past the end of the stream. This generally indicates that an attempt was made to read more data than is available.
    * @see [[isAtTheEnd]]
    */
-  public get isPastTheEnd(): boolean { return this.curPos > this.length; }
+  public get isPastTheEnd(): boolean {
+    return this.curPos > this.length;
+  }
+
   /** Returns true if the current read position has advanced precisely to the end of the stream, indicating all of the data has been consumed.
    * @see [[isPastTheEnd]].
    */
-  public get isAtTheEnd(): boolean { return this.curPos === this.length; }
+  public get isAtTheEnd(): boolean {
+    return this.curPos === this.length;
+  }
 
   /** The current read position as an index into the stream of bytes. */
   public get curPos(): number { return this._curPos; }

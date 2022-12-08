@@ -19,13 +19,13 @@ describe("ViewSelector", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    UiFramework.setUiVersion("1");
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
   });
 
   after(async () => {
   // restore to default "2" setting
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
     TestUtils.terminateUiFramework();
   });
@@ -33,6 +33,7 @@ describe("ViewSelector", () => {
   it("should render correctly", () => {
     const wrapper = shallow(
       <Provider store={TestUtils.store}>
+        {/* eslint-disable-next-line deprecation/deprecation */}
         <FrameworkVersion>
           <ViewSelector imodel={imodelMock.object} />
         </FrameworkVersion>
@@ -44,6 +45,7 @@ describe("ViewSelector", () => {
   it("should set Show settings by ViewSelector.updateShowSettings", () => {
     const wrapper = mount(
       <Provider store={TestUtils.store}>
+        {/* eslint-disable-next-line deprecation/deprecation */}
         <FrameworkVersion>
           <ViewSelector imodel={imodelMock.object} listenForShowUpdates={true} />
         </FrameworkVersion>
@@ -68,7 +70,7 @@ describe("ViewSelector", () => {
   it("should trigger componentDidUpdate processing", async () => {
     const wrapper = mount(
       <Provider store={TestUtils.store}>
-        <FrameworkVersion>
+        <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
           <ViewSelector imodel={imodelMock.object} />
         </FrameworkVersion>
       </Provider>

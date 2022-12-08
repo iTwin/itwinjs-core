@@ -18,10 +18,22 @@ import {
   WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
 import { Point2d } from "@itwin/core-geometry";
+import { ByteStream } from "@itwin/core-bentley";
 
 chai.use(chaiAsPromised);
 
 const wmsSampleSource = { formatId: "WMS", url: "https://localhost/wms", name: "Test WMS" };
+
+const createFakeTileResponse = (contentType: string, data?: Uint8Array) => {
+  const test = {
+    headers: new Headers( { "content-type" : contentType}),
+    arrayBuffer: async () => {
+      return Promise.resolve(data ? ByteStream.fromUint8Array(data).arrayBuffer : undefined);
+    },
+    status: 200,
+  } as unknown;   // By using unknown type, I can define parts of Response I really need
+  return (test as Response );
+};
 
 describe("WmsMapLayerImageryProvider", () => {
   const sandbox = sinon.createSandbox();
@@ -94,11 +106,8 @@ describe("WmsMapLayerImageryProvider", () => {
     });
 
     // Test with empty body
-    const makeTileRequestStub = sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
-      const header: any = { "content-type": "image/png" };
-      // const header: any = {};
-      // header["content-type"] = "image/png";
-      return Promise.resolve({ body: [], text: undefined, status: 200, header });
+    let makeTileRequestStub = sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
+      return Promise.resolve(createFakeTileResponse("image/png", undefined));
     });
     const provider = new WmsMapLayerImageryProvider(settings);
     let tileData = await provider.loadTile(0, 0, 0);
@@ -106,30 +115,25 @@ describe("WmsMapLayerImageryProvider", () => {
 
     // test fake png
     makeTileRequestStub.restore();
-    sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
-      const header: any = {};
-      header["content-type"] = "image/png";
-      return Promise.resolve({ body: [0, 0, 0], text: undefined, status: 200, header });
+    makeTileRequestStub = sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
+      return Promise.resolve(createFakeTileResponse("image/png", Uint8Array.from([0, 0, 0])));
     });
     tileData = await provider.loadTile(0, 0, 0);
     chai.expect(tileData).to.not.undefined;
 
     // test fake jpg
     makeTileRequestStub.restore();
-    sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
-      const header: any = {};
-      header["content-type"] = "image/jpeg";
-      return Promise.resolve({ body: [0, 0, 0], text: undefined, status: 200, header });
+    makeTileRequestStub = sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
+      return Promise.resolve(createFakeTileResponse("image/jpeg", Uint8Array.from([0, 0, 0])));
     });
+
     tileData = await provider.loadTile(0, 0, 0);
     chai.expect(tileData).to.not.undefined;
 
     // test invalid content type
     makeTileRequestStub.restore();
     sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
-      const header: any = {};
-      header["content-type"] = "image/strangeFormat";
-      return Promise.resolve({ body: [0, 0, 0], text: undefined, status: 200, header });
+      return Promise.resolve(createFakeTileResponse("image/strangeFormat", Uint8Array.from([0, 0, 0])));
     });
     tileData = await provider.loadTile(0, 0, 0);
     chai.expect(tileData).to.undefined;
@@ -310,7 +314,7 @@ describe("MapLayerImageryProvider with IModelApp", () => {
     // Now lets have a successful tile request
     makeTileRequestStub.restore();
     makeTileRequestStub = sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
-      return Promise.resolve({ body: undefined, text: undefined, status: 200, header: undefined });
+      return Promise.resolve(createFakeTileResponse("image/png"));
     });
     await provider.loadTile(0, 0, 0);
     // Event should not have been triggered again

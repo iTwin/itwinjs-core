@@ -272,6 +272,11 @@ export class FrontstageManager {
     FrontstageManager._nineZoneSize = size;
   }
 
+  /** @internal */
+  public static get frontstageDefs(): ReadonlyMap<string, FrontstageDef> {
+    return this._frontstageDefs;
+  }
+
   /** Get Frontstage Deactivated event. */
   public static readonly onFrontstageDeactivatedEvent = new FrontstageDeactivatedEvent();
 
@@ -344,7 +349,9 @@ export class FrontstageManager {
   /** @internal */
   public static readonly onPanelSizeChangedEvent = new PanelSizeChangedEvent();
 
-  /** Get Nine-zone State Manager. */
+  /** Get Nine-zone State Manager.
+   * @deprecated Used in UI1.0 only.
+   */
   public static get NineZoneManager() {
     const id = FrontstageManager.activeFrontstageId;
     let manager = FrontstageManager._nineZoneManagers.get(id);
@@ -372,20 +379,12 @@ export class FrontstageManager {
   private static getFrontstageKey(frontstageId: string) {
     const provider = FrontstageManager._frontstageProviders.get(frontstageId);
     let isIModelIndependent = false;
-    if (provider) {
+    if (provider && !provider.frontstageConfig) {
       isIModelIndependent = !!provider.frontstage.props.isIModelIndependent;
     }
     const imodelId = UiFramework.getIModelConnection()?.iModelId ?? "noImodel";
     const key = isIModelIndependent ? frontstageId : `[${imodelId}]${frontstageId}`;
     return key;
-  }
-
-  /** Add a Frontstage via a definition.
-   * @param frontstageDef  Definition of the Frontstage to add
-   */
-  private static addFrontstageDef(frontstageDef: FrontstageDef): void {
-    const key = FrontstageManager.getFrontstageKey(frontstageDef.id);
-    FrontstageManager._frontstageDefs.set(key, frontstageDef);
   }
 
   /** @internal */

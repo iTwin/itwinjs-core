@@ -811,8 +811,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.changeView(newView, options); // switch this viewport to use new ViewState2d
 
     if (options && options.doFit) { // optionally fit view to the extents of the new model
-      const range = await this.iModel.models.queryModelRanges([baseModelId]);
-      this.zoomToVolume(Range3d.fromJSON(range[0]), options);
+      const range = await this.iModel.models.queryExtents([baseModelId]);
+      this.zoomToVolume(Range3d.fromJSON(range[0]?.extents), options);
     }
   }
 
@@ -1068,6 +1068,10 @@ export abstract class Viewport implements IDisposable, TileUser {
       removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
         this.synchWithView();
       }));
+
+      removals.push(this.iModel.onDisplayedExtentsExpansion.addListener(() => {
+        this.invalidateController();
+      }));
     }
   }
 
@@ -1095,6 +1099,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     removals.push(settings.onWhiteOnWhiteReversalChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
+    removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
 
     removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
@@ -1901,21 +1907,24 @@ export abstract class Viewport implements IDisposable, TileUser {
       return ViewStatus.InvalidViewport;
 
     if (view.is3d() && view.isCameraOn) {
-      const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
-      const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, Matrix3d.createScale(factor, factor, 1.0));
+      const eyePoint = view.getEyePoint().clone();
+      const targetPoint = view.getTargetPoint();
 
-      const offset = centerNpc.minus(NpcCenter); // offset by difference of old/new center
-      offset.z = 0.0;     // z center stays the same.
+      if (newCenter) {
+        const dir = eyePoint.vectorTo(targetPoint);
+        newCenter.plusScaled(dir, -0.5, eyePoint);
+        newCenter.plusScaled(dir, 0.5, targetPoint);
+      }
 
-      const offsetTransform = Transform.createTranslationXYZ(offset.x, offset.y, offset.z);
-      const product = offsetTransform.multiplyTransformTransform(scaleTransform);
+      const transform = Transform.createFixedPointAndMatrix(targetPoint, Matrix3d.createScale(factor, factor, factor));
+      const zDir = view.getZVector();
 
-      const frust = new Frustum();
-      product.multiplyPoint3dArrayInPlace(frust.points);
+      transform.multiplyPoint3d(eyePoint, eyePoint);
+      targetPoint.setFrom(eyePoint.plusScaled(zDir, zDir.dotProduct(eyePoint.vectorTo(targetPoint))));
 
-      this.npcToWorldArray(frust.points);
-      view.setupFromFrustum(frust);
-      view.centerEyePoint();
+      const status = view.lookAt({eyePoint, targetPoint, upVector: view.getYVector(), lensAngle: view.camera.lens });
+      if (ViewStatus.Success !== status)
+        return status;
     } else {
       // for non-camera views, do the zooming by adjusting the origin and delta directly so there can be no
       // chance of the rotation changing due to numerical precision errors calculating it from the frustum corners.

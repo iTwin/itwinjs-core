@@ -23,6 +23,8 @@ import { CacheInvalidationProps } from "../../presentation-components/common/Con
 import { PresentationTableDataProvider, TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE } from "../../presentation-components/table/DataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * This is just a helper class to provide public access to
  * protected methods of PresentationTableDataProvider
@@ -196,7 +198,7 @@ describe("TableDataProvider", () => {
       provider.filterExpression = "test";
       expect(await provider.getDescriptorOverrides()).to.deep.eq({
         displayType: provider.displayType,
-        filterExpression: "test",
+        fieldsFilterExpression: "test",
       });
     });
 

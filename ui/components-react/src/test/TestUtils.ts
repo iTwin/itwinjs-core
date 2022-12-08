@@ -51,6 +51,7 @@ export class TestUtils {
     return new Promise((resolve) => setTimeout(resolve));
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public static createPropertyRecord(value: any, column: ColumnDescription, typename: string) {
     const v: PrimitiveValue = {
       valueFormat: PropertyValueFormat.Primitive,
@@ -160,6 +161,7 @@ export class TestUtils {
     return property;
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public static createEnumStringProperty(name: string, index: string, column?: ColumnDescription) {
     const value: PrimitiveValue = {
       displayValue: "",
@@ -189,6 +191,7 @@ export class TestUtils {
 
     return propertyRecord;
   }
+  // eslint-disable-next-line deprecation/deprecation
   public static createEnumProperty(name: string, index: string | number, column?: ColumnDescription) {
     const value: PrimitiveValue = {
       displayValue: name,
@@ -378,20 +381,26 @@ export class TestUtils {
 }
 
 /** @internal */
+// eslint-disable-next-line deprecation/deprecation
 export class TestFilterableTable implements FilterableTable {
   private _filterDescriptors = new TableFilterDescriptorCollection();
+  // eslint-disable-next-line deprecation/deprecation
   private _columnDescriptions: ColumnDescription[];
 
+  // eslint-disable-next-line deprecation/deprecation
   constructor(colDescriptions: ColumnDescription[]) {
     this._columnDescriptions = colDescriptions;
   }
 
   /** Gets the description of a column within the table. */
+  // eslint-disable-next-line deprecation/deprecation
   public getColumnDescription(columnKey: string): ColumnDescription | undefined {
+    // eslint-disable-next-line deprecation/deprecation
     return this._columnDescriptions.find((v: ColumnDescription) => v.key === columnKey);
   }
 
   /** Gets the filter descriptors for the table. */
+  // eslint-disable-next-line deprecation/deprecation
   public get filterDescriptors(): CompositeFilterDescriptorCollection {
     return this._filterDescriptors;
   }
@@ -408,5 +417,11 @@ export class MineDataController extends DataControllerBase {
     return { encounteredError: true, errorMessage: { severity: MessageSeverity.Error, briefMessage: "Test" } };
   }
 }
+
+/**
+ * Simplified type for `sinon.SinonSpy`.
+ * @internal
+ */
+export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
 
 export default TestUtils;   // eslint-disable-line: no-default-export

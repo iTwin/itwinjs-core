@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
-import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
+import { IModelHost, IModelHostConfiguration, IModelHostOptions, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
 import { AzureBlobStorage } from "../CloudStorageBackend";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -16,6 +16,7 @@ import { AzureServerStorage } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
 import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: path.join(__dirname, ".cache") };
@@ -45,6 +46,14 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("BisCore")).to.exist;
     expect(Schemas.getRegisteredSchema("Generic")).to.exist;
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
+  });
+
+  it("should call logger sync function", async () => {
+    const logChanged = sinon.spy(IModelHost as any, "syncNativeLogLevels");
+    await IModelHost.startup(opts);
+    expect(logChanged.callCount).eq(0);
+    Logger.setLevel("test-cat", LogLevel.Warning);
+    expect(logChanged.callCount).eq(1);
   });
 
   it("should raise onAfterStartup events", async () => {
@@ -125,9 +134,9 @@ describe("IModelHost", () => {
       accessKey: "testAccessKey",
     };
 
-    const setUseTileCacheStub = sinon.stub();
+    const setMaxTileCacheSizeStub = sinon.stub();
     sinon.stub(IModelHost, "platform").get(() => ({
-      setUseTileCache: setUseTileCacheStub,
+      setMaxTileCacheSize: setMaxTileCacheSizeStub,
     }));
 
     await IModelHost.startup(config);
@@ -137,7 +146,7 @@ describe("IModelHost", () => {
     assert.isDefined(IModelHost.tileStorage);
     assert.instanceOf(IModelHost.tileStorage!.storage, AzureServerStorage);
     assert.equal((IModelHost.tileStorage!.storage as any)._config.accountName, config.tileCacheAzureCredentials.account);
-    assert.isTrue(setUseTileCacheStub.calledOnceWithExactly(false));
+    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(0));
   });
 
   it("should set custom cloud storage provider for tile cache", async () => {
@@ -145,9 +154,9 @@ describe("IModelHost", () => {
     config.tileCacheService = {} as AzureBlobStorage;
     config.tileCacheStorage = {} as ServerStorage;
 
-    const setUseTileCacheStub = sinon.stub();
+    const setMaxTileCacheSizeStub = sinon.stub();
     sinon.stub(IModelHost, "platform").get(() => ({
-      setUseTileCache: setUseTileCacheStub,
+      setMaxTileCacheSize: setMaxTileCacheSizeStub,
     }));
 
     await IModelHost.startup(config);
@@ -155,7 +164,7 @@ describe("IModelHost", () => {
     assert.equal(IModelHost.tileCacheService, config.tileCacheService);
     assert.isDefined(IModelHost.tileStorage);
     assert.equal(IModelHost.tileStorage!.storage, config.tileCacheStorage);
-    assert.isTrue(setUseTileCacheStub.calledOnceWithExactly(false));
+    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(0));
   });
 
   it("should throw if both tileCacheService and tileCacheAzureCredentials are set", async () => {
@@ -181,16 +190,33 @@ describe("IModelHost", () => {
   });
 
   it("should use local cache if cloud storage provider for tile cache is not set", async () => {
-    const setUseTileCacheStub = sinon.stub();
+    const setMaxTileCacheSizeStub = sinon.stub();
     sinon.stub(IModelHost, "platform").get(() => ({
-      setUseTileCache: setUseTileCacheStub,
+      setMaxTileCacheSize: setMaxTileCacheSizeStub,
     }));
 
     await IModelHost.startup(opts);
 
     assert.isUndefined(IModelHost.tileCacheService);
     assert.isUndefined(IModelHost.tileUploader);
-    assert.isTrue(setUseTileCacheStub.calledOnceWithExactly(true));
+    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(IModelHostConfiguration.defaultMaxTileCacheDbSize));
+  });
+
+  it("should use configured size for local cache", async () => {
+    const setMaxTileCacheSizeStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setMaxTileCacheSize: setMaxTileCacheSizeStub,
+    }));
+
+    const maxTileCacheDbSize = 123456;
+    await IModelHost.startup({
+      ...opts,
+      maxTileCacheDbSize,
+    });
+
+    assert.isUndefined(IModelHost.tileCacheService);
+    assert.isUndefined(IModelHost.tileUploader);
+    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(maxTileCacheDbSize));
   });
 
   it("should cleanup tileCacheService, tileStorageService and tileUploader on shutdown", async () => {

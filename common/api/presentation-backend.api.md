@@ -73,13 +73,14 @@ export function combineDiagnosticsOptions(...options: Array<BackendDiagnosticsOp
 
 // @public
 export interface ContentCacheConfig {
-    // @alpha
+    // @beta
     size?: number;
 }
 
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
+    memoryCacheSize?: number;
     // (undocumented)
     mode: HierarchyCacheMode.Disk;
 }
@@ -144,6 +145,13 @@ export class Presentation {
     static initialize(props?: PresentationProps): void;
     static get initProps(): PresentationProps | undefined;
     static terminate(): void;
+}
+
+// @public
+export interface PresentationAssetsRootConfig {
+    backend: string;
+    // @deprecated
+    common: string;
 }
 
 // @public
@@ -235,6 +243,15 @@ export class PresentationManager {
 }
 
 // @public
+export interface PresentationManagerCachingConfig {
+    content?: ContentCacheConfig;
+    // @beta
+    hierarchies?: HierarchyCacheConfig;
+    // @beta
+    workerConnectionCacheSize?: number;
+}
+
+// @public @deprecated
 export enum PresentationManagerMode {
     ReadOnly = 0,
     ReadWrite = 1
@@ -244,10 +261,7 @@ export enum PresentationManagerMode {
 export interface PresentationManagerProps {
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
-    caching?: {
-        hierarchies?: HierarchyCacheConfig;
-        content?: ContentCacheConfig;
-    };
+    caching?: PresentationManagerCachingConfig;
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
     };
@@ -264,11 +278,9 @@ export interface PresentationManagerProps {
     id?: string;
     // @deprecated
     localeDirectories?: string[];
+    // @deprecated
     mode?: PresentationManagerMode;
-    presentationAssetsRoot?: string | {
-        backend: string;
-        common: string;
-    };
+    presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
     // @alpha

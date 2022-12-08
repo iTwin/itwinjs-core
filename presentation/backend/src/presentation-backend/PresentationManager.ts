@@ -29,6 +29,7 @@ import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStr
 /**
  * Presentation manager working mode.
  * @public
+ * @deprecated The attribute is not used by [[PresentationManager]] anymore
  */
 export enum PresentationManagerMode {
   /**
@@ -81,6 +82,8 @@ export interface HierarchyCacheConfigBase {
 
 /**
  * Configuration for in-memory hierarchy cache.
+ *
+ * @see [Memory cache documentation page]($docs/presentation/advanced/Caching.md#memory-cache)
  * @beta
  */
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -89,6 +92,8 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
 
 /**
  * Configuration for persistent disk hierarchy cache.
+ *
+ * @see [Disk cache documentation page]($docs/presentation/advanced/Caching.md#disk-cache)
  * @beta
  */
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -100,6 +105,14 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
    * The default directory depends on the iModel and the way it's opened.
    */
   directory?: string;
+
+  /**
+   * While the cache itself is stored on a disk, there's still a required small in-memory cache.
+   * The parameter allows controlling size of that cache. Defaults to `32768000` bytes (32 MB).
+   *
+   * @beta
+   */
+  memoryCacheSize?: number;
 }
 
 /**
@@ -108,6 +121,7 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
  * Hybrid cache uses a combination of in-memory and disk caches, which should make it a better
  * alternative for cases when there are lots of simultaneous requests.
  *
+ * @see [Hybrid cache documentation page]($docs/presentation/advanced/Caching.md#hybrid-cache)
  * @beta
  */
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
@@ -119,6 +133,8 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
 
 /**
  * Configuration for content cache.
+ *
+ * @see [Content cache documentation page]($docs/presentation/advanced/Caching.md#content-cache)
  * @public
  */
 export interface ContentCacheConfig {
@@ -127,9 +143,41 @@ export interface ContentCacheConfig {
    *
    * Defaults to `100`.
    *
-   * @alpha
+   * @beta
    */
   size?: number;
+}
+
+/**
+ * Caching configuration options for [[PresentationManager]].
+ * @public
+ */
+export interface PresentationManagerCachingConfig {
+  /**
+   * Hierarchies-related caching options.
+   *
+   * @see [Hierarchies cache documentation page]($docs/presentation/advanced/Caching.md#hierarchies-cache)
+   * @beta
+   */
+  hierarchies?: HierarchyCacheConfig;
+
+  /**
+   * Content-related caching options.
+   *
+   * @see [Content cache documentation page]($docs/presentation/advanced/Caching.md#content-cache)
+   */
+  content?: ContentCacheConfig;
+
+  /**
+   * Each worker thread (see [[workerThreadsCount]]) opens a connection to an iModel used for a request. This
+   * means there could be  `{workerThreadsCount} * {iModels count}` number of connections. Each connection
+   * uses a memory cache to increase iModel read performance. This parameter allows controlling the size of that
+   * cache. Defaults to `32768000` bytes (32 MB).
+   *
+   * @see [Worker connections cache documentation page]($docs/presentation/advanced/Caching.md#worker-connections-cache)
+   * @beta
+   */
+  workerConnectionCacheSize?: number;
 }
 
 /**
@@ -153,45 +201,44 @@ export interface MultiElementPropertiesResponse {
 }
 
 /**
+ * Configuration options for supplying asset directly paths to [[PresentationManager]].
+ * @public
+ */
+export interface PresentationAssetsRootConfig {
+  /** Path to `presentation-backend` assets */
+  backend: string;
+
+  /**
+   * Path to `presentation-common` assets.
+   *
+   * @deprecated This path is not used anymore
+   */
+  common: string;
+}
+
+/**
  * Properties that can be used to configure [[PresentationManager]]
  * @public
  */
 export interface PresentationManagerProps {
   /**
-   * Path overrides for presentation assets. Need to be overriden by application if it puts these assets someplace else than the default.
+   * Path overrides for presentation backend assets. Need to be overriden by application if it puts these assets someplace else than the default.
    *
-   * By default paths to asset directories are determined during the call of [[Presentation.initialize]] using this algorithm:
+   * By default the path to assets directory is determined during the call of [[Presentation.initialize]] using this algorithm:
    *
-   * - for `presentation-backend` assets:
+   * - if path of `.js` file that contains [[PresentationManager]] definition contains "presentation-backend", assume the package is in `node_modules` and the directory structure is:
+   *   - `assets/*\*\/*`
+   *   - `presentation-backend/{presentation-backend source files}`
    *
-   *   - if path of `.js` file that contains [[PresentationManager]] definition contains "presentation-backend", assume the package is in `node_modules` and the directory structure is:
-   *     - `assets/*\*\/*`
-   *     - `presentation-backend/{presentation-backend source files}`
+   *   which means the assets can be found through a relative path `../assets/` from the JS file being executed.
    *
-   *     which means the assets can be found through a relative path `../assets/` from the JS file being executed.
-   *
-   * - for `presentation-common` assets:
-   *
-   *   - if path of `.js` files of `presentation-common` package contain "presentation-common", assume the package is in `node_modules` and the directory structure is:
-   *     - `assets/*\*\/*`
-   *     - `presentation-common/{presentation-common source files}`
-   *
-   *     which means the assets can be found through a relative path `../assets/` from the package's source files.
-   *
-   * - in both cases, if we determine that source files are not in `node_modules`, assume the backend is webpacked into a single file with assets next to it:
+   * - else, assume the backend is webpacked into a single file with assets next to it:
    *   - `assets/*\*\/*`
    *   - `{source file being executed}.js`
    *
    *   which means the assets can be found through a relative path `./assets/` from the `{source file being executed}`.
-   *
-   * The overrides can be specified as a single path (when assets of both `presentation-backend` and `presentation-common` packages are merged into a single directory) or as an object with two separate paths for each package.
    */
-  presentationAssetsRoot?: string | {
-    /** Path to `presentation-backend` assets */
-    backend: string;
-    /** Path to `presentation-common` assets */
-    common: string;
-  };
+  presentationAssetsRoot?: string | PresentationAssetsRootConfig;
 
   /**
    * A list of directories containing application's presentation rulesets.
@@ -253,8 +300,10 @@ export interface PresentationManagerProps {
    * use `ReadWrite`, others might want to set to `ReadOnly` for better performance.
    *
    * Defaults to [[PresentationManagerMode.ReadWrite]].
+   *
+   * @deprecated The attribute is not used by [[PresentationManager]] anymore
    */
-  mode?: PresentationManagerMode;
+  mode?: PresentationManagerMode; // eslint-disable-line deprecation/deprecation
 
   /**
    * The interval (in milliseconds) used to poll for presentation data changes. Only has
@@ -265,16 +314,7 @@ export interface PresentationManagerProps {
   updatesPollInterval?: number;
 
   /** Options for caching. */
-  caching?: {
-    /**
-     * Hierarchies-related caching options.
-     * @beta
-     */
-    hierarchies?: HierarchyCacheConfig;
-
-    /** Content-related caching options. */
-    content?: ContentCacheConfig;
-  };
+  caching?: PresentationManagerCachingConfig;
 
   /**
    * Use [SQLite's Memory-Mapped I/O](https://sqlite.org/mmap.html) for worker connections. This mode improves performance of handling

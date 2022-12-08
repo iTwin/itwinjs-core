@@ -12,6 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[FooterIndicator]] component.
+ * @deprecated Props of a deprecated component.
  * @beta
  */
 export interface FooterIndicatorProps extends CommonProps {
@@ -28,10 +29,10 @@ export interface FooterIndicatorProps extends CommonProps {
 }
 
 /** Indicator used in [[Footer]] component.
+ * @deprecated Use [StatusBarIndicator]($appui-react) instead.
  * @beta
  */
-export function FooterIndicator(props: FooterIndicatorProps) {
-
+export const FooterIndicator = React.forwardRef<HTMLDivElement, FooterIndicatorProps>(function FooterIndicator(props, ref) {
   const { isInFooterMode, children, ...attributes } = props;
 
   const className = classnames(
@@ -41,8 +42,8 @@ export function FooterIndicator(props: FooterIndicatorProps) {
   );
 
   return (
-    <div {...{ ...attributes, className }}>
+    <div ref={ref} {...{ ...attributes, className }}>
       {children}
     </div>
   );
-}
+});

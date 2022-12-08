@@ -77,7 +77,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
   public override render(): React.ReactNode {
     return (
       <>
-        <Indicator
+        <Indicator // eslint-disable-line deprecation/deprecation
           iconName={`icon-${this.getSnapModeIconNameFromMode(this.props.snapMode)}`}
           toolTip={this._title}
           label={this._title}

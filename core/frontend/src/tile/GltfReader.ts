@@ -15,7 +15,7 @@ import {
 import {
   BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
-  QPoint3dList, Quantization, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
+  QPoint3dList, Quantization, RenderMaterial, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
@@ -33,6 +33,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { TextureImageSource } from "../render/RenderTexture";
+import { CreateRenderMaterialArgs } from "../render/RenderMaterial";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -381,7 +382,7 @@ interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
 
 interface Gltf2Material extends GltfChildOfRootProperty {
   pbrMetallicRoughness?: GltfMaterialPbrMetallicRoughness;
-  normalTexture?: unknown;
+  normalTexture?: GltfTextureInfo;
   occlusionTexture?: unknown;
   emissiveTexture?: GltfTextureInfo;
   emissiveFactor?: number[];
@@ -1309,24 +1310,24 @@ export abstract class GltfReader {
 
   protected readFeatureIndices(_json: any): number[] | undefined { return undefined; }
 
+  private extractId(value: any): string | undefined {
+    switch (typeof value) {
+      case "string":
+        return value;
+      case "number":
+        return value.toString();
+      default:
+        return undefined;
+    }
+  }
+
   private extractTextureId(material: GltfMaterial): string | undefined {
     if (typeof material !== "object")
       return undefined;
 
-    const extractId = (value: any) => {
-      switch (typeof value) {
-        case "string":
-          return value;
-        case "number":
-          return value.toString();
-        default:
-          return undefined;
-      }
-    };
-
     // Bimium's shader value...almost certainly obsolete at this point.
     if (isGltf1Material(material))
-      return material.diffuse ?? extractId(material.values?.tex);
+      return material.diffuse ?? this.extractId(material.values?.tex);
 
     // KHR_techniques_webgl extension
     const techniques = this._glTF.extensions?.KHR_techniques_webgl?.techniques;
@@ -1337,13 +1338,23 @@ export abstract class GltfReader {
         for (const uniformName of Object.keys(uniforms)) {
           const uniform = uniforms[uniformName];
           if (typeof uniform === "object" && uniform.type === GltfDataType.Sampler2d)
-            return extractId((ext.values[uniformName] as any)?.index);
+            return this.extractId((ext.values[uniformName] as any)?.index);
         }
       }
     }
 
-    const id = extractId(material.pbrMetallicRoughness?.baseColorTexture?.index);
-    return id ?? extractId(material.emissiveTexture?.index);
+    const id = this.extractId(material.pbrMetallicRoughness?.baseColorTexture?.index);
+    return id ?? this.extractId(material.emissiveTexture?.index);
+  }
+
+  private extractNormalMapId(material: GltfMaterial): string | undefined {
+    if (typeof material !== "object")
+      return undefined;
+
+    if (isGltf1Material(material))
+      return undefined;
+
+    return this.extractId(material.normalTexture?.index);
   }
 
   private isMaterialTransparent(material: GltfMaterial): boolean {
@@ -1365,9 +1376,15 @@ export abstract class GltfReader {
   protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined {
     const isTransparent = this.isMaterialTransparent(material);
     const textureId = this.extractTextureId(material);
-    const textureMapping = undefined !== textureId ? this.findTextureMapping(textureId, isTransparent) : undefined;
+    const normalMapId = this.extractNormalMapId(material);
+    const textureMapping = (undefined !== textureId || undefined !== normalMapId) ? this.findTextureMapping(textureId, isTransparent, normalMapId) : undefined;
     const color = colorFromMaterial(material, isTransparent);
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
+    let renderMaterial: RenderMaterial | undefined;
+    if (undefined !== textureMapping && undefined !== textureMapping.normalMapParams) {
+      const args: CreateRenderMaterialArgs = { diffuse: { color }, specular: { color: ColorDef.white }, textureMapping };
+      renderMaterial = IModelApp.renderSystem.createRenderMaterial(args);
+    }
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d): GltfMeshData[] {
@@ -2052,12 +2069,42 @@ export abstract class GltfReader {
     return renderTexture ?? false;
   }
 
-  protected findTextureMapping(id: string, isTransparent: boolean): TextureMapping | undefined {
-    let texture = this._resolvedTextures.get({ id, isTransparent });
-    if (undefined === texture)
-      this._resolvedTextures.set({ id, isTransparent }, texture = this.resolveTexture(id, isTransparent));
+  protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined): TextureMapping | undefined {
+    if (undefined === id && undefined === normalMapId)
+      return undefined;
 
-    return texture ? new TextureMapping(texture, new TextureMapping.Params()) : undefined;
+    let texture;
+    if (undefined !== id) {
+      texture = this._resolvedTextures.get({ id, isTransparent });
+      if (undefined === texture)
+        this._resolvedTextures.set({ id, isTransparent }, texture = this.resolveTexture(id, isTransparent));
+    }
+
+    let normalMap;
+    if (undefined !== normalMapId) {
+      normalMap = this._resolvedTextures.get({ id: normalMapId, isTransparent: false });
+      if (undefined === normalMap)
+        this._resolvedTextures.set({ id: normalMapId, isTransparent: false }, normalMap = this.resolveTexture(normalMapId, false));
+    }
+
+    let nMap;
+    if (normalMap) {
+      if (texture) {
+        nMap = {
+          normalMap,
+        };
+      } else {
+        texture = normalMap;
+        nMap = {};
+      }
+    }
+
+    if (!texture)
+      return undefined;
+
+    const textureMapping = new TextureMapping(texture, new TextureMapping.Params());
+    textureMapping.normalMapParams = nMap;
+    return textureMapping;
   }
 }
 
@@ -2082,6 +2129,12 @@ export interface ReadGltfGraphicsArgs {
    * If not supplied, relative URIs cannot be resolved. For glTF assets containing no relative URIs, this is not required.
    */
   baseUrl?: string;
+  /** @alpha */
+  contentRange?: ElementAlignedBox3d;
+  /** @alpha */
+  transform?: Transform;
+  /** @alpha */
+  hasChildren?: boolean;
 }
 
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
@@ -2107,6 +2160,9 @@ export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<Rend
  */
 export class GltfGraphicsReader extends GltfReader {
   private readonly _featureTable?: FeatureTable;
+  private readonly _contentRange?: ElementAlignedBox3d;
+  private readonly _transform?: Transform;
+  private readonly _isLeaf: boolean;
   public readonly binaryData?: Uint8Array; // strictly for tests
 
   public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
@@ -2115,6 +2171,10 @@ export class GltfGraphicsReader extends GltfReader {
       iModel: args.iModel,
       vertexTableRequired: true,
     });
+
+    this._contentRange = args.contentRange;
+    this._transform = args.transform;
+    this._isLeaf = true !== args.hasChildren;
 
     this.binaryData = props.binaryData;
     const pickableId = args.pickableOptions?.id;
@@ -2126,7 +2186,7 @@ export class GltfGraphicsReader extends GltfReader {
 
   public async read(): Promise<GltfReaderResult> {
     await this.resolveResources();
-    return this.readGltfAndCreateGraphics(true, this._featureTable, undefined);
+    return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._contentRange, this._transform);
   }
 
   public get nodes(): GltfDictionary<GltfNode> { return this._nodes; }

@@ -46,6 +46,7 @@
     "SearchPlaceholder": "Search...",
     "StoreOnModelSettings": "Store on Model Settings",
     "StoreOnITwinSettings": "Store on iTwin Settings",
+    "TechPreviewBadgeTooltip": "Technology preview",
     "Type": "Type",
     "URL": "URL",
     "UrlInputPlaceHolder": "Enter Map Source URL",

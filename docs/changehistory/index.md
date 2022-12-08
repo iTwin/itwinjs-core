@@ -1,147 +1,233 @@
-
-# 3.3.0 Change Notes
+# 3.5.0 Change Notes
 
 Table of contents:
 
 - [Display system](#display-system)
-  - [Dynamic schedule scripts](#dynamic-schedule-scripts)
-  - [Hiliting models and subcategories](#hiliting-models-and-subcategories)
-  - [Improved appearance overrides for animated views](#improved-appearance-overrides-for-animated-views)
-- [AppUi](#appui)
-  - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
-  - [Tool Settings title](#tool-settings-title)
-- [ElectronApp changes](#electronapp-changes)
-- [Frontend category APIs](#frontend-category-apis)
-- [IModelHostOptions](#imodelhostoptions)
-- [Progress API for downloading changesets](#progress-api-for-downloading-changesets)
-- [RPC over IPC](#rpc-over-ipc)
+  - [Reality model display customization](#reality-model-display-customization)
+  - [View padding](#view-padding)
 - [Presentation](#presentation)
-  - [Relationship properties](#relationship-properties)
-- [Webpack 5](#webpack-5)
+  - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
+  - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
+- [Element aspect ids](#element-aspect-ids)
+- [AppUi](#appui)
+- [New packages](#new-packages)
+  - [@itwin/map-layers-formats](#itwinmap-layers-formats)
+- [Geometry](#geometry)
+  - [Polyface](#polyface)
+  - [Curves](#curves)
 - [Deprecations](#deprecations)
-  - [@itwin/core-bentley](#itwincore-bentley)
+  - [@itwin/appui-layout-react](#itwinappui-layout-react)
+  - [@itwin/appui-react](#itwinappui-react)
+  - [@itwin/components-react](#itwincomponents-react)
+  - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-common](#itwincore-common)
   - [@itwin/core-geometry](#itwincore-geometry)
-  - [@itwin/core-mobile](#itwincore-mobile)
+  - [@itwin/core-transformer](#itwincore-transformer)
+  - [@itwin/presentation-backend](#itwinpresentation-backend)
 
 ## Display system
 
-### Dynamic schedule scripts
+### Reality model display customization
 
-[Timeline animation](../learning/display/TimelineAnimation.md) enables the visualization of change within an iModel over a period of time. This can be a valuable tool for, among other things, animating the contents of a viewport to show the progress of an asset through the phases of its construction. However, one constraint has always limited the utility of this feature: the instructions for animating the view were required to be stored on a persistent element - either a [DisplayStyle]($backend) or a [RenderTimeline]($backend) - in the [IModel]($common).
+You can now customize various aspects of how a reality model is displayed within a [Viewport]($frontend) by applying your own [RealityModelDisplaySettings]($common) to the model. For contextual reality models, use [ContextRealityModel.displaySettings]($common); for persistent reality [Model]($backend)s, use [DisplayStyleSettings.setRealityModelDisplaySettings]($common).
 
-That constraint has now been lifted. This makes it possible to create and apply ad-hoc animations entirely on the frontend. For now, support for this capability must be enabled when calling [IModelApp.startup]($frontend) by setting [TileAdmin.Props.enableFrontendScheduleScripts]($frontend) to `true`, as in this example:
+For all types of reality models, you can customize how the model's color is mixed with a color override applied by a [FeatureAppearance]($common) or a [SpatialClassifier]($common). [RealityModelDisplaySettings.overrideColorRatio]($common) defaults to 0.5, mixing the two colors equally, but you can adjust it to any value between 0.0 (use only the model's color) and 1.0 (use only the override color).
+
+Point clouds provide the following additional customizations:
+
+- [PointCloudDisplaySettings.sizeMode]($common) controls how the size of each point in the cloud is computed - either as a specific radius in pixels via [PointCloudDisplaySettings.pixelSize]($common), or based on the [Tile]($frontend)'s voxel size in meters.
+- When using voxel size mode, points can be scaled using [PointCloudDisplaySettings.voxelScale]($common) and clamped to a range of pixel sizes using [PointCloudDisplaySettings.minPixelsPerVoxel]($common) and [PointCloudDisplaySettings.maxPixelsPerVoxel]($common).
+- [PointCloudDisplaySettings.shape]($common) specifies whether to draw rounded points or square points.
+
+### View padding
+
+Functions like [ViewState.lookAtVolume]($frontend) and [Viewport.zoomToElements]($frontend) fit a view to a specified volume. They accept a [MarginOptions]($frontend) that allows the caller to customize how tightly the view fits to the volume, via [MarginPercent]($frontend). However, the amount by which the volume is enlarged to add extra space can yield surprising results. For example, a [MarginPercent]($frontend) that specifies a margin of 25% on each side - `{left: .25, right: .25, top: .25, bottom: .25}` - actually *doubles* the width and height of the volume, adding 50% of the original volume's size to each side. Moreover, [MarginPercent]($frontend)'s constructor clamps the margin values to a minimum of zero and maximum of 0.25.
+
+Now, [MarginOptions]($frontend) has an alternative way to specify how to adjust the size of the viewed volume, using [MarginOptions.paddingPercent]($frontend). Like [MarginPercent]($frontend), a [PaddingPercent]($frontend) specifies the extra space as a percentage of the original volume's space on each side - though it may also specify a single padding to be applied to all four sides, or omit any side that should have no padding applied. For example,
+
+```
+{paddingPercent: {left: .2, right: .2, top: .2, bottom: .2}}
+// is equivalent to
+{paddingPercent: .2}
+```
+
+and
+
+```
+{paddingPercent: {left: 0, top: 0, right: .5, bottom: .5}}
+// is equivalent to
+{paddingPercent: {right: .5, bottom: .5}
+```
+
+Moreover, [PaddingPercent]($frontend) imposes no constraints on the padding values. They can even be negative, which causes the volume to shrink instead of expand by **subtracting** a percentage of the original volume's size from one or more sides.
+
+The padding computations are more straightforward than those used for margins. For example, `{paddingPercent: 0.25}` adds 25% of the original volume's size to each side, whereas the equivalent `marginPercent` adds 50% to each side.
+
+Note that both margins and padding apply only to 2d views, or to 3d views with the camera turned off; and that additional extra space will be allocated on either the top and bottom or left and right to preserve the viewport's aspect ratio.
+
+## Presentation
+
+### Controlling in-memory cache sizes
+
+The presentation library uses a number of SQLite connections, each of which have an associated in-memory page cache. Ability to control the size of these caches on the backend has been added to allow consumers fine-tune their configuration based on their memory restrictions and use cases.
+
+The configuration is done when initializing [Presentation]($presentation-backend) or creating a [PresentationManager]($presentation-backend):
 
 ```ts
-await IModelApp.startup({
-  tileAdmin: {
-    enableFrontendScheduleScripts: true,
+Presentation.initialize({
+  caching: {
+    // use 8 megabytes page cache for worker connections to iModels
+    workerConnectionCacheSize: 8 * 1024 * 1024,
+    // use a disk-based hierarchy cache with a 4 megabytes in-memory page cache
+    hierarchies: {
+      mode: HierarchyCacheMode.Disk,
+      memoryCacheSize: 4 * 1024 * 1024,
+    },
   },
 });
 ```
 
-Then, you can create a new schedule script using [RenderSchedule.ScriptBuilder]($common) or [RenderSchedule.Script.fromJSON]($common) and apply it by assigning to [DisplayStyleState.scheduleScript]($frontend). For example, given a JSON representation of the script:
+See the [Caching documentation page](../presentation/advanced/Caching.md) for more details on various caches used by presentation system.
 
-```ts
-function updateScheduleScript(
-  viewport: Viewport,
-  props: RenderSchedule.ScriptProps
-): void {
-  viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
-}
+### Changes to infinite hierarchy prevention
+
+The idea of infinite hierarchy prevention is to stop producing hierarchy when we notice duplicate ancestor nodes. See more details about that in the [Infinite hierarchy prevention page](../presentation/hierarchies/InfiniteHierarchiesPrevention.md).
+
+Previously, when a duplicate node was detected, our approach to handle the situation was to just hide the duplicate node altogether. However, in some situations that turned out to be causing mismatches between what we get through a nodes count request and what we get through a nodes request (e.g. the count request returns `2`, but the nodes request returns only 1 node). There was no way to keep the count request efficient with this approach of handling infinite hierarchies.
+
+The new approach, instead of hiding the duplicate node, shows it, but without any children. This still "breaks" the hierarchy when we want that, but keeps the count and nodes in sync.
+
+#### Example
+
+Say, we have two instances A and B and they point to each other through a relationship:
+
+```
+A -> refers to -> B
+B -> refers to -> A
 ```
 
-### Hiliting models and subcategories
+With presentation rules we can set up a hierarchy where root node is A, its child is B, whose child is again A, and so on.
 
-Support for hiliting models and subcategories using [HiliteSet]($frontend) has been promoted from `@beta` to `@public`. This allows applications to toggle hiliting of all elements belonging to a set of [Model]($backend)s and/or [SubCategory]($backend)'s. This feature can work in one of two modes, specified by [HiliteSet.modelSubCategoryMode]($frontend):
+With previous approach the produced hierarchy "breaks" at the B node and looks like this:
 
-- Union - an element will be hilited if either its model or its subcategory is hilited; or
-- Intersection - an element will be hilited if both its model and its subcategory are hilited.
+```
++ A
++--+ B
+```
 
-Applications often work with [Category]($backend)'s instead of subcategories. You can use the new [Categories API](#frontend-category-apis) to obtain the Ids of the subcategories belonging to one or more categories.
+With the new approach we "break" at the duplicate A node:
 
-### Improved appearance overrides for animated views
+```
++ A
++--+ B
+   +--+ A
+```
 
-The appearances of elements within a view can be [customized](../learning/display/SymbologyOverrides.md) in a variety of ways. Two such sources of customization are a [FeatureOverrideProvider]($frontend) like [EmphasizeElements]($frontend), which can change the color, transparency, and/or emphasis effect applied to any number of elements; and a [RenderSchedule.Script]($common), which can modify the color and transparency of groups of elements over time. Previously, when these two sources of appearance overrides came into conflict, the results were less than ideal:
+## Element aspects
 
-- If any aspect of the element's appearance was overridden by a [FeatureOverrideProvider]($frontend), then **none** of the schedule script's appearance overrides would be applied to that element.
-- If some elements were being emphasized in the view (e.g., via [EmphasizeElements.emphasizeElements]($frontend)), any non-emphasized elements whose appearance was modified by the schedule script would not be drawn using the de-emphasized (typically, light transparent grey) appearance, making it difficult for the emphasized elements to stand out.
+### Aspect Ids
 
-Both of these problems are addressed in iTwin.js 3.3.0.
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so the ids returned are not unique from all element ids and may collide.
 
-- The schedule script's overrides are now combined with the element's overrides, but at a lower priority such that if a FeatureOverrideProvider changes the color of the element to red, and the script wants to change its color to green and make it semi-transparent, the element will be drawn as semi-transparent red.
-- [EmphasizeElements]($frontend) now ignores the schedule script's color and transparency overrides for non-emphasized elements when other elements are being emphasized. Other [FeatureOverrideProvider]($frontend)s can do the same - or otherwise customize to which elements the script's overrides are applied - by supplying a function to do so to [FeatureOverrides.ignoreAnimationOverrides]($common).
+### ExternalSourceAspect find methods
+
+[ExternalSourceAspect.findBySource]($core-backend) is deprecated. Use [ExternalSourceAspect.findAllBySource]($core-backend) instead.
+
+An [Element]($core-backend) can have more than one ExternalSourceAspect with the same scope, kind, and identifier. Also, many elements could have ExternalSourceAspects with the same scope, kind, and identifier. Therefore, `ExternalSourceAspect.findAllBySource` returns an *array*.
+
+If an app expects there to be only one [ExternalSourceAspect]($core-backend) with a given scope, kind, and identifier in the iModel, it must check that the array returned by ExternalSourceAspect.findAllBySource contains only one item.
+
+To narrow the search to just the `ExternalSourceAspect`s on a single element, use an ECSql query, such as `select ecinstanceid from Bis.ExternalSourceAspect where scope.id=? and kind=? and identifier=? and element.id=?`. If only one such aspect is expected, verify that only one row is found.
 
 ## AppUi
 
-### Auto-hiding floating widgets
+### Setting allowed panel zones for widgets
 
-When a widget is in floating state, it will not automatically hide when the rest of the UI auto-hides. To create a widget that will automatically hide with the in-viewport tool widgets, set the prop [AbstractWidgetProps.hideWithUiWhenFloating]($appui-abstract) to `true` in your UiProvider.
+When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
 
-Auto-hide UI feature will ignore dragged floating widgets and keep them visible until drag interaction is complete. Floating widgets are also animated correctly when hiding.
+## New packages
 
-### Tool Settings title
+### @itwin/map-layers-formats
 
-By default, when the Tool Settings widget is floating, the title will read "Tool Settings". To use the name of the active tool as the title instead, you can now use [UiFramework.setUseToolAsToolSettingsLabel]($appui-react) when your app starts.
+A new `@itwin/map-layers-formats` package has been introduced to provide additional [MapLayerFormat]($frontend)s not delivered as part of `@itwin/core-frontend`. The initial release contains the new `ArgGISFeature` format which allows vector data published by [ArcGIS Feature services](https://enterprise.arcgis.com/en/server/latest/publish-services/windows/what-is-a-feature-service-.htm) to be displayed in a [Viewport]($frontend).
 
-```ts
-UiFramework.setUseToolAsToolSettingsLabel(true);
-```
+To use this package, you must initialize it by calling [MapLayersFormats.initialize]($map-layers-formats) to register the additional formats. This should be done only **after** [IModelApp.startup]($frontend) has been called.
 
-## ElectronApp changes
+## Geometry
 
-Reduced API surface of an `ElectronApp` class to only allow white-listed APIs from `electron` modules to be called. `ElectronApp` is updated to reflect the change: `callShell` and `callApp` methods are removed, `callDialog` is updated to only show dialogs and a message box.
+### Polyface
 
-## Frontend category APIs
+The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
 
-A [Category]($backend) provides a way to organize groups of [GeometricElement]($backend)s. Each category contains at least one [SubCategory]($backend) which defines the appearance of geometry belonging to that subcategory. This information is important for frontend code - for example, the display system needs access to subcategory appearances so that it can draw elements correctly, and applications may want to [hilite subcategories](#hiliting-models-and-subcategories) in a [Viewport]($frontend).
+### Curves
 
-[IModelConnection.categories]($frontend) now provides access to APIs for querying this information. The information is cached upon retrieval so that repeated requests need not query the backend.
-
-- [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
-- [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
-
-## IModelHostOptions
-
-The argument for [IModelHost.startup]($backend) has been changed from [IModelHostConfiguration]($backend) to the [IModelHostOptions]($backend) interface. This matches the approach on the frontend for [IModelApp.startup]($frontend) and makes it easier to supply startup options. `IModelHostConfiguration` implements `IModelHostOptions`, so existing code will continue to work without changes.
-
-## Progress API for downloading changesets
-
-[BackendHubAccess]($core-backend) interface now supports progress reporting and cancellation of changeset(s) download. [BackendHubAccess.downloadChangeset]($core-backend) and [BackendHubAccess.downloadChangesets]($core-backend) take optional argument `progressCallback` of type [ProgressFunction]($core-backend). If function is passed, it is regularly called to report download progress. Changeset(s) download can be cancelled by returning [ProgressStatus.Abort]($core-backend) from said function.
-
-## RPC over IPC
-
-When a web application is using IPC communication between its frontend and backend, the RPC protocols now delegate request and response transportation to the IPC system.
-After the initial "handshake" request, there are now no further HTTP requests. All traffic (both IPC and RPC) is sent over the WebSocket.
-This change yields security benefits by reducing the surface area of our frontend/backend communication and provides performance consistency for the application.
-
-## Presentation
-
-### Relationship properties
-
-Properties that are defined on [ECRelationshipClass](../bis/ec/ec-relationship-class.md) can now be included in content using newly added [`RelatedPropertiesSpecification.relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute.
-
-When relationship properties are shown, or [`RelatedPropertiesSpecification.forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute is set to `true`, all information coming from that relationship, including related instance properties, will be organized within a category named after the relationship class.
-
-## Webpack 5
-
-The `@itwin/core-webpack-tools` and `@itwin/backend-webpack-tools` packages have been updated to support [Webpack 5](https://webpack.js.org/) and now require a peer dependency of _webpack@^5_. Please refer to their [changelog](https://github.com/webpack/changelog-v5/blob/master/README.md) and [migration guide](https://github.com/webpack/changelog-v5/blob/master/MIGRATION%20GUIDE.md) as you update.
+The methods [CurveCollection.projectedParameterRange]($core-geometry) and [CurvePrimitive.projectedParameterRange]($core-geometry) have been added for computing the range of fractional projection parameters of the instance curve(s) onto a `Ray3d`. The default implementation of the latter method returns undefined to avoid a circular dependency, so extenders of [CurvePrimitive]($core-geometry) should override as appropriate.
 
 ## Deprecations
 
-### @itwin/core-bentley
+### @itwin/appui-layout-react
 
-The AuthStatus enum has been removed. This enum has fallen out of use since the authorization refactor in 3.0.0, and is no longer a member of [BentleyError]($core-bentley).
+All non-internal components are deprecated with their corresponding replacements available in `@itwin/appui-react` package. Going forward `@itwin/appui-layout-react` package is considered as internal implementation detail of the `@itwin/appui-react` package and should not be used directly.
 
-The beta functions [Element.collectPredecessorIds]($core-backend) and [Element.getPredecessorIds]($core-backend) have been deprecated and replaced with [Element.collectReferenceIds]($core-backend) and [Element.getReferenceIds]($core-backend), since the term "predecessor" has been inaccurate since 3.2.0, when the transformer became capable of handling cyclic references and not just references to elements that were inserted before itself (predecessors).
+| Deprecated        | Replacement                                        |
+| ----------------- | -------------------------------------------------- |
+| `Dialog`          | [StatusBarDialog]($appui-react)                    |
+| `FooterIndicator` | [StatusBarIndicator]($appui-react)                 |
+| `FooterPopup`     | `popup` prop of [StatusBarIndicator]($appui-react) |
+| `FooterSeparator` | [StatusBarSeparator]($appui-react)                 |
+| `SafeAreaInsets`  | [SafeAreaInsets]($appui-react)                     |
+| `TitleBar`        | [StatusBarDialog.TitleBar]($appui-react)           |
+
+### @itwin/appui-react
+
+A number of **UI1.0** related APIs and components are deprecated and will be removed in the next `@itwin/appui-react` major version:
+`FrameworkVersion`, `FrameworkVersionContext`, `FrameworkVersionId`, `FrameworkVersionProps`, `ListPickerBase`, `useFrameworkVersion`,
+`NineZoneChangeHandler`, `StagePanelChangeHandler`, `WidgetStateFunc`, `ZoneDefProvider`, `Zone`, `ZoneDef`.
+
+Pseudo components used by the [FrontstageProvider]($appui-react) are deprecated and replaced by corresponding configuration interfaces:
+
+| Component    | Replacement                      |
+| ------------ | -------------------------------- |
+| `Frontstage` | [FrontstageConfig]($appui-react) |
+| `Widget`     | [WidgetConfig]($appui-react)     |
+| `StagePanel` | [StagePanelConfig]($appui-react) |
+
+Other deprecations and their replacements:
+
+| Deprecated             | Replacement                                |
+| ---------------------- | ------------------------------------------ |
+| `ActionItemButton`     | [ActionButton]($appui-abstract)            |
+| `ActivityMessagePopup` | Activity messages are set-up automatically |
+| `Backstage`            | [BackstageComposer]($appui-react)          |
+| `BackstageEvent`       | [BackstageManager.onToggled]($appui-react) |
+| `GroupButton`          | [GroupButton]($appui-abstract)             |
+| `Indicator`            | [StatusBarIndicator]($appui-react)         |
+| `ToolButton`           | [CommonToolbarItem]($appui-abstract)       |
+| `withSafeArea`         | [SafeAreaContext]($appui-react)            |
+
+### @itwin/components-react
+
+All the components that were only used by or with the deprecated [Table]($components-react) are now marked as deprecated as well and will be removed in an upcoming version. The Table was deprecated a year ago in favor of the Table component provided in the `@itwin/itwinui-react` package, which do not use any of these parts.
+
+### @itwin/core-backend
+
+The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated in favor of [IModelDb.Views.getViewStateProps]($backend), which accepts the same inputs and returns the same output, but performs some potentially-expensive work on a background thread to avoid blocking the JavaScript event loop.
+
+The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
+ The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
+
+### @itwin/core-common
+
+[Localization.getLocalizedStringWithNamespace]($common) is deprecated in favor of using [Localization.getLocalizedString]($common) and providing either a key with a namespace `<namespace>:<key>` or including `{ ns: <namespace> }` in the options.
 
 ### @itwin/core-geometry
 
-Growable array constructors now take an optional growth factor to control additional capacity during memory reallocations (default 1.5). This can make repeated additions to these arrays more efficient. Affected classes are [GrowableBlockedArray]($core-geometry), [GrowableFloat64Array]($core-geometry), [GrowableXYArray]($core-geometry), and [GrowableXYZArray]($core-geometry). In addition, loops in `ensureCapacity`, `pushBlockCopy`, `resize`, `clone`, etc. have been replaced with more efficient calls to typed array `set`, `copyWithin`, `fill`.
+The method [PathFragment.childFractionTChainDistance]($core-geometry) has been deprecated in favor of the correctly spelled method [PathFragment.childFractionToChainDistance]($core-geometry).
 
-The [GrowableXYArray]($core-geometry) method `setXYZAtCheckedPointIndex` is deprecated in favor of the more appropriately named new method `setXYAtCheckedPointIndex`.
+### @itwin/core-transformer
 
-### @itwin/core-mobile
+[IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).
 
-IOSApp, IOSAppOpts, and AndroidApp have been removed in favor of [MobileApp]($core-mobile) and [MobileAppOpts]($core-mobile). Developers were previously discouraged from making direct use of [MobileApp]($core-mobile), which was a base class of the two platform specific mobile apps. This distinction has been removed, as the implementation of the two apps was the same. IOSAppOpts, now [MobileAppOpts]($core-mobile), is an extension of [NativeAppOpts]($core-frontend) with the added condition that an [AuthorizationClient]($core-common) is never provided.
+### @itwin/presentation-backend
 
-IOSHost, IOSHostOpts, AndroidHost, and AndroidHostOpts have been removed in favor of [MobileHost]($core-mobile) for the same reasons described above.
+[PresentationManagerProps.mode]($presentation-backend) has been deprecated because there is no performance difference between [PresentationManager]($presentation-backend) working in `ReadOnly` or `ReadWrite` modes.

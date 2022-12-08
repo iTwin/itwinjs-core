@@ -33,7 +33,7 @@ export interface DiagnosticsProps {
     /** Severity of log messages to capture. Defaults to "error" when not set. */
     severity?: DiagnosticsLoggerSeverity;
     /** Should performance metric be captured. */
-    perf?: boolean;
+    perf?: boolean | { minimumDuration: number };
     /** Get version of presentation backend. */
     backendVersion?: boolean;
     /** Handler of resulting logs. */
@@ -53,7 +53,7 @@ export function createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnos
 
   const options: DiagnosticsOptions = {};
   if (props.devDiagnostics?.perf)
-    options.perf = true;
+    options.perf = props.devDiagnostics.perf;
   if (props.devDiagnostics?.severity)
     options.dev = props.devDiagnostics.severity;
   if (props.ruleDiagnostics?.severity)

@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
+/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
 import { IndexedXYCollection } from "./IndexedXYCollection";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Point2d, Vector2d, XY } from "./Point2dVector2d";
 import { XAndY } from "./XYZProps";
 
@@ -32,6 +32,7 @@ export class Point2dArrayCarrier extends IndexedXYCollection {
   }
   /**
    * Access by index, returning strongly typed Point2d
+   * * This returns the xy value but NOT reference to the point in the "carried" array.
    * @param index index of point within the array
    * @param result caller-allocated destination
    * @returns undefined if the index is out of bounds

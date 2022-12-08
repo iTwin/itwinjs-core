@@ -24,6 +24,7 @@ import { HollowIcon } from "./HollowIcon";
 import { ToasterSettings } from "@itwin/itwinui-react/cjs/core/Toast/Toaster";
 
 /** Properties for a [[ActivityMessage]]
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface ActivityMessageProps {
@@ -36,7 +37,7 @@ export interface ActivityMessageProps {
  * @public
  * @deprecated
  */
-export function ActivityMessage(props: ActivityMessageProps) {
+export function ActivityMessage(props: ActivityMessageProps) { // eslint-disable-line deprecation/deprecation
   const messageDetails = props.activityMessageInfo.details;
   const [percentCompleteLabel] = React.useState(UiFramework.translate("activityCenter.percentComplete"));
   const [cancelLabel] = React.useState(UiCore.translate("dialog.cancel"));

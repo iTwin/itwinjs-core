@@ -57,6 +57,12 @@ describe("PresentationRpcImpl", () => {
     });
   });
 
+  it("doesn't cancel requests if request timeout is 0", () => {
+    using(new PresentationRpcImpl({ requestTimeout: 0 }), (impl) => {
+      expect(impl.pendingRequests.props.unusedValueLifetime).to.be.undefined;
+    });
+  });
+
   it("returns all diagnostics when `PresentationManager` calls diagnostics handler multiple times", async () => {
     const rulesetsMock = moq.Mock.ofType<RulesetManager>();
     const variablesMock = moq.Mock.ofType<RulesetVariablesManager>();

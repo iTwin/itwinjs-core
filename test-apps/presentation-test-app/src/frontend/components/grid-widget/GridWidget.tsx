@@ -42,7 +42,7 @@ interface GridProps {
 function Grid(props: GridProps) {
   const { imodel, rulesetId, diagnostics } = props;
   const dataProvider = useDisposable(React.useCallback(
-    () => new PresentationTableDataProvider({ imodel, ruleset: rulesetId, ...diagnostics }),
+    () => new PresentationTableDataProvider({ imodel, ruleset: rulesetId, ...diagnostics }), // eslint-disable-line deprecation/deprecation
     [imodel, rulesetId, diagnostics],
   ));
   return (<SampleTable dataProvider={dataProvider} />);
