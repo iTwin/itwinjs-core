@@ -1,6 +1,25 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Wed, 30 Nov 2022 14:28:19 GMT and should not be manually modified.
+This log was last generated on Wed, 07 Dec 2022 19:12:36 GMT and should not be manually modified.
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:36 GMT
+
+### Updates
+
+- update RenderScheduleScript.discloseIds to use EntityReferences
+- add setTimeout override
+- add setTimeout override
+- Removing node (runtime) dependencies from core-common
+- Deprecate Localization.getLocalizedStringWithNamespace
+- Update TypeOfChange with Parent changes
+- Support for reporting progress and cancelling 'pullChanges' in IpcApp.
+- Added ability to display normal maps
+- Reject an EcefLocation with an origin at the center of the Earth.
+- Add Rpc method for obtaining meshes from elements.
+- Add RealityModelDisplaySettings for customization of reality model display.
+- Avoid raising ViewDetails.onClipVectorChanged if the clip did not actually change.
+- Add GraphicsRequestProps.useAbsolutePositions to address precision issues with coordinates far from the origin.
 
 ## 3.4.7
 Wed, 30 Nov 2022 14:28:19 GMT
