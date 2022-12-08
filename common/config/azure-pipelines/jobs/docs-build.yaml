@@ -95,7 +95,7 @@ jobs:
         displayName: Copy Reference files to Staging
 
       # Download bis docs artifact
-      - {{ if parameters.useCurrentBisDocsArtifact )}}:
+      - {{ if parameters.useCurrentBisDocsArtifact }}:
         - download: current
           artifact: Bis Docs
           displayName: Download Bis Docs Artifact

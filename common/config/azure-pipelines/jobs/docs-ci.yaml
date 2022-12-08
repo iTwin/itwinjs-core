@@ -22,6 +22,15 @@ pr:
     exclude:
       - .github/CODEOWNERS
 
+resources:
+  pipelines:
+  - pipeline: itwinjs-docs
+    source: iTwin.js/Docs/iTwin.js Docs - YAML
+    branch: master
+  - pipeline: bis-docs
+    source: BIS/Generate-Schema-Markdown-(GitHub)
+    branch: master
+
 jobs:
 - template: ./docs-build.yaml
   parameters:
