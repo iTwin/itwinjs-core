@@ -10,6 +10,61 @@ import { Point2d, Range2d } from "@itwin/core-geometry";
 import { request, RequestBasicCredentials, RequestOptions } from "../../request/Request";
 import { MapCartoRectangle, WmsUtilities } from "../internal"; // WmsUtilities needed for getBaseUrl
 
+enum OwsConstants {
+  ABSTRACT_XMLTAG = "ows:Abstract",
+  ACCESSCONSTRAINTS_XMLTAG = "ows:AccessConstraints",
+  ALLOWEDVALUES_XMLTAG = "ows:AllowedValues",
+  BOUNDINGBOX_XMLTAG = "ows:BoundingBox",
+  CONSTRAINT_XMLTAG = "ows:Constraint",
+  DCP_XMLTAG = "ows:DCP",
+  FEES_XMLTAG = "ows:Fees",
+  GET_XMLTAG = "ows:Get",
+  HTTP_XMLTAG = "ows:HTTP",
+  IDENTIFIER_XMLTAG = "ows:Identifier",
+  KEYWORDS_XMLTAG = "ows:Keywords",
+  KEYWORD_XMLTAG = "ows:Keyword",
+  LOWERCORNER_XMLTAG = "ows:LowerCorner",
+  OPERATION_XMLTAG = "ows:Operation",
+  OPERATIONSMETADATA_XMLTAG = "ows:OperationsMetadata",
+  POST_XMLTAG = "ows:Post",
+  SERVICEIDENTIFICATION_XMLTAG = "ows:ServiceIdentification",
+  SERVICETYPE_XMLTAG = "ows:ServiceType",
+  SERVICETYPEVERSION_XMLTAG = "ows:ServiceTypeVersion",
+  SUPPORTEDCRS_XMLTAG = "ows:SupportedCRS",
+  TITLE_XMLTAG = "ows:Title",
+  UPPERCORNER_XMLTAG = "ows:UpperCorner",
+  VALUE_XMLTAG = "ows:Value",
+  WGS84BOUNDINGBOX_XMLTAG = "ows:WGS84BoundingBox"
+
+}
+
+enum XmlConstants {
+  // Operations names
+  GETCAPABILITIES = "GetCapabilities",
+  GETTILE = "GetTile",
+  GETFEATUREINFO = "GetFeatureInfo",
+
+  MATRIXWIDTH_XMLTAG = "MatrixWidth",
+  MATRIXHEIGHT_XMLTAG = "MatrixHeight",
+  SCALEDENOMINATOR_XMLTAG = "ScaleDenominator",
+
+  TILEHEIGHT_XMLTAG = "TileHeight",
+  TILEMATRIX_XMLTAG = "TileMatrix",
+  TILEMATRIXSETLINK_XMLTAG = "TileMatrixSetLink",
+  TILEWIDTH_XMLTAG = "TileWidth",
+  TOPLEFTCORNER_XMLTAG = "TopLeftCorner",
+  WELLKNOWNSCALESET_XMLTAG = "WellKnownScaleSet",
+
+  CONSTRAINT_NAME_FILTER = "Encoding",
+  STYLE_ISDEFAULT = "IsDefault",
+  XLINK_HREF = "xlink:href",
+}
+
+export enum WmtsConstants {
+  GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178,
+  GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible",
+}
+
 /**
  * fetch XML from HTTP request
  * @param url server URL to address the request
@@ -27,6 +82,11 @@ async function getXml(url: string, credentials?: RequestBasicCredentials): Promi
   return data.text;
 }
 
+/**
+ * Utility function to extract an element' text content
+ * @param url server URL to address the request
+ * @internal
+ */
 const getElementTextContent = (elem: Element, qualifiedName: string, defaultText?: string) => {
   let text: string|undefined, found = false;
   const tmpElem = elem.getElementsByTagName(qualifiedName);
@@ -42,62 +102,6 @@ const getElementTextContent = (elem: Element, qualifiedName: string, defaultText
  * @internal
  */
 export namespace WmtsCapability {
-
-  export abstract class OwsConstants {
-    // OWS xml tag names
-    public static readonly ABSTRACT_XMLTAG = "ows:Abstract";
-    public static readonly ACCESSCONSTRAINTS_XMLTAG = "ows:AccessConstraints";
-    public static readonly ALLOWEDVALUES_XMLTAG = "ows:AllowedValues";
-    public static readonly BOUNDINGBOX_XMLTAG = "ows:BoundingBox";
-    public static readonly CONSTRAINT_XMLTAG = "ows:Constraint";
-    public static readonly DCP_XMLTAG = "ows:DCP";
-    public static readonly FEES_XMLTAG = "ows:Fees";
-    public static readonly GET_XMLTAG = "ows:Get";
-    public static readonly HTTP_XMLTAG = "ows:HTTP";
-    public static readonly IDENTIFIER_XMLTAG = "ows:Identifier";
-    public static readonly KEYWORDS_XMLTAG = "ows:Keywords";
-    public static readonly KEYWORD_XMLTAG = "ows:Keyword";
-    public static readonly LOWERCORNER_XMLTAG = "ows:LowerCorner";
-    public static readonly OPERATION_XMLTAG = "ows:Operation";
-    public static readonly OPERATIONSMETADATA_XMLTAG = "ows:OperationsMetadata";
-    public static readonly POST_XMLTAG = "ows:Post";
-    public static readonly SERVICEIDENTIFICATION_XMLTAG = "ows:ServiceIdentification";
-    public static readonly SERVICETYPE_XMLTAG = "ows:ServiceType";
-    public static readonly SERVICETYPEVERSION_XMLTAG = "ows:ServiceTypeVersion";
-    public static readonly SUPPORTEDCRS_XMLTAG = "ows:SupportedCRS";
-    public static readonly TITLE_XMLTAG = "ows:Title";
-    public static readonly UPPERCORNER_XMLTAG = "ows:UpperCorner";
-    public static readonly VALUE_XMLTAG = "ows:Value";
-    public static readonly WGS84BOUNDINGBOX_XMLTAG = "ows:WGS84BoundingBox";
-  }
-
-  export abstract class XmlConstants {
-    // Operations names
-    public static readonly GETCAPABILITIES = "GetCapabilities";
-    public static readonly GETTILE = "GetTile";
-    public static readonly GETFEATUREINFO = "GetFeatureInfo";
-
-    public static readonly MATRIXWIDTH_XMLTAG = "MatrixWidth";
-    public static readonly MATRIXHEIGHT_XMLTAG = "MatrixHeight";
-    public static readonly SCALEDENOMINATOR_XMLTAG = "ScaleDenominator";
-
-    public static readonly TILEHEIGHT_XMLTAG = "TileHeight";
-    public static readonly TILEMATRIX_XMLTAG = "TileMatrix";
-    public static readonly TILEMATRIXSETLINK_XMLTAG = "TileMatrixSetLink";
-    public static readonly TILEWIDTH_XMLTAG = "TileWidth";
-    public static readonly TOPLEFTCORNER_XMLTAG = "TopLeftCorner";
-    public static readonly WELLKNOWNSCALESET_XMLTAG = "WellKnownScaleSet";
-
-    public static readonly CONSTRAINT_NAME_FILTER = "Encoding";
-    public static readonly STYLE_ISDEFAULT = "IsDefault";
-    public static readonly XLINK_HREF = "xlink:href";
-  }
-
-  export abstract class Constants {
-    public static readonly GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178;
-    public static readonly GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible";
-  }
-
   export class ServiceIdentification {
     public readonly abstract?: string;
     public readonly accessConstraints?: string;
@@ -190,17 +194,17 @@ export namespace WmtsCapability {
     public readonly encoding?: string;
 
     constructor(elem: Element) {
-      const url = elem.getAttribute(WmtsCapability.XmlConstants.XLINK_HREF);
+      const url = elem.getAttribute(XmlConstants.XLINK_HREF);
       if (url)
         this.url = url ?? "";
 
-      const constraint = elem.getElementsByTagName(WmtsCapability.OwsConstants.CONSTRAINT_XMLTAG);
+      const constraint = elem.getElementsByTagName(OwsConstants.CONSTRAINT_XMLTAG);
       if (constraint.length > 0) {
         this.constraintName = constraint[0].getAttribute("name") ?? "";
-        if (this.constraintName?.endsWith(WmtsCapability.XmlConstants.CONSTRAINT_NAME_FILTER)) {
-          const allowedValues = constraint[0].getElementsByTagName(WmtsCapability.OwsConstants.ALLOWEDVALUES_XMLTAG);
+        if (this.constraintName?.endsWith(XmlConstants.CONSTRAINT_NAME_FILTER)) {
+          const allowedValues = constraint[0].getElementsByTagName(OwsConstants.ALLOWEDVALUES_XMLTAG);
           if (allowedValues.length > 0) {
-            const value = getElementTextContent(allowedValues[0], WmtsCapability.OwsConstants.VALUE_XMLTAG);
+            const value = getElementTextContent(allowedValues[0], OwsConstants.VALUE_XMLTAG);
             if (value.found) {
               this.encoding = value.text;
             }
@@ -222,15 +226,15 @@ export namespace WmtsCapability {
       if (name)
         this.name = name;
 
-      const dcp = elem.getElementsByTagName(WmtsCapability.OwsConstants.DCP_XMLTAG);
+      const dcp = elem.getElementsByTagName(OwsConstants.DCP_XMLTAG);
       if (!dcp || dcp.length === 0)
         return;
 
-      const dcpHttp = dcp[0].getElementsByTagName(WmtsCapability.OwsConstants.HTTP_XMLTAG);
+      const dcpHttp = dcp[0].getElementsByTagName(OwsConstants.HTTP_XMLTAG);
       if (!dcpHttp || dcpHttp.length === 0)
         return;
 
-      const get = dcpHttp[0].getElementsByTagName(WmtsCapability.OwsConstants.GET_XMLTAG);
+      const get = dcpHttp[0].getElementsByTagName(OwsConstants.GET_XMLTAG);
       if (get.length > 0) {
         this._getDcpHttp = [];
 
@@ -239,7 +243,7 @@ export namespace WmtsCapability {
         }
       }
 
-      const post = dcpHttp[0].getElementsByTagName(WmtsCapability.OwsConstants.POST_XMLTAG);
+      const post = dcpHttp[0].getElementsByTagName(OwsConstants.POST_XMLTAG);
       if (post.length > 0) {
         this._postDcpHttp = [];
 
@@ -274,13 +278,13 @@ export namespace WmtsCapability {
     public getGoogleMapsCompatibleTileMatrixSet(): TileMatrixSet[] {
       const googleMapsTms: TileMatrixSet[] = [];
       this.tileMatrixSets.forEach((tms) => {
-        if (tms.wellKnownScaleSet?.toLowerCase().includes(WmtsCapability.Constants.GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME))
+        if (tms.wellKnownScaleSet?.toLowerCase().includes(WmtsConstants.GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME))
           googleMapsTms.push(tms);
 
         // In case wellKnownScaleSet was not been set properly, infer from scaleDenominator
         // Note: some servers are quite inaccurate in their scale values, hence I used a delta value of 1.
         else if (   tms.tileMatrix.length > 0
-                && Math.abs(tms.tileMatrix[0].scaleDenominator - WmtsCapability.Constants.GOOGLEMAPS_LEVEL0_SCALE_DENOM) < 1
+                && Math.abs(tms.tileMatrix[0].scaleDenominator - WmtsConstants.GOOGLEMAPS_LEVEL0_SCALE_DENOM) < 1
                 && (tms.supportedCrs.includes("3857") || tms.supportedCrs.includes("900913"))
         )
           googleMapsTms.push(tms);
@@ -307,11 +311,11 @@ export namespace WmtsCapability {
       if (isDefault)
         this.isDefault = isDefault.toLowerCase() === "true";
 
-      const title = getElementTextContent(elem, WmtsCapability.OwsConstants.TITLE_XMLTAG);
+      const title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG);
       if (title.found)
         this.title = title.text;
 
-      const identifier = getElementTextContent(elem, WmtsCapability.OwsConstants.IDENTIFIER_XMLTAG);
+      const identifier = getElementTextContent(elem, OwsConstants.IDENTIFIER_XMLTAG);
       if (identifier.found)
         this.identifier = identifier.text;
     }
@@ -324,8 +328,8 @@ export namespace WmtsCapability {
     constructor(elem: Element) {
       this.crs = elem.getAttribute("crs") ?? undefined;
 
-      const lowerCorner = getElementTextContent(elem, WmtsCapability.OwsConstants.LOWERCORNER_XMLTAG);
-      const upperCorner = getElementTextContent(elem, WmtsCapability.OwsConstants.UPPERCORNER_XMLTAG);
+      const lowerCorner = getElementTextContent(elem, OwsConstants.LOWERCORNER_XMLTAG);
+      const upperCorner = getElementTextContent(elem, OwsConstants.UPPERCORNER_XMLTAG);
       if (lowerCorner.found && upperCorner.found) {
         const lowerCornerArray = lowerCorner.text?.split(" ").map((x: string) => +x);
         const upperCornerArray = upperCorner.text?.split(" ").map((x: string) => +x);
@@ -381,26 +385,26 @@ export namespace WmtsCapability {
     public readonly tileMatrix: TileMatrix[] = [];
 
     constructor(elem: Element) {
-      const identifier = getElementTextContent(elem, WmtsCapability.OwsConstants.IDENTIFIER_XMLTAG, "");
+      const identifier = getElementTextContent(elem, OwsConstants.IDENTIFIER_XMLTAG, "");
       if (identifier.found)
         this.identifier = identifier.text!;
       else
         throw new Error("No Identifier found.");
 
-      this.title = getElementTextContent(elem, WmtsCapability.OwsConstants.TITLE_XMLTAG).text;
-      this.abstract =  getElementTextContent(elem, WmtsCapability.OwsConstants.ABSTRACT_XMLTAG).text;
-      const supportedCrs = getElementTextContent(elem, WmtsCapability.OwsConstants.SUPPORTEDCRS_XMLTAG, "");
+      this.title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG).text;
+      this.abstract =  getElementTextContent(elem, OwsConstants.ABSTRACT_XMLTAG).text;
+      const supportedCrs = getElementTextContent(elem, OwsConstants.SUPPORTEDCRS_XMLTAG, "");
 
       if (supportedCrs.found)
         this.supportedCrs = supportedCrs.text!;
       else
         throw new Error("No supported CRS found.");
 
-      this.wellKnownScaleSet = getElementTextContent(elem, WmtsCapability.XmlConstants.WELLKNOWNSCALESET_XMLTAG).text ?? "";
+      this.wellKnownScaleSet = getElementTextContent(elem, XmlConstants.WELLKNOWNSCALESET_XMLTAG).text ?? "";
 
       // TileMatrix:
       // TileMatrix is mandatory on TileMatrixSet, if it doesn't exists, something is OFF with the capability.
-      const tileMatrix = elem.getElementsByTagName( WmtsCapability.XmlConstants.TILEMATRIX_XMLTAG);
+      const tileMatrix = elem.getElementsByTagName( XmlConstants.TILEMATRIX_XMLTAG);
       if (tileMatrix.length === 0)
         throw new Error("No matrix set link found for WMTS layer");
 
@@ -422,23 +426,23 @@ export namespace WmtsCapability {
     public readonly matrixHeight: number;
 
     constructor(elem: Element) {
-      const identifier = getElementTextContent(elem, WmtsCapability.OwsConstants.IDENTIFIER_XMLTAG, "");
+      const identifier = getElementTextContent(elem, OwsConstants.IDENTIFIER_XMLTAG, "");
       if (identifier.found)
         this.identifier = identifier.text!;
       else
         throw new Error("No Identifier found.");
 
-      this.title = getElementTextContent(elem, WmtsCapability.OwsConstants.TITLE_XMLTAG).text;
-      this.abstract = getElementTextContent(elem, WmtsCapability.OwsConstants.ABSTRACT_XMLTAG).text;
+      this.title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG).text;
+      this.abstract = getElementTextContent(elem, OwsConstants.ABSTRACT_XMLTAG).text;
 
       // Scale denominator
-      const scaleDenom = getElementTextContent(elem, WmtsCapability.XmlConstants.SCALEDENOMINATOR_XMLTAG, "");
+      const scaleDenom = getElementTextContent(elem, XmlConstants.SCALEDENOMINATOR_XMLTAG, "");
       if (!scaleDenom.found)
         throw new Error("No scale denominator found on TileMatrix.");
       this.scaleDenominator = +scaleDenom.text!;
 
       // Top left corner
-      const topLeftCorner = getElementTextContent(elem, WmtsCapability.XmlConstants.TOPLEFTCORNER_XMLTAG, "").text?.split(" ").map((x: string) => +x);
+      const topLeftCorner = getElementTextContent(elem, XmlConstants.TOPLEFTCORNER_XMLTAG, "").text?.split(" ").map((x: string) => +x);
       if (topLeftCorner?.length !== 2)
         throw new Error("No TopLeftCorner found on TileMatrix.");
       this.topLeftCorner = Point2d.create(topLeftCorner[0], topLeftCorner[1]);
@@ -481,25 +485,25 @@ export namespace WmtsCapability {
 
     constructor(elem: Element) {
 
-      const identifier = getElementTextContent(elem, WmtsCapability.OwsConstants.IDENTIFIER_XMLTAG, "");
+      const identifier = getElementTextContent(elem, OwsConstants.IDENTIFIER_XMLTAG, "");
       if (identifier.found)
         this.identifier = identifier.text!;
       else
         throw new Error("No Identifier found.");
 
-      this.title = getElementTextContent(elem, WmtsCapability.OwsConstants.TITLE_XMLTAG).text;
+      this.title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG).text;
       this.format = getElementTextContent(elem, "Format").text;
 
       // BoundingBox
-      const boundingBox = elem.getElementsByTagName(WmtsCapability.OwsConstants.BOUNDINGBOX_XMLTAG);
+      const boundingBox = elem.getElementsByTagName(OwsConstants.BOUNDINGBOX_XMLTAG);
       if (boundingBox.length > 0 )
         this.boundingBox =  new BoundingBox(boundingBox[0]);
 
       let lowerCornerArray: number[]|undefined, upperCornerArray: number[]|undefined;
-      const bbox = elem.getElementsByTagName(WmtsCapability.OwsConstants.WGS84BOUNDINGBOX_XMLTAG);
+      const bbox = elem.getElementsByTagName(OwsConstants.WGS84BOUNDINGBOX_XMLTAG);
       if (bbox.length > 0) {
-        lowerCornerArray = getElementTextContent(bbox[0], WmtsCapability.OwsConstants.LOWERCORNER_XMLTAG).text?.split(" ").map((x: string) => +x);
-        upperCornerArray = getElementTextContent(bbox[0], WmtsCapability.OwsConstants.UPPERCORNER_XMLTAG).text?.split(" ").map((x: string) => +x);
+        lowerCornerArray = getElementTextContent(bbox[0], OwsConstants.LOWERCORNER_XMLTAG).text?.split(" ").map((x: string) => +x);
+        upperCornerArray = getElementTextContent(bbox[0], OwsConstants.UPPERCORNER_XMLTAG).text?.split(" ").map((x: string) => +x);
       }
 
       if (lowerCornerArray?.length === 2 && upperCornerArray?.length === 2)
@@ -523,7 +527,7 @@ export namespace WmtsCapability {
 
       // TileMatrixSetLink
       // TileMatrixSetLink is mandatory on Layer, if it doesn't exists, something is OFF with the capability.
-      const tileMatrixSetLink = elem.getElementsByTagName( WmtsCapability.XmlConstants.TILEMATRIXSETLINK_XMLTAG);
+      const tileMatrixSetLink = elem.getElementsByTagName( XmlConstants.TILEMATRIXSETLINK_XMLTAG);
 
       if (tileMatrixSetLink.length === 0)
         throw new Error("No matrix set link found for WMTS layer");
@@ -551,12 +555,12 @@ export class WmtsCapabilities {
       this.version = capability.getAttribute("version") ?? undefined;
 
       // Service Identification
-      const serviceIdentification = capability.getElementsByTagName(WmtsCapability.OwsConstants.SERVICEIDENTIFICATION_XMLTAG);
+      const serviceIdentification = capability.getElementsByTagName(OwsConstants.SERVICEIDENTIFICATION_XMLTAG);
       if (serviceIdentification.length > 0)
         this.serviceIdentification = new WmtsCapability.ServiceIdentification(serviceIdentification[0]);
 
       // Operations metadata
-      const operationsMetadata = capability.getElementsByTagName(WmtsCapability.OwsConstants.OPERATIONSMETADATA_XMLTAG);
+      const operationsMetadata = capability.getElementsByTagName(OwsConstants.OPERATIONSMETADATA_XMLTAG);
       if (operationsMetadata.length > 0)
         this.operationsMetadata = new WmtsCapability.OperationMetadata(operationsMetadata[0]);
 
