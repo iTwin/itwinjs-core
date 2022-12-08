@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import * as uuid from "uuid";
+import { Guid } from "@itwin/core-bentley";
 import { onExit, spawnChildProcess } from "./SpawnUtils";
 
 /**
@@ -59,7 +59,7 @@ export function writeCoverageData(coverageData: any): void {
   if (!fs.existsSync(nycTempDirAbsolute))
     throw new Error(`Cannot save coverage data - nyc temp directory "${nycTempDirAbsolute}" does not exist.`);
 
-  // Use uuid/v4 to generate a unique filename, just like `nyc` does.
-  const coverageFileName = path.join(nycTempDirAbsolute, `${uuid.v4()}.json`);
+  // Use Guid to generate a unique filename, just like `nyc` does.
+  const coverageFileName = path.join(nycTempDirAbsolute, `${Guid.createValue()}.json`);
   fs.writeFileSync(coverageFileName, JSON.stringify(coverageData));
 }
