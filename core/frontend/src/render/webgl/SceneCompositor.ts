@@ -2132,6 +2132,7 @@ class MRTCompositor extends Compositor {
   }
 
   protected renderPointClouds(commands: RenderCommands, compositeFlags: CompositeFlags) {
+    const is3d = FrustumUniformType.Perspective === this.target.uniforms.frustum.type;
     // separate individual point clouds and get their point cloud settings
     const pointClouds: Array<SinglePointCloudData> = [];
     let pcs: PointCloudDisplaySettings | undefined;
@@ -2143,7 +2144,6 @@ class MRTCompositor extends Compositor {
         ++pushDepth;
         if (pushDepth === 1) {
           pcs = cmd.branch.branch.realityModelDisplaySettings?.pointCloud;
-          const is3d = FrustumUniformType.Perspective === this.target.uniforms.frustum.type;
           this.target.uniforms.realityModel.pointCloud.updateRange (cmd.branch.branch.realityModelRange,
             this.target, cmd.branch.localToWorldTransform, is3d);
           pointClouds.push(curPC = { pcs, cmds: [cmd] });
@@ -2169,16 +2169,16 @@ class MRTCompositor extends Compositor {
 
     for (const pc of pointClouds) {
       pcs = pc.pcs;
-      let edlOn = pcs?.edlMode !== "off";
+      let edlOn = pcs?.edlMode !== "off" && is3d;
       if (edlOn) {
         if (undefined === this._textures.hilite)
           edlOn = false;
         else {
           // create fbo on fly if not present, or has changed (from MS)
-          // ###TODO needs simplifying if possible
-          // ###TODO also consider not drawing point clouds to MS buffers, at least if EDL, it isn't worth the overhead.
+          // ###TODO consider not drawing point clouds to MS buffers, at least if EDL, it isn't worth the overhead.
           //         would have to blit depth before draw, use depth for draw, then run shader to copy depth back to MSAA
           //         at end, wherever color buf changed (test alpha, else discard)
+          //         this would also simplify this code considerably
           let drawColBufs;
           if (undefined !== this._fbos.edlDrawCol)
             drawColBufs = this._fbos.edlDrawCol.getColorTargets(useMsBuffers, 0);

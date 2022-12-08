@@ -68,22 +68,10 @@ export class PointCloudUniforms {
       // limit the viewDepth/rangeScale ratio to min of 10 to still get reasonable factors when close to and inside the model
       rangeFactor = Math.log (Math.max (10, viewDepth / rangeScale));
     }
-    // calculate a second factor to compensate for zoom level
-    let zoomFactor;
-    if (is3d) {
-      zoomFactor = far / near;
-    } else {
-      const left = target.uniforms.frustum.planes[Plane.kLeft];
-      const right = target.uniforms.frustum.planes[Plane.kRight];
-      const pixWidth = target.uniforms.viewRect.width;
-      zoomFactor = viewDepth * pixWidth / (right - left);
-    }
-    const scaleFactor = rangeFactor + Math.log (zoomFactor);
-    console.log (`sf = ${(scaleFactor * 33.5).toPrecision(7)} rf ${rangeFactor.toPrecision(7)}, vwD ${viewDepth.toPrecision(7)}, n ${near.toPrecision(7)}, f ${far.toPrecision(7)}, zf ${Math.log(zoomFactor).toPrecision(7)}`); // TODO remove this debug
-    if (!is3d) {
-      const vwWidth = target.uniforms.frustum.planes[3] - target.uniforms.frustum.planes[2];
-      console.log (`  Orth: fp width = ${vwWidth.toPrecision(7)} left ${target.uniforms.frustum.planes[2].toPrecision(7)} right ${target.uniforms.frustum.planes[3].toPrecision(7)}`);
-    }
+    const zoomFactor = Math.log (far / near); // compensate for zoom level
+    const winSizeFactor = Math.pow (1.8440033, Math.log2 (2226 / target.uniforms.viewRect.width)); // compensate for window size
+    const scaleFactor = (rangeFactor + zoomFactor) / winSizeFactor;
+
     if (this._scaleFactor === scaleFactor && this._is3d === is3d)
       return;
     this._scaleFactor = scaleFactor;
