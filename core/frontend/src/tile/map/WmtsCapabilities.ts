@@ -60,6 +60,8 @@ enum XmlConstants {
   XLINK_HREF = "xlink:href",
 }
 
+/** @internal
+*/
 export enum WmtsConstants {
   GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178,
   GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible",
@@ -84,18 +86,18 @@ async function getXml(url: string, credentials?: RequestBasicCredentials): Promi
 
 /**
  * Utility function to extract an element' text content
+ * @return An element's text content, default to provided defaultTest value if no text is available; return undefined if the element cannot be found.
  * @param url server URL to address the request
  * @internal
  */
 const getElementTextContent = (elem: Element, qualifiedName: string, defaultText?: string) => {
-  let text: string|undefined, found = false;
+  let text: string|undefined;
   const tmpElem = elem.getElementsByTagName(qualifiedName);
   if (tmpElem.length > 0) {
     text = tmpElem[0].textContent ?? defaultText;
-    found = true;
   }
 
-  return {found, text};
+  return text;
 };
 
 /** Encapsulation of the capabilities for an WMTS server
@@ -113,20 +115,20 @@ export namespace WmtsCapability {
 
     constructor(elem: Element) {
       const abstract = getElementTextContent(elem, OwsConstants.ABSTRACT_XMLTAG);
-      if (abstract.found)
-        this.abstract = abstract.text;
+      if (abstract)
+        this.abstract = abstract;
 
       const serviceType = getElementTextContent(elem, OwsConstants.SERVICETYPE_XMLTAG, "");
-      if (serviceType.found)
-        this.serviceType = serviceType.text;
+      if (serviceType)
+        this.serviceType = serviceType;
 
       const serviceTypeVersion = getElementTextContent(elem, OwsConstants.SERVICETYPEVERSION_XMLTAG, "");
-      if (serviceTypeVersion.found)
-        this.serviceTypeVersion = serviceTypeVersion.text;
+      if (serviceTypeVersion)
+        this.serviceTypeVersion = serviceTypeVersion;
 
       const title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG);
-      if (title.found)
-        this.title = title.text;
+      if (title)
+        this.title = title;
 
       const keywords = elem.getElementsByTagName(OwsConstants.KEYWORDS_XMLTAG);
       if (keywords.length > 0) {
@@ -140,13 +142,13 @@ export namespace WmtsCapability {
       }
 
       const accessConstraints = getElementTextContent(elem, OwsConstants.ACCESSCONSTRAINTS_XMLTAG, "");
-      if (accessConstraints.found) {
-        this.accessConstraints = accessConstraints.text;
+      if (accessConstraints) {
+        this.accessConstraints = accessConstraints;
       }
 
       const fees = getElementTextContent(elem, OwsConstants.FEES_XMLTAG);
-      if (fees.found)
-        this.fees = fees.text;
+      if (fees)
+        this.fees = fees;
     }
   }
 
@@ -205,8 +207,8 @@ export namespace WmtsCapability {
           const allowedValues = constraint[0].getElementsByTagName(OwsConstants.ALLOWEDVALUES_XMLTAG);
           if (allowedValues.length > 0) {
             const value = getElementTextContent(allowedValues[0], OwsConstants.VALUE_XMLTAG);
-            if (value.found) {
-              this.encoding = value.text;
+            if (value) {
+              this.encoding = value;
             }
           }
         }
@@ -312,12 +314,12 @@ export namespace WmtsCapability {
         this.isDefault = isDefault.toLowerCase() === "true";
 
       const title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG);
-      if (title.found)
-        this.title = title.text;
+      if (title)
+        this.title = title;
 
       const identifier = getElementTextContent(elem, OwsConstants.IDENTIFIER_XMLTAG);
-      if (identifier.found)
-        this.identifier = identifier.text;
+      if (identifier)
+        this.identifier = identifier;
     }
   }
 
@@ -330,9 +332,9 @@ export namespace WmtsCapability {
 
       const lowerCorner = getElementTextContent(elem, OwsConstants.LOWERCORNER_XMLTAG);
       const upperCorner = getElementTextContent(elem, OwsConstants.UPPERCORNER_XMLTAG);
-      if (lowerCorner.found && upperCorner.found) {
-        const lowerCornerArray = lowerCorner.text?.split(" ").map((x: string) => +x);
-        const upperCornerArray = upperCorner.text?.split(" ").map((x: string) => +x);
+      if (lowerCorner && upperCorner) {
+        const lowerCornerArray = lowerCorner?.split(" ").map((x: string) => +x);
+        const upperCornerArray = upperCorner?.split(" ").map((x: string) => +x);
         if (lowerCornerArray && lowerCornerArray.length === 2 && upperCornerArray && upperCornerArray.length === 2)
           this.range = Range2d.createXYXY(lowerCornerArray[0], lowerCornerArray[1], upperCornerArray[0], upperCornerArray[1]);
       }
@@ -345,16 +347,16 @@ export namespace WmtsCapability {
 
     constructor(elem: Element) {
       const tileMatrix = getElementTextContent(elem, "TileMatrix");
-      if (tileMatrix.found)
-        this.tileMatrix = tileMatrix.text;
+      if (tileMatrix)
+        this.tileMatrix = tileMatrix;
 
       const minTileRow = getElementTextContent(elem, "MinTileRow");
       const maxTileRow = getElementTextContent(elem, "MaxTileRow");
       const minTileCol = getElementTextContent(elem, "MinTileCol");
       const maxTileCol = getElementTextContent(elem, "MaxTileCol");
 
-      if (minTileRow.text !== undefined && maxTileRow.text !== undefined && minTileCol.text !== undefined && maxTileCol.text )
-        this.limits = Range2d.createXYXY(Number(minTileCol.text), Number(minTileRow.text), Number(maxTileCol.text), Number(maxTileRow.text));
+      if (minTileRow !== undefined && maxTileRow !== undefined && minTileCol !== undefined && maxTileCol )
+        this.limits = Range2d.createXYXY(Number(minTileCol), Number(minTileRow), Number(maxTileCol), Number(maxTileRow));
     }
   }
 
@@ -364,7 +366,7 @@ export namespace WmtsCapability {
 
     constructor(elem: Element) {
       const tileMatrixSet = getElementTextContent(elem, "TileMatrixSet", "");
-      this.tileMatrixSet = tileMatrixSet.text ? tileMatrixSet.text : "";
+      this.tileMatrixSet = tileMatrixSet ?? "";
 
       const tileMatrixLimitsRoot = elem.getElementsByTagName("TileMatrixSetLimits");
       if (tileMatrixLimitsRoot.length > 0) {
@@ -386,21 +388,21 @@ export namespace WmtsCapability {
 
     constructor(elem: Element) {
       const identifier = getElementTextContent(elem, OwsConstants.IDENTIFIER_XMLTAG, "");
-      if (identifier.found)
-        this.identifier = identifier.text!;
+      if (identifier)
+        this.identifier = identifier;
       else
         throw new Error("No Identifier found.");
 
-      this.title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG).text;
-      this.abstract =  getElementTextContent(elem, OwsConstants.ABSTRACT_XMLTAG).text;
+      this.title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG);
+      this.abstract =  getElementTextContent(elem, OwsConstants.ABSTRACT_XMLTAG);
       const supportedCrs = getElementTextContent(elem, OwsConstants.SUPPORTEDCRS_XMLTAG, "");
 
-      if (supportedCrs.found)
-        this.supportedCrs = supportedCrs.text!;
+      if (supportedCrs)
+        this.supportedCrs = supportedCrs;
       else
         throw new Error("No supported CRS found.");
 
-      this.wellKnownScaleSet = getElementTextContent(elem, XmlConstants.WELLKNOWNSCALESET_XMLTAG).text ?? "";
+      this.wellKnownScaleSet = getElementTextContent(elem, XmlConstants.WELLKNOWNSCALESET_XMLTAG) ?? "";
 
       // TileMatrix:
       // TileMatrix is mandatory on TileMatrixSet, if it doesn't exists, something is OFF with the capability.
@@ -427,49 +429,49 @@ export namespace WmtsCapability {
 
     constructor(elem: Element) {
       const identifier = getElementTextContent(elem, OwsConstants.IDENTIFIER_XMLTAG, "");
-      if (identifier.found)
-        this.identifier = identifier.text!;
+      if (identifier)
+        this.identifier = identifier;
       else
         throw new Error("No Identifier found.");
 
-      this.title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG).text;
-      this.abstract = getElementTextContent(elem, OwsConstants.ABSTRACT_XMLTAG).text;
+      this.title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG);
+      this.abstract = getElementTextContent(elem, OwsConstants.ABSTRACT_XMLTAG);
 
       // Scale denominator
       const scaleDenom = getElementTextContent(elem, XmlConstants.SCALEDENOMINATOR_XMLTAG, "");
-      if (!scaleDenom.found)
+      if (!scaleDenom)
         throw new Error("No scale denominator found on TileMatrix.");
-      this.scaleDenominator = +scaleDenom.text!;
+      this.scaleDenominator = +scaleDenom;
 
       // Top left corner
-      const topLeftCorner = getElementTextContent(elem, XmlConstants.TOPLEFTCORNER_XMLTAG, "").text?.split(" ").map((x: string) => +x);
+      const topLeftCorner = getElementTextContent(elem, XmlConstants.TOPLEFTCORNER_XMLTAG, "")?.split(" ").map((x: string) => +x);
       if (topLeftCorner?.length !== 2)
         throw new Error("No TopLeftCorner found on TileMatrix.");
       this.topLeftCorner = Point2d.create(topLeftCorner[0], topLeftCorner[1]);
 
       // Tile Width
       const tileWidth = getElementTextContent(elem, XmlConstants.TILEWIDTH_XMLTAG, "");
-      if (!tileWidth.found)
+      if (!tileWidth)
         throw new Error("No tile width found on TileMatrix.");
-      this.tileWidth = +tileWidth.text!;
+      this.tileWidth = +tileWidth;
 
       // Tile Height
       const tileHeight = getElementTextContent(elem, XmlConstants.TILEHEIGHT_XMLTAG, "");
-      if (!tileHeight.found)
+      if (!tileHeight)
         throw new Error("No tile height found on TileMatrix.");
-      this.tileHeight = +tileHeight.text!;
+      this.tileHeight = +tileHeight;
 
       // Matrix Width
       const matrixWidth = getElementTextContent(elem, XmlConstants.MATRIXWIDTH_XMLTAG, "");
-      if (!matrixWidth.found)
+      if (!matrixWidth)
         throw new Error("No tile width found on TileMatrix.");
-      this.matrixWidth = +matrixWidth.text!;
+      this.matrixWidth = +matrixWidth;
 
       // Matrix Height
       const matrixHeight = getElementTextContent(elem, XmlConstants.MATRIXHEIGHT_XMLTAG, "");
-      if (!matrixHeight.found)
+      if (!matrixHeight)
         throw new Error("No tile height found on TileMatrix.");
-      this.matrixHeight = +matrixHeight.text!;
+      this.matrixHeight = +matrixHeight;
     }
   }
 
@@ -486,13 +488,13 @@ export namespace WmtsCapability {
     constructor(elem: Element) {
 
       const identifier = getElementTextContent(elem, OwsConstants.IDENTIFIER_XMLTAG, "");
-      if (identifier.found)
-        this.identifier = identifier.text!;
+      if (identifier)
+        this.identifier = identifier;
       else
         throw new Error("No Identifier found.");
 
-      this.title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG).text;
-      this.format = getElementTextContent(elem, "Format").text;
+      this.title = getElementTextContent(elem, OwsConstants.TITLE_XMLTAG);
+      this.format = getElementTextContent(elem, "Format");
 
       // BoundingBox
       const boundingBox = elem.getElementsByTagName(OwsConstants.BOUNDINGBOX_XMLTAG);
@@ -502,8 +504,8 @@ export namespace WmtsCapability {
       let lowerCornerArray: number[]|undefined, upperCornerArray: number[]|undefined;
       const bbox = elem.getElementsByTagName(OwsConstants.WGS84BOUNDINGBOX_XMLTAG);
       if (bbox.length > 0) {
-        lowerCornerArray = getElementTextContent(bbox[0], OwsConstants.LOWERCORNER_XMLTAG).text?.split(" ").map((x: string) => +x);
-        upperCornerArray = getElementTextContent(bbox[0], OwsConstants.UPPERCORNER_XMLTAG).text?.split(" ").map((x: string) => +x);
+        lowerCornerArray = getElementTextContent(bbox[0], OwsConstants.LOWERCORNER_XMLTAG)?.split(" ").map((x: string) => +x);
+        upperCornerArray = getElementTextContent(bbox[0], OwsConstants.UPPERCORNER_XMLTAG)?.split(" ").map((x: string) => +x);
       }
 
       if (lowerCornerArray?.length === 2 && upperCornerArray?.length === 2)
