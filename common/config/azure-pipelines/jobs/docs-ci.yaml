@@ -22,18 +22,10 @@ pr:
     exclude:
       - .github/CODEOWNERS
 
-resources:
-  pipelines:
-  - pipeline: itwinjs-docs
-    source: iTwin.js/Docs/iTwin.js Docs - YAML
-    branch: master
-  - pipeline: bis-docs
-    source: BIS/Generate-Schema-Markdown-(GitHub)
-    branch: master
-
 jobs:
-- template: ./docs-build.yaml
-  parameters:
-    workingDir: $(Pipeline.Workspace)/itwinjs-core
-    outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
-    shouldPublish: ${{ and(eq(variables['Build.Reason'], 'IndividualCI'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))) }}
+  extends:
+    template: ./docs-build.yaml
+    parameters:
+      workingDir: $(Pipeline.Workspace)/itwinjs-core
+      outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
+      shouldPublish: ${{ and(eq(variables['Build.Reason'], 'IndividualCI'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))) }}
