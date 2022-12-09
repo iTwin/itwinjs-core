@@ -22,6 +22,8 @@
   --darkGrey: #c1c1c1;
   --black: #000;
   --white: #fff;
+  --dark-blue: #004a93;
+  --block-hover-color: rgba(94, 176, 206, 0.16);
 
   /* stack */
   --zzz-top: 900;
@@ -80,7 +82,7 @@ h1.gradient-text {
 }
 
 /*
-* "be" so as not to conflcit with bootstrap
+* "be" so as not to conflict with bootstrap
 * (bootstrap removal pending)
 */
 
@@ -110,11 +112,8 @@ main>section {
   width: 100%;
   margin: 0 auto;
   padding: 45px 0 90px 0;
-
   display: -webkit-box;
-
   display: -ms-flexbox;
-
   display: flex;
   -webkit-box-orient: horizontal;
   -webkit-box-direction: normal;
@@ -125,14 +124,9 @@ main>section {
 #main-banner {
   width: 100%;
   min-height: 400px;
-  background-size: cover;
-  background-image: url("../assets/sample-banner.jpg");
   color: var(--white);
-
   display: -webkit-box;
-
   display: -ms-flexbox;
-
   display: flex;
   -webkit-box-orient: horizontal;
   -webkit-box-direction: normal;
@@ -141,10 +135,37 @@ main>section {
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
+  position: relative;
 }
 
 #main-banner hgroup {
-  width: 455px;
+  z-index: 10;
+}
+
+#main-banner-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-image: url("../assets/construction-finalist-china-railway-18th-bureau-group-high-resolution.png");
+  background-color: #343a4052;
+  background-blend-mode: darken;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 9;
+}
+
+#main-banner-image .front-tooltip {
+  background-color: rgba(255, 255, 255, 0.188);
+  color: white;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 10px;
+  font-size: 11px;
+
 }
 
 #main-banner h1 {
@@ -200,12 +221,7 @@ main>section {
 
 #main-banner .iui-button.orange {
   background-color: var(--orange);
-
-
-  /* border-color: #005e3f; */
   margin-right: 16px;
-  /* border-width: 2px; */
-  /* background: #005e3fa1; */
 }
 
 #main-banner .iui-button.transparent {
@@ -213,40 +229,72 @@ main>section {
   border: 1px solid #fff;
 }
 
+.link-button-group {
+  z-index: 10;
+}
+
 #start-building h1 {
   -ms-flex-item-align: start;
   align-self: flex-start;
+  margin-top: 10px;
+  margin-bottom: 0px;
+}
+
+.intro-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 90px;
+}
+
+.introduction {
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+  flex-basis: 100%;
+  /* padding-right: 70px; */
+  margin-top: 20px;
+}
+
+.introduction>p {
+  width: 600px;
+}
+
+#first-app-photo {
+  height: 350px;
 }
 
 ul.joined-blocklist {
-  width: 100%;
   padding: 0;
-  margin: 14px 0;
   list-style-type: none;
   -webkit-box-shadow: var(--itwin-shadow);
   box-shadow: var(--itwin-shadow);
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -ms-flex-item-align: center;
-  -ms-grid-row-align: center;
-  align-self: center;
+  margin: 50px auto 0 auto;
   -webkit-box-orient: horizontal;
   -webkit-box-direction: normal;
   -ms-flex-direction: row;
   flex-direction: row;
+  flex-wrap: wrap;
+  margin-bottom: 0px;
 }
 
 ul.joined-blocklist li {
   flex: 1;
   -webkit-box-flex: 1;
   -ms-flex: 1;
+  flex-basis: 20%;
   border-right: 1px solid #dce0e3;
+  border-bottom: 1px solid #dce0e3;
 }
 
 ul.joined-blocklist li a {
+  height: 100%;
   margin: 0;
-  padding: 30px 20px;
+  padding: 35px 5px;
+  font-size: 14px;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -260,35 +308,17 @@ ul.joined-blocklist li a {
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
-  font-size: 14px;
   text-decoration: none;
 }
 
 ul.joined-blocklist li a:hover {
   cursor: pointer;
-  background: rgba(94, 176, 206, 0.16);
+  background: var(--block-hover-color);
   transition-property: background;
   transition-duration: 300ms;
   text-decoration: none;
 }
 
-ul.joined-blocklist li:first-of-type {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-}
-
-ul.joined-blocklist li:first-of-type,
 ul.joined-blocklist li:last-of-type {
   margin: 0;
   border-right: none;
@@ -300,10 +330,6 @@ ul.joined-blocklist li.block-filled-gradient {
   box-sizing: border-box;
   color: var(--white);
   font-size: 18px;
-}
-
-ul.joined-blocklist li.block-filled-gradient img {
-  height: 55px;
 }
 
 ul.joined-blocklist li.block-filled-gradient p {
@@ -323,11 +349,52 @@ ul.joined-blocklist li p {
 }
 
 ul.joined-blocklist li p:first-of-type {
-  font-weight: 700;
+  font-weight: 500;
 }
 
 ul.joined-blocklist li img {
-  height: 56px;
+  height: 65px;
+}
+
+.next-steps-new {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  margin-top: 30px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  display: flex;
+  flex-direction: row;
+}
+
+.next-steps-new img {
+  height: 35px;
+  opacity: .8;
+}
+
+.next-steps-new h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.next-step-new {
+  display: flex;
+  flex-direction: row;
+  flex-basis: calc(100% / 3);
+  padding-right: 20px;
+}
+
+.next-step-new div {
+  padding-left: 30px;
 }
 
 ul.next-steps {
@@ -382,27 +449,80 @@ li.next-step h2 {
 }
 
 li.next-step p {
-  /* max-width: 290px; */
   font-size: 14px;
   margin-top: 25px;
 }
 
-section#community {
-  padding-top: 90px;
-  background-color: var(--grey);
+section#getInspired {
+  padding-top: 60px;
+  background-color: #fbfbfb;
+
 }
 
-section#community h1 {
-  font-size: 21px;
-  font-weight: 700px;
-  margin: 0px;
-  line-height: 22px;
+section#getInspired ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
 }
 
-section#community h1 span {
-  font-size: var(--section-heading-size);
-  height: var(--section-heading-size);
+section#getInspired ul li {
+  flex-basis: calc(100% / 3);
+  border-left: 1px dashed rgba(128, 128, 128, 0.171);
+  color: var(--white);
+  padding: 0 20px;
+}
+
+section#getInspired ul li h2 {
+  font-size: 16px;
+}
+
+section#getInspired ul li h2::before {
+  content: "";
   display: block;
+  position: absolute;
+  left: -21px;
+  height: 20px;
+  width: 2px;
+  background-color: #0f3a64;
+  cursor: auto;
+}
+
+section#getInspired ul li a {
+  position: relative;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  padding-top: 45px;
+  height: 100%;
+}
+
+section#getInspired ul li a img {
+  height: 30px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+img.icon-lighter {
+  opacity: 0.6;
+}
+
+img.icon-lighter#scholar {
+  height: 40px;
+  top: -5px;
+}
+
+section#getInspired ul li a span {
+  color: var(--dark-blue);
+  font-weight: 700;
+  margin-top: auto;
+}
+
+section#community {
+  padding-top: 60px;
+  padding-bottom: 60px;
+  background-color: var(--grey);
 }
 
 section#community h1 .all-caps {
@@ -419,7 +539,6 @@ section#community ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
-  margin-top: 14px;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -432,29 +551,27 @@ section#community ul {
   justify-content: center;
 }
 
-section#community ul li {
-  height: 285px;
-  padding: 30px 0px 0px 0px;
-  margin-right: 20px;
-  border: 1px solid #c7ccd1;
-  /* border-radius: 12px; */
-  background: rgba(255, 255, 255, 0.5);
-  display: -webkit-box;
-  display: -ms-flexbox;
+section#community .get-involved-list {
+  flex-basis: 100%;
+  flex-wrap: nowrap;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
+  flex-direction: row;
+
+}
+
+section#community .get-involved-list li {
+  flex-basis: calc(100% / 3);
+}
+
+section#community .involved-content {
+  display: flex;
   flex-direction: column;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  -webkit-box-pack: start;
-  -ms-flex-pack: start;
-  justify-content: flex-start;
-  text-align: center;
-  -ms-flex-preferred-size: 25%;
-  flex-basis: 25%;
+}
+
+
+section#community ul li {
+  position: relative;
+  margin-bottom: 35px;
 }
 
 section#community ul li:last-of-type {
@@ -462,50 +579,71 @@ section#community ul li:last-of-type {
 }
 
 section#community ul li img {
-  height: 35px;
+  width: 35px;
 }
 
 section#community ul li h2 {
   font-size: 16px;
   font-weight: 700;
-  padding: 15px 50px;
+
 }
 
 section#community ul li p {
-  padding: 0 25px;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
+  margin-bottom: 5px;
 }
 
 section#community ul li a {
-  display: block;
-  width: 100%;
-  height: 40px;
-  line-height: 43px;
-  background: #fff;
-  color: var(--bright-orange);
   text-decoration: none;
-  margin-top: auto;
-  border-bottom-right-radius: 12px;
-  border-bottom-left-radius: 12px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-align: row;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  justify-content: flex-start;
+  align-items: flex-start;
+
 }
 
+.get-involved-content {
+  display: flex;
+  flex-direction: column;
+  margin-left: 30px;
+}
+
+section#community ul li a span {
+  display: block;
+  width: 100%;
+  background-color: #fff;
+  color: var(--bright-orange);
+}
+
+section#community ul li a span {
+  background-color: transparent;
+}
 
 section#what-is-itwin {
   background-color: #fff;
 }
 
 section#what-is-itwin h1 {
-  margin-bottom: 10px;
+  margin-bottom: 30px;
   -ms-flex-item-align: start;
   align-self: flex-start;
 }
 
-section#what-is-itwin .itwin-description {
+.itwin-description {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  width: 60%;
-  max-width: 590px;
+  max-width: 600px;
   margin-bottom: 50px;
 }
 
@@ -523,7 +661,6 @@ section#what-is-itwin .feature-list {
 }
 
 section#what-is-itwin .feature-row {
-  /* flex: 50%; */
   margin-right: 0;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -655,10 +792,6 @@ section#what-is-itwin .feature-list p {
     margin-left: 10px;
   }
 
-  ul.joined-blocklist li:first-of-type {
-    padding: 10px;
-  }
-
   ul.next-steps {
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
@@ -727,6 +860,33 @@ section#what-is-itwin .feature-list p {
     top: 30px;
   }
 
+  section#getInspired h1 {
+    margin-bottom: 30px;
+  }
+
+  section#getInspired ul {
+    flex-wrap: wrap;
+  }
+
+  section#getInspired ul li {
+    flex-basis: 50%;
+    margin-bottom: 80px;
+    padding-right: 30px;
+  }
+}
+
+@media screen and (max-width: 968px) {
+  ul.joined-blocklist {
+    flex-basis: 30%;
+  }
+
+  ul.joined-blocklist li {
+    flex-basis: 100%;
+  }
+
+  ul.joined-blocklist li img {
+    height: 36px;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -745,9 +905,9 @@ section#what-is-itwin .feature-list p {
     padding: var(--section-vertical-space-top) 0 5px 0;
   }
 
-  /* main banner*/
+  /* main banner */
   #main-banner {
-    min-height: 300px;
+    min-height: 350px;
   }
 
   #main-banner p {
@@ -756,10 +916,20 @@ section#what-is-itwin .feature-list p {
 
   #main-banner hgroup {
     width: 100%;
+    z-index: 10;
   }
 
   /* start building */
+  .intro-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+  }
 
+  .introduction>p {
+    width: 100%;
+  }
 
   ul.joined-blocklist li {
     border-bottom: 1px solid #dce0e3;
@@ -789,6 +959,10 @@ section#what-is-itwin .feature-list p {
     margin-bottom: var(--section-vertical-space-bottom);
   }
 
+  .next-steps-new {
+    margin-bottom: 30px;
+    flex-direction: column;
+  }
 
 
   li.next-step:last-of-type:after {
@@ -821,6 +995,17 @@ section#what-is-itwin .feature-list p {
     margin-right: 0px;
   }
 
+  section#community .involved-content {
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  section#community .get-involved-list {
+    margin-left: 0;
+    flex-basis: 100%;
+    flex-direction: column;
+  }
+
   /* iTwinJS - What does it mean?? */
 
   section#what-is-itwin {
@@ -832,7 +1017,7 @@ section#what-is-itwin .feature-list p {
     margin-top: 0px;
   }
 
-  section#what-is-itwin .itwin-description {
+  .itwin-description {
     padding-right: 0px;
     margin-bottom: 50px;
     width: 100%;
@@ -887,4 +1072,10 @@ section#what-is-itwin .feature-list p {
   background: -webkit-gradient(linear, left top, left bottom, from(var(--white)), to(black));
   background: -o-linear-gradient(top, var(--white), black);
   background: linear-gradient(to bottom, var(--white), black);
+}
+
+@media screen and (min-width: 1750px) {
+  #main-banner {
+    min-height: 600px;
+  }
 }

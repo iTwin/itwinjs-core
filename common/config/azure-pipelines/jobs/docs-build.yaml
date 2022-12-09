@@ -89,7 +89,7 @@ jobs:
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
       - powershell: |
-          $commitMsg = '$(Build.SourceVersionMessage)'
+          $commitMsg = "$(Build.SourceVersionMessage)"
           if ($commitMsg -match '^(\d+.\d+.\d+)(-dev.\d+)?$') {
             Write-Host `'$commitMsg`'` is a version bump
             Write-Host '##vso[build.addbuildtag]iTwinJsDocsRelease'
