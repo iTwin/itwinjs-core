@@ -46,6 +46,33 @@ describe("JsonParser", () => {
       parser = new JsonParser(createSchemaJsonWithItems(json));
       assert.throws(() => [...parser.getItems()], ECObjectsError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '0' is not a valid ECName.`);
     });
+
+    it("should throw for bad property type", () => {
+      const json = {
+        TestEntityClass: {
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.BaseEntity",
+          properties: [
+            {
+              name: "TestProp",
+              type: "BadType",
+              typeName: "int",
+            },
+          ],
+        },
+        BaseEntity: {
+          schemaItemType: "EntityClass",
+        },
+      };
+
+      parser = new JsonParser(createSchemaJsonWithItems(json));
+      const findResult = parser.findItem("TestEntityClass");
+      if (findResult === undefined)
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
+
+      const [, , parentElement] = findResult;
+      assert.throws(() => Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass")), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.TestProp has an invalid 'type' attribute. 'BadType' is not a valid type.`);
+    });
   });
 
   describe("parseCustomAttributeClass", () => {
@@ -349,9 +376,9 @@ describe("JsonParser", () => {
       assert.throws(() => parser.parseKindOfQuantity(json), ECObjectsError, `The KindOfQuantity TestSchema.TestKindOfQuantity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
     }
 
-    it("should throw for invalid relativeError", () => { testInvalidAttribute("relativeError", "number", false); });
-    it("should throw for invalid presentationUnits", () => { testInvalidAttribute("presentationUnits", `string' or 'string[]`, false); });
-    it("should throw for invalid persistenceUnit", () => { testInvalidAttribute("persistenceUnit", "string", false); });
+    it("should throw for invalid relativeError", () => testInvalidAttribute("relativeError", "number", false));
+    it("should throw for invalid presentationUnits", () => testInvalidAttribute("presentationUnits", `string' or 'string[]`, false));
+    it("should throw for invalid persistenceUnit", () => testInvalidAttribute("persistenceUnit", "string", false));
 
     // should throw for missing relativeError
     const missingRelativeError = {
@@ -474,20 +501,20 @@ describe("JsonParser", () => {
       assert.throws(() => parser.parsePrimitiveProperty(json), ECObjectsError, err);
     }
 
-    it("should throw for invalid label", () => { testInvalidAttribute("label", "string", false); });
-    it("should throw for invalid description", () => { testInvalidAttribute("description", "string", false); });
-    it("should throw for invalid priority", () => { testInvalidAttribute("priority", "number", false); });
-    it("should throw for invalid isReadOnly", () => { testInvalidAttribute("isReadOnly", "boolean", 1.234); });
-    it("should throw for invalid category", () => { testInvalidAttribute("category", "string", false); });
-    it("should throw for invalid kindOfQuantity", () => { testInvalidAttribute("kindOfQuantity", "string", false); });
-    it("should throw for invalid inherited", () => { testInvalidAttribute("inherited", "boolean", 1.234); });
-    it("should throw for invalid customAttributes", () => { testInvalidAttribute("category", "string", false); });
-    it("should throw for invalid typeName", () => { testInvalidAttribute("typeName", "string", 0); });
-    it("should throw for invalid minLength", () => { testInvalidAttribute("minLength", "number", "0"); });
-    it("should throw for invalid maxLength", () => { testInvalidAttribute("maxLength", "number", "0"); });
-    it("should throw for invalid minValue", () => { testInvalidAttribute("minValue", "number", "0"); });
-    it("should throw for invalid maxValue", () => { testInvalidAttribute("maxValue", "number", "0"); });
-    it("should throw for invalid extendedTypeName", () => { testInvalidAttribute("extendedTypeName", "string", 0); });
+    it("should throw for invalid label", () => testInvalidAttribute("label", "string", false));
+    it("should throw for invalid description", () => testInvalidAttribute("description", "string", false));
+    it("should throw for invalid priority", () => testInvalidAttribute("priority", "number", false));
+    it("should throw for invalid isReadOnly", () => testInvalidAttribute("isReadOnly", "boolean", 1.234));
+    it("should throw for invalid category", () => testInvalidAttribute("category", "string", false));
+    it("should throw for invalid kindOfQuantity", () => testInvalidAttribute("kindOfQuantity", "string", false));
+    it("should throw for invalid inherited", () => testInvalidAttribute("inherited", "boolean", 1.234));
+    it("should throw for invalid customAttributes", () => testInvalidAttribute("category", "string", false));
+    it("should throw for invalid typeName", () => testInvalidAttribute("typeName", "string", 0));
+    it("should throw for invalid minLength", () => testInvalidAttribute("minLength", "number", "0"));
+    it("should throw for invalid maxLength", () => testInvalidAttribute("maxLength", "number", "0"));
+    it("should throw for invalid minValue", () => testInvalidAttribute("minValue", "number", "0"));
+    it("should throw for invalid maxValue", () => testInvalidAttribute("maxValue", "number", "0"));
+    it("should throw for invalid extendedTypeName", () => testInvalidAttribute("extendedTypeName", "string", 0));
   });
 
   describe("parsePrimitiveArrayProperty", () => {

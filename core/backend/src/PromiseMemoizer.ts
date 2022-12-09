@@ -23,9 +23,13 @@ export class QueryablePromise<T> {
   public get isFulfilled(): boolean { return this._fulfilled; }
   public get isRejected(): boolean { return this._rejected; }
   public constructor(public readonly promise: Promise<T>) {
-    this.promise
-      .then((res: T) => { this.result = res; this._fulfilled = true; })
-      .catch((err: any) => { this.error = err; this._rejected = true; });
+    this.promise.then((res: T) => {
+      this.result = res;
+      this._fulfilled = true;
+    }).catch((err: any) => {
+      this.error = err;
+      this._rejected = true;
+    });
   }
 }
 
@@ -63,7 +67,7 @@ export class PromiseMemoizer<T> implements IDisposable {
   }
 
   /** Call the memoized function */
-  public memoize = (...args: any[]): QueryablePromise<T> => {
+  public memoize(...args: any[]): QueryablePromise<T> {
     const key: string = this._generateKeyFn(...args);
     let qp: QueryablePromise<T> | undefined = this._cachedPromises.get(key);
     if (qp)
@@ -84,27 +88,34 @@ export class PromiseMemoizer<T> implements IDisposable {
       return v;
     };
 
-    const p = this._memoizeFn(...args).then(removeCachedPromise, (e) => { throw removeCachedPromise(e); });
+    const p = this._memoizeFn(...args).then(removeCachedPromise, (e) => {
+      throw removeCachedPromise(e);
+    });
+
     qp = new QueryablePromise<T>(p);
     this._cachedPromises.set(key, qp);
     return qp;
-  };
+  }
 
   /** Delete the memoized function */
-  public deleteMemoized = (...args: any[]) => {
+  public deleteMemoized(...args: any[]) {
     const key: string = this._generateKeyFn(...args);
     this._cachedPromises.delete(key);
-  };
+    const timer = this._timers.get(key);
+    if (timer)
+      clearTimeout(timer);
+  }
 
   /** Clear all entries in the memoizer cache */
-  public clearCache = () => {
+  public clearCache() {
     this._cachedPromises.clear();
-  };
+  }
 
-  public dispose = () => {
+  public dispose() {
     for (const timer of this._timers.values())
       clearTimeout(timer);
+
     this._timers.clear();
     this.clearCache();
-  };
+  }
 }

@@ -45,7 +45,9 @@ function interpolateSwingingEye(
   };
 }
 /** Animates the transition of a [[Viewport]] from one [Frustum]($common) to another. The viewport will render as many frames as necessary during the supplied duration.
+ * @see [[Viewport.animateFrustumChange]] to conveniently animate a viewport from one frustum to another.
  * @public
+ * @extensions
  */
 export class FrustumAnimator implements Animator {
   private _tweens = new Tweens();
@@ -82,7 +84,12 @@ export class FrustumAnimator implements Animator {
       const beginRange = Range3d.createTransformedArray(viewTransform, view.applyPose(begin).calculateFocusCorners()); // get the view-aligned range of the focus plane at the beginning
 
       // do the starting and ending views (plus the margin) overlap? If not we need to zoom out to show how to get from one to the other
-      const expand = (range: Range3d) => { const r = range.clone(); r.scaleAboutCenterInPlace(zoomSettings.margin); return r; };
+      const expand = (range: Range3d) => {
+        const r = range.clone();
+        r.scaleAboutCenterInPlace(zoomSettings.margin);
+        return r;
+      };
+
       if (!expand(beginRange).intersectsRangeXY(expand(endRange))) {
         view3.lookAtViewAlignedVolume(beginRange.union(endRange), viewport.viewRect.aspect); // set up a view that would show both extents
         duration *= zoomSettings.durationFactor; // increase duration so the zooming isn't too fast

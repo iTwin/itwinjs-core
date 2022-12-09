@@ -67,8 +67,14 @@
     "TogglePathDecoration": {
       "keyin": "dta path decoration"
     },
+    "AddGltfDecoration": {
+      "keyin": "dta gltf"
+    },
     "ShutDown": {
       "keyin": "dta shutdown"
+    },
+    "Exit": {
+      "keyin": "dta exit"
     },
     "SignIn": {
       "keyin": "dta signin"
@@ -138,6 +144,28 @@
     },
     "SyncFrusta": {
       "keyin": "dta frustum sync"
+    },
+    "GenerateTileContent": {
+      "keyin": "dta gen tile"
+    },
+    "GenerateElementGraphics": {
+      "keyin": "dta gen graphics"
+    },
+    "Macro": {
+      "keyin": "dta macro"
+    },
+    "TerrainDrape": {
+      "keyin": "dta drape terrain",
+      "Prompts": {
+        "EnterDrapePoint": "Enter drape terrain point",
+        "SelectDrapeRealityModel": "Select reality model or map (with terrain) to drape"
+      }
+    },
+    "OpenRealityModelSettings": {
+      "keyin": "dta reality model settings"
+    },
+    "AttachCustomRealityData": {
+      "keyin": "dta attach reality"
     }
   }
 }

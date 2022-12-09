@@ -12,6 +12,7 @@ import { BaseTimelineDataProvider } from "../../imodel-components-react/timeline
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../imodel-components-react/timeline/interfaces";
 import { TimelineComponent, TimelineMenuItemProps } from "../../imodel-components-react/timeline/TimelineComponent";
 import { TestUtils } from "../TestUtils";
+import { MockRender } from "@itwin/core-frontend";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public playing = false;
@@ -105,6 +106,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
     sinon.restore();
     // need to initialize to get localized strings
     await TestUtils.initializeUiIModelComponents();
+    await MockRender.App.startup();
 
     // JSDom used in testing does not provide implementations for requestAnimationFrame/cancelAnimationFrame so add dummy ones here.
     window.requestAnimationFrame = rafSpy;
@@ -117,9 +119,12 @@ describe("<TimelineComponent showDuration={true} />", () => {
     rafSpy.resetHistory();
   });
 
-  after(() => {
+  after(async () => {
     sinon.restore();
     Element.prototype.getBoundingClientRect = getBoundingClientRect;
+    await MockRender.App.shutdown();
+
+    TestUtils.terminateUiIModelComponents();
   });
 
   it("should render without milestones - minimized", async () => {
@@ -416,14 +421,9 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
     expect(renderedComponent).not.to.be.undefined;
 
-    // hit play/pause button to start animation
+    // hit the setting button
     const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
     fireEvent.click(settingMenuSpan);
-
-    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
-    expect(menuPopupDiv).not.to.be.null;
-    // renderedComponent.debug();
-
     const repeatItem = renderedComponent.getByText("timeline.repeat");
     expect(repeatItem).not.to.be.null;
     fireEvent.click(repeatItem);
@@ -471,10 +471,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
     const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
     fireEvent.click(settingMenuSpan);
-
-    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
-    expect(menuPopupDiv).not.to.be.null;
-    // renderedComponent.debug();
 
     renderedComponent.rerender(
       <TimelineComponent
@@ -602,9 +598,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
     const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
     fireEvent.click(settingMenuSpan);
 
-    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
-    expect(menuPopupDiv).not.to.be.null;
-    // renderedComponent.debug();
     const repeatItem = renderedComponent.getByText("timeline.repeat");
     expect(repeatItem).not.to.be.null;
     fireEvent.click(repeatItem);
@@ -757,9 +750,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
     const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
     fireEvent.click(settingMenuSpan);
 
-    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
-    expect(menuPopupDiv).not.to.be.null;
-    // renderedComponent.debug();
     const addedItem = renderedComponent.getByText("8 seconds");
     expect(addedItem).not.to.be.null;
 
@@ -796,13 +786,12 @@ describe("<TimelineComponent showDuration={true} />", () => {
     const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
     fireEvent.click(settingMenuSpan);
 
-    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
-    expect(menuPopupDiv).not.to.be.null;
-    // renderedComponent.debug();
     const addedItem = renderedComponent.getByText("2 Seconds");
     expect(addedItem).not.to.be.null;
     fireEvent.click(addedItem);
 
+    // open menu again
+    fireEvent.click(settingMenuSpan);
     const standardItem = renderedComponent.getByText("timeline.slow");
     expect(standardItem).not.to.be.null;
   });
@@ -836,9 +825,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
     const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
     fireEvent.click(settingMenuSpan);
 
-    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
-    expect(menuPopupDiv).not.to.be.null;
-    // renderedComponent.debug();
     const addedItem = renderedComponent.queryByText("40 Seconds");
     expect(addedItem).not.to.be.null;
 
@@ -868,10 +854,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
     const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
     fireEvent.click(settingMenuSpan);
 
-    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
-    expect(menuPopupDiv).not.to.be.null;
-    // renderedComponent.debug();
-
     expect(renderedComponent.queryByText("timeline.repeat")).to.be.null;
 
     const mouseUp = new MouseEvent("mouseup");
@@ -891,6 +873,8 @@ describe("<TimelineComponent showDuration={true} />", () => {
         showDuration={false}
         totalDuration={duration}
         timeZoneOffset={-300}
+        dateFormatOptions={{ locales: "en-US", options: { year: "numeric", month: "short", day: "numeric" } }}
+        timeFormatOptions={{ locales: "en-US", options: { hour: "2-digit", minute: "numeric", second: "numeric", hour12: true } }}
         componentId={"sampleApp-timeZoneOffset"}
       />
     );
@@ -898,12 +882,13 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
     const startDateLabel = renderedComponent.getByTestId("test-start-date");
     expect(startDateLabel).not.to.be.null;
-    expect(startDateLabel.innerHTML).to.equal("6/30/2016");
+    expect(startDateLabel.innerHTML).to.equal("Jun 30, 2016");
 
     const startTimeLabel = renderedComponent.getByTestId("test-start-time");
     expect(startTimeLabel).not.to.be.null;
-    expect(startTimeLabel.innerHTML).to.equal("7:00:00 PM");
+    expect(startTimeLabel.innerHTML).to.equal("07:00:00 PM");
   });
+
   it("should mark today's date on the timeline", () => {
     const duration = 10 * 1000;
     const todayDate = new Date();

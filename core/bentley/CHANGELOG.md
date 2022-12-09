@@ -1,6 +1,287 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+This log was last generated on Wed, 07 Dec 2022 19:12:36 GMT and should not be manually modified.
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:36 GMT
+
+### Updates
+
+- Add EntityReferences
+- add PickAsyncMethods utility type
+- Add new ChangeSetStatus.DownloadCancelled error code.
+- Add ByteStream.remainingLength.
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:50 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:57 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
+
+## 3.4.1
+Mon, 17 Oct 2022 20:06:51 GMT
+
+### Updates
+
+- Add EntityReferences
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Use older variable names from opentelemetry
+- Updated Node types declaration to support latest v16
+- Add APIs for incrementally constructing typed arrays.
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+_Version update only_
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+_Version update only_
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+_Version update only_
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Add ExtractLiterals type.
+- Remove AuthStatus from BentleyError.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:52 GMT
+
+_Version update only_
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+_Version update only_
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+_Version update only_
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Introducing StatusCategory
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- added ClassUtils.isProperSubclassOf utility
+- Add realityDataStatus
+- add internal YieldManager
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+_Version update only_
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Drop deprecated ElectronUtils and Id methods.
+- make ChangeSetApplyOption @internal - to be removed in future
+- add MarkRequired utility type
+- assert accepts a function for condition and/or message, and does nothing unless NODE_ENV-development or explicitly enabled.
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Add ByteStream.nextUint24.
+- added UnexpectedErrors class
+- allow intercept log and filter it
+- Add various utility types.
+- rename to @itwin/core-bentley
+- Support for Node 16
+- Deprecate ByteStream constructor in favor of less error-prone initialization methods.
+- remove ClientRequestContext and its subclasses
+- Deprecated Config and removed config.app usage
+- remove ChangeSetApplyOption
+- remove ClientRequestContext.current
+- Switching to consume new Projects-Client
+-  Renamed an iModel's parent container to iTwin
+- added JSONSchema
+
+## 2.19.28
+Wed, 12 Jan 2022 14:52:38 GMT
+
+_Version update only_
+
+## 2.19.27
+Wed, 05 Jan 2022 20:07:20 GMT
+
+_Version update only_
+
+## 2.19.26
+Wed, 08 Dec 2021 20:54:52 GMT
+
+_Version update only_
+
+## 2.19.25
+Fri, 03 Dec 2021 20:05:49 GMT
+
+_Version update only_
+
+## 2.19.24
+Mon, 29 Nov 2021 18:44:31 GMT
+
+_Version update only_
+
+## 2.19.23
+Mon, 22 Nov 2021 20:41:39 GMT
+
+_Version update only_
+
+## 2.19.22
+Wed, 17 Nov 2021 01:23:26 GMT
+
+_Version update only_
+
+## 2.19.21
+Wed, 10 Nov 2021 10:58:24 GMT
+
+_Version update only_
+
+## 2.19.20
+Fri, 29 Oct 2021 16:14:22 GMT
+
+_Version update only_
+
+## 2.19.19
+Mon, 25 Oct 2021 16:16:25 GMT
+
+_Version update only_
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+_Version update only_
+
+## 2.19.17
+Thu, 14 Oct 2021 21:19:43 GMT
+
+_Version update only_
+
+## 2.19.16
+Mon, 11 Oct 2021 17:37:46 GMT
+
+_Version update only_
+
+## 2.19.15
+Fri, 08 Oct 2021 16:44:23 GMT
+
+_Version update only_
+
+## 2.19.14
+Fri, 01 Oct 2021 13:07:03 GMT
+
+_Version update only_
 
 ## 2.19.13
 Tue, 21 Sep 2021 21:06:40 GMT
@@ -555,7 +836,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Added FailedToGetProductSettings error
-- Setup Guid.normalize() for internal use.
+- Setup Guid.normalize() for internal use. 
 - channel rules
 
 ## 2.0.0
@@ -563,12 +844,12 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Monitor progress of downloading briefcases, ability to cancel download of briefcases.
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
 - Update Config.App documentation to reflect the removal of the config.json file
 - Added ContextDoesNotExist error
 - BUG273249
-- Updated docs.
-- Updated error text.
+- Updated docs. 
+- Updated error text. 
 - added raw log method that bypass catogory check
 - order imports.
 - Add a type guard for `IDisposable`
@@ -602,7 +883,7 @@ Wed, 22 Jan 2020 19:24:11 GMT
 
 ### Updates
 
-- VSS$257397: Temporary fix for checking electron renderer.
+- VSS$257397: Temporary fix for checking electron renderer. 
 - Upgrade to TypeScript 3.7.2.
 
 ## 1.10.0
@@ -617,7 +898,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 ### Updates
 
-- Setup OidcDesktopClient for Electron use cases.
+- Setup OidcDesktopClient for Electron use cases. 
 - Added non-static wait and executeAfter to BeDuration
 - Fix warnings from static analysis
 - Added `BeDuration.race` for common timeout operations.
@@ -670,7 +951,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 ### Updates
 
 - Added OneAtATimeActivity class
-- Introduced AsyncMutex - a utility to run async blocks of code in sequence.
+- Introduced AsyncMutex - a utility to run async blocks of code in sequence. 
 - Update to TypeScript 3.5
 
 ## 1.0.0
@@ -697,10 +978,10 @@ Mon, 13 May 2019 15:52:05 GMT
 - Logged the fields in ClientRequestContext
 - Logging fixes.
 - Put sourcemap in npm package.
-- Fixed logger to not mutate incoming objects.
+- Fixed logger to not mutate incoming objects. 
 - Improved performance logging
 - Added functions for iterating and obtaining the number of elements of a collection of Id64s represented as an Id64Arg.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Use TextDecoder to decode binary utf-8 strings if supported.
 - Upgrade TypeDoc dependency to 0.14.2
 
@@ -736,7 +1017,7 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
@@ -843,7 +1124,7 @@ Fri, 16 Nov 2018 21:45:44 GMT
 
 ### Updates
 
-- Changes to debug utilities.
+- Changes to debug utilities. 
 - Fluentd Bunnyan Logger added
 
 ## 0.166.0

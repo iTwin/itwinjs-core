@@ -8,6 +8,7 @@
 
 import "./ToolSettings.scss";
 import * as React from "react";
+import { IModelApp } from "@itwin/core-frontend";
 import { DockedToolSetting, DockedToolSettings, ScrollableWidgetContent, ToolSettingsStateContext } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -22,6 +23,13 @@ export interface ToolSettingsEntry {
   editorNode: React.ReactNode;
 }
 
+function EmptyToolSettingsEntry(): ToolSettingsEntry {
+  const labelString = IModelApp.localization.getLocalizedString("UiFramework:tools.noToolSettings");
+  const labelNode = <div className="uif-toolsetting-label-docked-horizontal-empty">{labelString}</div>;
+  const editorNode = <div />;
+  return {labelNode,editorNode };
+}
+
 /** @internal */
 // istanbul ignore next - need to work on overflow unit testing
 function TsLabel({ children }: { children: React.ReactNode }) {
@@ -32,7 +40,7 @@ function TsLabel({ children }: { children: React.ReactNode }) {
 export function WidgetPanelsToolSettings() {
   const frontstageDef = useActiveFrontstageDef();
   const toolSettings = React.useContext(ToolSettingsStateContext);
-  const topCenterZone = frontstageDef?.topCenter;
+  const topCenterZone = frontstageDef?.topCenter; // eslint-disable-line deprecation/deprecation
   if (!topCenterZone || !topCenterZone.isToolSettings || toolSettings.type === "widget")
     return null;
   return (
@@ -54,11 +62,13 @@ export function ToolSettingsDockedContent() {
 /** @internal */
 export function useHorizontalToolSettingNodes() {
   const [settings, setSettings] = React.useState(FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes);
-
   React.useEffect(() => {
     const handleToolActivatedEvent = () => {
       const nodes = FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
-      setSettings(nodes);
+      if (!nodes || nodes.length === 0)
+        setSettings ([EmptyToolSettingsEntry()]);
+      else
+        setSettings(nodes);
     };
     FrontstageManager.onToolActivatedEvent.addListener(handleToolActivatedEvent);
     return () => {
@@ -69,7 +79,10 @@ export function useHorizontalToolSettingNodes() {
   React.useEffect(() => {
     const handleToolSettingsReloadEvent = () => {
       const nodes = FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
-      setSettings(nodes);
+      if (!nodes || nodes.length === 0)
+        setSettings ([EmptyToolSettingsEntry()]);
+      else
+        setSettings(nodes);
     };
     FrontstageManager.onToolSettingsReloadEvent.addListener(handleToolSettingsReloadEvent);
     return () => {

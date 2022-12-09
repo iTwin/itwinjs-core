@@ -10,7 +10,7 @@ import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, ColorDef, DisplayStyle3dSettingsProps,
   GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
@@ -270,7 +270,10 @@ export class ViewAttributes {
       parent: this._element,
       // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
       expand: ViewAttributes._expandViewFlags,
-      handler: (expanded) => { ViewAttributes._expandViewFlags = expanded; vfMenu.label.style.fontWeight = expanded ? "bold" : "500"; },
+      handler: (expanded) => {
+        ViewAttributes._expandViewFlags = expanded;
+        vfMenu.label.style.fontWeight = expanded ? "bold" : "500";
+      },
       body: flagsDiv,
     });
     (vfMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
@@ -661,12 +664,18 @@ export class ViewAttributes {
     exaggerationDiv.style.textAlign = "left";
     settingsDiv.appendChild(exaggerationDiv);
 
+    const bingCheckbox = this.addCheckbox("Use Bing elevation",
+      (enabled: boolean) => updateTerrainSettings({ providerName: enabled ? "DtaBingTerrain" : "CesiumWorldTerrain" }),
+      settingsDiv
+    ).checkbox;
+
     this._updates.push((view) => {
       const map = view.displayStyle.settings.backgroundMap;
       const terrainSettings = map.terrainSettings;
       heightOriginMode.value = terrainSettings.heightOriginMode.toString();
       heightOrigin.value = terrainSettings.heightOrigin.toString();
       exaggeration.value = terrainSettings.exaggeration.toString();
+      bingCheckbox.checked = "DtaBingTerrain" === terrainSettings.providerName;
     });
 
     return settingsDiv;
@@ -717,7 +726,10 @@ export class ViewAttributes {
       parent: this._element,
       expand: ViewAttributes._expandEdgeDisplay,
       // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
-      handler: (expanded) => { ViewAttributes._expandEdgeDisplay = expanded; nestedMenu.label.style.fontWeight = expanded ? "bold" : "500"; },
+      handler: (expanded) => {
+        ViewAttributes._expandEdgeDisplay = expanded;
+        nestedMenu.label.style.fontWeight = expanded ? "bold" : "500";
+      },
       body: edgeDisplayDiv,
     });
     nestedMenu.label.style.fontWeight = "500";
@@ -734,6 +746,12 @@ export class ViewAttributes {
       handler: (_) => this.overrideEdgeSettings({ transThreshold: parseFloat(slider.slider.value) }),
     });
     slider.div.style.textAlign = "left";
+
+    const smoothEdgesCb = this.addCheckbox("Smooth Polyface Edges", (enabled: boolean) => {
+      IModelApp.tileAdmin.generateAllPolyfaceEdges = enabled;
+      this._vp.invalidateScene();
+      this.sync();
+    }, edgeDisplayDiv);
 
     const visEdgesCb = this.addCheckbox("Visible Edges", (enabled: boolean) => {
       this._vp.viewFlags = this._vp.viewFlags.with("visibleEdges", enabled);
@@ -770,6 +788,7 @@ export class ViewAttributes {
       visEdgesCb.checkbox.checked = vf.visibleEdges;
       visEditor.hidden = !vf.visibleEdges;
       hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
+      smoothEdgesCb.checkbox.checked = IModelApp.tileAdmin.generateAllPolyfaceEdges;
       hidEditor.hidden = !vf.hiddenEdges;
     });
     const hr = document.createElement("hr");

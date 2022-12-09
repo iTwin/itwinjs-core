@@ -17,6 +17,7 @@ import {
 } from "../../core-backend";
 import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 let iModelDb: StandaloneDb;
 const insertedLabel = "inserted label";
@@ -266,7 +267,7 @@ describe("Functional Domain", () => {
 
     IModelTestUtils.flushTxns(iModelDb); // importSchema below will fail if this is not called to flush local changes
 
-    await iModelDb.importSchemas([join(__dirname, "../assets/TestFunctional.ecschema.xml")]);
+    await iModelDb.importSchemas([join(KnownTestLocations.assetsDir, "TestFunctional.ecschema.xml")]);
 
     iModelDb.saveChanges("Import TestFunctional schema");
     assert.equal(commits, 1);

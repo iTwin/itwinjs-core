@@ -62,6 +62,11 @@
     "label": "Scope",
     "toolTip": "Selection Scope"
   },
+  "selectionScopeLabels": {
+    "element": "Element",
+    "assembly": "Assembly",
+    "top-assembly": "Top Assembly"
+  },
   "tests": {
     "singleContent": "Single Content",
     "label": "Test Label",
@@ -105,7 +110,7 @@
     "bingMapSettings": "Bing Map Settings",
     "elevationOffset": "Elevation Offset:"
   },
-  "savedViews": {
+  "viewTypes": {
     "views": "Views",
     "spatialViews": "Spatial Views",
     "drawings": "Drawings",
@@ -157,7 +162,17 @@
       "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
       "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
       "widgetOpacityTitle": "Widget Opacity",
-      "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets"
+      "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets",
+      "widgetIconTitle": "Show Icon on Widget Tab",
+      "widgetIconDescription": "If widget panel less 320 pixels wide then only icons will display on widget tab.",
+      "autoCollapseUnpinnedPanelsTitle": "Auto Collapse Unpinned Panels",
+      "autoCollapseUnpinnedPanelsDescription": "Collapse unpinned widget panels when mouse leaves panel boundary. If false, mouse down outside is required.",
+      "animateToolSettingsTitle": "Animate Docked Tool Settings on appear",
+      "animateToolSettingsDescription": "Animate tool settings when they appear in the docked bar.",
+      "useToolAsToolSettingsLabelTitle": "Use tool as tool settings label",
+      "useToolAsToolSettingsLabelDescription": "Use active tool name as the Tool Settings tab label, if false, will always be titled 'Tool Settings'.",
+      "toolbarOpacityTitle": "Toolbar Opacity",
+      "toolbarOpacityDescription": "Opacity of 2.0 toolbars when mouse is not hovering."
     }
   },
   "tools": {
@@ -172,6 +187,7 @@
     "isolateModels": "Isolate Models",
     "emphasizeSelected": "Emphasize Selected",
     "clearVisibility": "Clear Isolated, Hidden, and Emphasized Elements",
+    "noToolSettings": "No settings for this tool.",
     "sectionTools": "Section Tools",
     "sectionClear": "Clear Sections",
     "sectionPanelLabel": "Section",
@@ -189,11 +205,18 @@
       },
       "ToggleCamera": {
         "description": "Turn on/off use of camera in active view",
-        "flyover": "Toggle Camera"
+        "flyover": "Toggle Camera",
+        "turnOnFlyover": "Turn Camera On",
+        "turnOffFlyover": "Turn Camera Off"
       }
     },
     "OpenSettings": {
       "keyin": "open settings"
+    },
+    "RestoreAllFrontstages": {
+      "keyin": "restore all frontstages",
+      "description": "Restore all Frontstages to Default Layout",
+      "flyover": "Restore all Stages to Default Layout"
     },
     "RestoreFrontstageLayout": {
       "keyin": "restore frontstage layout",
@@ -289,6 +312,9 @@
     "pin": "Pin"
   },
   "widget": {
+    "labels": {
+      "toolSettings": "Tool Settings"
+    },
     "tooltips": {
       "dockToolSettings": "Dock to top",
       "moreWidgets": "More widgets",

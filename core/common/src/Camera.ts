@@ -11,6 +11,7 @@ import { Angle, AngleProps, Point3d, XYAndZ, XYZProps } from "@itwin/core-geomet
 
 /** JSON representation of a [[Camera]].
  * @public
+ * @extensions
  */
 export interface CameraProps {
   lens: AngleProps;
@@ -27,8 +28,15 @@ export class Camera implements CameraProps {
   public focusDist: number;
   public readonly eye: Point3d;
 
-  public static isValidLensAngle(val: Angle) { return val.radians > (Math.PI / 8.0) && val.radians < Math.PI; }
-  public static validateLensAngle(val: Angle) { if (!this.isValidLensAngle(val)) val.setRadians(Math.PI / 2.0); }
+  public static isValidLensAngle(val: Angle) {
+    return val.radians > (Math.PI / 8.0) && val.radians < Math.PI;
+  }
+
+  public static validateLensAngle(val: Angle) {
+    if (!this.isValidLensAngle(val))
+      val.setRadians(Math.PI / 2.0);
+  }
+
   public invalidateFocus() { this.focusDist = 0.0; }
   public get isFocusValid() { return this.focusDist > 0.0 && this.focusDist < 1.0e14; }
   public getFocusDistance() { return this.focusDist; }

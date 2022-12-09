@@ -1,0 +1,41 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/index";
+
+.rule {
+  display: grid;
+  grid-template-columns: min-content auto;
+  padding: 3px 0;
+
+  .rule-condition {
+    display: grid;
+    grid-template-columns: minmax(auto, 500px) 150px minmax(auto, 300px);
+    grid-column-gap: $iui-m;
+
+    .rule-property .iui-input {
+      padding-top: 1.5px;
+      padding-bottom: 1.5px;
+      min-height: 27px;
+    }
+  }
+
+  .rule-remove-action {
+    padding-right: $iui-sm;
+    visibility: hidden;
+  }
+
+  &:focus-within .rule-remove-action,
+  &:hover .rule-remove-action {
+    visibility: visible;
+  }
+}
+
+.rule-group-items > .rule {
+  padding-bottom: 14px;
+
+  &:first-child {
+    padding-top: 14px;
+  }
+}

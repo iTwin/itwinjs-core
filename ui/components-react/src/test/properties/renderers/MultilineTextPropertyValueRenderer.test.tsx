@@ -23,12 +23,6 @@ describe("MultilineTextPropertyValueRenderer", () => {
 
     it("is not able to render when record value is not primitive", () => {
       const record = TestUtils.createArrayProperty("test");
-      record.property.renderer = { name: "multiline" };
-      expect(renderer.canRender(record)).to.be.false;
-    });
-
-    it("is not able to render when renderer name is not multiline", () => {
-      const record = TestUtils.createPrimitiveStringProperty("test", "test");
       expect(renderer.canRender(record)).to.be.false;
     });
   });

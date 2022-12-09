@@ -73,6 +73,10 @@ export function GroupTool(props: GroupToolProps) {
       onClick={handleClick}
       onKeyDown={props.onKeyDown}
       onPointerUp={handlePointerUp}
+      data-item-id={props.item.id}
+      data-item-type="popup-tool-panel-item"
+      data-item-priority={props.item.itemPriority}
+      data-item-provider-id={props.item.providerId}
       ref={ref}
       style={props.style}
       role="button"

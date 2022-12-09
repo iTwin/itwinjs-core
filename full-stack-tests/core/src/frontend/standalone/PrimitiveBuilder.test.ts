@@ -32,8 +32,8 @@ describe("PrimitiveBuilder", () => {
   });
 
   after(async () => {
-    if (viewport) viewport.dispose();
-    if (imodel) await imodel.close();
+    viewport?.dispose();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -347,7 +347,7 @@ describe("PrimitiveBuilder", () => {
     const loopRange: Range3d = new Range3d();
     loop.range(undefined, loopRange);
 
-    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
+    const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false, undefined);
 
     const pathPoints: Point3d[] = [];
     pathPoints.push(new Point3d(0, 0, 0));

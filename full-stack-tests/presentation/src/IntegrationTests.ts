@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
-import * as cpx from "cpx";
+import * as cpx from "cpx2";
 import * as fs from "fs";
 import * as path from "path";
+import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
@@ -18,6 +18,7 @@ import {
 } from "@itwin/presentation-backend";
 import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
+import Backend from "i18next-http-backend";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -64,12 +65,8 @@ const copyITwinFrontendAssets = (outputDir: string) => {
 };
 
 class IntegrationTestsApp extends NoRenderApp {
-  protected static supplyUrlTemplate(): string {
-    return `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`;
-  }
-
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
-    await NoRenderApp.startup({ ...opts, localization: new ITwinLocalization({ urlTemplate: this.supplyUrlTemplate() }) });
+    await NoRenderApp.startup(opts);
     await IModelApp.localization.changeLanguage("en-PSEUDO");
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyITwinBackendAssets("lib/assets");
@@ -92,7 +89,6 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
-    localeDirectories: [path.join(libDir, "assets", "locales")],
     defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
     caching: {
@@ -112,6 +108,35 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     authorizationClient: props.useClientServices
       ? TestUtility.getAuthorizationClient(TestUsers.regular)
       : undefined,
+    localization: new ITwinLocalization({
+      urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
+      initOptions: {
+        preload: ["test"],
+      },
+      backendHttpOptions: {
+        request: (options, url, payload, callback) => {
+          /**
+           * A few reasons why we need to modify this request fn:
+           * - The above urlTemplate uses the file:// protocol
+           * - Node v18's fetch implementation does not support file://
+           * - i18n-http-backend uses fetch if it defined globally
+           */
+          const fileProtocol = "file://";
+          const request = new Backend().options.request?.bind(this as void);
+
+          if (url.startsWith(fileProtocol)){
+            try {
+              const data = fs.readFileSync(url.replace(fileProtocol, ""), "utf8");
+              callback(null, {status: 200, data});
+            } catch (error) {
+              callback(error, {status: 500, data: ""});
+            }
+          } else {
+            request!(options, url, payload, callback);
+          }
+        },
+      },
+    }),
   };
 
   if (props.useClientServices)
@@ -119,12 +144,17 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
 
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,
+    backendHostProps: { cacheDir: path.join(__dirname, ".cache") },
     frontendProps: frontendInitProps,
     frontendApp: IntegrationTestsApp,
     frontendAppOptions,
   };
 
   await initializeTesting(presentationTestingInitProps);
+
+  global.requestAnimationFrame = sinon.fake((cb: FrameRequestCallback) => {
+    return window.setTimeout(cb, 0);
+  });
 };
 
 export const initialize = async (backendTimeout: number = 0) => {
@@ -136,6 +166,7 @@ export const initializeWithClientServices = async () => {
 };
 
 export const terminate = async () => {
+  delete (global as any).requestAnimationFrame;
   await terminateTesting();
 };
 

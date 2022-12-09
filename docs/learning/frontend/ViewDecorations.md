@@ -36,13 +36,23 @@ View Graphic Decorations are drawn using the iTwin.js rendering system through W
 
 > Note that `GraphicType.ViewOverlay` performs the same function as Canvas Decorators and are generally less flexible and less efficient. Prefer Canvas Decorations instead.
 
-You create View Graphic Decorations by calling [DecorateContext.createGraphicBuilder]($frontend) on the context supplied to `decorate`, supplying the appropriate `GraphicType`.
-You then add one or more graphics to the [GraphicBuilder]($frontend) using its methods. Finally, you add the completed graphics to the frame by calling [DecorateContext.addDecorationFromBuilder]($frontend).
+You typically create View Graphic Decorations by calling [DecorateContext.createGraphicBuilder]($frontend) on the context supplied to `decorate`, supplying the appropriate `GraphicType`.
+You then add one or more graphics to the [GraphicBuilder]($frontend) using its methods. Finally, you add the completed graphics to the frame by calling [DecorateContext.addDecorationFromBuilder]($frontend). Another option is to use [readGltfGraphics]($frontend) to produce the graphics from a [glTF asset](https://www.khronos.org/gltf/) and supply them to [DecorateContext.addDecoration]($frontend).
 
-The following example illustrates creating a view graphic decoration to show the [IModel.projectExtents]($common) in spatial views:
+#### GraphicBuilder decorations
+
+The following example illustrates creating a view graphic decoration to show the [IModel.projectExtents]($common) in spatial views using a [GraphicBuilder]($frontend):
 
 ```ts
 [[include:View_Graphic_Decoration]]
+```
+
+#### glTF decorations
+
+The following example illustrates creating a view graphic decoration from a [glTF asset](https://www.khronos.org/gltf/) using [readGltfGraphics]($frontend):
+
+```ts
+[[include:Gltf_Decoration]]
 ```
 
 #### Pickable View Graphic Decorations
@@ -59,6 +69,8 @@ The following example illustrates creating a pickable view graphic decoration in
 ```ts
 [[include:Pickable_View_Graphic_Decoration]]
 ```
+
+If you have many decorations to draw with different pickable Ids, it can be more efficient to produce them using a single [GraphicBuilder]($frontend) than producing one graphic per pickable Id. This can be achieved by calling [GraphicBuilder.activatePickableId]($frontend) or to specify the pickable Id to associate with subsequently-added geometry.
 
 ### Canvas Decorations
 

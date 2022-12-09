@@ -18,30 +18,34 @@ import { HSVColor, HSVConstants } from "./HSVColor";
 const scratchBytes = new Uint8Array(4);
 const scratchUInt32 = new Uint32Array(scratchBytes.buffer);
 
-/** An unsigned 32-bit integer in 0xTTBBGGRR format
+/** The JSON representation of a [[ColorDef]] - an unsigned 32-bit integer in 0xTTBBGGRR format.
  * @public
+ * @extensions
  */
 export type ColorDefProps = number;
 
 /** An immutable integer representation of a color.
  *
- * Colors are stored as 4 components: Red, Blue, Green, and Transparency (0=fully opaque). Each is an 8-bit integer between 0-255.
+ * A color consists of 4 components: Red, Blue, Green, and Transparency. Each component is an 8-bit unsigned integer in the range [0..255]. A value of zero means that component contributes nothing
+ * to the color: e.g., a color with Red=0 contains no shade of red, and a color with Transparency=0 is fully opaque. A value of 255 means that component contributes its maximum
+ * value to the color: e.g., a color with Red=255 is as red as it is possible to be, and a color with Transparency=255 is fully transparent.
  *
- * Much confusion results from attempting to interpret those 4 one-byte values as a 4 byte integer. There are generally two sources
- * of confusion:
- *  1. The ordering of the Red, Green, Blue bytes; and
+ * Internally, these 4 components are combined into a single 32-bit unsigned integer as represented by [[ColorDefProps]]. This representation can result in some confusion regarding:
+ *  1. The ordering of the individual components; and
  *  2. Whether to specify transparency or opacity (sometimes referred to as "alpha").
  *
- * ColorDef uses `0xTTBBGGRR` (red in the low byte. 0==fully opaque in high byte) internally, but it also provides methods
- * to convert to `0xRRGGBB` (see [[getRgb]]) and `0xAABBGGRR` (red in the low byte, 0==fully transparent in high byte. see [[getAbgr]]).
+ * ColorDef uses `0xTTBBGGRR` internally, which uses Transparency and puts Red in the low byte and Transparency in the high byte. It can be converted to `0xRRGGBB` format (blue in the low byte)
+ * using [[getRgb]] and `0xAABBGGRRx format (red in the low byte, using opacity instead of transparency) using [[getAbgr]].
  *
- * The [[create]] method also accepts strings in the common HTML formats.
+ * A ColorDef can be created from a numeric [[ColorDefProps]], from a string in one of the common HTML formats (e.g., [[fromString]]), or by specifying values for the individual components
+ * (e.g., [[from]]).
  *
- * ColorDef is immutable. To obtain a modified copy of a ColorDef, use methods like [[adjustedForContrast]], [[inverse]], or [[withTransparency]]. For example:
+ * ColorDef is **immutable**. To obtain a modified copy of a ColorDef, use methods like [[adjustedForContrast]], [[inverse]], or [[withTransparency]]. For example:
  * ```ts
  *  const semiTransparentBlue = ColorDef.blue.withTransparency(100);
  * ```
  * @public
+ * @extensions
  */
 export class ColorDef {
   private readonly _tbgr: number;
@@ -55,21 +59,14 @@ export class ColorDef {
    * Create a new ColorDef.
    * @param val value to use.
    * If a number, it is interpreted as a 0xTTBBGGRR (Red in the low byte, high byte is transparency 0==fully opaque) value.
-   *
-   * If a string, must be in one of the following forms:
-   * *"rgb(255,0,0)"*
-   * *"rgba(255,0,0,.2)"*
-   * *"rgb(100%,0%,0%)"*
-   * *"hsl(120,50%,50%)"*
-   * *"#rrggbb"*
-   * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case insensitive.
+   * If a string, it must be in one of the forms supported by [[fromString]] - any unrecognized string will produce [[black]].
    */
   public static create(val?: string | ColorDefProps) {
     return this.fromTbgr(this.computeTbgr(val));
   }
 
   /** @internal */
-  public static computeTbgr(val?: string | ColorDefProps): number {
+  public static computeTbgr(val?: string | ColorDefProps): ColorDefProps {
     switch (typeof val) {
       case "number":
         return val;
@@ -94,7 +91,7 @@ export class ColorDef {
   }
 
   /** Compute the 0xTTBBGGRR value corresponding to the specified Red, Green, Blue, Transparency components. All inputs should be integers between 0-255. */
-  public static computeTbgrFromComponents(red: number, green: number, blue: number, transparency?: number): number {
+  public static computeTbgrFromComponents(red: number, green: number, blue: number, transparency?: number): ColorDefProps {
     scratchBytes[0] = red;
     scratchBytes[1] = green;
     scratchBytes[2] = blue;
@@ -103,7 +100,7 @@ export class ColorDef {
   }
 
   /** Create a ColorDef from its 0xTTBBGGRR representation. */
-  public static fromTbgr(tbgr: number): ColorDef {
+  public static fromTbgr(tbgr: ColorDefProps): ColorDef {
     switch (tbgr) {
       case ColorByName.black:
         return this.black;
@@ -120,6 +117,11 @@ export class ColorDef {
     }
   }
 
+  /** Create a ColorDef from its 0xAABBGGRR representation. */
+  public static fromAbgr(abgr: number): ColorDef {
+    return this.fromTbgr(this.getAbgr(abgr));
+  }
+
   /** Create a ColorDef from a string representation. The following representations are supported:
    * *"rgb(255,0,0)"*
    * *"rgba(255,0,0,.2)"*
@@ -127,22 +129,41 @@ export class ColorDef {
    * *"hsl(120,50%,50%)"*
    * *"#rrbbgg"*
    * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case-insensitive.
+   *
+   * If `val` is not a valid color string, this function returns [[black]].
+   * @see [[isValidColor]] to determine if `val` is a valid color string.
    */
   public static fromString(val: string): ColorDef {
     return this.fromTbgr(this.computeTbgrFromString(val));
   }
 
-  /** Compute the 0xTTBBGGRR value corresponding to a string representation of a color. The following representations are supported:
-   * *"rgb(255,0,0)"*
-   * *"rgba(255,0,0,.2)"*
-   * *"rgb(100%,0%,0%)"*
-   * *"hsl(120,50%,50%)"*
-   * *"#rrbbgg"*
-   * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case-insensitive.
+  /** Determine whether the input is a valid representation of a ColorDef.
+   * @see [[fromString]] for the definition of a valid string representation.
+   * @see [[ColorDefProps]] for the definition of a valid numeric representation.
    */
-  public static computeTbgrFromString(val: string): number {
+  public static isValidColor(val: string | number): boolean {
+    if (typeof val === "number")
+      return val >= 0 && val <= 0xffffffff && Math.floor(val) === val;
+
+    return undefined !== this.tryComputeTbgrFromString(val);
+  }
+
+  /** Compute the 0xTTBBGGRR value corresponding to a string representation of a color.
+   * If `val` is not a valid color string, this function returns 0 (black).
+   * @see [[fromString]] for the definition of a valid color string.
+   * @see [[tryComputeTbgrFromString]] to determine if `val` is a valid color string.
+   */
+  public static computeTbgrFromString(val: string): ColorDefProps {
+    return this.tryComputeTbgrFromString(val) ?? 0;
+  }
+
+  /** Try to compute the 0xTTBBGGRR value corresponding to a string representation of a ColorDef.
+   * @returns the corresponding numeric representation, or `undefined` if the input does not represent a color.
+   * @see [[fromString]] for the definition of a valid color string.
+   */
+  public static tryComputeTbgrFromString(val: string): ColorDefProps | undefined {
     if (typeof val !== "string")
-      return 0;
+      return undefined;
 
     val = val.toLowerCase();
     let m = /^((?:rgb|hsl)a?)\(\s*([^\)]*)\)/.exec(val);
@@ -207,21 +228,21 @@ export class ColorDef {
     }
 
     if (val && val.length > 0) {   // ColorRgb value
-      const colorByName = Object.entries(ColorByName).find((entry) => typeof entry[1] === "string" && entry[1].toLowerCase() === val);
-      if (colorByName)
-        return Number(colorByName[0]);
+      for (const [key, value] of Object.entries(ColorByName))
+        if (key.toLowerCase() === val)
+          return value;
     }
 
-    return 0;
+    return undefined;
   }
 
-  /** Get the r,g,b,t values from this ColorDef. Values will be integers between 0-255. */
+  /** Get the red, green, blue, and transparency values from this ColorDef. Values will be integers between 0-255. */
   public get colors(): { r: number, g: number, b: number, t: number } {
     return ColorDef.getColors(this._tbgr);
   }
 
   /** Get the r,g,b,t values encoded in an 0xTTBBGGRR value. Values will be integers between 0-255. */
-  public static getColors(tbgr: number) {
+  public static getColors(tbgr: ColorDefProps) {
     scratchUInt32[0] = tbgr;
     return {
       b: scratchBytes[2],
@@ -232,7 +253,7 @@ export class ColorDef {
   }
 
   /** The color value of this ColorDef as an integer in the form 0xTTBBGGRR (red in the low byte) */
-  public get tbgr(): number { return this._tbgr; }
+  public get tbgr(): ColorDefProps { return this._tbgr; }
 
   /** Get the value of the color as a number in 0xAABBGGRR format (i.e. red is in low byte). Transparency (0==fully opaque) converted to alpha (0==fully transparent).  */
   public getAbgr(): number {
@@ -240,7 +261,7 @@ export class ColorDef {
   }
 
   /** Get the value of a 0xTTBBGGRR color as a number in 0xAABBGGRR format (i.e. red is in low byte). Transparency (0==fully opaque) converted to alpha (0==fully transparent).  */
-  public static getAbgr(tbgr: number): number {
+  public static getAbgr(tbgr: ColorDefProps): number {
     scratchUInt32[0] = tbgr;
     scratchBytes[3] = 255 - scratchBytes[3];
     return scratchUInt32[0];
@@ -252,7 +273,7 @@ export class ColorDef {
   }
 
   /** Get the RGB value of the 0xTTBBGGRR color as a number in 0xRRGGBB format (i.e blue is in the low byte). Transparency is ignored. Value will be from 0 to 2^24 */
-  public static getRgb(tbgr: number): number {
+  public static getRgb(tbgr: ColorDefProps): number {
     scratchUInt32[0] = tbgr;
     return (scratchBytes[0] << 16) + (scratchBytes[1] << 8) + scratchBytes[2];
   }
@@ -270,7 +291,7 @@ export class ColorDef {
    * @param alpha the new alpha value as an integer between 0-255.
    * @returns The 0xTTBBGGRR value equivalent to `tbgr` but with the specified alpha.
    */
-  public static withAlpha(tbgr: number, alpha: number): number {
+  public static withAlpha(tbgr: ColorDefProps, alpha: number): number {
     scratchUInt32[0] = tbgr;
     scratchBytes[3] = 255 - (alpha | 0);
     return scratchUInt32[0];
@@ -282,7 +303,7 @@ export class ColorDef {
   }
 
   /** Extract the alpha value from a 0xTTBBGGRR color. */
-  public static getAlpha(tbgr: number): number {
+  public static getAlpha(tbgr: ColorDefProps): number {
     scratchUInt32[0] = tbgr;
     return 255 - scratchBytes[3];
   }
@@ -293,7 +314,7 @@ export class ColorDef {
   }
 
   /** True if the specified 0xTTBBGGRR color is fully opaque. */
-  public static isOpaque(tbgr: number): boolean {
+  public static isOpaque(tbgr: ColorDefProps): boolean {
     return 255 === this.getAlpha(tbgr);
   }
 
@@ -303,7 +324,7 @@ export class ColorDef {
   }
 
   /** Extract the transparency component from a 0xTTBBGGRR color as an integer between 0-255.. */
-  public static getTransparency(tbgr: number): number {
+  public static getTransparency(tbgr: ColorDefProps): number {
     scratchUInt32[0] = tbgr;
     return scratchBytes[3];
   }
@@ -321,7 +342,7 @@ export class ColorDef {
    * @param transparency the new transparency as an integer between 0-255.
    * @returns The 0xTTBBGGRR value equivalent to `tbgr` but with the specified transparency.
    */
-  public static withTransparency(tbgr: number, transparency: number): number {
+  public static withTransparency(tbgr: ColorDefProps, transparency: number): ColorDefProps {
     return this.withAlpha(tbgr, 255 - transparency);
   }
 
@@ -330,9 +351,15 @@ export class ColorDef {
     return ColorDef.getName(this.tbgr);
   }
 
-  /** Obtain the name of the color in the [[ColorByName]] list associated with the specified 0xTTBBGGRR value, or undefined if no such named color exists. */
-  public static getName(tbgr: number): string | undefined {
-    return ColorByName[tbgr];
+  /** Obtain the name of the color in the [[ColorByName]] list associated with the specified 0xTTBBGGRR value, or undefined if no such named color exists.
+   * @note A handful of colors (like "aqua" and "cyan") have identical tbgr values; in such cases the first match will be returned.
+   */
+  public static getName(tbgr: ColorDefProps): string | undefined {
+    for (const [key, value] of Object.entries(ColorByName))
+      if (value === tbgr)
+        return key;
+
+    return undefined;
   }
 
   /** Convert this ColorDef to a string in the form "#rrggbb" where values are hex digits of the respective colors */
@@ -341,11 +368,11 @@ export class ColorDef {
   }
 
   /** Convert the 0xTTBBGGRR value to a string in the form "#rrggbb". */
-  public static toHexString(tbgr: number): string {
+  public static toHexString(tbgr: ColorDefProps): string {
     return `#${(`000000${this.getRgb(tbgr).toString(16)}`).slice(-6)}`;
   }
 
-  private static getColorsString(tbgr: number) {
+  private static getColorsString(tbgr: ColorDefProps) {
     const c = this.getColors(tbgr);
     return `${c.r},${c.g},${c.b}`;
   }
@@ -356,7 +383,7 @@ export class ColorDef {
   }
 
   /** Convert the 0xTTBBGGRR color to a string in the form "rgb(r,g,b)" where each component is specified in decimal. */
-  public static toRgbString(tbgr: number): string {
+  public static toRgbString(tbgr: ColorDefProps): string {
     return `rgb(${this.getColorsString(tbgr)})`;
   }
 
@@ -366,7 +393,7 @@ export class ColorDef {
   }
 
   /** Convert the 0xTTBBGGRR color to a string of the form "rgba(r,g,b,a)" where the color components are specified in decimal and the alpha component is a fraction. */
-  public static toRgbaString(tbgr: number): string {
+  public static toRgbaString(tbgr: ColorDefProps): string {
     return `rgba(${this.getColorsString(tbgr)},${this.getAlpha(tbgr) / 255.})`;
   }
 
@@ -385,7 +412,7 @@ export class ColorDef {
    * @param weight The weighting factor in [0..1]. A value of 0.0 selects `tbgr1`; 1.0 selects `tbgr2`; 0.5 mixes them evenly; etc.
    * @returns The linear interpolation between `tbgr1` and `tbgr2` using the specified weight.
    */
-  public static lerp(tbgr1: number, tbgr2: number, weight: number): number {
+  public static lerp(tbgr1: ColorDefProps, tbgr2: ColorDefProps, weight: number): ColorDefProps {
     const c = this.getColors(tbgr1);
     const color = this.getColors(tbgr2);
     c.r += (color.r - c.r) * weight;
@@ -400,7 +427,7 @@ export class ColorDef {
   }
 
   /** Return a 0xTTBBGGRR color whose color components are the inverse of the input color. The result has 0 transparency. */
-  public static inverse(tbgr: number): number {
+  public static inverse(tbgr: ColorDefProps): ColorDefProps {
     const colors = this.getColors(tbgr);
     return this.computeTbgrFromComponents(255 - colors.r, 255 - colors.g, 255 - colors.b);
   }
@@ -411,13 +438,20 @@ export class ColorDef {
   }
 
   /** Compute the 0xTTBBGGRR color corresponding to the specified hue, saturation, lightness values. */
-  public static computeTbgrFromHSL(h: number, s: number, l: number, transparency = 0): number {
+  public static computeTbgrFromHSL(h: number, s: number, l: number, transparency = 0): ColorDefProps {
     const torgb = (p1: number, q1: number, t: number) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p1 + (q1 - p1) * 6 * t;
-      if (t < 1 / 2) return q1;
-      if (t < 2 / 3) return p1 + (q1 - p1) * 6 * (2 / 3 - t);
+      if (t < 0)
+        t += 1;
+      if (t > 1)
+        t -= 1;
+
+      if (t < 1 / 6)
+        return p1 + (q1 - p1) * 6 * t;
+      if (t < 1 / 2)
+        return q1;
+      if (t < 2 / 3)
+        return p1 + (q1 - p1) * 6 * (2 / 3 - t);
+
       return p1;
     };
 
@@ -463,10 +497,17 @@ export class ColorDef {
       const delta = max - min;
       saturation = lightness <= 0.5 ? delta / (max + min) : delta / (2 - max - min);
       switch (max) {
-        case col.r: hue = (col.g - col.b) / delta + (col.g < col.b ? 6 : 0); break;
-        case col.g: hue = (col.b - col.r) / delta + 2; break;
-        case col.b: hue = (col.r - col.g) / delta + 4; break;
+        case col.r:
+          hue = (col.g - col.b) / delta + (col.g < col.b ? 6 : 0);
+          break;
+        case col.g:
+          hue = (col.b - col.r) / delta + 2;
+          break;
+        case col.b:
+          hue = (col.r - col.g) / delta + 4;
+          break;
       }
+
       hue /= 6;
     }
 
@@ -546,12 +587,14 @@ export class ColorDef {
 
     let r = 0, b = 0, g = 0;
     switch (hueIntpart) {
+      /* eslint-disable max-statements-per-line */
       case 0: r = v; g = t; b = p; break; // reddish
       case 1: r = q, g = v; b = p; break; // yellowish
       case 2: r = p, g = v; b = t; break; // greenish
       case 3: r = p, g = q; b = v; break; // cyanish
       case 4: r = t, g = p; b = v; break; // bluish
       case 5: r = v, g = p; b = q; break; // magenta-ish
+      /* eslint-enable max-statements-per-line */
     }
 
     return ColorDef.from(r, g, b, transparency);

@@ -12,7 +12,7 @@ import {
   computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, MutableTreeModel, MutableTreeModelNode, TreeModel,
   TreeModelNode, TreeModelNodeInput, TreeModelNodePlaceholder, TreeModelRootNode,
 } from "../../../components-react/tree/controlled/TreeModel";
-import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
+import { createRandomMutableTreeModelNode } from "./TreeHelpers";
 
 const createTreeModelNode = (parentNode: TreeModelNode | TreeModelRootNode, input: TreeModelNodeInput): MutableTreeModelNode => {
   return {
@@ -27,6 +27,7 @@ const createTreeModelNode = (parentNode: TreeModelNode | TreeModelRootNode, inpu
     isExpanded: input.isExpanded,
     label: input.label,
     isSelected: input.isSelected,
+    isSelectionDisabled: input.item.isSelectionDisabled,
 
     checkbox: {
       state: input.item.checkBoxState || CheckBoxState.Off,
@@ -71,6 +72,28 @@ describe("MutableTreeModel", () => {
     rootNodesArray.set(0, rootNode.id);
     childNodesArray = new SparseArray<string>();
     childNodesArray.set(0, childNode.id);
+  });
+
+  describe("constructor", () => {
+    it("clones empty seed model", () => {
+      const seedModel = new MutableTreeModel();
+      seedModel.setNumChildren(undefined, 0);
+      treeModel = new MutableTreeModel(seedModel);
+      expect(treeModel.getRootNode().numChildren).to.be.equal(0);
+      expect(treeModel.getChildren(undefined)?.getLength()).to.be.equal(0);
+    });
+
+    it("clones populated seed model", () => {
+      const seedModel = new MutableTreeModel();
+      seedModel.setChildren(undefined, [createTreeModelNodeInput("root1"), createTreeModelNodeInput("root2")], 0);
+      seedModel.setNumChildren("root1", 1);
+      seedModel.setChildren("root1", [{ ...createTreeModelNodeInput("child1"), numChildren: 0 }], 0);
+      treeModel = new MutableTreeModel(seedModel);
+      expect(treeModel.getRootNode().numChildren).to.be.equal(2);
+      expect(treeModel.getNode("root1")?.numChildren).to.be.equal(1);
+      expect(treeModel.getNode("root2")?.numChildren).to.be.equal(undefined);
+      expect(treeModel.getNode("child1")?.numChildren).to.be.equal(0);
+    });
   });
 
   describe("getRootNode", () => {

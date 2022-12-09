@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as React from "react";
 import { WidgetState } from "@itwin/appui-abstract";
-import { FooterSeparator } from "@itwin/appui-layout-react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, FooterModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
+  ConfigurableCreateInfo, ConfigurableUiControlType, FooterModeField, StatusBar, StatusBarSeparator, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
@@ -18,11 +18,10 @@ describe("FooterModeField", () => {
       super(info, options);
     }
 
-    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
-      if (openWidget) { }
+    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <FooterModeField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget}> <FooterSeparator /> </FooterModeField>
+          <FooterModeField isInFooterMode={isInFooterMode}> <StatusBarSeparator /> </FooterModeField>
         </>
       );
     }
@@ -46,22 +45,27 @@ describe("FooterModeField", () => {
     TestUtils.terminateUiFramework();
   });
 
-  it("should mount with isInFooterMode", () => {
+  it("should mount with isInFooterMode (deprecated)", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-    expect(wrapper.find(FooterSeparator).length).to.eq(1);
+    expect(wrapper.find(StatusBarSeparator).length).to.eq(1);
   });
 
-  it("should mount with isInFooterMode=false", () => {
+  it("should mount without isInFooterMode", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
+    expect(wrapper.find(StatusBarSeparator).length).to.eq(1);
+  });
+
+  it("should mount with isInFooterMode=false (deprecated)", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
-    expect(wrapper.find(FooterSeparator).length).to.eq(0);
+    expect(wrapper.find(StatusBarSeparator).length).to.eq(0);
   });
 
   it("should change with Props change", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-    expect(wrapper.find(FooterSeparator).length).to.eq(1);
+    expect(wrapper.find(StatusBarSeparator).length).to.eq(1);
     wrapper.setProps({ isInFooterMode: false });
     wrapper.update();
-    expect(wrapper.find(FooterSeparator).length).to.eq(0);
+    expect(wrapper.find(StatusBarSeparator).length).to.eq(0);
   });
 
 });

@@ -68,7 +68,7 @@ describe("LinearReferencing Domain", () => {
   const outputDir = path.join(__dirname, "output");
 
   before(async () => {
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
     LinearReferencingSchema.registerSchema();
     TestLinearReferencingSchema.registerSchema();
     if (!IModelJsFs.existsSync(outputDir)) {
@@ -117,7 +117,7 @@ describe("LinearReferencing Domain", () => {
       classFullName: PhysicalModel.classFullName,
       modeledElement: { id: physicalPartitionId },
     });
-    const physicalModelId: Id64String = iModelDb.models.insertModel(physicalModel);
+    const physicalModelId: Id64String = iModelDb.models.insertModel(physicalModel.toJSON());
     assert.isTrue(Id64.isValidId64(physicalModelId));
 
     // Create a Test Feature element

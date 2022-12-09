@@ -17,11 +17,10 @@ tableRowAnchors: true
 |**Keyboard&nbsp;Shortcut**|A keystroke or combination of keystrokes used to launch a command or tool.
 |**Navigation&nbsp;Aid**|A user interface control that moves the user's perspective around within a specific Content View.
 |**Panel&nbsp;Zone**|An area of within a Stage Panel that can contain a collection of Widgets. There are three designated zones: Start, Middle, and End.
-|**Stage&nbsp;Panel**|A panel defined as part of a Frontstage that displays to the left, right, above or below the 9-zone area.
+|**Stage&nbsp;Panel**|A panel defined as part of a Frontstage that displays to the left, right, above or below the content area.
 |**Status&nbsp;Bar**|The Footer area of the application window that gives the user feedback about the state of an application.
 |**Status&nbsp;Field**|An area of the Status Bar assigned to display specific feedback about the active application. Also referred to as **Status&nbsp;Item**
-|**Tool&nbsp;Settings**|Properties that modify the behavior and outcome of the active tool. Typically docked at the top of the application window.
+|**Tool&nbsp;Settings**|Properties that modify the behavior and outcome of the active tool. Typically docked as a bar at the top of the application window.
 |**View&nbsp;Navigation&nbsp;Tools**|These tools are located in the right side of the content area. These tools are used to navigate and modify the view parameter such as rotation and zoom level.
 |**Widget**|A collection of UI components tied to a particular zone that allows the user to view and/or modify data relevant to their current context.
 |**Workflow**|A defined sequence of tasks used to accomplish a goal.
-|**Zone**|A standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.

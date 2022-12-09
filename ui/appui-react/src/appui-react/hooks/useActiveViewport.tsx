@@ -7,9 +7,10 @@
  */
 
 import { useEffect, useState } from "react";
+import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { ActiveContentChangedEventArgs, ContentViewManager } from "../content/ContentViewManager";
-import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 
 /** React hook that maintains the active viewport.
  * @public
@@ -33,7 +34,7 @@ export function useActiveViewport(): ScreenViewport | undefined {
 
   useEffect(() => {
     const syncIdsOfInterest = [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ContentControlActivated, SyncUiEventId.FrontstageReady];
-    const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    const handleSyncUiEvent = (args: UiSyncEventArgs): void => {
       // istanbul ignore else
       if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
         const activeContentControl = ContentViewManager.getActiveContentControl();

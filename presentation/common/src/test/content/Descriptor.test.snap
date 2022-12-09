@@ -28,6 +28,10 @@ Object {
       "label": "label4",
       "name": "name4",
     },
+    "0x5": Object {
+      "label": "label5",
+      "name": "name5",
+    },
   },
   "connectionId": "",
   "contentFlags": 0,
@@ -128,6 +132,34 @@ Object {
         ],
         "typeName": "StructType",
         "valueFormat": "Struct",
+      },
+    },
+    Object {
+      "category": "test-category",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Test Properties Field With Navigation Property Info",
+      "name": "test-properties-field-with-navigation-property-info",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": "0x2",
+            "name": "PropertyName",
+            "navigationPropertyInfo": Object {
+              "classInfo": "0x4",
+              "isForwardRelationship": true,
+              "isTargetPolymorphic": true,
+              "targetClassInfo": "0x5",
+            },
+            "type": "TestPropertyType",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "navigation",
+        "valueFormat": "Primitive",
       },
     },
   ],
@@ -302,8 +334,28 @@ Object {
       },
     },
   ],
+  "fieldsFilterExpression": "testFilterExpression",
   "filterExpression": "testFilterExpression",
   "inputKeysHash": undefined,
+  "instanceFilter": Object {
+    "expression": "testExpression",
+    "relatedInstances": Array [
+      Object {
+        "alias": "testAlias",
+        "isRequired": true,
+        "pathFromSelectToPropertyClass": Array [
+          Object {
+            "isForwardRelationship": true,
+            "relationshipName": "relClass",
+            "sourceClassName": "sourceClass",
+            "targetClassName": "targetClass",
+          },
+        ],
+        "relationshipAlias": "testRelAlias",
+      },
+    ],
+    "selectClassName": "testClass",
+  },
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": false,

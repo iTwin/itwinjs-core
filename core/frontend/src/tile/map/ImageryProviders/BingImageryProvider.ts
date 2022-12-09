@@ -8,8 +8,8 @@
 
 import { assert, BentleyError, IModelStatus } from "@itwin/core-bentley";
 import { Range2d } from "@itwin/core-geometry";
-import { ImageSource, MapLayerSettings } from "@itwin/core-common";
-import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
+import { request, RequestOptions, Response } from "../../../request/Request";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenViewport } from "../../../Viewport";
 import {
@@ -29,7 +29,7 @@ class Coverage {
     private _maximumZoomLevel: number) { }
 
   public overlaps(quadId: QuadId, tilingScheme: MapTilingScheme): boolean {
-    const range: Range2d = quadId.getLatLongRange(tilingScheme);
+    const range: Range2d = quadId.getLatLongRangeDegrees(tilingScheme);
     if (quadId.level < this._minimumZoomLevel)
       return false;
     if (quadId.level > this._maximumZoomLevel)
@@ -80,7 +80,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   private _mapTilingScheme: MapTilingScheme;
   private _urlBase: string;
 
-  constructor(settings: MapLayerSettings) {
+  constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
     this._urlBase = settings.url;
     this._zoomMax = 0;
@@ -147,8 +147,8 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     return matchingAttributions;
   }
 
-  public override getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined {
-    const tiles = IModelApp.tileAdmin.getTilesForViewport(vp)?.selected;
+  public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
+    const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);
     const copyrights: string[] = [];
     for (const match of matchingAttributions)
@@ -160,7 +160,8 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
         copyrightMsg += "<br>";
       copyrightMsg += copyrights[i];
     }
-    return IModelApp.makeLogoCard({ iconSrc: "images/bing.svg", heading: "Microsoft Bing", notice: copyrightMsg });
+
+    cards.appendChild(IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", notice: copyrightMsg }));
   }
 
   // initializes the BingImageryProvider by reading the templateUrl, logo image, and attribution list.
@@ -188,7 +189,8 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
       // case, but we can't stop - the user might want to look at design data a closer zoom. So we intentionally load such
       // a tile, and then compare other tiles to it, rejecting them if they match.
       this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-        if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
+        if (tileData !== undefined)
+          this._missingTileData = tileData.data as Uint8Array;
       });
     } catch (error) {
       throw new BentleyError(IModelStatus.BadModel, "Error in Bing Server communications");

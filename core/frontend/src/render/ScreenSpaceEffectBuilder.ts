@@ -12,6 +12,7 @@ import { Viewport } from "../Viewport";
  * @see [[ScreenSpaceEffectBuilder.addUniform]] to define a uniform variable.
  * @see [[Uniform]] to set the value of a uniform variable.
  * @public
+ * @extensions
  */
 export enum UniformType {
   /** GLSL `bool`. */
@@ -31,6 +32,7 @@ export enum UniformType {
 /** The underlying data types that can be used for varying variables in screen-space effect shaders.
  * @see [[ScreenSpaceEffectBuilder.addVarying]] to define a varying variable.
  * @public
+ * @extensions
  */
 export enum VaryingType {
   /** GLSL `float`. */
@@ -47,6 +49,7 @@ export enum VaryingType {
  * @see [[UniformParams.bind]] to provide the value of the variable.
  * @see [[ScreenSpaceEffectBuilder.addUniform]] to add a uniform variable to an effect shader.
  * @public
+ * @extensions
  */
 export interface Uniform {
   /** Sets the value to an integer - equivalent to `WebGLRenderingContext.uniform1i`. */
@@ -67,6 +70,7 @@ export interface Uniform {
 
 /** Context supplied to [[UniformParams.bind]].
  * @public
+ * @extensions
  */
 export interface UniformContext {
   /** The viewport to which the screen-space effect is to be applied. */
@@ -76,6 +80,7 @@ export interface UniformContext {
 /** Parameters used to define a uniform variable for a [[ScreenSpaceEffectBuilder]]'s shader program.
  * @see [[ScreenSpaceEffectBuilder.addUniform]] to add a uniform variable to an effect shader.
  * @public
+ * @extensions
  */
 export interface UniformParams {
   /** The data type of the uniform variable. */
@@ -89,6 +94,7 @@ export interface UniformParams {
 /** Parameters used to define an array of uniform variables for a [[ScreenSpaceEffectBuilder]]'s shader program.
  * @see [[ScreenSpaceEffectBuilder.addUniformArray]] to add a uniform array to an effect shader.
  * @public
+ * @extensions
  */
 export interface UniformArrayParams extends UniformParams {
   /** The number of elements in the array. */
@@ -104,6 +110,7 @@ export interface UniformArrayParams extends UniformParams {
  * The [[RenderSystem]] takes care of adjusting the source code for some of these differences, e.g., `varying` (WebGL1) vs `in` and `out` (WebGL2);
  * and `TEXTURE`, `TEXTURE_CUBE`, and `TEXTURE_PROJ` macros are provided to replace `texture2D`, `textureCube`, and `texture2DProj` with their WebGL2 equivalents when applicable.
  * @public
+ * @extensions
  */
 export interface ScreenSpaceEffectSource {
   /** The GLSL implementation of the vertex shader. Instead of `main`, it implements `void effectMain(vec4 position)` where `position` is the vertex position in normalized device coordinates ([-1..1]).
@@ -134,6 +141,7 @@ export interface ScreenSpaceEffectSource {
 /** Parameters used to create a [[ScreenSpaceEffectBuilder]].
  * @see [[RenderSystem.createScreenSpaceEffectBuilder]].
  * @public
+ * @extensions
  */
 export interface ScreenSpaceEffectBuilderParams {
   /** The name of the effect. Must be unique among all registered screen-space effects. It is not displayed to the user. */
@@ -149,6 +157,7 @@ export interface ScreenSpaceEffectBuilderParams {
 
 /** Context passed to [[ScreenSpaceEffectBuilder.shouldApply]].
  * @public
+ * @extensions
  */
 export interface ScreenSpaceEffectContext {
   /** The viewport to which the screen-space effect is to be applied. */
@@ -182,6 +191,7 @@ export interface ScreenSpaceEffectContext {
  * @see [ConvolutionEffect]($frontend-devtools) for examples of effects like blur, sharpen, and emboss.
  * @see [FlipImageEffect]($frontend-devtools) for a very simple example of an effect that shifts pixels from their original locations.
  * @public
+ * @extensions
  */
 export interface ScreenSpaceEffectBuilder {
   /** True if the shader will be used with a WebGL 2 rendering context. */

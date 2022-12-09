@@ -10,11 +10,9 @@ import { SingleSchemaClassSpecification } from "../ClassSpecifications";
 import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
- * Creates nodes for instances which are returned by an ECSQL query.
+ * Returns nodes for instances returned by a provided ECSQL query.
  *
- * **Note:** this specification is formerly known as `SearchResultInstanceNodesSpecification`.
- *
- * @see [More details]($docs/presentation/Hierarchies/CustomQueryInstanceNodes.md)
+ * @see [Custom query instance nodes specification reference documentation page]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md)
  * @public
  */
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
@@ -22,15 +20,16 @@ export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecific
   specType: ChildNodeSpecificationTypes.CustomQueryInstanceNodes;
 
   /**
-   * Specifications of queries used to create the content.
-   *
-   * **Note:** if more than one search query is specified, the results get merged.
+   * Specifications of queries used to create the content. Query specifications define the actual
+   * results of the specification.
    */
   queries?: QuerySpecification[];
 }
 
 /**
  * Query specifications used in [[CustomQueryInstanceNodesSpecification]].
+ *
+ * @see [Custom query specifications reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#attribute-queries)
  * @public
  */
 export declare type QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification;
@@ -45,20 +44,25 @@ export enum QuerySpecificationTypes {
 }
 
 /**
- * Base interface for all [[QuerySpecification]] implementations. Not meant
- * to be used directly, see `QuerySpecification`.
+ * Base interface for all [[QuerySpecification]] implementations.
  * @public
  */
 export interface QuerySpecificationBase {
   /** Used for serializing to JSON. */
   specType: QuerySpecificationTypes;
 
-  /** Specification of ECClass whose instances the query returns. */
+  /**
+   * Specification of ECClass whose instances the query returns. The specification may also point to a
+   * base class of instances returned by the query. If the query returns instances that are not of this
+   * class, they aren't included in the result set.
+   */
   class: SingleSchemaClassSpecification;
 }
 
 /**
- * Specification which contains an ECSQL query used to query for instances.
+ * The specification contains an ECSQL query which is used to query for instances.
+ *
+ * @see [String query specification reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#string-query-specification)
  * @public
  */
 export interface StringQuerySpecification extends QuerySpecificationBase {
@@ -70,12 +74,10 @@ export interface StringQuerySpecification extends QuerySpecificationBase {
 }
 
 /**
- * Specification which specifies the name of the parent instance property whose
- * value is the ECSQL used to query for instances.
+ * The specification specifies the name of the parent node instance property whose value is the ECSQL
+ * used to query for instances.
  *
- * **Precondition:** can be used only if parent node is ECInstance node.
- * If there is no immediate parent instance node it will go up until it finds one.
- *
+ * @see [ECProperty value query specification reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#ecproperty-value-query-specification)
  * @public
  */
 export interface ECPropertyValueQuerySpecification extends QuerySpecificationBase {
@@ -83,10 +85,7 @@ export interface ECPropertyValueQuerySpecification extends QuerySpecificationBas
   specType: QuerySpecificationTypes.ECPropertyValue;
 
   /**
-   * Specifies name of the parent instance property whose value
-   * contains the ECSQL query.
-   *
-   * **Warning:** the property whose name is specified must be of string type.
+   * Specifies name of the parent instance property whose value contains the ECSQL query.
    */
   parentPropertyName: string;
 }

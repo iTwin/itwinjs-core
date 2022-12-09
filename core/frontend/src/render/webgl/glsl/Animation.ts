@@ -10,10 +10,12 @@ import { assert } from "@itwin/core-bentley";
 import { AnalysisStyleDisplacement, AnalysisStyleThematic, ThematicGradientSettings } from "@itwin/core-common";
 import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
 import { DrawParams } from "../DrawCommand";
+import { System } from "../System";
 import { TextureUnit } from "../RenderFlags";
 import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { IsThematic } from "../TechniqueFlags";
 import { octDecodeNormal } from "./Surface";
+import { unquantizePosition } from "./Vertex";
 
 const initialize = `
   g_anim_step = vec2(1.0) / u_animLUTParams.xy;
@@ -187,6 +189,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
   vert.addGlobal("g_anim_step", VariableType.Vec2);
   vert.addGlobal("g_anim_center", VariableType.Vec2);
   vert.addInitializer(initialize);
+  vert.addFunction(unquantizePosition);
 
   vert.addUniform("u_animLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_animLUT", (uniform, params) => {
@@ -270,7 +273,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
       });
     });
 
-    if (isThematic === IsThematic.No) {
+    if (isThematic === IsThematic.No || System.instance.capabilities.isWebGL2) {
       vert.addUniform("u_animScalarParams", VariableType.Vec3, (prog) => {
         prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
           const scalars = getScalarChannel(params);

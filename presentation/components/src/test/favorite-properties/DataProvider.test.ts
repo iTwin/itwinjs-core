@@ -2,20 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
-import * as path from "path";
 import * as moq from "typemoq";
+import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { PropertyData } from "@itwin/components-react";
 import { Id64String } from "@itwin/core-bentley";
+import { EmptyLocalization } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
 import {
   FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager,
 } from "@itwin/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { PropertyData } from "@itwin/components-react";
 import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 
@@ -36,11 +34,7 @@ describe("FavoritePropertiesDataProvider", () => {
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setSelectionManager(selectionManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
-    const localize = new ITwinLocalization({
-      urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    });
-    await localize.initialize(["iModelJS"]);
-    Presentation.setLocalization(localize);
+    Presentation.setLocalization(new EmptyLocalization());
   });
 
   after(() => {

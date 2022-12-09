@@ -3,74 +3,93 @@
 exports[`WidgetPanelProvider should render captured 1`] = `
 <div
   class="nz-widgetPanels-panel nz-left nz-captured nz-span-top nz-span-bottom"
+  style="width: 200px;"
 >
   <div
     class="nz-content"
   >
     <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
-    />
-    <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
+      class="nz-panel-section-0 nz-widgetPanels-vertical nz-panel-section-full-size"
     >
       <div
-        class="nz-widget-tabBar nz-separator"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
-          class="nz-handle"
-        />
-        <div
-          class="nz-widget-tabs"
-          role="tablist"
+          class="nz-widget-tabBar nz-separator"
         >
           <div
-            class="nz-widget-tabTarget nz-hidden"
+            class="nz-handle"
           />
           <div
-            class="nz-widget-tab nz-active nz-first nz-last"
-            data-item-id="t1"
-            data-item-type="widget-tab"
-            role="tab"
-            title=""
-          >
-            <span />
-          </div>
-          <div
-            class="nz-widget-tabTarget nz-hidden"
-          />
-          <div
-            class="nz-widget-overflow nz-hidden"
+            class="nz-widget-tabs"
+            role="tablist"
           >
             <div
-              class="nz-button"
-              role="button"
-              tabindex="-1"
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-tab nz-active nz-first nz-last"
+              data-item-id="t1"
+              data-item-type="widget-tab"
+              role="tab"
+              title=""
+            >
+              <span />
+            </div>
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-overflow nz-hidden"
             >
               <div
-                class="nz-icon"
-              />
+                class="nz-button"
+                role="button"
+                tabindex="-1"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
             </div>
+          </div>
+          <div
+            class="nz-widget-tabBarButtons"
+          >
+            <button
+              class="nz-widget-pinToggle nz-is-pinned"
+            >
+              <i
+                class="icon core-svg-icon"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
+                  />
+                </svg>
+              </i>
+            </button>
           </div>
         </div>
         <div
-          class="nz-widget-tabBarButtons"
+          class="nz-widget-contentContainer"
         >
-          <button
-            class="nz-widget-pinToggle"
-          >
-            <i
-              class="icon icon-chevron-left"
-            />
-          </button>
+          <div
+            class="nz-content"
+          />
         </div>
       </div>
       <div
-        class="nz-widget-content-container"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
       />
     </div>
-    <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
-    />
   </div>
   <div
     class="nz-grip-container"
@@ -79,17 +98,12 @@ exports[`WidgetPanelProvider should render captured 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -107,69 +121,87 @@ exports[`WidgetPanelProvider should render collapsed 1`] = `
     class="nz-content"
   >
     <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
-    />
-    <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
+      class="nz-panel-section-0 nz-widgetPanels-vertical nz-panel-section-full-size"
     >
       <div
-        class="nz-widget-tabBar nz-separator"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
-          class="nz-handle"
-        />
-        <div
-          class="nz-widget-tabs"
-          role="tablist"
+          class="nz-widget-tabBar nz-separator"
         >
           <div
-            class="nz-widget-tabTarget nz-hidden"
+            class="nz-handle"
           />
           <div
-            class="nz-widget-tab nz-active nz-first nz-last"
-            data-item-id="t1"
-            data-item-type="widget-tab"
-            role="tab"
-            title=""
-          >
-            <span />
-          </div>
-          <div
-            class="nz-widget-tabTarget nz-hidden"
-          />
-          <div
-            class="nz-widget-overflow nz-hidden"
+            class="nz-widget-tabs"
+            role="tablist"
           >
             <div
-              class="nz-button"
-              role="button"
-              tabindex="-1"
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-tab nz-active nz-first nz-last"
+              data-item-id="t1"
+              data-item-type="widget-tab"
+              role="tab"
+              title=""
+            >
+              <span />
+            </div>
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-overflow nz-hidden"
             >
               <div
-                class="nz-icon"
-              />
+                class="nz-button"
+                role="button"
+                tabindex="-1"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
             </div>
+          </div>
+          <div
+            class="nz-widget-tabBarButtons"
+          >
+            <button
+              class="nz-widget-pinToggle nz-is-pinned"
+            >
+              <i
+                class="icon core-svg-icon"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
+                  />
+                </svg>
+              </i>
+            </button>
           </div>
         </div>
         <div
-          class="nz-widget-tabBarButtons"
+          class="nz-widget-contentContainer"
         >
-          <button
-            class="nz-widget-pinToggle"
-          >
-            <i
-              class="icon icon-chevron-left"
-            />
-          </button>
+          <div
+            class="nz-content"
+          />
         </div>
       </div>
       <div
-        class="nz-widget-content-container"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
       />
     </div>
-    <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
-    />
   </div>
   <div
     class="nz-grip-container"
@@ -178,17 +210,12 @@ exports[`WidgetPanelProvider should render collapsed 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -206,69 +233,87 @@ exports[`WidgetPanelProvider should render horizontal 1`] = `
     class="nz-content"
   >
     <div
-      class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
-    />
-    <div
-      class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill nz-border-bottom nz-border-left nz-border-right"
+      class="nz-panel-section-0 nz-widgetPanels-horizontal nz-panel-section-full-size"
     >
       <div
-        class="nz-widget-tabBar nz-separator"
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill nz-border-bottom nz-border-left nz-border-right"
       >
         <div
-          class="nz-handle"
-        />
-        <div
-          class="nz-widget-tabs"
-          role="tablist"
+          class="nz-widget-tabBar nz-separator"
         >
           <div
-            class="nz-widget-tabTarget nz-hidden"
+            class="nz-handle"
           />
           <div
-            class="nz-widget-tab nz-active nz-first nz-last"
-            data-item-id="t1"
-            data-item-type="widget-tab"
-            role="tab"
-            title=""
-          >
-            <span />
-          </div>
-          <div
-            class="nz-widget-tabTarget nz-hidden"
-          />
-          <div
-            class="nz-widget-overflow nz-hidden"
+            class="nz-widget-tabs"
+            role="tablist"
           >
             <div
-              class="nz-button"
-              role="button"
-              tabindex="-1"
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-tab nz-active nz-first nz-last"
+              data-item-id="t1"
+              data-item-type="widget-tab"
+              role="tab"
+              title=""
+            >
+              <span />
+            </div>
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-overflow nz-hidden"
             >
               <div
-                class="nz-icon"
-              />
+                class="nz-button"
+                role="button"
+                tabindex="-1"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
             </div>
+          </div>
+          <div
+            class="nz-widget-tabBarButtons"
+          >
+            <button
+              class="nz-widget-pinToggle nz-is-pinned"
+            >
+              <i
+                class="icon core-svg-icon"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
+                  />
+                </svg>
+              </i>
+            </button>
           </div>
         </div>
         <div
-          class="nz-widget-tabBarButtons"
+          class="nz-widget-contentContainer"
         >
-          <button
-            class="nz-widget-pinToggle"
-          >
-            <i
-              class="icon icon-chevron-up"
-            />
-          </button>
+          <div
+            class="nz-content"
+          />
         </div>
       </div>
       <div
-        class="nz-widget-content-container"
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-last"
       />
     </div>
-    <div
-      class="nz-widget-widgetTarget nz-hidden nz-top nz-last"
-    />
   </div>
   <div
     class="nz-grip-container"
@@ -277,17 +322,12 @@ exports[`WidgetPanelProvider should render horizontal 1`] = `
       class="nz-widgetPanels-grip nz-top nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -299,127 +339,149 @@ exports[`WidgetPanelProvider should render horizontal 1`] = `
 exports[`WidgetPanelProvider should render multiple widgets 1`] = `
 <div
   class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+  style="width: 200px;"
 >
   <div
     class="nz-content"
   >
     <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
-    />
-    <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-bottom nz-border-left nz-border-right"
+      class="nz-panel-section-0 nz-widgetPanels-vertical"
+      style="height: 50%;"
     >
       <div
-        class="nz-widget-tabBar nz-separator"
+        class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-bottom nz-border-left nz-border-right"
       >
         <div
-          class="nz-handle"
-        />
-        <div
-          class="nz-widget-tabs"
-          role="tablist"
+          class="nz-widget-tabBar nz-separator"
         >
           <div
-            class="nz-widget-tabTarget nz-hidden"
+            class="nz-handle"
           />
           <div
-            class="nz-widget-tab nz-active nz-first nz-last"
-            data-item-id="t1"
-            data-item-type="widget-tab"
-            role="tab"
-            title=""
-          >
-            <span />
-          </div>
-          <div
-            class="nz-widget-tabTarget nz-hidden"
-          />
-          <div
-            class="nz-widget-overflow nz-hidden"
+            class="nz-widget-tabs"
+            role="tablist"
           >
             <div
-              class="nz-button"
-              role="button"
-              tabindex="-1"
-            >
-              <div
-                class="nz-icon"
-              />
-            </div>
-          </div>
-        </div>
-        <div
-          class="nz-widget-tabBarButtons"
-        >
-          <button
-            class="nz-widget-pinToggle"
-          >
-            <i
-              class="icon icon-chevron-left"
+              class="nz-widget-tabTarget nz-hidden"
             />
-          </button>
-        </div>
-      </div>
-      <div
-        class="nz-widget-content-container"
-      />
-    </div>
-    <div
-      class="nz-widget-widgetTarget nz-hidden nz-left"
-    />
-    <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
-    >
-      <div
-        class="nz-widget-tabBar nz-separator"
-      >
-        <div
-          class="nz-handle"
-        />
-        <div
-          class="nz-widget-tabs"
-          role="tablist"
-        >
-          <div
-            class="nz-widget-tabTarget nz-hidden"
-          />
-          <div
-            class="nz-widget-tab nz-active nz-first nz-last"
-            data-item-id="t2"
-            data-item-type="widget-tab"
-            role="tab"
-            title=""
-          >
-            <span />
-          </div>
-          <div
-            class="nz-widget-tabTarget nz-hidden"
-          />
-          <div
-            class="nz-widget-overflow nz-hidden"
-          >
             <div
-              class="nz-button"
-              role="button"
-              tabindex="-1"
+              class="nz-widget-tab nz-active nz-first nz-last"
+              data-item-id="t1"
+              data-item-type="widget-tab"
+              role="tab"
+              title=""
+            >
+              <span />
+            </div>
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-overflow nz-hidden"
             >
               <div
-                class="nz-icon"
-              />
+                class="nz-button"
+                role="button"
+                tabindex="-1"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
             </div>
+          </div>
+          <div
+            class="nz-widget-tabBarButtons"
+          >
+            <button
+              class="nz-widget-pinToggle nz-is-pinned"
+            >
+              <i
+                class="icon core-svg-icon"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
+                  />
+                </svg>
+              </i>
+            </button>
           </div>
         </div>
         <div
-          class="nz-widget-tabBarButtons"
-        />
+          class="nz-widget-contentContainer"
+        >
+          <div
+            class="nz-content"
+          />
+        </div>
       </div>
       <div
-        class="nz-widget-content-container"
+        class="nz-vertical-panel-splitter"
       />
     </div>
     <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
-    />
+      class="nz-panel-section-1 nz-widgetPanels-vertical"
+    >
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
+      >
+        <div
+          class="nz-widget-tabBar nz-separator"
+        >
+          <div
+            class="nz-handle"
+          />
+          <div
+            class="nz-widget-tabs"
+            role="tablist"
+          >
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-tab nz-active nz-first nz-last"
+              data-item-id="t2"
+              data-item-type="widget-tab"
+              role="tab"
+              title=""
+            >
+              <span />
+            </div>
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-overflow nz-hidden"
+            >
+              <div
+                class="nz-button"
+                role="button"
+                tabindex="-1"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            class="nz-widget-tabBarButtons"
+          />
+        </div>
+        <div
+          class="nz-widget-contentContainer"
+        >
+          <div
+            class="nz-content"
+          />
+        </div>
+      </div>
+    </div>
   </div>
   <div
     class="nz-grip-container"
@@ -428,17 +490,12 @@ exports[`WidgetPanelProvider should render multiple widgets 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -450,74 +507,93 @@ exports[`WidgetPanelProvider should render multiple widgets 1`] = `
 exports[`WidgetPanelProvider should render spanned 1`] = `
 <div
   class="nz-widgetPanels-panel nz-top nz-span nz-span-top nz-span-bottom"
+  style="height: 100px;"
 >
   <div
     class="nz-content"
   >
     <div
-      class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
-    />
-    <div
-      class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill nz-border-bottom nz-border-left nz-border-right"
+      class="nz-panel-section-0 nz-widgetPanels-horizontal nz-panel-section-full-size"
     >
       <div
-        class="nz-widget-tabBar nz-separator"
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill nz-border-bottom nz-border-left nz-border-right"
       >
         <div
-          class="nz-handle"
-        />
-        <div
-          class="nz-widget-tabs"
-          role="tablist"
+          class="nz-widget-tabBar nz-separator"
         >
           <div
-            class="nz-widget-tabTarget nz-hidden"
+            class="nz-handle"
           />
           <div
-            class="nz-widget-tab nz-active nz-first nz-last"
-            data-item-id="t1"
-            data-item-type="widget-tab"
-            role="tab"
-            title=""
-          >
-            <span />
-          </div>
-          <div
-            class="nz-widget-tabTarget nz-hidden"
-          />
-          <div
-            class="nz-widget-overflow nz-hidden"
+            class="nz-widget-tabs"
+            role="tablist"
           >
             <div
-              class="nz-button"
-              role="button"
-              tabindex="-1"
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-tab nz-active nz-first nz-last"
+              data-item-id="t1"
+              data-item-type="widget-tab"
+              role="tab"
+              title=""
+            >
+              <span />
+            </div>
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-overflow nz-hidden"
             >
               <div
-                class="nz-icon"
-              />
+                class="nz-button"
+                role="button"
+                tabindex="-1"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
             </div>
+          </div>
+          <div
+            class="nz-widget-tabBarButtons"
+          >
+            <button
+              class="nz-widget-pinToggle nz-is-pinned"
+            >
+              <i
+                class="icon core-svg-icon"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
+                  />
+                </svg>
+              </i>
+            </button>
           </div>
         </div>
         <div
-          class="nz-widget-tabBarButtons"
+          class="nz-widget-contentContainer"
         >
-          <button
-            class="nz-widget-pinToggle"
-          >
-            <i
-              class="icon icon-chevron-up"
-            />
-          </button>
+          <div
+            class="nz-content"
+          />
         </div>
       </div>
       <div
-        class="nz-widget-content-container"
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-last"
       />
     </div>
-    <div
-      class="nz-widget-widgetTarget nz-hidden nz-top nz-last"
-    />
   </div>
   <div
     class="nz-grip-container"
@@ -526,17 +602,12 @@ exports[`WidgetPanelProvider should render spanned 1`] = `
       class="nz-widgetPanels-grip nz-top nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -554,69 +625,87 @@ exports[`WidgetPanelProvider should render vertical 1`] = `
     class="nz-content"
   >
     <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
-    />
-    <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
+      class="nz-panel-section-0 nz-widgetPanels-vertical nz-panel-section-full-size"
     >
       <div
-        class="nz-widget-tabBar nz-separator"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
-          class="nz-handle"
-        />
-        <div
-          class="nz-widget-tabs"
-          role="tablist"
+          class="nz-widget-tabBar nz-separator"
         >
           <div
-            class="nz-widget-tabTarget nz-hidden"
+            class="nz-handle"
           />
           <div
-            class="nz-widget-tab nz-active nz-first nz-last"
-            data-item-id="t1"
-            data-item-type="widget-tab"
-            role="tab"
-            title=""
-          >
-            <span />
-          </div>
-          <div
-            class="nz-widget-tabTarget nz-hidden"
-          />
-          <div
-            class="nz-widget-overflow nz-hidden"
+            class="nz-widget-tabs"
+            role="tablist"
           >
             <div
-              class="nz-button"
-              role="button"
-              tabindex="-1"
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-tab nz-active nz-first nz-last"
+              data-item-id="t1"
+              data-item-type="widget-tab"
+              role="tab"
+              title=""
+            >
+              <span />
+            </div>
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-overflow nz-hidden"
             >
               <div
-                class="nz-icon"
-              />
+                class="nz-button"
+                role="button"
+                tabindex="-1"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
             </div>
+          </div>
+          <div
+            class="nz-widget-tabBarButtons"
+          >
+            <button
+              class="nz-widget-pinToggle nz-is-pinned"
+            >
+              <i
+                class="icon core-svg-icon"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
+                  />
+                </svg>
+              </i>
+            </button>
           </div>
         </div>
         <div
-          class="nz-widget-tabBarButtons"
+          class="nz-widget-contentContainer"
         >
-          <button
-            class="nz-widget-pinToggle"
-          >
-            <i
-              class="icon icon-chevron-left"
-            />
-          </button>
+          <div
+            class="nz-content"
+          />
         </div>
       </div>
       <div
-        class="nz-widget-content-container"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
       />
     </div>
-    <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
-    />
   </div>
   <div
     class="nz-grip-container"
@@ -625,17 +714,12 @@ exports[`WidgetPanelProvider should render vertical 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -647,74 +731,93 @@ exports[`WidgetPanelProvider should render vertical 1`] = `
 exports[`WidgetPanelProvider should render with span bottom 1`] = `
 <div
   class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+  style="width: 200px;"
 >
   <div
     class="nz-content"
   >
     <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
-    />
-    <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
+      class="nz-panel-section-0 nz-widgetPanels-vertical nz-panel-section-full-size"
     >
       <div
-        class="nz-widget-tabBar nz-separator"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
-          class="nz-handle"
-        />
-        <div
-          class="nz-widget-tabs"
-          role="tablist"
+          class="nz-widget-tabBar nz-separator"
         >
           <div
-            class="nz-widget-tabTarget nz-hidden"
+            class="nz-handle"
           />
           <div
-            class="nz-widget-tab nz-active nz-first nz-last"
-            data-item-id="t1"
-            data-item-type="widget-tab"
-            role="tab"
-            title=""
-          >
-            <span />
-          </div>
-          <div
-            class="nz-widget-tabTarget nz-hidden"
-          />
-          <div
-            class="nz-widget-overflow nz-hidden"
+            class="nz-widget-tabs"
+            role="tablist"
           >
             <div
-              class="nz-button"
-              role="button"
-              tabindex="-1"
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-tab nz-active nz-first nz-last"
+              data-item-id="t1"
+              data-item-type="widget-tab"
+              role="tab"
+              title=""
+            >
+              <span />
+            </div>
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-overflow nz-hidden"
             >
               <div
-                class="nz-icon"
-              />
+                class="nz-button"
+                role="button"
+                tabindex="-1"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
             </div>
+          </div>
+          <div
+            class="nz-widget-tabBarButtons"
+          >
+            <button
+              class="nz-widget-pinToggle nz-is-pinned"
+            >
+              <i
+                class="icon core-svg-icon"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
+                  />
+                </svg>
+              </i>
+            </button>
           </div>
         </div>
         <div
-          class="nz-widget-tabBarButtons"
+          class="nz-widget-contentContainer"
         >
-          <button
-            class="nz-widget-pinToggle"
-          >
-            <i
-              class="icon icon-chevron-left"
-            />
-          </button>
+          <div
+            class="nz-content"
+          />
         </div>
       </div>
       <div
-        class="nz-widget-content-container"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
       />
     </div>
-    <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
-    />
   </div>
   <div
     class="nz-grip-container"
@@ -723,17 +826,12 @@ exports[`WidgetPanelProvider should render with span bottom 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />
@@ -745,74 +843,93 @@ exports[`WidgetPanelProvider should render with span bottom 1`] = `
 exports[`WidgetPanelProvider should render with top spanned 1`] = `
 <div
   class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+  style="width: 200px;"
 >
   <div
     class="nz-content"
   >
     <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
-    />
-    <div
-      class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
+      class="nz-panel-section-0 nz-widgetPanels-vertical nz-panel-section-full-size"
     >
       <div
-        class="nz-widget-tabBar nz-separator"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
-          class="nz-handle"
-        />
-        <div
-          class="nz-widget-tabs"
-          role="tablist"
+          class="nz-widget-tabBar nz-separator"
         >
           <div
-            class="nz-widget-tabTarget nz-hidden"
+            class="nz-handle"
           />
           <div
-            class="nz-widget-tab nz-active nz-first nz-last"
-            data-item-id="t1"
-            data-item-type="widget-tab"
-            role="tab"
-            title=""
-          >
-            <span />
-          </div>
-          <div
-            class="nz-widget-tabTarget nz-hidden"
-          />
-          <div
-            class="nz-widget-overflow nz-hidden"
+            class="nz-widget-tabs"
+            role="tablist"
           >
             <div
-              class="nz-button"
-              role="button"
-              tabindex="-1"
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-tab nz-active nz-first nz-last"
+              data-item-id="t1"
+              data-item-type="widget-tab"
+              role="tab"
+              title=""
+            >
+              <span />
+            </div>
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-overflow nz-hidden"
             >
               <div
-                class="nz-icon"
-              />
+                class="nz-button"
+                role="button"
+                tabindex="-1"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
             </div>
+          </div>
+          <div
+            class="nz-widget-tabBarButtons"
+          >
+            <button
+              class="nz-widget-pinToggle nz-is-pinned"
+            >
+              <i
+                class="icon core-svg-icon"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
+                  />
+                </svg>
+              </i>
+            </button>
           </div>
         </div>
         <div
-          class="nz-widget-tabBarButtons"
+          class="nz-widget-contentContainer"
         >
-          <button
-            class="nz-widget-pinToggle"
-          >
-            <i
-              class="icon icon-chevron-left"
-            />
-          </button>
+          <div
+            class="nz-content"
+          />
         </div>
       </div>
       <div
-        class="nz-widget-content-container"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
       />
     </div>
-    <div
-      class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
-    />
   </div>
   <div
     class="nz-grip-container"
@@ -821,17 +938,12 @@ exports[`WidgetPanelProvider should render with top spanned 1`] = `
       class="nz-widgetPanels-grip nz-left nz-grip"
     >
       <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
+        class="nz-line-grip"
+      >
+        <div
+          class="nz-line-grip-detail"
+        />
+      </div>
       <div
         class="nz-handle"
       />

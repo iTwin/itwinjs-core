@@ -35,13 +35,13 @@ iModelHub holds an immutable ledger of all changes to an iModel. Similar to an a
 
 A local [Briefcase](../Glossary.md#briefcase) holds the state of an iModel as of a given point in time, plus changes made locally, if any. To receive changes made by others, users *synchronize* their Briefcase from iModelHub. Any ChangeSets [pushed](../Glossary.md#push) to iModelHub by other users are [pulled](../Glossary.md#pull) and [merged](../Glossary.md#merge) into the local Briefcase.
 
-To permanently save your changes, you push them in the form of a ChangeSet to iModelHub. You must always synchronize your Briefcase with iModelHub before you can upload changes. iModelHub enforces that ChangeSets it accepts must always be *based on* (i.e. synchronized with) the most recent ChangeSet. This is what establishes the linear timeline of changes.
+To permanently save your changes, you push them in the form of a Changeset to iModelHub. You must always synchronize your Briefcase with iModelHub before you can upload changes. iModelHub enforces that ChangeSets it accepts must always be *based on* (i.e. synchronized with) the most recent Changeset. This is what establishes the linear timeline of changes.
 
 > See [Working with Briefcase and ChangeSets](./Briefcases.md).
 
 ### Named Versions
 
-Every ChangeSet on the timeline creates a *new version* of the iModel. However, some points on the timeline can represent important milestones or significant events to be saved (e.g. for a design review). iModelHub provides a way to mark a point on the timeline with a name. These time points are referred to as **Named Versions**. Since a specific action must be taken to create them, they are treated specially by iModelHub with caching to make them faster to access.
+Every Changeset on the timeline creates a *new version* of the iModel. However, some points on the timeline can represent important milestones or significant events to be saved (e.g. for a design review). iModelHub provides a way to mark a point on the timeline with a name. These time points are referred to as **Named Versions**. Since a specific action must be taken to create them, they are treated specially by iModelHub with caching to make them faster to access.
 
 > See [Using Named Versions](./Versions.md).
 
@@ -53,6 +53,6 @@ iModels are meant to be distributed widely in the form of Briefcases, and each B
 
 ## iModelHub Events
 
-Applications can register listeners for events from iModelHub. Events report on certain operations being performed on that iModel. It is possible therefore to create Agents that react to every ChangeSet, performing validation, tracking, synchronization with external systems, etc. Since each Agent works on a local Briefcase synchronized with ChangeSets, they can be deployed independently and the system is vastly scalable.
+Applications can register listeners for events from iModelHub. Events report on certain operations being performed on that iModel. It is possible therefore to create Agents that react to every Changeset, performing validation, tracking, synchronization with external systems, etc. Since each Agent works on a local Briefcase synchronized with ChangeSets, they can be deployed independently and the system is vastly scalable.
 
 > See [Working with events](./Events).

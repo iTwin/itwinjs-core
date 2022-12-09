@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Frontstage
  */
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { PointProps, StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
+import { PointProps, StagePanelLocation, UiError, WidgetState } from "@itwin/appui-abstract";
 import { CommonProps, Rectangle, RectangleProps } from "@itwin/core-react";
 import {
   getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, ResizeHandle, StagePanelsManager, StagePanelType,
@@ -26,18 +27,24 @@ import { ModalFrontstage } from "./ModalFrontstage";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Interface defining callbacks for widget changes
+ * @deprecated
  * @public
  */
 export interface WidgetChangeHandler {
+  // eslint-disable-next-line deprecation/deprecation
   handleResize(zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number): void;
+  // eslint-disable-next-line deprecation/deprecation
   handleTabClick(widgetId: WidgetZoneId, tabIndex: number): void;
+  // eslint-disable-next-line deprecation/deprecation
   handleTabDragStart(widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps): void;
   handleTabDragEnd(): void;
   handleTabDrag(dragged: PointProps): void;
+  // eslint-disable-next-line deprecation/deprecation
   handleWidgetStateChange(widgetId: WidgetZoneId, tabIndex: number, isOpening: boolean): void;
 }
 
 /** Interface defining callbacks for stage panel changes
+ * @deprecated Used in UI1.0 only.
  * @public
  */
 export interface StagePanelChangeHandler {
@@ -54,13 +61,15 @@ export interface StagePanelChangeHandler {
 }
 
 /** Interface defining callbacks for ZoneDropTarget changes
+ * @deprecated
  * @public
  */
 export interface TargetChangeHandler {
-  handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void;
+  handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void; // eslint-disable-line deprecation/deprecation
 }
 
 /** Interface defining callbacks for nine zone changes
+ * @deprecated Used in UI1.0 only.
  * @public
  */
 export interface NineZoneChangeHandler {
@@ -69,6 +78,7 @@ export interface NineZoneChangeHandler {
 }
 
 /** Interface defining a provider for Zone definitions
+ * @deprecated Used in UI1.0 only.
  * @public
  */
 export interface ZoneDefProvider {
@@ -83,8 +93,8 @@ export interface FrontstageRuntimeProps {
   nineZone: NineZoneManagerProps;
   nineZoneChangeHandler: NineZoneChangeHandler;
   stagePanelChangeHandler: StagePanelChangeHandler;
-  targetChangeHandler: TargetChangeHandler;
-  widgetChangeHandler: WidgetChangeHandler;
+  targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   widgetTabs: WidgetTabs;
   zoneDefProvider: ZoneDefProvider;
 }
@@ -120,10 +130,11 @@ const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
 ];
 
 /** FrontstageComposer React component.
+ * @deprecated
  * @public
  */
 export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState>
-  implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler {
+  implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler { // eslint-disable-line deprecation/deprecation
 
   private _frontstageDef: FrontstageDef | undefined;
   private _isMounted = false;
@@ -134,6 +145,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   constructor(props: CommonProps) {
     super(props);
 
+    FrontstageManager.activeFrontstageDef?.updateWidgetDefs();
     this._frontstageDef = FrontstageManager.activeFrontstageDef;
 
     // Get the id and nineZoneProps for the current FrontstageDef
@@ -179,6 +191,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private initializeZoneBounds() {
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
+
     this.setState((prevState) => {
       const frontstageDef = this._frontstageDef;
       if (!frontstageDef)
@@ -190,9 +206,11 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         const zoneDef = frontstageDef.getZoneDef(zoneId);
         if (!zoneDef)
           continue;
+        // istanbul ignore next
         if (zoneDef.initialWidth)
           zones = zonesManager.setZoneWidth(zoneId, zoneDef.initialWidth, zones);
       }
+      // istanbul ignore else
       if (zones === prevState.nineZone.zones)
         return null;
       return {
@@ -229,7 +247,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private _handleFrontstageActivatedEvent = (args: FrontstageActivatedEventArgs) => {
-    // Save the nineZoneProps into the former FrontstageDef
+    // istanbul ignore next - Save the nineZoneProps into the former FrontstageDef
     if (this._frontstageDef)
       this._frontstageDef.nineZone = { ...this.state.nineZone };
 
@@ -263,7 +281,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Bottom).minSize = 20;
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Bottom).collapseOffset = 0;
 
-    widgetZoneIds.forEach((zoneId: WidgetZoneId) => {
+    widgetZoneIds.forEach((zoneId) => {
       const zoneDef = this.getZoneDef(zoneId);
       if (!zoneDef || zoneDef.zoneState === ZoneState.Off)
         return;
@@ -327,9 +345,11 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   public override render(): React.ReactNode {
     let content: React.ReactNode;
+    // istanbul ignore else
     if (this._frontstageDef) {
+      // istanbul ignore else
       if (this._frontstageDef.frontstageProvider) {
-        const frontstageRuntimeProps: FrontstageRuntimeProps = {
+        const runtimeProps: FrontstageRuntimeProps = {
           frontstageDef: this._frontstageDef,
           nineZone: this.state.nineZone,
           nineZoneChangeHandler: this,
@@ -339,7 +359,11 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           targetChangeHandler: this,
           zoneDefProvider: this,
         };
-        content = React.cloneElement(this._frontstageDef.frontstageProvider.frontstage, { runtimeProps: frontstageRuntimeProps });
+        if (!React.isValidElement(this._frontstageDef.frontstageProvider.frontstage)) {
+          throw new UiError(UiFramework.loggerCategory(this), "Frontstage provider should return a <Frontstage /> element in UI1.0");
+        }
+
+        content = React.cloneElement(this._frontstageDef.frontstageProvider.frontstage, { runtimeProps });
       } else {
         Logger.logError(UiFramework.loggerCategory(this), "FrontstageDef has no FrontstageProvider");
         content = null;
@@ -401,7 +425,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   };
 
   // istanbul ignore next
-  public handleResize = (zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => {
+  public handleResize = (zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => { // eslint-disable-line deprecation/deprecation
     if (this._isMounted)
       this.setState((prevState) => {
         const zones = FrontstageManager.NineZoneManager.getZonesManager().handleWidgetResize({ zoneId, resizeBy, handle, filledHeightDiff }, prevState.nineZone.zones);
@@ -416,7 +440,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       });
   };
 
-  public handleTabClick = (widgetId: WidgetZoneId, tabIndex: number) => {
+  public handleTabClick = (widgetId: WidgetZoneId, tabIndex: number) => { // eslint-disable-line deprecation/deprecation
     // istanbul ignore else
     if (this._isMounted)
       this.setState((prevState) => {
@@ -455,6 +479,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   };
 
   // istanbul ignore next
+  // eslint-disable-next-line deprecation/deprecation
   public handleTabDragStart = (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps) => {
     if (this._isMounted)
       this.setState((prevState) => {
@@ -497,7 +522,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   };
 
   // istanbul ignore next
-  public handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void {
+  public handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void { // eslint-disable-line deprecation/deprecation
     if (this._isMounted)
       this.setState((prevState) => {
         const zones = isTargeted ? FrontstageManager.NineZoneManager.getZonesManager().handleTargetChanged({ zoneId, type }, prevState.nineZone.zones) :
@@ -596,6 +621,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   public handleFloatingZonesBoundsChange(bounds: RectangleProps) {
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
+
     this.setState((prevState) => {
       const zones = FrontstageManager.NineZoneManager.getZonesManager().setFloatingZonesBounds(bounds, prevState.nineZone.zones);
       if (zones === prevState.nineZone.zones)
@@ -627,6 +656,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       });
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public handleWidgetStateChange(widgetId: WidgetZoneId, tabIndex: number, isOpening: boolean): void {
     // istanbul ignore else
     if (this._isMounted)
@@ -660,12 +690,12 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   // istanbul ignore next
-  public getGhostOutlineBounds(zoneId: WidgetZoneId): RectangleProps | undefined {
+  public getGhostOutlineBounds(zoneId: WidgetZoneId): RectangleProps | undefined { // eslint-disable-line deprecation/deprecation
     const manager = FrontstageManager.NineZoneManager.getZonesManager();
     return manager.getGhostOutlineBounds(zoneId, this.state.nineZone.zones);
   }
 
-  public setZoneAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean): void {
+  public setZoneAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean): void { // eslint-disable-line deprecation/deprecation
     // istanbul ignore else
     if (this._isMounted)
       this.setState((prevState) => {
@@ -681,7 +711,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       });
   }
 
-  public mergeZones(toMergeId: WidgetZoneId, targetId: WidgetZoneId): void {
+  public mergeZones(toMergeId: WidgetZoneId, targetId: WidgetZoneId): void { // eslint-disable-line deprecation/deprecation
     // istanbul ignore else
     if (this._isMounted)
       this.setState((prevState) => {

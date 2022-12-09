@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { BeEvent, Id64, Id64Arg } from "@itwin/core-bentley";
+import { BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import {
   AxisOrder, ClipMaskXYZRangePlanes, ClipPlane, ClipPrimitive, ClipShape, ClipUtilities, ClipVector, ConvexClipPlaneSet, FrameBuilder, Geometry, GeometryQuery,
   GrowableXYZArray, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PolygonOps, PolylineOps, Range1d, Range3d, Ray3d,
@@ -31,6 +31,7 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
 
 /** An object that can react to a view's clip being changed by tools or modify handles.
  * @public
+ * @extensions
  */
 export interface ViewClipEventHandler {
   /** Add newly created clip geometry to selection set and show modify controls. */
@@ -70,7 +71,7 @@ export interface DrawClipOptions {
 }
 
 /** A tool to define a clip volume for a view
- * @public
+ * @public @extensions
  */
 export class ViewClipTool extends PrimitiveTool {
   constructor(protected _clipEventHandler?: ViewClipEventHandler) { super(); }
@@ -106,7 +107,11 @@ export class ViewClipTool extends PrimitiveTool {
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.allow3dManipulations()); }
 
   /** @internal */
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
   /** @internal */
   public override async onUnsuspend() { this.showPrompt(); }
   /** @internal */
@@ -116,7 +121,10 @@ export class ViewClipTool extends PrimitiveTool {
   /** @internal */
   protected setupAndPromptForNextAction(): void { this.showPrompt(); }
   /** @internal */
-  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { await this.onReinitialize(); return EventHandled.No; }
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    await this.onReinitialize();
+    return EventHandled.No;
+  }
 
   /** @internal */
   public static getPlaneInwardNormal(orientation: ContextRotationId, viewport: Viewport): Vector3d | undefined {
@@ -428,7 +436,7 @@ export class ViewClipTool extends PrimitiveTool {
 }
 
 /** A tool to remove a clip volume for a view
- * @public
+ * @public @extensions
  */
 export class ViewClipClearTool extends ViewClipTool {
   public static override toolId = "ViewClip.Clear";
@@ -675,8 +683,10 @@ export class ViewClipByShapeTool extends ViewClipTool {
       currentPt = ev.point.clone();
     if (2 === points.length && !ev.isControlKey) {
       const xDir = Vector3d.createStartEnd(points[0], points[1]);
-      const xLen = xDir.magnitude(); xDir.normalizeInPlace();
-      const yDir = xDir.crossProduct(normal); yDir.normalizeInPlace();
+      const xLen = xDir.magnitude();
+      xDir.normalizeInPlace();
+      const yDir = xDir.crossProduct(normal);
+      yDir.normalizeInPlace();
       const cornerPt = AccuDrawHintBuilder.projectPointToLineInView(currentPt, points[1], yDir, ev.viewport!, true);
       if (undefined !== cornerPt) {
         points.push(cornerPt);
@@ -728,7 +738,10 @@ export class ViewClipByShapeTool extends ViewClipTool {
   }
 
   /** @internal */
-  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._points.length > 0 && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    if (this._points.length > 0 && undefined !== ev.viewport)
+      ev.viewport.invalidateDecorations();
+  }
 
   /** @internal */
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -858,7 +871,10 @@ export class ViewClipByRangeTool extends ViewClipTool {
   }
 
   /** @internal */
-  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (undefined !== this._corner && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    if (undefined !== this._corner && undefined !== ev.viewport)
+      ev.viewport.invalidateDecorations();
+  }
 
   /** @internal */
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -928,7 +944,11 @@ export class ViewClipByElementTool extends ViewClipTool {
     await super.onPostInstall();
     if (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive) {
       let useSelection = true;
-      this.targetView.iModel.selectionSet.elements.forEach((val) => { if (Id64.isInvalid(val) || Id64.isTransient(val)) useSelection = false; });
+      this.targetView.iModel.selectionSet.elements.forEach((val) => {
+        if (Id64.isInvalid(val) || Id64.isTransient(val))
+          useSelection = false;
+      });
+
       if (useSelection) {
         await this.doClipToSelectedElements(this.targetView);
         return;
@@ -945,21 +965,26 @@ export class ViewClipByElementTool extends ViewClipTool {
     return false;
   }
 
-  protected async doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange: boolean = false): Promise<boolean> {
+  protected async doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange: boolean = false, modelId?: Id64String): Promise<boolean> {
     try {
       const placements = await viewport.iModel.elements.getPlacements(ids, { type: viewport.view.is3d() ? "3d" : "2d" });
       if (0 === placements.length)
         return false;
 
+      const displayTransform = modelId && 1 === placements.length ? viewport.view.computeDisplayTransform({ modelId, elementId: placements[0].elementId }) : undefined;
       const range = new Range3d();
       const transform = Transform.createIdentity();
       if (!alwaysUseRange && 1 === placements.length) {
         const placement = placements[0];
         range.setFrom(placement instanceof Placement2d ? Range3d.createRange2d(placement.bbox, 0) : placement.bbox);
         transform.setFrom(placement.transform); // Use ElementAlignedBox for single selection...
+        displayTransform?.multiplyTransformTransform(transform, transform);
       } else {
         for (const placement of placements)
           range.extendRange(placement.calculateRange());
+
+        if (displayTransform)
+          transform.setFrom(displayTransform);
       }
 
       if (range.isNull)
@@ -980,7 +1005,9 @@ export class ViewClipByElementTool extends ViewClipTool {
         const indices = Range3d.faceCornerIndices(canUseXZ ? 3 : 1);
         const corners = range.corners();
         const points: Point3d[] = [];
-        for (const index of indices) points.push(corners[index]);
+        for (const index of indices)
+          points.push(corners[index]);
+
         transform.multiplyPoint3dArrayInPlace(points);
         transform.multiplyVector(zDir, zDir);
         transform.setFrom(Transform.createOriginAndMatrix(points[0], Matrix3d.createRigidHeadsUp(zDir)));
@@ -1016,7 +1043,7 @@ export class ViewClipByElementTool extends ViewClipTool {
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (undefined === hit || !hit.isElementHit)
       return EventHandled.No;
-    return await this.doClipToElements(this.targetView, hit.sourceId, this._alwaysUseRange) ? EventHandled.Yes : EventHandled.No;
+    return await this.doClipToElements(this.targetView, hit.sourceId, this._alwaysUseRange, hit.modelId) ? EventHandled.Yes : EventHandled.No;
   }
 }
 
@@ -1092,8 +1119,10 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     const pt2 = anchorRay.fractionToPoint(1.0);
     const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
 
-    context.viewport.worldToView(pt1, pt1); pt1.z = 0.0;
-    context.viewport.worldToView(pt2, pt2); pt2.z = 0.0;
+    context.viewport.worldToView(pt1, pt1);
+    pt1.z = 0.0;
+    context.viewport.worldToView(pt2, pt2);
+    pt2.z = 0.0;
 
     builder.setSymbology(color, ColorDef.black, weight, LinePixels.Code5);
     builder.addLineString([pt1, pt2]);
@@ -1182,7 +1211,10 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
         zHigh = clipExtents.high + localOffset;
       const realZLow = (undefined === zLow ? clipExtents.low : zLow);
       const realZHigh = (undefined === zHigh ? clipExtents.high : zHigh);
-      if (realZLow > realZHigh) { zLow = realZHigh; zHigh = realZLow; }
+      if (realZLow > realZHigh) {
+        zLow = realZHigh;
+        zHigh = realZLow;
+      }
     }
 
     return ViewClipTool.doClipToShape(this._clipView, adjustedPts, clipShape.transformFromClip, zLow, zHigh);
@@ -1327,8 +1359,33 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       this._clipShape = clipShape;
     } else {
       const clipPlanes = ViewClipTool.isSingleConvexClipPlaneSet(clip);
-      if (undefined === clipPlanes || clipPlanes.planes.length > 12)
-        return false;
+      if (undefined === clipPlanes || clipPlanes.planes.length > 12) {
+        // Show visual representation for ClipVectors that are not supported for modification...
+        const viewRange = this._clipView.computeViewRange();
+
+        for (const primitive of clip.clips) {
+          const union = primitive.fetchClipPlanesRef();
+          if (undefined === union)
+            continue;
+
+          for (const convexSet of union.convexSets) {
+            const convexSetLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(convexSet, viewRange, true, false, true);
+            if (undefined === convexSetLoops)
+              continue;
+
+            if (undefined === this._clipPlanesLoops)
+              this._clipPlanesLoops = convexSetLoops;
+            else
+              this._clipPlanesLoops.push(...convexSetLoops);
+          }
+        }
+
+        if (undefined === this._clipPlanesLoops)
+          return false;
+
+        this._clip = clip;
+        return true;
+      }
       const clipPlanesLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipPlanes, this._clipView.computeViewRange(), true, false, true);
       if (undefined !== clipPlanesLoops && clipPlanesLoops.length > clipPlanes.planes.length)
         return false;
@@ -1368,7 +1425,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       const midPtHi = shapePtsHi[i].interpolate(0.5, shapePtsHi[i + 1]);
       const faceCenter = midPtLo.interpolate(0.5, midPtHi);
       const edgeTangent = Vector3d.createStartEnd(shapePtsLo[i], shapePtsLo[i + 1]);
-      const faceNormal = edgeTangent.crossProduct(shapeArea.direction); faceNormal.normalizeInPlace();
+      const faceNormal = edgeTangent.crossProduct(shapeArea.direction);
+      faceNormal.normalizeInPlace();
       this._controls[i] = new ViewClipControlArrow(faceCenter, faceNormal, shapePtsLo.length > 5 ? 0.5 : 0.75);
     }
 
@@ -1422,7 +1480,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
       const defaultOrigin = plane.projectPointToPlane(viewRange.center);
       const defaultOutwardNormal = plane.getNormalRef().negate();
-      const expandedRange = viewRange.clone(); expandedRange.extend(defaultOrigin);
+      const expandedRange = viewRange.clone();
+      expandedRange.extend(defaultOrigin);
       const nonContribLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(ConvexClipPlaneSet.createPlanes([this._clipPlanes.planes[i]]), expandedRange, true, false, true);
       const nonContribColor = ColorDef.from(250, 100, 100);
 
@@ -1778,6 +1837,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
         ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoops, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.white, vp), 3, false, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.from(0, 255, 255, 225), vp), this._clipId);
       if (undefined !== this._clipPlanesLoopsNoncontributing)
         ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoopsNoncontributing, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.red, vp), 1, true);
+    } else if (undefined !== this._clipPlanesLoops) {
+      ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoops, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.white, vp), 3, false, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.from(0, 255, 255, 225), vp), this._clipId);
     }
 
     if (!this._isActive)
@@ -1827,8 +1888,10 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       if (undefined === transform)
         continue;
 
-      const visPts: Point3d[] = []; for (const pt of shapePts) visPts.push(pt.clone()); // deep copy because we're using a builder transform w/addLineString...
-      const hidPts: Point3d[] = []; for (const pt of shapePts) hidPts.push(pt.clone());
+      // deep copy beecause we're using a builder transform w/addLineString...
+      const visPts = shapePts.map((pt) => pt.clone());
+      const hidPts = shapePts.map((pt) => pt.clone());
+
       const arrowVisBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._controlIds[iFace]);
       const arrowHidBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, transform);
       const isSelected = this.iModel.selectionSet.has(this._controlIds[iFace]);
@@ -1900,11 +1963,12 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
 /** Event types for ViewClipDecorationProvider.onActiveClipChanged \
  * @public
+ * @extensions
  */
 export enum ClipEventType { New, NewPlane, Modify, Clear }
 
 /** An implementation of ViewClipEventHandler that responds to new clips by presenting clip modification handles
- * @public
+ * @public @extensions
  */
 export class ViewClipDecorationProvider implements ViewClipEventHandler {
   private static _provider?: ViewClipDecorationProvider;

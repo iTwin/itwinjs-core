@@ -307,7 +307,7 @@ describe("TileAdmin", () => {
     }
 
     function expectSelectedTiles(viewport: Viewport, tiles: Tile[]): void {
-      const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
+      const selected = IModelApp.tileAdmin.getTilesForUser(viewport)?.selected;
       if (selected) {
         for (const tile of tiles)
           expect(selected.has(tile)).to.be.true;

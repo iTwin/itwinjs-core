@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/index";
 
-$hovered-icon-color: $buic-foreground-primary-tone;
+$hovered-icon-color: $buic-foreground-primary;
 
 .maplayers-settings-popup-panel {
   z-index: 14000;
@@ -13,19 +13,9 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   width: 340px;
 }
 
+.map-manager-header-buttons-group {
 .maplayers-settings-popup-button {
-  color: $buic-foreground-body;
-  font-size: 20px;
-  background-color: transparent;
-  border: none;
   position: relative;
   top: 1px;
-
-  &:hover {
-    color: $hovered-icon-color;
-  }
-
-  &:focus {
-    outline: none;
-  }
+}
 }

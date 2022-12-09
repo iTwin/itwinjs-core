@@ -226,7 +226,14 @@ export class ToolWithSettings extends PrimitiveTool {
   public get coordinateProperty() {
     if (!this._coordinateProperty)
       this._coordinateProperty = new DialogProperty<string>(
-        PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Coordinate")),
+        PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Coordinate"),
+          [
+            {
+              type: PropertyEditorParamTypes.InputEditorSize,
+              size: 16,   // num characters
+            } as InputEditorSizeParams,
+          ]
+        ),
         "0.0, 0.0, 0.0", undefined);
     return this._coordinateProperty;
   }
@@ -442,11 +449,33 @@ export class ToolWithSettings extends PrimitiveTool {
       return this.exitTool();
   }
 
-  /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
+  public override async exitTool() {
+    // eslint-disable-next-line no-console
+    console.log("tool exit");
+    await super.exitTool();
+  }
+
+  /** Used to supply DefaultToolSettingProvider with a list of properties used to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([
+      this.colorOptionProperty,
+      this.colorPickerProperty,
+      this.lockProperty,
+      this.cityProperty,
+      this.stateProperty,
+      this.coordinateProperty,
+      this.numberProperty,
+      this.stationProperty,
+      this.useLengthProperty,
+      this.lengthProperty,
+      this.surveyLengthProperty,
+      this.angleProperty,
+      this.imageCheckBoxProperty,
+    ]);
+
     const toolSettings = new Array<DialogItem>();
     toolSettings.push(this.colorOptionProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }));
-    toolSettings.push(this.colorPickerProperty.toDialogItem({ rowPriority: 2, columnIndex: 2 }));
+    toolSettings.push(this.colorPickerProperty.toDialogItem({ rowPriority: 2, columnIndex: 1 }));
     toolSettings.push(this.lockProperty.toDialogItem({ rowPriority: 5, columnIndex: 2 }));
     toolSettings.push(this.cityProperty.toDialogItem({ rowPriority: 10, columnIndex: 2 }));
     toolSettings.push(this.stateProperty.toDialogItem({ rowPriority: 10, columnIndex: 4 }));
@@ -454,10 +483,10 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push(this.numberProperty.toDialogItem({ rowPriority: 16, columnIndex: 2 }));
     toolSettings.push(this.stationProperty.toDialogItem({ rowPriority: 17, columnIndex: 2 }));
     const lengthLock = this.useLengthProperty.toDialogItem({ rowPriority: 18, columnIndex: 0 });
-    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 20, columnIndex: 2 }, lengthLock));
-    toolSettings.push(this.surveyLengthProperty.toDialogItem({ rowPriority: 21, columnIndex: 2 }));
-    toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 25, columnIndex: 2 }));
-    toolSettings.push(this.imageCheckBoxProperty.toDialogItem({ rowPriority: 30, columnIndex: 2 }));
+    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 18, columnIndex: 1 }, lengthLock));
+    toolSettings.push(this.surveyLengthProperty.toDialogItem({ rowPriority: 19, columnIndex: 2 }));
+    toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 20, columnIndex: 2 }));
+    toolSettings.push(this.imageCheckBoxProperty.toDialogItem({ rowPriority: 21, columnIndex: 2 }));
     return toolSettings;
   }
 
@@ -478,49 +507,31 @@ export class ToolWithSettings extends PrimitiveTool {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }
 
-  private syncLengthState(): void {
-    this.lengthProperty.displayValue = (this.lengthProperty.description as LengthDescription).format(this.lengthProperty.value);
-    this.lengthProperty.isDisabled = !this.useLengthProperty.value;
-    this.syncToolSettingsProperties([this.lengthProperty.syncItem]);
+  /** Override to return the property that is disabled/enabled if the supplied property is a lock property.
+   * @see [[changeToolSettingPropertyValue]]
+   * @beta
+   */
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return (property === this.useLengthProperty ? this.lengthProperty : undefined);
   }
 
-  /** Used to send changes from UI back to Tool */
+  /** Used to allow Tool to react to ToolSettings changes in UI */
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.lockProperty.name) {
-      this.lockProperty.value = updatedValue.value.value as boolean;
-      this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === this.colorOptionProperty.name) {
-      this.colorOptionProperty.value = updatedValue.value.value as number;
-      this.showColorOptionSelectionInfo(updatedValue);
-    } else if (updatedValue.propertyName === this.imageCheckBoxProperty.name) {
-      this.imageCheckBoxProperty.value = updatedValue.value.value as boolean;
-      this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === this.cityProperty.name) {
-      this.cityProperty.value = updatedValue.value.value as string;
-      this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === this.stateProperty.name) {
-      this.stateProperty.value = updatedValue.value.value as string;
-      this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === this.useLengthProperty.name) {
-      this.useLengthProperty.value = updatedValue.value.value as boolean;
-      this.showInfoFromUi(updatedValue);
-      this.syncLengthState();
-    } else if (updatedValue.propertyName === this.lengthProperty.name) {
-      this.lengthProperty.value = updatedValue.value.value as number;
-      this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === this.numberProperty.name) {
-      this.numberProperty.value = updatedValue.value.value as number;
-      this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === this.surveyLengthProperty.name) {
-      this.surveyLengthProperty.value = updatedValue.value.value as number;
-      this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === this.colorPickerProperty.name) {
-      this.colorPickerProperty.value = updatedValue.value.value as number;
-      this.showColorInfoFromUi(updatedValue);
-    }
+    return this.changeToolSettingPropertyValue(updatedValue);
+  }
 
-    // return true is change is valid
-    return true;
+  protected override changeToolSettingPropertyValue(syncItem: DialogPropertySyncItem): boolean {
+    const updated = super.changeToolSettingPropertyValue(syncItem);
+
+    // this is a testing tool so show value that was changed - in a real tool there is typically no need to override changeToolSettingPropertyValue
+    if (syncItem.propertyName === this.colorOptionProperty.name) {
+      this.showColorOptionSelectionInfo(syncItem);
+    } else if (syncItem.propertyName === this.colorPickerProperty.name) {
+      this.showColorInfoFromUi(syncItem);
+    } else {
+      this.showInfoFromUi(syncItem);
+    }
+    return updated;
   }
 
   /** Used to bump the value of a tool setting. If no `settingIndex` param is specified, the first setting is bumped.

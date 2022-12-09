@@ -67,7 +67,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
 
   private _update = (vp: Viewport) => {
     // set progress animation before the next repaint.
-    setImmediate(() => this._refreshState(vp));
+    setTimeout(() => this._refreshState(vp));
   };
 
   private _onViewOpen = (vp: ScreenViewport) => {
@@ -112,7 +112,8 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     const classes = classnames(
       "uifw-tile-loading-bar",
       this.state.enabled && "uifw-tile-loading-bar-visible",
-      this.props.isInFooterMode && "nz-footer-mode",
+      // eslint-disable-next-line deprecation/deprecation
+      (this.props.isInFooterMode ?? true) && "nz-footer-mode",
       this.props.className,
     );
     return (

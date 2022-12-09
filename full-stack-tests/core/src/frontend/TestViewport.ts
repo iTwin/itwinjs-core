@@ -136,7 +136,7 @@ function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boo
 // Read colors for each pixel; return the unique ones.
 function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
-  const buffer = vp.readImage(rect)!;
+  const buffer = vp.readImageBuffer({ rect })!;
   expect(buffer).not.to.be.undefined;
   const u32 = new Uint32Array(buffer.data.buffer);
   const colors = new ColorSet();
@@ -254,7 +254,7 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
       return;
     }
 
-    this.onRender.addOnce((_) => { this._frameRendered = true; });
+    this.onRender.addOnce((_) => this._frameRendered = true);
     await new Promise<void>((resolve: any) => requestAnimationFrame(resolve));
     return this.waitForRenderFrame();
   }

@@ -9,7 +9,7 @@ import {
   AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, FeatureAppearance, ModelClipGroup, ModelClipGroups, MonochromeMode, PlanProjectionSettings, SubCategoryOverride, ThematicDisplay, ViewFlags,
 } from "@itwin/core-common";
 import {
-  ChangeFlag, FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport,
+  ChangeFlag, FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
 import { TestUtility } from "../TestUtility";
@@ -240,9 +240,9 @@ describe("Viewport changed events", async () => {
       expectNoChange(() => settings.timePoint = 43);
 
       // eslint-disable-next-line deprecation/deprecation
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.scheduleScriptProps = [{ modelId: "0x123", elementTimelines: [] }]);
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = [{ modelId: "0x123", elementTimelines: [] }]);
       // eslint-disable-next-line deprecation/deprecation
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.scheduleScriptProps = undefined);
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = undefined);
       // If assignment to scheduleScriptProps produces no net change, no event.
       // eslint-disable-next-line deprecation/deprecation
       expectNoChange(() => settings.scheduleScriptProps = undefined);
@@ -277,7 +277,7 @@ describe("Viewport changed events", async () => {
 
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => settings.applyOverrides({ viewflags: { backgroundMap: !settings.viewFlags.backgroundMap } }));
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => settings.applyOverrides({ backgroundColor: 0xabcdef }));
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.applyOverrides({ scheduleScript: [{ modelId: "0x321", elementTimelines: [] }] }));
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.applyOverrides({ scheduleScript: [{ modelId: "0x321", elementTimelines: [] }] }));
     });
   });
 
@@ -338,6 +338,10 @@ describe("Viewport changed events", async () => {
     });
   });
 
+  function changeView(viewport: Viewport, view: ViewState): void {
+    viewport.changeView(view, { animateFrustumChange: false });
+  }
+
   it("should be dispatched when displayed 2d models change", async () => {
     vp = ScreenViewport.create(viewDiv, await testImodel.views.load(id64(0x20))); // views model 0x19
 
@@ -351,16 +355,16 @@ describe("Viewport changed events", async () => {
 
       // Switching to a different 2d view of the same model should not produce model-changed event
       const view20 = await testImodel.views.load(id64(0x20)); // views model 0x1e
-      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => vp.changeView(view20));
+      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view20));
 
       // Switching to a different 2d view of a different model should produce model-changed event
       // Note: new view also has different categories enabled.
       const view35 = await testImodel.views.load(id64(0x35)); // views model 0x1e
-      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState, ViewportState.Controller, () => vp.changeView(view35));
+      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view35));
 
       // Switch back to previous view.
-      // Note: changeView() clears undo stack so cannot/needn't test undo/redo here.
-      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState, ViewportState.Controller, () => vp.changeView(view20.clone()));
+      // Note: changeView(vp, ) clears undo stack so cannot/needn't test undo/redo here.
+      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view20.clone()));
     });
   });
 
@@ -445,11 +449,11 @@ describe("Viewport changed events", async () => {
 
       // Switching to a different view with same category selector produces no category-changed event
       const view13 = await testImodel.views.load(id64(0x13));
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeView(view13));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view13));
 
       // Switching to a different view with different category selector produces event
       const view17 = await testImodel.views.load(id64(0x17));
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.DisplayStyle | ChangeFlag.ViewedCategories, ViewportState.Controller, () => vp.changeView(view17));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.DisplayStyle | ChangeFlag.ViewedCategories, ViewportState.Controller, () => changeView(vp, view17));
 
       // Changing category selector, then switching to a view with same categories enabled produces no event.
       mon.expect(ChangeFlag.ViewedCategories, undefined, () => {
@@ -457,7 +461,7 @@ describe("Viewport changed events", async () => {
         vp.changeCategoryDisplay(view13.categorySelector.categories, true);
       });
 
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeView(view13));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view13));
     });
   });
 
@@ -594,25 +598,25 @@ describe("Viewport changed events", async () => {
     vp = ScreenViewport.create(viewDiv, view2d20.clone());
     ViewportChangedHandler.test(vp, (mon) => {
       // No effective change to view
-      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => vp.changeView(view2d20.clone()));
+      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view2d20.clone()));
 
       // 2d => 2d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeView(view2d2e.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view2d2e.clone()));
 
       // 2d => 3d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeView(view3d15.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view3d15.clone()));
 
       // No effective change
-      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => vp.changeView(view3d15.clone()));
+      mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view3d15.clone()));
 
       // 3d => 3d - same model selector, same display style, different category selector
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories, ViewportState.Controller, () => vp.changeView(view3d17.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories, ViewportState.Controller, () => changeView(vp, view3d17.clone()));
 
       // 3d => 2d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeView(view2d20.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view2d20.clone()));
 
       // Pass the exact same ViewState reference => no "ViewState changed" event.
-      mon.expect(ChangeFlag.None, undefined, () => vp.changeView(vp.view));
+      mon.expect(ChangeFlag.None, undefined, () => changeView(vp, vp.view));
     });
 
     // Test the immediately-fire onChangeView event.
@@ -620,15 +624,15 @@ describe("Viewport changed events", async () => {
     const removeListener = vp.onChangeView.addListener(() => ++numEvents);
 
     // Same ViewState reference => no event
-    vp.changeView(vp.view);
+    changeView(vp, vp.view);
     expect(numEvents).to.equal(0);
 
     // Different ViewState reference => event
-    vp.changeView(view2d20.clone());
+    changeView(vp, view2d20.clone());
     expect(numEvents).to.equal(1);
 
     // Different ViewState reference to an logically identical ViewState => event
-    vp.changeView(view2d20);
+    changeView(vp, view2d20);
     expect(numEvents).to.equal(2);
 
     removeListener();
@@ -641,9 +645,16 @@ describe("Viewport changed events", async () => {
     ViewportChangedHandler.test(vp, (mon) => {
       const expectChange = (state: ViewportState, func: () => void) => mon.expect(ChangeFlag.None, state, func);
 
-      expectChange(ViewportState.RenderPlan, () => view.details.clipVector = ClipVector.createEmpty());
+      expectChange(ViewportState.RenderPlan, () => view.details.clipVector = ClipVector.fromJSON([{
+        shape: {
+          points: [
+            [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 0, 0],
+          ],
+        },
+      }]));
+
       expectChange(ViewportState.Scene, () => view.details.modelClipGroups = new ModelClipGroups([ModelClipGroup.fromJSON({ models: ["0x123"] })]));
-      expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: (_id, _tf) => Transform.createIdentity() });
+      expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: () => Transform.createIdentity() });
     });
   });
 

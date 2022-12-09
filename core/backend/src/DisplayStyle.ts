@@ -6,21 +6,21 @@
  * @module ViewDefinitions
  */
 
-import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
+  DisplayStyleProps, DisplayStyleSettings, EntityReferenceSet, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@itwin/core-common";
 import { DefinitionElement, RenderTimeline } from "./Element";
-import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
+import { IModelElementCloneContext } from "./IModelElementCloneContext";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
  * Many ViewDefinitions may share the same DisplayStyle.
  * @public
  */
-export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
+export abstract class DisplayStyle extends DefinitionElement {
   /** @internal */
   public static override get className(): string { return "DisplayStyle"; }
   public abstract get settings(): DisplayStyleSettings;
@@ -40,27 +40,27 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 
-  /** @alpha */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
     for (const [id] of this.settings.subCategoryOverrides) {
-      predecessorIds.add(id);
+      referenceIds.addElement(id);
     }
 
     for (const excludedElementId of this.settings.excludedElementIds)
-      predecessorIds.add(excludedElementId);
+      referenceIds.addElement(excludedElementId);
 
     if (this.settings.renderTimeline) {
-      predecessorIds.add(this.settings.renderTimeline);
+      referenceIds.addElement(this.settings.renderTimeline);
     } else {
       const script = this.loadScheduleScript();
       if (script)
-        script.script.discloseIds(predecessorIds);
+        script.script.discloseIds(referenceIds); // eslint-disable-line deprecation/deprecation
     }
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
+  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
 
     if (!context.isBetweenIModels || !targetElementProps.jsonProperties?.styles)
@@ -94,20 +94,18 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
         settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
     }
 
-    // eslint-disable-next-line deprecation/deprecation
     if (settings.renderTimeline) {
       const renderTimeline = context.findTargetElementId(settings.renderTimeline);
       if (Id64.isValid(renderTimeline))
         settings.renderTimeline = renderTimeline;
       else
         delete settings.renderTimeline;
-    } else if (settings.scheduleScript) { // eslint-disable-line deprecation/deprecation
-      // eslint-disable-next-line deprecation/deprecation
+    } else if (settings.scheduleScript) {
       const scheduleScript = RenderTimeline.remapScript(context, settings.scheduleScript);
       if (scheduleScript.length > 0)
-        settings.scheduleScript = scheduleScript; // eslint-disable-line deprecation/deprecation
+        settings.scheduleScript = scheduleScript;
       else
-        delete settings.scheduleScript; // eslint-disable-line deprecation/deprecation
+        delete settings.scheduleScript;
     }
   }
 
@@ -120,8 +118,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
         script = RenderSchedule.Script.fromJSON(timeline.scriptProps);
         sourceId = timeline.id;
       }
-    } else if (this.settings.scheduleScriptProps) { // eslint-disable-line deprecation/deprecation
-      // eslint-disable-next-line deprecation/deprecation
+    } else if (this.settings.scheduleScriptProps) {
       script = RenderSchedule.Script.fromJSON(this.settings.scheduleScriptProps);
       sourceId = this.id;
     }
@@ -177,7 +174,7 @@ export class DisplayStyle2d extends DisplayStyle {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String {
     const displayStyle = this.create(iModelDb, definitionModelId, name);
-    return iModelDb.elements.insertElement(displayStyle);
+    return iModelDb.elements.insertElement(displayStyle.toJSON());
   }
 }
 
@@ -201,7 +198,7 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
  * @public
  */
-export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps {
+export class DisplayStyle3d extends DisplayStyle {
   /** @internal */
   public static override get className(): string { return "DisplayStyle3d"; }
   private readonly _settings: DisplayStyle3dSettings;
@@ -214,19 +211,19 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
   }
 
-  /** @alpha */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
     for (const textureId of this.settings.environment.sky.textureIds)
-      predecessorIds.add(textureId);
+      referenceIds.addElement(textureId);
 
     if (this.settings.planProjectionSettings)
       for (const planProjectionSetting of this.settings.planProjectionSettings)
-        predecessorIds.add(planProjectionSetting[0]);
+        referenceIds.addElement(planProjectionSetting[0]);
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
+  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels) {
       const convertTexture = (id: string) => Id64.isValidId64(id) ? context.findTargetElementId(id) : id;
@@ -299,6 +296,6 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {
     const displayStyle = this.create(iModelDb, definitionModelId, name, options);
-    return iModelDb.elements.insertElement(displayStyle);
+    return iModelDb.elements.insertElement(displayStyle.toJSON());
   }
 }

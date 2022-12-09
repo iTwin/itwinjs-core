@@ -4,53 +4,73 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, ProcessDetector } from "@itwin/core-bentley";
 
-/** Parameters for starting display-test-app with a specified initial configuration */
-export interface DtaConfiguration {
-  customOrchestratorUri?: string;
-  viewName?: string;
+export interface DtaBooleanConfiguration {
   // standalone-specific config:
   standalone?: boolean;
-  iModelName?: string;
-  filename?: string;
-  standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
   signInForStandalone?: boolean; // If true, and standalone is true, then sign in. Required when opening local files containing reality models.
   enableDiagnostics?: boolean; // If true, all RenderDiagnostics will be enabled (assertions, debug output, GL state checks).
-  disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
   disableInstancing?: boolean; // default false
+  disableIndexedEdges?: boolean; // default false
   enableImprovedElision?: boolean; // default true
   ignoreAreaPatterns?: boolean; // default false
   enableExternalTextures?: boolean; // default true
+  enableFrontendScheduleScripts?: boolean; // default true
   disableMagnification?: boolean;
   disableBRepCache?: boolean; // default true
   preserveShaderSourceCode?: boolean;
   useProjectExtents?: boolean; // default ON
-  maxTilesToSkip?: number;
-  tileTreeExpirationSeconds?: number;
-  tileExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
   filterMapTextures?: boolean;  // default OFF
   filterMapDrapeTextures?: boolean; // default ON (if extension supported)
-  useFakeCloudStorageTileCache?: boolean; // default OFF
   dpiAwareViewports?: boolean; // default ON
-  devicePixelRatioOverride?: number; // default undefined
   dpiAwareLOD?: boolean; // default OFF
   disableEdges?: boolean; // default OFF
   useWebGL2?: boolean; // default ON
+  errorOnMissingUniform?: boolean; // default true
   debugShaders?: boolean; // default OFF
   alwaysLoadEdges?: boolean; // default OFF
-  minimumSpatialTolerance?: number; // default undefined (no minimum)
   alwaysSubdivideIncompleteTiles?: boolean; // default OFF
-  antialiasSamples?: number; // default 1 (No antialiasing)
   openReadWrite?: boolean; // default false
-  iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share
+  devTools?: boolean; // default true
+  cacheTileMetadata?: boolean; // default false
+  ignoreCache?: boolean; // default is undefined, set to true to delete a cached version of a remote imodel before opening it.
+}
+
+export interface DtaStringConfiguration {
+  customOrchestratorUri?: string;
+  viewName?: string;
+  iModelName?: string;
+  filename?: string;
+  standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
+  startupMacro?: string;    // Used when running a macro at startup, specifies file path
+  iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share, and by iModel download
   mapBoxKey?: string; // default undefined
   bingMapsKey?: string; // default undefined
   cesiumIonKey?: string; // default undefined
   logLevel?: string; // default undefined
   windowSize?: string; // default undefined
-  devTools?: boolean; // default true
-  cacheTileMetadata?: boolean; // default false
+  iModelId?: GuidString; // default is undefined, the ID of the iModel to download and open from the hub
+  urlPrefix?: string; // default is undefined, used to override the default URL prefix for iModel Hub access
+  oidcClientId?: string; // default is undefined, used for auth setup
+  oidcScope?: string; // default is undefined, used for auth setup
+  oidcRedirectUri?: string; // default is undefined, used for auth setup
 }
+
+export interface DtaNumberConfiguration {
+  maxTilesToSkip?: number;
+  tileTreeExpirationSeconds?: number;
+  tileExpirationSeconds?: number;
+  devicePixelRatioOverride?: number; // default undefined
+  minimumSpatialTolerance?: number; // default undefined (no minimum)
+  antialiasSamples?: number; // default 1 (No antialiasing)
+}
+
+export interface DtaOtherConfiguration {
+  disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
+}
+
+/** Parameters for starting display-test-app with a specified initial configuration */
+export type DtaConfiguration = DtaBooleanConfiguration & DtaStringConfiguration & DtaNumberConfiguration & DtaOtherConfiguration;
 
 let configuration: DtaConfiguration | undefined;
 
@@ -74,6 +94,7 @@ export const getConfig = (): DtaConfiguration => {
   configuration.iModelName = process.env.IMJS_STANDALONE_FILENAME;
   configuration.standalonePath = process.env.IMJS_STANDALONE_FILEPATH; // optional (browser-use only)
   configuration.viewName = process.env.IMJS_STANDALONE_VIEWNAME; // optional
+  configuration.startupMacro = process.env.IMJS_STARTUP_MACRO;
 
   if (undefined !== process.env.IMJS_DISABLE_DIAGNOSTICS)
     configuration.enableDiagnostics = false;
@@ -87,6 +108,9 @@ export const getConfig = (): DtaConfiguration => {
   if (undefined !== process.env.IMJS_DISABLE_INSTANCING)
     configuration.disableInstancing = true;
 
+  if (undefined !== process.env.IMJS_DISABLE_INDEXED_EDGES)
+    configuration.disableIndexedEdges = true;
+
   if (undefined !== process.env.IMJS_NO_IMPROVED_ELISION)
     configuration.enableImprovedElision = false;
 
@@ -96,11 +120,17 @@ export const getConfig = (): DtaConfiguration => {
   if (undefined !== process.env.IMJS_NO_EXTERNAL_TEXTURES)
     configuration.enableExternalTextures = false;
 
+  if (undefined !== process.env.IMJS_NO_FRONTEND_SCHEDULE_SCRIPTS)
+    configuration.enableFrontendScheduleScripts = false;
+
   if (undefined !== process.env.IMJS_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
 
   if (undefined !== process.env.IMJS_DISABLE_BREP_CACHE)
     configuration.disableBRepCache = true;
+
+  if (undefined !== process.env.IMJS_DISABLE_UNIFORM_ERRORS)
+    configuration.errorOnMissingUniform = false;
 
   if (undefined !== process.env.IMJS_DEBUG_SHADERS)
     configuration.debugShaders = true;
@@ -190,13 +220,18 @@ export const getConfig = (): DtaConfiguration => {
   if (undefined !== extensions)
     configuration.disabledExtensions = extensions.split(";");
 
-  configuration.useFakeCloudStorageTileCache = undefined !== process.env.IMJS_FAKE_CLOUD_STORAGE;
-
   configuration.disableEdges = undefined !== process.env.IMJS_DISABLE_EDGE_DISPLAY;
   configuration.alwaysLoadEdges = undefined !== process.env.IMJS_ALWAYS_LOAD_EDGES;
   configuration.alwaysSubdivideIncompleteTiles = undefined !== process.env.IMJS_SUBDIVIDE_INCOMPLETE;
 
   configuration.iTwinId = process.env.IMJS_ITWIN_ID;
+
+  configuration.iModelId = process.env.IMJS_IMODEL_ID;
+  configuration.urlPrefix = process.env.IMJS_URL_PREFIX;
+  configuration.oidcClientId = process.env.IMJS_OIDC_CLIENT_ID;
+  configuration.oidcScope = process.env.IMJS_OIDC_SCOPE;
+  configuration.oidcRedirectUri = process.env.IMJS_OIDC_REDIRECT_URI;
+  configuration.ignoreCache = undefined !== process.env.IMJS_IGNORE_CACHE;
 
   return configuration;
 };

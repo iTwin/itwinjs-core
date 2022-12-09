@@ -7,8 +7,8 @@
  */
 
 import { AttributeMap } from "../AttributeMap";
-import { FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { IsInstanced } from "../TechniqueFlags";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { IsInstanced, PositionType } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addColor } from "./Color";
 import { addShaderFlags } from "./Common";
@@ -35,10 +35,10 @@ const roundCorners = `
 
 const computeRoundCorners = "  v_roundCorners = gl_PointSize > 4.0 ? 1.0 : 0.0;";
 
-function createBase(instanced: IsInstanced): ProgramBuilder {
+function createBase(instanced: IsInstanced, positionType: PositionType): ProgramBuilder {
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.PointString, IsInstanced.Yes === instanced);
 
-  const builder = new ProgramBuilder(attrMap, instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
+  const builder = new ProgramBuilder(attrMap, { positionType, instanced: IsInstanced.Yes === instanced });
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
@@ -51,15 +51,15 @@ function createBase(instanced: IsInstanced): ProgramBuilder {
 }
 
 /** @internal */
-export function createPointStringHiliter(instanced: IsInstanced): ProgramBuilder {
-  const builder = createBase(instanced);
+export function createPointStringHiliter(instanced: IsInstanced, posType: PositionType): ProgramBuilder {
+  const builder = createBase(instanced, posType);
   addHiliter(builder, true);
   return builder;
 }
 
 /** @internal */
-export function createPointStringBuilder(instanced: IsInstanced): ProgramBuilder {
-  const builder = createBase(instanced);
+export function createPointStringBuilder(instanced: IsInstanced, posType: PositionType): ProgramBuilder {
+  const builder = createBase(instanced, posType);
   addShaderFlags(builder);
   addColor(builder);
   addWhiteOnWhiteReversal(builder.frag);

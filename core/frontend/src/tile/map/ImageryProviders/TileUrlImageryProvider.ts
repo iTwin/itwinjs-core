@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { MapLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
 
 const levelToken = "{level}";
@@ -16,7 +16,7 @@ const columnToken = "{column}";
 * @internal
 */
 export class TileUrlImageryProvider extends MapLayerImageryProvider {
-  constructor(settings: MapLayerSettings) {
+  constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
   }
   public static validateUrlTemplate(template: string): MapLayerSourceValidation {

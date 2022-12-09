@@ -12,11 +12,7 @@ import { LinePixels } from "../LinePixels";
 import { SubCategoryAppearance } from "../SubCategoryAppearance";
 import { SubCategoryOverride } from "../SubCategoryOverride";
 import {
-  FeatureAppearance,
-  FeatureAppearanceProps,
-  FeatureAppearanceProvider,
-  FeatureAppearanceSource,
-  FeatureOverrides,
+  FeatureAppearance, FeatureAppearanceProps, FeatureAppearanceProvider, FeatureAppearanceSource, FeatureOverrides,
 } from "../FeatureSymbology";
 
 describe("FeatureAppearance", () => {
@@ -87,6 +83,44 @@ describe("FeatureAppearance", () => {
     test({ transp: 0.5 }, { transparency: 0.5 });
     test({ transp: 1.0 }, { transparency: 1.0 });
   });
+
+  it("view-dependent transparency", () => {
+    it("to and from JSON", () => {
+      function test(appProps: FeatureAppearanceProps, expectViewDependent: boolean): void {
+        const expected = expectViewDependent ? true : undefined;
+        const app = FeatureAppearance.fromJSON(appProps);
+        expect(app.viewDependentTransparency).to.equal(expected);
+        expect(app.toJSON().viewDependentTransparency).to.equal(expected);
+      }
+
+      test({ }, false);
+      test({ transparency: undefined }, false);
+      test({ transparency: 1 }, false);
+      test({ transparency: 0 }, false );
+
+      test({ transparency: 1, viewDependentTransparency: true }, true);
+      test({ transparency: 0, viewDependentTransparency: true }, true);
+
+      test({ viewDependentTransparency: true }, false);
+      test({ transparency: undefined, viewDependentTransparency: true }, false);
+    });
+
+    it("from subcategory override", () => {
+      function test(ovrProps: SubCategoryAppearance.Props, expectViewDependent: boolean): void {
+        const expected = expectViewDependent ? true : undefined;
+        const ovr = SubCategoryOverride.fromJSON(ovrProps);
+        const app = FeatureAppearance.fromSubCategoryOverride(ovr);
+        expect(app.viewDependentTransparency).to.equal(expected);
+        expect(app.toJSON().viewDependentTransparency).to.equal(expected);
+      }
+
+      test({ transp: 0.5 }, true);
+      test({ transp: 0 }, true);
+      test({ transp: undefined }, false);
+      test({ }, false);
+      test({ color: ColorDef.blue.toJSON() }, false);
+    });
+  });
 });
 
 describe("FeatureOverrides", () => {
@@ -132,16 +166,16 @@ describe("FeatureOverrides", () => {
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureAppearanceProps;
     const modelApp1 = FeatureAppearance.fromJSON(props1);
     const modelApp2 = FeatureAppearance.fromJSON(props2);
-    overrides.overrideModel(id, modelApp1);
+    overrides.overrideModel(id, modelApp1); // eslint-disable-line deprecation/deprecation
     assert.exists(overrides.getModelOverridesById(id));
 
-    overrides.overrideModel(id, modelApp2);
+    overrides.overrideModel(id, modelApp2); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp2), "overrideModel will override prexisting model associated with given id if replaceExisting is not set to false explicitly");
 
-    overrides.overrideModel(id, modelApp1, false);
+    overrides.overrideModel(id, modelApp1, false); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp2), "overrides will not replace model if replace existing is set to false");
 
-    overrides.overrideModel(id, modelApp1);
+    overrides.overrideModel(id, modelApp1); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp1), "overrides will replace model if replace existing isn't set to false (test 2)");
   });
 
@@ -156,17 +190,17 @@ describe("FeatureOverrides", () => {
     // Even though the subcategory is invisible, it's possible a model will override it to be visible.
     // So overrideSubCategory() will record the appearance override anyway.
     expect(overrides.getSubCategoryOverridesById(id)).to.be.undefined;
-    overrides.overrideSubCategory(id, subCatApp1);
+    overrides.overrideSubCategory(id, subCatApp1); // eslint-disable-line deprecation/deprecation
     expect(overrides.getSubCategoryOverridesById(id)).not.to.be.undefined;
 
     overrides.setVisibleSubCategory(id);
-    overrides.overrideSubCategory(id, subCatApp2);
+    overrides.overrideSubCategory(id, subCatApp2); // eslint-disable-line deprecation/deprecation
     assert.exists(overrides.getSubCategoryOverridesById(id), "if subCategoryId is in subCategoryVisible set, then subCategoryApp set");
 
-    overrides.overrideSubCategory(id, subCatApp1, false);
+    overrides.overrideSubCategory(id, subCatApp1, false); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getSubCategoryOverridesById(id)!.equals(subCatApp2), "overrides will not replace subCatApp if replace existing is set to false");
 
-    overrides.overrideSubCategory(id, subCatApp1);
+    overrides.overrideSubCategory(id, subCatApp1); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getSubCategoryOverridesById(id)!.equals(subCatApp1), "overrides will replace subCatApp if replace existing isn't set to false");
   });
 
@@ -179,17 +213,17 @@ describe("FeatureOverrides", () => {
     const elemApp2 = FeatureAppearance.fromJSON(props2);
 
     overrides.setNeverDrawn(id);
-    overrides.overrideElement(id, elemApp1);
+    overrides.overrideElement(id, elemApp1); // eslint-disable-line deprecation/deprecation
     assert.isUndefined(overrides.getElementOverridesById(id), "if elementId is in never drawn set, then nothing is set");
 
     overrides = new Overrides();
-    overrides.overrideElement(id, elemApp1);
+    overrides.overrideElement(id, elemApp1); // eslint-disable-line deprecation/deprecation
     assert.exists(overrides.getElementOverridesById(id), "if elementId is not in never drawn set, then elemApp is set");
 
-    overrides.overrideElement(id, elemApp2, false);
+    overrides.overrideElement(id, elemApp2, false); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getElementOverridesById(id)!.equals(elemApp1), "overrides will not replace elemApp if replace existing is set to false");
 
-    overrides.overrideElement(id, elemApp2);
+    overrides.overrideElement(id, elemApp2); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getElementOverridesById(id)!.equals(elemApp2), "overrides will replace elemApp if replace existing isn't set to false");
   });
 
@@ -221,12 +255,12 @@ describe("FeatureOverrides", () => {
     const defApp = FeatureAppearance.fromRgb(ColorDef.red);
     ovrs.setDefaultOverrides(defApp);
 
-    ovrs.overrideElement(el1, app);
-    ovrs.overrideModel(mod1, app);
-    ovrs.overrideSubCategory(cat1, app);
-    ovrs.overrideElement(el2, noApp);
-    ovrs.overrideModel(mod2, noApp);
-    ovrs.overrideSubCategory(cat2, noApp);
+    ovrs.overrideElement(el1, app); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideModel(mod1, app); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideSubCategory(cat1, app); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideElement(el2, noApp); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideModel(mod2, noApp); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideSubCategory(cat2, noApp); // eslint-disable-line deprecation/deprecation
 
     const expectAppearance = (elem: Id64String, model: Id64String, subcat: Id64String, expectedAppearance: FeatureAppearance) => {
       const feature = new Feature(elem, subcat, GeometryClass.Primary);
@@ -307,6 +341,129 @@ describe("FeatureOverrides", () => {
     expectAppearance(1, blue);
     expectAppearance(2, FeatureAppearance.defaults);
     expectAppearance(0, green);
+  });
+
+  it("animation overrides extend element overrides", () => {
+    const ovrs = new Overrides();
+
+    const expectAppearance = (elementId: string, nodeId: number, expected: FeatureAppearance) => {
+      const actual = ovrs.getFeatureAppearance(new Feature(elementId), "0x1", undefined, nodeId);
+      expect(actual).not.to.be.undefined;
+      expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
+    };
+
+    const merge = (src: FeatureAppearance, plus: FeatureAppearanceProps): FeatureAppearance => {
+      return FeatureAppearance.fromJSON({
+        ...src.toJSON(),
+        ...plus,
+      });
+    };
+
+    const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+    const red = FeatureAppearance.fromRgb(ColorDef.red);
+    const halfTransp = FeatureAppearance.fromTransparency(0.5);
+    const halfTranspWeight5 = merge(halfTransp, { weight: 5 });
+
+    ovrs.overrideAnimationNode(1, red);
+    ovrs.overrideAnimationNode(2, halfTransp);
+    ovrs.overrideAnimationNode(3, halfTranspWeight5);
+
+    expectAppearance("0xa", 1, red);
+    expectAppearance("0xa", 2, halfTransp);
+    expectAppearance("0xa", 3, halfTranspWeight5);
+
+    ovrs.overrideElement("0xc", FeatureAppearance.defaults); // eslint-disable-line deprecation/deprecation
+    expectAppearance("0xc", 1, red);
+    expectAppearance("0xc", 2, halfTransp);
+    expectAppearance("0xc", 3, halfTranspWeight5);
+
+    ovrs.overrideElement("0xa", blue); // eslint-disable-line deprecation/deprecation
+    expectAppearance("0xa", 1, blue);
+    expectAppearance("0xa", 2, merge(blue, { transparency: 0.5 }));
+    expectAppearance("0xa", 3, merge(blue, { transparency: 0.5, weight: 5 }));
+
+    const greenWeight3 = FeatureAppearance.fromJSON({ rgb: { r: 0, g: 255, b: 0 }, weight: 3 });
+    ovrs.overrideElement("0xb", greenWeight3); // eslint-disable-line deprecation/deprecation
+    expectAppearance("0xb", 1, greenWeight3);
+    expectAppearance("0xb", 2, merge(greenWeight3, { transparency: 0.5 }));
+    expectAppearance("0xb", 3, merge(greenWeight3, { transparency: 0.5 }));
+  });
+
+  it("ignores animation color/transparency overrides if specified", () => {
+    const ovrs = new Overrides();
+
+    const red = FeatureAppearance.fromRgb(ColorDef.red);
+    const green = FeatureAppearance.fromRgb(ColorDef.green);
+    const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+    ovrs.overrideAnimationNode(1, red);
+    ovrs.overrideAnimationNode(5, green);
+    ovrs.overrideAnimationNode(10, blue);
+
+    ovrs.ignoreAnimationOverrides((args) => args.elementId.lower > 5);
+    ovrs.ignoreAnimationOverrides((args) => args.animationNodeId < 5);
+
+    const expectAppearance = (elemId: string, nodeId: number, expected: FeatureAppearance) => {
+      const actual = ovrs.getFeatureAppearance(new Feature(elemId), "0x1", undefined, nodeId);
+      expect(actual).not.to.be.undefined;
+      expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
+    };
+
+    expectAppearance("0x1", 10, blue);
+    expectAppearance("0x1", 5, green);
+
+    expectAppearance("0x10", 10, FeatureAppearance.defaults);
+    expectAppearance("0x1", 1, FeatureAppearance.defaults);
+    expectAppearance("0x6", 5, FeatureAppearance.defaults);
+
+    const black = FeatureAppearance.fromRgb(ColorDef.black);
+    ovrs.setDefaultOverrides(black);
+    expectAppearance("0x10", 10, black);
+    expectAppearance("0x1", 1, black);
+    expectAppearance("0x6", 5, black);
+  });
+
+  it("applies conflict strategy", () => {
+    const elementId = "0x1";
+    const ovrs = new Overrides();
+
+    const test = (appearance: FeatureAppearance, onConflict: "subsume" | "extend" | "replace" | "skip" = "extend", expected: FeatureAppearance | undefined) => {
+      ovrs.override({ elementId, appearance, onConflict });
+      const actual = ovrs.getElementOverridesById(elementId);
+      if (!expected) {
+        expect(actual).to.be.undefined;
+      } else {
+        expect(actual).not.to.be.undefined;
+        expect(actual!.equals(expected)).to.be.true;
+      }
+    };
+
+    const green = FeatureAppearance.fromRgb(ColorDef.green);
+    for (const onConflict of ["extend", "replace", "skip", undefined]) {
+      ovrs.elementOverrides.clear();
+      expect(ovrs.getElementOverridesById(elementId)).to.be.undefined;
+      test(green, onConflict as "subsume" | "extend" | "replace" | "skip" | undefined, green);
+    }
+
+    test(FeatureAppearance.fromTransparency(0.5), "skip", green);
+    test(FeatureAppearance.fromRgb(ColorDef.blue), "extend", green);
+
+    const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+    test(blue, "replace", blue);
+    test(FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f)), "skip", blue);
+    test(FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f)), "extend", FeatureAppearance.fromRgba(ColorDef.blue.withTransparency(0x7f)));
+
+    test(FeatureAppearance.fromTransparency(0.25), "subsume", FeatureAppearance.fromRgba(ColorDef.blue.withTransparency(0x3f)));
+    test(FeatureAppearance.fromRgb(ColorDef.red), "subsume", FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x3f)));
+  });
+
+  it("subsumes by default", () => {
+    const elementId = "0x1";
+    const ovrs = new Overrides();
+    ovrs.override({ elementId, appearance: FeatureAppearance.fromRgba(ColorDef.blue.withTransparency(0x7f)) });
+    ovrs.override({ elementId, appearance: FeatureAppearance.fromRgb(ColorDef.red) });
+
+    const app = ovrs.getElementOverridesById(elementId)!;
+    expect(app.equals(FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f)))).to.be.true;
   });
 });
 

@@ -14,6 +14,7 @@ import { Viewport } from "./Viewport";
 
 /** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
  * @public
+ * @extensions
  */
 export class EmphasizeElements implements FeatureOverrideProvider {
   private _defaultAppearance?: FeatureAppearance;
@@ -32,17 +33,35 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const emphasizedElements = this.getEmphasizedElements(vp);
     if (undefined !== emphasizedElements) {
       overrides.setDefaultOverrides(this._defaultAppearance!);
-      const app = this.wantEmphasis ? this._emphasizedAppearance : FeatureAppearance.defaults;
-      emphasizedElements.forEach((id) => { overrides.overrideElement(id, app); });
+      const appearance = this.wantEmphasis ? this._emphasizedAppearance : FeatureAppearance.defaults;
+
+      // Avoid creating a new object per-element inside the loop
+      const args = { elementId: "", appearance };
+      for (const elementId of emphasizedElements) {
+        args.elementId = elementId;
+        overrides.override(args);
+      }
+
+      // Do not apply animation overrides to de-emphasized elements.
+      overrides.ignoreAnimationOverrides((args) => {
+        const id = Id64.fromUint32Pair(args.elementId.lower, args.elementId.upper);
+        return !emphasizedElements.has(id);
+      });
     }
 
     const overriddenElements = this.getOverriddenElements();
     if (undefined !== overriddenElements) {
       if (undefined !== this._defaultAppearance)
         overrides.setDefaultOverrides(this._defaultAppearance);
+
+      // Avoid creating a new object per-element inside the loop
+      const args = { elementId: "", appearance: FeatureAppearance.defaults };
       for (const [key, ids] of overriddenElements) {
-        const ovrApp = this.createAppearanceFromKey(key);
-        ids.forEach((id) => { overrides.overrideElement(id, ovrApp); });
+        args.appearance = this.createAppearanceFromKey(key);
+        for (const elementId of ids) {
+          args.elementId = elementId;
+          overrides.override(args);
+        }
       }
     }
 

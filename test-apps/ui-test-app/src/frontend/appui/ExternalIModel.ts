@@ -5,7 +5,8 @@
 
 import { Id64String, Logger } from "@itwin/core-bentley";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
-import { IModelHubFrontend } from "@bentley/imodelhub-client";
+import { IModelsClient } from "@itwin/imodels-client-management";
+import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "../";
 
@@ -66,14 +67,17 @@ export class ExternalIModel {
     if (!args.iModelId && !args.iModelName) {
       throw new Error("An iModel name or id is required to construct an External iModel");
     } else if (!args.iModelId && args.iModelName) {
-      const hubClient = new IModelHubFrontend();
-      const iModelId = await hubClient.queryIModelByName({
-        iModelName: args.iModelName,
-        iTwinId: createArgs.iTwinId!,
-        accessToken,
-      });
-      // note: iModelName is set in createArgs
-      createArgs.iModelId = iModelId;
+      const hubClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+      for await (const iModel of hubClient.iModels.getMinimalList({
+        urlParams: {
+          name: args.iModelName,
+          projectId: createArgs.iTwinId!,
+        },
+        authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
+      })) {
+        createArgs.iModelId = iModel.id;
+        break;
+      }
     }
 
     return new ExternalIModel(createArgs);

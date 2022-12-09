@@ -1,6 +1,6 @@
 # @itwin/eslint-plugin
 
-ESLint plugin with default configuration and custom rules for iModel.js projects. For best results, use with Typescript 4.1+
+ESLint plugin with default configuration and custom rules for iTwin.js projects. For best results, use with Typescript 4.1+
 
 ## Installation
 

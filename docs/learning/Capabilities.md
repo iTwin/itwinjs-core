@@ -21,7 +21,7 @@ Not all capabilities are at the same maturity level, the key below explains the 
 
 There are two forms of iModels:
 
-1. ✔️️ Briefcase iModels synchronize with iModelHub and have a ChangeSet Timeline
+1. ✔️️ Briefcase iModels synchronize with iModelHub and have a Changeset Timeline
 2. ✔️️ [Snapshot iModels](./backend/AccessingIModels.md) are static, read-only (conceptually similar to PDF), are not synchronized, and have no timeline
 
 ### iModelHub
@@ -29,19 +29,19 @@ There are two forms of iModels:
 [iModelHub](./iModelHub/index) is the control center for Briefcase iModels and manages:
 
 - ✔️️ Authenticating access to iModels
-- ✔️️ Synchronization with the ChangeSet [Timeline](./iModelHub/index.md#the-timeline-of-changes-to-an-iModel)
+- ✔️️ Synchronization with the Changeset [Timeline](./iModelHub/index.md#the-timeline-of-changes-to-an-iModel)
 - ✔️️ [Named Versions](./iModelHub/versions.md)
 
 ### BIS Classes
 
 The contents of an iModel are defined by [BIS](../bis/index.md) classes.
 
-- ✔️️ [Elements](../bis/intro/element-fundamentals.md)
-- ✔️️ [ElementAspects](../bis/intro/elementaspect-fundamentals.md)
-- ✔️️ [Models](../bis/intro/model-fundamentals.md)
-- ✔️️ [Relationships](../bis/intro/relationship-fundamentals.md)
-- ✔️️ Subjects and Partitions which form the [information hierarchy](../bis/intro/information-hierarchy.md)
-- ✔️️ [Categories](../bis/intro/categories.md)
+- ✔️️ [Elements](../bis/guide/fundamentals/element-fundamentals.md)
+- ✔️️ [ElementAspects](../bis/guide/fundamentals/elementaspect-fundamentals.md)
+- ✔️️ [Models](../bis/guide/fundamentals/model-fundamentals.md)
+- ✔️️ [Relationships](../bis/guide/fundamentals/relationship-fundamentals.md)
+- ✔️️ Subjects and Partitions which form the [information hierarchy](../bis/guide/fundamentals/information-hierarchy.md)
+- ✔️️ [Categories](../bis/guide/fundamentals/categories.md)
 
 ### GeoLocation
 
@@ -188,36 +188,34 @@ Create iModels from data from external BIM/CAD/GIS/etc. applications.
 
 [iModel Connectors](.\imodel-connectors.md) read data from external formats and *connect* it into an iModel. They create ChangeSets that are sent to iModelHub.
 
-## Application and User Settings
+## User Preferences
 
-Use the [Settings API](./frontend/settings.md) to save information outside of an iModel.
+Use the [User Preference API](./frontend/preferences.md) to save information outside of an iModel.
 
-- ✔️️ User
 - ✔️️ Application
-- ✔️️ Project
+- ✔️️ iTwin
 - ✔️️ iModel
 
 Examples:
 
 - ✔️️ Saved Views
 - ✔️️ Section Definitions
-- ✔️️ User Preferences and Persistent State
 
 ## User Interface
 
-The [9-Zone UI](./learning/ui/ninezone/index.md) UX pattern organizes the screen into 9 purpose-specific zones for ease of use and consistency.
+The [AppUI](./learning/ui/appui/index) UX pattern provides specific zones for tools and tool settings, and allow panels around the main content area to be populated with widgets that interact with an iModel.
 
-The iTwin.js UI layer is based in React, so its UI controls can be added to existing web apps.
+The iTwin.js UI layer is based in React, so its UI controls can be added to existing iModelApp-based applications that can run in a browser or on a desktop that runs Electron.
 
 ### UI Controls
 
-Controls built to implement a UI using the 9-zone pattern.
+Controls built to participate in the AppUI pattern.
 
-- ✔️ [Widgets](./learning/ui/framework/Widgets.md)
+- ✔️ [Widgets](./learning/ui/appui-react/Widgets.md)
 - ✔️ Toolbars
-- ✔️ [Backstage](./learning/ui/framework/Backstage.md)
-- ✔️ [Frontstages](./learning/ui/framework/Frontstages.md)
-- ✔️ [Stage Panels](./learning/ui/framework/StagePanels.md)
+- ✔️ [Backstage](./learning/ui/appui-react/Backstage.md)
+- ✔️ [Frontstages](./learning/ui/appui-react/Frontstages.md)
+- ✔️ [Stage Panels](./learning/ui/appui-react/StagePanels.md)
 - ✔️ View Layout system to configure the working area.
 
 ### Data-driven controls
@@ -344,11 +342,11 @@ Desktop and Mobile device Web browsers.
 
 ## Further Resources
 
-- [GitHub](https://github.com/iTwin/itwinjs-core): the imodeljs repository along with samples.
+- [GitHub](https://github.com/iTwin/itwinjs-core): the iTwin.js Core repository.
 - [Documentation](https://www.itwinjs.org/learning/):
   - Learning articles: explaining the iTwin.js library structure and architecture.
   - BIS docs: for understanding BIS schemas and the ECSql data query language.
-  - API reference: can be used in conjunction with the imodeljs repository above to find code samples for API calls. Function/Class names can be searched within the repository to find relevant samples.
+  - API reference: can be used in conjunction with the iTwin.js Core repository above to find code samples for API calls. Function/Class names can be searched within the repository to find relevant samples.
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/imodeljs): don't forget to add the **imodeljs** tag to your question. This will make it easier for us to respond.
 - [YouTube Channel](https://www.youtube.com/channel/UCs4HxiWI4o4bzayG5QnxaIA): Informational videos for guidance and training.
 - Sample Apps: can be used as a starting point for your app.

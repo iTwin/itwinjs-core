@@ -10,6 +10,7 @@
  * The format determines how many bytes are allocated for each pixel in the buffer and the semantics of each byte.
  * @see [[ImageBuffer.getNumBytesPerPixel]]
  * @public
+ * @extensions
  */
 export enum ImageBufferFormat {
   /** RGBA format - 4 bytes per pixel. */
@@ -84,7 +85,9 @@ export class ImageBuffer {
  * @note Floating point inputs are truncated.
  * @public
  */
-export function isPowerOfTwo(num: number): boolean { return 0 === (num & (num - 1)); }
+export function isPowerOfTwo(num: number): boolean {
+  return 0 === (num & (num - 1));
+}
 
 /** Returns the first power-of-two value greater than or equal to the input.
  * @note Floating point inputs are truncated.
@@ -100,6 +103,7 @@ export function nextHighestPowerOfTwo(num: number): number {
 
 /** The format of an ImageSource.
  * @public
+ * @extensions
  */
 export enum ImageSourceFormat {
   /** Image data is stored with JPEG compression. */

@@ -46,7 +46,7 @@ export class Uniform {
   public compile(prog: ShaderProgram): boolean {
     assert(!this.isValid);
     if (undefined !== prog.glProgram) {
-      this._handle = UniformHandle.create(prog.glProgram, this._name);
+      this._handle = UniformHandle.create(prog, this._name);
     }
 
     return this.isValid;
@@ -130,15 +130,17 @@ export class ShaderProgram implements WebGLDisposable {
   private readonly _graphicUniforms = new Array<GraphicUniform>();
   private readonly _attrMap?: Map<string, AttributeDetails>;
   // for debugging purposes...
-  private _description: string;
+  public readonly description: string;
   private _fragDescription: string;
   private _vertGNdx: number = -1;
   private _fragGNdx: number = -1;
   private _vertHNdx: number = -1;
   private _fragHNdx: number = -1;
+  public readonly outputsToPick;
 
   public constructor(gl: WebGLContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, fragDescription: string) {
-    this._description = description;
+    this.description = description;
+    this.outputsToPick = description.includes("Overrides") || description.includes("Pick");
     this._fragDescription = fragDescription;
     this.vertSource = vertSource;
     this.fragSource = fragSource;
@@ -175,13 +177,13 @@ export class ShaderProgram implements WebGLDisposable {
     gl.compileShader(shader);
     const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;
     if (!succeeded) {
-      const compileLog = `${GL.ShaderType.Vertex === type ? "Vertex" : "Fragment"} shader failed to compile. Errors: ${gl.getShaderInfoLog(shader)} Program description: ${this._description}`;
+      const compileLog = `${GL.ShaderType.Vertex === type ? "Vertex" : "Fragment"} shader failed to compile. Errors: ${gl.getShaderInfoLog(shader)} Program description: ${this.description}`;
       throw new Error(compileLog);
     }
 
     if (System.instance.options.debugShaders) {
       const isVS = GL.ShaderType.Vertex === type;
-      const desc = isVS ? this._description : this._fragDescription;
+      const desc = isVS ? this.description : this._fragDescription;
       this.saveShaderCode(isVS, desc, src, shader);
     }
 
@@ -212,7 +214,7 @@ export class ShaderProgram implements WebGLDisposable {
     const succeeded = gl.getProgramParameter(this._glProgram, GL.ProgramParameter.LinkStatus) as boolean;
     if (!succeeded) {
       const validateLog = gl.getProgramInfoLog(this._glProgram);
-      const msg = `Shader program failed to link. Link errors: ${linkLog} Validation errors: ${validateLog} Program description: ${this._description}`;
+      const msg = `Shader program failed to link. Link errors: ${linkLog} Validation errors: ${validateLog} Program description: ${this.description}`;
       throw new Error(msg);
     }
 

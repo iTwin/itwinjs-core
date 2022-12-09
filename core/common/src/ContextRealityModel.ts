@@ -10,6 +10,7 @@ import { assert, BeEvent } from "@itwin/core-bentley";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
+import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
 
 /** JSON representation of the blob properties for an OrbitGt property cloud.
  * @alpha
@@ -23,7 +24,7 @@ export interface OrbitGtBlobProps {
 }
 
 /** Identify the Reality Data service provider
- * @alpha
+ * @beta
  */
 export enum RealityDataProvider {
   /**
@@ -37,7 +38,7 @@ export enum RealityDataProvider {
    * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.OrbitGtBlob property.
    * It was use to support OrbitPointCloud (OPC) from other server than ContextShare
    * You should use other mode when possible
-   * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
+   * @see [[RealityDataSource.createKeyFromOrbitGtBlobProps]] that will try to detect provider from an URL
    */
   OrbitGtBlob = "OrbitGtBlob",
   /**
@@ -53,7 +54,7 @@ export enum RealityDataProvider {
 }
 
 /** Identify the Reality Data storage format
- * @alpha
+ * @beta
  */
 export enum RealityDataFormat {
   /**
@@ -66,10 +67,27 @@ export enum RealityDataFormat {
   OPC = "OPC",
 }
 
+/** Utility function for RealityDataFormat
+ * @beta
+ */
+export namespace RealityDataFormat {
+  /**
+   * Try to extract the RealityDataFormat from the url
+   * @param tilesetUrl the reality data attachment url
+   * @returns the extracted RealityDataFormat or ThreeDTile by default if not found
+   */
+  export function fromUrl(tilesetUrl: string): RealityDataFormat {
+    let format = RealityDataFormat.ThreeDTile;
+    if (tilesetUrl.includes(".opc"))
+      format = RealityDataFormat.OPC;
+    return format;
+  }
+}
+
 /**
  * Key used by RealityDataSource to identify provider and reality data format
  * This key identify one and only one reality data source on the provider
- * @alpha
+ * @beta
  */
 export interface RealityDataSourceKey {
   /**
@@ -87,10 +105,29 @@ export interface RealityDataSourceKey {
   /** The context id that was used when reality data was attached - if none provided, current session iTwinId will be used */
   iTwinId?: string;
 }
+/**
+ * RealityDataSourceKey utility functions
+ * @beta */
+export namespace RealityDataSourceKey {
+  /** Utility function to convert a RealityDataSourceKey into its string representation */
+  export function convertToString(rdSourceKey: RealityDataSourceKey): string {
+    return `${rdSourceKey.provider}:${rdSourceKey.format}:${rdSourceKey.id}:${rdSourceKey?.iTwinId}`;
+  }
+  /** Utility function to compare two RealityDataSourceKey, we consider it equal even if itwinId is different */
+  export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean {
+    if ((key1.provider === RealityDataProvider.CesiumIonAsset) && key2.provider === RealityDataProvider.CesiumIonAsset)
+      return true; // ignore other properties for CesiumIonAsset, id is hidden
+    if ((key1.provider === key2.provider) && (key1.format === key2.format) && (key1.id === key2.id)) {
+      // && (key1?.iTwinId === key2?.iTwinId)) -> ignore iTwinId, consider it is the same reality data
+      return true;
+    }
+    return false;
+  }
+}
 
 /** JSON representation of the reality data reference attachment properties.
- * @alpha
- */
+ * @beta
+*/
 export interface RealityDataSourceProps {
   /** The source key that identify a reality data for the provider. */
   sourceKey: RealityDataSourceKey;
@@ -98,32 +135,35 @@ export interface RealityDataSourceProps {
 
 /** JSON representation of a [[ContextRealityModel]].
  * @public
+ * @extensions
  */
 export interface ContextRealityModelProps {
-  /**
-   * The reality data source key identify the reality data provider and storage format.
-   * It takes precedence over tilesetUrl and orbitGtBlob when present and can be use to actually replace these properties.
-   * @alpha
+  /** See [[ContextRealityModel.rdSourceKey]].
+   * @beta
    */
   rdSourceKey?: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
   tilesetUrl: string;
-  /** @see [[ContextRealityModel.orbitGtBlob]].
+  /** See [[ContextRealityModel.orbitGtBlob]].
    * @alpha
    */
   orbitGtBlob?: OrbitGtBlobProps;
-  /** @see [[ContextRealityModel.realityDataId]]. */
+  /** See [[ContextRealityModel.realityDataId]]. */
   realityDataId?: string;
   /** An optional, user-friendly name for the reality model suitable for display in a user interface. */
   name?: string;
   /** An optional, user-friendly description of the reality model suitable for display in a user interface. */
   description?: string;
-  /** @see [[ContextRealityModel.classifiers]]. */
+  /** See [[ContextRealityModel.classifiers]]. */
   classifiers?: SpatialClassifierProps[];
-  /** @see [[ContextRealityModel.planarClipMask]]. */
+  /** See [[ContextRealityModel.planarClipMask]]. */
   planarClipMask?: PlanarClipMaskProps;
-  /** @see [[ContextRealityModel.appearanceOverrides]]. */
+  /** See [[ContextRealityModel.appearanceOverrides]]. */
   appearanceOverrides?: FeatureAppearanceProps;
+  /** See [[ContextRealityModel.displaySettings]].
+   * @beta
+   */
+  displaySettings?: RealityModelDisplayProps;
 }
 
 /** @public */
@@ -155,6 +195,12 @@ export namespace ContextRealityModelProps {
         output.appearanceOverrides.rgb = { ...input.appearanceOverrides.rgb };
     }
 
+    if (input.displaySettings) {
+      output.displaySettings = { ...input.displaySettings };
+      if (input.displaySettings.pointCloud)
+        output.displaySettings.pointCloud = { ...output.displaySettings.pointCloud };
+    }
+
     if (input.planarClipMask)
       output.planarClipMask = { ...input.planarClipMask };
 
@@ -172,12 +218,14 @@ export namespace ContextRealityModelProps {
  * @public
  */
 export class ContextRealityModel {
+  /** @internal */
   protected readonly _props: ContextRealityModelProps;
   /**
    * The reality data source key identify the reality data provider and storage format.
-   * @alpha
+   * It takes precedence over tilesetUrl and orbitGtBlob when present and can be use to actually replace these properties.
+   * @beta
    */
-  public readonly  rdSourceKey?: RealityDataSourceKey;
+  public readonly rdSourceKey?: RealityDataSourceKey;
   /** A name suitable for display in a user interface. By default, an empty string. */
   public readonly name: string;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -191,11 +239,17 @@ export class ContextRealityModel {
   /** @alpha */
   public readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
   protected _appearanceOverrides?: FeatureAppearance;
+  /** @beta */
+  protected _displaySettings: RealityModelDisplaySettings;
   protected _planarClipMask?: PlanarClipMaskSettings;
   /** Event dispatched just before assignment to [[planarClipMaskSettings]]. */
   public readonly onPlanarClipMaskChanged = new BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>();
   /** Event dispatched just before assignment to [[appearanceOverrides]]. */
   public readonly onAppearanceOverridesChanged = new BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>();
+  /** Event dispatched just before assignment to [[displaySettings]].
+   * @beta
+   */
+  public readonly onDisplaySettingsChanged = new BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>();
 
   /** Construct a new context reality model.
    * @param props JSON representation of the reality model, which will be kept in sync with changes made via the ContextRealityModel's methods.
@@ -209,6 +263,8 @@ export class ContextRealityModel {
     this.realityDataId = props.realityDataId;
     this.description = props.description ?? "";
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
+    this._displaySettings = RealityModelDisplaySettings.fromJSON(props.displaySettings);
+
     if (props.planarClipMask && props.planarClipMask.mode !== PlanarClipMaskMode.None)
       this._planarClipMask = PlanarClipMaskSettings.fromJSON(props.planarClipMask);
 
@@ -244,6 +300,18 @@ export class ContextRealityModel {
     this._appearanceOverrides = overrides;
   }
 
+  /** Settings controlling how this reality model is displayed in a [Viewport]($frontend).
+   * @beta
+   */
+  public get displaySettings(): RealityModelDisplaySettings {
+    return this._displaySettings;
+  }
+  public set displaySettings(settings: RealityModelDisplaySettings) {
+    this.onDisplaySettingsChanged.raiseEvent(settings, this);
+    this._props.displaySettings = settings.toJSON();
+    this._displaySettings = settings;
+  }
+
   /** Convert this model to its JSON representation. */
   public toJSON(): ContextRealityModelProps {
     return ContextRealityModelProps.clone(this._props);
@@ -259,6 +327,7 @@ export class ContextRealityModel {
  * @see [[ContextRealityModels]].
  * @see [[DisplayStyleSettingsProps.contextRealityModels]].
  * @public
+ * @extensions
  */
 export interface ContextRealityModelsContainer {
   /** The list of reality models. */
@@ -279,6 +348,10 @@ export class ContextRealityModels {
   public readonly onPlanarClipMaskChanged = new BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>();
   /** Event dispatched just before [[ContextRealityModel.appearanceOverrides]] is modified for one of the reality models. */
   public readonly onAppearanceOverridesChanged = new BeEvent<(model: ContextRealityModel, newOverrides: FeatureAppearance | undefined) => void>();
+  /** Event dispatched just before [[ContextRealityModel.displaySettings]] is modified for one of the reality models.
+   * @beta
+   */
+  public readonly onDisplaySettingsChanged = new BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>();
   /** Event dispatched when a model is [[add]]ed, [[delete]]d, [[replace]]d, or [[update]]d. */
   public readonly onChanged = new BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>();
 
@@ -409,6 +482,8 @@ export class ContextRealityModels {
     model.onPlanarClipMaskChanged.addListener(this.handlePlanarClipMaskChanged, this);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onAppearanceOverridesChanged.addListener(this.handleAppearanceOverridesChanged, this);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    model.onDisplaySettingsChanged.addListener(this.handleDisplaySettingsChanged, this);
     return model;
   }
 
@@ -417,6 +492,8 @@ export class ContextRealityModels {
     model.onPlanarClipMaskChanged.removeListener(this.handlePlanarClipMaskChanged, this);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onAppearanceOverridesChanged.removeListener(this.handleAppearanceOverridesChanged, this);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    model.onDisplaySettingsChanged.removeListener(this.handleDisplaySettingsChanged, this);
   }
 
   private handlePlanarClipMaskChanged(mask: PlanarClipMaskSettings | undefined, model: ContextRealityModel): void {
@@ -425,5 +502,9 @@ export class ContextRealityModels {
 
   private handleAppearanceOverridesChanged(app: FeatureAppearance | undefined, model: ContextRealityModel): void {
     this.onAppearanceOverridesChanged.raiseEvent(model, app);
+  }
+
+  private handleDisplaySettingsChanged(settings: RealityModelDisplaySettings, model: ContextRealityModel): void {
+    this.onDisplaySettingsChanged.raiseEvent(model, settings);
   }
 }

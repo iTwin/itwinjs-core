@@ -1,36 +1,63 @@
 sep=;
 Release Tag;API Item
 alpha;ArcMethod
+alpha;basicManipulationIpc: PickAsyncMethods
 alpha;BCurveMethod
+alpha;class BlendEdgesTool 
 alpha;class BooleanOperationTool 
+alpha;BreakCurveTool 
+alpha;ChamferEdgesTool 
 alpha;CircleMethod
 alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
 alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
+alpha;CopyElementsTool 
 alpha;CreateArcTool 
 alpha;CreateBCurveTool 
+alpha;CreateBoxTool 
 alpha;CreateCircleTool 
+alpha;CreateConePhase
+alpha;CreateConeTool 
 alpha;CreateCurvePhase
+alpha;CreateCylinderPhase
+alpha;CreateCylinderTool 
 alpha;class CreateElementTool 
+alpha;class CreateElementWithDynamicsTool 
 alpha;CreateEllipseTool 
 alpha;CreateLineStringTool 
 alpha;class CreateOrContinuePathTool 
 alpha;CreateRectangleTool 
+alpha;CreateSphereTool 
+alpha;CreateTorusPhase
+alpha;CreateTorusTool 
+alpha;CurveData
 alpha;CutSolidElementsTool 
 alpha;DeleteElementsTool 
+alpha;DeleteSubEntitiesTool 
 alpha;DynamicGraphicsProvider
 alpha;EditorOptions
 alpha;EditTools
 alpha;class ElementGeometryCacheTool 
 alpha;ElementGeometryGraphicsProvider
 alpha;EmbossSolidElementsTool 
+alpha;ExtendCurveTool 
+alpha;ExtrudeCurveTool 
+alpha;FaceLocationData
 alpha;HollowFacesTool 
 alpha;ImprintSolidElementsTool 
 alpha;ImprintSolidMethod
 alpha;IntersectSolidElementsTool 
+alpha;isSameSubEntity(a: SubEntityProps, b: SubEntityProps): boolean
+alpha;class LocateFaceOrProfileTool 
 alpha;class LocateSubEntityTool 
 alpha;LoftProfilesTool 
+alpha;makeEditToolIpc
+alpha;class ModifyCurveTool 
+alpha;class ModifyElementTool 
+alpha;class ModifyElementWithDynamicsTool 
 alpha;MoveElementsTool 
+alpha;OffsetCurveTool 
 alpha;OffsetFacesTool 
+alpha;ProfileLocationData
 beta;ProjectExtentsClipDecoration 
 beta;ProjectGeolocationMoveTool 
 beta;ProjectGeolocationNorthTool 
@@ -41,13 +68,22 @@ beta;ProjectLocationHideTool
 beta;ProjectLocationSaveTool 
 beta;ProjectLocationShowTool 
 alpha;RedoTool 
+alpha;RegionBooleanMode
+alpha;RegionBooleanTool 
+alpha;RevolveCurveTool 
 alpha;RotateAbout
 alpha;RotateElementsTool 
 alpha;RotateMethod
+alpha;RoundEdgesTool 
 alpha;SewSheetElementsTool 
+alpha;solidModelingIpc: PickAsyncMethods
+alpha;class SolidPrimitiveTool 
+alpha;SpinFacesTool 
 alpha;SubEntityData
 alpha;SubtractSolidElementsTool 
 alpha;SweepAlongPathTool 
+alpha;SweepFacesTool 
+alpha;ThickenSheetElementsTool 
 alpha;class TransformElementsTool 
 alpha;TransformGraphicsData
 alpha;TransformGraphicsProvider

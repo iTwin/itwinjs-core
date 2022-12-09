@@ -20,6 +20,7 @@ import { createOrbitGtTileTreeReference, createRealityTileTreeReference, Reality
  * @see [[DisplayStyleState.contextRealityModelStates]].
  * @see [[DisplayStyleState.attachRealityModel]].
  * @public
+ * @extensions
  */
 export class ContextRealityModelState extends ContextRealityModel {
   private readonly _treeRef: RealityModelTileTree.Reference;
@@ -48,6 +49,7 @@ export class ContextRealityModelState extends ContextRealityModel {
         name: props.name,
         classifiers: this.classifiers,
         planarClipMask: this.planarClipMaskSettings,
+        getDisplaySettings: () => this.displaySettings,
       }) :
       createOrbitGtTileTreeReference({
         iModel,
@@ -56,6 +58,7 @@ export class ContextRealityModelState extends ContextRealityModel {
         name: props.name,
         classifiers: this.classifiers,
         source: displayStyle,
+        getDisplaySettings: () => this.displaySettings,
       });
 
     this.onPlanarClipMaskChanged.addListener((newSettings) => {

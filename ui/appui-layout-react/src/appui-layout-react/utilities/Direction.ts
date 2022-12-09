@@ -7,6 +7,7 @@
  */
 
 /** Available directions.
+ * @deprecated Use [Direction]($components-react) instead
  * @beta
  */
 export enum Direction {
@@ -17,7 +18,8 @@ export enum Direction {
 }
 
 /** Available orthogonal directions.
- * @alpha
+ * @deprecated Use [OrthogonalDirection]($components-react) instead
+ * @internal
  */
 export enum OrthogonalDirection {
   Vertical,

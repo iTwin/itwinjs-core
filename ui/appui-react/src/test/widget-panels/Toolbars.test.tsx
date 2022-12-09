@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
@@ -18,8 +19,8 @@ describe("WidgetPanelsToolbars", () => {
     const frontstageDef = new FrontstageDef();
     const topLeft = new ZoneDef();
     const topRight = new ZoneDef();
-    const topLeftWidget = new WidgetDef({});
-    const topRightWidget = new WidgetDef({});
+    const topLeftWidget = new WidgetDef();
+    const topRightWidget = new WidgetDef();
     sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
     sinon.stub(frontstageDef, "topLeft").get(() => topLeft);
     sinon.stub(frontstageDef, "topRight").get(() => topRight);

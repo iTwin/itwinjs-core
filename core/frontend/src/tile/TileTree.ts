@@ -14,11 +14,12 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
-import { Tile, TileDrawArgs, TileLoadPriority, TileTreeParams } from "./internal";
+import { Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreeParams } from "./internal";
 
 /** Describes the current state of a [[TileTree]]. TileTrees are loaded asynchronously and may be unloaded after a period of disuse.
  * @see [[TileTreeOwner]].
  * @public
+ * @extensions
  */
 export enum TileTreeLoadStatus {
   /** No attempt to load the tile tree has yet been made. */
@@ -45,6 +46,7 @@ export enum TileTreeLoadStatus {
  * overridden instead to customize the behavior. For example, [[selectTiles]] should not be overridden; instead, override the[[_selectTiles]] method
  * that it calls.
  * @public
+ * @extensions
  */
 export abstract class TileTree {
   private _isDisposed = false;
@@ -131,7 +133,7 @@ export abstract class TileTree {
   public selectTiles(args: TileDrawArgs): Tile[] {
     this._lastSelected = BeTimePoint.now();
     const tiles = this._selectTiles(args);
-    IModelApp.tileAdmin.addTilesForViewport(args.context.viewport, tiles, args.readyTiles);
+    IModelApp.tileAdmin.addTilesForUser(args.context.viewport, tiles, args.readyTiles);
     args.processSelectedTiles(tiles);
     return tiles;
   }
@@ -184,6 +186,14 @@ export abstract class TileTree {
       dbToEcef = this.iModel.ecefLocation.getTransform();
 
     return dbToEcef.multiplyTransformTransform(this.iModelTransform);
+  }
+
+  /** Populate [[TileGeometryCollector.polyfaces]] with geometry obtained from this tile tree's tiles satisfying the collector's criteria.
+   * The base implementation does nothing.
+   * @see [[TileTreeReference.createGeometryTreeReference]] to attempt to create a TileTree that can collect geometry.
+   * @beta
+   */
+  public collectTileGeometry(_collector: TileGeometryCollector): void {
   }
 }
 

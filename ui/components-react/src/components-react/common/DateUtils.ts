@@ -5,6 +5,16 @@
 /** @packageDocumentation
  * @module Common
  */
+
+/**
+ * Define formatting options for use when component are generating a formatted date string calling `Date.toLocaleTimeString()`.
+ * @public
+ */
+export interface DateFormatOptions {
+  locales?: string | string[] | undefined;
+  options?: Intl.DateTimeFormatOptions | undefined;
+}
+
 /**
  * Adjust a Date object to show time in one time zone as if it is in the local time zone.
  * This is useful when showing sunrise and sunset times for a project location in a different time zone
@@ -40,20 +50,30 @@ export function adjustDateToTimezone(inDateTime: Date, utcOffset: number) {
  * Format a date in a display string, optionally converting to time zone, if specified by timeZoneOffset
  * @param date Date object to format
  * @param timeZoneOffset optional: offset from UTC to use for conversion
+ * @param formatOptions optional: allow locale and format for output Date string. If not defined current locale options are used.
  * @returns formatted date string
  * @public
  */
-export const toDateString = (date: Date, timeZoneOffset?: number) => {
+export const toDateString = (date: Date, timeZoneOffset?: number, formatOptions?: DateFormatOptions) => {
+  if (formatOptions) {
+    return undefined === timeZoneOffset ? date.toLocaleDateString(formatOptions.locales, formatOptions.options) :
+      adjustDateToTimezone(date, timeZoneOffset).toLocaleDateString(formatOptions.locales, formatOptions.options);
+  }
   return undefined === timeZoneOffset ? date.toLocaleDateString() : adjustDateToTimezone(date, timeZoneOffset).toLocaleDateString();
 };
 /**
  * Format the time included in a date, optionally converting to time zone, if specified
  * @param date Date object
  * @param timeZoneOffset optional: offset from UTC to use for conversion
+ * @param formatOptions optional: allow locale and format for output Time string. If not defined current locale options are used.
  * @returns formatted time string
  * @public
  */
-export const toTimeString = (date: Date, timeZoneOffset?: number) => {
+export const toTimeString = (date: Date, timeZoneOffset?: number, formatOptions?: DateFormatOptions) => {
+  if (formatOptions) {
+    return undefined === timeZoneOffset ? date.toLocaleTimeString(formatOptions.locales, formatOptions.options) :
+      adjustDateToTimezone(date, timeZoneOffset).toLocaleTimeString(formatOptions.locales, formatOptions.options);
+  }
   return undefined === timeZoneOffset ? date.toLocaleTimeString() : adjustDateToTimezone(date, timeZoneOffset).toLocaleTimeString();
 };
 

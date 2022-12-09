@@ -13,9 +13,9 @@ import "./layout-variables.scss";
 import "./classes.scss";
 
 import { Logger } from "@itwin/core-bentley";
-import { Localization } from "@itwin/core-common";
+import type { Localization } from "@itwin/core-common";
 import { getClassName, UiError } from "@itwin/appui-abstract";
-
+import { IconWebComponent } from "./utils/IconWebComponent";
 // cSpell:ignore colorthemes colorvariables
 
 /**
@@ -38,6 +38,9 @@ export class UiCore {
 
     UiCore._localization = localization;
     await UiCore._localization.registerNamespace(UiCore.localizationNamespace);
+    if (window.customElements.get("svg-loader") === undefined)
+      window.customElements.define("svg-loader", IconWebComponent);
+
     UiCore._initialized = true;
   }
 
@@ -69,7 +72,7 @@ export class UiCore {
     return "UiCore";
   }
 
-  /** Calls localization.getLocalizedStringWithNamespace with the "UiCore" namespace. Do NOT include the namespace in the key.
+  /** Calls localization.getLocalizedString with the "UiCore" namespace. Do NOT include the namespace in the key.
    * @internal
    */
   public static translate(key: string | string[]): string {
@@ -77,7 +80,7 @@ export class UiCore {
       Logger.logError(UiCore.loggerCategory(this), `translate: UiCore must be initialize with a localization provider. Returning blank string.`);
       return "";
     }
-    return UiCore._localization.getLocalizedStringWithNamespace(UiCore.localizationNamespace, key);
+    return UiCore._localization.getLocalizedString(key, { ns: UiCore.localizationNamespace });
   }
 
   /** @internal */

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { PrimitiveValue, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { PrimitivePropertyValueRendererImpl } from "./PrimitivePropertyValueRenderer";
@@ -20,7 +20,7 @@ export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
   /** Checks if the renderer can handle given property */
   public canRender(record: PropertyRecord) {
     return record.value.valueFormat === PropertyValueFormat.Primitive
-      && record.property.typename === "navigation";
+      && record.property.typename === StandardTypeNames.Navigation;
   }
 
   /** Method that returns a JSX representation of PropertyRecord */

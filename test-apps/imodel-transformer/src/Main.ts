@@ -5,108 +5,197 @@
 
 import * as path from "path";
 import * as Yargs from "yargs";
-import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { assert, Guid, Logger, LogLevel } from "@itwin/core-bentley";
 import { ProjectsAccessClient } from "@itwin/projects-client";
-import { Version } from "@bentley/imodelhub-client";
-import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
-import { IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
-import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@itwin/core-common";
+import { IModelDb, IModelHost, IModelJsFs, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
+import { BriefcaseIdValue, ChangesetId, ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "@itwin/core-transformer";
+import { NamedVersion } from "@itwin/imodels-client-authoring";
 import { ElementUtils } from "./ElementUtils";
-import { IModelHubUtils } from "./IModelHubUtils";
+import { IModelHubUtils, IModelTransformerTestAppHost } from "./IModelHubUtils";
 import { loggerCategory, Transformer, TransformerOptions } from "./Transformer";
-
-interface CommandLineArgs {
-  hub?: string;
-  sourceFile?: string;
-  sourceITwinId?: GuidString;
-  sourceIModelId?: GuidString;
-  sourceIModelName?: string;
-  sourceStartChangesetId?: ChangesetId;
-  sourceStartChangesetIndex?: ChangesetIndex;
-  sourceEndChangesetId?: ChangesetId;
-  sourceEndChangesetIndex?: ChangesetIndex;
-  /** location of a target snapshot iModel to transform */
-  targetFile: string;
-  /** location to create a new target file */
-  targetDestination: string;
-  targetITwinId?: GuidString;
-  targetIModelId?: GuidString;
-  targetIModelName?: string;
-  clean?: boolean;
-  logChangesets: boolean;
-  logNamedVersions: boolean;
-  logProvenanceScopes: boolean;
-  logTransformer: boolean;
-  validation: boolean;
-  simplifyElementGeometry?: boolean;
-  combinePhysicalModels?: boolean;
-  exportViewDefinition?: Id64String;
-  deleteUnusedGeometryParts?: boolean;
-  noProvenance?: boolean;
-  includeSourceProvenance?: boolean;
-  excludeSubCategories?: string;
-  excludeCategories?: string;
-}
+import * as dotenv from "dotenv";
+import * as dotenvExpand from "dotenv-expand";
 
 void (async () => {
   try {
-    Yargs.usage("Transform the specified source iModel into a new target iModel");
-    Yargs.strict();
+    const envResult = dotenv.config({ path: path.resolve(__dirname, "../.env") });
+    if (!envResult.error) {
+      dotenvExpand(envResult);
+    }
 
-    // iModelHub environment options
-    Yargs.option("hub", { desc: "The iModelHub environment: prod | qa | dev", type: "string", default: "prod" });
+    const args = Yargs(process.argv.slice(2))
+      .usage(
+        [
+          "Transform the specified source iModel into a new target iModel.",
+          "You must set up a .env file to connect to an online iModel, see the .env.template file to do so.",
+        ].join("\n")
+      )
+      .strict()
+      .options({
+        hub: {
+          desc: "The iModelHub environment: prod | qa | dev",
+          type: "string",
+          default: "prod",
+        },
 
-    // used if the source iModel is a snapshot
-    Yargs.option("sourceFile", { desc: "The full path to the source iModel", type: "string" });
+        // used if the source iModel is a snapshot
+        sourceFile: {
+          desc: "The full path to the source iModel",
+          type: "string",
+        },
 
-    // used if the source iModel is on iModelHub
-    Yargs.option("sourceITwinId", { desc: "The iModelHub iTwin containing the source iModel", type: "string" });
-    Yargs.option("sourceIModelId", { desc: "The guid of the source iModel", type: "string", default: undefined });
-    Yargs.option("sourceIModelName", { desc: "The name of the source iModel", type: "string", default: undefined });
-    Yargs.option("sourceStartChangesetId", { desc: "The starting changeset of the source iModel to transform", type: "string", default: undefined });
-    Yargs.option("sourceStartChangesetIndex", { desc: "The starting changeset of the source iModel to transform", type: "number", default: undefined });
-    Yargs.option("sourceEndChangesetId", { desc: "The ending changeset of the source iModel to transform", type: "string", default: undefined });
-    Yargs.option("sourceEndChangesetIndex", { desc: "The ending changeset of the source iModel to transform", type: "number", default: undefined });
+        // used if the source iModel is on iModelHub
+        sourceITwinId: {
+          desc: "The iModelHub iTwin containing the source iModel",
+          type: "string",
+        },
+        sourceIModelId: {
+          desc: "The guid of the source iModel",
+          type: "string",
+        },
+        sourceIModelName: {
+          desc: "The name of the source iModel",
+          type: "string",
+        },
+        sourceStartChangesetId: {
+          desc: "The starting changeset of the source iModel to transform",
+          type: "string",
+        },
+        sourceStartChangesetIndex: {
+          desc: "The starting changeset of the source iModel to transform",
+          type: "number",
+        },
+        sourceEndChangesetId: {
+          desc: "The ending changeset of the source iModel to transform",
+          type: "string",
+        },
+        sourceEndChangesetIndex: {
+          desc: "The ending changeset of the source iModel to transform",
+          type: "number",
+        },
 
-    // used if the target iModel is a new snapshot
-    Yargs.option("targetDestination", { desc: "The destination path where to create the target iModel", type: "string" });
-    // used if the target iModel is a standalone db
-    Yargs.option("targetFile", { desc: "The full path to the target iModel", type: "string" });
+        // used if the target iModel is a new snapshot
+        targetDestination: {
+          desc: "The destination path where to create the target iModel",
+          type: "string",
+        },
+        // used if the target iModel is a standalone db
+        targetFile: {
+          desc: "The full path to the target iModel",
+          type: "string",
+        },
+        // used if the target iModel is on iModelHub
+        targetITwinId: {
+          desc: "The iModelHub iTwin containing the target iModel",
+          type: "string",
+        },
+        targetIModelId: {
+          desc: "The guid of the target iModel",
+          type: "string",
+        },
+        targetIModelName: {
+          desc: "The name of the target iModel",
+          type: "string",
+        },
 
-    // used if the target iModel is on iModelHub
-    Yargs.option("targetITwinId", { desc: "The iModelHub iTwin containing the target iModel", type: "string" });
-    Yargs.option("targetIModelId", { desc: "The guid of the target iModel", type: "string", default: undefined });
-    Yargs.option("targetIModelName", { desc: "The name of the target iModel", type: "string", default: undefined });
+        // print/debug options
+        logChangesets: {
+          desc: "If true, log the list of changesets",
+          type: "boolean",
+          default: false,
+        },
+        logNamedVersions: {
+          desc: "If true, log the list of named versions",
+          type: "boolean",
+          default: false,
+        },
+        logProvenanceScopes: {
+          desc: "If true, log the provenance scopes in the source and target iModels",
+          type: "boolean",
+          default: false,
+        },
+        logTransformer: {
+          alias: ["verbose", "v"],
+          desc: "If true, turn on verbose logging for iModel transformation",
+          type: "boolean",
+          default: false,
+        },
+        validation: {
+          desc: "If true, perform extra and potentially expensive validation to assist with finding issues and confirming results",
+          type: "boolean",
+          default: false,
+        },
 
-    // target iModel management options
-    Yargs.option("clean", { desc: "If true, refetch briefcases and clean/delete the target before beginning", type: "boolean", default: undefined });
-
-    // print/debug options
-    Yargs.option("logChangesets", { desc: "If true, log the list of changesets", type: "boolean", default: false });
-    Yargs.option("logNamedVersions", { desc: "If true, log the list of named versions", type: "boolean", default: false });
-    Yargs.option("logProvenanceScopes", { desc: "If true, log the provenance scopes in the source and target iModels", type: "boolean", default: false });
-    Yargs.option("logTransformer", { desc: "If true, turn on verbose logging for iModel transformation", type: "boolean", default: false });
-    Yargs.option("validation", { desc: "If true, perform extra and potentially expensive validation to assist with finding issues and confirming results", type: "boolean", default: false });
-
-    // transformation options
-    Yargs.option("simplifyElementGeometry", { desc: "Simplify element geometry upon import into target iModel", type: "boolean", default: false });
-    Yargs.option("combinePhysicalModels", { desc: "Combine all source PhysicalModels into a single PhysicalModel in the target iModel", type: "boolean", default: false });
-    Yargs.option("exportViewDefinition", { desc: "Only export elements that would be visible using the specified ViewDefinition Id", type: "string", default: undefined });
-    Yargs.option("deleteUnusedGeometryParts", { desc: "Delete unused GeometryParts from the target iModel", type: "boolean", default: false });
-    Yargs.option("excludeSubCategories", { desc: "Exclude geometry in the specified SubCategories (names with comma separators) from the target iModel", type: "string" });
-    Yargs.option("excludeCategories", { desc: "Exclude a categories (names with comma separators) and their elements from the target iModel", type: "string" });
-    Yargs.option("noProvenance", { desc: "If true, IModelTransformer should not record its provenance.", type: "boolean", default: false });
-    Yargs.option("includeSourceProvenance", { desc: "Include existing provenance from the source iModel in the target iModel", type: "boolean", default: false });
-
-    const args = Yargs.parse() as Yargs.Arguments<CommandLineArgs>;
+        // transformation options
+        simplifyElementGeometry: {
+          desc: "Simplify element geometry upon import into target iModel",
+          type: "boolean",
+          default: false,
+        },
+        combinePhysicalModels: {
+          desc: "Combine all source PhysicalModels into a single PhysicalModel in the target iModel",
+          type: "boolean",
+          default: false,
+        },
+        exportViewDefinition: {
+          desc: "Only export elements that would be visible using the specified ViewDefinition Id",
+          type: "string",
+        },
+        deleteUnusedGeometryParts: {
+          desc: "Delete unused GeometryParts from the target iModel",
+          type: "boolean",
+          default: false,
+        },
+        excludeSubCategories: {
+          desc: "Exclude geometry in the specified SubCategories (names with comma separators) from the target iModel",
+          type: "string",
+        },
+        excludeCategories: {
+          desc: "Exclude a categories (names with comma separators) and their elements from the target iModel",
+          type: "string",
+        },
+        noProvenance: {
+          desc: "If true, IModelTransformer should not record its provenance.",
+          type: "boolean",
+          default: false,
+        },
+        includeSourceProvenance: {
+          desc: "Include existing provenance from the source iModel in the target iModel",
+          type: "boolean",
+          default: false,
+        },
+        isolateElements: {
+          desc: "transform filtering all element/models that aren't part of the logical path to a set of comma-separated element ids",
+          type: "string",
+        },
+        isolateTrees: {
+          desc: "transform filtering all element/models that aren't part of the logical path to a set of comma-separated element ids, or one of their children",
+          type: "string",
+        },
+        loadSourceGeometry: {
+          desc: "load geometry from the source as JSON while transforming, for easier (but not performant) transforming of geometry",
+          type: "boolean",
+          default: false,
+        },
+        cloneUsingJsonGeometry: {
+          desc: "sets cloneUsingBinaryGeometry in the transformer options to true, which is slower but allows simple editing of geometry in javascript.",
+          type: "boolean",
+          default: false,
+        },
+        danglingReferencesBehavior: {
+          desc: "sets danglingReferencesBehavior in the transformer options",
+          default: "reject" as const,
+          choices: ["reject", "ignore"] as const,
+        },
+      })
+      .parseSync();
 
     IModelHubUtils.setHubEnvironment(args.hub);
 
-    const iModelHost = new IModelHostConfiguration();
-    iModelHost.hubAccess = new IModelHubBackend();
+    await IModelTransformerTestAppHost.startup();
+    const acquireAccessToken = async () => IModelTransformerTestAppHost.acquireAccessToken();
 
-    await IModelHost.startup(iModelHost);
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Error);
     Logger.setLevel(loggerCategory, LogLevel.Info);
@@ -122,15 +211,14 @@ void (async () => {
     let targetDb: IModelDb;
     const processChanges = args.sourceStartChangesetIndex || args.sourceStartChangesetId;
 
-    const accessToken = await IModelHubUtils.getAccessToken();
     if (args.sourceITwinId || args.targetITwinId) {
       iTwinAccessClient = new ProjectsAccessClient();
     }
 
     if (args.sourceITwinId) {
       // source is from iModelHub
-      assert(undefined !== iTwinAccessClient);
-      assert(undefined !== args.sourceIModelId);
+      assert(undefined !== iTwinAccessClient, "iTwinAccessClient must have been defined if sourceITwinId is allowed, if you are seeing this, it is a bug");
+      assert(undefined !== args.sourceIModelId, "if you provide a sourceITwinId, you must provide a sourceIModelId");
       const sourceITwinId = Guid.normalize(args.sourceITwinId);
       const sourceIModelId = Guid.normalize(args.sourceIModelId);
       let sourceEndVersion = IModelVersion.latest();
@@ -139,9 +227,9 @@ void (async () => {
       if (args.sourceStartChangesetIndex || args.sourceStartChangesetId) {
         assert(!(args.sourceStartChangesetIndex && args.sourceStartChangesetId), "Pick single way to specify starting changeset");
         if (args.sourceStartChangesetIndex) {
-          args.sourceStartChangesetId = await IModelHubUtils.queryChangesetId(accessToken, sourceIModelId, args.sourceStartChangesetIndex);
+          args.sourceStartChangesetId = await IModelHubUtils.queryChangesetId(await acquireAccessToken(), sourceIModelId, args.sourceStartChangesetIndex);
         } else {
-          args.sourceStartChangesetIndex = await IModelHubUtils.queryChangesetIndex(accessToken, sourceIModelId, args.sourceStartChangesetId!);
+          args.sourceStartChangesetIndex = await IModelHubUtils.queryChangesetIndex(await acquireAccessToken(), sourceIModelId, args.sourceStartChangesetId as ChangesetId);
         }
         Logger.logInfo(loggerCategory, `sourceStartChangesetIndex=${args.sourceStartChangesetIndex}`);
         Logger.logInfo(loggerCategory, `sourceStartChangesetId=${args.sourceStartChangesetId}`);
@@ -149,29 +237,28 @@ void (async () => {
       if (args.sourceEndChangesetIndex || args.sourceEndChangesetId) {
         assert(!(args.sourceEndChangesetIndex && args.sourceEndChangesetId), "Pick single way to specify ending changeset");
         if (args.sourceEndChangesetIndex) {
-          args.sourceEndChangesetId = await IModelHubUtils.queryChangesetId(accessToken, sourceIModelId, args.sourceEndChangesetIndex);
+          args.sourceEndChangesetId = await IModelHubUtils.queryChangesetId(await acquireAccessToken(), sourceIModelId, args.sourceEndChangesetIndex);
         } else {
-          args.sourceEndChangesetIndex = await IModelHubUtils.queryChangesetIndex(accessToken, sourceIModelId, args.sourceEndChangesetId!);
+          args.sourceEndChangesetIndex = await IModelHubUtils.queryChangesetIndex(await acquireAccessToken(), sourceIModelId, args.sourceEndChangesetId as ChangesetId);
         }
-        sourceEndVersion = IModelVersion.asOfChangeSet(args.sourceEndChangesetId!);
+        sourceEndVersion = IModelVersion.asOfChangeSet(args.sourceEndChangesetId as ChangesetId);
         Logger.logInfo(loggerCategory, `sourceEndChangesetIndex=${args.sourceEndChangesetIndex}`);
         Logger.logInfo(loggerCategory, `sourceEndChangesetId=${args.sourceEndChangesetId}`);
       }
 
       if (args.logChangesets) {
-        await IModelHubUtils.forEachChangeset(accessToken, sourceIModelId, (changeset: ChangesetProps) => {
+        await IModelHubUtils.forEachChangeset(await acquireAccessToken(), sourceIModelId, (changeset: ChangesetProps) => {
           Logger.logInfo(loggerCategory, `sourceChangeset: index=${changeset.index}, id="${changeset.id}", description="${changeset.description}"}`);
         });
       }
 
       if (args.logNamedVersions) {
-        await IModelHubUtils.forEachNamedVersion(accessToken, sourceIModelId, (namedVersion: Version) => {
-          Logger.logInfo(loggerCategory, `sourceNamedVersion: id="${namedVersion.id}", changesetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
+        await IModelHubUtils.forEachNamedVersion(await acquireAccessToken(), sourceIModelId, (namedVersion: NamedVersion) => {
+          Logger.logInfo(loggerCategory, `sourceNamedVersion: id="${namedVersion.id}", changesetId="${namedVersion.changesetId}", name="${namedVersion.name}"`);
         });
       }
 
       sourceDb = await IModelHubUtils.downloadAndOpenBriefcase({
-        accessToken,
         iTwinId: sourceITwinId,
         iModelId: sourceIModelId,
         asOf: sourceEndVersion.toJSON(),
@@ -199,34 +286,33 @@ void (async () => {
       let targetIModelId = args.targetIModelId ? Guid.normalize(args.targetIModelId) : undefined;
       if (undefined !== args.targetIModelName) {
         assert(undefined === targetIModelId, "should not specify targetIModelId if targetIModelName is specified");
-        targetIModelId = await IModelHubUtils.queryIModelId(accessToken, targetITwinId, args.targetIModelName);
+        targetIModelId = await IModelHubUtils.queryIModelId(await acquireAccessToken(), targetITwinId, args.targetIModelName);
         if ((args.clean) && (undefined !== targetIModelId)) {
-          await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId: targetITwinId, iModelId: targetIModelId });
+          await IModelHost.hubAccess.deleteIModel({ accessToken: await acquireAccessToken(), iTwinId: targetITwinId, iModelId: targetIModelId });
           targetIModelId = undefined;
         }
         if (undefined === targetIModelId) {
           // create target iModel if it doesn't yet exist or was just cleaned/deleted above
-          targetIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId: targetITwinId, iModelName: args.targetIModelName });
+          targetIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken: await acquireAccessToken(), iTwinId: targetITwinId, iModelName: args.targetIModelName });
         }
       }
-      assert(undefined !== targetIModelId);
+      assert(undefined !== targetIModelId, "if you provide a sourceITwinId, you must provide a sourceIModelId");
       Logger.logInfo(loggerCategory, `targetITwinId=${targetITwinId}`);
       Logger.logInfo(loggerCategory, `targetIModelId=${targetIModelId}`);
 
       if (args.logChangesets) {
-        await IModelHubUtils.forEachChangeset(accessToken, targetIModelId, (changeset: ChangesetProps) => {
+        await IModelHubUtils.forEachChangeset(await acquireAccessToken(), targetIModelId, (changeset: ChangesetProps) => {
           Logger.logInfo(loggerCategory, `targetChangeset:  index="${changeset.index}", id="${changeset.id}", description="${changeset.description}"`);
         });
       }
 
       if (args.logNamedVersions) {
-        await IModelHubUtils.forEachNamedVersion(accessToken, targetIModelId, (namedVersion: Version) => {
-          Logger.logInfo(loggerCategory, `targetNamedVersion: id="${namedVersion.id}", changesetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
+        await IModelHubUtils.forEachNamedVersion(await acquireAccessToken(), targetIModelId, (namedVersion: NamedVersion) => {
+          Logger.logInfo(loggerCategory, `targetNamedVersion: id="${namedVersion.id}", changesetId="${namedVersion.changesetId}", name="${namedVersion.name}"`);
         });
       }
 
       targetDb = await IModelHubUtils.downloadAndOpenBriefcase({
-        accessToken,
         iTwinId: targetITwinId,
         iModelId: targetIModelId,
       });
@@ -264,13 +350,28 @@ void (async () => {
 
     const transformerOptions: TransformerOptions = {
       ...args,
+      cloneUsingBinaryGeometry: !args.cloneUsingJsonGeometry,
       excludeSubCategories: args.excludeSubCategories?.split(","),
       excludeCategories: args.excludeCategories?.split(","),
     };
 
     if (processChanges) {
       assert(undefined !== args.sourceStartChangesetId);
-      await Transformer.transformChanges(accessToken, sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
+      await Transformer.transformChanges(await acquireAccessToken(), sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
+    } else if (args.isolateElements !== undefined || args.isolateTrees !== undefined) {
+      const isolateTrees = args.isolateTrees !== undefined;
+      const isolateArg = args.isolateElements ?? args.isolateTrees;
+      assert(isolateArg !== undefined);
+      const isolateList = isolateArg.split(",");
+      const transformer = await Transformer.transformIsolated(sourceDb, targetDb, isolateList, isolateTrees, transformerOptions);
+      Logger.logInfo(
+        loggerCategory,
+        [
+          "remapped elements:",
+          isolateList.map((id) => `${id}=>${transformer.context.findTargetElementId(id)}`).join(", "),
+        ].join("\n")
+      );
+      transformer.dispose();
     } else {
       await Transformer.transformAll(sourceDb, targetDb, transformerOptions);
     }

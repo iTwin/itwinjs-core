@@ -19,6 +19,7 @@ The iTwin.js library is organized into the following separately downloadable [np
   - ($webgl-compatibility)
   - ($hypermodeling)
   - ($markup)
+  - ($map-layers-formats)
 - Backend
   - ($backend)
   - ($transformer)
@@ -28,13 +29,6 @@ The iTwin.js library is organized into the following separately downloadable [np
 - ($i18n)
 - ($bentley)
 - ($geometry)
-
-## iTwin.js Client Packages
-
-- ($imodelhub-client)
-- ($itwin-client)
-- ($product-settings-client)
-- ($reality-data-client)
 
 ## iTwin.js UI Packages
 

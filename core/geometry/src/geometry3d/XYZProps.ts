@@ -7,6 +7,7 @@
  * @module CartesianGeometry
  */
 
+import { Geometry } from "../Geometry";
 /**
  * interface for class with `x` and `y` as number properties.
  * @public
@@ -66,6 +67,22 @@ export type XAndY = Readonly<WritableXAndY>;
  * @public
  */
 export type XYAndZ = Readonly<WritableXYAndZ>;
+
+/** @public */
+export namespace XYAndZ { // eslint-disable-line @typescript-eslint/no-redeclare
+  /** Return true if two XYAndZs have equal x,y,z parts within a specified tolerance.
+   * @param a The first XYAndZ to compare
+   * @param b The second XYAndZ to compare
+   * @param The tolerance for comparison. If undefined, [[Geometry.smallMetricDistance]] is used.
+   * @returns true if the difference in each coordinate of `a` and `b` is smaller than `tol`.
+   */
+  export function almostEqual(a: XYAndZ, b: XYAndZ, tol?: number): boolean {
+    return Geometry.isSameCoordinate(a.x, b.x, tol)
+      && Geometry.isSameCoordinate(a.y, b.y, tol)
+      && Geometry.isSameCoordinate(a.z, b.z, tol);
+  }
+}
+
 /**
  * interface for type with readable `low` and `high` members which have `x` and `y` number members.
  * @public

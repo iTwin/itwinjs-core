@@ -182,16 +182,21 @@ $key-size-modifier: 24px;
   }
 }
 
-.uifw-toolAssistance-tabs {
+.uifw-toolAssistance-tabs.iui-tabs.iui-default {
   @include iui-text(leading);
 
   // Tabs are sized at 50% with the labels centered
   >li {
     width: 50%;
 
-    .iui-tab {
+    button.iui-tab {
       width: 100%;
       display: unset;
+      background-color: var(--buic-background-tab-inactive);
+
+      &.iui-active {
+        background-color: var(--buic-background-dialog);
+      }
     }
 
     .iui-tab-label {

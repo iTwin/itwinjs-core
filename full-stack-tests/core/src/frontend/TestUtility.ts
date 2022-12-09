@@ -6,12 +6,14 @@ import { assert } from "chai";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Project as ITwin } from "@itwin/projects-client";
 import { AuthorizationClient } from "@itwin/core-common";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { IModelApp, IModelAppOptions, MockRender, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions, LocalhostIpcApp, MockRender, NativeApp } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
-import { rpcInterfaces, TestRpcInterface } from "../common/RpcInterfaces";
-import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./hub/ITwinPlatformEnv";
+import { rpcInterfaces } from "../common/RpcInterfaces";
+import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
+import { setBackendAccessToken } from "../certa/certaCommon";
 
 export class TestUtility {
   public static testITwinName = "iModelJsIntegrationTest";
@@ -29,6 +31,7 @@ export class TestUtility {
     // A version of the above that uses BisCore 1.0.13 and includes a second display style with schedule script stored
     // separately on a RenderTimeline element.
     synchroNew: "SYNCHRO.UTK.1.0.13",
+    realityDataAccess: "Tuxford_qa",
   };
 
   public static testSnapshotIModels = {
@@ -63,26 +66,19 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
-      authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
+      authorizationClient = new ElectronRendererAuthorization();
       IModelApp.authorizationClient = authorizationClient;
-      const accessToken = await getAccessTokenFromBackend(user);
+      const accessToken = await setBackendAccessToken(user);
       if ("" === accessToken)
         throw new Error("no access token");
 
-      // TRICKY: when the tests run multiple times, it doesn't see the token change so doesn't send it to the frontend. Simulate logout.
-      await NativeApp.callNativeHost("setAccessToken", "");
-      await NativeApp.callNativeHost("setAccessToken", accessToken);
     } else {
       authorizationClient = new IModelHubUserMgr(user);
       IModelApp.authorizationClient = authorizationClient;
       await (authorizationClient as IModelHubUserMgr).signIn();
     }
 
-    const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
-    if (cloudParams.iModelBank)
-      this.iTwinPlatformEnv = new ITwinStackCloudEnv(cloudParams.iModelBank.url);
-    else
-      this.iTwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
+    this.iTwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
 
     ((IModelApp as any)._hubAccess) = this.iTwinPlatformEnv.hubAccess;
   }
@@ -101,7 +97,9 @@ export class TestUtility {
     const accessToken = await IModelApp.getAccessToken();
     const iModelId = await this.iTwinPlatformEnv.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     assert.isDefined(iModelId);
-    return iModelId!;
+    if (!iModelId)
+      throw new Error("no access token");
+    return iModelId;
   }
 
   /** Purges all acquired briefcases for the current user for the specified iModel, if the specified threshold of acquired briefcases is exceeded */
@@ -134,26 +132,33 @@ export class TestUtility {
    *
    * Otherwise, IModelApp.startup is used directly.
    */
-  public static async startFrontend(opts?: IModelAppOptions, mockRender?: boolean): Promise<void> {
+  public static async startFrontend(opts?: IModelAppOptions, mockRender?: boolean, enableWebEdit?: boolean): Promise<void> {
     opts = opts ? opts : TestUtility.iModelAppOptions;
     if (mockRender)
       opts.renderSys = this.systemFactory();
     if (ProcessDetector.isElectronAppFrontend)
       return ElectronApp.startup({ iModelApp: opts });
-    return IModelApp.startup(opts);
+
+    if (enableWebEdit) {
+      let socketUrl = new URL(window.location.toString());
+      socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
+      socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
+
+      return LocalhostIpcApp.startup({ iModelApp: opts, localhostIpcApp: { socketUrl } });
+    } else {
+      return IModelApp.startup(opts);
+    }
   }
 
   /** Helper around the different shutdown workflows for different app types.
    * If running in an Electron render process (via ProcessDetector.isElectronAppFrontend), the ElectronApp.startup is called.
-   *
    */
   public static async shutdownFrontend(): Promise<void> {
     this.systemFactory = () => TestUtility.createDefaultRenderSystem();
-    // FIXME: The ElectronApp.shutdown() has side-effects that aren't currently cleaned up properly
-    // so that a new ElectronApp.startup() has a clean slate. It is somewhere in Ipc land as the error
-    // is a missing Ipc method.
-    // if (ProcessDetector.isElectronAppFrontend)
-    //   return ElectronApp.shutdown();
+
+    if (ProcessDetector.isElectronAppFrontend)
+      return ElectronApp.shutdown();
+
     return IModelApp.shutdown();
   }
 }

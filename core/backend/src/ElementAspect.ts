@@ -6,7 +6,7 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
+import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -39,7 +39,7 @@ export interface OnAspectIdArg extends OnAspectArg {
  * BIS Guideline: Subclass ElementUniqueAspect or ElementMultiAspect rather than subclassing ElementAspect directly.
  * @public
  */
-export class ElementAspect extends Entity implements ElementAspectProps {
+export class ElementAspect extends Entity {
   /** @internal */
   public static override get className(): string { return "ElementAspect"; }
   public element: RelatedElement;
@@ -152,11 +152,14 @@ export class ChannelRootAspect extends ElementUniqueAspect {
  * @note The associated ECClass was added to the BisCore schema in version 1.0.2
  * @public
  */
-export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
+export class ExternalSourceAspect extends ElementMultiAspect {
   /** @internal */
   public static override get className(): string { return "ExternalSourceAspect"; }
 
-  /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source. */
+  /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source.
+   * @note Warning: in a future major release the `scope` property will be optional, since the scope is intended to be potentially invalid.
+   *       all references should treat it as potentially undefined, but we cannot change the type yet since that is a breaking change.
+   */
   public scope: RelatedElement;
   /** The identifier of the object in the source repository. */
   public identifier: string;
@@ -186,8 +189,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     this.jsonProperties = props.jsonProperties;
   }
 
-  /**  Look up the ElementId of the element that contains an aspect with the specified Scope, Kind, and Identifier
-   */
+  /** @deprecated findAllBySource */
   public static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): { elementId?: Id64String, aspectId?: Id64String } {
     const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
     let elementId: Id64String | undefined;
@@ -204,6 +206,32 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     return { elementId, aspectId };
   }
 
+  /** Look up the elements that contain one or more ExternalSourceAspect with the specified Scope, Kind, and Identifier.
+   * The result of this function is an array of all of the ExternalSourceAspects that were found, each associated with the owning element.
+   * A given element could have more than one ExternalSourceAspect with the given scope, kind, and identifier.
+   * Also, many elements could have ExternalSourceAspect with the same scope, kind, and identifier.
+   * Therefore, the result array could have more than one entry with the same elementId.
+   * Aspects are never shared. Each aspect has its own unique ECInstanceId.
+   * @param iModelDb The iModel to query
+   * @param scope    The scope of the ExternalSourceAspects to find
+   * @param kind     The kind of the ExternalSourceAspects to find
+   * @param identifier The identifier of the ExternalSourceAspects to find
+   * @returns the query results
+  */
+  public static findAllBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): Array<{ elementId: Id64String, aspectId: Id64String }> {
+    const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
+    const found: Array<{ elementId: Id64String, aspectId: Id64String }> = [];
+    iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+      statement.bindId("scope", scope);
+      statement.bindString("kind", kind);
+      statement.bindString("identifier", identifier);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        found.push({ elementId: statement.getValue(0).getId(), aspectId: statement.getValue(1).getId() });
+      }
+    });
+    return found;
+  }
+
   /** @internal */
   public override toJSON(): ExternalSourceAspectProps {
     const val = super.toJSON() as ExternalSourceAspectProps;
@@ -215,6 +243,16 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     val.version = this.version;
     val.jsonProperties = this.jsonProperties;
     return val;
+  }
+
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    if (this.scope)
+      referenceIds.addElement(this.scope.id);
+    referenceIds.addElement(this.element.id);
+    if (this.source)
+      referenceIds.addElement(this.source.id);
   }
 }
 

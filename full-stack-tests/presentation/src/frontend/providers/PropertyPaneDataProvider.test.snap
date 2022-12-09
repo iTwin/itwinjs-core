@@ -269,7 +269,7 @@ Object {
     },
     Object {
       "expand": true,
-      "label": "Mòdél $õürçê",
+      "label": "Model Source",
       "name": "/selected-item/-source_information-model_source",
     },
   ],
@@ -1538,7 +1538,7 @@ Object {
       PropertyRecord {
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
-          "displayLabel": "Ñámê",
+          "displayLabel": "Name",
           "name": "rc_generic_PhysicalObject_bis_PhysicalModel_bis_PhysicalPartition_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
           "typename": "string",
         },
@@ -1551,7 +1551,7 @@ Object {
       PropertyRecord {
         "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
         "property": Object {
-          "displayLabel": "Pàth",
+          "displayLabel": "Path",
           "name": "rc_generic_PhysicalObject_bis_PhysicalModel_bis_PhysicalPartition_ncc_bis_RepositoryLink$pc_bis_UrlLink_Url",
           "typename": "string",
         },
@@ -1995,12 +1995,12 @@ Object {
           "childCategories": Array [
             Object {
               "expand": true,
-              "label": "Mòdél $õürçê",
+              "label": "Model Source",
               "name": "/selected-item/-source_information-model_source",
             },
           ],
-          "expand": false,
-          "label": "$óúrçè Íñfórmâtíöñ",
+          "expand": true,
+          "label": "Source Information",
           "name": "/selected-item/-source_information",
         },
       ],
@@ -3274,7 +3274,7 @@ Object {
       PropertyRecord {
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
-          "displayLabel": "Ñámê",
+          "displayLabel": "Name",
           "name": "rc_generic_PhysicalObject_bis_PhysicalModel_bis_PhysicalPartition_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
           "typename": "string",
         },
@@ -3287,7 +3287,7 @@ Object {
       PropertyRecord {
         "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
         "property": Object {
-          "displayLabel": "Pàth",
+          "displayLabel": "Path",
           "name": "rc_generic_PhysicalObject_bis_PhysicalModel_bis_PhysicalPartition_ncc_bis_RepositoryLink$pc_bis_UrlLink_Url",
           "typename": "string",
         },

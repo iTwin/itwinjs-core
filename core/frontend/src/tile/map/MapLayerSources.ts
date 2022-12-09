@@ -2,31 +2,42 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module MapLayers
+ */
 
-import { BentleyError, compareStrings } from "@itwin/core-bentley";
-import { Point2d } from "@itwin/core-geometry";
+import { compareStrings } from "@itwin/core-bentley";
 import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, MapLayerSettings, MapSubLayerProps,
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
 } from "@itwin/core-common";
-import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
+import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
-import { ArcGisUtilities, MapCartoRectangle, MapLayerSettingsService, MapLayerSourceValidation } from "../internal";
+import { getJson, RequestBasicCredentials } from "../../request/Request";
+import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
 
-/** @internal */
+/**
+ * Values for return codes from [[MapLayerSource.validateSource]]
+ * @public
+ */
 export enum MapLayerSourceStatus {
+  /** Layer source is valid */
   Valid,
+  /** Authorization has failed when accessing this layer source. */
   InvalidCredentials,
+  /** Provided format id could not be resolved in [[MapLayerFormatRegistry]] */
   InvalidFormat,
+  /** The tiling schema of the source is not supported */
   InvalidTileTree,
+  /** Could not not connect to remote server using the provided URL.*/
   InvalidUrl,
+  /** Authorization is required to access this map layer source. */
   RequireAuth,
 }
 
 /** JSON representation of a map layer source.
- * @internal
+ *  * @see [ImageryMapLayerFormatId]($common)
+ * @public
  */
 interface MapLayerSourceProps {
   /** Identifies the map layers source. Defaults to 'WMS'. */
@@ -37,18 +48,12 @@ interface MapLayerSourceProps {
   url: string;
   /** True to indicate background is transparent.  Defaults to 'true'. */
   transparentBackground?: boolean;
-  /** Is a base layer.  Defaults to 'false'. */
-  isBase?: boolean;
   /** Indicate if this source definition should be used as a base map. Defaults to false. */
   baseMap?: boolean;
-  /** UserName */
-  userName?: string;
-  /** Password */
-  password?: string;
 }
 
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
- * @internal
+ * @public
  */
 export class MapLayerSource {
   public formatId: string;
@@ -59,26 +64,26 @@ export class MapLayerSource {
   public userName?: string;
   public password?: string;
 
-  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, userName?: string, password?: string) {
+  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true) {
     this.formatId = formatId;
     this.name = name;
     this.url = url;
     this.baseMap = baseMap;
     this.transparentBackground = transparentBackground;
-    this.userName = userName;
-    this.password = password;
   }
 
   public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
     if (json === undefined)
       return undefined;
 
-    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground, json.userName, json.password);
+    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground);
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
+    return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.userName, this.password, ignoreCache);
   }
+
+  /** @internal*/
   public static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps) {
     const provider = BackgroundMapProvider.fromBackgroundMapProps(props);
     const layerSettings = BaseMapLayerSettings.fromProvider(provider);
@@ -96,10 +101,13 @@ export class MapLayerSource {
     return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground };
   }
 
-  public toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined {
+  public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
     // When MapLayerSetting is created from a MapLayerSource, sub-layers and credentials need to be set separately.
-    const layerSettings = MapLayerSettings.fromJSON({ ...this, subLayers });
-    layerSettings?.setCredentials(this.userName, this.password);
+    const layerSettings = ImageMapLayerSettings.fromJSON({ ...this, subLayers });
+    if (this.userName !== undefined || this.password !== undefined) {
+      layerSettings?.setCredentials(this.userName, this.password);
+    }
+
     return layerSettings;
   }
 
@@ -111,7 +119,6 @@ export class MapLayerSource {
 /** A collection of [[MapLayerSource]] objects.
  * @internal
  */
-
 export class MapLayerSources {
   private static _instance?: MapLayerSources;
   private constructor(private _sources: MapLayerSource[]) { }
@@ -128,28 +135,22 @@ export class MapLayerSources {
   }
   public get layers(): MapLayerSource[] {
     const layers = new Array<MapLayerSource>();
-    this._sources.forEach((source) => { if (!source.baseMap) layers.push(source); });
+    this._sources.forEach((source) => {
+      if (!source.baseMap)
+        layers.push(source);
+    });
+
     return layers;
   }
   public get allSource() { return this._sources; }
   public get bases(): MapLayerSource[] {
     const layers = new Array<MapLayerSource>();
-    this._sources.forEach((source) => { if (source.baseMap) layers.push(source); });
-    return layers;
-  }
+    this._sources.forEach((source) => {
+      if (source.baseMap)
+        layers.push(source);
+    });
 
-  /**
-   *  This function fetch the USG map layer sources. Those are free and publicly available but not worldwide.
-   *  Needs to validate the location of the user before fetching it.
-   */
-  private static async getUSGSSources(): Promise<MapLayerSource[]> {
-    const mapLayerSources: MapLayerSource[] = [];
-    (await ArcGisUtilities.getServiceDirectorySources("https://basemap.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://index.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://hydro.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://carto.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://elevation.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    return mapLayerSources;
+    return layers;
   }
 
   private static getBingMapLayerSource(): MapLayerSource[] {
@@ -168,16 +169,6 @@ export class MapLayerSources {
     return mapLayerSources;
   }
 
-  /**
- *  This function fetch the Disco map layer sources. Those sources are for Europe but not very reliable.
- *  Needs to validate the location of the user before fetching it.
- */
-  private static async getDiscoSources(): Promise<MapLayerSource[]> {
-    const mapLayerSources: MapLayerSource[] = [];
-    (await ArcGisUtilities.getServiceDirectorySources("https://land.discomap.eea.europa.eu/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    return mapLayerSources;
-  }
-
   public static async create(iModel?: IModelConnection, queryForPublicSources = false, addMapBoxSources = false): Promise<MapLayerSources> {
     if (!queryForPublicSources && MapLayerSources._instance)
       return MapLayerSources._instance;
@@ -185,13 +176,13 @@ export class MapLayerSources {
     if (!iModel)
       iModel = IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.iModel : undefined;
 
-    let sourceRange = MapCartoRectangle.create();
+    let sourceRange = MapCartoRectangle.createMaximum();
     if (iModel) {
       const projectCenter = iModel.projectExtents.localXYZToWorld(.5, .5, .5)!;
       const cartoCenter = iModel.spatialToCartographicFromEcef(projectCenter);
-      const globeRange = MapCartoRectangle.create();
+      const globeRange = MapCartoRectangle.createMaximum();
       const nearDelta = Point2d.create(globeRange.xLength() / 100, globeRange.yLength() / 100);
-      sourceRange = MapCartoRectangle.create(cartoCenter.longitude - nearDelta.x, cartoCenter.latitude - nearDelta.y, cartoCenter.longitude + nearDelta.x, cartoCenter.latitude + nearDelta.y);
+      sourceRange = MapCartoRectangle.fromRadians(cartoCenter.longitude - nearDelta.x, cartoCenter.latitude - nearDelta.y, cartoCenter.longitude + nearDelta.x, cartoCenter.latitude + nearDelta.y);
     }
 
     const sources = new Array<MapLayerSource>();
@@ -214,7 +205,7 @@ export class MapLayerSources {
     }
 
     if (queryForPublicSources) {
-      const sourcesJson = await getJson("assets/MapLayerSources.json");
+      const sourcesJson = await getJson(`${IModelApp.publicPath}assets/MapLayerSources.json`);
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);
@@ -223,14 +214,6 @@ export class MapLayerSources {
       }
 
       (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
-    }
-
-    if (iModel && iModel.iTwinId && iModel.iModelId) {
-      try {
-        (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.iTwinId, iModel.iModelId)).forEach((source) => addSource(source));
-      } catch (err) {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
-      }
     }
 
     sources.sort((a: MapLayerSource, b: MapLayerSource) => compareStrings(a.name.toLowerCase(), b.name.toLowerCase()));

@@ -1,11 +1,10 @@
 {
   "name": "@itwin/editor-frontend",
-  "version": "3.0.0-dev.113",
-  "description": "iModel.js frontend components",
+  "version": "3.6.0-dev.8",
+  "description": "iTwin.js frontend components",
   "main": "lib/cjs/editor-frontend.js",
   "module": "lib/esm/editor-frontend.js",
   "typings": "lib/cjs/editor-frontend",
-  "imodeljsSharedLibrary": false,
   "license": "MIT",
   "scripts": {
     "build": "npm run -s copy:locale && npm run -s build:cjs",
@@ -37,31 +36,28 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.113",
-    "@itwin/core-common": "workspace:^3.0.0-dev.113"
+    "@itwin/appui-abstract": "workspace:^3.6.0-dev.8",
+    "@itwin/core-bentley": "workspace:^3.6.0-dev.8",
+    "@itwin/core-common": "workspace:^3.6.0-dev.8",
+    "@itwin/core-frontend": "workspace:^3.6.0-dev.8",
+    "@itwin/core-geometry": "workspace:^3.6.0-dev.8"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@types/chai": "^4.1.4",
-    "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
-    "@types/semver": "^5.5.0",
-    "chai": "^4.1.2",
-    "cpx": "^1.5.0",
-    "electron": "^14.0.0",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
-    "glob": "^7.1.2",
-    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
-    "source-map-loader": "^1.0.0",
     "typescript": "~4.4.0"
   },
   "//dependencies": [
@@ -69,10 +65,7 @@
     "NOTE: editor-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/core-geometry": "workspace:*",
-    "@itwin/editor-common": "workspace:*",
-    "@itwin/core-frontend": "workspace:*",
-    "@itwin/appui-abstract": "workspace:*"
+    "@itwin/editor-common": "workspace:*"
   },
   "eslintConfig": {
     "plugins": [

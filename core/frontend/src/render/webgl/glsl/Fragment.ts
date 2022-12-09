@@ -71,7 +71,7 @@ const computePickBufferOutputs = `${multiplyAlpha}
   ivec4 feature_id_i = ivec4(feature_id * 255.0 + 0.5);
   vec4 output1 = vec4(feature_id_i) / 255.0;
   float linearDepth = computeLinearDepth(v_eyeSpace.z);
-  vec4 output2 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
+  vec4 output2 = vec4(renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
 `;
 
 const computeAltPickBufferOutputs = `${multiplyAlpha}
@@ -102,6 +102,14 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
   frag.addFunction(computeLinearDepth);
 
   const prelude = new SourceBuilder();
+  const overrideOrder = frag.get(FragmentShaderComponent.OverrideRenderOrder);
+  if (overrideOrder) {
+    frag.addFunction("float overrideRenderOrder(float currentOrder)", overrideOrder);
+    prelude.addline("  float renderOrder = overrideRenderOrder(u_renderOrder);");
+  } else {
+    prelude.addline("  float renderOrder = u_renderOrder;");
+  }
+
   prelude.add(computePickBufferOutputs);
 
   const overrideColor = frag.get(FragmentShaderComponent.OverrideColor);

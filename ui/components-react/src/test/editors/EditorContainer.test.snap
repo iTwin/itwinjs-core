@@ -7,6 +7,7 @@ exports[`<EditorContainer /> renders correctly 1`] = `
   onBlur={[Function]}
   onClick={[Function]}
   onContextMenu={[Function]}
+  onKeyDown={[Function]}
   role="presentation"
   title="abc"
 >

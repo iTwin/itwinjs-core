@@ -6,15 +6,17 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb, IModelJsNative } from "@itwin/core-backend";
 import {
+  Id64sRulesetVariableJSON,
   NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams, UpdateHierarchyStateParams,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import { createRandomBaseNodeKey } from "@itwin/presentation-common/lib/cjs/test";
+import { createRandomBaseNodeKey, createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
+import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 
 describe("PresentationIpcHandler", () => {
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
@@ -36,6 +38,25 @@ describe("PresentationIpcHandler", () => {
       const testVariable: StringRulesetVariable = { id: "var-id", type: VariableValueTypes.String, value: "test-val" };
       variablesManagerMock.setup((x) => x.setValue(testVariable.id, testVariable.type, testVariable.value)).verifiable(moq.Times.once());
 
+      const ipcHandler = new PresentationIpcHandler();
+      const params: SetRulesetVariableParams<RulesetVariableJSON> = {
+        clientId: "test-client-id",
+        rulesetId: testRulesetId,
+        variable: testVariable,
+      };
+      await ipcHandler.setRulesetVariable(params);
+      variablesManagerMock.verifyAll();
+    });
+
+    it("decompresses ids set before setting value variables", async () => {
+      const ids = OrderedId64Iterable.sortArray([createRandomId(), createRandomId()]);
+      const testVariable: Id64sRulesetVariableJSON = {
+        type: VariableValueTypes.Id64Array,
+        id: "test",
+        value: CompressedId64Set.compressIds(ids),
+      };
+
+      variablesManagerMock.setup((x) => x.setValue(testVariable.id, testVariable.type, ids)).verifiable(moq.Times.once());
       const ipcHandler = new PresentationIpcHandler();
       const params: SetRulesetVariableParams<RulesetVariableJSON> = {
         clientId: "test-client-id",

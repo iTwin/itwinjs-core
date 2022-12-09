@@ -27,6 +27,7 @@ import { ViewState, ViewState2d } from "./ViewState";
 
 /** Options for creating a [[ViewState2d]] via [[ViewCreator2d]].
  *  @public
+ * @extensions
 */
 export interface ViewCreator2dOptions {
   /** Aspect ratio of [[Viewport]]. Required to fit contents of the model in the initial state of the view. */
@@ -47,6 +48,7 @@ export interface ViewCreator2dOptions {
  *   const view = await viewCreator.createViewForModel(models[0].id!);
  * ```
  * @public
+ * @extensions
  */
 export class ViewCreator2d {
 
@@ -159,13 +161,8 @@ export class ViewCreator2d {
     const bgColor: ColorDef = options?.bgColor ? options.bgColor : ColorDef.white;
 
     // model extents
-    let modelExtents: Range3d;
-    if (this._imodel.isBlank) {
-      modelExtents = this._imodel.projectExtents;
-    } else {
-      const modelProps = await this._imodel.models.queryModelRanges(modelId);
-      modelExtents = Range3d.fromJSON(modelProps[0]);
-    }
+    const modelProps = await this._imodel.models.queryExtents(modelId);
+    const modelExtents = Range3d.fromJSON(modelProps[0]?.extents);
     let originX = modelExtents.low.x;
     let originY = modelExtents.low.y;
     let deltaX = modelExtents.xLength();
@@ -215,7 +212,7 @@ export class ViewCreator2d {
     const displayStyleProps: DisplayStyleProps = {
       code: Code.createEmpty(),
       model: dictionaryId,
-      classFullName: "BisCore:DisplayStyle",
+      classFullName: "BisCore:DisplayStyle2d",
       jsonProperties: {
         styles: {
           backgroundColor: bgColor.tbgr,
@@ -243,7 +240,7 @@ export class ViewCreator2d {
   private async _addSheetViewProps(modelId: Id64String, props: ViewStateProps) {
     let width = 0;
     let height = 0;
-    for await (const row of this._imodel.query(`SELECT Width, Height FROM bis.Sheet WHERE ECInstanceId = ?`, QueryBinder.from([modelId]), QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of this._imodel.query(`SELECT Width, Height FROM bis.Sheet WHERE ECInstanceId = ?`, QueryBinder.from([modelId]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       width = row.width as number;
       height = row.height as number;
       break;
@@ -334,7 +331,7 @@ export class ViewCreator2d {
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    for await (const row of this._imodel.query(query, undefined, QueryRowFormat.UseJsPropertyNames))
+    for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       rows.push(row.id);
 
     return rows;

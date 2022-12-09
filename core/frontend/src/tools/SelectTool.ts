@@ -28,6 +28,7 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
 
 /** The method for choosing elements with the [[SelectionTool]]
  * @public
+ * @extensions
  */
 export enum SelectionMethod {
   /** Identify element(s) by picking for drag selection (inside/overlap for drag box selection determined by point direction and shift key) */
@@ -40,6 +41,7 @@ export enum SelectionMethod {
 
 /** The mode for choosing elements with the [[SelectionTool]]
  * @public
+ * @extensions
  */
 export enum SelectionMode {
   /** Identified elements replace the current selection set (use control key to add or remove) */
@@ -52,6 +54,7 @@ export enum SelectionMode {
 
 /** The processing method to use to update the current selection.
  * @public
+ * @extensions
  */
 export enum SelectionProcessing {
   /** Add element to selection. */
@@ -140,7 +143,10 @@ export class SelectionTool extends PrimitiveTool {
             { iconSpec: "icon-select-plus" },
             {
               iconSpec: "icon-select-minus",
-              isEnabledFunction: () => { const tool = IModelApp.toolAdmin.activeTool; return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false; },
+              isEnabledFunction: () => {
+                const tool = IModelApp.toolAdmin.activeTool;
+                return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false;
+              },
             },
           ],
         } as ButtonGroupEditorParams, {
@@ -293,14 +299,20 @@ export class SelectionTool extends PrimitiveTool {
     const crossingLine = (SelectionMethod.Line === this.selectionMethod || (SelectionMethod.Pick === this.selectionMethod && BeButton.Reset === ev.button));
     const overlapSelection = (crossingLine || this.useOverlapSelection(ev));
 
-    const position = vp.worldToView(this._points[0]); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
-    const position2 = vp.worldToView(ev.point); position2.x = Math.floor(position2.x) + 0.5; position2.y = Math.floor(position2.y) + 0.5;
+    const position = vp.worldToView(this._points[0]);
+    position.x = Math.floor(position.x) + 0.5;
+    position.y = Math.floor(position.y) + 0.5;
+    const position2 = vp.worldToView(ev.point);
+    position2.x = Math.floor(position2.x) + 0.5;
+    position2.y = Math.floor(position2.y) + 0.5;
     const offset = position2.minus(position);
 
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {
       ctx.strokeStyle = bestContrastIsBlack ? "black" : "white";
       ctx.lineWidth = 1;
-      if (overlapSelection) ctx.setLineDash([5, 5]);
+      if (overlapSelection)
+        ctx.setLineDash([5, 5]);
+
       if (crossingLine) {
         ctx.beginPath();
         ctx.moveTo(0, 0);
@@ -378,7 +390,11 @@ export class SelectionTool extends PrimitiveTool {
         }
         if (undefined !== outline && 0 !== outline.size) {
           const inside = new Set<string>();
-          contents.forEach((id) => { if (!outline.has(id)) inside.add(id); });
+          contents.forEach((id) => {
+            if (!outline.has(id))
+              inside.add(id);
+          });
+
           contents = inside;
         }
       } else {
@@ -585,9 +601,20 @@ export class SelectionTool extends PrimitiveTool {
     return (this._isSuspended || this._isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public override async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+  public override async onTouchMove(ev: BeTouchEvent): Promise<void> {
+    if (this._isSelectByPoints)
+      return IModelApp.toolAdmin.convertTouchMoveToMotion(ev);
+  }
+
+  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> {
+    if (this._isSelectByPoints)
+      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev);
+  }
+
+  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> {
+    if (this._isSelectByPoints)
+      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset);
+  }
 
   public override decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
 

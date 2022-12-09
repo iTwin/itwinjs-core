@@ -288,7 +288,11 @@ const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, Quantit
       event.currentTarget.select();
     }, []);
 
-    const containerClasses = classnames("component-quantity-number-input-container", containerClassName, showTouchButtons && "component-number-buttons-for-touch");
+    const isDisabled = !!otherProps.disabled;
+    const containerClasses = classnames("component-quantity-number-input-container",
+      containerClassName, showTouchButtons && "component-number-buttons-for-touch",
+      isDisabled && "component-quantity-number-input-disabled",
+    );
     return (
       <div className={containerClasses} >
         <div className="component-quantity-number-input-value-and-buttons-container">

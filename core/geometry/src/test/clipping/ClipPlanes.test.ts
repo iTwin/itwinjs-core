@@ -38,6 +38,8 @@ import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceCl
 import { LinearSweep } from "../../solid/LinearSweep";
 import { Cone } from "../../solid/Cone";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
+import { IndexedPolyface } from "../../polyface/Polyface";
+import { ImportedSample } from "../testInputs/ImportedSamples";
 
 /* eslint-disable no-console, no-trailing-spaces */
 
@@ -297,8 +299,6 @@ describe("ConvexClipPlaneSet", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  // ---------------------------------------------------------------------------------------------------
-
   it("ClipPointsOnOrInside", () => {
     for (let i = -50; i < 50; i += 15) {
       const clip1 = ClipPlane.createPlane(Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, 0), Vector3d.create(i, -i, i))!);
@@ -319,6 +319,39 @@ describe("ConvexClipPlaneSet", () => {
     }
 
     ck.checkpoint("IsPointOn&IsPointOnOrInside");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  function testConvertMeshToClipper(mesh: IndexedPolyface) {
+    const result = ConvexClipPlaneSet.createConvexPolyface(mesh);
+    if (ck.testDefined(result.clipper)) {
+      if (ck.testExactNumber(mesh.facetCount, result.clipper.planes.length, "# facets === # planes")) {
+        const xyz = Point3d.create();
+        for (let i = 0; i < mesh.pointCount; ++i) {
+          mesh.data.getPoint(i, xyz);
+          ck.testTrue(result.clipper.isPointOnOrInside(xyz), "mesh vertex is not outside clipper");
+          let isVertexOnClipper = false;
+          for (const plane of result.clipper.planes) {
+            if (plane.isPointOn(xyz)) {
+              isVertexOnClipper = true;
+              break;
+            }
+          }
+          ck.testTrue(isVertexOnClipper, "mesh vertex is *on* clipper");
+        }
+      }
+    }
+  }
+
+  it("CreateFromConvexPolyface", () => {
+    const mesh = ImportedSample.createPolyhedron62();
+    if (ck.testDefined(mesh) && undefined !== mesh) {
+      testConvertMeshToClipper(mesh);
+      // verify that the reversed closed mesh produces same clipper with inward plane normals
+      mesh.reverseIndices();
+      mesh.reverseNormals();
+      testConvertMeshToClipper(mesh);
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });

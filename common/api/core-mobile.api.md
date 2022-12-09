@@ -4,16 +4,18 @@
 
 ```ts
 
+/// <reference types="node" />
+
 import { AccessToken } from '@itwin/core-bentley';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
+import { AuthorizationClient } from '@itwin/core-common';
 import { BeEvent } from '@itwin/core-bentley';
-import { CancelRequest } from '@bentley/itwin-client';
-import { IModelAppOptions } from '@itwin/core-frontend';
-import { NativeAppAuthorizationBackend } from '@itwin/core-backend';
-import { NativeAppAuthorizationConfiguration } from '@itwin/core-common';
+import { BentleyError } from '@itwin/core-bentley';
+import { GetMetaDataFunction } from '@itwin/core-bentley';
+import * as https from 'https';
+import { Listener } from '@itwin/core-bentley';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
-import { ProgressCallback } from '@bentley/itwin-client';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { RpcConfiguration } from '@itwin/core-common';
 import { RpcEndpoint } from '@itwin/core-common';
@@ -24,25 +26,29 @@ import { RpcRequestFulfillment } from '@itwin/core-common';
 import { RpcSerializedValue } from '@itwin/core-common';
 
 // @beta (undocumented)
-export class AndroidApp {
+export enum BatteryState {
     // (undocumented)
-    static get isValid(): boolean;
+    Charging = 2,
     // (undocumented)
-    static startup(opts?: {
-        mobileApp?: {
-            rpcInterfaces?: RpcInterfaceDefinition[];
-        };
-        iModelApp?: IModelAppOptions;
-    }): Promise<void>;
+    Full = 3,
+    // (undocumented)
+    Unknown = 0,
+    // (undocumented)
+    Unplugged = 1
+}
+
+// @beta
+export interface CancelRequest {
+    cancel: () => boolean;
 }
 
 // @beta (undocumented)
-export class AndroidHost extends MobileHost {
-    static startup(opt?: AndroidHostOpts): Promise<void>;
-}
+export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate" | "authAccessTokenChanged";
 
-// @beta (undocumented)
-export type AndroidHostOpts = MobileHostOpts;
+// @internal
+export class DownloadFailed extends BentleyError {
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
+}
 
 // @beta (undocumented)
 export interface DownloadTask {
@@ -71,30 +77,13 @@ export interface DownloadTask {
 }
 
 // @beta (undocumented)
-export class IOSApp {
-    // (undocumented)
-    static get isValid(): boolean;
-    // (undocumented)
-    static startup(opts?: IOSAppOpts): Promise<void>;
-}
-
-// @beta (undocumented)
-export type IOSAppOpts = NativeAppOpts;
-
-// @beta (undocumented)
-export class IOSHost extends MobileHost {
-    static startup(opt?: IOSHostOpts): Promise<void>;
-}
-
-// @beta (undocumented)
-export type IOSHostOpts = MobileHostOpts;
-
-// @beta (undocumented)
 export class MobileApp {
     // (undocumented)
     static callBackend<T extends AsyncMethodsOf<MobileAppFunctions>>(methodName: T, ...args: Parameters<MobileAppFunctions[T]>): Promise<PromiseReturnType<MobileAppFunctions[T]>>;
     // (undocumented)
     static get isValid(): boolean;
+    // (undocumented)
+    static onAuthAccessTokenChanged: BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>;
     // (undocumented)
     static onEnterBackground: BeEvent<() => void>;
     // (undocumented)
@@ -105,8 +94,31 @@ export class MobileApp {
     static onOrientationChanged: BeEvent<() => void>;
     // (undocumented)
     static onWillTerminate: BeEvent<() => void>;
-    // @internal
-    static startup(opts?: NativeAppOpts): Promise<void>;
+    // (undocumented)
+    static startup(opts?: MobileAppOpts): Promise<void>;
+}
+
+// @beta
+export interface MobileAppFunctions {
+    // (undocumented)
+    getAccessToken: () => Promise<[AccessToken, string]>;
+    // (undocumented)
+    reconnect: (connection: number) => Promise<void>;
+}
+
+// @beta (undocumented)
+export type MobileAppOpts = NativeAppOpts & {
+    iModelApp: {
+        authorizationClient?: never;
+    };
+};
+
+// @internal
+export class MobileAuthorizationBackend implements AuthorizationClient {
+    // (undocumented)
+    getAccessToken(): Promise<AccessToken>;
+    // (undocumented)
+    setAccessToken(accessToken?: string, expirationDate?: string): void;
 }
 
 // @beta (undocumented)
@@ -118,15 +130,7 @@ export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: st
 // @beta (undocumented)
 export abstract class MobileDevice {
     // (undocumented)
-    abstract authGetAccessToken(callback: (accessToken?: string, err?: string) => void): void;
-    // (undocumented)
-    authInit(_config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
-    // (undocumented)
-    abstract authSignIn(callback: (err?: string) => void): void;
-    // (undocumented)
-    abstract authSignOut(callback: (err?: string) => void): void;
-    // (undocumented)
-    abstract authStateChanged(accessToken?: string, err?: string): void;
+    abstract authGetAccessToken(callback: (accessToken?: string, expirationDate?: string, err?: string) => void): void;
     // (undocumented)
     abstract cancelDownloadTask(cancelId: number): boolean;
     // (undocumented)
@@ -149,26 +153,45 @@ export abstract class MobileDevice {
     abstract resumeDownloadInForeground(requestId: number): boolean;
 }
 
+// @internal
+export class MobileFileHandler {
+    constructor();
+    // (undocumented)
+    agent?: https.Agent;
+    basename(filePath: string): string;
+    downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    exists(filePath: string): boolean;
+    getFileSize(filePath: string): number;
+    isDirectory(filePath: string): boolean;
+    static isUrlExpired(downloadUrl: string, futureSeconds?: number): boolean;
+    join(...paths: string[]): string;
+    unlink(filePath: string): void;
+    uploadFile(accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
+}
+
 // @beta (undocumented)
 export class MobileHost {
     // @internal (undocumented)
-    static get authorization(): MobileAuthorizationBackend;
+    static authGetAccessToken(): Promise<[string, string]>;
     // (undocumented)
     static get device(): MobileDevice;
     // @internal (undocumented)
     static downloadFile(downloadUrl: string, downloadTo: string, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     // (undocumented)
     static get isValid(): boolean;
+    static notifyMobileFrontend<T extends keyof MobileNotifications>(methodName: T, ...args: Parameters<MobileNotifications[T]>): void;
     // (undocumented)
-    static readonly onEnterBackground: BeEvent<import("@itwin/core-bentley").Listener>;
+    static readonly onAuthAccessTokenChanged: BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>;
     // (undocumented)
-    static readonly onEnterForeground: BeEvent<import("@itwin/core-bentley").Listener>;
+    static readonly onEnterBackground: BeEvent<Listener>;
     // (undocumented)
-    static readonly onMemoryWarning: BeEvent<import("@itwin/core-bentley").Listener>;
+    static readonly onEnterForeground: BeEvent<Listener>;
     // (undocumented)
-    static readonly onOrientationChanged: BeEvent<import("@itwin/core-bentley").Listener>;
+    static readonly onMemoryWarning: BeEvent<Listener>;
     // (undocumented)
-    static readonly onWillTerminate: BeEvent<import("@itwin/core-bentley").Listener>;
+    static readonly onOrientationChanged: BeEvent<Listener>;
+    // (undocumented)
+    static readonly onWillTerminate: BeEvent<Listener>;
     // @internal (undocumented)
     static reconnect(connection: number): void;
     static startup(opt?: MobileHostOpts): Promise<void>;
@@ -180,13 +203,30 @@ export interface MobileHostOpts extends NativeHostOpts {
     mobileHost?: {
         device?: MobileDevice;
         rpcInterfaces?: RpcInterfaceDefinition[];
-        authConfig?: NativeAppAuthorizationConfiguration;
-        noInitializeAuthClient?: boolean;
     };
 }
 
 // @beta (undocumented)
+export interface MobileNotifications {
+    // (undocumented)
+    notifyAuthAccessTokenChanged: (accessToken: string | undefined, expirationDate: string | undefined) => void;
+    // (undocumented)
+    notifyEnterBackground: () => void;
+    // (undocumented)
+    notifyEnterForeground: () => void;
+    // (undocumented)
+    notifyMemoryWarning: () => void;
+    // (undocumented)
+    notifyOrientationChanged: () => void;
+    // (undocumented)
+    notifyWillTerminate: () => void;
+}
+
+// @beta (undocumented)
 export type MobileProgressCallback = (bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => void;
+
+// @beta (undocumented)
+export type MobileRpcChunks = Array<string | Uint8Array>;
 
 // @beta
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
@@ -201,12 +241,75 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
     };
 }
 
+// @beta (undocumented)
+export interface MobileRpcGateway {
+    // (undocumented)
+    connectionId: number;
+    // (undocumented)
+    handler: (payload: ArrayBuffer | string, connectionId: number) => void;
+    // (undocumented)
+    port: number;
+    // (undocumented)
+    sendBinary: (message: Uint8Array, connectionId: number) => void;
+    // (undocumented)
+    sendString: (message: string, connectionId: number) => void;
+}
+
 // @beta
 export class MobileRpcManager {
     static initializeClient(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
     static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
     // @internal (undocumented)
     static ready(): Promise<void>;
+}
+
+// @beta
+export class MobileRpcProtocol extends RpcProtocol {
+    constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint);
+    // (undocumented)
+    static encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks>;
+    // (undocumented)
+    static encodeResponse(fulfillment: RpcRequestFulfillment): MobileRpcChunks;
+    // (undocumented)
+    static obtainInterop(): MobileRpcGateway;
+    // (undocumented)
+    requests: Map<string, MobileRpcRequest>;
+    // (undocumented)
+    readonly requestType: typeof MobileRpcRequest;
+    // (undocumented)
+    sendToBackend(message: MobileRpcChunks): void;
+    // (undocumented)
+    sendToFrontend(message: MobileRpcChunks, connection?: number): void;
+    // (undocumented)
+    socket: WebSocket;
+}
+
+// @beta (undocumented)
+export class MobileRpcRequest extends RpcRequest {
+    protected load(): Promise<RpcSerializedValue>;
+    // @internal (undocumented)
+    notifyResponse(fulfillment: RpcRequestFulfillment): void;
+    readonly protocol: MobileRpcProtocol;
+    protected send(): Promise<number>;
+    protected setHeader(_name: string, _value: string): void;
+}
+
+// @beta (undocumented)
+export enum Orientation {
+    // (undocumented)
+    FaceDown = 32,
+    // (undocumented)
+    FaceUp = 16,
+    // (undocumented)
+    LandscapeLeft = 4,
+    // (undocumented)
+    LandscapeRight = 8,
+    // (undocumented)
+    Portrait = 1,
+    // (undocumented)
+    PortraitUpsideDown = 2,
+    // (undocumented)
+    Unknown = 0
 }
 
 // @beta
@@ -219,6 +322,15 @@ export enum RpcMobilePlatform {
     Unknown = 0
 }
 
+// @internal
+export class SasUrlExpired extends BentleyError {
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
+}
+
+// @internal
+export class UserCancelledError extends BentleyError {
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
+}
 
 // (No @packageDocumentation comment for this package)
 

@@ -8,22 +8,32 @@ import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
-import { IModelHost, IModelHostConfiguration, KnownLocations } from "../IModelHost";
+import { IModelHost, IModelHostConfiguration, IModelHostOptions, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
-import { IModelTestUtils, TestUtils } from "./index";
+import { AzureBlobStorage } from "../CloudStorageBackend";
+import { KnownTestLocations } from "./KnownTestLocations";
+import { AzureServerStorage } from "@itwin/object-storage-azure";
+import { ServerStorage } from "@itwin/object-storage-core";
+import { TestUtils } from "./TestUtils";
+import { IModelTestUtils } from "./IModelTestUtils";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 
 describe("IModelHost", () => {
+  const opts = { cacheDir: path.join(__dirname, ".cache") };
+  beforeEach(async () => {
+    await TestUtils.shutdownBackend();
+  });
 
   afterEach(async () => {
     sinon.restore();
-    // Restore the backend to the initial state.
-    await TestUtils.shutdownBackend();
+  });
+
+  after(async () => {
     await TestUtils.startBackend();
   });
 
   it("valid default configuration", async () => {
-    await TestUtils.shutdownBackend();
-    await IModelHost.startup();
+    await IModelHost.startup(opts);
 
     // Valid registered implemented RPCs
     expect(RpcRegistry.instance.implementationClasses.size).to.equal(5);
@@ -38,16 +48,23 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
   });
 
-  it("should raise onAfterStartup events", async () => {
-    await TestUtils.shutdownBackend();
+  it("should call logger sync function", async () => {
+    const logChanged = sinon.spy(IModelHost as any, "syncNativeLogLevels");
+    await IModelHost.startup(opts);
+    expect(logChanged.callCount).eq(0);
+    Logger.setLevel("test-cat", LogLevel.Warning);
+    expect(logChanged.callCount).eq(1);
+  });
 
+  it("should raise onAfterStartup events", async () => {
     const eventHandler = sinon.spy();
     IModelHost.onAfterStartup.addOnce(eventHandler);
-    await IModelHost.startup();
+    await IModelHost.startup(opts);
     expect(eventHandler.calledOnce).to.be.true;
   });
 
   it("should raise onBeforeShutdown events", async () => {
+    await TestUtils.startBackend();
     const eventHandler = sinon.spy();
     IModelHost.onBeforeShutdown.addOnce(eventHandler);
     const filename = IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim");
@@ -81,6 +98,7 @@ describe("IModelHost", () => {
   });
 
   it("should auto-shutdown on process beforeExit event", async () => {
+    await TestUtils.startBackend();
     expect(IModelHost.isValid).to.be.true;
     const eventHandler = sinon.spy();
     IModelHost.onBeforeShutdown.addOnce(eventHandler);
@@ -91,10 +109,7 @@ describe("IModelHost", () => {
   });
 
   it("should set the briefcase cache directory to expected locations", async () => {
-    // Shutdown IModelHost to allow this test to use it.
-    await TestUtils.shutdownBackend();
-
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     const cacheSubDir = "imodels";
 
     // Test cache default location
@@ -111,9 +126,135 @@ describe("IModelHost", () => {
     assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
   });
 
-  // TODO:
-  it.skip("should cleanup everything on shutdown", () => {
+  /* eslint-disable deprecation/deprecation */
+  it("should set Azure cloud storage provider for tile cache given credentials", async () => {
+    const config: IModelHostOptions = {};
+    config.tileCacheAzureCredentials = {
+      account: "testAccount",
+      accessKey: "testAccessKey",
+    };
 
+    const setMaxTileCacheSizeStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setMaxTileCacheSize: setMaxTileCacheSizeStub,
+    }));
+
+    await IModelHost.startup(config);
+
+    assert.instanceOf(IModelHost.tileCacheService, AzureBlobStorage);
+    assert.equal((IModelHost.tileCacheService as any)._credential.accountName, config.tileCacheAzureCredentials.account);
+    assert.isDefined(IModelHost.tileStorage);
+    assert.instanceOf(IModelHost.tileStorage!.storage, AzureServerStorage);
+    assert.equal((IModelHost.tileStorage!.storage as any)._config.accountName, config.tileCacheAzureCredentials.account);
+    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(0));
   });
 
+  it("should set custom cloud storage provider for tile cache", async () => {
+    const config: IModelHostOptions = {};
+    config.tileCacheService = {} as AzureBlobStorage;
+    config.tileCacheStorage = {} as ServerStorage;
+
+    const setMaxTileCacheSizeStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setMaxTileCacheSize: setMaxTileCacheSizeStub,
+    }));
+
+    await IModelHost.startup(config);
+
+    assert.equal(IModelHost.tileCacheService, config.tileCacheService);
+    assert.isDefined(IModelHost.tileStorage);
+    assert.equal(IModelHost.tileStorage!.storage, config.tileCacheStorage);
+    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(0));
+  });
+
+  it("should throw if both tileCacheService and tileCacheAzureCredentials are set", async () => {
+    const config: IModelHostOptions = {};
+    config.tileCacheAzureCredentials = {
+      account: "testAccount",
+      accessKey: "testAccessKey",
+    };
+    config.tileCacheService = {} as AzureBlobStorage;
+
+    await expect(IModelHost.startup(config)).to.be.rejectedWith("Cannot use both Azure and custom cloud storage providers for tile cache.");
+  });
+
+  it("should throw if both tileCacheStorage and tileCacheAzureCredentials are set", async () => {
+    const config: IModelHostOptions = {};
+    config.tileCacheAzureCredentials = {
+      account: "testAccount",
+      accessKey: "testAccessKey",
+    };
+    config.tileCacheStorage = {} as ServerStorage;
+
+    await expect(IModelHost.startup(config)).to.be.rejectedWith("Cannot use both Azure and custom cloud storage providers for tile cache.");
+  });
+
+  it("should use local cache if cloud storage provider for tile cache is not set", async () => {
+    const setMaxTileCacheSizeStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setMaxTileCacheSize: setMaxTileCacheSizeStub,
+    }));
+
+    await IModelHost.startup(opts);
+
+    assert.isUndefined(IModelHost.tileCacheService);
+    assert.isUndefined(IModelHost.tileUploader);
+    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(IModelHostConfiguration.defaultMaxTileCacheDbSize));
+  });
+
+  it("should use configured size for local cache", async () => {
+    const setMaxTileCacheSizeStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setMaxTileCacheSize: setMaxTileCacheSizeStub,
+    }));
+
+    const maxTileCacheDbSize = 123456;
+    await IModelHost.startup({
+      ...opts,
+      maxTileCacheDbSize,
+    });
+
+    assert.isUndefined(IModelHost.tileCacheService);
+    assert.isUndefined(IModelHost.tileUploader);
+    assert.isTrue(setMaxTileCacheSizeStub.calledOnceWithExactly(maxTileCacheDbSize));
+  });
+
+  it("should cleanup tileCacheService, tileStorageService and tileUploader on shutdown", async () => {
+    const config: IModelHostOptions = {};
+    config.tileCacheService = {} as AzureBlobStorage;
+    config.tileCacheStorage = {} as ServerStorage;
+
+    await IModelHost.startup(config);
+
+    assert.equal(IModelHost.tileCacheService, config.tileCacheService);
+    assert.equal(IModelHost.tileStorage?.storage, config.tileCacheStorage);
+    assert.isDefined(IModelHost.tileUploader);
+
+    await IModelHost.shutdown();
+
+    assert.isUndefined(IModelHost.tileCacheService);
+    assert.isUndefined(IModelHost.tileStorage);
+    assert.isUndefined(IModelHost.tileUploader);
+  });
+  /* eslint-enable deprecation/deprecation */
+
+  it("should throw if hubAccess is undefined and getter is called", async () => {
+    await IModelHost.startup(opts);
+    expect(IModelHost.getHubAccess()).undefined;
+    expect(() => IModelHost.hubAccess).throws();
+  });
+
+  it("computeSchemaChecksum", () => {
+    const assetsDir = path.join(KnownTestLocations.assetsDir, "ECSchemaOps");
+    const schemaXmlPath = path.join(assetsDir, "SchemaA.ecschema.xml");
+    let referencePaths = [assetsDir];
+    let sha1 = IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths });
+    expect(sha1).equal("3ac6578060902aa0b8426b61d62045fdf7fa0b2b");
+
+    expect(() => IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true })).throws("Failed to read schema SchemaA.ecschema");
+
+    referencePaths = [path.join(assetsDir, "exact-match")];
+    sha1 = IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true });
+    expect(sha1).equal("2a618664fbba1df7c05f27d7c0e8f58de250003b");
+  });
 });

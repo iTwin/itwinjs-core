@@ -4,18 +4,18 @@
   "definitions": {
     "CalculatedPropertiesSpecification": {
       "additionalProperties": false,
-      "description": "Sub-specification to include additional calculated properties into the content.",
+      "description": "This content modifier allows including additional calculated properties into the content.",
       "properties": {
         "label": {
-          "description": "Label of the calculated property. May be localized.",
+          "description": "Specifies label of the calculated property. Supports localization.",
           "type": "string"
         },
         "priority": {
-          "description": "Priority of the property. Determines the position of this property in UI\ncomponents - higher priority means the property should be more visible.\nDefaults to `1000`.",
+          "description": "Assign a custom `Field.priority` to the property. It's up to the UI component to make sure that priority\nis respected - properties with higher priority should appear before or above properties with lower priority.",
           "type": "integer"
         },
         "value": {
-          "description": "ECExpression used to calculate the value. The\nfollowing symbol sets are available:\n- ECInstance ECExpression context\n- Ruleset variables",
+          "description": "Defines an expression to calculate the value. The expression can use ECInstance\nand Ruleset Variables symbol contexts.",
           "type": "string"
         }
       },
@@ -27,7 +27,7 @@
     },
     "CheckBoxRule": {
       "additionalProperties": false,
-      "description": "Rule that allows configuring check boxes for certain nodes.\n\nIs also allows binding check box state with boolean properties by setting `propertyName` parameter.\nIf `propertyName` is not set, then `defaultValue` is used for default check box state.",
+      "description": "CheckBox rules provide a way to create a checkbox for specific types of ECInstance's.",
       "properties": {
         "condition": {
           "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
@@ -45,20 +45,20 @@
           ]
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "propertyName": {
-          "description": "Name of boolean type ECProperty which is bound with the check box state. When set,\nproperty value gets bound to checkbox state.",
+          "description": "Name of boolean type ECProperty which is bound with the check box state. When set, property\nvalue gets bound to checkbox state.",
           "minLength": 1,
           "type": "string"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -83,14 +83,14 @@
     },
     "ChildNodeRule": {
       "additionalProperties": false,
-      "description": "Child node rules define nodes that are displayed at\neach child hierarchy level.",
+      "description": "Child node rules are used to define child nodes in a hierarchy.",
       "properties": {
         "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "description": "Defines a condition which needs to be met in order for the rule to be used. The condition is an\nECExpression which has to evaluate\nto a boolean value.",
           "type": "string"
         },
         "customizationRules": {
-          "description": "Customization rules that are applied for the content returned by\nthis rule.",
+          "description": "A list of customization rules that\napply only to nodes produced by this rule.",
           "items": {
             "anyOf": [
               {
@@ -128,15 +128,15 @@
           "type": "array"
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -150,7 +150,7 @@
           "type": "string"
         },
         "specifications": {
-          "description": "Specifications that define what content the rule returns.",
+          "description": "A list of hierarchy specifications that define what nodes are going to be returned.",
           "items": {
             "anyOf": [
               {
@@ -170,11 +170,11 @@
           "type": "array"
         },
         "stopFurtherProcessing": {
-          "description": "Stop processing rules that have lower priority. Used in cases when recursion\nsuppression is needed.\n\nNote: If this flag is set, `specifications` and `subConditions` are not processed.",
+          "description": "Stop processing rules that have lower priority. Used in cases when recursion suppression is needed.",
           "type": "boolean"
         },
         "subConditions": {
-          "description": "Specifies child node rules which are only used when specific condition\nis satisfied.",
+          "description": "A list of sub-rules which share *placement attributes* and\nnested customization rules\nof the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules\ncan add additional condition of their own.",
           "items": {
             "$ref": "#/definitions/SubCondition"
           },
@@ -188,14 +188,14 @@
     },
     "ClassGroup": {
       "additionalProperties": false,
-      "description": "Allows grouping ECInstance nodes by their base class.",
+      "description": "Base class grouping allows grouping ECInstance nodes by their base class (as opposed to the hierarchy\nspecifications' `groupByClass` attribute, which always groups by direct class).",
       "properties": {
         "baseClass": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of the base ECClass to group by. Defaults to rule's class."
+          "description": "Specification of the base ECClass to group by. If specified, allows grouping by a subclass of the class\nspecified by rule's `class` attribute."
         },
         "createGroupForSingleItem": {
-          "description": "Should the grouping node be created if there is only one item in that group.",
+          "description": "Specifies whether a grouping node should be created if there is only one item in that group.",
           "type": "boolean"
         },
         "specType": {
@@ -213,10 +213,10 @@
     },
     "ContentInstancesOfSpecificClassesSpecification": {
       "additionalProperties": false,
-      "description": "Creates content for ECInstance(s) of specified classes.\n\nNote: this specification doesn't rely on selection. It always returns instances no matter\nwhat the selection is, so pre-filtering should be done in `ContentRule` condition and `instanceFilter`.",
+      "description": "This specification creates content for all instances of specific ECClasses.",
       "properties": {
         "calculatedProperties": {
-          "description": "Specifications for including calculated properties",
+          "description": "Specifications of calculated properties whose values are\ngenerated using provided ECExpressions.",
           "items": {
             "$ref": "#/definitions/CalculatedPropertiesSpecification"
           },
@@ -234,54 +234,72 @@
               "type": "array"
             }
           ],
-          "description": "List of ECClass specifications whose ECInstances should be selected."
+          "description": "Defines a set of multi schema classes that specify which\nECClasses need to be selected to form the result."
+        },
+        "excludedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Defines a set of multi schema classes that prevents specified\nECClasses and subclasses from being selected by `classes` attribute."
         },
         "handleInstancesPolymorphically": {
-          "description": "Whether to get content from instances of derived `classes`.",
+          "description": "Tells whether selecting instances from ECClasses specified in `classes` and `excludedClasses`\nattributes should be polymorphic or not.",
           "type": "boolean"
         },
         "handlePropertiesPolymorphically": {
-          "description": "Whether to get content from properties of derived `classes`. If `true`, properties from `classes` with no instances\ndo not appear in the result set.",
+          "description": "Specifies whether properties of derived `classes` should be included in the content.",
           "type": "boolean"
         },
         "instanceFilter": {
-          "description": "Condition for filtering instances of defined classes.\n\nSee: ECExpressions available in instance filter",
+          "description": "Specifies an ECExpression for filtering instances\nof ECClasses specified through the `classes` attribute.",
           "type": "string"
         },
+        "onlyIfNotHandled": {
+          "description": "Specifies whether this specification should be ignored if another specification was handled before as\ndetermined by rule and specification priorities. This provides a mechanism for defining a fallback specification.",
+          "type": "boolean"
+        },
         "priority": {
-          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
+          "description": "Controls the order in which specifications are handled — specification with higher priority value is handled\nfirst. If priorities are equal, the specifications are handled in the order they appear in the ruleset.",
           "type": "integer"
         },
         "propertyCategories": {
-          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
+          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from property specification defined in\n`propertyOverrides` by `id`.",
           "items": {
             "$ref": "#/definitions/PropertyCategorySpecification"
           },
           "type": "array"
         },
         "propertyOverrides": {
-          "description": "Specifications for various property overrides.",
+          "description": "Specifications for various property overrides that allow customizing property display.",
           "items": {
             "$ref": "#/definitions/PropertySpecification"
           },
           "type": "array"
         },
         "relatedInstances": {
-          "description": "Specifications for joining related instances",
+          "description": "Specifications of related instances that can be used when creating the content.",
           "items": {
             "$ref": "#/definitions/RelatedInstanceSpecification"
           },
           "type": "array"
         },
         "relatedProperties": {
-          "description": "Specifications for including properties of related instances",
+          "description": "Specifications of related properties which are\nincluded in the generated content.",
           "items": {
             "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
           "type": "array"
         },
         "showImages": {
-          "description": "Should each content record be assigned an image id",
+          "description": "Should image IDs be calculated for the returned instances. When `true`, `ImageIdOverride` rules get applied when\ncreating the content.",
           "type": "boolean"
         },
         "specType": {
@@ -300,10 +318,10 @@
     },
     "ContentModifier": {
       "additionalProperties": false,
-      "description": "Rule that allows supplementing content with additional\nspecifications for certain ECClasses.",
+      "description": "Content modifiers are used to modify how instances of specified ECClasses are displayed in content which is\nproduced using content rules. They do not produce any content\nby themselves.",
       "properties": {
         "calculatedProperties": {
-          "description": "Specifications for including calculated properties",
+          "description": "Specifications of calculated properties whose values are\ngenerated using provided ECExpressions.",
           "items": {
             "$ref": "#/definitions/CalculatedPropertiesSpecification"
           },
@@ -311,39 +329,39 @@
         },
         "class": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of ECClass whose content should be supplemented.\nThe modifier is applied to all ECClasses if this property\nis not specified."
+          "description": "Specification of ECClass whose content should be modified. The modifier is applied to all content\nif this attribute is not specified."
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "propertyCategories": {
-          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
+          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from property specification defined in\n`propertyOverrides` by `id`.",
           "items": {
             "$ref": "#/definitions/PropertyCategorySpecification"
           },
           "type": "array"
         },
         "propertyOverrides": {
-          "description": "Specifications for various property overrides.",
+          "description": "Specifications for various property overrides that allow customizing property display.",
           "items": {
             "$ref": "#/definitions/PropertySpecification"
           },
           "type": "array"
         },
         "relatedProperties": {
-          "description": "Specifications for including properties of related instances",
+          "description": "Specifications of related properties which are\nincluded in the generated content.",
           "items": {
             "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
           "type": "array"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -364,53 +382,57 @@
     },
     "ContentRelatedInstancesSpecification": {
       "additionalProperties": false,
-      "description": "Creates content for ECInstance(s) related to current selection.\n\nNote: Use `ContentRule.condition` to apply specification on correct selection.",
+      "description": "Returns content for instances related to the selected (input) instances.",
       "properties": {
         "calculatedProperties": {
-          "description": "Specifications for including calculated properties",
+          "description": "Specifications of calculated properties whose values are\ngenerated using provided ECExpressions.",
           "items": {
             "$ref": "#/definitions/CalculatedPropertiesSpecification"
           },
           "type": "array"
         },
         "instanceFilter": {
-          "description": "Condition for filtering instances targeted by specified relationship paths.\n\nSee: ECExpressions available in instance filter",
+          "description": "Specifies an ECExpression for filtering instances\nof ECClasses targeted through the `relationshipPaths` attribute.",
           "type": "string"
         },
+        "onlyIfNotHandled": {
+          "description": "Specifies whether this specification should be ignored if another specification was handled before as\ndetermined by rule and specification priorities. This provides a mechanism for defining a fallback specification.",
+          "type": "boolean"
+        },
         "priority": {
-          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
+          "description": "Controls the order in which specifications are handled — specification with higher priority value is handled\nfirst. If priorities are equal, the specifications are handled in the order they appear in the ruleset.",
           "type": "integer"
         },
         "propertyCategories": {
-          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
+          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from property specification defined in\n`propertyOverrides` by `id`.",
           "items": {
             "$ref": "#/definitions/PropertyCategorySpecification"
           },
           "type": "array"
         },
         "propertyOverrides": {
-          "description": "Specifications for various property overrides.",
+          "description": "Specifications for various property overrides that allow customizing property display.",
           "items": {
             "$ref": "#/definitions/PropertySpecification"
           },
           "type": "array"
         },
         "relatedInstances": {
-          "description": "Specifications for joining related instances",
+          "description": "Specifications of related instances that can be used when creating the content.",
           "items": {
             "$ref": "#/definitions/RelatedInstanceSpecification"
           },
           "type": "array"
         },
         "relatedProperties": {
-          "description": "Specifications for including properties of related instances",
+          "description": "Specifications of related properties which are\nincluded in the generated content.",
           "items": {
             "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
           "type": "array"
         },
         "relationshipPaths": {
-          "description": "Relationship paths from input (selected) instance class to content class.",
+          "description": "Specifies a chain of relationship path specifications that\nforms a path from an input instance to the output instances. When this array is empty, the specification produces no results.",
           "items": {
             "anyOf": [
               {
@@ -427,7 +449,7 @@
           "type": "array"
         },
         "showImages": {
-          "description": "Should each content record be assigned an image id",
+          "description": "Should image IDs be calculated for the returned instances. When `true`, `ImageIdOverride` rules get applied when\ncreating the content.",
           "type": "boolean"
         },
         "specType": {
@@ -446,22 +468,22 @@
     },
     "ContentRule": {
       "additionalProperties": false,
-      "description": "Defines content that's displayed in content controls (table view,\nproperty pane, etc.) and the content that's selected in\nunified selection controls",
+      "description": "Content rules are used to define content that is displayed for specific type of input.\nInput consists of either ECInstances or nodes and to make things\nsimpler everything is considered a node - instances get converted to\n*ECInstance nodes* (thus the `SelectedNode` symbol in `condition` ECExpression).",
       "properties": {
         "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "description": "Defines a condition which needs to be met in order for the rule to be used. The condition is an\nECExpression which has to evaluate to\na boolean value.",
           "type": "string"
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -475,7 +497,7 @@
           "type": "string"
         },
         "specifications": {
-          "description": "Specifications that define content returned by the rule",
+          "description": "A list of content specifications that define what content is going to be returned. This is the most\nimportant attribute which is responsible for defining what instances' properties are included in the\nreturned content.",
           "items": {
             "anyOf": [
               {
@@ -500,18 +522,18 @@
     },
     "CustomNodeSpecification": {
       "additionalProperties": false,
-      "description": "Creates a custom-defined node.",
+      "description": "Returns a static custom-defined node that's not based on an ECInstance.",
       "properties": {
         "description": {
-          "description": "Description of the node. May be localized.",
+          "description": "Specifies the value of `Node.description` property, which is a string that may\nbe localized. UI component displaying the node may choose\nwhether and how to surface this information to users.",
           "type": "string"
         },
         "doNotSort": {
-          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "description": "Suppress sorting of nodes returned by this specification. With this attribute set to `true`, the order\nof returned nodes is undefined.",
           "type": "boolean"
         },
         "hasChildren": {
-          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "description": "This attribute allows telling the engine that nodes created by this specification always or never have children.",
           "enum": [
             "Always",
             "Never",
@@ -520,38 +542,38 @@
           "type": "string"
         },
         "hideExpression": {
-          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
+          "description": "When specified ECExpression evaluates\nto `true`, nodes produced by this specification are omitted and their children appear one hierarchy level\nhigher.",
           "type": "string"
         },
         "hideIfNoChildren": {
-          "description": "Hide nodes if they don't have children.",
+          "description": "Specifies whether nodes created through this specification should be hidden if they have no child nodes.",
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "When `true`, instances nodes produced by this specification are omitted and their children appear one\nhierarchy level higher.",
           "type": "boolean"
         },
         "imageId": {
-          "description": "Id of the image to use for this custom node.",
+          "description": "Specifies node's image ID. If set, the ID is assigned to `Node.imageId` and it's\nup to the UI component to decide what to do with it.",
           "type": "string"
         },
         "label": {
-          "description": "Label of the node. May be localized.",
+          "description": "Specifies node label. This is a string value that may be localized.",
           "type": "string"
         },
         "nestedRules": {
-          "description": "Nested rule specifications.",
+          "description": "Specifications of nested child node rules that\nallow creating child nodes without the need of supplying a condition to match the parent node.",
           "items": {
             "$ref": "#/definitions/ChildNodeRule"
           },
           "type": "array"
         },
         "priority": {
-          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
+          "description": "Controls the order in which specifications are handled — specification with higher priority value is\nhandled first. If priorities are equal, the specifications are handled in the order they appear in the\nruleset.",
           "type": "integer"
         },
         "relatedInstances": {
-          "description": "Specifications of related instances that can be used in nodes' creation.",
+          "description": "Specifications of related instances that can be used\nwhen creating the nodes.",
           "items": {
             "$ref": "#/definitions/RelatedInstanceSpecification"
           },
@@ -565,11 +587,11 @@
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
-          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
+          "description": "Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this\nspecification. See more in infinite hierarchies prevention page.",
           "type": "boolean"
         },
         "type": {
-          "description": "Type of the node.",
+          "description": "Specifies node type, which is assigned to node's key.",
           "type": "string"
         }
       },
@@ -582,22 +604,22 @@
     },
     "CustomQueryInstanceNodesSpecification": {
       "additionalProperties": false,
-      "description": "Creates nodes for instances which are returned by an ECSQL query.\n\nNote: this specification is formerly known as `SearchResultInstanceNodesSpecification`.",
+      "description": "Returns nodes for instances returned by a provided ECSQL query.",
       "properties": {
         "doNotSort": {
-          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "description": "Suppress sorting of nodes returned by this specification. With this attribute set to `true`, the order\nof returned nodes is undefined.",
           "type": "boolean"
         },
         "groupByClass": {
-          "description": "Group instances by ECClass. Defaults to `true`.",
+          "description": "Controls whether returned instances should be grouped by ECClass. Defaults to `true`.",
           "type": "boolean"
         },
         "groupByLabel": {
-          "description": "Group instances by label. Defaults to `true`.",
+          "description": "Controls whether returned instances should be grouped by label. Defaults to `true`.",
           "type": "boolean"
         },
         "hasChildren": {
-          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "description": "This attribute allows telling the engine that nodes created by this specification always or never have children.",
           "enum": [
             "Always",
             "Never",
@@ -606,30 +628,30 @@
           "type": "string"
         },
         "hideExpression": {
-          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
+          "description": "When specified ECExpression evaluates\nto `true`, nodes produced by this specification are omitted and their children appear one hierarchy level\nhigher.",
           "type": "string"
         },
         "hideIfNoChildren": {
-          "description": "Hide nodes if they don't have children.",
+          "description": "Specifies whether nodes created through this specification should be hidden if they have no child nodes.",
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "When `true`, instances nodes produced by this specification are omitted and their children appear one\nhierarchy level higher.",
           "type": "boolean"
         },
         "nestedRules": {
-          "description": "Nested rule specifications.",
+          "description": "Specifications of nested child node rules that\nallow creating child nodes without the need of supplying a condition to match the parent node.",
           "items": {
             "$ref": "#/definitions/ChildNodeRule"
           },
           "type": "array"
         },
         "priority": {
-          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
+          "description": "Controls the order in which specifications are handled — specification with higher priority value is\nhandled first. If priorities are equal, the specifications are handled in the order they appear in the\nruleset.",
           "type": "integer"
         },
         "queries": {
-          "description": "Specifications of queries used to create the content.\n\nNote: if more than one search query is specified, the results get merged.",
+          "description": "Specifications of queries used to create the content. Query specifications define the actual\nresults of the specification.",
           "items": {
             "anyOf": [
               {
@@ -643,7 +665,7 @@
           "type": "array"
         },
         "relatedInstances": {
-          "description": "Specifications of related instances that can be used in nodes' creation.",
+          "description": "Specifications of related instances that can be used\nwhen creating the nodes.",
           "items": {
             "$ref": "#/definitions/RelatedInstanceSpecification"
           },
@@ -657,7 +679,7 @@
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
-          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
+          "description": "Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this\nspecification. See more in infinite hierarchies prevention page.",
           "type": "boolean"
         }
       },
@@ -668,10 +690,10 @@
     },
     "CustomRendererSpecification": {
       "additionalProperties": false,
-      "description": "Specification for custom content renderer.",
+      "description": "This specification allows defining a custom renderer, which can be used to render properties or categories.",
       "properties": {
         "rendererName": {
-          "description": "Name of the custom renderer.",
+          "description": "Name of the renderer that's going to be used in UI components. Value of this attribute corresponds\nto `RendererDescription.name` attribute that gets assigned to whatever the renderer\nis set on.",
           "type": "string"
         }
       },
@@ -682,18 +704,18 @@
     },
     "DefaultPropertyCategoryOverride": {
       "additionalProperties": false,
-      "description": "A rule that allows overriding the default property category.\n\nThe default property category is a category that gets assigned to properties\nthat otherwise have no category.",
+      "description": "A rule that allows overriding the default property category.\n\nThe default property category is a category that gets assigned to properties that otherwise have no category.",
       "properties": {
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -708,7 +730,7 @@
         },
         "specification": {
           "$ref": "#/definitions/PropertyCategorySpecification",
-          "description": "Specification of the category override"
+          "description": "Specification for the custom property category."
         }
       },
       "required": [
@@ -719,30 +741,30 @@
     },
     "DisabledSortingRule": {
       "additionalProperties": false,
-      "description": "Rule to disable sorting for certain ECInstances in the hierarchy and/or content.\n\nNote: Disabling sorting increases performance\n\nNote: This rule is not meant to be used to sort grouping nodes, custom nodes or\nother non ECInstance type of nodes.",
+      "description": "Rule to disable sorting for certain ECInstances in the hierarchy and/or content.",
       "properties": {
         "class": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of ECClass whose ECInstances should be sorted by this rule.\nDefaults to all classes in current context if not specified."
+          "description": "Specifies ECClass whose ECInstances should be sorted."
         },
         "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "description": "Defines a condition which needs to be met in order for the rule to be used. The condition is an\nECExpression which has to\nevaluate to a boolean value.",
           "type": "string"
         },
         "isPolymorphic": {
-          "description": "Should `class` defined in this rule be handled polymorphically.",
+          "description": "Specifies that `class` attribute defined in this rule should be handled polymorphically.",
           "type": "boolean"
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -763,14 +785,14 @@
     },
     "ECPropertyValueQuerySpecification": {
       "additionalProperties": false,
-      "description": "Specification which specifies the name of the parent instance property whose\nvalue is the ECSQL used to query for instances.\n\nPrecondition: can be used only if parent node is ECInstance node.\nIf there is no immediate parent instance node it will go up until it finds one.",
+      "description": "The specification specifies the name of the parent node instance property whose value is the ECSQL\nused to query for instances.",
       "properties": {
         "class": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of ECClass whose instances the query returns."
+          "description": "Specification of ECClass whose instances the query returns. The specification may also point to a\nbase class of instances returned by the query. If the query returns instances that are not of this\nclass, they aren't included in the result set."
         },
         "parentPropertyName": {
-          "description": "Specifies name of the parent instance property whose value\ncontains the ECSQL query.\n\nWarning: the property whose name is specified must be of string type.",
+          "description": "Specifies name of the parent instance property whose value contains the ECSQL query.",
           "type": "string"
         },
         "specType": {
@@ -790,29 +812,29 @@
     },
     "ExtendedDataRule": {
       "additionalProperties": false,
-      "description": "Rule used to inject some extended data into presentation data\nobjects (nodes, records).\n\nA couple of typical use cases:\n- Table is showing models and elements polymorphically and application\n   wants to handle all models and all elements differently. The rule can be used\n   to inject some flag that tells whether table row represents a model or an element.\n- Tree shows a hierarchy of models and elements. Then element node is clicked,\n   application needs to additionally know element model's ID. The rule can be used\n   to inject that ID into element's node.",
+      "description": "Extended data rule is used to inject some arbitrary data into presentation data objects (nodes, content records).",
       "properties": {
         "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order for it to be used. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "description": "Defines a condition which needs to be met in order for the rule to be used. The condition\nis an ECExpression which has\nto evaluate to a boolean value.",
           "type": "string"
         },
         "items": {
           "additionalProperties": {
             "type": "string"
           },
-          "description": "A map of items that define the values stored in the extended data structure.\n\nThe key part of the pair should be unique within all keys which are used for specific\npresentation object, even if they are applied using different `ExtendedData` definitions.\n\nThe value part of the pair is an ECExpression, which can use\na limited set of symbols and whose\nevaluated result is used as the value of the extended data item.",
+          "description": "A map of ECExpressions whose\nevaluation results are used as extended data values.",
           "type": "object"
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -834,18 +856,18 @@
     },
     "GroupingRule": {
       "additionalProperties": false,
-      "description": "Grouping rule is an advanced way to configure node grouping.\n\nIt allows to define these types of groupings:\n- Group by base class.\n- Group by any property of the instance by a common value or a range of values.\n- Group multiple instances with the same label in to one ECInstance node. This can be used in cases when these\ninstances represent the same object for the user.\n\nThe rule works in conjunction with other grouping options available in navigation specifications `ChildNodeSpecification`:\n`groupByClass` and `groupByLabel`. The grouping hierarchy looks like this:\n- Base ECClass grouping node (specified by base class grouping specification `ClassGroup`)\n   - ECClass grouping node (specified by `groupByClass` property)\n     - ECProperty grouping node 1 (specified by 1st `PropertyGroup`)\n       - ECProperty grouping node 2 (specified by 2nd `PropertyGroup`)\n         - ECProperty grouping node n (specified by n-th `PropertyGroup`)\n           - Display label grouping node (specified by `groupByLabel` property)\n             - ECInstance nodes (may be grouped under a single node by `SameLabelInstanceGroup`)",
+      "description": "Grouping rules provide advanced ways to group instances when creating hierarchies.",
       "properties": {
         "class": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of ECClass which should be grouped using this rule"
+          "description": "Specification of ECClass which should be grouped using this rule."
         },
         "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "description": "An ECExpression that results in\na boolean value. If specified,  the grouping rule applies only to instance nodes that cause the condition\nto evaluate to `true`.",
           "type": "string"
         },
         "groups": {
-          "description": "Specifications of grouping which should be applied to matching ECInstances",
+          "description": "Specifies a list of grouping specifications\nwhich describe the kind of grouping that should be applied.",
           "items": {
             "anyOf": [
               {
@@ -862,15 +884,15 @@
           "type": "array"
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -915,27 +937,27 @@
     },
     "ImageIdOverride": {
       "additionalProperties": false,
-      "description": "Rule that allows overriding default icon and dynamically define an icon\nfor a particular node based on the context.",
+      "description": "ImageId override rules allow setting an image ID to specific types of ECInstances.",
       "properties": {
         "condition": {
           "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
           "type": "string"
         },
         "imageIdExpression": {
-          "description": "Defines an image ID that should be used for nodes that meet rule condition. This is\nan ECExpression, so ID can be\ndefined/formatted dynamically based on the context - for example ECInstance property value.",
+          "description": "An expression whose result becomes the image ID. This is\nan ECExpression, so ID can be\ndefined/formatted dynamically based on the context - for example ECInstance property value.",
           "minLength": 1,
           "type": "string"
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -957,22 +979,22 @@
     },
     "InstanceLabelOverride": {
       "additionalProperties": false,
-      "description": "Rule to override labels for instances of specific ECClasses.\n\nImportant: Prefer this rule over `LabelOverride` when possible as it\nhas better performance.",
+      "description": "Instance label override rule provides a way to set instance label to one of its property values,\nother attributes and/or combination of them.",
       "properties": {
         "class": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of the ECClass to apply this rule to."
+          "description": "Specifies the ECClass to apply this rule to."
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -986,7 +1008,7 @@
           "type": "string"
         },
         "values": {
-          "description": "Specifications for the label value. The first non-empty value\nis used as the actual label.",
+          "description": "Specifications of values used to override label. The first non-empty value is used as the actual label.",
           "items": {
             "anyOf": [
               {
@@ -1027,7 +1049,7 @@
     },
     "InstanceLabelOverrideBriefcaseIdSpecification": {
       "additionalProperties": false,
-      "description": "Specification that returns ECInstance's briefcase ID in base36 format.",
+      "description": "Specification returns ECInstance's briefcase ID in base36 format.",
       "properties": {
         "specType": {
           "description": "Type of the specification",
@@ -1044,7 +1066,7 @@
     },
     "InstanceLabelOverrideClassLabelSpecification": {
       "additionalProperties": false,
-      "description": "Specification that uses ECClass display label as the label content.",
+      "description": "Specification uses ECClass display label as the label content.",
       "properties": {
         "specType": {
           "description": "Type of the specification",
@@ -1061,7 +1083,7 @@
     },
     "InstanceLabelOverrideClassNameSpecification": {
       "additionalProperties": false,
-      "description": "Specification that uses ECClass name as the label content.",
+      "description": "Specification uses ECClass name as the label content.",
       "properties": {
         "full": {
           "description": "Should full (`{schemaName}.{className}`) class name be used",
@@ -1082,7 +1104,7 @@
     },
     "InstanceLabelOverrideCompositeValueSpecification": {
       "additionalProperties": false,
-      "description": "Specification that allows creating a label value composited using\nmultiple other specifications.",
+      "description": "Specification allows creating a label value composited using multiple other specifications.",
       "properties": {
         "parts": {
           "description": "Parts of the value.\n\nIf any of the parts with `isRequired` flag evaluate to an empty string, the\nresult of this specification is also an empty string.",
@@ -1149,7 +1171,7 @@
     },
     "InstanceLabelOverrideLocalIdSpecification": {
       "additionalProperties": false,
-      "description": "Specification that returns ECInstance's local ID in base36 format.",
+      "description": "Specification returns ECInstance's local ID in base36 format.",
       "properties": {
         "specType": {
           "description": "Type of the specification",
@@ -1166,7 +1188,7 @@
     },
     "InstanceLabelOverridePropertyValueSpecification": {
       "additionalProperties": false,
-      "description": "Specification that uses property value as the label content.",
+      "description": "Specification uses property value as the label content.",
       "properties": {
         "propertyName": {
           "description": "Name of the property whose value should be used.",
@@ -1184,7 +1206,7 @@
               "type": "array"
             }
           ],
-          "description": "Path from `InstanceLabelOverride.class` to the property class. If omitted,\n`InstanceLabelOverride.class` is used as property class."
+          "description": "Specification of the relationship path from `InstanceLabelOverride.class`\nto class of the property. If omitted, `InstanceLabelOverride.class` is used as property class."
         },
         "specType": {
           "description": "Type of the specification",
@@ -1202,7 +1224,7 @@
     },
     "InstanceLabelOverrideRelatedInstanceLabelSpecification": {
       "additionalProperties": false,
-      "description": "Specification that uses label of a related instance as the label content.",
+      "description": "Specification uses label of another related instance as the label content.",
       "properties": {
         "pathToRelatedInstance": {
           "anyOf": [
@@ -1216,7 +1238,7 @@
               "type": "array"
             }
           ],
-          "description": "Path from `InstanceLabelOverride.class` to the class of related instance whose label\nshould be returned."
+          "description": "Specification of the relationship path from `InstanceLabelOverride.class`\nto class of the related instance."
         },
         "specType": {
           "description": "Type of the specification",
@@ -1234,7 +1256,7 @@
     },
     "InstanceLabelOverrideStringValueSpecification": {
       "additionalProperties": false,
-      "description": "Specification that uses the specified value as the label content.",
+      "description": "Specification uses the specified value as the label content.",
       "properties": {
         "specType": {
           "description": "Type of the specification",
@@ -1256,10 +1278,10 @@
     },
     "InstanceNodesOfSpecificClassesSpecification": {
       "additionalProperties": false,
-      "description": "Creates nodes for all instances of specified ECClasses.",
+      "description": "Returns nodes for instances of specific ECClasses.",
       "properties": {
         "arePolymorphic": {
-          "description": "Should all `classes` be handled polymorphically.",
+          "description": "Tells whether selecting instances from ECClasses specified in `classes` and `excludedClasses`\nattributes should be polymorphic or not.",
           "type": "boolean"
         },
         "classes": {
@@ -1274,22 +1296,36 @@
               "type": "array"
             }
           ],
-          "description": "Specifications of ECClasses whose instances should be returned."
+          "description": "Defines a set of multi schema classes that\nspecify which ECClasses need to be selected to form the result."
         },
         "doNotSort": {
-          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "description": "Suppress sorting of nodes returned by this specification. With this attribute set to `true`, the order\nof returned nodes is undefined.",
           "type": "boolean"
         },
+        "excludedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Defines a set of multi schema classes that\nprevents specified ECClasses and subclasses from being selected by `classes` attribute."
+        },
         "groupByClass": {
-          "description": "Group instances by ECClass. Defaults to `true`.",
+          "description": "Controls whether returned instances should be grouped by ECClass. Defaults to `true`.",
           "type": "boolean"
         },
         "groupByLabel": {
-          "description": "Group instances by label. Defaults to `true`.",
+          "description": "Controls whether returned instances should be grouped by label. Defaults to `true`.",
           "type": "boolean"
         },
         "hasChildren": {
-          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "description": "This attribute allows telling the engine that nodes created by this specification always or never have children.",
           "enum": [
             "Always",
             "Never",
@@ -1298,34 +1334,34 @@
           "type": "string"
         },
         "hideExpression": {
-          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
+          "description": "When specified ECExpression evaluates\nto `true`, nodes produced by this specification are omitted and their children appear one hierarchy level\nhigher.",
           "type": "string"
         },
         "hideIfNoChildren": {
-          "description": "Hide nodes if they don't have children.",
+          "description": "Specifies whether nodes created through this specification should be hidden if they have no child nodes.",
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "When `true`, instances nodes produced by this specification are omitted and their children appear one\nhierarchy level higher.",
           "type": "boolean"
         },
         "instanceFilter": {
-          "description": "Condition for filtering instances of defined classes.\n\nSee: ECExpressions Available in InstanceFilter.",
+          "description": "Specifies an ECExpression for filtering\ninstances of ECClasses specified through the `classes` attribute.",
           "type": "string"
         },
         "nestedRules": {
-          "description": "Nested rule specifications.",
+          "description": "Specifications of nested child node rules that\nallow creating child nodes without the need of supplying a condition to match the parent node.",
           "items": {
             "$ref": "#/definitions/ChildNodeRule"
           },
           "type": "array"
         },
         "priority": {
-          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
+          "description": "Controls the order in which specifications are handled — specification with higher priority value is\nhandled first. If priorities are equal, the specifications are handled in the order they appear in the\nruleset.",
           "type": "integer"
         },
         "relatedInstances": {
-          "description": "Specifications of related instances that can be used in nodes' creation.",
+          "description": "Specifications of related instances that can be used\nwhen creating the nodes.",
           "items": {
             "$ref": "#/definitions/RelatedInstanceSpecification"
           },
@@ -1339,7 +1375,7 @@
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
-          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
+          "description": "Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this\nspecification. See more in infinite hierarchies prevention page.",
           "type": "boolean"
         }
       },
@@ -1351,32 +1387,32 @@
     },
     "LabelOverride": {
       "additionalProperties": false,
-      "description": "Rule to override labels and descriptions of nodes which pass rule's\ncondition.\n\nImportant: Prefer `InstanceLabelOverride` over this rule when possible as it\nhas better performance.",
+      "description": "Label override rules provide advanced ways to override instance labels and descriptions in\nexchange of some performance penalty.",
       "properties": {
         "condition": {
           "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
           "type": "string"
         },
         "description": {
-          "description": "Defines the description that should be used for node. This is\nan ECExpression, so\ndescription can be defined/formatted dynamically based on the context - for example\nECInstance property value. May be localized.",
+          "description": "An expression whose result becomes the description. This is\nan ECExpression, so\ndescription can be defined/formatted dynamically based on the context - for example\nECInstance property value. May be localized.",
           "minLength": 1,
           "type": "string"
         },
         "label": {
-          "description": "Defines the label that should be used for node. This is\nan ECExpression, so label\ncan be defined/formatted dynamically based on the context - for example\nECInstance property value. May be localized.",
+          "description": "An expression whose result becomes the label. This is\nan ECExpression, so label\ncan be defined/formatted dynamically based on the context - for example\nECInstance property value. May be localized.",
           "minLength": 1,
           "type": "string"
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -1397,18 +1433,21 @@
     },
     "MultiSchemaClassesSpecification": {
       "additionalProperties": false,
-      "description": "Specification for multiple ECClasses that belong to\nthe same ECSchema.",
+      "description": "This specification lists ECClasses which should be targeted when creating content or hierarchy nodes.",
       "properties": {
+        "arePolymorphic": {
+          "description": "Defines whether the derived ECClasses should be included in the result.",
+          "type": "boolean"
+        },
         "classNames": {
-          "description": "List of ECClass names.\n\nEach class name may be prefixed with:\n- `E:` to exclude class from results\n- `PE:` to exclude class and all its sublasses from results\nSo generally the list may contain `[\"base_class_name\", \"PE:derived_class_name\"]` to\ninclude all instances of `base_class_name` except all polymorphic instances of\n`derived_class_name`.",
+          "description": "An array of target ECClass names.",
           "items": {
             "type": "string"
           },
-          "pattern": "^(E:|PE:)?[\\w\\d]+$",
           "type": "array"
         },
         "schemaName": {
-          "description": "Name of ECSchema",
+          "description": "Specifies the schema which contains the target classes.",
           "pattern": "^[\\w\\d]+$",
           "type": "string"
         }
@@ -1438,29 +1477,29 @@
     },
     "NodeArtifactsRule": {
       "additionalProperties": false,
-      "description": "Rule used to create and assign artifacts to specific nodes. The artifacts can be\naccessed when evaluating parent node's `hideExpression` to decide whether it should\nbe hidden or not.\n\nA typical use case:\n- The hierarchy consists of *Subject* nodes and each *Subject* may or may not have child *Model* nodes. There are 2 types\nof *Models*: *A* & *B*, we want *ModelA* nodes to be visible and *ModelB* ones to be hidden. We want *Subject* node to be\nvisible only if it has a *Model* (either *A* or *B*). In this case we can't use `hideIfNoChildren` flag on *Subjects*, because\na *Subject* node may only have a related *ModelB* which means *Subject* doesn't have children and should be displayed as a leaf node.\nThe solution is to use `NodeArtifacts` on the *ModelB* nodes and a `hideExpression` on *Subject* nodes. The expression can access\nartifacts created by child *ModelB* nodes: `NOT ThisNode.HasChildren AND NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.IsModelB)`",
+      "description": "Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be\naccessed when evaluating parent node's `hideExpression` to decide whether it should be hidden or not.",
       "properties": {
         "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order for it to be used. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "description": "Specifies an ECExpression that\nallows applying node artifacts based on evaluation result, e.g. by some property of the parent node.",
           "type": "string"
         },
         "items": {
           "additionalProperties": {
             "type": "string"
           },
-          "description": "A map of items that define the values stored in the artifacts data structure.\n\nThe key part of the pair should be unique within all keys which are used for specific\npresentation object, even if they are applied using different `NodeArtifacts` definitions.\n\nThe value part of the pair is an ECExpression, which can use\na limited set of symbols and whose\nevaluated result is used as the artifact value.",
+          "description": "A map of ECExpressions whose evaluation results\nare used as artifact values.",
           "type": "object"
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -1499,18 +1538,18 @@
     },
     "PropertyCategorySpecification": {
       "additionalProperties": false,
-      "description": "Specification to define a custom property category.",
+      "description": "Content modifier for defining custom property categories. Custom categories are not present in the result unless\nthey contain at least one property. One way to assign a property to the category is by using\nproperty overrides.",
       "properties": {
         "autoExpand": {
-          "description": "Should this category be auto-expanded. Defaults to `false`.",
+          "description": "Controls the value of `CategoryDescription.expand` which tells the UI component\ndisplaying the category to auto-expand the category.",
           "type": "boolean"
         },
         "description": {
-          "description": "Optional extensive description of the category.",
+          "description": "Extensive description of the category. The description is assigned to the category object that's set\non content fields and it's up to UI component to decide how the description is displayed.",
           "type": "string"
         },
         "id": {
-          "description": "Category identifier which has to be unique at the scope of it's definition.",
+          "description": "Category identifier used to reference the category definition from property overrides or other category\ndefinitions. The identifier has to be unique within the list of category definitions where this\nspecification is used.",
           "type": "string"
         },
         "label": {
@@ -1535,15 +1574,15 @@
               "type": "string"
             }
           ],
-          "description": "Identifier of a parent category. When specified as a `string`,\nthe value acts as an `IdCategoryIdentifier`. Defaults to `ParentCategoryIdentifier`."
+          "description": "Identifier of a parent category. When specifying the parent category by ID, it has to be available in\nthe scope of this category definition."
         },
         "priority": {
-          "description": "Priority of the category. Higher priority categories are displayed on top. Defaults to `1000`.",
+          "description": "Assign a custom `CategoryDescription.priority` to the category. It's up to the\nUI component to make sure that priority is respected - categories with higher priority should appear\nbefore or above categories with lower priority.",
           "type": "integer"
         },
         "renderer": {
           "$ref": "#/definitions/CustomRendererSpecification",
-          "description": "Custom category renderer specification."
+          "description": "Custom category renderer specification that allows\nassigning a custom category renderer to be used in UI. This specification is used to set up\n`CategoryDescription.renderer` for this category and it's up to the UI component to\nmake sure appropriate renderer is used to render the category."
         }
       },
       "required": [
@@ -1658,14 +1697,14 @@
     },
     "PropertyEditorSpecification": {
       "additionalProperties": false,
-      "description": "Specification for custom property editor",
+      "description": "This specification allows assigning a custom property editor to specific properties.",
       "properties": {
         "editorName": {
-          "description": "Name of the custom editor",
+          "description": "Name of the property editor that's going to be used in UI components. This name is carried over to\n`Field.editor` and it's up to the UI component to make sure appropriate editor\nis used to edit the property.",
           "type": "string"
         },
         "parameters": {
-          "description": "Parameters for the editor",
+          "description": "Parameters for the editor.",
           "items": {
             "anyOf": [
               {
@@ -1692,18 +1731,18 @@
     },
     "PropertyGroup": {
       "additionalProperties": false,
-      "description": "Allows grouping by property of the instance\nby a common value or by range of values.",
+      "description": "Property grouping allows grouping by a property of the instance by value or by given ranges of values.",
       "properties": {
         "createGroupForSingleItem": {
-          "description": "Should the grouping node be created if there is only one item in that group",
+          "description": "Specifies whether a grouping node should be created if there is only one item in that group.",
           "type": "boolean"
         },
         "createGroupForUnspecifiedValues": {
-          "description": "Should a separate grouping node be created for nodes whose grouping value is not\nset or is an empty string.\n\nDefaults to `true`.",
+          "description": "Should a separate grouping node be created for nodes whose grouping value is not set or is set to an empty string.",
           "type": "boolean"
         },
         "groupingValue": {
-          "description": "Should the instances be grouped on display label or the grouping property value.\nDefaults to `PropertyGroupingValue.DisplayLabel`.\n\nNote: Grouping by property value is required if the display label is\noverridden to display grouped instances count.\n\nWarning: Grouping by label and sorting by property value is not possible.",
+          "description": "Specifies whether instances should be grouped using property's display or raw value.",
           "enum": [
             "DisplayLabel",
             "PropertyValue"
@@ -1711,24 +1750,24 @@
           "type": "string"
         },
         "imageId": {
-          "description": "ID of an image to use for the grouping node",
+          "description": "Specifies grouping node's image ID. If set, the ID is assigned to `Node.imageId` and\nit's up to the UI component to decide what to do with it.",
           "minLength": 1,
           "type": "string"
         },
         "propertyName": {
-          "description": "Name of the ECProperty which is used for grouping.",
+          "description": "Name of the ECProperty which is used for grouping. The property must exist on the ECClass specified by the\nrule's `class` attribute and it must be of either a primitive or a navigation type.",
           "minLength": 1,
           "type": "string"
         },
         "ranges": {
-          "description": "Ranges into which the grouping values are divided",
+          "description": "Ranges into which the grouping values are divided. Instances are grouped by value if no ranges are specified.",
           "items": {
             "$ref": "#/definitions/PropertyRangeGroupSpecification"
           },
           "type": "array"
         },
         "sortingValue": {
-          "description": "Should the nodes be sorted by display label or the grouping property value. In most\ncases the result is the same, unless `LabelOverride` rule is used to change the display label.\nDefaults to `PropertyGroupingValue.DisplayLabel`.\n\nNote: Sorting by property value only makes sense when instances are grouped by\nproperty value as well.\n\nWarning: Grouping by label and sorting by property value is not possible.",
+          "description": "Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result\nis the same, unless a label override rule is used to change node's display label.",
           "enum": [
             "DisplayLabel",
             "PropertyValue"
@@ -1751,10 +1790,10 @@
     },
     "PropertyRangeGroupSpecification": {
       "additionalProperties": false,
-      "description": "Describes a grouping range",
+      "description": "Describes a grouping range.",
       "properties": {
         "fromValue": {
-          "description": "Value that defines the range start (inclusive)",
+          "description": "Value that defines the range start (inclusive).",
           "minLength": 1,
           "type": "string"
         },
@@ -1764,12 +1803,12 @@
           "type": "string"
         },
         "label": {
-          "description": "Grouping node label. May be localized.\nDefaults to `{from value} - {to value}`",
+          "description": "Grouping node label. May be localized.\nDefaults to `{from value} - {to value}`.",
           "minLength": 1,
           "type": "string"
         },
         "toValue": {
-          "description": "Value that defines the range end (inclusive)",
+          "description": "Value that defines the range end (inclusive).",
           "minLength": 1,
           "type": "string"
         }
@@ -1782,35 +1821,35 @@
     },
     "PropertySortingRule": {
       "additionalProperties": false,
-      "description": "Rule to configure sorting for certain ECInstances in the hierarchy and/or content.\nIt is possible to configure different sorting for different types of ECInstances.\n\nMultiple sorting rules may be applied for the same instances - in this case the\ninstances are first sorted by the highest priority rule and then the lower priority ones.\n\nNote: This rule is not meant to be used to sort grouping nodes, custom nodes or\nother non ECInstance type of nodes.",
+      "description": "Rule to configure sorting for certain ECInstances in the hierarchy and/or content. It is possible to configure different sorting for different types of ECInstances.",
       "properties": {
         "class": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of ECClass whose ECInstances should be sorted by this rule.\nDefaults to all classes in current context if not specified."
+          "description": "Specifies ECClass whose ECInstances should be sorted."
         },
         "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "description": "Defines a condition which needs to be met in order for the rule to be used. The condition is an\nECExpression which has to\nevaluate to a boolean value.",
           "type": "string"
         },
         "isPolymorphic": {
-          "description": "Should `class` defined in this rule be handled polymorphically.",
+          "description": "Specifies that `class` attribute defined in this rule should be handled polymorphically.",
           "type": "boolean"
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "propertyName": {
-          "description": "Name of the property which should be used for sorting",
+          "description": "Specifies name of the property which should be used for sorting.",
           "minLength": 1,
           "type": "string"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -1824,7 +1863,7 @@
           "type": "string"
         },
         "sortAscending": {
-          "description": "Will sort in ascending order if set to true, otherwise descending. Defaults to `true`.",
+          "description": "Specifies whether instances should be sorted in ascending order or descending.",
           "type": "boolean"
         }
       },
@@ -1836,7 +1875,7 @@
     },
     "PropertySpecification": {
       "additionalProperties": false,
-      "description": "Specification of an ECProperty and its overrides",
+      "description": "This specification allows overriding some attributes of specific ECProperty or define how it's displayed.",
       "properties": {
         "categoryId": {
           "anyOf": [
@@ -1853,35 +1892,46 @@
               "type": "string"
             }
           ],
-          "description": "Identifier of a category that should be used for the property."
+          "description": "The attribute allows moving the property into a different category."
         },
         "doNotHideOtherPropertiesOnDisplayOverride": {
-          "description": "Flag to control behavior of `isDisplayed` override when it's set to `true`.\nBy default, forcing property display hides all other properties.\nSetting `doNotHideOtherPropertiesOnDisplayOverride` to `true` disables that behavior and\nprevents forcing property display of one property from hiding other properties.",
+          "description": "This attribute controls whether making the property visible using `isDisplayed` attribute should automatically hide\nall other properties of the same class. When `true`, this behavior is disabled.",
           "type": "boolean"
         },
         "editor": {
           "$ref": "#/definitions/PropertyEditorSpecification",
-          "description": "Custom property editor specification."
+          "description": "Custom property editor specification that allows assigning\na custom value editor to be used in UI."
         },
         "isDisplayed": {
-          "description": "Display override. `true` to force display, `false` to force hide, `undefined` to use default.",
+          "description": "This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the\nECSchema. The allowed settings are:\n\n- Omitted or `undefined`: property visibility is controlled by the ECSchema.\n\n- `true`: property is made visible. Warning: this will automatically hide all other properties of the same class.\n   If this behavior is not desirable, set `doNotHideOtherPropertiesOnDisplayOverride` attribute to `true`.\n\n- `false`: property is made hidden.\n\nThe value can also be set using an ECExpression.",
+          "type": [
+            "string",
+            "boolean"
+          ]
+        },
+        "isReadOnly": {
+          "description": "This attribute controls whether the property field is read-only. If the attribute value is not set, the field is\nread-only when at least one of the properties is read-only.",
           "type": "boolean"
         },
         "labelOverride": {
-          "description": "Label override. May be localized.",
+          "description": "This is an attribute that allows overriding the property label. May be localized.",
           "type": "string"
         },
         "name": {
-          "description": "Name of the ECProperty.\n\nA `\"*\"` may be specified to match all properties in current context:\n- when the specification is used in an ECClass context (e.g. in a `ContentModifier` rule),\n   all properties of that class are matched (including properties derived from base classes, but excluding\n   subclass properties).\n- when specification is used outside of class context, all properties found in that context are matched. E.g. when\n   used in `ContentSpecification.propertyOverrides` where `ContentSpecification` creates content with properties of\n   different classes.",
+          "description": "Name of the ECProperty to apply overrides to. A `\"*\"` may be specified to match all properties in current context.\nThe current context is determined based on where the override is specified:\n\n- When used in a content modifier, the\n   properties of the ECClass specified by the `class` attribute are used.\n\n- When used in one of the content specifications,\n   properties produced by that specification are used.",
           "type": "string"
         },
         "overridesPriority": {
-          "description": "Priority of the specified overrides.",
+          "description": "There may be multiple property specifications that apply to a single property and there may be conflicts between\ndifferent attributes. The `overridesPriority` attribute is here to help solve the problem - if multiple specifications\nattempt to override the same attribute, the override of specification with highest `overridesPriority` value is used.\nThe order of overrides from specification with the same `overridesPriority` is defined by the order they appear in\nthe overrides list.",
+          "type": "number"
+        },
+        "priority": {
+          "description": "This attribute controls the order in which property fields should be displayed. Property fields with higher priority\nwill appear before property fields with lower priority. If the attribute value is not set, the field's priority\nwill be the maximum priority of its properties.",
           "type": "number"
         },
         "renderer": {
           "$ref": "#/definitions/CustomRendererSpecification",
-          "description": "Custom property renderer specification."
+          "description": "Custom property renderer specification that allows assigning a\ncustom value renderer to be used in UI. The specification is used to set up `Field.renderer` for\nthis property and it's up to the UI component to make sure appropriate renderer is used to render the property."
         }
       },
       "required": [
@@ -1891,22 +1941,22 @@
     },
     "RelatedInstanceNodesSpecification": {
       "additionalProperties": false,
-      "description": "Creates nodes for related instances of specified ECClasses.\n\nPrecondition: can be used only if parent node is ECInstance\nnode. If there is no immediate parent instance node it will go up until it finds one.",
+      "description": "Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined\nby traversing the hierarchy upwards until an ECInstance node is encountered.",
       "properties": {
         "doNotSort": {
-          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "description": "Suppress sorting of nodes returned by this specification. With this attribute set to `true`, the order\nof returned nodes is undefined.",
           "type": "boolean"
         },
         "groupByClass": {
-          "description": "Group instances by ECClass. Defaults to `true`.",
+          "description": "Controls whether returned instances should be grouped by ECClass. Defaults to `true`.",
           "type": "boolean"
         },
         "groupByLabel": {
-          "description": "Group instances by label. Defaults to `true`.",
+          "description": "Controls whether returned instances should be grouped by label. Defaults to `true`.",
           "type": "boolean"
         },
         "hasChildren": {
-          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "description": "This attribute allows telling the engine that nodes created by this specification always or never have children.",
           "enum": [
             "Always",
             "Never",
@@ -1915,41 +1965,41 @@
           "type": "string"
         },
         "hideExpression": {
-          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
+          "description": "When specified ECExpression evaluates\nto `true`, nodes produced by this specification are omitted and their children appear one hierarchy level\nhigher.",
           "type": "string"
         },
         "hideIfNoChildren": {
-          "description": "Hide nodes if they don't have children.",
+          "description": "Specifies whether nodes created through this specification should be hidden if they have no child nodes.",
           "type": "boolean"
         },
         "hideNodesInHierarchy": {
-          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "description": "When `true`, instances nodes produced by this specification are omitted and their children appear one\nhierarchy level higher.",
           "type": "boolean"
         },
         "instanceFilter": {
-          "description": "Condition for filtering instances targeted by specified relationship paths.\n\nSee: ECExpressions Available in InstanceFilter",
+          "description": "Specifies an ECExpression for filtering\ninstances of ECClasses targeted through the `relationshipPaths` attribute.",
           "type": "string"
         },
         "nestedRules": {
-          "description": "Nested rule specifications.",
+          "description": "Specifications of nested child node rules that\nallow creating child nodes without the need of supplying a condition to match the parent node.",
           "items": {
             "$ref": "#/definitions/ChildNodeRule"
           },
           "type": "array"
         },
         "priority": {
-          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
+          "description": "Controls the order in which specifications are handled — specification with higher priority value is\nhandled first. If priorities are equal, the specifications are handled in the order they appear in the\nruleset.",
           "type": "integer"
         },
         "relatedInstances": {
-          "description": "Specifications of related instances that can be used in nodes' creation.",
+          "description": "Specifications of related instances that can be used\nwhen creating the nodes.",
           "items": {
             "$ref": "#/definitions/RelatedInstanceSpecification"
           },
           "type": "array"
         },
         "relationshipPaths": {
-          "description": "Relationship paths from parent node instance class to child node instances' class.",
+          "description": "Specifies a chain of relationship path specifications\nthat forms a path from a source instance to the output instances. When this array is empty, the specification produces\nno results.",
           "items": {
             "anyOf": [
               {
@@ -1973,7 +2023,7 @@
           "type": "string"
         },
         "suppressSimilarAncestorsCheck": {
-          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
+          "description": "Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this\nspecification. See more in infinite hierarchies prevention page.",
           "type": "boolean"
         }
       },
@@ -1985,15 +2035,15 @@
     },
     "RelatedInstanceSpecification": {
       "additionalProperties": false,
-      "description": "This sub-specification allows joining the primary node instance with any number of related instances and creating\nhierarchies based on a mix of those related instances.\n\nThe related instance property values can be accessed from multiple different places:\n- Instance filter\n- Customization rule value\n- Grouping rule\n\nExample:\n```JSON\n{\n   \"id\": \"related_instance_example\",\n   \"rules\": [{\n     \"ruleType\": \"LabelOverride\",\n     \"condition\": \"ThisNode.IsInstanceNode ANDALSO this.IsOfClass(\\\"Model\\\", \\\"BisCore\\\")\",\n     \"label\": \"modeledElement.UserLabel\"\n   }, {\n     \"ruleType\": \"Grouping\",\n     \"condition\": \"ParentNode.IsNull\",\n     \"class\": {\n       \"schemaName\": \"BisCore\",\n       \"className\": \"Element\"\n     },\n     \"groups\": [{\n       \"specType\": \"Property\",\n       \"propertyName\": \"CodeValue\",\n       \"createGroupForSingleItem\": true\n     }]\n   }, {\n     \"ruleType\": \"RootNodes\",\n     \"specifications\": [{\n       \"specType\": \"InstanceNodesOfSpecificClasses\",\n       \"classes\": { \"schemaName\": \"BisCore\", \"classNames\": [\"GeometricModel\"] },\n       \"arePolymorphic\": true,\n       \"instanceFilter\": \"modeledElement.CodeNamespace = 1\",\n       \"relatedInstances\": [{\n         \"relationshipPath\": [{\n           \"relationship\": { \"schemaName\": \"BisCore\", \"className\": \"ModelModelsElement\" },\n           \"direction\": \"Forward\",\n         }],\n         \"class\": { \"schemaName\": \"BisCore\", \"className\": \"Element\" },\n         \"alias\": \"modeledElement\"\n       }]\n     }]\n   }]\n}\n```\nHere `BisCore:GeometricModel` instances are joined with `BisCore:Element` instances to create the hierarchy. This allows:\n- Related `BisCore:Element` properties to be accessed in `InstanceFilter` using `modeledElement` alias.\n- The `LabelOverride` rule to use `modeledElement` alias to access properties of the joined related instance.\n- The `GroupingRule` to be applied because it's grouping `BisCore:Element` which is now part of the generated nodes.",
+      "description": "Related instance specification is used in content\nand hierarchy specifications to \"join\" the\nprimary instance with its related instance and allow using the related instance for filtering, customization and grouping.",
       "properties": {
         "alias": {
-          "description": "The alias to give for the joined related instance. Used to reference the related instance in\ninstance filter and customization rules.\n\n**The value must be unique per-specification!**",
+          "description": "Specifies an an alias that given to the related instance. The alias can be used to reference the\ninstance in instance filter and customization rules.",
           "pattern": "^\\w[\\w\\d]*$",
           "type": "string"
         },
         "isRequired": {
-          "description": "Is the related instance required to exist. If yes, primary instance won't be returned\nif the related instance doesn't exist. If not, primary instance will be returned, but related\ninstance will be null.\n\nIn SQL terms in can be compared to INNER JOIN vs OUTER JOIN.",
+          "description": "Specifies whether to omit the primary instance from the result if the other end of `relationshipPath`\ndoes not yield any related instances.",
           "type": "boolean"
         },
         "relationshipPath": {
@@ -2008,7 +2058,7 @@
               "type": "array"
             }
           ],
-          "description": "Relationship path to find the related instance."
+          "description": "Specifies a chain of relationship path specifications\nthat forms a path from the primary instance to the related instances."
         }
       },
       "required": [
@@ -2019,18 +2069,26 @@
     },
     "RelatedPropertiesSpecification": {
       "additionalProperties": false,
-      "description": "Sub-specification to include additional related instance properties.",
+      "description": "This specification allows including related instance properties into the content.",
       "properties": {
         "autoExpand": {
-          "description": "Should field containing related properties be automatically expanded. This only takes effect when\ncontent class is related to properties source class through a one-to-many or many-to-many relationship.",
+          "description": "Should the field containing related properties be assigned the `NestedContentField.autoExpand`\nattribute. The attribute tells UI components showing the properties that they should be initially displayed in the expanded state.",
+          "type": "boolean"
+        },
+        "forceCreateRelationshipCategory": {
+          "description": "Specifies whether a relationship category should be created regardless of whether any relationship properties were included.",
           "type": "boolean"
         },
         "handleTargetClassPolymorphically": {
-          "description": "Should the target class specified in `propertiesSource` be handled\npolymorphically. This means properties of not only the target class, but also all its subclasses\nare loaded.",
+          "description": "The attribute tells whether the target class specified through `propertiesSource` should be handled\npolymorphically. This means properties of the concrete class are loaded in addition to properties of the\ntarget class itself.",
           "type": "boolean"
         },
+        "instanceFilter": {
+          "description": "Condition for filtering instances targeted by the `propertiesSource` attribute.\n\nSee: ECExpressions available in instance filter",
+          "type": "string"
+        },
         "nestedRelatedProperties": {
-          "description": "Specifications for nested related properties",
+          "description": "The attribute allows loading additional related properties that are related to the target instance of this specification.",
           "items": {
             "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
@@ -2059,7 +2117,7 @@
               "type": "string"
             }
           ],
-          "description": "A list of property names or specifications that should be included in the content. All\nproperties are included if this attribute is not specified."
+          "description": "List of names or definitions of related class properties that should be included in the content."
         },
         "propertiesSource": {
           "anyOf": [
@@ -2073,18 +2131,43 @@
               "type": "array"
             }
           ],
-          "description": "Relationship path from content class to properties' class."
+          "description": "Specifies a chain of relationship path specifications that\nforms a path from the content instance to the related instance(s) whose properties should additionally be loaded."
         },
         "relationshipMeaning": {
-          "description": "Meaning of the relationship which tells how to categorize the related properties. Defaults to `RelationshipMeaning.RelatedInstance`.",
+          "description": "The attribute describes what the related properties mean to the primary instance\nwhose properties are displayed.",
           "enum": [
             "RelatedInstance",
             "SameInstance"
           ],
           "type": "string"
         },
+        "relationshipProperties": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/PropertySpecification"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "*",
+                "_none_"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "List of names or definitions of relationship class properties that should be included in the content."
+        },
         "skipIfDuplicate": {
-          "description": "Should this related properties specification be ignored if it duplicates another higher priority specification for the same relationship.",
+          "description": "Specifies whether the specification should be ignored if another higher priority specification for the same relationship already exists.",
           "type": "boolean"
         }
       },
@@ -2095,10 +2178,10 @@
     },
     "RelationshipStepSpecification": {
       "additionalProperties": false,
-      "description": "Specification of a single relationship path step.",
+      "description": "Specification of a single step in `RelationshipPathSpecification`.",
       "properties": {
         "direction": {
-          "description": "Relationship direction that should be followed to find the target class.",
+          "description": "This attribute specifies the direction in which the `relationship` should be followed.",
           "enum": [
             "Backward",
             "Forward"
@@ -2107,11 +2190,11 @@
         },
         "relationship": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of the relationship to use for joining the related instance."
+          "description": "This attribute specifies the ECRelationship that should be used to traverse to target class."
         },
         "targetClass": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of the target class. Either relationship's source or target class is used (based\non specified direction) if more specific target class is not specified by this attribute."
+          "description": "This attribute may be used to specialize the target of the relationship."
         }
       },
       "required": [
@@ -2122,7 +2205,7 @@
     },
     "RepeatableRelationshipStepSpecification": {
       "additionalProperties": false,
-      "description": "Specification of a single relationship path step.",
+      "description": "Specification of a single step in `RepeatableRelationshipPathSpecification`.",
       "properties": {
         "count": {
           "anyOf": [
@@ -2136,10 +2219,10 @@
               "type": "number"
             }
           ],
-          "description": "Number of relationship steps that should be taken. Special `*` value means that\nrelationship is traversed recursively and all matching instances are accumulated.\nDefaults to `1`."
+          "description": "When a number is specified, the relationship is traversed recursively the specified number of times.\n\nWhen it is set to a special value `\"*\"`, the same relationship is traversed recursively unbounded number\nof times, starting from zero (the relationship is not followed). On each traversal iteration, Presentation\nrules engine accumulates all indirectly related ECInstances as defined by the remaining relationship path."
         },
         "direction": {
-          "description": "Relationship direction that should be followed to find the target class.",
+          "description": "This attribute specifies the direction in which the `relationship` should be followed.",
           "enum": [
             "Backward",
             "Forward"
@@ -2148,11 +2231,11 @@
         },
         "relationship": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of the relationship to use for joining the related instance."
+          "description": "This attribute specifies the ECRelationship that should be used to traverse to target class."
         },
         "targetClass": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of the target class. Either relationship's source or target class is used (based\non specified direction) if more specific target class is not specified by this attribute."
+          "description": "This attribute may be used to specialize the target of the relationship."
         }
       },
       "required": [
@@ -2163,7 +2246,7 @@
     },
     "RequiredSchemaSpecification": {
       "additionalProperties": false,
-      "description": "A specification for a schema requirement.",
+      "description": "This specification is designed for specifying schema requirements for the `Ruleset` or specific\npresentation rules.",
       "properties": {
         "maxVersion": {
           "description": "Maximum allowed schema version (exclusive).\nFormat: `{read version}.{write version}.{minor version}`, e.g. `2.1.15`.",
@@ -2176,7 +2259,7 @@
           "type": "string"
         },
         "name": {
-          "description": "ECSchema name",
+          "description": "Specifies the schema to whom the requirement is being set.",
           "type": "string"
         }
       },
@@ -2204,18 +2287,18 @@
     },
     "RootNodeRule": {
       "additionalProperties": false,
-      "description": "Root node rules define the nodes that are displayed\nat the root hierarchy level.",
+      "description": "Root node rules are used to define nodes that are displayed at the root hierarchy level.",
       "properties": {
         "autoExpand": {
-          "description": "Automatically expand nodes created by this rule.",
+          "description": "Tells the library to assign produced nodes a flag, indicating that they should be automatically expanded.",
           "type": "boolean"
         },
         "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "description": "Defines a condition which needs to be met in order for the rule to be used. The condition is an\nECExpression which has to evaluate\nto a boolean value.",
           "type": "string"
         },
         "customizationRules": {
-          "description": "Customization rules that are applied for the content returned by\nthis rule.",
+          "description": "A list of customization rules that\napply only to nodes produced by this rule.",
           "items": {
             "anyOf": [
               {
@@ -2253,15 +2336,15 @@
           "type": "array"
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -2275,7 +2358,7 @@
           "type": "string"
         },
         "specifications": {
-          "description": "Specifications that define what content the rule returns.",
+          "description": "A list of hierarchy specifications that define what nodes are going to be returned.",
           "items": {
             "anyOf": [
               {
@@ -2295,11 +2378,11 @@
           "type": "array"
         },
         "stopFurtherProcessing": {
-          "description": "Stop processing rules that have lower priority. Used in cases when recursion\nsuppression is needed.\n\nNote: If this flag is set, `specifications` and `subConditions` are not processed.",
+          "description": "Stop processing rules that have lower priority. Used in cases when recursion suppression is needed.",
           "type": "boolean"
         },
         "subConditions": {
-          "description": "Specifies child node rules which are only used when specific condition\nis satisfied.",
+          "description": "A list of sub-rules which share *placement attributes* and\nnested customization rules\nof the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules\ncan add additional condition of their own.",
           "items": {
             "$ref": "#/definitions/SubCondition"
           },
@@ -2313,10 +2396,10 @@
     },
     "SameLabelInstanceGroup": {
       "additionalProperties": false,
-      "description": "Allows grouping multiple instances with the same label into one ECInstance node.\nIt can be used in cases when these instances represent the same object for the user.\n\nWhen multiple instances are grouped, an ECInstance node is created instead of a\ngrouping node and the ECInstance key for the node is assigned to key of one of grouped\ninstances.",
+      "description": "Allows grouping multiple instances with the same label into one ECInstances type of node. Similar to display label grouping,\nbut instead of showing a grouping node with multiple grouped ECInstance nodes, it shows a single ECInstances node which represents\nmultiple ECInstances.",
       "properties": {
         "applicationStage": {
-          "description": "Stage of hierarchy creation at which the rule is applied.\nDefaults to `SameLabelInstanceGroupApplicationStage.Query`.",
+          "description": "Grouping nodes by label is an expensive operation because it requires the whole hierarchy level to be created before even the first\ngrouped node can be produced. To alleviate the performance impact when this specification is used, two `applicationStage` settings have been introduced:\n\n- `\"Query\"` groups instances during ECSql query, which can often make use of database indices and is generally fairly quick. It is chosen\n   as the default option, however, it fails to produce grouping nodes when certain ruleset specifications are involved.\n\n- `\"PostProcess\"` groups instances after the whole hierarchy level is built. It incurs a large performance penalty, but it will\n   produce the expected result in all cases.",
           "enum": [
             "PostProcess",
             "Query"
@@ -2338,69 +2421,69 @@
     },
     "SelectedNodeInstancesSpecification": {
       "additionalProperties": false,
-      "description": "Creates content for current selection.\n\nNote: No data is returned for selected custom nodes.",
+      "description": "Returns content for selected (input) instances.",
       "properties": {
         "acceptableClassNames": {
-          "description": "Filter selected nodes by specified class names. All classes are\naccepted if not specified.",
+          "description": "Specifies a list of class names which the input instances have to match for the specification to be used.",
           "items": {
             "type": "string"
           },
           "type": "array"
         },
         "acceptablePolymorphically": {
-          "description": "Should `acceptableClassNames` property be checked polymorphically. If true, all derived\nclasses are accepted as well.",
+          "description": "Specifies whether derived classes of `acceptableClassNames` should be included in the content.",
           "type": "boolean"
         },
         "acceptableSchemaName": {
-          "description": "Filter selected nodes by specified schema name. All schemas are\naccepted if not specified.",
+          "description": "Specifies ECSchema name which the input instances have to match for the specification to be used.",
           "pattern": "^[\\w\\d]+$",
           "type": "string"
         },
         "calculatedProperties": {
-          "description": "Specifications for including calculated properties",
+          "description": "Specifications of calculated properties whose values are\ngenerated using provided ECExpressions.",
           "items": {
             "$ref": "#/definitions/CalculatedPropertiesSpecification"
           },
           "type": "array"
         },
         "onlyIfNotHandled": {
-          "description": "Identifies whether we should ignore this specification if there is already an existing specification\nwith higher `priority` that already provides content.",
+          "description": "Specifies whether this specification should be ignored if another specification was handled before as\ndetermined by rule and specification priorities. This provides a mechanism for defining a fallback specification.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
+          "description": "Controls the order in which specifications are handled — specification with higher priority value is handled\nfirst. If priorities are equal, the specifications are handled in the order they appear in the ruleset.",
           "type": "integer"
         },
         "propertyCategories": {
-          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
+          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from property specification defined in\n`propertyOverrides` by `id`.",
           "items": {
             "$ref": "#/definitions/PropertyCategorySpecification"
           },
           "type": "array"
         },
         "propertyOverrides": {
-          "description": "Specifications for various property overrides.",
+          "description": "Specifications for various property overrides that allow customizing property display.",
           "items": {
             "$ref": "#/definitions/PropertySpecification"
           },
           "type": "array"
         },
         "relatedInstances": {
-          "description": "Specifications for joining related instances",
+          "description": "Specifications of related instances that can be used when creating the content.",
           "items": {
             "$ref": "#/definitions/RelatedInstanceSpecification"
           },
           "type": "array"
         },
         "relatedProperties": {
-          "description": "Specifications for including properties of related instances",
+          "description": "Specifications of related properties which are\nincluded in the generated content.",
           "items": {
             "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
           "type": "array"
         },
         "showImages": {
-          "description": "Should each content record be assigned an image id",
+          "description": "Should image IDs be calculated for the returned instances. When `true`, `ImageIdOverride` rules get applied when\ncreating the content.",
           "type": "boolean"
         },
         "specType": {
@@ -2418,15 +2501,15 @@
     },
     "SingleSchemaClassSpecification": {
       "additionalProperties": false,
-      "description": "Specification for a single ECClass",
+      "description": "This specification is used to point to specific ECClass.",
       "properties": {
         "className": {
-          "description": "Name of ECClass",
+          "description": "Specifies name of the target class.",
           "pattern": "^[\\w\\d]+$",
           "type": "string"
         },
         "schemaName": {
-          "description": "Name of ECSchema",
+          "description": "Specifies name of the schema which contains the target class.",
           "pattern": "^[\\w\\d]+$",
           "type": "string"
         }
@@ -2439,11 +2522,11 @@
     },
     "StringQuerySpecification": {
       "additionalProperties": false,
-      "description": "Specification which contains an ECSQL query used to query for instances.",
+      "description": "The specification contains an ECSQL query which is used to query for instances.",
       "properties": {
         "class": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of ECClass whose instances the query returns."
+          "description": "Specification of ECClass whose instances the query returns. The specification may also point to a\nbase class of instances returned by the query. If the query returns instances that are not of this\nclass, they aren't included in the result set."
         },
         "query": {
           "description": "Specifies the search ECSQL query.",
@@ -2466,7 +2549,7 @@
     },
     "StyleOverride": {
       "additionalProperties": false,
-      "description": "Rule to override default node style and dynamically define a foreground/background\ncolors and a font style for a particular nodes.",
+      "description": "Style override rules allow customizing display style of specific types of ECInstances.",
       "properties": {
         "backColor": {
           "description": "Background color that should be used for node. The value should be an ECExpression\nwhose result would evaluate to one the following formats:\n- color name (`Red`, `Blue`, etc.)\n- `rgb(255, 255, 255)`\n- `#0F0F0F`",
@@ -2477,7 +2560,7 @@
           "type": "string"
         },
         "fontStyle": {
-          "description": "Font style that should be used for node. The value should be an ECExpression\nwhose result would evaluate to one the following values:\n- `\"Bold\"`\n- `\"Italic\"`\n- `\"Italic,Bold\"`\n- `\"Regular\"`\n\nDefaults to `\"FontStyle.Regular\"`.",
+          "description": "Font style that should be used for node. The value should be an ECExpression\nwhose result would evaluate to one the following values:\n- `\"Bold\"`\n- `\"Italic\"`\n- `\"Italic,Bold\"`\n- `\"Regular\"`\n\nDefaults to `\"Regular\"`.",
           "type": "string"
         },
         "foreColor": {
@@ -2485,15 +2568,15 @@
           "type": "string"
         },
         "onlyIfNotHandled": {
-          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "description": "Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule\npriorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.",
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are\nequal, the rules are handled in the order they're defined.",
           "type": "integer"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "A list of ECSchema requirements that need to be met for the rule to be used.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
@@ -2514,21 +2597,21 @@
     },
     "SubCondition": {
       "additionalProperties": false,
-      "description": "Defines child node specifications which should only be handled when a condition\nis satisfied.",
+      "description": "This is a sub-rule which shares *placement attributes* and\nnested customization rules\nof the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules\ncan add additional condition of their own.",
       "properties": {
         "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "description": "Defines a condition which needs to be met in order for the rule to be used. The condition is an\nECExpression which has to evaluate\nto a boolean value.",
           "type": "string"
         },
         "requiredSchemas": {
-          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "description": "Specifications that define ECSchema requirements for\nthe rule to take effect.",
           "items": {
             "$ref": "#/definitions/RequiredSchemaSpecification"
           },
           "type": "array"
         },
         "specifications": {
-          "description": "Child node specifications which are used if condition is satisfied",
+          "description": "A list of hierarchy specifications that define what nodes are going to be returned.",
           "items": {
             "anyOf": [
               {
@@ -2548,7 +2631,7 @@
           "type": "array"
         },
         "subConditions": {
-          "description": "Nested sub-conditions",
+          "description": "A list of nested sub-rules which share *placement attributes* of this sub-condition. This means the\nattributes of this sub-condition are still in effect and the sub-rules can add additional condition\nof their own.",
           "items": {
             "$ref": "#/definitions/SubCondition"
           },
@@ -2634,7 +2717,7 @@
       "type": "object"
     }
   },
-  "description": "Presentation ruleset is a list of rules that define tree hierarchy and content provided by\nthe presentation manager. The ruleset consists of:\n- Ruleset options\n- Navigation rules:\n   - Root node rules\n   - Child node rules\n- Content rules for content you see in content controls\n- Customization rules used for additional customizations such as styling, labeling, checkboxes, etc.\n- User-controllable variables.",
+  "description": "Presentation ruleset is a list of rules that define tree hierarchy and content provided by\nthe presentation library. The ruleset consists of:\n- Ruleset options\n- Hierarchy rules:\n   - Root node rules\n   - Child node rules\n- Content rules for content you see in content controls like property grid and table.\n- Customization rules used for additional customizations such as styling, labeling, checkboxes, etc.\n- User-controllable variables.",
   "properties": {
     "id": {
       "description": "Ruleset identifier. This ID is used to bind UI components with the specific rule set.",
@@ -2713,7 +2796,7 @@
       "type": "array"
     },
     "version": {
-      "description": "Version of the presentation ruleset in SemVer format: `{major}.{minor}.{patch}`.\n\nSetting the version is optional, but might be useful when ruleset is persisted\nsomewhere and evolves over time. Having a version helps choose persisting\nstrategy (keep all versions or only latest) and find the latest ruleset from a list\nof ruleset with the same id.\n\nDefaults to `0.0.0`.",
+      "description": "Version of the presentation ruleset in SemVer format: `{major}.{minor}.{patch}`.\n\nSetting the version is optional, but might be useful when ruleset is persisted\nsomewhere and evolves over time. Having a version helps choose persisting\nstrategy (keep all versions or only latest) and find the latest ruleset from a list\nof rulesets with the same id.\n\nDefaults to `0.0.0`.",
       "pattern": "^[\\d]+\\.[\\d]+\\.[\\d]+$",
       "type": "string"
     }

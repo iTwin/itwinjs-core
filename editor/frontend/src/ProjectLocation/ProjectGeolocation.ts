@@ -10,11 +10,15 @@ import { AccuDrawHintBuilder, AccuDrawShortcuts, AngleDescription, BeButtonEvent
 import { Angle, Matrix3d, Point3d, Ray3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, LinePixels } from "@itwin/core-common";
 import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
-import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
+import { DialogItem, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { EditTools } from "../EditTool";
 
-function translatePrompt(key: string) { return EditTools.translate(`ProjectLocation:Prompts.${key}`); }
-function translateMessage(key: string) { return EditTools.translate(`ProjectLocation:Message.${key}`); }
+function translatePrompt(key: string) {
+  return EditTools.translate(`ProjectLocation:Prompts.${key}`);
+}
+function translateMessage(key: string) {
+  return EditTools.translate(`ProjectLocation:Message.${key}`);
+}
 
 /** @internal */
 class LabelDecoration implements CanvasDecoration {
@@ -82,114 +86,74 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
   public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; } // Allow snapping to terrain, etc. outside project extents...
   public override requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public override async onCleanup() { await super.onCleanup(); this.unsuspendDecorations(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
+  public override async onCleanup() {
+    await super.onCleanup();
+    this.unsuspendDecorations();
+  }
+
   public async onRestartTool() { return this.exitTool(); }
   public override async onUnsuspend() { this.provideToolAssistance(); }
 
-  private _latitudeValue: DialogItemValue = { value: 0.0 };
-  public get latitude(): number { return this._latitudeValue.value as number; }
-  public set latitude(value: number) { this._latitudeValue.value = value; }
-  private static _latitudeName = "latitude";
-  private static _latitudeDescription?: AngleDescription;
-  private _getLatitudeDescription = (): PropertyDescription => {
-    if (!ProjectGeolocationPointTool._latitudeDescription)
-      ProjectGeolocationPointTool._latitudeDescription = new AngleDescription(ProjectGeolocationPointTool._latitudeName, translateMessage("Latitude"));
-    return ProjectGeolocationPointTool._latitudeDescription;
-  };
+  private _latitudeProperty: DialogProperty<number> | undefined;
+  public get latitudeProperty() {
+    if (!this._latitudeProperty)
+      this._latitudeProperty = new DialogProperty<number>(new AngleDescription("latitude", translateMessage("Latitude")), 0.0);
+    return this._latitudeProperty;
+  }
 
-  private _longitudeValue: DialogItemValue = { value: 0.0 };
-  public get longitude(): number { return this._longitudeValue.value as number; }
-  public set longitude(value: number) { this._longitudeValue.value = value; }
-  private static _longitudeName = "longitude";
-  private static _longitudeDescription?: AngleDescription;
-  private _getLongitudeDescription = (): PropertyDescription => {
-    if (!ProjectGeolocationPointTool._longitudeDescription)
-      ProjectGeolocationPointTool._longitudeDescription = new AngleDescription(ProjectGeolocationPointTool._longitudeName, translateMessage("Longitude"));
-    return ProjectGeolocationPointTool._longitudeDescription;
-  };
+  public get latitude(): number { return this.latitudeProperty.value; }
+  public set latitude(value: number) { this.latitudeProperty.value = value; }
 
-  private _altitudeValue: DialogItemValue = { value: 0.0 };
-  public get altitude(): number { return this._altitudeValue.value as number; }
-  public set altitude(value: number) { this._altitudeValue.value = value; }
-  private static _altitudeName = "altitude";
-  private static _altitudeDescription?: LengthDescription;
-  private _getAltitudeDescription = (): PropertyDescription => {
-    if (!ProjectGeolocationPointTool._altitudeDescription)
-      ProjectGeolocationPointTool._altitudeDescription = new LengthDescription(ProjectGeolocationPointTool._altitudeName, CoreTools.translate("Measure.Labels.Altitude"));
-    return ProjectGeolocationPointTool._altitudeDescription;
-  };
+  private _longitudeProperty: DialogProperty<number> | undefined;
+  public get longitudeProperty() {
+    if (!this._longitudeProperty)
+      this._longitudeProperty = new DialogProperty<number>(new AngleDescription("longitude", translateMessage("Longitude")), 0.0);
+    return this._longitudeProperty;
+  }
 
-  private _northValue: DialogItemValue = { value: 0.0 };
-  public get north(): number { return this._northValue.value as number; }
-  public set north(value: number) { this._northValue.value = value; }
-  private static _northName = "north";
-  private static _northDescription?: AngleDescription;
-  private _getNorthDescription = (): PropertyDescription => {
-    if (!ProjectGeolocationPointTool._northDescription)
-      ProjectGeolocationPointTool._northDescription = new AngleDescription(ProjectGeolocationPointTool._northName, translateMessage("North"));
-    return ProjectGeolocationPointTool._northDescription;
-  };
+  public get longitude(): number { return this.longitudeProperty.value; }
+  public set longitude(value: number) { this.longitudeProperty.value = value; }
+
+  private _altitudeProperty: DialogProperty<number> | undefined;
+  public get altitudeProperty() {
+    if (!this._altitudeProperty)
+      this._altitudeProperty = new DialogProperty<number>(new LengthDescription("altitude", CoreTools.translate("Measure.Labels.Altitude")), 0.0);
+    return this._altitudeProperty;
+  }
+
+  public get altitude(): number { return this.altitudeProperty.value; }
+  public set altitude(value: number) { this.altitudeProperty.value = value; }
+
+  private _northProperty: DialogProperty<number> | undefined;
+  public get northProperty() {
+    if (!this._northProperty)
+      this._northProperty = new DialogProperty<number>(new AngleDescription("north", translateMessage("North")), 0.0);
+    return this._northProperty;
+  }
+
+  public get north(): number { return this.northProperty.value; }
+  public set north(value: number) { this.northProperty.value = value; }
 
   private syncToolSettingsCoordinates(): void {
-    const syncData: DialogPropertySyncItem[] = []; // NOTE: Check that formatted quantity descriptions are defined, i.e. abstract ui for tool settings is implemented...
-
-    if (ProjectGeolocationPointTool._latitudeDescription) {
-      const newLatitudeDisplayValue = ProjectGeolocationPointTool._latitudeDescription.format(this.latitude);
-      const latitudeValue: DialogItemValue = { value: this.latitude, displayValue: newLatitudeDisplayValue };
-      const syncLatitudeItem: DialogPropertySyncItem = { value: latitudeValue, propertyName: ProjectGeolocationPointTool._latitudeName, isDisabled: !this._accept };
-      syncData.push(syncLatitudeItem);
-    }
-
-    if (ProjectGeolocationPointTool._longitudeDescription) {
-      const newLongitudeDisplayValue = ProjectGeolocationPointTool._longitudeDescription.format(this.longitude);
-      const longitudeValue: DialogItemValue = { value: this.longitude, displayValue: newLongitudeDisplayValue };
-      const syncLongitudeItem: DialogPropertySyncItem = { value: longitudeValue, propertyName: ProjectGeolocationPointTool._longitudeName, isDisabled: !this._accept };
-      syncData.push(syncLongitudeItem);
-    }
-
-    if (ProjectGeolocationPointTool._altitudeDescription) {
-      const newAltitudeDisplayValue = ProjectGeolocationPointTool._altitudeDescription.format(this.altitude);
-      const altitudeValue: DialogItemValue = { value: this.altitude, displayValue: newAltitudeDisplayValue };
-      const syncAltitudeItem: DialogPropertySyncItem = { value: altitudeValue, propertyName: ProjectGeolocationPointTool._altitudeName, isDisabled: !this._accept };
-      syncData.push(syncAltitudeItem);
-    }
-
-    if (ProjectGeolocationPointTool._northDescription) {
-      const newNorthDisplayValue = ProjectGeolocationPointTool._northDescription.format(this.north);
-      const northValue: DialogItemValue = { value: this.north, displayValue: newNorthDisplayValue };
-      const syncNorthItem: DialogPropertySyncItem = { value: northValue, propertyName: ProjectGeolocationPointTool._northName, isDisabled: !this._accept };
-      syncData.push(syncNorthItem);
-    }
-
-    if (0 !== syncData.length)
-      this.syncToolSettingsProperties(syncData);
+    this.syncToolSettingsProperties([this.latitudeProperty.syncItem, this.longitudeProperty.syncItem, this.altitudeProperty.syncItem, this.northProperty.syncItem]);
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === ProjectGeolocationPointTool._latitudeName) {
-      this.latitude = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: ProjectGeolocationPointTool._latitudeName, value: this._latitudeValue });
-    } else if (updatedValue.propertyName === ProjectGeolocationPointTool._longitudeName) {
-      this.longitude = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: ProjectGeolocationPointTool._longitudeName, value: this._longitudeValue });
-    } else if (updatedValue.propertyName === ProjectGeolocationPointTool._altitudeName) {
-      this.altitude = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: ProjectGeolocationPointTool._altitudeName, value: this._altitudeValue });
-    } else if (updatedValue.propertyName === ProjectGeolocationPointTool._northName) {
-      this.north = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: ProjectGeolocationPointTool._northName, value: this._northValue });
-    }
-    return true;
+    return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
     this._haveToolSettings = true;
     const toolSettings = new Array<DialogItem>();
-    toolSettings.push({ value: this._latitudeValue, property: this._getLatitudeDescription(), isDisabled: true, editorPosition: { rowPriority: 1, columnIndex: 2 } });
-    toolSettings.push({ value: this._longitudeValue, property: this._getLongitudeDescription(), isDisabled: true, editorPosition: { rowPriority: 2, columnIndex: 2 } });
-    toolSettings.push({ value: this._altitudeValue, property: this._getAltitudeDescription(), isDisabled: true, editorPosition: { rowPriority: 3, columnIndex: 2 } });
-    toolSettings.push({ value: this._northValue, property: this._getNorthDescription(), isDisabled: true, editorPosition: { rowPriority: 4, columnIndex: 2 } });
+    toolSettings.push(this.latitudeProperty.toDialogItem({ rowPriority: 1, columnIndex: 2 }));
+    toolSettings.push(this.longitudeProperty.toDialogItem({ rowPriority: 2, columnIndex: 2 }));
+    toolSettings.push(this.altitudeProperty.toDialogItem({ rowPriority: 3, columnIndex: 2 }));
+    toolSettings.push(this.northProperty.toDialogItem({ rowPriority: 4, columnIndex: 2 }));
     return toolSettings;
   }
 
@@ -232,7 +196,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
       this._scale = 1.0;
 
     deco.viewport.invalidateDecorations();
-    setTimeout(() => { this.pulseDecoration(); }, 100);
+    setTimeout(() => this.pulseDecoration(), 100);
   }
 
   private unsuspendDecorations() {
@@ -269,6 +233,14 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
+  protected acceptDefaultLocation(): void {
+    // Greenwich is better default when testing control handle w/o tool settings support...
+    this.latitude = Angle.createDegrees(51.4934).radians;
+    this.longitude = Angle.createDegrees(0.0098).radians;
+    this.altitude = 50.0;
+    this.north = 0.0;
+  }
+
   public acceptKnownLocation(ev: BeButtonEvent): void {
     const deco = ProjectExtentsClipDecoration.get();
     if (undefined === deco)
@@ -286,11 +258,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
         this.altitude = cartographic.height;
         this.north = deco.getClockwiseAngleToNorth().radians;
       } else if (!this._haveToolSettings) {
-        // Greenwich is better default when testing control handle w/o tool settings support...
-        this.latitude = Angle.createDegrees(51.4934).radians;
-        this.longitude = Angle.createDegrees(0.0098).radians;
-        this.altitude = 50.0;
-        this.north = 0.0;
+        this.acceptDefaultLocation();
       }
     }
 
@@ -326,7 +294,15 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override async onInstall(): Promise<boolean> { return ProjectExtentsClipDecoration.allowEcefLocationChange(false); }
+  public override async onInstall(): Promise<boolean> {
+    if (!ProjectExtentsClipDecoration.allowEcefLocationChange(false))
+      return false;
+
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
+    this.initializeToolSettingPropertyValues([this.latitudeProperty, this.longitudeProperty, this.altitudeProperty, this.northProperty]);
+
+    return true;
+  }
 
   /** The keyin takes the following arguments, all of which are optional:
    *  - `latitude=number` Latitude of accept point in degrees.
@@ -343,25 +319,25 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
       if (parts[0].toLowerCase().startsWith("la")) {
         const latitude = Number.parseFloat(parts[1]);
         if (!Number.isNaN(latitude)) {
-          this.latitude = Angle.createDegrees(latitude).radians;
+          this.saveToolSettingPropertyValue(this.latitudeProperty, { value: Angle.createDegrees(latitude).radians });
           this._cartographicFromArgs = true;
         }
       } else if (parts[0].toLowerCase().startsWith("lo")) {
         const longitude = Number.parseFloat(parts[1]);
         if (!Number.isNaN(longitude)) {
-          this.longitude = Angle.createDegrees(longitude).radians;
+          this.saveToolSettingPropertyValue(this.longitudeProperty, { value: Angle.createDegrees(longitude).radians });
           this._cartographicFromArgs = true;
         }
       } else if (parts[0].toLowerCase().startsWith("al")) {
         const altitude = Number.parseFloat(parts[1]);
         if (!Number.isNaN(altitude)) {
-          this.altitude = altitude;
+          this.saveToolSettingPropertyValue(this.altitudeProperty, { value: altitude });
           this._cartographicFromArgs = true;
         }
       } else if (parts[0].toLowerCase().startsWith("no")) {
         const north = Number.parseFloat(parts[1]);
         if (!Number.isNaN(north)) {
-          this.north = Angle.createDegrees(north).radians;
+          this.saveToolSettingPropertyValue(this.northProperty, { value: Angle.createDegrees(north).radians });
           this._cartographicFromArgs = true;
         }
       }
@@ -385,8 +361,14 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
   public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; } // Allow snapping to terrain, etc. outside project extents...
   public override requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public override async onCleanup() { await super.onCleanup(); this.unsuspendDecorations(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+  public override async onCleanup() {
+    await super.onCleanup();
+    this.unsuspendDecorations();
+  }
   public async onRestartTool() { return this.exitTool(); }
   public override async onUnsuspend() { this.provideToolAssistance(); }
 
@@ -530,9 +512,20 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
   public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; } // Allow snapping to terrain, etc. outside project extents...
   public override requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public override async onCleanup() { await super.onCleanup(); this.unsuspendDecorations(); }
-  public async onRestartTool() { const tool = new ProjectGeolocationMoveTool(); if (!await tool.run()) return this.exitTool(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+  public override async onCleanup() {
+    await super.onCleanup();
+    this.unsuspendDecorations();
+  }
+  public async onRestartTool() {
+    const tool = new ProjectGeolocationMoveTool();
+    if (!await tool.run())
+      return this.exitTool();
+  }
+
   public override async onUnsuspend() { this.provideToolAssistance(); }
 
   protected provideToolAssistance(): void {

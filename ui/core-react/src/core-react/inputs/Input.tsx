@@ -28,8 +28,8 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>,
 // Defined using following pattern (const Input at bottom) to ensure useful API documentation is extracted
 const ForwardRefInput = React.forwardRef<HTMLInputElement, InputProps>(   // eslint-disable-line deprecation/deprecation
   function ForwardRefInput(props, ref) {
-    const { className, style, setFocus, nativeKeyHandler, ...otherProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
-    const inputElementRef = React.useRef<HTMLInputElement>();
+    const { className, style, setFocus, nativeKeyHandler, size, ...otherProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const inputElementRef = React.useRef<HTMLInputElement>(null);
     const refs = useRefs(inputElementRef, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
 
     React.useEffect(() => {

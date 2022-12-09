@@ -7,9 +7,10 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
-import { Viewport } from "../../Viewport";
+import { BaseMapLayerSettings, MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
+import { DisplayStyleState } from "../../DisplayStyleState";
 import { ViewState } from "../../ViewState";
+import { Viewport } from "../../Viewport";
 import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, TileTreeReference } from "../internal";
 
 /** @internal */
@@ -25,13 +26,12 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
       func(this.overlayMap);
     }
   }
-  constructor(private readonly _vp: Viewport) {
-    const displayStyle = _vp.displayStyle;
+  constructor(viewportId: number, displayStyle: DisplayStyleState) {
     const mapSettings = displayStyle.backgroundMapSettings;
     const mapImagery = displayStyle.settings.mapImagery;
-    this.backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, _vp.viewportId, false, false, () => displayStyle.overrideTerrainDisplay());
-    this.overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, displayStyle.iModel, _vp.viewportId, true, false);
-    this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, _vp.viewportId, false, true);
+    this.backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, viewportId, false, false, () => displayStyle.overrideTerrainDisplay());
+    this.overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, displayStyle.iModel, viewportId, true, false);
+    this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, viewportId, false, true);
 
     const removals = this._detachFromDisplayStyle;
     removals.push(displayStyle.settings.onBackgroundMapChanged.addListener((settings) => {
@@ -65,7 +65,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     const mapImagery = newView.displayStyle.settings.mapImagery;
     if (!newView.displayStyle.backgroundMapSettings.equals(this.backgroundMap.settings)
       || !layersMatch(mapImagery.backgroundLayers, this.backgroundMap.layerSettings)
-      || (mapImagery.backgroundBase instanceof MapLayerSettings && !layersMatch([mapImagery.backgroundBase], this.backgroundDrapeMap.layerSettings))) {
+      || (mapImagery.backgroundBase instanceof BaseMapLayerSettings && !layersMatch([mapImagery.backgroundBase], this.backgroundDrapeMap.layerSettings))) {
       this.backgroundMap.clearLayers();
       this.backgroundDrapeMap.clearLayers();
     }

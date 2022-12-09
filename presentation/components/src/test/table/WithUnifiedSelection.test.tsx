@@ -2,14 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { InstanceKey, KeySet } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, isKeySet } from "@itwin/presentation-common/lib/cjs/test";
@@ -17,11 +16,11 @@ import {
   ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler,
   SelectionManager,
 } from "@itwin/presentation-frontend";
-import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@itwin/components-react";
 import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
 import { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
 
-// eslint-disable-next-line deprecation/deprecation
+/* eslint-disable deprecation/deprecation */
+
 const PresentationTable = tableWithUnifiedSelection(Table);
 
 describe("Table withUnifiedSelection", () => {
@@ -54,6 +53,7 @@ describe("Table withUnifiedSelection", () => {
     Presentation.terminate();
   });
 
+  // eslint-disable-next-line deprecation/deprecation
   const setupDataProvider = (providerMock?: moq.IMock<PresentationTableDataProvider>, imodel?: IModelConnection, rulesetId?: string, columns?: ColumnDescription[], rows?: RowItem[]) => {
     if (!providerMock)
       providerMock = dataProviderMock;
@@ -72,11 +72,14 @@ describe("Table withUnifiedSelection", () => {
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
     providerMock.setup(async (x) => x.getRowsCount()).returns(async () => rows!.length);
     providerMock.setup(async (x) => x.getRow(moq.It.isAnyNumber())).returns(async (i: number) => rows![i]);
+    // eslint-disable-next-line deprecation/deprecation
     providerMock.setup((x) => x.onColumnsChanged).returns(() => new TableDataChangeEvent());
+    // eslint-disable-next-line deprecation/deprecation
     providerMock.setup((x) => x.onRowsChanged).returns(() => new TableDataChangeEvent());
     providerMock.setup((x) => x.getRowKey(moq.It.isAny())).returns((row) => InstanceKey.fromJSON(JSON.parse(row.key)));
   };
 
+  // eslint-disable-next-line deprecation/deprecation
   const createRandomRowItem = (): RowItem & { _key: InstanceKey } => {
     const k = createRandomECInstanceKey();
     return {
@@ -252,6 +255,7 @@ describe("Table withUnifiedSelection", () => {
       it("calls props callback and returns its result", () => {
         const row = createRandomRowItem();
         const result = faker.random.boolean();
+        // eslint-disable-next-line deprecation/deprecation
         const callback = moq.Mock.ofType<(row: RowItem) => boolean>();
         callback.setup((x) => x(row)).returns(() => result).verifiable();
 
@@ -312,6 +316,7 @@ describe("Table withUnifiedSelection", () => {
       it("calls props callback and aborts when it returns false", async () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
         const rowsIter = createAsyncIterator(rows);
+        // eslint-disable-next-line deprecation/deprecation
         const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>>();
         callback.setup(async (x) => x(rowsIter, true)).returns(async () => false).verifiable();
 
@@ -332,6 +337,7 @@ describe("Table withUnifiedSelection", () => {
       it("calls props callback and adds row keys to selection manager when callback returns true", async () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
         const rowsIter = createAsyncIterator(rows);
+        // eslint-disable-next-line deprecation/deprecation
         const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>>();
         callback.setup(async (x) => x(rowsIter, false)).returns(async () => true).verifiable();
 
@@ -391,6 +397,7 @@ describe("Table withUnifiedSelection", () => {
       it("calls props callback and removes row keys from selection manager when callback returns true", async () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
         const rowsIter = createAsyncIterator(rows);
+        // eslint-disable-next-line deprecation/deprecation
         const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>) => Promise<boolean>>();
         callback.setup(async (x) => x(rowsIter)).returns(async () => true).verifiable();
 
@@ -410,6 +417,7 @@ describe("Table withUnifiedSelection", () => {
       it("calls props callback and aborts when it returns false", async () => {
         const rows = [createRandomRowItem(), createRandomRowItem()];
         const rowsIter = createAsyncIterator(rows);
+        // eslint-disable-next-line deprecation/deprecation
         const callback = moq.Mock.ofType<(rowIterator: AsyncIterableIterator<RowItem>) => Promise<boolean>>();
         callback.setup(async (x) => x(rowsIter)).returns(async () => false).verifiable();
 

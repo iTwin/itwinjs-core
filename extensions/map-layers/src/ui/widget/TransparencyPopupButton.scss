@@ -20,14 +20,8 @@
   }
 }
 
-.map-transparency-popup-button {
-  color: $buic-foreground-body;
-  font-size: $iui-font-size;
-  background-color: transparent;
-  height: 2.2em;
-  border: none;
-  margin-right: 2px;
 
+.map-transparency-popup-button {
   .transparent-button {
     width: 16px;
     height: 16px;
@@ -37,17 +31,7 @@
     fill: $buic-foreground-body;
   }
 
-  &:hover {
-    color: $buic-foreground-primary-tone;
-    cursor: auto;
-
-    svg.checkered {
-      fill: $buic-foreground-primary-tone;
-    }
-  }
-
-  &:focus {
-    box-shadow: $uicore-button-focus-boxshadow;
-    outline: none;
+  svg.checkered-disabled {
+    fill: $buic-foreground-muted;
   }
 }

@@ -11,6 +11,7 @@ import { IModelConnection } from "./IModelConnection";
 
 /** Identifies the type of changes made to the [[SelectionSet]] to produce a [[SelectionSetEvent]].
  * @public
+ * @extensions
  */
 export enum SelectionSetEventType {
   /** Elements have been added to the set. */
@@ -25,6 +26,7 @@ export enum SelectionSetEventType {
 
 /** Passed to [[SelectionSet.onChanged]] event listeners when elements are added to the selection set.
  * @public
+ * @extensions
  */
 export interface SelectAddEvent {
   type: SelectionSetEventType.Add;
@@ -36,6 +38,7 @@ export interface SelectAddEvent {
 
 /** Passed to [[SelectionSet.onChanged]] event listeners when elements are removed from the selection set.
  * @public
+ * @extensions
  */
 export interface SelectRemoveEvent {
   /** The type of operation that produced this event. */
@@ -48,6 +51,7 @@ export interface SelectRemoveEvent {
 
 /** Passed to [[SelectionSet.onChanged]] event listeners when elements are simultaneously added to and removed from the selection set.
  * @public
+ * @extensions
  */
 export interface SelectReplaceEvent {
   type: SelectionSetEventType.Replace;
@@ -71,6 +75,7 @@ export interface SelectReplaceEvent {
  *  }
  *  ```
  * @public
+ * @extensions
  */
 export type SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent;
 
@@ -162,30 +167,70 @@ class HilitedElementIds extends HilitedIds {
   }
 }
 
+/** Describes how the sets of hilited models and subcategories in a [[HiliteSet]] interact.
+ *  - "union" indicates a [Feature]($common) will be hilited if either its model **or** its subcategory is present in the HiliteSet.
+ *  - "intersection" indicates a [Feature]($common) will be hilited only if both its model **and** its subcategory are present in the HiliteSet.
+ *
+ * @see [[HiliteSet.modelSubCategoryMode]] to change the mode for a HiliteSet.
+ * @public
+ */
+export type ModelSubCategoryHiliteMode = "union" | "intersection";
+
 /** A set of *hilited* elements for an [[IModelConnection]], by element id.
  * Hilited elements are displayed with a customizable hilite effect within a [[Viewport]].
- * The set exposes 3 types of elements in 3 separate collections: geometric elements, subcategories, and geometric models.
+ * The set exposes 3 types of elements in 3 separate collections: [GeometricElement]($backend), [GeometricModel]($backend), and [SubCategory]($backend).
+ * The [[models]] and [[subcategories]] can be hilited independently or as an intersection of the two sets, as specified by [[modelSubCategoryMode]].
+ *
+ * Technically, the hilite effect is applied to [Feature]($common)s, not [Element]($backend)s. An element's geometry stream can contain multiple
+ * features belonging to different subcategories.
+ *
+ * Because Javascript lacks efficient support for 64-bit integers, the Ids are stored as pairs of 32-bit integers via [Id64.Uint32Set]($bentley).
+ *
  * @note Typically, elements are hilited by virtue of their presence in the IModelConnection's [[SelectionSet]]. The HiliteSet allows additional
  * elements to be displayed with the hilite effect without adding them to the [[SelectionSet]]. If you add elements to the HiliteSet directly, you
  * are also responsible for removing them as appropriate.
- * @note Support for subcategories and geometric models in the HiliteSet is currently `beta`.
  * @see [[IModelConnection.hilited]] for the HiliteSet associated with an iModel.
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
  * @public
+ * @extensions
  */
 export class HiliteSet {
   private readonly _elements: HilitedElementIds;
+  private _mode: ModelSubCategoryHiliteMode = "union";
 
   /** The set of hilited subcategories.
-   * @beta
+   * @see [[modelSubCategoryMode]] to control how this set interacts with the set of hilited [[models]].
+   * @see [[IModelConnection.Categories]] to obtain the set of subcategories associated with one or more [Category]($backend)'s.
    */
   public readonly subcategories: Id64.Uint32Set;
+
   /** The set of hilited [[GeometricModelState]]s.
-   * @beta
+   * @see [[modelSubCategoryMode]] to control how this set interacts with the set of hilited [[subcategories]].
    */
   public readonly models: Id64.Uint32Set;
+
   /** The set of hilited elements. */
   public get elements(): Id64.Uint32Set { return this._elements; }
+
+  /** Controls how the sets of hilited [[models]] and [[subcategories]] interact with one another.
+   * By default they are treated as a union: a [Feature]($common) is hilited if either its model **or** its subcategory is hilited.
+   * This can be changed to an intersection such that a [Feature]($common) is hilited only if both its model **and** subcategory are hilited.
+   * @note The sets of hilited models and subcategories are independent of the set of hilited [[elements]] - an element whose Id is present in
+   * [[elements]] is always hilited regardless of its model or subcategories.
+   */
+  public get modelSubCategoryMode(): ModelSubCategoryHiliteMode {
+    return this._mode;
+  }
+  public set modelSubCategoryMode(mode: ModelSubCategoryHiliteMode) {
+    if (mode === this._mode)
+      return;
+
+    this.onModelSubCategoryModeChanged.raiseEvent(mode);
+    this._mode = mode;
+  }
+
+  /** Event raised just before changing the value of [[modelSubCategoryMode]]. */
+  public readonly onModelSubCategoryModeChanged = new BeEvent<(newMode: ModelSubCategoryHiliteMode) => void>();
 
   /** Construct a HiliteSet
    * @param iModel The iModel containing the entities to be hilited.
@@ -221,6 +266,8 @@ export class HiliteSet {
    * @param onOff True to add the elements to the hilited set, false to remove them.
    */
   public setHilite(arg: Id64Arg, onOff: boolean): void {
+    const oldSize = this.elements.size;
+
     for (const id of Id64.iterable(arg)) {
       if (onOff)
         this.elements.addId(id);
@@ -228,7 +275,8 @@ export class HiliteSet {
         this.elements.deleteId(id);
     }
 
-    IModelApp.viewManager.onSelectionSetChanged(this.iModel);
+    if (oldSize !== this.elements.size)
+      IModelApp.viewManager.onSelectionSetChanged(this.iModel);
   }
 }
 
@@ -236,6 +284,7 @@ export class HiliteSet {
  * Selected elements are displayed with a customizable hilite effect within a [[Viewport]].
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
  * @public
+ * @extensions
  */
 export class SelectionSet {
   private _elements = new Set<string>();

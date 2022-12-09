@@ -1,117 +1,54 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Frontstage local storage wrapper ModalFrontstageComposer ActiveFrontstageDefProvider should render 1`] = `
-<div
-  className="uifw-widgetPanels-frontstage"
-  onKeyDown={[Function]}
-  role="presentation"
+<ContextProvider
+  value={
+    Object {
+      "store": Object {
+        "@@observable": [Function],
+        "dispatch": [Function],
+        "getState": [Function],
+        "replaceReducer": [Function],
+        "subscribe": [Function],
+      },
+      "subscription": Object {
+        "addNestedSub": [Function],
+        "getListeners": [Function],
+        "handleChangeWrapper": [Function],
+        "isSubscribed": [Function],
+        "notifyNestedSubs": [Function],
+        "trySubscribe": [Function],
+        "tryUnsubscribe": [Function],
+      },
+    }
+  }
 >
-  <NineZone
-    dispatch={[Function]}
-    labels={
-      Object {
-        "dockToolSettingsTitle": "widget.tooltips.dockToolSettings",
-        "moreToolSettingsTitle": "widget.tooltips.moreToolSettings",
-        "moreWidgetsTitle": "widget.tooltips.moreWidgets",
-        "pinPanelTitle": "widget.tooltips.pinPanel",
-        "popoutActiveTab": "widget.tooltips.popoutActiveTab",
-        "resizeGripTitle": "widget.tooltips.resizeGrip",
-        "sendWidgetHomeTitle": "widget.tooltips.sendHome",
-        "toolSettingsHandleTitle": "widget.tooltips.toolSettingsHandle",
-        "unpinPanelTitle": "widget.tooltips.unpinPanel",
+  <ActiveFrontstageDefProvider
+    frontstageDef={
+      FrontstageDef {
+        "_defaultContentId": "",
+        "_id": "",
+        "_isApplicationClosing": false,
+        "_isInFooterMode": true,
+        "_isReady": false,
+        "_isStageClosing": false,
+        "_timeTracker": TimeTracker {
+          "_firstActiveTimestamp": 0,
+          "_idleCount": 0,
+          "_idleStartTimestamp": 0,
+          "_idleTime": 0,
+          "_idleTimeCounter": [Function],
+          "_idleTimeout": 5000,
+          "_lastActiveTimestamp": 0,
+          "_totalIdleTime": 0,
+          "_totalTime": 0,
+          "_trackActivity": [Function],
+        },
+        "_version": 0,
       }
     }
-    state={
-      Object {
-        "draggedTab": undefined,
-        "floatingWidgets": Object {
-          "allIds": Array [],
-          "byId": Object {},
-        },
-        "panels": Object {
-          "bottom": Object {
-            "collapseOffset": 100,
-            "collapsed": false,
-            "maxSize": 600,
-            "maxWidgetCount": 2,
-            "minSize": 100,
-            "pinned": true,
-            "resizable": true,
-            "side": "bottom",
-            "size": undefined,
-            "span": true,
-            "widgets": Array [],
-          },
-          "left": Object {
-            "collapseOffset": 100,
-            "collapsed": false,
-            "maxSize": 600,
-            "maxWidgetCount": 3,
-            "minSize": 200,
-            "pinned": true,
-            "resizable": true,
-            "side": "left",
-            "size": undefined,
-            "widgets": Array [],
-          },
-          "right": Object {
-            "collapseOffset": 100,
-            "collapsed": false,
-            "maxSize": 600,
-            "maxWidgetCount": 3,
-            "minSize": 200,
-            "pinned": true,
-            "resizable": true,
-            "side": "right",
-            "size": undefined,
-            "widgets": Array [],
-          },
-          "top": Object {
-            "collapseOffset": 100,
-            "collapsed": false,
-            "maxSize": 600,
-            "maxWidgetCount": 2,
-            "minSize": 100,
-            "pinned": true,
-            "resizable": true,
-            "side": "top",
-            "size": undefined,
-            "span": true,
-            "widgets": Array [],
-          },
-        },
-        "popoutWidgets": Object {
-          "allIds": Array [],
-          "byId": Object {},
-        },
-        "size": Object {
-          "height": 0,
-          "width": 0,
-        },
-        "tabs": Object {
-          "nz-tool-settings-tab": Object {
-            "allowedPanelTargets": Array [
-              "bottom",
-              "left",
-              "right",
-            ],
-            "id": "nz-tool-settings-tab",
-            "label": "Tool Settings",
-          },
-        },
-        "toolSettings": Object {
-          "type": "docked",
-        },
-        "widgets": Object {},
-      }
-    }
-    tab={<WidgetPanelsTab />}
-    toolSettingsContent={<ToolSettingsContent />}
-    widgetContent={<WidgetContent />}
-  >
-    <Memo(WidgetPanelsFrontstageComponent) />
-  </NineZone>
-</div>
+  />
+</ContextProvider>
 `;
 
 exports[`Frontstage local storage wrapper ModalFrontstageComposer initializeNineZoneState should initialize widgets 1`] = `
@@ -131,32 +68,35 @@ Object {
       "pinned": true,
       "resizable": true,
       "side": "bottom",
-      "size": undefined,
+      "size": 100,
       "span": true,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "left": Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
-      "maxWidgetCount": 3,
+      "maxWidgetCount": 2,
       "minSize": 200,
       "pinned": true,
       "resizable": true,
       "side": "left",
-      "size": undefined,
+      "size": 200,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "right": Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
-      "maxWidgetCount": 3,
+      "maxWidgetCount": 2,
       "minSize": 200,
       "pinned": true,
       "resizable": true,
       "side": "right",
-      "size": undefined,
+      "size": 200,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "top": Object {
@@ -168,8 +108,9 @@ Object {
       "pinned": true,
       "resizable": true,
       "side": "top",
-      "size": undefined,
+      "size": 100,
       "span": true,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
   },
@@ -209,11 +150,12 @@ Object {
     "byId": Object {
       "w1": Object {
         "bounds": Object {
-          "bottom": 0,
-          "left": 0,
-          "right": 0,
-          "top": 0,
+          "bottom": 140,
+          "left": 20,
+          "right": 220,
+          "top": 20,
         },
+        "hidden": false,
         "home": Object {
           "side": "left",
           "widgetId": undefined,
@@ -235,30 +177,33 @@ Object {
       "side": "bottom",
       "size": undefined,
       "span": true,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "left": Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
-      "maxWidgetCount": 3,
+      "maxWidgetCount": 2,
       "minSize": 200,
       "pinned": true,
       "resizable": true,
       "side": "left",
       "size": undefined,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "right": Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
-      "maxWidgetCount": 3,
+      "maxWidgetCount": 2,
       "minSize": 200,
       "pinned": true,
       "resizable": true,
       "side": "right",
       "size": undefined,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "top": Object {
@@ -272,6 +217,7 @@ Object {
       "side": "top",
       "size": undefined,
       "span": true,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
   },
@@ -288,7 +234,12 @@ Object {
       "allowedPanelTargets": undefined,
       "id": "t1",
       "preferredFloatingWidgetSize": undefined,
-      "preferredPopoutWidgetSize": undefined,
+      "userSized": undefined,
+    },
+    "t2": Object {
+      "allowedPanelTargets": undefined,
+      "id": "t2",
+      "preferredFloatingWidgetSize": undefined,
       "userSized": undefined,
     },
   },
@@ -334,30 +285,33 @@ Object {
       "side": "bottom",
       "size": undefined,
       "span": true,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "left": Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
-      "maxWidgetCount": 3,
+      "maxWidgetCount": 2,
       "minSize": 200,
       "pinned": true,
       "resizable": true,
       "side": "left",
       "size": undefined,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "right": Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
-      "maxWidgetCount": 3,
+      "maxWidgetCount": 2,
       "minSize": 200,
       "pinned": true,
       "resizable": true,
       "side": "right",
       "size": undefined,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "top": Object {
@@ -371,6 +325,7 @@ Object {
       "side": "top",
       "size": undefined,
       "span": true,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
   },
@@ -393,7 +348,10 @@ Object {
       "label": "Tool Settings",
     },
     "t1": Object {
+      "allowedPanelTargets": undefined,
       "canPopout": undefined,
+      "hideWithUiWhenFloating": false,
+      "iconSpec": undefined,
       "id": "t1",
       "isFloatingStateWindowResizable": true,
       "label": "Widget",
@@ -425,30 +383,33 @@ Object {
       "side": "bottom",
       "size": undefined,
       "span": true,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "left": Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
-      "maxWidgetCount": 3,
+      "maxWidgetCount": 2,
       "minSize": 200,
       "pinned": true,
       "resizable": true,
       "side": "left",
       "size": undefined,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "right": Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
-      "maxWidgetCount": 3,
+      "maxWidgetCount": 2,
       "minSize": 200,
       "pinned": true,
       "resizable": true,
       "side": "right",
       "size": undefined,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
     "top": Object {
@@ -462,6 +423,7 @@ Object {
       "side": "top",
       "size": undefined,
       "span": true,
+      "splitterPercent": 50,
       "widgets": Array [],
     },
   },
@@ -501,6 +463,7 @@ exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render 1
       "_id": "",
       "_isApplicationClosing": false,
       "_isInFooterMode": true,
+      "_isReady": false,
       "_isStageClosing": false,
       "_timeTracker": TimeTracker {
         "_firstActiveTimestamp": 0,
@@ -528,6 +491,7 @@ exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render m
       "_id": "",
       "_isApplicationClosing": false,
       "_isInFooterMode": true,
+      "_isReady": false,
       "_isStageClosing": false,
       "_timeTracker": TimeTracker {
         "_firstActiveTimestamp": 0,

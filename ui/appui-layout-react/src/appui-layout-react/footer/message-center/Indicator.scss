@@ -39,6 +39,10 @@
 
     >.nz-label {
       font-size: $text-font-size;
+      font-size: $text-font-size;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
 
       @include for-tablet-portrait-down {
         font-size: $text-font-size-medium;

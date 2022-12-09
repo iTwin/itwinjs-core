@@ -4,56 +4,54 @@
 
 ### Introduction
 
-- [Motivation](./Motivation/index.md)
-- [Setting up](./Setup/index.md)
+- [Motivation](./motivation/index.md)
+- [Setting up](./setup/index.md)
 
 &nbsp;
 
-### [Content](./Content/index.md)
+### [Content](./content/index.md)
 
-- [Rules](./Content/index.md#rules)
-- [Specifications](./Content/index.md#specifications)
-- [Modifiers](./Content/index.md#modifiers)
-- [Property Categorization](./Content/PropertyCategorization.md)
-- [ECExpressions](./Content/ECExpressions.md)
-- [Terminology](./Content/Terminology.md)
-- [External Resources](./Content/index.md#external-resources)
-
-&nbsp;
-
-### [Hierarchies](./Hierarchies/index.md)
-
-- [Rules](./Hierarchies/index.md#rules)
-- [Specifications](./Hierarchies/ChildNodeRule.md#attribute-specifications)
-- [Customization](./Hierarchies/index.md#hierarchy-customization)
-- [Infinite hierarchies prevention](./Hierarchies/InfiniteHierarchiesPrevention.md)
-- [ECExpressions](./Hierarchies/ECExpressions.md)
-- [Terminology](./Hierarchies/Terminology.md)
-- [External Resources](./Hierarchies/index.md#external-resources)
+- [Rules](./content/index.md#rules)
+- [Specifications](./content/index.md#specifications)
+- [Modifiers](./content/index.md#modifiers)
+- [Property Categorization](./content/PropertyCategorization.md)
+- [ECExpressions](./content/ECExpressions.md)
+- [Terminology](./content/Terminology.md)
+- [External Resources](./content/index.md#external-resources)
 
 &nbsp;
 
-### [Customization](./Customization/index.md)
+### [Hierarchies](./hierarchies/index.md)
 
-- [Rules](./Customization/index.md#rules)
-- [Property value renderers](./Customization/PropertyValueRenderers.md)
-- [Property category renderers](./Customization/PropertyCategoryRenderers.md)
-- [ECExpressions](./Customization/ECExpressions.md)
-
-&nbsp;
-
-### [Unified Selection](./Unified-Selection/index.md)
-
-- [External Resources](./Unified-Selection/index.md#external-resources)
+- [Rules](./hierarchies/index.md#rules)
+- [Specifications](./hierarchies/ChildNodeRule.md#attribute-specifications)
+- [Customization](./hierarchies/index.md#hierarchy-customization)
+- [Infinite hierarchies prevention](./hierarchies/InfiniteHierarchiesPrevention.md)
+- [ECExpressions](./hierarchies/ECExpressions.md)
+- [Terminology](./hierarchies/Terminology.md)
+- [External Resources](./hierarchies/index.md#external-resources)
 
 &nbsp;
 
-### [Advanced](./Advanced/index.md)
+### [Customization](./customization/index.md)
 
-- [ECExpressions](./Advanced/ECExpressions.md)
-- [Localization](./Advanced/Localization.md)
-- [Ruleset Variables](./Advanced/RulesetVariables.md)
-- [Ruleset Supplementation](./Advanced/RulesetSupplementation.md)
-- [Default BIS Presentation Rules](./Advanced/DefaultBisRules.md)
-- [Performance Tips](./Advanced/Performance.md)
-- [Testing](./Advanced/Testing.md)
+- [Rules](./customization/index.md#rules)
+- [ECExpressions](./customization/ECExpressions.md)
+
+&nbsp;
+
+### [Unified Selection](./unified-selection/index.md)
+
+- [External Resources](./unified-selection/index.md#external-resources)
+
+&nbsp;
+
+### [Advanced](./advanced/index.md)
+
+- [ECExpressions](./advanced/ECExpressions.md)
+- [Localization](./advanced/Localization.md)
+- [Ruleset Variables](./advanced/RulesetVariables.md)
+- [Ruleset Supplementation](./advanced/RulesetSupplementation.md)
+- [Default BIS Presentation Rules](./advanced/DefaultBisRules.md)
+- [Performance Tips](./advanced/Performance.md)
+- [Testing](./advanced/Testing.md)

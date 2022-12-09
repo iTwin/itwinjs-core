@@ -2,30 +2,36 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import { InputStatus, LabeledTextarea } from "../../core-react";
+import { classesFromElement } from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */
 
-describe("<LabeledTextarea />", () => {
-  it("should render", () => {
-    mount(<LabeledTextarea label="textarea test" />);
-  });
-
+describe("<LabeledTextArea />", () => {
   it("renders correctly", () => {
-    shallow(<LabeledTextarea label="textarea test" />).should.matchSnapshot();
+    render(<LabeledTextarea label="input test" />);
+
+    expect(screen.getByLabelText("input test")).to.be.eq(screen.getByRole("textbox"));
   });
 
   it("renders disabled correctly", () => {
-    shallow(<LabeledTextarea label="textarea test" disabled />).should.matchSnapshot();
+    const {container} = render(<LabeledTextarea label="input test" disabled={true} />);
+
+    expect(classesFromElement(container.firstElementChild)).to.include("uicore-disabled");
   });
 
   it("renders status correctly", () => {
-    shallow(<LabeledTextarea label="textarea test" status={InputStatus.Success} />).should.matchSnapshot();
+    const {container} = render(<LabeledTextarea label="input test" status={InputStatus.Success} />);
+
+    expect(classesFromElement(container.firstElementChild)).to.include("success");
   });
 
   it("renders message correctly", () => {
-    shallow(<LabeledTextarea label="textarea test" message="Test message" />).should.matchSnapshot();
+    render(<LabeledTextarea label="input test" message="Test message" />);
+
+    expect(screen.getByText("Test message")).to.exist;
   });
 });

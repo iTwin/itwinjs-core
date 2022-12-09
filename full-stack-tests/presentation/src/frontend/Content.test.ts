@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import * as sinon from "sinon";
+import { assert, Guid, Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
   NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes, SelectClassInfo,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
 
-import sinon = require("sinon");
 describe("Content", () => {
 
   let imodel: IModelConnection;
@@ -226,7 +226,7 @@ describe("Content", () => {
         { className: "PCJ_TestSchema:TestClass", id: "0x71" },
       ]);
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
-      const field = getFieldByLabel(descriptor.fields, "Ñámê");
+      const field = getFieldByLabel(descriptor.fields, "Name");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2.dgn",
         groupedRawValues: ["Properties_60InstancesWithUrl2.dgn"],
@@ -398,6 +398,104 @@ describe("Content", () => {
 
   });
 
+  describe("Navigation Properties", () => {
+
+    it("creates navigation fields", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.SelectedNodeInstances,
+          }],
+        }],
+      };
+
+      const keys = new KeySet([
+        { className: "PCJ_TestSchema:TestClass", id: "0x70" },
+      ]);
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
+      const field = getFieldByLabel(descriptor.fields, "Model");
+
+      assert(field.isPropertiesField());
+
+      expect(field.properties.length).to.eq(1);
+      expect(field.properties[0].property.navigationPropertyInfo).is.not.null;
+      expect(field.properties[0].property.navigationPropertyInfo?.isForwardRelationship).to.eq(false);
+      expect(field.properties[0].property.navigationPropertyInfo?.classInfo.id).to.eq("0x40");
+      expect(field.properties[0].property.navigationPropertyInfo?.targetClassInfo.id).to.eq("0x41");
+
+    });
+
+  });
+
+  describe("Instance filter", () => {
+
+    it("filters content instances using direct property", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: [{ schemaName: "PCJ_TestSchema", classNames: ["TestClass"] }],
+          }],
+        }],
+      };
+
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {
+          instanceFilter: {
+            selectClassName: "PCJ_TestSchema:TestClass",
+            expression: "this.String_Property_4 = \"Yoda\"",
+          },
+        },
+      });
+
+      expect(content?.contentSet.length).to.be.eq(6);
+    });
+
+    it("filters content instances using related property", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: [{ schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true }],
+          }],
+        }],
+      };
+
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {
+          instanceFilter: {
+            selectClassName: "Generic:PhysicalObject",
+            expression: "related.Btu__x002F__lb__x0020____x005B__Btu__x0020__per__x0020__pound__x0020__mass__x005D__ = 1475.699",
+            relatedInstances: [{
+              pathFromSelectToPropertyClass: [{
+                sourceClassName: "Generic:PhysicalObject",
+                targetClassName: "DgnCustomItemTypes_MyProp:area__x0020__per__x0020__time__x0020__squaredElementAspect",
+                relationshipName: "BisCore:ElementOwnsMultiAspects",
+                isForwardRelationship: true,
+              }],
+              alias: "related",
+            }],
+          },
+        },
+      });
+
+      expect(content?.contentSet.length).to.be.eq(1);
+    });
+
+  });
+
   describe("Class descriptor", () => {
 
     it("creates base class descriptor usable for subclasses", async () => {
@@ -471,9 +569,9 @@ describe("Content", () => {
                   label: "TestClass",
                 },
                 targetClassInfo: {
-                  id: "0x171",
-                  name: "DgnCustomItemTypes_MyProp:areaElementAspect",
-                  label: "area",
+                  id: "0x86",
+                  name: "BisCore:ElementMultiAspect",
+                  label: "Element Multi-Aspect",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -493,9 +591,241 @@ describe("Content", () => {
                   label: "TestClass",
                 },
                 targetClassInfo: {
-                  id: "0xb0",
-                  name: "BisCore:PhysicalModel",
-                  label: "Physical Model",
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x83",
+                  name: "BisCore:ElementHasLinks",
+                  label: "ElementHasLinks",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                targetClassInfo: {
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x40",
+                  name: "BisCore:ModelContainsElements",
+                  label: "ModelContainsElements",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x83",
+                  name: "BisCore:ElementHasLinks",
+                  label: "ElementHasLinks",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x82",
+                  name: "BisCore:ElementGroupsMembers",
+                  label: "ElementGroupsMembers",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                targetClassInfo: {
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x40",
+                  name: "BisCore:ModelContainsElements",
+                  label: "ModelContainsElements",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x82",
+                  name: "BisCore:ElementGroupsMembers",
+                  label: "ElementGroupsMembers",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x82",
+                  name: "BisCore:ElementGroupsMembers",
+                  label: "ElementGroupsMembers",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                targetClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x83",
+                  name: "BisCore:ElementHasLinks",
+                  label: "ElementHasLinks",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                targetClassInfo: {
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x40",
+                  name: "BisCore:ModelContainsElements",
+                  label: "ModelContainsElements",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x82",
+                  name: "BisCore:ElementGroupsMembers",
+                  label: "ElementGroupsMembers",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x96",
+                  name: "BisCore:GroupInformationElement",
+                  label: "Group Information",
+                },
+                targetClassInfo: {
+                  id: "0x84",
+                  name: "BisCore:LinkElement",
+                  label: "Link",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x83",
+                  name: "BisCore:ElementHasLinks",
+                  label: "ElementHasLinks",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -508,14 +838,14 @@ describe("Content", () => {
               },
               {
                 sourceClassInfo: {
-                  id: "0xb0",
-                  name: "BisCore:PhysicalModel",
-                  label: "Physical Model",
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
                 },
                 targetClassInfo: {
-                  id: "0xb4",
-                  name: "BisCore:PhysicalPartition",
-                  label: "Physical Partition",
+                  id: "0x44",
+                  name: "BisCore:ISubModeledElement",
+                  label: "Modellable Element",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -528,9 +858,9 @@ describe("Content", () => {
               },
               {
                 sourceClassInfo: {
-                  id: "0xb4",
-                  name: "BisCore:PhysicalPartition",
-                  label: "Physical Partition",
+                  id: "0x44",
+                  name: "BisCore:ISubModeledElement",
+                  label: "Modellable Element",
                 },
                 targetClassInfo: {
                   id: "0xa9",
@@ -547,13 +877,119 @@ describe("Content", () => {
                 isForwardRelationship: true,
               },
             ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x8e",
+                  name: "BisCore:GeometricElement3dHasTypeDefinition",
+                  label: "GeometricElement3dHasTypeDefinition",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                targetClassInfo: {
+                  id: "0x41",
+                  name: "BisCore:Model",
+                  label: "Model",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x40",
+                  name: "BisCore:ModelContainsElements",
+                  label: "ModelContainsElements",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: false,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x8e",
+                  name: "BisCore:GeometricElement3dHasTypeDefinition",
+                  label: "GeometricElement3dHasTypeDefinition",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x8e",
+                  name: "BisCore:GeometricElement3dHasTypeDefinition",
+                  label: "GeometricElement3dHasTypeDefinition",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                targetClassInfo: {
+                  id: "0x86",
+                  name: "BisCore:ElementMultiAspect",
+                  label: "Element Multi-Aspect",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x87",
+                  name: "BisCore:ElementOwnsMultiAspects",
+                  label: "ElementOwnsMultiAspects",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
           ],
           navigationPropertyClasses: [
             {
               sourceClassInfo: {
-                id: "0x3f",
-                name: "BisCore:Element",
-                label: "Element",
+                id: "0x1a0",
+                name: "PCJ_TestSchema:TestClass",
+                label: "TestClass",
               },
               targetClassInfo: {
                 id: "0x41",
@@ -571,14 +1007,14 @@ describe("Content", () => {
             },
             {
               sourceClassInfo: {
-                id: "0x8b",
-                name: "BisCore:GeometricElement3d",
-                label: "3D Geometric Element",
+                id: "0x1a0",
+                name: "PCJ_TestSchema:TestClass",
+                label: "TestClass",
               },
               targetClassInfo: {
-                id: "0x8d",
-                name: "BisCore:SpatialCategory",
-                label: "Spatial Category",
+                id: "0x3f",
+                name: "BisCore:Element",
+                label: "Element",
               },
               isPolymorphicTargetClass: true,
               relationshipInfo: {
@@ -676,7 +1112,7 @@ describe("Content", () => {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       const realRace = Promise.race;
       raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
-        (values as any).push(new Promise((_resolve, reject) => { reject("something"); }));
+        (values as any).push(new Promise((_resolve, reject) => reject("something")));
         return realRace.call(Promise, values);
       });
     });
@@ -725,21 +1161,15 @@ function getFieldLabels(fields: Descriptor | Field[]): FieldLabels {
   });
 }
 
-interface ECClassInfo {
-  id: Id64String;
-  baseClassIds: Id64String[];
-  derivedClassIds: Id64String[];
-}
-
-function cloneFilteredNestedContentField(field: NestedContentField, filterClassInfo: ECClassInfo) {
+function cloneFilteredNestedContentField(field: NestedContentField, filterClassInfo: ECClassHierarchyInfo) {
   const clone = field.clone();
   clone.nestedFields = filterNestedContentFieldsByClass(clone.nestedFields, filterClassInfo);
   return clone;
 }
-function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
+function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassHierarchyInfo) {
   const filteredFields = new Array<Field>();
   fields.forEach((f) => {
-    if (f.isNestedContentField() && f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClassIds.includes(id))) {
+    if (f.isNestedContentField() && f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClasses.some((info) => info.id === id))) {
       const clone = cloneFilteredNestedContentField(f, classInfo);
       if (clone.nestedFields.length > 0)
         filteredFields.push(clone);
@@ -749,14 +1179,14 @@ function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassInf
   });
   return filteredFields;
 }
-function filterFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
+function filterFieldsByClass(fields: Field[], classInfo: ECClassHierarchyInfo) {
   const filteredFields = new Array<Field>();
   fields.forEach((f) => {
     if (f.isNestedContentField()) {
       // always include nested content field if its `actualPrimaryClassIds` contains either id of given class itself or one of its derived class ids
       // note: nested content fields might have more nested fields inside them and these deeply nested fields might not apply for given class - for
       // that we need to clone the field and pick only property fields and nested fields that apply.
-      const appliesForGivenClass = f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClassIds.includes(id));
+      const appliesForGivenClass = f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClasses.some((info) => info.id === id));
       if (appliesForGivenClass) {
         const clone = cloneFilteredNestedContentField(f, classInfo);
         if (clone.nestedFields.length > 0)
@@ -767,8 +1197,8 @@ function filterFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
       const appliesForGivenClass = f.properties.some((p) => {
         const propertyClassId = p.property.classInfo.id;
         return propertyClassId === classInfo.id
-          || classInfo.baseClassIds.includes(propertyClassId)
-          || classInfo.derivedClassIds.includes(propertyClassId);
+          || classInfo.baseClasses.some((info) => info.id === propertyClassId)
+          || classInfo.derivedClasses.some((info) => info.id === propertyClassId);
       });
       if (appliesForGivenClass)
         filteredFields.push(f);
@@ -777,56 +1207,4 @@ function filterFieldsByClass(fields: Field[], classInfo: ECClassInfo) {
     }
   });
   return filteredFields;
-}
-
-class ECClassHierarchy {
-  private constructor(private _imodel: IModelConnection, private _baseClasses: Map<Id64String, Id64String[]>, private _derivedClasses: Map<Id64String, Id64String[]>) {
-  }
-  public static async create(imodel: IModelConnection) {
-    const baseClassHierarchy = new Map();
-    const derivedClassHierarchy = new Map();
-
-    const query = "SELECT SourceECInstanceId AS ClassId, TargetECInstanceId AS BaseClassId FROM meta.ClassHasBaseClasses";
-    for await (const row of imodel.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
-      const { classId, baseClassId } = row;
-
-      const baseClasses = baseClassHierarchy.get(classId);
-      if (baseClasses)
-        baseClasses.push(baseClassId);
-      else
-        baseClassHierarchy.set(classId, [baseClassId]);
-
-      const derivedClasses = derivedClassHierarchy.get(baseClassId);
-      if (derivedClasses)
-        derivedClasses.push(classId);
-      else
-        derivedClassHierarchy.set(baseClassId, [classId]);
-    }
-
-    return new ECClassHierarchy(imodel, baseClassHierarchy, derivedClassHierarchy);
-  }
-  private getAllBaseClassIds(classId: Id64String) {
-    const baseClassIds = this._baseClasses.get(classId) ?? [];
-    return baseClassIds.reduce<Id64String[]>((arr, id) => {
-      arr.push(id, ...this.getAllBaseClassIds(id));
-      return arr;
-    }, []);
-  }
-  private getAllDerivedClassIds(baseClassId: Id64String) {
-    const derivedClassIds = this._derivedClasses.get(baseClassId) ?? [];
-    return derivedClassIds.reduce<Id64String[]>((arr, id) => {
-      arr.push(id, ...this.getAllDerivedClassIds(id));
-      return arr;
-    }, []);
-  }
-  public async getClassInfo(schemaName: string, className: string) {
-    const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
-    const result = await this._imodel.createQueryReader(classQuery, QueryBinder.from([className, schemaName])).toArray(QueryRowFormat.UseJsPropertyNames);
-    const { id } = result[0];
-    return {
-      id,
-      baseClassIds: this.getAllBaseClassIds(id),
-      derivedClassIds: this.getAllDerivedClassIds(id),
-    };
-  }
 }

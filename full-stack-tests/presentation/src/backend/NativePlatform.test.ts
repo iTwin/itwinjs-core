@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { SnapshotDb } from "@itwin/core-backend";
-import { HierarchyCacheMode, PresentationManagerMode } from "@itwin/presentation-backend";
+import { HierarchyCacheMode } from "@itwin/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@itwin/presentation-backend/lib/cjs/presentation-backend/NativePlatform";
 import { PresentationError } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
@@ -28,9 +28,7 @@ describe("NativePlatform", () => {
     expect(imodel).is.not.null;
     const TNativePlatform = createDefaultNativePlatform({ // eslint-disable-line @typescript-eslint/naming-convention
       id: "",
-      localeDirectories: [],
       taskAllocationsMap: {},
-      mode: PresentationManagerMode.ReadWrite,
       isChangeTrackingEnabled: false,
       cacheConfig: { mode: HierarchyCacheMode.Memory },
     });

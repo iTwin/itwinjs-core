@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers",
-  "version": "3.0.0-dev.113",
+  "version": "3.6.0-dev.8",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers.js",
   "module": "lib/esm/map-layers.js",
@@ -19,11 +19,12 @@
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./src/public/locales/en-PSEUDO",
-    "test": "mocha \"./lib/cjs/test/**/*.test.js\""
+    "test": "mocha \"./lib/cjs/test/**/*.test.js\"",
+    "rebuild": "npm run -s clean && npm run -s build"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/map-layers"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/extensions/map-layers"
   },
   "keywords": [
     "iModel",
@@ -36,33 +37,30 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/appui-layout-react": "workspace:*",
+    "@itwin/appui-react": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
+    "@itwin/components-react": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
-    "@itwin/presentation-common": "workspace:*",
-    "@bentley/react-scripts": "4.0.3",
-    "@itwin/appui-abstract": "workspace:*",
-    "@itwin/components-react": "workspace:*",
     "@itwin/core-react": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/imodel-components-react": "workspace:*",
-    "@itwin/appui-react": "workspace:*",
-    "@itwin/appui-layout-react": "workspace:*",
-    "@itwin/itwinui-css": "^0.37.0",
-    "@itwin/itwinui-react": "^1.23.0",
+    "@itwin/itwinui-css": "0.x",
+    "@itwin/itwinui-react": "~1.42.0",
+    "@itwin/presentation-common": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^7.0.2",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
     "@types/enzyme": "3.9.3",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
-    "@types/react": "17.0.31",
+    "@types/node": "18.11.5",
+    "@types/react": "^17.0.37",
     "@types/react-beautiful-dnd": "^12.1.2",
-    "@types/react-select": "3.0.26",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
@@ -70,15 +68,16 @@
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
-    "cpx": "^1.5.0",
-    "enzyme": "^3.4.0",
+    "cpx2": "^3.0.0",
+    "enzyme": "3.10.0",
     "enzyme-to-json": "^3.3.4",
     "eslint": "^7.11.0",
-    "jsdom": "^17.0.0",
+    "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "react": "^17.0.0",
+    "react-dom": "^17.0.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
@@ -86,24 +85,22 @@
     "typescript": "~4.4.0"
   },
   "dependencies": {
+    "@itwin/itwinui-icons-color-react": "~1.0.3",
     "classnames": "^2.3.1",
-    "react-beautiful-dnd": "^13.0.0",
-    "react-select": "3.2.0",
-    "react-resize-detector": "^6.7.6"
+    "react-beautiful-dnd": "^13.0.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-common": "workspace:*",
-    "@itwin/core-frontend": "workspace:*",
-    "@itwin/core-quantity": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
-    "@itwin/appui-abstract": "workspace:*",
-    "@itwin/components-react": "workspace:*",
-    "@itwin/core-react": "workspace:*",
-    "@itwin/appui-react": "workspace:*",
-    "@itwin/imodel-components-react": "workspace:*",
-    "@itwin/appui-layout-react": "workspace:*",
+    "@itwin/core-bentley": "workspace:^3.6.0-dev.8",
+    "@itwin/core-geometry": "workspace:^3.6.0-dev.8",
+    "@itwin/core-common": "workspace:^3.6.0-dev.8",
+    "@itwin/core-frontend": "workspace:^3.6.0-dev.8",
+    "@itwin/core-quantity": "workspace:^3.6.0-dev.8",
+    "@itwin/appui-abstract": "workspace:^3.6.0-dev.8",
+    "@itwin/components-react": "workspace:^3.6.0-dev.8",
+    "@itwin/core-react": "workspace:^3.6.0-dev.8",
+    "@itwin/appui-react": "workspace:^3.6.0-dev.8",
+    "@itwin/imodel-components-react": "workspace:^3.6.0-dev.8",
+    "@itwin/appui-layout-react": "workspace:^3.6.0-dev.8",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -115,7 +112,7 @@
     "plugins": [
       "@itwin"
     ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
+    "extends": "plugin:@itwin/ui"
   },
   "mocha": {
     "require": [

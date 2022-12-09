@@ -21,6 +21,9 @@ export class ContextShareProvider {
       // Not a valid URL for Context share
       return false;
     }
+    // If api.bentley.com/realitydata is used, it is context share
+    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata"))
+      return true;
     // detect if it is a RDS url
     const formattedUrl1 = attUrl.pathname.replace(/~2F/g, "/").replace(/\\/g, "/");
     if (formattedUrl1) {
@@ -47,6 +50,22 @@ export class ContextShareProvider {
     } catch (e) {
       // Not a valid URL and not equal, probably $cesiumAsset
       return invalidUrlInfo;
+    }
+    // If api.bentley.com/realitydata is used, it is context share
+    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata")) {
+      const lcTilesetUrl = tilesetUrl.toLowerCase();
+      // NOTICE: We assume it is a ThreeDTile BUT this could technically be a point cloud (OPC).
+      // This method was used in typical workflow where format was always ThreeDTile and is here for legacy support.
+      // We don't want to make a call to RDS to resolve format since this method must not be async (it is used in workflow that are not async)
+      const format = RealityDataFormat.ThreeDTile;
+      const indexId = lcTilesetUrl.indexOf("realitydata/") + 12; // lenght of "realitydata/" = 12;
+      const id = lcTilesetUrl.substr(indexId, Guid.empty.length);
+      const indexProjectId = lcTilesetUrl.indexOf("projectid=") + 10; // lenght of "projectid=" = 10;
+      let projectId: string | undefined;
+      if (indexProjectId && indexProjectId > 0)
+        projectId = lcTilesetUrl.substr(indexProjectId, Guid.empty.length);
+      const apimContextShareKey = { provider: RealityDataProvider.ContextShare, format, id, iTwinId: projectId };
+      return apimContextShareKey;
     }
     // detect if it is a RDS url
     const formattedUrl1 = attUrl.pathname.replace(/~2F/g, "/").replace(/\\/g, "/");

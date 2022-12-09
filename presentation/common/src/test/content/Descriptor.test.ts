@@ -12,6 +12,7 @@ import {
 import { Field, FieldDescriptorType } from "../../presentation-common/content/Fields";
 import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
 import { CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON } from "../../presentation-common/EC";
+import { InstanceFilterDefinition } from "../../presentation-common/InstanceFilterDefinition";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
   createTestSelectClassInfo, createTestSimpleContentField,
@@ -29,7 +30,6 @@ describe("Descriptor", () => {
         displayType: faker.random.word(),
         categories: [category],
         fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
-        filterExpression: faker.random.words(),
         selectClasses: [],
       };
       const descriptor = new Descriptor(source);
@@ -46,7 +46,6 @@ describe("Descriptor", () => {
         displayType: faker.random.word(),
         categories: [category],
         fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
-        filterExpression: faker.random.words(),
         selectClasses: [],
       };
       const descriptor = new Descriptor(source);
@@ -70,7 +69,7 @@ describe("Descriptor", () => {
 
     it("creates valid Descriptor from valid JSON", () => {
       const category = createTestCategoryDescription();
-      const ids = ["0x1", "0x2", "0x3", "0x4"];
+      const ids = ["0x1", "0x2", "0x3", "0x4", "0x5"];
       const testRelatedClassInfo: RelatedClassInfoJSON<string> = {
         sourceClassInfo: ids[1],
         targetClassInfo: ids[2],
@@ -89,6 +88,7 @@ describe("Descriptor", () => {
           [ids[1]]: { name: "name2", label: "label2" },
           [ids[2]]: { name: "name3", label: "label3" },
           [ids[3]]: { name: "name4", label: "label4" },
+          [ids[4]]: { name: "name5", label: "label5" },
         },
         selectClasses: [{
           selectClassInfo: ids[0],
@@ -152,6 +152,26 @@ describe("Descriptor", () => {
             }],
           }],
           autoExpand: false,
+        }, {
+          name: "test-properties-field-with-navigation-property-info",
+          label: "Test Properties Field With Navigation Property Info",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "navigation" },
+          category: category.name,
+          isReadonly: false,
+          priority: 0,
+          properties: [{
+            property: {
+              classInfo: ids[1],
+              name: "PropertyName",
+              type: "TestPropertyType",
+              navigationPropertyInfo: {
+                classInfo: ids[3],
+                isForwardRelationship: true,
+                targetClassInfo: ids[4],
+                isTargetPolymorphic: true,
+              },
+            },
+          }],
         }],
       };
       const descriptor = Descriptor.fromJSON(json);
@@ -210,10 +230,25 @@ describe("Descriptor", () => {
         })],
         categories: [category],
         fields,
-        filterExpression: "testFilterExpression",
+        fieldsFilterExpression: "testFilterExpression",
         selectionInfo: { providerName: "testProviderName", level: 1 },
         sortingField: fields[0],
         sortDirection: SortDirection.Ascending,
+        instanceFilter: {
+          selectClassName: "testClass",
+          expression: "testExpression",
+          relatedInstances: [{
+            alias: "testAlias",
+            relationshipAlias: "testRelAlias",
+            isRequired: true,
+            pathFromSelectToPropertyClass: [{
+              sourceClassName: "sourceClass",
+              targetClassName: "targetClass",
+              relationshipName: "relClass",
+              isForwardRelationship: true,
+            }],
+          }],
+        },
       });
       expect(descriptor.toJSON()).to.matchSnapshot();
     });
@@ -292,8 +327,19 @@ describe("Descriptor", () => {
         fields: [],
         filterExpression: "test filter",
       });
+      descriptor.fieldsFilterExpression = undefined;
       expect(descriptor.createDescriptorOverrides()).to.deep.eq({
-        filterExpression: "test filter",
+        fieldsFilterExpression: "test filter",
+      });
+    });
+
+    it("creates a valid object with fields filter expression", () => {
+      const descriptor = createTestContentDescriptor({
+        fields: [],
+        fieldsFilterExpression: "test filter",
+      });
+      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
+        fieldsFilterExpression: "test filter",
       });
     });
 
@@ -323,6 +369,20 @@ describe("Descriptor", () => {
           field: { type: FieldDescriptorType.Name, fieldName: field.name },
           direction: SortDirection.Descending,
         },
+      });
+    });
+
+    it("creates a valid object with instance filter", () => {
+      const instanceFilter: InstanceFilterDefinition = {
+        selectClassName: "SelectClass",
+        expression: "testExpression",
+      };
+      const descriptor = createTestContentDescriptor({
+        fields: [],
+        instanceFilter,
+      });
+      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
+        instanceFilter,
       });
     });
 

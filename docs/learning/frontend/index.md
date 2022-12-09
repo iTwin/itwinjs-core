@@ -1,9 +1,10 @@
 # The App Frontend
 
-The frontend of an app is concerned mainly with data display and user interaction. Frontend code:
+The frontend of an app is concerned mainly with data visualization and user interaction. Frontend code:
 
 - Always runs in a web browser.
 - Gets access to the data in an iModel by making requests on a [backend](../backend/index.md).
+- May use the [display system](../display/index.md) to visualize the contents of an iTwin.
 
 The following app configurations are supported:
 
@@ -20,18 +21,19 @@ An app's frontend will often depend on npm packages to help implement its GUI.
 An app's frontend script requires the `@itwin/core-frontend` npm package.
 The [common packages](../common/index.md) will also be required.
 
-These packages provide the following functions that a frontend requires:
+These packages provide the following services:
 
-- [Login and obtain AccessTokens](../common/AccessToken.md)
+- [Log in and obtain AccessTokens](../common/AccessToken.md)
 - [Open a "connection" to an iModel](./IModelConnection.md)
-- [Adminstration](./IModelApp.md) via the IModelApp class
+- [Adminstration and configuration](./IModelApp.md) via the IModelApp class
 - [Localization](./Localization.md) of strings and user interface
 - Writing [Tools](./Tools.md) for handling events from users
 - Communicating with the Backend via an [RpcInterface](../RpcInterface.md)
 - Displaying [Views](./Views.md) of iModels
 - Executing [ECSQL queries](./ExecutingECSQL.md) on iModels
-- Storing [Settings](./Settings.md) for Applications, Projects, and iModels.
+- Storing [User Preferences](./Preferences.md) for iTwins and iModels
 - [Formatting Quantities](./QuantityFormatting.md)
+- Writing [Extensions](./Extensions.md) that can load on demand into an iTwin.js frontend application
 
 ## Web browser compatibility
 

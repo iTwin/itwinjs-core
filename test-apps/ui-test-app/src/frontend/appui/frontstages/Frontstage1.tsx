@@ -6,7 +6,7 @@ import * as React from "react";
 import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@itwin/imodel-components-react";
 import {
   ActionItemButton, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
-  NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
+  ModalDialogManager, NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
   ZoneState,
 } from "@itwin/appui-react";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
@@ -17,6 +17,7 @@ import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
 import { StandardContentLayouts, UiAdmin, WidgetState } from "@itwin/appui-abstract";
 import { AppUi } from "../AppUi";
+import { TestModalDialog } from "../dialogs/TestModalDialog";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
@@ -77,8 +78,10 @@ function SampleTimelineComponent() {
 }
 
 export class Frontstage1 extends FrontstageProvider {
+  public static stageId = "ui-test-app:Test1";
+
   public get id(): string {
-    return "Test1";
+    return Frontstage1.stageId;
   }
 
   private _topMostPanel = {
@@ -140,7 +143,6 @@ export class Frontstage1 extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         defaultContentId="TestContent1"
-        isInFooterMode={true}
         topLeft={
           <Zone
             widgets={[
@@ -297,17 +299,37 @@ class FrontstageToolWidget extends React.Component {
       },
     });
   }
+
+  private get _openPopupWindow() {
+    return new CommandItemDef({
+      iconSpec: "icon-smiley-sad",
+      label: "Open Popup Window",
+      execute: () => location.href = "pw://imodelbridges-qa-us-pw.bentley.com:imodelbridges-qa-us-pw-01/Documents/D{8e708119-4aef-49f0-b412-d9b5615ba928}",
+      // execute: () => window.open("pw://imodelbridges-qa-us-pw.bentley.com:imodelbridges-qa-us-pw-01/Documents/D{8e708119-4aef-49f0-b412-d9b5615ba928}"),
+    });
+  }
+
+  private get _openModal() {
+    return new CommandItemDef({
+      iconSpec: "icon-smiley-happy",
+      label: "Open Modal Dialog",
+      execute: () => ModalDialogManager.openDialog(<TestModalDialog />),
+    });
+  }
+
   private _horizontalToolbar = (
     <Toolbar
       expandsTo={Direction.Bottom}
       items={
         <>
+          <ActionItemButton actionItem={this._openPopupWindow} />
           <ActionItemButton actionItem={CoreTools.selectElementCommand} />
           <ActionItemButton actionItem={AppTools.item1} />
           <ActionItemButton actionItem={AppTools.item2} />
           <ActionItemButton actionItem={this._openNestedFrontstage1} />
           <ActionItemButton actionItem={this._switchLayout} />
           <ActionItemButton actionItem={this._pausePlayTimeline} />
+          <ActionItemButton actionItem={this._openModal} />
         </>
       }
     />

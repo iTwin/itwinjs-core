@@ -7,9 +7,8 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import { Range1d } from "@itwin/core-geometry";
+import { Polyface, Range1d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
-import { request } from "@bentley/itwin-client";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { RenderSystem } from "../../render/RenderSystem";
@@ -46,42 +45,31 @@ export class MapTileLoader extends RealityTileLoader {
     return IModelApp.tileAdmin.channels.getForHttp("itwinjs-imagery");
   }
 
-  public async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
-    if (!this.terrainProvider.requiresLoadedContent)
-      return new Uint8Array();
-
-    const quadId = QuadId.createFromContentId(tile.contentId);
-    const tileUrl = this._terrainProvider.constructUrl(quadId.row, quadId.column, quadId.level);
-    const tileRequestOptions = this._terrainProvider.requestOptions;
-
+  public async requestTileContent(tile: MapTile, isCanceled: () => boolean): Promise<TileRequest.Response> {
+    assert(tile instanceof MapTile);
     try {
-      const response = await request(tileUrl, tileRequestOptions);
-      if (response.status === 200)
-        return new Uint8Array(response.body);
-
-      return undefined;
-
-    } catch (error) {
+      const data = await this.terrainProvider.requestMeshData({ tile, isCanceled });
+      return undefined !== data ? { data } : undefined;
+    } catch (_) {
       return undefined;
     }
   }
 
-  public override forceTileLoad(tile: Tile): boolean {
+  public override forceTileLoad(tile: MapTile): boolean {
     return this._terrainProvider.forceTileLoad(tile);
   }
-  public override async loadTileContent(tile: MapTile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TerrainTileContent> {
-    if (undefined === isCanceled)
-      isCanceled = () => !tile.isLoading;
 
-    const quadId = QuadId.createFromContentId(tile.contentId);
-    const mesh = await this._terrainProvider.getMesh(tile, data as Uint8Array);
-    if (undefined === mesh)
-      return {};
-    if (isCanceled())
+  public override async loadTileContent(tile: MapTile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TerrainTileContent> {
+    assert("data" in data);
+    isCanceled = isCanceled ?? (() => !tile.isLoading);
+
+    const quadId = tile.quadId;
+    const mesh = await this._terrainProvider.readMesh({ data: data.data, isCanceled, tile });
+    if (!mesh || isCanceled())
       return {};
 
     const projection = tile.getProjection(tile.heightRange);
-    const terrainGeometry = system.createRealityMeshFromTerrain(mesh, projection.transformFromLocal);
+    const terrainGeometry = system.createTerrainMesh(mesh, projection.transformFromLocal, true);
 
     let unavailableChild = false;
     if (quadId.level < this.maxDepth) {
@@ -97,10 +85,14 @@ export class MapTileLoader extends RealityTileLoader {
     return {
       contentRange: projection.transformFromLocal.multiplyRange(projection.localRange),
       terrain: {
-        mesh: unavailableChild ? mesh : undefined, // If a child is unavilable retain mesh for upsampling.,
-        geometry: terrainGeometry,
+        mesh: unavailableChild ? mesh : undefined, // If a child is unavailable retain mesh for upsampling.,
+        renderGeometry: terrainGeometry,
       },
     };
+  }
+
+  public loadPolyfaces(): Polyface[] | undefined {
+    assert (false, "load polyFaces not implmented for map tiles");
   }
 
   public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {

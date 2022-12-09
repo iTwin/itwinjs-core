@@ -19,11 +19,12 @@ import { Widget } from "../widgets/Widget";
 import { ViewToolWidgetComposer } from "../widgets/ViewToolWidgetComposer";
 import { StatusBarWidgetComposerControl } from "../widgets/StatusBarWidgetComposerControl";
 import { StagePanelState } from "../stagepanels/StagePanelDef";
+import { ToolItemDef } from "../shared/ToolItemDef";
 
 /** Properties of a [[WidgetPanelProps]] component
  * @public
  */
-export type WidgetPanelProps = Omit<StagePanelProps, "widgets" | "runtimeProps" | "header" | "allowedZones" | "panelZones">;
+export type WidgetPanelProps = Omit<StagePanelProps, "widgets" | "runtimeProps" | "header" | "allowedZones" | "panelZones">; // eslint-disable-line deprecation/deprecation
 
 /**
  * Props for [[StandardFrontstageProvider]]
@@ -52,6 +53,8 @@ export interface StandardFrontstageProps {
   cornerButton?: React.ReactNode;
   /** Set to true if default Navigation aid is not desired */
   hideNavigationAid?: boolean;
+  /** Set to true if no tool setting dock is needed. Typically only used in modal stages. */
+  hideToolSettings?: boolean;
   /** Set to true if no status bar is needed in stage */
   hideStatusBar?: boolean;
   /** Props used to set initial size and state of panel. Defaults to:
@@ -71,6 +74,11 @@ export interface StandardFrontstageProps {
    * supports. See [[DefaultContentToolsAppData]] for an example.
    */
   applicationData?: any;
+  /** The defaultTool is is started when then frontstage loads and whenever any other tools exit.
+   * Most of the time, this is the Element Selection Tool (CoreTools.selectElementCommand).
+   * Your app can specify its own tool or another core tool as default with this property.
+   */
+  defaultTool?: ToolItemDef;
 }
 
 /**
@@ -87,53 +95,55 @@ export class StandardFrontstageProvider extends FrontstageProvider {
     return this.props.id;
   }
 
-  public get frontstage(): React.ReactElement<FrontstageProps> {
+  public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
     const contentGroup = (this.props.contentGroupProps instanceof ContentGroupProvider) ? this.props.contentGroupProps : new ContentGroup(this.props.contentGroupProps);
     return (
-      <Frontstage
+      <Frontstage // eslint-disable-line deprecation/deprecation
         key={this.props.id}
         id={this.props.id}
         version={this.props.version ?? 1.0}
-        defaultTool={CoreTools.selectElementCommand}
+        defaultTool={this.props.defaultTool ?? CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={true}
         usage={this.props.usage}
         applicationData={this.props.applicationData}
 
         contentManipulationTools={
-          <Zone
+          <Zone // eslint-disable-line deprecation/deprecation
             widgets={
               [
-                <Widget id={`${this.props.id}-contentManipulationTools`} key={`${this.props.id}-contentManipulationTools`} isFreeform={true}
+                <Widget id={`${this.props.id}-contentManipulationTools`} key={`${this.props.id}-contentManipulationTools`} isFreeform={true} // eslint-disable-line deprecation/deprecation
                   element={<ContentToolWidgetComposer cornerButton={this.props.cornerButton} />}
                 />,
               ]}
           />
         }
         viewNavigationTools={
-          <Zone
+          <Zone // eslint-disable-line deprecation/deprecation
             widgets={
               [
-                <Widget id={`${this.props.id}-viewNavigationTools`} key={`${this.props.id}-viewNavigationTools`} isFreeform={true}
+                <Widget id={`${this.props.id}-viewNavigationTools`} key={`${this.props.id}-viewNavigationTools`} isFreeform={true} // eslint-disable-line deprecation/deprecation
                   element={<ViewToolWidgetComposer hideNavigationAid={this.props.hideNavigationAid} />}
                 />,
               ]}
           />
         }
         toolSettings={
-          <Zone
+          <Zone // eslint-disable-line deprecation/deprecation
             widgets={
-              [
-                <Widget id={`${this.props.id}-toolSettings`} key={`${this.props.id}-toolSettings`} isToolSettings={true} />,
-              ]}
+              this.props.hideToolSettings ? [] :
+                [
+                  <Widget id={`${this.props.id}-toolSettings`} key={`${this.props.id}-toolSettings`} isToolSettings={true} />, // eslint-disable-line deprecation/deprecation
+                ]
+            }
           />
         }
         statusBar={
-          <Zone
+          <Zone // eslint-disable-line deprecation/deprecation
             widgets={
               this.props.hideStatusBar ? [] :
                 [
-                  <Widget id={`${this.props.id}-statusBar`} key={`${this.props.id}-statusBar`} isStatusBar={true}
+                  <Widget id={`${this.props.id}-statusBar`} key={`${this.props.id}-statusBar`} isStatusBar={true} // eslint-disable-line deprecation/deprecation
                     control={StatusBarWidgetComposerControl} />,
                 ]
             }
@@ -141,7 +151,7 @@ export class StandardFrontstageProvider extends FrontstageProvider {
         }
 
         leftPanel={
-          <StagePanel
+          <StagePanel // eslint-disable-line deprecation/deprecation
             size={300}
             pinned={false}
             defaultState={StagePanelState.Minimized}
@@ -150,7 +160,7 @@ export class StandardFrontstageProvider extends FrontstageProvider {
         }
 
         topPanel={
-          <StagePanel
+          <StagePanel // eslint-disable-line deprecation/deprecation
             size={90}
             pinned={false}
             defaultState={StagePanelState.Minimized}
@@ -159,7 +169,7 @@ export class StandardFrontstageProvider extends FrontstageProvider {
         }
 
         rightPanel={
-          <StagePanel
+          <StagePanel // eslint-disable-line deprecation/deprecation
             defaultState={StagePanelState.Open}
             {...this.props.rightPanelProps}
 
@@ -167,7 +177,7 @@ export class StandardFrontstageProvider extends FrontstageProvider {
         }
 
         bottomPanel={
-          <StagePanel
+          <StagePanel // eslint-disable-line deprecation/deprecation
             size={180}
             defaultState={StagePanelState.Open}
             {...this.props.bottomPanelProps}

@@ -12,16 +12,15 @@ import { PropertyCategorySpecification } from "./modifiers/PropertyCategorySpeci
 /**
  * A rule that allows overriding the default property category.
  *
- * The default property category is a category that gets assigned to properties
- * that otherwise have no category.
+ * The default property category is a category that gets assigned to properties that otherwise have no category.
  *
- * @see [More details]($docs/presentation/Content/DefaultPropertyCategoryOverride.md)
+ * @see [Default property category override reference documentation page]($docs/presentation/content/DefaultPropertyCategoryOverride.md)
  * @public
  */
 export interface DefaultPropertyCategoryOverride extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.DefaultPropertyCategoryOverride;
 
-  /** Specification of the category override */
+  /** Specification for the custom property category. */
   specification: PropertyCategorySpecification;
 }

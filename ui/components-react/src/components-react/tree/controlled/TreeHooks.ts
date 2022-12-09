@@ -6,8 +6,9 @@
  * @module Tree
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useDisposable } from "@itwin/core-react";
+import { useRerender } from "../../common/UseRerender";
 import { TreeDataProvider } from "../TreeDataProvider";
 import { TreeEventHandler, TreeEventHandlerParams } from "./TreeEventHandler";
 import { TreeModel } from "./TreeModel";
@@ -21,17 +22,11 @@ import { PagedTreeNodeLoader, TreeNodeLoader } from "./TreeNodeLoader";
  * @public
  */
 export function useTreeModel(modelSource: TreeModelSource): TreeModel {
-  const [model, setModel] = useState(modelSource.getModel());
-
+  const { rerender } = useRerender();
   useEffect(() => {
-    const onModelChanged = () => {
-      setModel(modelSource.getModel());
-    };
-    onModelChanged();
-    return modelSource.onModelChanged.addListener(onModelChanged);
-  }, [modelSource]);
-
-  return model;
+    return modelSource.onModelChanged.addListener(rerender);
+  }, [modelSource, rerender]);
+  return modelSource.getModel();
 }
 
 /**

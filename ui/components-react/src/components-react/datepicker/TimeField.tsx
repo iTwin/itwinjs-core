@@ -48,7 +48,7 @@ function isSameTime(a: TimeSpec, b: TimeSpec) {
   return a.hours === b.hours && a.minutes === b.minutes && a.seconds === b.seconds;
 }
 
-/** Field used to set the Hour:Minutes:Seconds in the [[DataPicker]] Popup panel. The user may key-in the value or use up/down keys to
+/** Field used to set the Hour:Minutes:Seconds in the [[DatePicker]] Popup panel. The user may key-in the value or use up/down keys to
  * change the time.
  * @internal
  */

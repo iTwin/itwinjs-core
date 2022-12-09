@@ -96,7 +96,7 @@ export class Transform implements BeJSONFunctions {
    * the origin and matrix parts.
    * @param other Transform to compare to.
    */
-  public isAlmostEqual(other: Transform): boolean { return this._origin.isAlmostEqual(other._origin) && this._matrix.isAlmostEqual(other._matrix); }
+  public isAlmostEqual(other: Readonly<Transform>): boolean { return this.origin.isAlmostEqual(other.origin) && this.matrix.isAlmostEqual(other.matrix); }
 
   /**
    * Test for near equality with other Transform.  Comparison uses the isAlmostEqualAllowZRotation method of Matrix3d
@@ -251,8 +251,7 @@ export class Transform implements BeJSONFunctions {
    * * Has careful logic for building up optional result without allocations.
    */
   public static createRigidFromOriginAndColumns(origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform): Transform | undefined {
-    const matrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder,
-      result ? result._matrix : undefined);
+    const matrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder, result ? result._matrix : undefined);
     if (!matrix)
       return undefined;
     if (result) {
@@ -525,6 +524,15 @@ export class Transform implements BeJSONFunctions {
   public multiplyVector(vector: Vector3d, result?: Vector3d): Vector3d {
     return this._matrix.multiplyVector(vector, result);
   }
+
+/** Multiply the vector in place by the Matrix3d part of the transform.
+   *
+   * *  The transform's origin is not used.
+   */
+ public multiplyVectorInPlace(vector: Vector3d): void {
+  this._matrix.multiplyVectorInPlace(vector);
+}
+
   /** Multiply the vector (x,y,z) by the Matrix3d part of the transform.
    *
    * *  The transform's origin is not used.

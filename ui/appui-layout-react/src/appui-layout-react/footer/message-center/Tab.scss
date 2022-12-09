@@ -26,7 +26,7 @@
 
 .nz-footer-messageCenter-tab {
   min-width: 40px;
-  min-height: 40px;
+  min-height: 38px;
   box-sizing: border-box;
   cursor: pointer;
   text-align: center;
@@ -35,8 +35,6 @@
   justify-content: center;
   position: relative;
   color: $buic-text-color;
-
-  @include title;
 
   &:not(.nz-active) {
     border-bottom: 1px solid $buic-background-dialog-stroke;

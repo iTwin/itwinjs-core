@@ -1,6 +1,6 @@
 # iTwin Snapshot
 
-[Snapshot iModels]($docs/learning/backend/accessingimodels.md/#snapshot-imodels) are a static format representing the state of an iModel at a point in time. Once created, they can not be modified. And do not have a connection with iModelHub. Developers writing iTwin.js applications should enjoy several features of Snapshot iModels:
+[Snapshot iModels](../backend/AccessingIModels.md/#snapshot-imodels) are a static format representing the state of an iModel at a point in time. Once created, they can not be modified. And do not have a connection with iModelHub. Developers writing iTwin.js applications should enjoy several features of Snapshot iModels:
 
 - No connection to iModelHub removes authentication and authorization obstacles
 - Their offline nature allows all development to be done locally, with no network latency
@@ -12,4 +12,4 @@ The iTwin Snapshot app was designed with developers in mind. The free tool allow
 
 [!bwc tile heading="Download iTwin Snapshot" link="https://autoupdatecdn.bentley.com/itsnp/client/iTwinSnapshot.exe" contents=" " icon="download.svg" step="13" width="20%"]
 
-Further information on how to use iTwin Snapshot can be found in the ["Create a snapshot iModel"]($docs/learning/tutorials/create-test-imodel-offline.md) tutorial.
+Further information on how to use iTwin Snapshot can be found in the ["Create a snapshot iModel"](./create-test-imodel-offline.md) tutorial.

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-impl",
-  "version": "3.0.0-dev.113",
+  "version": "3.6.0-dev.8",
   "description": "Schema RPC Interface backend implementation",
   "main": "lib/cjs/ecschema-rpc-impl.js",
   "typings": "lib/cjs/ecschema-rpc-impl",
@@ -31,24 +31,22 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:*",
-    "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/ecschema-rpcinterface-common": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@bentley/itwin-client": "workspace:*"
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/ecschema-rpcinterface-common": "workspace:*"
   },
   "devDependencies": {
-    "@bentley/itwin-client": "workspace:*",
-    "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-backend": "workspace:*",
-    "@itwin/core-common": "workspace:*",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"

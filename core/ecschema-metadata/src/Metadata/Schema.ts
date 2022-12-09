@@ -86,7 +86,7 @@ export class Schema implements CustomAttributeContainerProps {
 
   public get schemaKey() {
     if (undefined === this._schemaKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema '${this.name}' has an invalid SchemaKey.`);
     return this._schemaKey;
   }
 

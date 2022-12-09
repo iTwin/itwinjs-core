@@ -5,7 +5,7 @@ Items provided at runtime may be inserted into a Toolbar, StatusBar or Backstage
 
 ## UiItemsProvider Interface
 
-Below is an excerpt from the [UiItemsProvider]($appui-abstract) interface that shows the primary methods that an application or extension would want to implement to add items to different areas of the User Interface.
+Below is an excerpt from the [UiItemsProvider]($appui-abstract) interface that shows the primary methods that an application or extension would want to implement to add items to different areas of the User Interface. The class [BaseUiItemsProvider]($appui-abstract) is a base class that implements the UiItemsProvider interface and allows the user to determine if the provider is to be used within a specific stage.
 
 ```ts
 export interface UiItemsProvider {
@@ -19,7 +19,7 @@ export interface UiItemsProvider {
 
 ### UiItemsProvider Example
 
-The code excerpt below is an example taken from `imodeljs\test-apps\ui-test-app` that shows a class that implements the UiItemsProvider interface.
+The code excerpt below shows a class that implements the UiItemsProvider interface.
 
 ```tsx
 class TestUiProvider implements UiItemsProvider {
@@ -85,6 +85,10 @@ class TestUiProvider implements UiItemsProvider {
     if (stageId === "ViewsFrontstage" && location === StagePanelLocation.Right) {
       widgets.push({
         id: "addonWidget",
+        icon: PresentationPropertyGridWidgetControl.iconSpec,
+        label: PresentationPropertyGridWidgetControl.label,
+        defaultFloatingSize={{width:330, height:540}},
+         isFloatingStateWindowResizable={true},
         getWidgetContent: () => <FillCentered>Addon Widget in panel</FillCentered>,
       });
     }
@@ -92,6 +96,10 @@ class TestUiProvider implements UiItemsProvider {
   }
 }
 ```
+
+### BaseUiItemsProvider Example
+
+The [StandardContentToolsProvider]($appui-react) class serves as a good example of an items provider that allows an application to define a callback function to determine if the items are to be added to the active stage. See this [example](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-items-providers-test/src/ui/frontstages/NetworkTracing.tsx) to see how the StandardContentToolsProvider can provide one set of tools to a specific stage. While the same [provider](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/appui/frontstages/FrontstageUi2.tsx) can be registered with a different Id and a different isSupportedStage callback to provide a different set of tools to different stages.
 
 ## UiItemsManager Class
 

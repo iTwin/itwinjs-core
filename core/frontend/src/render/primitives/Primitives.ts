@@ -40,7 +40,10 @@ export class GeometryOptions {
   public readonly preserveOrder: PreserveOrder;
   public readonly edges: GenerateEdges;
   constructor(edges: GenerateEdges, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No, preserveOrder: PreserveOrder = PreserveOrder.No) {
-    this.normals = normals; this.surfaces = surfaces; this.preserveOrder = preserveOrder; this.edges = edges;
+    this.normals = normals;
+    this.surfaces = surfaces;
+    this.preserveOrder = preserveOrder;
+    this.edges = edges;
   }
 
   public get wantSurfacesOnly(): boolean { return this.surfaces === SurfacesOnly.Yes; }
@@ -99,7 +102,8 @@ export class TriangleList {
 
     this._flags.push(flags);
   }
-  public addFromTypedArray(indices: Uint16Array | Uint32Array, flags: number = 0) {
+
+  public addFromTypedArray(indices: Uint8Array | Uint16Array | Uint32Array, flags: number = 0) {
     for (let i = 0; i < indices.length;) {
       this.indices.push(indices[i++]);
       this.indices.push(indices[i++]);

@@ -6,47 +6,23 @@
  * @module RpcInterface
  */
 
-import { Readable, Writable } from "stream";
+import { BentleyError, Logger } from "@itwin/core-bentley";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { BackendReadable, BackendWritable } from "../../BackendTypes";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
-import { RpcProtocol } from "../core/RpcProtocol";
+import { RpcProtocol, SerializedRpcRequest } from "../core/RpcProtocol";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
-import { RpcInterface } from "../../RpcInterface";
-import { RpcManager } from "../../RpcManager";
-import { RpcRoutingToken } from "../core/RpcRoutingToken";
-import { BentleyError, Logger } from "@itwin/core-bentley";
 
-class InitializeInterface extends RpcInterface {
-  public static readonly interfaceName = "InitializeInterface";
-  public static readonly interfaceVersion = "1.0.0";
-  public async initialize() { return this.forward(arguments); }
-
-  public static createRequest(protocol: WebAppRpcProtocol) {
-    const routing = RpcRoutingToken.generate();
-
-    const config = class extends RpcConfiguration {
-      public interfaces = () => [InitializeInterface];
-      public protocol = protocol;
-    };
-
-    RpcConfiguration.assignWithRouting(InitializeInterface, routing, config);
-
-    const instance = RpcConfiguration.obtain(config);
-    RpcConfiguration.initializeInterfaces(instance);
-
-    const client = RpcManager.getClientForInterface(InitializeInterface, routing);
-    return new (protocol.requestType)(client, "initialize", []);
-  }
-}
+/* eslint-disable deprecation/deprecation */
 
 /** An HTTP server request object.
  * @public
  */
-export interface HttpServerRequest extends Readable {
+export interface HttpServerRequest extends BackendReadable {
   aborted: boolean;
   httpVersion: string;
   httpVersionMajor: number;
@@ -57,12 +33,13 @@ export interface HttpServerRequest extends Readable {
   rawHeaders: string[];
   trailers: { [key: string]: string | undefined };
   rawTrailers: string[];
+  setTimeout(msecs: number, callback: () => void): void;
   setTimeout(msecs: number, callback: () => void): this;
   url?: string;
   statusCode?: number;
   statusMessage?: string;
   socket: any;
-  destroy(error?: Error): void;
+  destroy(error?: Error): this;
   body: string | Buffer;
   path: string;
   method: string;
@@ -73,7 +50,7 @@ export interface HttpServerRequest extends Readable {
 /** An HTTP server response object.
  * @public
  */
-export interface HttpServerResponse extends Writable {
+export interface HttpServerResponse extends BackendWritable {
   send(body?: any): HttpServerResponse;
   status(code: number): HttpServerResponse;
   set(field: string, value: string): void;
@@ -85,32 +62,6 @@ export interface HttpServerResponse extends Writable {
 export abstract class WebAppRpcProtocol extends RpcProtocol {
   public override preserveStreams = true;
 
-  private _initialized: Promise<void> | undefined;
-
-  /** @internal */
-  public allowedHeaders: Set<string> = new Set();
-
-  /** @internal */
-  public async initialize() {
-    if (this._initialized) {
-      return this._initialized;
-    }
-
-    return this._initialized = new Promise(async (resolve) => {
-      try {
-        const request = InitializeInterface.createRequest(this);
-        const response = await request.preflight();
-        if (response && response.ok) {
-          (response.headers.get("Access-Control-Allow-Headers") || "").split(",").forEach((v) => this.allowedHeaders.add(v.trim()));
-        }
-      } catch (err) {
-        Logger.logWarning(CommonLoggerCategory.RpcInterfaceFrontend, "Unable to discover backend capabilities.", BentleyError.getErrorProps(err));
-      }
-
-      resolve();
-    });
-  }
-
   /** Convenience handler for an RPC operation get request for an HTTP server. */
   public async handleOperationGetRequest(req: HttpServerRequest, res: HttpServerResponse) {
     return this.handleOperationPostRequest(req, res);
@@ -118,9 +69,18 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
 
   /** Convenience handler for an RPC operation post request for an HTTP server. */
   public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
-    const request = await WebAppRpcRequest.parseRequest(this, req);
+    let request: SerializedRpcRequest;
+    try {
+      request = await WebAppRpcRequest.parseRequest(this, req);
+    } catch (error) {
+      const message = BentleyError.getErrorMessage(error);
+      Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, `Failed to parse request: ${message}`, BentleyError.getErrorMetadata(error));
+      res.status(400);
+      res.send(JSON.stringify({ message, isError: true }));
+      return;
+    }
     const fulfillment = await this.fulfill(request);
-    WebAppRpcRequest.sendResponse(this, request, fulfillment, res);
+    await WebAppRpcRequest.sendResponse(this, request, fulfillment, req, res);
   }
 
   /** Convenience handler for an OpenAPI description request for an HTTP server. */
@@ -165,6 +125,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       case 502: return RpcRequestStatus.BadGateway;
       case 503: return RpcRequestStatus.ServiceUnavailable;
       case 504: return RpcRequestStatus.GatewayTimeout;
+      case 408: return RpcRequestStatus.RequestTimeout;
+      case 429: return RpcRequestStatus.TooManyRequests;
       default: return RpcRequestStatus.Unknown;
     }
   }
@@ -180,9 +142,13 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       case RpcRequestStatus.BadGateway: return 502;
       case RpcRequestStatus.ServiceUnavailable: return 503;
       case RpcRequestStatus.GatewayTimeout: return 504;
+      case RpcRequestStatus.RequestTimeout: return 408;
+      case RpcRequestStatus.TooManyRequests: return 429;
       default: return 501;
     }
   }
+
+  public override supportsStatusCategory = true;
 
   /** Whether an HTTP status code indicates a request timeout. */
   public isTimeout(code: number): boolean {

@@ -56,7 +56,7 @@ describe("Operational: Execute Query", () => {
     const query = "select count(*) nRows from(SELECT ECInstanceId FROM Bis.Element LIMIT 50)";
 
     const rows = [];
-    for await (const row of iModel.query(query, undefined, QueryRowFormat.UseJsPropertyNames))
+    for await (const row of iModel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       rows.push(row);
 
     expect(rows).to.be.not.empty;

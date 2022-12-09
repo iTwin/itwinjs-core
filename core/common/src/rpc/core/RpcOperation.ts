@@ -43,6 +43,9 @@ export class RpcOperationPolicy {
 
   /** Whether the IModelRpcProps in the operation parameter list is allowed to differ from the token in the request URL. */
   public allowTokenMismatch: boolean = false;
+
+  /** Whether to compress the operation response with one of the client's supported encodings. */
+  public allowResponseCompression: boolean = false;
 }
 
 /** An RPC operation descriptor.

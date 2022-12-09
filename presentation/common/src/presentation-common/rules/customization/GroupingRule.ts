@@ -7,56 +7,43 @@
  */
 
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
- * Grouping rule is an advanced way to configure node grouping.
+ * Grouping rules provide advanced ways to group instances when creating hierarchies.
  *
- * It allows to define these types of groupings:
- * - Group by base class.
- * - Group by any property of the instance by a common value or a range of values.
- * - Group multiple instances with the same label in to one ECInstance node. This can be used in cases when these
- * instances represent the same object for the user.
- *
- * The rule works in conjunction with other grouping options available in navigation specifications [[ChildNodeSpecification]]:
- * `groupByClass` and `groupByLabel`. The grouping hierarchy looks like this:
- * - Base ECClass grouping node (specified by base class grouping specification [[ClassGroup]])
- *   - ECClass grouping node (specified by `groupByClass` property)
- *     - ECProperty grouping node 1 (specified by 1st [[PropertyGroup]])
- *       - ECProperty grouping node 2 (specified by 2nd [[PropertyGroup]])
- *         - ECProperty grouping node n (specified by n-th [[PropertyGroup]])
- *           - Display label grouping node (specified by `groupByLabel` property)
- *             - ECInstance nodes (may be grouped under a single node by [[SameLabelInstanceGroup]])
- *
- * @see [More details]($docs/presentation/Hierarchies/GroupingRule.md)
+ * @see [Grouping rule reference documentation page]($docs/presentation/hierarchies/GroupingRule.md)
  * @public
  */
-export interface GroupingRule extends RuleBase, ConditionContainer {
+export interface GroupingRule extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.Grouping;
 
   /**
-   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/presentation/Hierarchies/ECExpressions.md#rule-condition).
+   * An [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#rule-condition) that results in
+   * a boolean value. If specified,  the grouping rule applies only to instance nodes that cause the condition
+   * to evaluate to `true`.
    */
   condition?: string;
 
-  /** Specification of ECClass which should be grouped using this rule */
+  /** Specification of ECClass which should be grouped using this rule. */
   class: SingleSchemaClassSpecification;
 
-  /** Specifications of grouping which should be applied to matching ECInstances */
+  /**
+   * Specifies a list of [grouping specifications]($docs/presentation/hierarchies/GroupingRule.md#grouping-specifications)
+   * which describe the kind of grouping that should be applied.
+   */
   groups: GroupingSpecification[];
 }
 
 /**
- * Grouping rule specifications
+ * Grouping rule specifications.
  * @public
  */
 export declare type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup;
 
 /**
- * Available types of [[GroupingSpecification]]
+ * Available types of [[GroupingSpecification]].
  * @public
  */
 export enum GroupingSpecificationTypes {
@@ -77,36 +64,47 @@ export interface GroupingSpecificationBase {
 }
 
 /**
- * Allows grouping ECInstance nodes by their base class.
+ * Base class grouping allows grouping ECInstance nodes by their base class (as opposed to the hierarchy
+ * specifications' `groupByClass` attribute, which always groups by direct class).
+ *
+ * @see [Base class grouping documentation section]($docs/presentation/hierarchies/GroupingRule.md#base-class-grouping)
  * @public
  */
 export interface ClassGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
   specType: GroupingSpecificationTypes.Class;
 
-  /** Should the grouping node be created if there is only one item in that group. */
+  /** Specifies whether a grouping node should be created if there is only one item in that group. */
   createGroupForSingleItem?: boolean;
 
-  /** Specification of the base ECClass to group by. Defaults to rule's class. */
+  /**
+   * Specification of the base ECClass to group by. If specified, allows grouping by a subclass of the class
+   * specified by rule's `class` attribute.
+   */
   baseClass?: SingleSchemaClassSpecification;
 }
 
 /**
- * Allows grouping multiple instances with the same label into one ECInstance node.
- * It can be used in cases when these instances represent the same object for the user.
+ * Allows grouping multiple instances with the same label into one ECInstances type of node. Similar to display label grouping,
+ * but instead of showing a grouping node with multiple grouped ECInstance nodes, it shows a single ECInstances node which represents
+ * multiple ECInstances.
  *
- * When multiple instances are grouped, an ECInstance node is created instead of a
- * grouping node and the ECInstance key for the node is assigned to key of one of grouped
- * instances.
- *
+ * @see [Same label instance grouping documentation section]($docs/presentation/hierarchies/GroupingRule.md#same-label-instance-grouping)
  * @public
  */
 export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
   specType: GroupingSpecificationTypes.SameLabelInstance;
+
   /**
-   * Stage of hierarchy creation at which the rule is applied.
-   * Defaults to [[SameLabelInstanceGroupApplicationStage.Query]].
+   * Grouping nodes by label is an expensive operation because it requires the whole hierarchy level to be created before even the first
+   * grouped node can be produced. To alleviate the performance impact when this specification is used, two `applicationStage` settings have been introduced:
+   *
+   * - `"Query"` groups instances during ECSql query, which can often make use of database indices and is generally fairly quick. It is chosen
+   *   as the default option, however, it fails to produce grouping nodes when certain ruleset specifications are involved.
+   *
+   * - `"PostProcess"` groups instances after the whole hierarchy level is built. It incurs a large performance penalty, but it will
+   *   produce the expected result in all cases.
    */
   applicationStage?: SameLabelInstanceGroupApplicationStage;
 }
@@ -130,9 +128,9 @@ export enum SameLabelInstanceGroupApplicationStage {
 }
 
 /**
- * Allows grouping by property of the instance
- * by a common value or by range of values.
+ * Property grouping allows grouping by a property of the instance by value or by given ranges of values.
  *
+ * @see [Property grouping documentation section]($docs/presentation/hierarchies/GroupingRule.md#property-grouping)
  * @public
  */
 export interface PropertyGroup extends GroupingSpecificationBase {
@@ -140,54 +138,45 @@ export interface PropertyGroup extends GroupingSpecificationBase {
   specType: GroupingSpecificationTypes.Property;
 
   /**
-   * Name of the ECProperty which is used for grouping.
+   * Name of the ECProperty which is used for grouping. The property must exist on the ECClass specified by the
+   * rule's `class` attribute and it must be of either a primitive or a navigation type.
    *
    * @minLength 1
    */
   propertyName: string;
 
   /**
-   * ID of an image to use for the grouping node
+   * Specifies grouping node's image ID. If set, the ID is assigned to [[Node.imageId]] and
+   * it's up to the UI component to decide what to do with it.
    *
    * @minLength 1
    */
   imageId?: string;
 
-  /** Should the grouping node be created if there is only one item in that group */
+  /** Specifies whether a grouping node should be created if there is only one item in that group. */
   createGroupForSingleItem?: boolean;
 
   /**
-   * Should a separate grouping node be created for nodes whose grouping value is not
-   * set or is an empty string.
-   *
-   * Defaults to `true`.
+   * Should a separate grouping node be created for nodes whose grouping value is not set or is set to an empty string.
    */
   createGroupForUnspecifiedValues?: boolean;
 
   /**
-   * Should the instances be grouped on display label or the grouping property value.
-   * Defaults to [[PropertyGroupingValue.DisplayLabel]].
+   * Specifies whether instances should be grouped using property's display or raw value.
    *
-   * **Note:** Grouping by property value is required if the display label is
-   * overridden to display grouped instances count.
-   *
-   * **Warning:** Grouping by label and sorting by property value is not possible.
+   * @deprecated Display value should always be used for grouping.
    */
-  groupingValue?: PropertyGroupingValue;
+  groupingValue?: PropertyGroupingValue; // eslint-disable-line deprecation/deprecation
 
   /**
-   * Should the nodes be sorted by display label or the grouping property value. In most
-   * cases the result is the same, unless [[LabelOverride]] rule is used to change the display label.
-   * Defaults to [[PropertyGroupingValue.DisplayLabel]].
+   * Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result
+   * is the same, unless a [label override rule]($docs/presentation/customization/LabelOverride.md) is used to change node's display label.
    *
-   * **Note:** Sorting by property value only makes sense when instances are grouped by
-   * property value as well.
-   *
-   * **Warning:** Grouping by label and sorting by property value is not possible.
+   * @deprecated Property grouping nodes should always be sorted by display label.
    */
-  sortingValue?: PropertyGroupingValue;
+  sortingValue?: PropertyGroupingValue; // eslint-disable-line deprecation/deprecation
 
-  /** Ranges into which the grouping values are divided */
+  /** Ranges into which the grouping values are divided. Instances are grouped by value if no ranges are specified. */
   ranges?: PropertyRangeGroupSpecification[];
 }
 
@@ -196,6 +185,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
  * for grouping and sorting
  *
  * @public
+ * @deprecated The attributes using this enum are deprecated.
  */
 export enum PropertyGroupingValue {
   /** By property value */
@@ -206,7 +196,9 @@ export enum PropertyGroupingValue {
 }
 
 /**
- * Describes a grouping range
+ * Describes a grouping range.
+ *
+ * @see [Property range group specification documentation section]($docs/presentation/hierarchies/GroupingRule.md#attribute-ranges)
  * @public
  */
 export interface PropertyRangeGroupSpecification {
@@ -218,22 +210,22 @@ export interface PropertyRangeGroupSpecification {
   imageId?: string;
 
   /**
-   * Grouping node label. May be [localized]($docs/presentation/Advanced/Localization.md).
-   * Defaults to `{from value} - {to value}`
+   * Grouping node label. May be [localized]($docs/presentation/advanced/Localization.md).
+   * Defaults to `{from value} - {to value}`.
    *
    * @minLength 1
    */
   label?: string;
 
   /**
-   * Value that defines the range start (inclusive)
+   * Value that defines the range start (inclusive).
    *
    * @minLength 1
    */
   fromValue: string;
 
   /**
-   * Value that defines the range end (inclusive)
+   * Value that defines the range end (inclusive).
    *
    * @minLength 1
    */

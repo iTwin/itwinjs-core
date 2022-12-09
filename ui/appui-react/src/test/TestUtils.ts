@@ -5,20 +5,21 @@
 import * as enzyme from "enzyme";
 import { createStore, Store } from "redux";
 import * as sinon from "sinon";
-import { fireEvent } from "@testing-library/react";
+import { fireEvent, prettyDOM } from "@testing-library/react";
 import { expect } from "chai";
 
-import { Localization } from "@itwin/core-common";
-import { ITwinLocalization } from "@itwin/core-i18n";
-import { UserInfo } from "../appui-react/UserInfo";
 import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@itwin/core-react";
+import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 
 import {
   ActionsUnion, combineReducers, ContentGroup, createAction, DeepReadonly, FrameworkReducer,
   FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
 } from "../appui-react";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
+import userEvent from "@testing-library/user-event";
+export {userEvent};
+
+/* eslint-disable deprecation/deprecation */
 
 interface SampleAppState {
   placeHolder?: boolean;
@@ -28,7 +29,7 @@ const initialState: SampleAppState = {
   placeHolder: false,
 };
 
-/** @internal */
+/** */
 export interface RootState {
   sampleAppState: SampleAppState;
   testDifferentFrameworkKey?: FrameworkState;
@@ -55,20 +56,13 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
 
 /** @internal */
 export class TestUtils {
-  private static _localization?: Localization;
   private static _uiFrameworkInitialized = false;
   public static store: Store<RootState>;
 
   private static _rootReducer: any;
 
-  public static get localization(): Localization {
-    return TestUtils._localization!;
-  }
-
   public static async initializeUiFramework(testAlternateKey = false) {
     if (!TestUtils._uiFrameworkInitialized) {
-      TestUtils._localization = new ITwinLocalization();
-      await TestUtils._localization.initialize(["IModelJs"]);
       if (testAlternateKey) {
         // this is the rootReducer for the test application.
         this._rootReducer = combineReducers({
@@ -103,9 +97,7 @@ export class TestUtils {
     TestUtils._uiFrameworkInitialized = false;
   }
 
-  /** Define Content Layouts referenced by Frontstages.
-   */
-
+  /** Define Content Layouts referenced by Frontstages. */
   public static fourQuadrants: ContentLayoutProps = {
     id: "FourQuadrants",
     description: "SampleApp:ContentLayoutDef.FourQuadrants",
@@ -117,8 +109,7 @@ export class TestUtils {
     },
   };
 
-  /** Define Content Groups referenced by Frontstages.
-   */
+  /** Define Content Groups referenced by Frontstages. */
   public static TestContentGroup1 = new ContentGroup({
     id: "TestContentGroup1",
     layout: StandardContentLayouts.fourQuadrants,
@@ -195,16 +186,6 @@ export class TestUtils {
 // cSpell:ignore testuser mailinator saml
 
 /** @internal */
-export const mockUserInfo = (): UserInfo => {
-  const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
-  const email = { id: "testuser001@mailinator.com" };
-  const profile = { firstName: "test", lastName: "user" };
-  const organization = { id: "fefac5b-bcad-488b-aed2-df27bffe5786", name: "Bentley" };
-  const featureTracking = { ultimateSite: "1004144426", usageCountryIso: "US" };
-  return new UserInfo(id, email, profile, organization, featureTracking);
-};
-
-/** @internal */
 export const storageMock = () => {
   const storage: { [key: string]: any } = {};
   return {
@@ -228,24 +209,24 @@ export const storageMock = () => {
 };
 
 /** @internal */
-export class UiSettingsStub implements UiSettings {
-  public async deleteSetting(): Promise<UiSettingsResult> {
+export class UiStateStorageStub implements UiStateStorage {
+  public async deleteSetting(): Promise<UiStateStorageResult> {
     return {
-      status: UiSettingsStatus.Success,
+      status: UiStateStorageStatus.Success,
       setting: {},
     };
   }
 
-  public async getSetting(): Promise<UiSettingsResult> {
+  public async getSetting(): Promise<UiStateStorageResult> {
     return {
-      status: UiSettingsStatus.NotFound,
+      status: UiStateStorageStatus.NotFound,
       setting: {},
     };
   }
 
-  public async saveSetting(): Promise<UiSettingsResult> {
+  public async saveSetting(): Promise<UiStateStorageResult> {
     return {
-      status: UiSettingsStatus.Success,
+      status: UiStateStorageStatus.Success,
       setting: {},
     };
   }
@@ -292,7 +273,7 @@ export function getButtonWithText(container: HTMLElement, label: string, onError
     onError && onError(`Couldn't find any '${selector}' buttons`);
 
   const button = [...buttons].find((btn) => {
-    const span = btn.querySelector("span.iui-label");
+    const span = btn.querySelector("span.iui-button-label");
     return span!.textContent === label;
   });
   if (!button)
@@ -306,8 +287,8 @@ export function getButtonWithText(container: HTMLElement, label: string, onError
  */
 export const selectChangeValueByIndex = (select: HTMLElement, index: number, onError?: (msg: string) => void): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const tippy = select.ownerDocument.querySelector("[data-tippy-root]") as HTMLElement;
+  const menu = tippy.querySelector(".iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
@@ -325,8 +306,8 @@ export const selectChangeValueByIndex = (select: HTMLElement, index: number, onE
  */
 export const selectChangeValueByText = (select: HTMLElement, label: string, onError?: (msg: string) => void): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const tippy = select.ownerDocument.querySelector("[data-tippy-root]") as HTMLElement;
+  const menu = tippy.querySelector(".iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
@@ -349,8 +330,8 @@ export const selectChangeValueByText = (select: HTMLElement, label: string, onEr
  */
 export const selectTestOptionCount = (select: HTMLElement, expectedCount: number, onError?: (msg: string) => void): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const tippy = select.ownerDocument.querySelector("[data-tippy-root]") as HTMLElement;
+  const menu = tippy.querySelector(".iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
@@ -381,6 +362,52 @@ export function stubScrollIntoView() {
   afterEach(() => {
     window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
   });
+}
+
+/** Returns tag, id and classes of the information used by CSS selectors */
+function getPartialSelctorInfo(e: HTMLElement) {
+  return `${e.tagName}${e.id ? `#${e.id}`: ""}${Array.from(e.classList.values()).map((c) => `.${c}`).join("")}`;
+}
+
+/** Returns the full list of classes and tag chain for an element up to HTML */
+function currentSelectorInfo(e: HTMLElement) {
+  let w = e;
+  const chain = [getPartialSelctorInfo(w)];
+  while(w.parentElement) {
+    w = w.parentElement;
+    chain.unshift(getPartialSelctorInfo(w));
+  }
+  return chain.join(" > ");
+}
+
+/**
+ * Function to generate a `satisfy` function and the relevant error message.
+ * @param selectors selector string used in `matches`
+ * @returns satisfy function which returns `tested.matches(selectors)`
+ */
+export function selectorMatches(selectors: string) {
+  const satisfier = (e: HTMLElement) => {
+    // \b\b\b... removes default "[Function : " part to get clear message in output.
+    const message = `\b\b\b\b\b\b\b\b\b\b\belement.matches('${selectors}'); current element selector: '${currentSelectorInfo(e)}'\n\n${prettyDOM()}`;
+    Object.defineProperty(satisfier, "name",  {value: message});
+    return e.matches(selectors);
+  };
+  return satisfier;
+}
+
+/**
+ * Function to generate a `satisfy` function and the relevant error message.
+ * @param selectors selector string used in `querySelector` of the element tested.
+ * @returns satisfy function which returns `!!tested.querySelector(selectors)`
+ */
+export function childStructure(selectors: string) {
+  const satisfier = (e: HTMLElement) => {
+    // \b\b\b... removes default "[Function : " part to get clear message in output.
+    const message = `\b\b\b\b\b\b\b\b\b\b\belement.querySelector('${selectors}'); but is: \n${prettyDOM(e)}`;
+    Object.defineProperty(satisfier, "name", {value: message});
+    return !!e.querySelector(selectors);
+  };
+  return satisfier;
 }
 
 export default TestUtils;   // eslint-disable-line: no-default-export

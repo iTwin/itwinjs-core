@@ -13,6 +13,7 @@ import { FpsTracker } from "./FpsTracker";
 import { GpuProfiler } from "./GpuProfiler";
 import { KeyinField } from "./KeyinField";
 import { MemoryTracker } from "./MemoryTracker";
+import { RenderCommandBreakdown } from "./RenderCommandBreakdown";
 import { TileMemoryBreakdown } from "./TileMemoryBreakdown";
 import { TileStatisticsTracker } from "./TileStatisticsTracker";
 import { ToolSettingsTracker } from "./ToolSettingsTracker";
@@ -28,6 +29,7 @@ export interface DiagnosticsPanelProps {
     tileStats?: boolean;
     memory?: boolean;
     tileMemoryBreakdown?: boolean;
+    renderCommands?: boolean;
     gpuProfiler?: boolean;
     toolSettings?: boolean;
   };
@@ -42,6 +44,7 @@ export class DiagnosticsPanel {
   private readonly _fpsTracker?: FpsTracker;
   private readonly _memoryTracker?: MemoryTracker;
   private readonly _tileMemoryBreakdown?: TileMemoryBreakdown;
+  private readonly _renderCommands?: RenderCommandBreakdown;
   private readonly _statsTracker?: TileStatisticsTracker;
   private readonly _gpuProfiler?: GpuProfiler;
   private readonly _toolSettingsTracker?: ToolSettingsTracker;
@@ -80,6 +83,11 @@ export class DiagnosticsPanel {
       this.addSeparator();
     }
 
+    if (!exclude.renderCommands) {
+      this._renderCommands = new RenderCommandBreakdown(this._element);
+      this.addSeparator();
+    }
+
     if (true !== exclude.memory) {
       this._memoryTracker = new MemoryTracker(this._element, vp);
       this.addSeparator();
@@ -100,6 +108,7 @@ export class DiagnosticsPanel {
     dispose(this._fpsTracker);
     dispose(this._memoryTracker);
     dispose(this._tileMemoryBreakdown);
+    dispose(this._renderCommands);
     dispose(this._statsTracker);
     dispose(this._gpuProfiler);
     dispose(this._toolSettingsTracker);

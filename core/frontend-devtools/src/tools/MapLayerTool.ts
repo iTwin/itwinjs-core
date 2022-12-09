@@ -7,7 +7,8 @@
  * @module Tools
  */
 
-import { BaseMapLayerSettings, ColorDef } from "@itwin/core-common";
+import { Id64String } from "@itwin/core-bentley";
+import { BaseMapLayerSettings, ColorDef, ModelMapLayerSettings } from "@itwin/core-common";
 import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -29,9 +30,9 @@ class AttachMapLayerBaseTool extends Tool {
           vp.displayStyle.backgroundMapBase = BaseMapLayerSettings.fromJSON({ ...source, subLayers: validation.subLayers });
           vp.invalidateRenderPlan();
         } else {
-          const layerSettings = source.toLayerSettings(validation.subLayers);
-          if (layerSettings) {
-            vp.displayStyle.attachMapLayerSettings(layerSettings, !this._isBackground);
+          const settings = source.toLayerSettings(validation.subLayers);
+          if (settings) {
+            vp.displayStyle.attachMapLayer({settings, isOverlay: !this._isBackground});
           }
         }
 
@@ -54,6 +55,44 @@ class AttachMapLayerBaseTool extends Tool {
     });
   }
 }
+
+/** Attach a map layer from URL base class. A layer is attached for each unique model in the selection
+ * @beta
+ */
+export class AttachModelMapLayerTool extends Tool {
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+  public static override toolId = "AttachModelMapLayerTool";
+  constructor(protected _formatId: string) { super(); }
+
+  public override async run(nameIn?: string): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp)
+      return false;
+
+    const iModel = vp.iModel;
+    const elements = await iModel.elements.getProps(iModel.selectionSet.elements);
+    const modelIds = new Set<Id64String>();
+
+    for (const element of elements)
+      modelIds.add(element.model);
+
+    for (const modelId of modelIds) {
+      const modelProps = await iModel.models.getProps(modelId);
+      const modelName = modelProps[0].name ? modelProps[0].name : modelId;
+      const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
+      const settings = ModelMapLayerSettings.fromJSON({ name, modelId });
+      vp.displayStyle.attachMapLayer({settings, isOverlay:false});
+    }
+    return true;
+  }
+
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
+    return this.run(args[0]);
+  }
+  public async onRestartTool() {
+  }
+}
 /** Attach a map layer from URL base class. */
 class AttachMapLayerByURLBaseTool extends AttachMapLayerBaseTool {
   public static override get minArgs() { return 1; }
@@ -61,7 +100,13 @@ class AttachMapLayerByURLBaseTool extends AttachMapLayerBaseTool {
   constructor(protected _formatId: string) { super(); }
 
   public override async run(url: string, name?: string, userName?: string, password?: string): Promise<boolean> {
-    this.doAttach(MapLayerSource.fromJSON({ url, name: (name ? name : url), formatId: this._formatId, userName, password }));
+    const source = MapLayerSource.fromJSON({ url, name: (name ? name : url), formatId: this._formatId });
+    if (source){
+      source.userName = userName;
+      source.password = password;
+    }
+
+    this.doAttach(source);
     return true;
   }
 
@@ -104,6 +149,14 @@ export class AttachWmtsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
 export class AttachArcGISMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
   public static override toolId = "AttachArcGISMapLayerTool";
   constructor() { super("ArcGIS"); }
+}
+
+/** This tool attaches an ArcGIS map layer from a given URL.
+ * @beta
+ */
+export class AttachArcGISFeatureMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
+  public static override toolId = "AttachArcGISFeatureMapLayerTool";
+  constructor() { super("ArcGISFeature"); }
 }
 
 /** This tool attaches a map layer from a given tile URL.

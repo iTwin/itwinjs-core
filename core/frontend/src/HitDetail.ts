@@ -15,7 +15,10 @@ import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum SnapMode {
   Nearest = 1,
   NearestKeypoint = 1 << 1,
@@ -26,7 +29,10 @@ export enum SnapMode {
   Intersection = 1 << 6,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum SnapHeat {
   None = 0,
   NotInRange = 1,   // "of interest", but out of range
@@ -35,6 +41,7 @@ export enum SnapHeat {
 
 /** The procedure that generated this Hit.
  * @public
+ * @extensions
  */
 export enum HitSource {
   None = 0,
@@ -51,6 +58,7 @@ export enum HitSource {
 /** What was being tested to generate this hit. This is not the element or
  * GeometricPrimitive that generated the Hit, it is an indication of whether it is an edge or interior hit.
  * @public
+ * @extensions
  */
 export enum HitGeomType {
   None = 0,
@@ -63,6 +71,7 @@ export enum HitGeomType {
 
 /** Classification of GeometricPrimitive that generated the Hit.
  * @public
+ * @extensions
  */
 export enum HitParentGeomType {
   None = 0,
@@ -73,7 +82,10 @@ export enum HitParentGeomType {
   Text = 5,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum HitPriority {
   WireEdge = 0,
   PlanarEdge = 1,
@@ -84,7 +96,10 @@ export enum HitPriority {
   Unknown = 6,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum HitDetailType {
   Hit = 1,
   Snap = 2,
@@ -94,6 +109,7 @@ export enum HitDetailType {
 /** A HitDetail stores the result when locating geometry displayed in a view.
  * It holds an approximate location on an element (or decoration) from a *pick*.
  * @public
+ * @extensions
  */
 export class HitDetail {
   private readonly _iModel?: IModelConnection;
@@ -181,6 +197,7 @@ export class HitDetail {
 /** A SnapDetail is generated from the result of a snap request. In addition to the HitDetail about the reason the element was *picked*,
  * it holds the *exact* point on the element from the snapping logic, plus additional information that varies with the type of element and snap mode.
  * @public
+ * @extensions
  */
 export class SnapDetail extends HitDetail {
   /** A sprite to show the user the type of snap performed */
@@ -220,7 +237,11 @@ export class SnapDetail extends HitDetail {
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
   /** Change the snap point. */
-  public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this.adjustedPoint.setFrom(point); this.heat = heat; }
+  public setSnapPoint(point: Point3d, heat: SnapHeat) {
+    this.snapPoint.setFrom(point);
+    this.adjustedPoint.setFrom(point);
+    this.heat = heat;
+  }
 
   /** Set curve primitive and HitGeometryType for this SnapDetail. */
   public setCurvePrimitive(primitive?: CurvePrimitive, localToWorld?: Transform, geomType?: HitGeomType): void {
@@ -261,7 +282,7 @@ export class SnapDetail extends HitDetail {
     val.parentGeomType = this.parentGeomType;
     val.adjustedPoint.setFrom(this.adjustedPoint);
     if (undefined !== this.primitive)
-      val.primitive = this.primitive.clone() as CurvePrimitive;
+      val.primitive = this.primitive.clone();
     if (undefined !== this.normal)
       val.normal = this.normal.clone();
     return val;
@@ -321,19 +342,22 @@ export class SnapDetail extends HitDetail {
 
   private static getSnapSpriteUrl(snapType: SnapMode): string {
     switch (snapType) {
-      case SnapMode.Nearest: return "sprites/SnapPointOn.png";
-      case SnapMode.NearestKeypoint: return "sprites/SnapKeypoint.png";
-      case SnapMode.MidPoint: return "sprites/SnapMidpoint.png";
-      case SnapMode.Center: return "sprites/SnapCenter.png";
-      case SnapMode.Origin: return "sprites/SnapOrigin.png";
-      case SnapMode.Bisector: return "sprites/SnapBisector.png";
-      case SnapMode.Intersection: return "sprites/SnapIntersection.png";
+      case SnapMode.Nearest: return `${IModelApp.publicPath}sprites/SnapPointOn.png`;
+      case SnapMode.NearestKeypoint: return `${IModelApp.publicPath}sprites/SnapKeypoint.png`;
+      case SnapMode.MidPoint: return `${IModelApp.publicPath}sprites/SnapMidpoint.png`;
+      case SnapMode.Center: return `${IModelApp.publicPath}sprites/SnapCenter.png`;
+      case SnapMode.Origin: return `${IModelApp.publicPath}sprites/SnapOrigin.png`;
+      case SnapMode.Bisector: return `${IModelApp.publicPath}sprites/SnapBisector.png`;
+      case SnapMode.Intersection: return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
     }
     return "";
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class IntersectDetail extends SnapDetail {
   public constructor(from: SnapDetail, heat: SnapHeat = SnapHeat.None, snapPoint: XYZProps, public readonly otherPrimitive: CurvePrimitive, public readonly otherId: string) {
     super(from, SnapMode.Intersection, heat, snapPoint);
@@ -368,19 +392,26 @@ export class IntersectDetail extends SnapDetail {
 /** The result of a "locate" is a sorted list of objects that satisfied the search criteria (a HitList). Earlier hits in the list
  * are somehow *better* than those later on.
  * @public
+ * @extensions
  */
 export class HitList<T extends HitDetail> {
   public hits: T[] = [];
   public currHit = -1;
   public get length(): number { return this.hits.length; }
-  public empty(): void { this.hits.length = 0; this.currHit = -1; }
+  public empty(): void {
+    this.hits.length = 0;
+    this.currHit = -1;
+  }
+
   public resetCurrentHit(): void { this.currHit = -1; }
 
   /** Get a hit from a particular index into a HitList
    * return the requested hit from the HitList or undefined
    */
   public getHit(hitNum: number): T | undefined {
-    if (hitNum < 0) hitNum = this.length - 1;
+    if (hitNum < 0)
+      hitNum = this.length - 1;
+
     return (hitNum >= this.length) ? undefined : this.hits[hitNum];
   }
 
@@ -398,7 +429,11 @@ export class HitList<T extends HitDetail> {
       this.hits.push(hit);
   }
 
-  public getNextHit(): T | undefined { this.currHit++; return this.getCurrentHit(); }
+  public getNextHit(): T | undefined {
+    this.currHit++;
+    return this.getCurrentHit();
+  }
+
   public getCurrentHit(): T | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
 
   public setCurrentHit(hit: T): void {
@@ -466,20 +501,28 @@ export class HitList<T extends HitDetail> {
     const zOverride2 = this.getPriorityZOverride(hit2.priority);
 
     // Prefer edges over surfaces, this is more important than z because we know the edge isn't obscured...
-    if (zOverride1 < zOverride2) return -1;
-    if (zOverride1 > zOverride2) return 1;
+    if (zOverride1 < zOverride2)
+      return -1;
+    if (zOverride1 > zOverride2)
+      return 1;
 
     // Compare xy distance from pick point, prefer hits closer to center...
-    if (hit1.distXY < hit2.distXY) return -1;
-    if (hit1.distXY > hit2.distXY) return 1;
+    if (hit1.distXY < hit2.distXY)
+      return -1;
+    if (hit1.distXY > hit2.distXY)
+      return 1;
 
     // Compare distance fraction, prefer hits closer to eye...
-    if (hit1.distFraction > hit2.distFraction) return -1;
-    if (hit1.distFraction < hit2.distFraction) return 1;
+    if (hit1.distFraction > hit2.distFraction)
+      return -1;
+    if (hit1.distFraction < hit2.distFraction)
+      return 1;
 
     // Compare geometry class, prefer path/region hits over surface hits when all else is equal...
-    if (hit1.priority < hit2.priority) return -1;
-    if (hit1.priority > hit2.priority) return 1;
+    if (hit1.priority < hit2.priority)
+      return -1;
+    if (hit1.priority > hit2.priority)
+      return 1;
 
     return 0;
   }

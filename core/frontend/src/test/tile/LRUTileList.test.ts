@@ -157,47 +157,47 @@ describe("LRUTileList", () => {
     list.add(t4);
     list.expectOrder(t1, t2, t3, t4, s);
 
-    list.markSelectedForViewport(vp1, [t1, t2]);
+    list.markUsed(vp1, [t1, t2]);
     list.expectOrder(t3, t4, s, t1, t2);
-    expect(t1.viewportIds).not.to.be.undefined;
-    expect(t2.viewportIds).not.to.be.undefined;
-    expect(t3.viewportIds).to.be.undefined;
-    expect(t4.viewportIds).to.be.undefined;
+    expect(t1.tileUserIds).not.to.be.undefined;
+    expect(t2.tileUserIds).not.to.be.undefined;
+    expect(t3.tileUserIds).to.be.undefined;
+    expect(t4.tileUserIds).to.be.undefined;
 
-    list.markSelectedForViewport(vp2, [t1, t4]);
+    list.markUsed(vp2, [t1, t4]);
     list.expectOrder(t3, s, t2, t1, t4);
-    expect(t1.viewportIds).not.to.be.undefined;
-    expect(t2.viewportIds).not.to.be.undefined;
-    expect(t3.viewportIds).to.be.undefined;
-    expect(t4.viewportIds).not.to.be.undefined;
+    expect(t1.tileUserIds).not.to.be.undefined;
+    expect(t2.tileUserIds).not.to.be.undefined;
+    expect(t3.tileUserIds).to.be.undefined;
+    expect(t4.tileUserIds).not.to.be.undefined;
 
-    list.clearSelectedForViewport(vp1);
+    list.clearUsed(vp1);
     list.expectOrder(t3, t2, s, t1, t4);
-    expect(t1.viewportIds).not.to.be.undefined;
-    expect(t2.viewportIds).to.be.undefined;
-    expect(t3.viewportIds).to.be.undefined;
-    expect(t4.viewportIds).not.to.be.undefined;
+    expect(t1.tileUserIds).not.to.be.undefined;
+    expect(t2.tileUserIds).to.be.undefined;
+    expect(t3.tileUserIds).to.be.undefined;
+    expect(t4.tileUserIds).not.to.be.undefined;
 
-    list.markSelectedForViewport(vp1, [t3, t4, t2]);
+    list.markUsed(vp1, [t3, t4, t2]);
     list.expectOrder(s, t1, t3, t4, t2);
-    expect(t1.viewportIds).not.to.be.undefined;
-    expect(t2.viewportIds).not.to.be.undefined;
-    expect(t3.viewportIds).not.to.be.undefined;
-    expect(t4.viewportIds).not.to.be.undefined;
+    expect(t1.tileUserIds).not.to.be.undefined;
+    expect(t2.tileUserIds).not.to.be.undefined;
+    expect(t3.tileUserIds).not.to.be.undefined;
+    expect(t4.tileUserIds).not.to.be.undefined;
 
-    list.clearSelectedForViewport(vp2);
+    list.clearUsed(vp2);
     list.expectOrder(t1, s, t3, t4, t2);
-    expect(t1.viewportIds).to.be.undefined;
-    expect(t2.viewportIds).not.to.be.undefined;
-    expect(t3.viewportIds).not.to.be.undefined;
-    expect(t4.viewportIds).not.to.be.undefined;
+    expect(t1.tileUserIds).to.be.undefined;
+    expect(t2.tileUserIds).not.to.be.undefined;
+    expect(t3.tileUserIds).not.to.be.undefined;
+    expect(t4.tileUserIds).not.to.be.undefined;
 
-    list.clearSelectedForViewport(vp1);
+    list.clearUsed(vp1);
     list.expectOrder(t1, t3, t4, t2, s);
-    expect(t1.viewportIds).to.be.undefined;
-    expect(t2.viewportIds).to.be.undefined;
-    expect(t3.viewportIds).to.be.undefined;
-    expect(t4.viewportIds).to.be.undefined;
+    expect(t1.tileUserIds).to.be.undefined;
+    expect(t2.tileUserIds).to.be.undefined;
+    expect(t3.tileUserIds).to.be.undefined;
+    expect(t4.tileUserIds).to.be.undefined;
   });
 
   it("iterates over partitions", () => {
@@ -210,8 +210,13 @@ describe("LRUTileList", () => {
         expect(actual[i]).to.equal(expected[i]);
     }
 
-    function expectSelected(...expected: LRUTileListNode[]) { expectPartition("selected", ...expected); }
-    function expectUnselected(...expected: LRUTileListNode[]) { expectPartition("unselected", ...expected); }
+    function expectSelected(...expected: LRUTileListNode[]) {
+      expectPartition("selected", ...expected);
+    }
+
+    function expectUnselected(...expected: LRUTileListNode[]) {
+      expectPartition("unselected", ...expected);
+    }
 
     expectSelected();
     expectUnselected();
@@ -288,12 +293,12 @@ describe("LRUTileList", () => {
     expect(list.tail).to.equal(list.sentinel);
     expect(list.totalBytesUsed).greaterThan(0);
 
-    list.markSelectedForViewport(1, tiles);
+    list.markUsed(1, tiles);
     expect(list.head).to.equal(list.sentinel);
     for (const tile of tiles) {
       expect(tile.previous !== undefined || tile.next !== undefined).to.be.true;
       expect(tile.bytesUsed).greaterThan(0);
-      expect(tile.viewportIds).not.to.be.undefined;
+      expect(tile.tileUserIds).not.to.be.undefined;
     }
 
     list.dispose();
@@ -302,7 +307,7 @@ describe("LRUTileList", () => {
     expect(list.totalBytesUsed).to.equal(0);
     for (const tile of tiles) {
       expectUnlinked(tile);
-      expect(tile.viewportIds).to.be.undefined;
+      expect(tile.tileUserIds).to.be.undefined;
       expect(tile.bytesUsed).to.equal(0);
     }
   });

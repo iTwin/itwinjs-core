@@ -148,7 +148,7 @@ export const isIconListEditorParams = (item: BasePropertyEditorParams): item is 
  * @public
  */
 export interface IconDefinition {
-  /** Icon specification. The value is the name of an icon WebFont entry, or if specifying an SVG symbol, use `svg:` prefix. */
+  /** Icon specification. The value is the name of an icon WebFont entry, or if specifying an imported SVG symbol use "webSvg:" prefix . */
   iconSpec: string;
   /** Function to determine if the item is enabled. */
   isEnabledFunction?: () => boolean;

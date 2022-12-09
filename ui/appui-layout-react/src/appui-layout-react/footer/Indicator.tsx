@@ -12,12 +12,15 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[FooterIndicator]] component.
+ * @deprecated Props of a deprecated component.
  * @beta
  */
 export interface FooterIndicatorProps extends CommonProps {
   /** Indicator content. */
   children?: React.ReactNode;
-  /** Describes whether the footer is in footer or widget mode. */
+  /** Describes whether the footer is in footer or widget mode.
+   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+  */
   isInFooterMode?: boolean;
   /** Title for the indicator */
   title?: string;
@@ -26,21 +29,21 @@ export interface FooterIndicatorProps extends CommonProps {
 }
 
 /** Indicator used in [[Footer]] component.
+ * @deprecated Use [StatusBarIndicator]($appui-react) instead.
  * @beta
  */
-export function FooterIndicator(props: FooterIndicatorProps) {
-
+export const FooterIndicator = React.forwardRef<HTMLDivElement, FooterIndicatorProps>(function FooterIndicator(props, ref) {
   const { isInFooterMode, children, ...attributes } = props;
 
   const className = classnames(
     "nz-footer-indicator",
-    isInFooterMode && "nz-footer-mode",
+    (isInFooterMode ?? true) && "nz-footer-mode",
     props.className
   );
 
   return (
-    <div {...{ ...attributes, className }}>
+    <div ref={ref} {...{ ...attributes, className }}>
       {children}
     </div>
   );
-}
+});

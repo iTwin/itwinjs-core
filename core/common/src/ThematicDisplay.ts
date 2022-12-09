@@ -6,6 +6,7 @@
  * @module Symbology
  */
 
+import { compareNumbers } from "@itwin/core-bentley";
 import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
@@ -13,6 +14,7 @@ import { Gradient } from "./Gradient";
 /** A thematic gradient mode used to generate and apply a thematic effect to a scene.
  * @see [[ThematicGradientSettings.mode]]
  * @public
+ * @extensions
  */
 export enum ThematicGradientMode {
   /** Apply a smooth color gradient to the scene. */
@@ -28,7 +30,9 @@ export enum ThematicGradientMode {
 /** A color scheme used to generate the colors of a thematic gradient within an applied range.
  * @see [[ThematicGradientSettings.colorScheme]]
  * @see [[ThematicDisplay.range]]
- * @public */
+ * @public
+ * @extensions
+ */
 export enum ThematicGradientColorScheme {
   /** A color gradient scheme that represents a blue-to-red gradation. */
   BlueRed = 0,
@@ -48,23 +52,20 @@ export enum ThematicGradientColorScheme {
 
 /** JSON representation of a [[ThematicGradientSettings]].
  * @public
+ * @extensions
  **/
 export interface ThematicGradientSettingsProps {
-  /** The thematic image mode used to generate and apply the thematic gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
+  /** See [[ThematicGradientSettings.mode]]. */
   mode?: ThematicGradientMode;
-  /** The step count value used for [[ThematicGradientMode.Stepped]], [[ThematicGradientMode.SteppedWithDelimiter]], and [[ThematicGradientMode.IsoLines]]. Defaults to 10. Cannot be less than 2. */
+  /** See [[ThematicGradientSettings.stepCount]]. */
   stepCount?: number;
-  /** The margin color used at the extremes of the gradient, when outside the applied range. Defaults to a black color using [[ColorDef.fromJSON]] with no arguments. */
+  /** See [[ThematicGradientSettings.marginColor]]. */
   marginColor?: ColorDefProps;
-  /** The color scheme used to generate the colors of the gradient within the applied range. Defaults to [[ThematicGradientColorScheme.BlueRed]]. */
+  /** See [[ThematicGradientSettings.colorScheme]]. */
   colorScheme?: ThematicGradientColorScheme;
-  /** The key color values that must be provided when using a custom thematic color scheme.
-   * Defaults to empty, unless using a custom thematic color scheme. In that case, this defaults to two key colors going from white to black.
-   * When using a custom thematic color scheme, there must be at least two entries in here. If there are not, it will revert to the default settings.
-   */
+  /** See [[ThematicGradientSettings.customKeys. */
   customKeys?: Gradient.KeyColorProps[];
-  /** The percentage to mix in the original color with the thematic display gradient color (0-1).
-   * Applies to background map terrain and point clouds only.  Defaults to 0. */
+  /** See [[ThematicGradientSettings.colorMix]]. */
   colorMix?: number;
 }
 
@@ -93,7 +94,7 @@ export class ThematicGradientSettings {
   public static get contentRange(): number { return 1.0 - 2.0 * ThematicGradientSettings.margin; }
   public static get contentMax(): number { return 1.0 - ThematicGradientSettings.margin; }
 
-  public static readonly defaults = new ThematicGradientSettings({ });
+  public static readonly defaults = new ThematicGradientSettings({});
 
   private static _defaultCustomKeys = [[0.0, 255, 255, 255], [1.0, 0, 0, 0]];
 
@@ -117,6 +118,34 @@ export class ThematicGradientSettings {
     }
 
     return true;
+  }
+
+  /** Compares two sets of thematic gradient settings.
+   * @param lhs First set of thematic gradient settings to compare
+   * @param rhs Second set of thematic gradient settings to compare
+   * @returns 0 if lhs is equivalent to rhs, a negative number if lhs compares less than rhs, or a positive number if lhs compares greater than rhs.
+   */
+  public static compare(lhs: ThematicGradientSettings, rhs: ThematicGradientSettings): number {
+    let diff = 0;
+    if ((diff = compareNumbers(lhs.mode, rhs.mode)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.stepCount, rhs.stepCount)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.marginColor.tbgr, rhs.marginColor.tbgr)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.colorScheme, rhs.colorScheme)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.colorMix, rhs.colorMix)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.customKeys.length, rhs.customKeys.length)) !== 0)
+      return diff;
+
+    for (let i = 0; i < lhs.customKeys.length; i++) {
+      if ((diff = compareNumbers(lhs.customKeys[i].color.tbgr, rhs.customKeys[i].color.tbgr)) !== 0)
+        return diff;
+    }
+
+    return diff;
   }
 
   private constructor(json?: ThematicGradientSettingsProps) {
@@ -161,7 +190,7 @@ export class ThematicGradientSettings {
   }
 
   public toJSON(): ThematicGradientSettingsProps {
-    const props: ThematicGradientSettingsProps = { };
+    const props: ThematicGradientSettingsProps = {};
     if (ThematicGradientMode.Smooth !== this.mode)
       props.mode = this.mode;
 
@@ -207,6 +236,7 @@ export class ThematicGradientSettings {
 
 /** JSON representation of a [[ThematicDisplaySensor]].
  * @public
+ * @extensions
  */
 export interface ThematicDisplaySensorProps {
   /** The world position of the sensor in X, Y, and Z. Defaults to {0,0,0}. */
@@ -256,6 +286,7 @@ export class ThematicDisplaySensor {
 
 /** JSON representation of a [[ThematicDisplaySensorSettings]] for [[ThematicDisplayMode.InverseDistanceWeightedSensors]].
  * @public
+ * @extensions
  */
 export interface ThematicDisplaySensorSettingsProps {
   /** This is the list of sensors. Defaults to an empty array. */
@@ -329,6 +360,7 @@ export class ThematicDisplaySensorSettings {
 
 /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry.
  * @public
+ * @extensions
  */
 export enum ThematicDisplayMode {
   /** The color gradient will be mapped to surface geometry and point clouds based on world height in meters. */
@@ -349,6 +381,7 @@ export enum ThematicDisplayMode {
 
 /** JSON representation of the thematic display setup of a [[DisplayStyle3d]].
  * @public
+ * @extensions
  */
 export interface ThematicDisplayProps {
   /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry. Defaults to [[ThematicDisplayMode.Height]]. */

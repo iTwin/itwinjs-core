@@ -117,7 +117,7 @@ describe("ToolRegistry", () => {
     testKeyinArgs(`uccalc "double """" quotes"`, [`double "" quotes`]);
     testKeyinArgs(`uccalc "" """" """"""`, [``, `"`, `""`]);
     testKeyinArgs(`uccalc no "yes """ no """ yes" no "yes "" yes"`, [`no`, `yes "`, `no`, `" yes`, `no`, `yes " yes`]);
-  });
+  }).timeout(8000);
 
   it("Should parse command with mismatched quotes", () => {
     expectParseError(`uccalc "test`, KeyinParseError.MismatchedQuotes);
@@ -144,7 +144,7 @@ describe("ToolRegistry", () => {
     testKeyinArgs(`  uccalc   one two  three   "four"     "five six" seven`, ["one", "two", "three", "four", "five six", "seven"]);
     testKeyinArgs(`uccalc one"two"three four""five"`, [`one"two"three`, `four""five"`]);
     testKeyinArgs("\tuccalc\none\t \ttwo \n three", ["one", "two", "three"]);
-  });
+  }).timeout(8000);
 
   it("Should find the MicroStation inputmanager training command", async () => {
     const command = IModelApp.tools.findExactMatch("inputmanager training");
@@ -228,7 +228,11 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
 function registerTestClass(id: string, keyin: string, ns: string) {
   (class extends Tool {
     public static override toolId = id;
-    public override async run(): Promise<boolean> { lastCommand = keyin; return true; }
+    public override async run(): Promise<boolean> {
+      lastCommand = keyin;
+      return true;
+    }
+
     public static override get keyin(): string { return keyin; }
 
   }).register(ns);

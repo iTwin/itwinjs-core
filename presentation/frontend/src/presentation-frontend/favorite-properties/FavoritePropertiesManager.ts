@@ -371,7 +371,7 @@ export class FavoritePropertiesManager implements IDisposable {
     INNER JOIN ECDbMeta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
     INNER JOIN ECDbMeta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
     WHERE (derivedSchema.Name || ':' || derivedClass.Name) IN (${[...missingClasses].map((className) => `'${className}'`).join(",")})`;
-    for await (const row of imodel.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       if (!(row.classFullName in baseClasses))
         baseClasses[row.classFullName] = [];
       baseClasses[row.classFullName].push(row.baseClassFullName);

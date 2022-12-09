@@ -12,7 +12,6 @@ export * from "./appui-layout-react/base/DragManager";
 export * from "./appui-layout-react/base/Ellipsis";
 export * from "./appui-layout-react/base/Event";
 export * from "./appui-layout-react/base/NineZone";
-export * from "./appui-layout-react/base/NineZoneState";
 export * from "./appui-layout-react/base/PointerCaptor";
 export * from "./appui-layout-react/base/WithContainIn";
 
@@ -63,6 +62,17 @@ export * from "./appui-layout-react/stage-panels/StagePanels";
 export * from "./appui-layout-react/stage-panels/manager/NestedStagePanels";
 export * from "./appui-layout-react/stage-panels/manager/StagePanel";
 export * from "./appui-layout-react/stage-panels/manager/StagePanels";
+
+export * from "./appui-layout-react/state/DropTargetState";
+export * from "./appui-layout-react/state/NineZoneAction";
+export * from "./appui-layout-react/state/NineZoneState";
+export * from "./appui-layout-react/state/NineZoneStateReducer";
+export * from "./appui-layout-react/state/PanelState";
+export * from "./appui-layout-react/state/TabLocation";
+export * from "./appui-layout-react/state/TabState";
+export * from "./appui-layout-react/state/ToolSettingsState";
+export * from "./appui-layout-react/state/WidgetLocation";
+export * from "./appui-layout-react/state/WidgetState";
 
 export * from "./appui-layout-react/tool-settings/Docked";
 export * from "./appui-layout-react/tool-settings/Handle";
@@ -135,9 +145,6 @@ export * from "./appui-layout-react/widget/rectangular/tab/Group";
 export * from "./appui-layout-react/widget/rectangular/tab/Separator";
 export * from "./appui-layout-react/widget/rectangular/tab/Tab";
 
-export * from "./appui-layout-react/widget/tool-settings/Nested";
-export * from "./appui-layout-react/widget/tool-settings/Popup";
-export * from "./appui-layout-react/widget/tool-settings/Scrollable";
 export * from "./appui-layout-react/widget/tool-settings/Tab";
 
 export * from "./appui-layout-react/widget-panels/AppContent";
@@ -167,7 +174,6 @@ export * from "./appui-layout-react/zones/target/StagePanel";
 
 /** @docs-package-description
  * The appui-layout-react package contains React components for application user interface layouts following the Bentley 9-Zone pattern.
- * For more information, see [learning about appui-layout-react]($docs/learning/ui/ninezone/index.md).
  */
 /**
  * @docs-group-description Backstage

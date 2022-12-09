@@ -1,0 +1,222 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+$separator-background: #F0F0F0;
+$ip-highlight-size: 4px;
+$ip-max-dropdown-width: 450px;
+
+.text-clip {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  display: block;
+}
+
+/* selector to disable user selection (on double click for example) */
+.text-disable-selection {
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+/* iTwin picker */
+.ip {
+  outline: none;
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &:after {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: block;
+    width: 0;
+    height: $ip-highlight-size;
+    background-color: $uicore-blue;
+    margin: auto;
+    content: '';
+    transition: width 0.4s ease;
+  }
+
+  &:hover:after {
+    width: 100%;
+  }
+}
+
+/* current iTwin + splitter container */
+.ip-content {
+  flex: 1;
+  padding: 0 .7em;
+  background: $uicore-blue-highlight;
+  display: flex;
+  align-items: center;
+  outline: none;
+  cursor: pointer;
+
+  /* change text color on hover */
+  &:hover {
+    color: $uicore-blue;
+  }
+
+  /* current itwin number & name */
+  >div {
+    font-size: $iui-font-size-leading;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+
+    /* itwin number */
+    .number {
+      @extend .text-clip;
+    }
+
+    /* itwin name font is smaller (and add some spacing between number and name) */
+    .name {
+      @extend .text-clip;
+      font-size: $iui-font-size;
+      margin-top: .25em;
+    }
+  }
+}
+
+/* content in its opened state */
+.ip-content .opened {
+  transform: rotate(-180deg);
+}
+
+/* highlight bar below the iTwin picker */
+.ip-highlight {
+  flex: initial;
+  height: $ip-highlight-size;
+  background: $uicore-gray-8;
+  transition: background-color .4s ease;
+}
+
+/* splitter icon */
+.ip-splitter {
+  @extend .text-disable-selection;
+  flex: initial;
+  margin-left: .75em;
+  font-size: 15px;
+  transition: transform .5s ease;
+}
+
+/* dropdown (list of iTwins) */
+.ip-dropdown {
+  color: #444;
+  background: #fff;
+  min-width: 100%;
+  width: 250px;
+  max-width: $ip-max-dropdown-width;
+  padding-bottom: .75em;
+
+  /* first part of the dropdown is a list */
+  ul {
+    padding: 0px;
+    margin: 0px;
+    list-style: none;
+    overflow-y: auto;
+
+    @include uicore-touch-scrolling;
+    @include uicore-scrollbar();
+
+    /* line for each iTwin */
+    li {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      flex-direction: row;
+      padding: 0px .75em 0px 1.25em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color .3s ease;
+      border-bottom: 1px solid $separator-background;
+      box-sizing: border-box;
+
+      /* iTwin number & name */
+      .ip-details{
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        overflow: hidden;
+
+        /* clip the number & name */
+        span {
+          @extend .text-clip;
+        }
+
+        /* number is a larger font size than name */
+        span:first-child {
+          font-size: $iui-font-size;
+          font-weight: 550;
+        }
+
+        /* name is a smaller font size and space the number/name */
+        span:last-child {
+          margin-top: .4em;
+          font-size: $iui-font-size-small;
+          font-weight: 300;
+        }
+      }
+
+      /* hover */
+      &:hover {
+        background-color: #eee;
+      }
+    }
+  }
+}
+
+/* no iTwin MRU's */
+.ip-no-mru {
+  display: block;
+  color: $uicore-gray;
+  font-size: $iui-font-size;
+  padding: .25em 1.25em;
+}
+
+/* menu separator */
+.ip-separator {
+  height: 1px;
+  margin: .75em 3em;
+  background: $separator-background;
+  cursor: default;
+}
+
+/* "More" option */
+.ip-more {
+  display: flex;
+  align-items: center;
+  padding: 0 .75em 0 1.25em;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color .3s ease;
+
+  &:hover {
+    background-color: #eee;
+  }
+}
+
+/* iTwin icon */
+.ip-icon {
+  font-size: 22px;
+  margin-right: .75em;
+}
+
+/*
+ .content:hover + .highlight, .highlight:hover {
+  background-color: $uicore-gray;}
+*/

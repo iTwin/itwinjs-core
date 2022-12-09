@@ -107,7 +107,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
           const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId);
           const geomElement = seedIModel.elements.createElement(elementProps);
           setPropVals(geomElement, pCount);
-          const id = seedIModel.elements.insertElement(geomElement);
+          const id = seedIModel.elements.insertElement(geomElement.toJSON());
           assert.isTrue(Id64.isValidId64(id), "insert failed");
         }
         seedIModel.saveChanges();
@@ -138,7 +138,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
         const geomElement = perfimodel.elements.createElement(elementProps);
         setPropVals(geomElement, propCount);
         const startTime = new Date().getTime();
-        const id = perfimodel.elements.insertElement(geomElement);
+        const id = perfimodel.elements.insertElement(geomElement.toJSON());
         const endTime = new Date().getTime();
         assert.isTrue(Id64.isValidId64(id), "insert failed");
         const elapsedTime = (endTime - startTime) / 1000.0;
@@ -358,7 +358,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
           const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestIndexSchema:PropElement");
           const geomElement = seedIModel.elements.createElement(elementProps);
           setPropVals(geomElement, propCounts);
-          const id = seedIModel.elements.insertElement(geomElement);
+          const id = seedIModel.elements.insertElement(geomElement.toJSON());
           assert.isTrue(Id64.isValidId64(id), "insert failed");
         }
         seedIModel.saveChanges();
@@ -385,7 +385,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
           const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestIndexSchema:PropElement0");
           const geomElement = seedIModel.elements.createElement(elementProps);
           setPropVals(geomElement, propCounts);
-          const id = seedIModel.elements.insertElement(geomElement);
+          const id = seedIModel.elements.insertElement(geomElement.toJSON());
           assert.isTrue(Id64.isValidId64(id), "insert failed");
         }
         seedIModel.saveChanges();
@@ -419,7 +419,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         const geomElement = perfimodel.elements.createElement(elementProps);
         setPropVals(geomElement, propCounts);
         const startTime = new Date().getTime();
-        const id = perfimodel.elements.insertElement(geomElement);
+        const id = perfimodel.elements.insertElement(geomElement.toJSON());
         const endTime = new Date().getTime();
         assert.isTrue(Id64.isValidId64(id), "insert failed");
         const elapsedTime = (endTime - startTime) / 1000.0;
@@ -447,7 +447,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         const geomElement = perfimodel.elements.createElement(elementProps);
         setPropVals(geomElement, propCounts);
         const startTime = new Date().getTime();
-        const id = perfimodel.elements.insertElement(geomElement);
+        const id = perfimodel.elements.insertElement(geomElement.toJSON());
         const endTime = new Date().getTime();
         assert.isTrue(Id64.isValidId64(id), "insert failed");
         const elapsedTime = (endTime - startTime) / 1000.0;

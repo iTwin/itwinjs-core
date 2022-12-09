@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "~@itwin/itwinui-css/scss/style/speed";
 @import "variables";
 
 .components-toolbar-button-item.components-ellipsis-icon {
@@ -46,4 +47,11 @@
   background: none;
 
   @include uicore-z-index(toolbar-panels);
+
+  transition: visibility $iui-speed ease, opacity $iui-speed ease;
+
+  &.nz-hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
 }

@@ -31,11 +31,12 @@ class IModelOpenControl extends ContentControl {
 }
 
 export class IModelOpenFrontstage extends FrontstageProvider {
+  public static stageId = "ui-test-app:IModelOpen";
   public get id(): string {
-    return "IModelOpen";
+    return IModelOpenFrontstage.stageId;
   }
 
-  public get frontstage(): React.ReactElement<FrontstageProps> {
+  public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
     const contentGroup: ContentGroup = new ContentGroup({
       id: "imodelIndexGroup",
       layout: StandardContentLayouts.singleView,
@@ -48,10 +49,9 @@ export class IModelOpenFrontstage extends FrontstageProvider {
     });
 
     return (
-      <Frontstage id={this.id}
+      <Frontstage id={this.id} // eslint-disable-line deprecation/deprecation
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
-        isInFooterMode={false}
         isIModelIndependent={true}
         usage={StageUsage.Private}
       />

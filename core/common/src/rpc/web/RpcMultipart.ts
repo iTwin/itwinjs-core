@@ -6,18 +6,20 @@
  * @module RpcInterface
  */
 
-import { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
+import { BackendBuffer, BackendReadable } from "../../BackendTypes";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { HttpServerRequest } from "../web/WebAppRpcProtocol";
 
+/* eslint-disable deprecation/deprecation */
+
 /** @internal */
 export interface FormDataCommon {
-  append(name: string, value: string | Blob | Buffer, fileName?: string): void;
+  append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
 }
 
 /** @internal */
-export interface ReadableFormData extends Readable {
+export interface ReadableFormData extends BackendReadable {
   getHeaders(): { [key: string]: any };
 }
 
@@ -33,13 +35,13 @@ export class RpcMultipart {
   }
 
   /** Creates a multipart stream for an RPC value. */
-  public static createStream(_value: RpcSerializedValue): ReadableFormData {
-    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+  public static createStream(value: RpcSerializedValue): ReadableFormData {
+    return this.platform.createStream(value);
   }
 
   /** Obtains the RPC value from a multipart HTTP request. */
-  public static async parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue> {
-    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+  public static async parseRequest(req: HttpServerRequest): Promise<RpcSerializedValue> {
+    return this.platform.parseRequest(req);
   }
 
   /** @internal */
@@ -47,12 +49,21 @@ export class RpcMultipart {
     form.append("objects", value.objects);
 
     for (let i = 0; i !== value.data.length; ++i) {
-      if (typeof (Blob) !== "undefined") {
-        form.append(`data-${i}`, new Blob([value.data[i]], { type: "application/octet-stream" }));
-      } else {
-        const buf = value.data[i];
-        form.append(`data-${i}`, Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength));
-      }
+      this.platform.appendToForm(i, form, value);
     }
   }
+
+  /** @internal */
+  public static platform = {
+    createStream(_value: RpcSerializedValue): ReadableFormData {
+      throw new IModelError(BentleyStatus.ERROR, "Not bound.");
+    },
+    async parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue> {
+      throw new IModelError(BentleyStatus.ERROR, "Not bound.");
+    },
+    appendToForm(i: number, form: FormDataCommon, value: RpcSerializedValue): void {
+      form.append(`data-${i}`, new Blob([value.data[i]], { type: "application/octet-stream" }));
+    },
+  };
 }
+

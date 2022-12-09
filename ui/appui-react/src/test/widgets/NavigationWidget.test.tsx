@@ -41,7 +41,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
     before(async () => {
       await NoRenderApp.startup();
       await TestUtils.initializeUiFramework();
-      UiFramework.setUiVersion("1");
+      UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
     });
 
@@ -50,7 +50,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
       await IModelApp.shutdown();
     });
 
-    const widgetProps: AnyWidgetProps = {
+    const widgetProps: AnyWidgetProps = { // eslint-disable-line deprecation/deprecation
       id: "navigationWidget",
       classId: "NavigationWidget",
       defaultState: WidgetState.Open,
@@ -58,8 +58,8 @@ describe("NavigationWidget localStorage Wrapper", () => {
       iconSpec: "icon-home",
       labelKey: "SampleApp:Test.my-label",
       navigationAidId: "StandardRotationNavigationAid",
-      horizontalDirection: Direction.Top,
-      verticalDirection: Direction.Left,
+      horizontalDirection: Direction.Top, // eslint-disable-line deprecation/deprecation
+      verticalDirection: Direction.Left, // eslint-disable-line deprecation/deprecation
     };
 
     it("NavigationWidgetDef from WidgetProps", () => {
@@ -77,22 +77,26 @@ describe("NavigationWidget localStorage Wrapper", () => {
     });
 
     const horizontalToolbar =
-      <Toolbar
-        expandsTo={Direction.Bottom}
+      <Toolbar // eslint-disable-line deprecation/deprecation
+        expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={
           <>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
           </>
         }
       />;
 
     const verticalToolbar =
-      <Toolbar
-        expandsTo={Direction.Left}
+      <Toolbar // eslint-disable-line deprecation/deprecation
+        expandsTo={Direction.Left} // eslint-disable-line deprecation/deprecation
         items={
           <>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
           </>
         }
@@ -101,6 +105,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
     it("NavigationWidget should render", async () => {
       mount(
         <Provider store={TestUtils.store} >
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <FrameworkVersion>
             <NavigationWidget // eslint-disable-line deprecation/deprecation
               horizontalToolbar={horizontalToolbar}
@@ -114,6 +119,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
     it("NavigationWidget should render correctly", async () => {
       shallow(
         <Provider store={TestUtils.store} >
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <FrameworkVersion>
             <NavigationWidget // eslint-disable-line deprecation/deprecation
               id="navigationWidget"
@@ -130,6 +136,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
       const vItemList = new ItemList([CoreTools.fitViewCommand]);
       mount(
         <Provider store={TestUtils.store} >
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <FrameworkVersion>
             <NavigationWidget // eslint-disable-line deprecation/deprecation
               horizontalItems={hItemList}
@@ -147,11 +154,11 @@ describe("NavigationWidget localStorage Wrapper", () => {
           verticalToolbar={verticalToolbar}
         />,
       );
-      expect(wrapper.find(ToolButton).length).to.eq(4);
+      expect(wrapper.find(ToolButton).length).to.eq(4); {/* eslint-disable-line deprecation/deprecation */}
 
       wrapper.setProps({ verticalToolbar: undefined });
       wrapper.update();
-      expect(wrapper.find(ToolButton).length).to.eq(2);
+      expect(wrapper.find(ToolButton).length).to.eq(2); {/* eslint-disable-line deprecation/deprecation */}
     });
 
     class TestContentControl extends ContentControl {
@@ -199,12 +206,12 @@ describe("NavigationWidget localStorage Wrapper", () => {
     });
 
     it("NavigationAidHost should render in 2.0 mode",  async () => {
-      UiFramework.setUiVersion("2");
+      UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
 
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <NavigationAidHost />
           </FrameworkVersion>
         </Provider>);
@@ -214,7 +221,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
       UiShowHideManager.snapWidgetOpacity = true;
       mount(
         <Provider store={TestUtils.store} >
-          <FrameworkVersion>
+          <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <NavigationAidHost />
           </FrameworkVersion>
         </Provider>);

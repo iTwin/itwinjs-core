@@ -2,11 +2,11 @@
 
 exports[`<FooterIndicator /> renders correctly 1`] = `
 <div
-  className="nz-footer-indicator"
+  className="nz-footer-indicator nz-footer-mode"
 />
 `;
 
-exports[`<FooterIndicator /> renders correctly in footer mode 1`] = `
+exports[`<FooterIndicator /> renders correctly in footer mode (deprecated) 1`] = `
 <div
   className="nz-footer-indicator nz-footer-mode"
 />
@@ -14,20 +14,20 @@ exports[`<FooterIndicator /> renders correctly in footer mode 1`] = `
 
 exports[`<FooterIndicator /> renders correctly with additional class names 1`] = `
 <div
-  className="nz-footer-indicator test-class-name"
+  className="nz-footer-indicator nz-footer-mode test-class-name"
 />
 `;
 
 exports[`<FooterIndicator /> renders correctly with onClick function 1`] = `
 <div
-  className="nz-footer-indicator"
+  className="nz-footer-indicator nz-footer-mode"
   onClick={[Function]}
 />
 `;
 
 exports[`<FooterIndicator /> renders correctly with title 1`] = `
 <div
-  className="nz-footer-indicator"
+  className="nz-footer-indicator nz-footer-mode"
   title="Title test"
 />
 `;

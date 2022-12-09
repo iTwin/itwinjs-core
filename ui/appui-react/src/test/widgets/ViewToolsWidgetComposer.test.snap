@@ -2,7 +2,7 @@
 
 exports[`ViewToolWidgetComposer ViewToolWidgetComposer should render correctly 1`] = `
 <NavigationWidgetComposer
-  className="nz-hidden"
+  className=""
   horizontalToolbar={
     <ToolbarComposer
       items={Array []}
@@ -22,7 +22,7 @@ exports[`ViewToolWidgetComposer ViewToolWidgetComposer should render correctly 1
 
 exports[`ViewToolWidgetComposer ViewToolWidgetComposer with no navigation aid should render correctly 1`] = `
 <NavigationWidgetComposer
-  className="nz-hidden"
+  className=""
   hideNavigationAid={true}
   horizontalToolbar={
     <ToolbarComposer

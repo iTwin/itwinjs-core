@@ -5,8 +5,9 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, PanelStateContext, PinToggle } from "../../appui-layout-react";
+import { createNineZoneState, NineZoneDispatch, PanelStateContext, PinToggle } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
+import { updatePanelState } from "../../appui-layout-react/state/internal/PanelStateHelpers";
 
 describe("PinToggle", () => {
   it("should render", () => {
@@ -22,12 +23,9 @@ describe("PinToggle", () => {
   });
 
   it("should render with `pin panel` title", () => {
-    const nineZone = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          pinned: false,
-        }),
-      }),
+    let nineZone = createNineZoneState();
+    nineZone = updatePanelState(nineZone, "left", {
+      pinned: false,
     });
     const { container } = render(
       <TestNineZoneProvider
@@ -53,8 +51,7 @@ describe("PinToggle", () => {
       </TestNineZoneProvider>
     );
     const toggle = container.getElementsByClassName("nz-widget-pinToggle")[0];
-    const icon = toggle.firstElementChild!;
-    Array.from(icon.classList.values()).should.contain("icon-chevron-down");
+    Array.from(toggle.classList.values()).should.contain("nz-is-pinned");
   });
 
   it("should dispatch PANEL_TOGGLE_PINNED", () => {

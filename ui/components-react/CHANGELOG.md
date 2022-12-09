@@ -1,6 +1,334 @@
 # Change Log - @itwin/components-react
 
-This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+This log was last generated on Wed, 07 Dec 2022 19:12:36 GMT and should not be manually modified.
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:36 GMT
+
+### Updates
+
+- Enabled virtualization in FilterBuilder property selector
+- Add ability to disable property selection in `PropertyFilterBuilder` component
+- Deprecating Table related components
+- Unpin classnames package
+- `ControlledTree`: Add ability to mark nodes as not selectable
+- Use --buic-toolbar-opacity to set the opacity of toolbar items.
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:50 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:57 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
+
+## 3.4.1
+Mon, 17 Oct 2022 20:06:51 GMT
+
+_Version update only_
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Fixed svg rendering when svg is provided as xml
+- Updated Node types declaration to support latest v16
+- Table: fix rows reloading when table is scrolled to the middle
+- Fix/Remove skipped tests
+- `MutableTreeModel`: Accept initial `TreeModel` in the constructor.
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+_Version update only_
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+_Version update only_
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+_Version update only_
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+### Updates
+
+- Updated desktop toolbar width and height to 40px
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Add ability to specify locale and format of Data and Time shown by timeline component.
+- Add children to render inside the node
+- Added 'PropertyFilterBuilder' component for building complex filters using properties list
+- Add support for undefined value in TypeConverter.
+- Avoid creating "NaN" string in numeric type converters.
+- Changed FloatTypeConverter and IntTypeConverter 'convertFromString' method to return 'undefined' if string is no a number.
+- Fix processing of widget container dragging to empty panel.
+- Update iTwinUI-react to 1.38.1
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:52 GMT
+
+_Version update only_
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+### Updates
+
+- Fix `useTreeModel` returning stale model for the given model source
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+_Version update only_
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items.
+- Update UI to new UX design to allow only 2 sections of widgets per panel.
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Add data attributes to identify item and its UI provider.
+- Update to itwinui-css version "0.44.0".
+- Update to @itwin/itwinui-react: 1.32.0
+- Update to latest itwinui-react.
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:01 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+### Updates
+
+- Use ToolbarAutoHidePopupContext to monitor widgets' authoidden state.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Update CustomNumberEditor to use size='small' itwinUi style.
+- rename to @itwin/components-react
+- remove ClientRequestContext and its subclasses
+- Removed SignIn component
+- Replace usage of I18N with generic Localization interface.
+- Update snapshots
+- Renamed an iModel's parent container to iTwin
+- Support for TypeDoc v0.22.7. Fix various broken docs links.
+- Refactored part of AccuDraw UI & Providing AccuDraw UI documentation
+- Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined.
+- Add missing public/beta types to the barrel file.
+- Updated recommendation for using Breadcrumbs from itwinui-react instead of deprecated Breadcrumb
+- Change `ControlledTree` to take `TreeModel` instead of `VisibleTreeNodes`.
+- Replace `useVisibleTreeNodes` with `useTreeModel` since consumers don't need to create `VisibleTreeNodes` anymore.
+- Rename `ControlledTreeProps.treeEvents` to `eventsHandler`.
+- Make `width` and `height` required props for `ControlledTree` and `TreeRenderer`.
+- Clean up deprecated Tree and Drag & Drop related APIs
+- Clean up deprecated FilteringInput and PropertyGrid props
+- Make `width` and `height` props required for `VirtualizedPropertyGrid` and `VirtualizedPropertyGridWithDataProvider`
+- Update CustomNumberEditor resetting of bad values.
+-  update immer to fix security warning
+- Deprecated Breadcrumb component
+- Deprecate and promote apis
+- Deprecate Table component.
+- Deprecate obsolete APIs. Publish beta APIs from last release.
+- Export BeDragDropContext
+- Upgraded itwinui-react to 1.16.2. Fixed editor sizes.
+- Remove files generated by bad merge
+- Make ToolbarPopupContext public so user can call closePanel from their popup panels.
+- Update props on iTwinUi-react Select so it works properly in auto-sized floating widgets.
+- Deprecated HorizontalTabs in ui-core. Removed older deprecated items. Updated NextVersion.md.
+- Update to latest itwinui-react
+- Clean up css for status bar entries to avoid unwanted text wrapping.
+- Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js
+- iTwinUI-react Table demo
+- Moved iTwinUI style overrides to ui-core from ui-framework
+- Rename ui directories to match new package names.
+- Remove native key handling in React editor components because it's not longer needed with React 17.
+- Add prop that prevents popup button panel from unmounting when closed.
+- Promote property grid related APIs
+- Update to React 17.
+- Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract.
+- Remove react 16 peer dependency.
+- Remove itwinUi css overrides.
+- UiFramework and UiIModelComponent initialize method no longer take localization argument, uses IModelApp.localization internally.
+- Replaced ui-core Slider with one from iTwinUi-react. 
+- Update to latest types/react package
+- Skip test causing CI job failures
+- Lock down and update version numbers so docs will build.
+
+## 2.19.28
+Wed, 12 Jan 2022 14:52:38 GMT
+
+_Version update only_
+
+## 2.19.27
+Wed, 05 Jan 2022 20:07:20 GMT
+
+_Version update only_
+
+## 2.19.26
+Wed, 08 Dec 2021 20:54:53 GMT
+
+_Version update only_
+
+## 2.19.25
+Fri, 03 Dec 2021 20:05:49 GMT
+
+_Version update only_
+
+## 2.19.24
+Mon, 29 Nov 2021 18:44:31 GMT
+
+_Version update only_
+
+## 2.19.23
+Mon, 22 Nov 2021 20:41:40 GMT
+
+_Version update only_
+
+## 2.19.22
+Wed, 17 Nov 2021 01:23:26 GMT
+
+_Version update only_
+
+## 2.19.21
+Wed, 10 Nov 2021 10:58:24 GMT
+
+_Version update only_
+
+## 2.19.20
+Fri, 29 Oct 2021 16:14:22 GMT
+
+_Version update only_
+
+## 2.19.19
+Mon, 25 Oct 2021 16:16:25 GMT
+
+_Version update only_
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+_Version update only_
+
+## 2.19.17
+Thu, 14 Oct 2021 21:19:43 GMT
+
+_Version update only_
+
+## 2.19.16
+Mon, 11 Oct 2021 17:37:46 GMT
+
+_Version update only_
+
+## 2.19.15
+Fri, 08 Oct 2021 16:44:23 GMT
+
+_Version update only_
+
+## 2.19.14
+Fri, 01 Oct 2021 13:07:03 GMT
+
+_Version update only_
 
 ## 2.19.13
 Tue, 21 Sep 2021 21:06:40 GMT
@@ -220,7 +548,7 @@ Mon, 24 May 2021 15:58:39 GMT
 - Improved Multi-Value column filtering in the Table component
 - Move `VirtualizedPropertyGrid` related types from @alpha to @beta.
 - Fixed getting distinct values when Table rows are updated
-- Update to latest classnames package
+- Update to latest classnames package 
 
 ## 2.15.6
 Wed, 26 May 2021 15:55:19 GMT
@@ -686,7 +1014,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Fix toolbar overflow panel display.
-- Update to only show group separators if toolbar is not transparent.
+- Update to only show group separators if toolbar is not transparent. 
 - Fix toolbar error when scaling up UI.
 - Property grid horizontal layout updated according to UX requirements.
 - Fixed Table filter renderers after react-select version upgrade
@@ -1158,7 +1486,7 @@ Wed, 19 Dec 2018 18:26:14 GMT
 - Added DragDrop tests, added component withDragDrop HOC tests
 - Synchronizing navigation aids with view definition changes
 - Simplified property pane tooltips and improved Property Pane performance.
-- Simplified struct and array tooltips in Table component.
+- Simplified struct and array tooltips in Table component. 
 - Fix BeInspireTree's event listening functions to handle array inputs
 - Fix BeInspireTree's muting events with allowed number of triggers
 - Cache BeInspireTree.visible() result for better performance
@@ -1288,7 +1616,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it.
+- Deprecated dev-cors-proxy-server and use of it. 
 - Fix: Do not start search if input field is empty
 - Use strongly typed enums for identifying keyboard keys
 - PropertyGrid property editing and unit tests

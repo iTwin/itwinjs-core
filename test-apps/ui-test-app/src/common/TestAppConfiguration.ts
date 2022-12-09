@@ -11,6 +11,10 @@ export interface TestAppConfiguration {
   bingMapsKey?: string;
   mapBoxKey?: string;
   cesiumIonKey?: string;
+
+  // ArcGis OAuth2 configuration
+  arcGisOnlineClientId?: string;
+  arcGisEnterpriseBaseUrl?: string;
 }
 
 export const loggerCategory = "ui-test-app";

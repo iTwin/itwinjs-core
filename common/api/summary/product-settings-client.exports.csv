@@ -1,7 +1,0 @@
-sep=;
-Release Tag;API Item
-internal;ConnectSettingsClient 
-beta;SettingsAdmin
-beta;SettingsMapResult
-beta;SettingsResult
-beta;SettingsStatus

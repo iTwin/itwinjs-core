@@ -8,10 +8,11 @@ process.env.NODE_ENV = "prod";
 
 const paths = require("./config/paths");
 const path = require("path");
-const cpx = require("cpx");
+const cpx = require("cpx2");
 const fs = require("fs");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 const { validateTags } = require("./utils/validateTags");
+const { addSourceDir } = require("./utils/addSourceDir");
 const argv = require("yargs").argv;
 
 // Makes the script crash on unhandled rejections instead of silently
@@ -26,7 +27,6 @@ const out = (argv.out === undefined) ? paths.appDocs : argv.out;
 const json = (argv.json === undefined) ? paths.appJsonDocs : argv.json;
 
 const baseUrlOptions = (argv.baseUrl === undefined) ? [] : ["--baseUrl", argv.baseUrl];
-console.log("Input: " + argv)
 const includeOptions = (argv.includes === undefined) ? [] : ["--includes", argv.includes];
 
 let excludeList = "**/node_modules/**/*,**/*test*/**/*";
@@ -34,6 +34,10 @@ if (argv.excludes !== undefined)
   excludeList += ",**/" + argv.excludes + "/**/*";
 if (argv.excludeGlob !== undefined)
   excludeList += "," + argv.excludeGlob;
+
+excludeList = excludeList.replace(/,/g, ',--exclude,')
+const excludeArray = excludeList.split(",");
+excludeArray.unshift("--exclude");
 
 let outputOptions = [
   "--json", json
@@ -46,11 +50,14 @@ const readmeOption = (argv.readme === undefined) ? "none" : argv.readme;
 
 const options = [
   "--excludePrivate",
-  "--experimentalDecorators",
-  "--excludeExternals",
-  "--excludeNotExported",
-  "--ignoreCompilerErrors",
   "--hideGenerator",
+  "--logLevel",
+  "Error"
+];
+
+const pluginOptions = [
+  "--plugin", "typedoc-plugin-merge-modules",
+  "--mergeModulesMergeMode", "module",
 ];
 
 if (argv.name) options.push("--name", argv.name);
@@ -58,16 +65,12 @@ if (argv.name) options.push("--name", argv.name);
 if (argv.theme) options.push("--theme", argv.theme);
 
 const args = [
-  path.resolve(process.cwd(), source),
+  "--entryPointStrategy", "expand", path.resolve(process.cwd(), source),
   ...options,
-  "--exclude", [excludeList],
+  ...excludeArray,
   ...outputOptions,
-  "--mode", "modules",
   "--readme", readmeOption,
-  "--module", "commonjs",
-  "--plugin", "typedoc-plugin-external-module-name,typedoc-plugin-internal-external",
-  "--external-aliases", "alpha,internal",
-  "--internal-aliases", "UNUSED",
+  ...pluginOptions,
   ...baseUrlOptions,
   ...includeOptions
 ];
@@ -85,6 +88,9 @@ spawn(require.resolve(".bin/typedoc"), args).then((code) => {
   if (fs.existsSync(path.join(process.cwd(), 'CHANGELOG.json'))) {
     cpx.copySync(path.join(process.cwd(), 'CHANGELOG.json'), outputDir);
   }
+
+  // Append the directory of the package to the output
+  addSourceDir(json, process.cwd());
 
   if (code === 0) {
     let tagErrors = validateTags(json);

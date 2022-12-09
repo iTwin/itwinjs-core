@@ -28,7 +28,7 @@ describe("Vertex buffer objects", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -96,7 +96,7 @@ describe("RenderTarget", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -221,13 +221,13 @@ describe("RenderTarget", () => {
   });
 
   it("should read image at expected sizes", async () => {
-    // NOTE: rect is in CSS pixels. ImageBuffer returned by readImage is in device pixels. vp.target.viewRect is in device pixels.
+    // NOTE: rect is in CSS pixels. ImageBuffer returned by readImageBuffer is in device pixels. vp.target.viewRect is in device pixels.
     const cssRect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, cssRect, async (vp) => {
       await vp.waitForAllTilesToRender();
 
       const expectImageDimensions = (readRect: ViewRect | undefined, targetSize: Point2d | undefined, expectedWidth: number, expectedHeight: number) => {
-        const img = vp.readImage(readRect, targetSize)!;
+        const img = vp.readImageBuffer({ rect: readRect, size: targetSize })!;
         expect(img).not.to.be.undefined;
         expect(img.width).to.equal(Math.floor(expectedWidth));
         expect(img.height).to.equal(Math.floor(expectedHeight));
@@ -237,7 +237,6 @@ describe("RenderTarget", () => {
 
       // Read full image, no resize
       expectImageDimensions(undefined, undefined, devRect.width, devRect.height);
-      expectImageDimensions(new ViewRect(0, 0, -1, -1), undefined, devRect.width, devRect.height);
       expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
 
       // Read sub-image, no resize
@@ -251,7 +250,7 @@ describe("RenderTarget", () => {
 
       // Read full image and resize
       expectImageDimensions(undefined, new Point2d(256, 128), 256, 128);
-      expectImageDimensions(new ViewRect(0, 0, -1, -1), new Point2d(50, 200), 50, 200);
+      expectImageDimensions(undefined, new Point2d(50, 200), 50, 200);
       expectImageDimensions(cssRect, new Point2d(10, 10), 10, 10);
       expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
 
@@ -260,7 +259,7 @@ describe("RenderTarget", () => {
     });
   });
 
-  it("should override symbology", async () => {
+  it.skip("should override symbology", async () => { // flaky test #4420
     const rect = new ViewRect(0, 0, 200, 150);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       const elemId = "0x29";
@@ -292,7 +291,7 @@ describe("RenderTarget", () => {
       expect(pixels.length).to.equal(1);
 
       // Specify element is nonLocatable
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromJSON({ nonLocatable: true }));
+      ovrProvider.ovrFunc = (ovrs) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromJSON({ nonLocatable: true }) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       pixels = vp.readUniquePixelData(undefined, true); // Exclude non-locatable elements
@@ -303,7 +302,7 @@ describe("RenderTarget", () => {
       expect(pixels.containsElement(elemId)).to.be.true;
 
       // Specify element is drawn blue
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.blue));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.blue) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -321,7 +320,7 @@ describe("RenderTarget", () => {
       // Specify default overrides, but also override element color
       ovrProvider.ovrFunc = (ovrs, _) => {
         ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.green));
-        ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.create(0x7f0000))); // blue = 0x7f...
+        ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.create(0x7f0000)) }); // blue = 0x7f...
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -331,7 +330,7 @@ describe("RenderTarget", () => {
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.false;
 
       // Override by subcategory
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideSubCategory(subcatId, FeatureAppearance.fromRgb(ColorDef.red));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ subCategoryId: subcatId, appearance: FeatureAppearance.fromRgb(ColorDef.red) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -339,8 +338,8 @@ describe("RenderTarget", () => {
 
       // Override color for element and subcategory - element wins
       ovrProvider.ovrFunc = (ovrs, _) => {
-        ovrs.overrideSubCategory(subcatId, FeatureAppearance.fromRgb(ColorDef.blue));
-        ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.red));
+        ovrs.override({ subCategoryId: subcatId, appearance: FeatureAppearance.fromRgb(ColorDef.blue) });
+        ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.red) });
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -348,7 +347,7 @@ describe("RenderTarget", () => {
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.true;
 
       // Override to be fully transparent - element should not draw at all
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromTransparency(1.0));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromTransparency(1.0) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -362,7 +361,7 @@ describe("RenderTarget", () => {
       // Set bg color to red, elem color to 50% transparent blue => expect blending
       vp.view.displayStyle.backgroundColor = ColorDef.red;
       vp.invalidateRenderPlan();
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -376,7 +375,7 @@ describe("RenderTarget", () => {
           expect(c.g).to.equal(0);
           expect(c.b).least(0x70);
           expect(c.b).most(0x90);
-          expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImage()
+          expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImageBuffer()
         }
       }
     });
@@ -525,7 +524,7 @@ describe("RenderTarget", () => {
       IModelApp.viewManager.dropDecorator(decorator);
 
       // expect green blended with black background
-      const testColor = vp.readColor(0, 149); // top left pixel, test vp coords are flipped
+      const testColor = vp.readColor(0, 0); // top left pixel
       expect(testColor.r).equals(0);
       expect(testColor.g).approximately(128, 3);
       expect(testColor.b).equals(0);

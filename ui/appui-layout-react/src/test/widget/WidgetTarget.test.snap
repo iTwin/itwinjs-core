@@ -1,5 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`WidgetTarget should render first targeted 1`] = `
+<div
+  class="nz-widget-widgetTarget nz-hidden nz-targeted nz-left nz-first"
+/>
+`;
+
+exports[`WidgetTarget should render last targeted 1`] = `
+<div
+  class="nz-widget-widgetTarget nz-hidden nz-targeted nz-left nz-last"
+/>
+`;
+
 exports[`WidgetTarget should render targeted 1`] = `
 <div
   class="nz-widget-widgetTarget nz-hidden nz-targeted nz-left"

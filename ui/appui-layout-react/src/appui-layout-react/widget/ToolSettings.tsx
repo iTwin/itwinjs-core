@@ -17,12 +17,12 @@ import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "./rectangular
 import { ResizeHandle } from "./Stacked";
 
 /** Properties of [[ToolSettings]] component.
- * @beta
+ * @internal
  */
 export interface ToolSettingsProps extends CommonProps {
   /** Title bar buttons. I.e. [[TitleBarButton]] */
   buttons?: React.ReactNode;
-  /** Tool settings content or content container. I.e. [[NestedToolSettings]], [[ScrollableToolSettings]] */
+  /** Tool settings content. */
   children?: React.ReactNode;
   /** Content ref of this widget. */
   contentRef?: React.Ref<HTMLDivElement>;
@@ -50,7 +50,7 @@ export interface ToolSettingsProps extends CommonProps {
 
 /** Tool settings widget is used to display Tool Settings and Tool Assistance (in Zone 2 of 9-Zone UI).
  * @note Should be placed in [[Zone]] component.
- * @beta
+ * @internal
  */
 export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
   private _widget = React.createRef<HTMLDivElement>();

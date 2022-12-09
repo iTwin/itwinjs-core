@@ -6,7 +6,7 @@
  * @module Tiles
  */
 import { assert } from "@itwin/core-bentley";
-import { IModelStatus, MapLayerSettings, ServerError } from "@itwin/core-common";
+import { ImageMapLayerSettings, IModelStatus, ServerError } from "@itwin/core-common";
 import {
   ImageryMapTile,
   MapLayerImageryProvider,
@@ -26,7 +26,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
 
   public override get mutualExclusiveSubLayer(): boolean { return true; }
 
-  constructor(settings: MapLayerSettings) {
+  constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
     this._baseUrl = WmsUtilities.getBaseUrl(this._settings.url);
   }
@@ -66,12 +66,12 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   // We have to pick one for each layer: for now we look for a Google Maps compatible tile tree.
   private initPreferredTileMatrixSet() {
     const googleMapsTms = this._capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
-    const wellGoogleKnownTms = googleMapsTms?.find((tms) => { return tms.wellKnownScaleSet?.toLowerCase().includes(WmtsCapability.Constants.GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME); });
+    const wellGoogleKnownTms = googleMapsTms?.find((tms) => tms.wellKnownScaleSet?.toLowerCase().includes(WmtsCapability.Constants.GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME));
 
     this._capabilities?.contents?.layers.forEach((layer) => {
       let preferredTms: WmtsCapability.TileMatrixSet | undefined;
 
-      if (wellGoogleKnownTms && layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === wellGoogleKnownTms.identifier); })) {
+      if (wellGoogleKnownTms && layer.tileMatrixSetLinks.some((tmsl) => tmsl.tileMatrixSet === wellGoogleKnownTms.identifier)) {
         // Favor tile matrix set that was explicitly marked as GoogleMaps compatible
         preferredTms =  wellGoogleKnownTms;
       } else {
@@ -79,13 +79,13 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
         // Search all compatible tile set matrix if previous attempt didn't work.
         // If more than one candidate is found, pick the tile set with the most LODs.
         let tileMatrixSets = googleMapsTms?.filter((tms) => {
-          return layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === tms.identifier); });
+          return layer.tileMatrixSetLinks.some((tmsl) => tmsl.tileMatrixSet === tms.identifier);
         });
 
         if (!tileMatrixSets || tileMatrixSets.length === 0) {
           const eps4326CompatibleTms = this._capabilities?.contents?.getEpsg4326CompatibleTileMatrixSet();
           tileMatrixSets = eps4326CompatibleTms?.filter((tms) => {
-            return layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === tms.identifier); });
+            return layer.tileMatrixSetLinks.some((tmsl) => tmsl.tileMatrixSet === tms.identifier);
           });
         }
 

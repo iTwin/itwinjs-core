@@ -15,7 +15,7 @@ import {
   Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions,
   ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition,
   Node, NodeKey, NodePathElement, Paged, PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo,
   SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
@@ -450,6 +450,29 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getNodes(options);
       expect(actualResult).to.deep.eq(result);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("requests localized root nodes from proxy", async () => {
+      i18nMock.reset();
+      i18nMock.setup((x) => x.getLocalizedString("EN:LocalizableString", moq.It.isAny())).returns(() =>  "LocalizedString");
+      const prelocalizedNode = [createRandomECInstancesNode({ label: { rawValue: "@EN:LocalizableString@", displayValue: "@EN:LocalizableString@", typeName: "string" } })];
+      const options: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        paging: testData.pageOptions,
+        parentKey: undefined,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getPagedNodes(prepareOptions(options)))
+        .returns(async () => ({ total: 666, items: prelocalizedNode.map(Node.toJSON) }))
+        .verifiable();
+
+      const actualResult = await manager.getNodes(options);
+      const expectedResult = prelocalizedNode;
+      expectedResult[0].label.rawValue = "LocalizedString";
+      expectedResult[0].label.displayValue = "LocalizedString";
+      expect(actualResult).to.deep.eq(expectedResult);
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -993,64 +1016,6 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock.verifyAll();
     });
 
-    it("requests multiple elements properties", async () => {
-      const elementClasses = ["TestSchema:TestClass"];
-      const result = {
-        total: 1,
-        items: [{
-          class: "test class",
-          id: "0x1",
-          label: "test label",
-          items: {},
-        }],
-      };
-      const options: MultiElementPropertiesRequestOptions<IModelConnection> = {
-        imodel: testData.imodelMock.object,
-        elementClasses,
-        paging: { start: 0, size: 0 },
-      };
-      rpcRequestsHandlerMock
-        .setup(async (x) => x.getElementProperties(toIModelTokenOptions(options)))
-        .returns(async () => result)
-        .verifiable();
-      const actualResult = await manager.getElementProperties(options);
-      expect(actualResult).to.deep.eq(result);
-      rpcRequestsHandlerMock.verifyAll();
-    });
-
-    it("requests multiple elements properties through multiple requests when getting partial responses", async () => {
-      const elementClasses = ["TestSchema:TestClass"];
-      const element1: ElementProperties = {
-        class: "test class",
-        id: "0x1",
-        label: "test label",
-        items: {},
-      };
-      const element2: ElementProperties = {
-        class: "test class",
-        id: "0x2",
-        label: "test label 2",
-        items: {},
-      };
-      const managerOptions: MultiElementPropertiesRequestOptions<IModelConnection> = {
-        imodel: testData.imodelMock.object,
-        elementClasses,
-        paging: undefined,
-      };
-      const rpcHandlerOptions = toIModelTokenOptions(managerOptions);
-      rpcRequestsHandlerMock
-        .setup(async (x) => x.getElementProperties({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
-        .returns(async () => ({ total: 2, items: [element1] }))
-        .verifiable();
-      rpcRequestsHandlerMock
-        .setup(async (x) => x.getElementProperties({ ...rpcHandlerOptions, paging: { start: 1, size: 0 } }))
-        .returns(async () => ({ total: 2, items: [element2] }))
-        .verifiable();
-      const actualResult = await manager.getElementProperties(managerOptions);
-      rpcRequestsHandlerMock.verifyAll();
-      expect(actualResult).to.deep.eq({ total: 2, items: [element1, element2] });
-    });
-
   });
 
   describe("getContentInstanceKeys", () => {
@@ -1398,6 +1363,17 @@ describe("PresentationManager", () => {
       const result = await buildPagedArrayResponse({ start: 1 }, getter);
       expect(getter).to.be.calledOnce;
       expect(getter).to.be.calledWith({ start: 1, size: 0 });
+      expect(result).to.deep.eq({ total: 0, items: [] });
+    });
+
+    it("returns zero response when partial request returns less items than requested", async () => {
+      const getter = sinon.stub();
+      getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
+      getter.onSecondCall().resolves({ total: 5, items: [] });
+      const result = await buildPagedArrayResponse({ start: 1 }, getter);
+      expect(getter).to.be.calledTwice;
+      expect(getter.firstCall).to.be.calledWith({ start: 1, size: 0 });
+      expect(getter.secondCall).to.be.calledWith({ start: 3, size: 0 });
       expect(result).to.deep.eq({ total: 0, items: [] });
     });
 

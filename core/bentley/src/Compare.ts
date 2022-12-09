@@ -8,7 +8,7 @@
 
 /**
  * A function that returns a numerical value indicating how two objects are ordered in relation to one another.
- * Such functions are used by various collection classes in the iModel.js library.
+ * Such functions are used by various collection classes throughout the library.
  * Given values `lhs` and `rhs`, the function returns:
  *  - Zero if lhs == rhs
  *  - A negative number if lhs < rhs
@@ -42,13 +42,19 @@ export function compareWithTolerance(a: number, b: number, tolerance = 0.1): num
 }
 
 /** @public */
-export function compareNumbers(a: number, b: number): number { return a - b; }
+export function compareNumbers(a: number, b: number): number {
+  return a - b;
+}
 
 /** @public */
-export function compareBooleans(a: boolean, b: boolean): number { return a !== b ? (a < b ? -1 : 1) : 0; }
+export function compareBooleans(a: boolean, b: boolean): number {
+  return a !== b ? (a < b ? -1 : 1) : 0;
+}
 
 /** @public */
-export function compareStrings(a: string, b: string): number { return a === b ? 0 : (a < b ? -1 : 1); }
+export function compareStrings(a: string, b: string): number {
+  return a === b ? 0 : (a < b ? -1 : 1);
+}
 
 /** @public */
 export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number {
@@ -61,13 +67,19 @@ export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => 
 }
 
 /** @public */
-export function compareStringsOrUndefined(lhs?: string, rhs?: string): number { return comparePossiblyUndefined(compareStrings, lhs, rhs); }
+export function compareStringsOrUndefined(lhs?: string, rhs?: string): number {
+  return comparePossiblyUndefined(compareStrings, lhs, rhs);
+}
 
 /** @public */
-export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number { return comparePossiblyUndefined(compareNumbers, lhs, rhs); }
+export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number {
+  return comparePossiblyUndefined(compareNumbers, lhs, rhs);
+}
 
 /** @public */
-export function compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number { return comparePossiblyUndefined(compareBooleans, lhs, rhs); }
+export function compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number {
+  return comparePossiblyUndefined(compareBooleans, lhs, rhs);
+}
 
 /** Compare two possibly-undefined values for equality. If both are undefined, the comparison is performed by the supplied `areEqual` function.
  * @public

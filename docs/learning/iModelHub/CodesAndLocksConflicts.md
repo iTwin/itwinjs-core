@@ -14,7 +14,7 @@ When sending update requests for [HubCode]($clients)s and [Lock]($clients)s (joi
 
 [IModelHubStatus.CodeDoesNotExist]($bentley) or [IModelHubStatus.LockDoesNotExist]($bentley) can occur when trying to send request with [ChangeState]($clients) modified for resources that do not exist.
 
-[IModelHubStatus.PullIsRequired]($bentley) can occur when a Lock requires user to have a newer [ChangeSet]($clients) merged into their Briefcase file. It can also occur if user didn't set their current ChangeSet id in the request.
+[IModelHubStatus.PullIsRequired]($bentley) can occur when a Lock requires user to have a newer [Changeset]($clients) merged into their Briefcase file. It can also occur if user didn't set their current Changeset id in the request.
 
 [IModelHubStatus.CodeStateInvalid]($bentley) can occur when a Code with [CodeState.Retired]($clients) is being updated to [CodeState.Reserved]($clients) or [CodeState.Used]($clients). It has to be updated to [CodeState.Available]($clients) first.
 

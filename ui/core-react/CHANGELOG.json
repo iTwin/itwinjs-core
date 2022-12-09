@@ -2,6 +2,510 @@
   "name": "@itwin/core-react",
   "entries": [
     {
+      "version": "3.5.0",
+      "tag": "@itwin/core-react_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Unpin classnames package, fix invalid use of classnames"
+          },
+          {
+            "comment": "Change core-dialog-hidden class so that modeless dialogs will be compatible with iTwinUI components."
+          },
+          {
+            "comment": "Use --buic-toolbar-opacity to set the opacity of toolbar items."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.7",
+      "tag": "@itwin/core-react_v3.4.7",
+      "date": "Wed, 30 Nov 2022 14:28:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.6",
+      "tag": "@itwin/core-react_v3.4.6",
+      "date": "Tue, 22 Nov 2022 14:24:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.5",
+      "tag": "@itwin/core-react_v3.4.5",
+      "date": "Thu, 17 Nov 2022 21:32:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.4",
+      "tag": "@itwin/core-react_v3.4.4",
+      "date": "Thu, 10 Nov 2022 19:32:17 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.3",
+      "tag": "@itwin/core-react_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.2",
+      "tag": "@itwin/core-react_v3.4.2",
+      "date": "Mon, 24 Oct 2022 13:23:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.1",
+      "tag": "@itwin/core-react_v3.4.1",
+      "date": "Mon, 17 Oct 2022 20:06:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.0",
+      "tag": "@itwin/core-react_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added data uri handling for svg components"
+          },
+          {
+            "comment": "Updated Node types declaration to support latest v16"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.5",
+      "tag": "@itwin/core-react_v3.3.5",
+      "date": "Tue, 27 Sep 2022 11:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.4",
+      "tag": "@itwin/core-react_v3.3.4",
+      "date": "Thu, 08 Sep 2022 19:00:05 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.3",
+      "tag": "@itwin/core-react_v3.3.3",
+      "date": "Tue, 06 Sep 2022 20:54:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.2",
+      "tag": "@itwin/core-react_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/core-react_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/core-react_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Fix svg-loader to only fetch svg data once. Also update buic-background-panel to use buic-background-1 so disabled itwin-ui components are properly displayed."
+          },
+          {
+            "comment": "Add drop-target stacking context layer."
+          },
+          {
+            "comment": "Update iTwinUI-react to 1.38.1"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/core-react_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/core-react_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.7",
+      "tag": "@itwin/core-react_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@itwin/core-react_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.5",
+      "tag": "@itwin/core-react_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added a 'repositionOnResize' property on the 'Popup' component, to avoid closing the popup everythime the browser window is resized."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.4",
+      "tag": "@itwin/core-react_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.3",
+      "tag": "@itwin/core-react_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.2",
+      "tag": "@itwin/core-react_v3.2.2",
+      "date": "Fri, 10 Jun 2022 16:11:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.1",
+      "tag": "@itwin/core-react_v3.2.1",
+      "date": "Tue, 07 Jun 2022 15:02:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Backport change to update panel background to use same as buic-background-dialog so dispabled itwin ui components display properly."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.0",
+      "tag": "@itwin/core-react_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added 'useCrossOriginPopup' and 'useInterval' hooks"
+          },
+          {
+            "comment": "ListBox component: `onKeyPress` has been deprecated, switch to `onKeyDown`"
+          },
+          {
+            "comment": "Fix for losing viewport content after clicking PW link "
+          },
+          {
+            "comment": "Implement svg icons loading as a web component."
+          },
+          {
+            "comment": "Allow React icons to be used on Wedget tabs, backstage, and status bar items"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/core-react_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/core-react_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/core-react_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/core-react_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to keep Dialog within application window."
+          },
+          {
+            "comment": "Update to itwinui-css version \"0.44.0\"."
+          },
+          {
+            "comment": "Update to @itwin/itwinui-react: 1.32.0"
+          },
+          {
+            "comment": "Update to latest itwinui-react - requires new compile option allowSyntheticDefaultImports=true."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/core-react_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/core-react_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/core-react_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "`TreeNode`: Fix checkbox propagating click events to the parent element, resulting in unexpected TreeNodeProps.onClick invocations."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/core-react_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update NumberInput to select on focus and to capture Enter key"
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "rename to @itwin/core-react"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "Update snapshots"
+          },
+          {
+            "comment": "Fix Select menu position when redered in a Popup."
+          },
+          {
+            "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links."
+          },
+          {
+            "comment": "Deprecate obsolete code."
+          },
+          {
+            "comment": "Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined."
+          },
+          {
+            "comment": "Add missing public/beta types to the barrel file."
+          },
+          {
+            "comment": "Fix infinite loop crash in ContextMenu when the menu is too large to fit in the parent window."
+          },
+          {
+            "comment": "Fix issue with PopupContextMenu not closing when click occurs in a parent popup."
+          },
+          {
+            "comment": "Deprecate and promote apis"
+          },
+          {
+            "comment": "Deprecate obsolete APIs. Publish beta APIs from last release."
+          },
+          {
+            "comment": "Upgraded itwinui-react to 1.16.2. Fixed editor sizes."
+          },
+          {
+            "comment": "Fixed small ExpandableBlock padding"
+          },
+          {
+            "comment": "Remove files generated by bad merge"
+          },
+          {
+            "comment": "Update disabled styling for NumberInput."
+          },
+          {
+            "comment": "Update styling on some status field items for better popup alignment."
+          },
+          {
+            "comment": "Update IconComponent SCSS to ensure color for inline svg is set."
+          },
+          {
+            "comment": "Allow size of NumberInput container to be sized via a style prop."
+          },
+          {
+            "comment": "Deprecated HorizontalTabs in ui-core. Removed older deprecated items. Updated NextVersion.md."
+          },
+          {
+            "comment": "Update to latest itwinui-react"
+          },
+          {
+            "comment": "Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js"
+          },
+          {
+            "comment": "Moved iTwinUI style overrides to ui-core from ui-framework"
+          },
+          {
+            "comment": "Rename ui directories to match new package names."
+          },
+          {
+            "comment": "Fix bug that sets the icon on MessageBox.NoSymbol the Success icon."
+          },
+          {
+            "comment": "Add prop that prevents popup children from unmounting when popup is closed."
+          },
+          {
+            "comment": "Update to React 17."
+          },
+          {
+            "comment": "Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract."
+          },
+          {
+            "comment": "Remove react 16 peer dependency."
+          },
+          {
+            "comment": "Remove itwinUi css overrides."
+          },
+          {
+            "comment": "UiFramework and UiIModelComponent initialize method no longer take localization argument, uses IModelApp.localization internally."
+          },
+          {
+            "comment": "Fix vertical alignment of text in message box."
+          },
+          {
+            "comment": "Avoid error seen sometimes in Electron where resizeObserver.current is null."
+          },
+          {
+            "comment": "Fixed z-index of status messages to be on top of a dialog"
+          },
+          {
+            "comment": "Deprecated ui-core Slider. Wrapped with one from iTwinUi-react to remove dependency on react-compound-slider."
+          },
+          {
+            "comment": "Update to latest types/react package"
+          },
+          {
+            "comment": "Lock down and update version numbers so docs will build."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.28",
+      "tag": "@itwin/core-react_v2.19.28",
+      "date": "Wed, 12 Jan 2022 14:52:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.27",
+      "tag": "@itwin/core-react_v2.19.27",
+      "date": "Wed, 05 Jan 2022 20:07:20 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.26",
+      "tag": "@itwin/core-react_v2.19.26",
+      "date": "Wed, 08 Dec 2021 20:54:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.25",
+      "tag": "@itwin/core-react_v2.19.25",
+      "date": "Fri, 03 Dec 2021 20:05:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.24",
+      "tag": "@itwin/core-react_v2.19.24",
+      "date": "Mon, 29 Nov 2021 18:44:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.23",
+      "tag": "@itwin/core-react_v2.19.23",
+      "date": "Mon, 22 Nov 2021 20:41:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.22",
+      "tag": "@itwin/core-react_v2.19.22",
+      "date": "Wed, 17 Nov 2021 01:23:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.21",
+      "tag": "@itwin/core-react_v2.19.21",
+      "date": "Wed, 10 Nov 2021 10:58:24 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.20",
+      "tag": "@itwin/core-react_v2.19.20",
+      "date": "Fri, 29 Oct 2021 16:14:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.19",
+      "tag": "@itwin/core-react_v2.19.19",
+      "date": "Mon, 25 Oct 2021 16:16:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Drop unnecessary dep on @bentley/react-scripts; add a *.d.ts file for svg?sprite loader syntax"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.18",
+      "tag": "@itwin/core-react_v2.19.18",
+      "date": "Thu, 21 Oct 2021 20:59:44 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.17",
+      "tag": "@itwin/core-react_v2.19.17",
+      "date": "Thu, 14 Oct 2021 21:19:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.16",
+      "tag": "@itwin/core-react_v2.19.16",
+      "date": "Mon, 11 Oct 2021 17:37:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.15",
+      "tag": "@itwin/core-react_v2.19.15",
+      "date": "Fri, 08 Oct 2021 16:44:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.14",
+      "tag": "@itwin/core-react_v2.19.14",
+      "date": "Fri, 01 Oct 2021 13:07:03 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.13",
       "tag": "@itwin/core-react_v2.19.13",
       "date": "Tue, 21 Sep 2021 21:06:40 GMT",

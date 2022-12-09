@@ -5,24 +5,18 @@
 @import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
 @import "variables";
 
-@mixin hover-style {
-  background-color: $buic-accessory-primary;
-
-  >.nz-dot {
-    background-color: $buic-foreground-accessory;
-  }
-}
+$line-grip-translate: 1px;
+$full-bar-width: calc($nz-grip-width * 0.5);
+$handle-width: calc($nz-grip-width + 1px);
+$line-grip-width: calc($nz-grip-width - 2px);
 
 .nz-widgetPanels-grip {
-  $handle-length: 3em;
-  $handle-width: 1.5em;
-
-  background-color: $buic-background-5;
+  background-color: transparent;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
   position: relative;
   display: flex;
+  transition: background-color 0.2s ease-out;
 
   >.nz-handle {
     position: absolute;
@@ -31,60 +25,100 @@
     transform: translate(-50%, -50%);
   }
 
-  >.nz-dot {
-    $size: 0.25em;
-    width: $size;
-    height: $size;
-    border-radius: 50%;
-    background-color: $buic-foreground-disabled;
-  }
-
   &.nz-left,
   &.nz-right {
     flex-direction: column;
     cursor: ew-resize;
-    width: $nz-grip-width;
-    height: $nz-grip-height;
-
-    >.nz-dot {
-      &:not(:first-child) {
-        margin-top: 3px;
-      }
-    }
+    width: $full-bar-width;
+    height: 100%;
 
     >.nz-handle {
-      height: $handle-length;
+      height: 100%;
       width: $handle-width;
     }
   }
 
   &.nz-top,
   &.nz-bottom {
-    flex-direction: row;
     cursor: ns-resize;
-    width: $nz-grip-height;
-    height: $nz-grip-width;
-
-    >.nz-dot {
-      &:not(:first-child) {
-        margin-left: 3px;
-      }
-    }
+    width: 100%;
+    height: $full-bar-width;
 
     >.nz-handle {
       height: $handle-width;
-      width: $handle-length;
+      width: 100%;
     }
   }
 
-  @media (hover: hover) {
-    &:hover {
-      @include hover-style;
+  &:hover, &.nz-resizing {
+    background-color: $buic-foreground-primary;
+  }
+}
+
+.nz-line-grip {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease-out, height 0.2s ease-out, width 0.2s ease-out;
+
+  .nz-captured &, .nz-widgetPanels-grip.nz-resizing &,
+  .nz-collapsed .nz-widgetPanels-grip:hover & {
+    opacity: 0;
+    height: 100%;
+    width: 100%;
+    }
+
+  .nz-collapsed & {
+    display: flex;
+    background-color: $buic-background-5;
+    border: 1px solid $buic-text-color-muted;
+    border-radius: 999px;
+    box-sizing: border-box;
+    opacity: 1;
+  }
+
+  .nz-left & {
+    transform: translateX($line-grip-translate);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  .nz-right & {
+    transform: translateX(calc($line-grip-translate * -1));
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .nz-top & {
+    transform: translateY($line-grip-translate);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+  .nz-bottom & {
+    transform: translateY(calc($line-grip-translate * -1));
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .nz-left &, .nz-right & {
+    height: 20%;
+    width: $line-grip-width;
+
+    .nz-line-grip-detail {
+      width: 1px;
+      height: 70%;
     }
   }
 
-  &.nz-active,
-  &.nz-resizing {
-    @include hover-style;
+  .nz-top &, .nz-bottom & {
+    height: $line-grip-width;
+    width: 20%;
+
+    .nz-line-grip-detail {
+      width: 70%;
+      height: 1px;
+    }
+  }
+
+  .nz-line-grip-detail {
+     background-color: $buic-text-color-muted;
   }
 }

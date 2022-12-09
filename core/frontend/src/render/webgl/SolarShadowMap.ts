@@ -9,7 +9,9 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, ViewFlags } from "@itwin/core-common";
+import {
+  Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, TextureTransparency, ViewFlags,
+} from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
 import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
@@ -161,12 +163,12 @@ class Bundle implements WebGLDisposable {
     if (undefined === fboSM)
       return undefined;
 
-    const depthTexture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: depthTextureHandle });
+    const depthTexture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: depthTextureHandle, transparency: TextureTransparency.Opaque });
     const evsmGeom = EVSMGeometry.createGeometry(depthTexture.texture.getHandle()!, shadowMapWidth, shadowMapHeight);
     if (undefined === evsmGeom)
       return undefined;
 
-    const shadowMapTexture = new Texture({ type: RenderTexture.Type.Normal, ownership: "external", handle: shadowMapTextureHandle });
+    const shadowMapTexture = new Texture({ type: RenderTexture.Type.Normal, ownership: "external", handle: shadowMapTextureHandle, transparency: TextureTransparency.Opaque });
     const renderCommands = new RenderCommands(target, stack, batch);
     return new Bundle(depthTexture, shadowMapTexture, fbo, fboSM, evsmGeom, renderCommands);
   }
@@ -313,9 +315,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     const view = context.viewport.view;
     const style = view.getDisplayStyle3d();
-    let sunDirection = style.sunDirection;
-    if (undefined === sunDirection)
-      sunDirection = defaultSunDirection;
+    const sunDirection = style.sunDirection ?? defaultSunDirection;
 
     const minimumHorizonDirection = -.01;
     if (sunDirection.z > minimumHorizonDirection) {
@@ -343,8 +343,20 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     // Limit the map to only displayed models.
     const viewTileRange = Range3d.createNull();
     view.forEachTileTreeRef((ref) => {
-      if (ref.castsShadows)
-        ref.accumulateTransformedRange(viewTileRange, worldToMap, undefined);
+      if (ref.castsShadows) {
+        if (ref.isGlobal) {
+          // A shadow-casting tile tree that spans the globe. Limit its range to the viewed extents.
+          for (const p3 of viewFrustum.points) {
+            const p4 = worldToMap.multiplyPoint3d(p3, 1);
+            if (p4.w > 0.0001)
+              viewTileRange.extendXYZW(p4.x, p4.y, p4.z, p4.w);
+            else
+              viewTileRange.high.z = Math.max(1.0, viewTileRange.high.z); // behind eye plane.
+          }
+        } else {
+          ref.accumulateTransformedRange(viewTileRange, worldToMap, undefined);
+        }
+      }
     });
 
     if (!viewTileRange.isNull)
@@ -355,7 +367,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     mapToWorld.multiplyPoint3dArrayQuietNormalize(scratchFrustum.points);       // This frustum represents the shadwowing geometry.  Intersect it with background geometry and expand the range depth to include that intersection.
     const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
-      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum);
+      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum, iModel.projectExtents);
       if (!backgroundDepthRange.isNull)
         shadowRange.low.z = Math.min(shadowRange.low.z, backgroundDepthRange.low);
     }
@@ -451,6 +463,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     // NB: textures and materials are needed because their transparencies affect whether or not a surface casts shadows
     const viewFlags = target.currentViewFlags.copy({
       renderMode: RenderMode.SmoothShade,
+      wiremesh: false,
       transparency: false,
       lighting: false,
       shadows: false,

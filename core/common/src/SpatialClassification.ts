@@ -7,10 +7,12 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
+import { ModelMapLayerSettings } from "./MapLayerSettings";
 
 /** Describes how a [[SpatialClassifier]] affects the display of classified geometry - that is, geometry intersecting
  * the classifier.
  * @public
+ * @extensions
  */
 export enum SpatialClassifierInsideDisplay {
   /** The geometry is not displayed. */
@@ -28,6 +30,7 @@ export enum SpatialClassifierInsideDisplay {
 /** Describes how a [[SpatialClassifier]] affects the display of unclassified geometry - that is, geometry not intersecting
  * the classifier.
  * @public
+ * @extensions
  */
 export enum SpatialClassifierOutsideDisplay {
   /** The geometry is not displayed. */
@@ -40,13 +43,14 @@ export enum SpatialClassifierOutsideDisplay {
 
 /** JSON representation of a [[SpatialClassifierFlags]].
  * @public
+ * @extensions
  */
 export interface SpatialClassifierFlagsProps {
-  /** @see [[SpatialClassifierFlags.inside]]. */
+  /** See [[SpatialClassifierFlags.inside]]. */
   inside: SpatialClassifierInsideDisplay;
-  /** @see [[SpatialClassifierFlags.outside]]. */
+  /** See [[SpatialClassifierFlags.outside]]. */
   outside: SpatialClassifierOutsideDisplay;
-  /** @see [[SpatialClassifierFlags.isVolumeClassifier]]. */
+  /** See [[SpatialClassifierFlags.isVolumeClassifier]]. */
   isVolumeClassifier?: boolean;
 }
 
@@ -110,18 +114,19 @@ export class SpatialClassifierFlags {
 
 /** JSON representation of a [[SpatialClassifier]].
  * @public
+ * @extensions
  */
 export interface SpatialClassifierProps {
-  /** @see [[SpatialClassifier.modelId]]. */
+  /** See [[SpatialClassifier.modelId]]. */
   modelId: Id64String;
-  /** @see [[SpatialClassifier.expand]]. */
+  /** See [[SpatialClassifier.expand]]. */
   expand: number;
-  /** @see [[SpatialClassifier.flags]]. */
+  /** See [[SpatialClassifier.flags]]. */
   flags: SpatialClassifierFlagsProps;
-  /** @see [[SpatialClassifier.name]]. */
+  /** See [[SpatialClassifier.name]]. */
   name: string;
   /** Records whether this is the active classifier.
-   * @see [[SpatialClassifier.active]].
+   * See [[SpatialClassifier.active]].
    */
   isActive?: boolean;
 }
@@ -136,7 +141,7 @@ export interface SpatialClassifierProps {
  * Two types of classification are supported:
  *  - Planar classification, in which the geometry of the classifier model is projected onto a plane to classify geometry within a region extruded perpendicular
  * the plane (e.g., the building footprints example); and
- *  - Volume classification, in which closed volumes within the classifier classify geometry that intersects those same volumes (e.g., imagine using boxes instead
+ *  - Volume classification, in which closed, non-intersecting volumes within the classifier classify geometry that intersects (i.e. is contained within) those same volumes (e.g., imagine using boxes instead
  * of footprints to classify buildings, or floors of buildings).
  * @see this (interactive example)[https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=classifier-sample].
  * @see [[SpatialClassifiers]] to define a set of classifiers.
@@ -182,6 +187,15 @@ export class SpatialClassifier {
     };
   }
 
+  /** Construct from Model Map Layer.
+   * @beta
+   */
+  public static fromModelMapLayer(mapLayer: ModelMapLayerSettings): SpatialClassifier {
+    const flags =  SpatialClassifierFlags.fromJSON({ inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off });
+
+    return new SpatialClassifier(mapLayer.modelId, mapLayer.name, flags);
+  }
+
   /** Create a classifier identical to this one except for any properties explicitly specified by `changedProps`. */
   public clone(changedProps?: Partial<SpatialClassifierProps>): SpatialClassifier {
     if (!changedProps)
@@ -207,6 +221,7 @@ export class SpatialClassifier {
 /** An object that can store the JSON representation of a list of [[SpatialClassifier]]s.
  * @see [[SpatialClassifiers]].
  * @public
+ * @extensions
  */
 export interface SpatialClassifiersContainer {
   /** The list of classifiers. */

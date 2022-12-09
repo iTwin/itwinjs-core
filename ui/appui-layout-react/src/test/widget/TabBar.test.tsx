@@ -2,35 +2,32 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Rectangle } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
-  addFloatingWidget, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext,
+  addFloatingWidget, addPanelWidget, addTab, createNineZoneState, FloatingWidgetProvider, NineZoneDispatch, PanelStateContext,
   PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
 } from "../../appui-layout-react";
 import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
 import { TestNineZoneProvider } from "../Providers";
+import { addTabs } from "../Utils";
 
 describe("WidgetTitleBar", () => {
   it("should dispatch WIDGET_DRAG_END", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], {
-      bounds: new Rectangle(0, 100, 200, 400).toProps(),
-    });
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addFloatingWidget(state, "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
-        <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.w1!}
-          widget={nineZone.widgets.w1}
+        <FloatingWidgetProvider
+          floatingWidget={state.floatingWidgets.byId.w1}
+          widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
     );
@@ -42,37 +39,30 @@ describe("WidgetTitleBar", () => {
       dispatch.reset();
       fireEvent.mouseUp(document);
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledOnceWithExactly(dispatch, sinon.match({
       type: "WIDGET_DRAG_END",
       floatingWidgetId: "w1",
       target: {
-        type: "floatingWidget",
+        type: "window",
       },
-    })).should.true;
+    }));
   });
 
   it("should dispatch FLOATING_WIDGET_CLEAR_USER_SIZED", () => {
     const fakeTimers = sinon.useFakeTimers();
 
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (stateDraft) => {
-      stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.byId.w1 = createFloatingWidgetState("w1", {
-        bounds: new Rectangle(0, 100, 200, 400).toProps(),
-        userSized: true,
-      });
-    });
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addFloatingWidget(state, "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
-        <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.w1!}
-          widget={nineZone.widgets.w1}
+        <FloatingWidgetProvider
+          floatingWidget={state.floatingWidgets.byId.w1}
+          widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
     );
@@ -87,32 +77,29 @@ describe("WidgetTitleBar", () => {
       fireEvent.mouseUp(handle);
       fakeTimers.tick(300);
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledOnceWithExactly(dispatch, {
       type: "FLOATING_WIDGET_CLEAR_USER_SIZED",
       id: "w1",
-    })).should.true;
+    });
   });
 
   it("should dispatch WIDGET_DRAG_END with tab target", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], {
-      bounds: new Rectangle(0, 100, 200, 400).toProps(),
-    });
-    nineZone = addPanelWidget(nineZone, "left", "w2", ["t2"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = addTab(nineZone, "t2");
+    let state = createNineZoneState();
+    state = addTabs(state, ["t1", "t2"]);
+    state = addFloatingWidget(state, "w1", ["t1"]);
+    state = addPanelWidget(state, "left", "w2", ["t2"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
         <WidgetIdContext.Provider value="w2">
           <WidgetTabTarget tabIndex={0} first />
         </WidgetIdContext.Provider>
-        <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.w1!}
-          widget={nineZone.widgets.w1}
+        <FloatingWidgetProvider
+          floatingWidget={state.floatingWidgets.byId.w1}
+          widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
     );
@@ -142,25 +129,19 @@ describe("WidgetTitleBar", () => {
   it("should dispatch WIDGET_DRAG_END with panel target", () => {
     sinon.stub(NineZoneModule, "getUniqueId").returns("newId");
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (stateDraft) => {
-      stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.byId.w1 = createFloatingWidgetState("w1", {
-        bounds: new Rectangle(0, 100, 200, 400).toProps(),
-      });
-    });
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addFloatingWidget(state, "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
-        <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.w1!}
-          widget={nineZone.widgets.w1}
+        <FloatingWidgetProvider
+          floatingWidget={state.floatingWidgets.byId.w1}
+          widget={state.widgets.w1}
         />
-        <PanelStateContext.Provider value={nineZone.panels.right}>
+        <PanelStateContext.Provider value={state.panels.right}>
           <PanelTarget />
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
@@ -175,7 +156,7 @@ describe("WidgetTitleBar", () => {
       dispatch.reset();
       fireEvent.mouseUp(document);
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledOnceWithExactly(dispatch, {
       type: "WIDGET_DRAG_END",
       floatingWidgetId: "w1",
       target: {
@@ -183,28 +164,22 @@ describe("WidgetTitleBar", () => {
         side: "right",
         type: "panel",
       },
-    })).should.true;
+    });
   });
 
   it("should dispatch FLOATING_WIDGET_BRING_TO_FRONT", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (stateDraft) => {
-      stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.byId.w1 = createFloatingWidgetState("w1", {
-        bounds: new Rectangle(0, 100, 200, 400).toProps(),
-      });
-    });
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addFloatingWidget(state, "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
-        <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.w1!}
-          widget={nineZone.widgets.w1}
+        <FloatingWidgetProvider
+          floatingWidget={state.floatingWidgets.byId.w1}
+          widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
     );
@@ -215,27 +190,14 @@ describe("WidgetTitleBar", () => {
         touches: [{}],
       });
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledWithExactly(dispatch, {
       type: "FLOATING_WIDGET_BRING_TO_FRONT",
       id: "w1",
-    })).should.true;
+    });
   });
 });
 
 describe("useDrag", () => {
-  it("should start drag action after timeout", () => {
-    const fakeTimers = sinon.useFakeTimers();
-    const spy = sinon.stub<Required<Parameters<typeof useDrag>>[0]>();
-    const { result } = renderHook(() => useDrag(spy));
-    act(() => {
-      const instance = document.createElement("div");
-      result.current(instance);
-      fireEvent.mouseDown(instance);
-      fakeTimers.tick(300);
-    });
-    spy.calledOnce.should.true;
-  });
-
   it("should start drag on pointer move", () => {
     const spy = sinon.stub<Required<Parameters<typeof useDrag>>[0]>();
     const { result } = renderHook(() => useDrag(spy));

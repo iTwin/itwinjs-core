@@ -54,44 +54,23 @@
       "default": true,
       "description": "the setting for blah"
     },
-    "workspace/container/alias": {
+    "fontList": {
       "type": "array",
-      "description": "array of workspace container aliases",
+      "description": "array of fonts to load",
       "items": {
         "type": "object",
         "required": [
-          "name",
-          "id"
+          "container",
+          "fontName"
         ],
         "properties": {
-          "id": {
+          "container": {
             "type": "string",
-            "description": "the id of the workspace container"
+            "description": "resource container name"
           },
-          "name": {
+          "fontName": {
             "type": "string",
-            "description": "the name of the workspace container"
-          }
-        }
-      },
-      "fontList": {
-        "type": "array",
-        "description": "array of fonts to load",
-        "items": {
-          "type": "object",
-          "required": [
-            "container",
-            "fontName"
-          ],
-          "properties": {
-            "container": {
-              "type": "string",
-              "description": "resource container name"
-            },
-            "fontName": {
-              "type": "string",
-              "description": "name of font within resource container"
-            }
+            "description": "name of font within resource container"
           }
         }
       }

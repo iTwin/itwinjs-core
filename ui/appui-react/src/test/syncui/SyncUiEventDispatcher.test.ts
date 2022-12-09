@@ -62,6 +62,7 @@ describe("SyncUiEventDispatcher", () => {
     let callbackCalled = false;
     let callbackHasExpectedEventId = false;
 
+    // eslint-disable-next-line deprecation/deprecation
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
       callbackCalled = true;
       callbackHasExpectedEventId = args.eventIds.has("event1");
@@ -80,6 +81,7 @@ describe("SyncUiEventDispatcher", () => {
     let callback1Called = false;
     let callback1HasExpectedEventId = false;
 
+    // eslint-disable-next-line deprecation/deprecation
     const handleSyncUiEvent1 = (args: SyncUiEventArgs): void => {
       callback1Called = true;
       callback1HasExpectedEventId = args.eventIds.has("event1");
@@ -102,6 +104,7 @@ describe("SyncUiEventDispatcher", () => {
     let callbackCalled = false;
     let callbackHasExpectedEventIds = false;
 
+    // eslint-disable-next-line deprecation/deprecation
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
       callbackCalled = true;
       callbackHasExpectedEventIds = args.eventIds.has("event1") && args.eventIds.has("event2");
@@ -120,11 +123,12 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
-  it.skip("test multiple event Id with a multiple dispatches", () => {
+  it("test multiple event Id with a multiple dispatches", () => {
     const fakeTimers = sinon.useFakeTimers();
     let callbackCalled = false;
     let callbackHasExpectedEventIds = false;
 
+    // eslint-disable-next-line deprecation/deprecation
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
       callbackCalled = true;
       callbackHasExpectedEventIds = args.eventIds.has("event1") && args.eventIds.has("event2") && args.eventIds.has("event3");
@@ -137,7 +141,7 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.dispatchSyncUiEvent("Event3");
     expect(callbackCalled).to.be.false;
 
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     fakeTimers.restore();
 
     expect(callbackCalled).to.be.true;
@@ -145,8 +149,7 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
-  // skipping following because some of these do not get called back within the timeToWaitForUiSyncCallback ms limit when running on Linux.
-  it.skip("Test event handlers", () => {
+  it("Test event handlers", () => {
     const fakeTimers = sinon.useFakeTimers();
     const handleSyncUiEvent = sinon.spy();
 
@@ -155,62 +158,62 @@ describe("SyncUiEventDispatcher", () => {
 
     handleSyncUiEvent.resetHistory();
     FrontstageManager.onContentControlActivatedEvent.emit({} as ContentControlActivatedEventArgs);
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
     FrontstageManager.onContentLayoutActivatedEvent.emit({} as ContentLayoutActivatedEventArgs);
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
     FrontstageManager.onFrontstageActivatedEvent.emit({} as FrontstageActivatedEventArgs);
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
     FrontstageManager.onFrontstageReadyEvent.emit({} as FrontstageReadyEventArgs);
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
     FrontstageManager.onModalFrontstageChangedEvent.emit({} as ModalFrontstageChangedEventArgs);
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
     FrontstageManager.onNavigationAidActivatedEvent.emit({} as NavigationAidActivatedEventArgs);
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
     FrontstageManager.onToolActivatedEvent.emit({} as ToolActivatedEventArgs);
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
     FrontstageManager.onWidgetStateChangedEvent.emit({} as WidgetStateChangedEventArgs);
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
     Backstage.onBackstageEvent.emit({} as BackstageEventArgs); // eslint-disable-line deprecation/deprecation
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
     WorkflowManager.onTaskActivatedEvent.emit({} as TaskActivatedEventArgs);  // eslint-disable-line deprecation/deprecation
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
     WorkflowManager.onWorkflowActivatedEvent.emit({} as WorkflowActivatedEventArgs);  // eslint-disable-line deprecation/deprecation
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
     ContentViewManager.onActiveContentChangedEvent.emit({} as ActiveContentChangedEventArgs);
-    fakeTimers.tick(timeToWaitForUiSyncCallback);
+    fakeTimers.runAll();
     fakeTimers.restore();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 

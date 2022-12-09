@@ -12,14 +12,27 @@ import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
+import { useTransientState } from "./useTransientState";
 
 /** @internal */
 export function WidgetContent() {
   const widget = useWidgetDef();
   // istanbul ignore next
   const itemId = widget?.id ?? widget?.label ?? "unknown";
+  const onSave = React.useCallback(() => {
+    // istanbul ignore next
+    widget?.saveTransientState();
+  }, [widget]);
+  const onRestore = React.useCallback(() => {
+    // istanbul ignore next
+    widget?.restoreTransientState();
+  }, [widget]);
+  useTransientState(onSave, onRestore);
   return (
-    <ScrollableWidgetContent itemId={itemId}>
+    <ScrollableWidgetContent
+      itemId={itemId}
+      providerId={widget?.initialProps?.providerId}
+    >
       {widget?.reactNode}
     </ScrollableWidgetContent>
   );
@@ -38,10 +51,7 @@ export function useWidgetDef(): WidgetDef | undefined {
         return;
       setWidgetDef(frontstage.findWidgetDef(tabId));
     };
-    FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
-    return () => {
-      FrontstageManager.onFrontstageNineZoneStateChangedEvent.removeListener(listener);
-    };
+    return FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
   }, [frontstage, tabId]);
 
   React.useEffect(() => {

@@ -3,10 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult } from "@itwin/core-bentley";
+import { DbResult, ProcessDetector } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+
+function skipIf(cond: () => boolean, skipMsg: string, title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
+  if (cond()) {
+    return it.skip(`${title} [${skipMsg}]`, callback);
+  }
+  return it(title, callback);
+}
+function skipIfWeb(title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
+  return skipIf(() => ProcessDetector.isBrowserProcess, "skipping for browser", title, callback);
+}
 
 describe("ECSql Query", () => {
   let imodel1: IModelConnection;
@@ -25,14 +35,15 @@ describe("ECSql Query", () => {
   });
 
   after(async () => {
-    if (imodel1) await imodel1.close();
-    if (imodel2) await imodel2.close();
-    if (imodel3) await imodel3.close();
-    if (imodel4) await imodel4.close();
-    if (imodel5) await imodel5.close();
+    await imodel1?.close();
+    await imodel2?.close();
+    await imodel3?.close();
+    await imodel4?.close();
+    await imodel5?.close();
     await TestUtility.shutdownFrontend();
   });
-  it.skip("Restart query", async () => {
+
+  skipIfWeb("Restart query frontend", async () => {
     let cancelled = 0;
     let successful = 0;
     let rowCount = 0;
@@ -40,7 +51,7 @@ describe("ECSql Query", () => {
       return new Promise<void>(async (resolve, reject) => {
         try {
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element")) {
+          for await (const _row of imodel1.restartQuery("tag", "SELECT * FROM BisCore.element")) {
             rowCount++;
           }
           successful++;
@@ -51,7 +62,7 @@ describe("ECSql Query", () => {
             cancelled++;
             resolve();
           } else {
-            reject();
+            reject(err);
           }
         }
       });
@@ -66,6 +77,45 @@ describe("ECSql Query", () => {
     assert.isAtLeast(cancelled, 1);
     assert.isAtLeast(successful, 1);
     assert.isAtLeast(rowCount, 1);
+  });
+
+  it("concurrent query use primary connection", async () => {
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { usePrimaryConn: true });
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 46);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+  });
+  it("concurrent query get meta data", async () => {
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element");
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 46);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+  });
+  it("concurrent query quota", async () => {
+    let reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { count: 4 } });
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 4);
+    reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { offset: 4, count: 4 } });
+    rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 4);
   });
   it("Paging Results", async () => {
     const getRowPerPage = (nPageSize: number, nRowCount: number) => {
@@ -98,7 +148,7 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const result = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray(QueryRowFormat.UseArrayIndexes);
+        const result = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray();
         assert.equal(result.length, rowPerPage[k]);
       }
     }
@@ -106,7 +156,7 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const row of db.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of db.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {
@@ -128,14 +178,14 @@ describe("ECSql Query", () => {
     let row1: any;
     let row2: any;
     let row3: any;
-    for await (const row of imodel2.query(query1, undefined, QueryRowFormat.UseJsPropertyNames))
+    for await (const row of imodel2.query(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       row1 = row;
     assert.isNotEmpty(row1.geometryStream);
-    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs: false }))
+    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
       row2 = row;
     assert.isNotEmpty(row2.geometryStream);
     assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs: true }))
+    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
       row3 = row;
     assert.equal(row3.id, row1.id);
     assert.include(row1.geometryStream, row3.geometryStream);

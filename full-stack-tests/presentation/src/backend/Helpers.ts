@@ -15,10 +15,12 @@ const rulesOrder = [
 const specialDefaultValues = new Map<string, any>([
   ["condition", ""],
   ["createGroupForUnspecifiedValues", true],
+  // eslint-disable-next-line deprecation/deprecation
   ["groupingValue", PropertyGroupingValue.DisplayLabel],
   ["isExclude", false],
   ["propertyName", ""],
   ["schemaNames", []],
+  // eslint-disable-next-line deprecation/deprecation
   ["sortingValue", PropertyGroupingValue.DisplayLabel],
   ["sortAscending", true],
   ["vars", []],

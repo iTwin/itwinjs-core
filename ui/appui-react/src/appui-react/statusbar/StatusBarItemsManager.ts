@@ -10,6 +10,6 @@ import { StatusBarItemsManager as UIA_StatusBarItemsManager } from "@itwin/appui
 
 /** StatusBar Items Manager class.
  * @beta
- * @deprecated Use [StatusBarItemsManager]($appui-abstract) in bentley/appui-abstract instead
+ * @deprecated Use [StatusBarItemsManager]($appui-abstract) instead
  */
 export class StatusBarItemsManager extends UIA_StatusBarItemsManager { }

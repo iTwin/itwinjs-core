@@ -6,29 +6,29 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
- * Rule that allows overriding default icon and dynamically define an icon
- * for a particular node based on the context.
+ * ImageId override rules allow setting an image ID to specific types of ECInstances.
  *
- * @see [More details]($docs/presentation/Customization/ImageIdOverride.md)
+ * @see [Image ID override reference documentation page]($docs/presentation/customization/ImageIdOverride.md)
  * @public
+ * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
  */
-export interface ImageIdOverride extends RuleBase, ConditionContainer {
+export interface ImageIdOverride extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.ImageIdOverride;
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/presentation/Customization/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/presentation/advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 
   /**
-   * Defines an image ID that should be used for nodes that meet rule condition. This is
-   * an [ECExpression]($docs/presentation/Customization/ECExpressions.md), so ID can be
+   * An expression whose result becomes the image ID. This is
+   * an [ECExpression]($docs/presentation/customization/ECExpressions.md), so ID can be
    * defined/formatted dynamically based on the context - for example ECInstance property value.
    *
    * @minLength 1

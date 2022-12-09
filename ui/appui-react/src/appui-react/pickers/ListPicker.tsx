@@ -17,7 +17,7 @@ import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
 import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
 import { UiFramework } from "../UiFramework";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);
 
 /** Enum for the list picker item type
@@ -60,7 +60,7 @@ interface ListPickerState {
   expanded: boolean;
 }
 
-let lastOpenedPicker: ListPickerBase | undefined;
+let lastOpenedPicker: ListPickerBase | undefined; // eslint-disable-line deprecation/deprecation
 
 /** Properties for the [[ListPickerItem]] component
  * @beta
@@ -138,7 +138,7 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
     const icon = this.state.expanded ? <i className="icon icon-chevron-down" /> : <i className="icon icon-chevron-right" />;
 
     return (
-      <Panel className={className} style={this.props.style} key={this.props.title}>
+      <Panel className={className} style={this.props.style} key={this.props.title}> {/* eslint-disable-line deprecation/deprecation */}
         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <div onClick={this._onClick}
           className={this.state.expanded ? "ListPickerInnerContainer-header-expanded" : "ListPickerInnerContainer-header"}
@@ -150,7 +150,7 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
           </div>
         </div>
         {this.state.expanded ?
-          <GroupColumn>
+          <GroupColumn> {/* eslint-disable-line deprecation/deprecation */}
             {this.props.children}
           </GroupColumn> : <div />
         }
@@ -196,7 +196,7 @@ export function getListPanel(props: ListPickerProps): React.ReactNode {
               className="ListPickerInnerContainer"
               expanded={expandSingleSection()}
             >
-              <GroupColumn>
+              <GroupColumn> {/* eslint-disable-line deprecation/deprecation */}
                 {item.children!.map(listItemToElement)}
               </GroupColumn>
             </ExpandableSection>
@@ -214,10 +214,10 @@ export function getListPanel(props: ListPickerProps): React.ReactNode {
     <ContainedGroup
       className="ListPickerContainer"
       columns={
-        <GroupColumn className="ListPicker-column">
+        <GroupColumn className="ListPicker-column"> {/* eslint-disable-line deprecation/deprecation */}
           {props.items.map(listItemToElement)}
         </GroupColumn>}
-      containFn={containHorizontally}
+      containFn={containHorizontally} // eslint-disable-line deprecation/deprecation
       title={props.title}
     />
   );
@@ -226,6 +226,7 @@ export function getListPanel(props: ListPickerProps): React.ReactNode {
 /**
  * List picker base class.
  * Used to provide an expandable list of items to enable/disable items.
+ * @deprecated Used in UI1.0 only.
  * @beta
  */
 export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPickerState> {
@@ -277,13 +278,13 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
       <ToolbarDragInteractionContext.Consumer>
         {(isEnabled) => {
           return (
-            <ExpandableItem
+            <ExpandableItem // eslint-disable-line deprecation/deprecation
               {...this.props}
               hideIndicator={isEnabled}
               panel={this.getExpandedContent()}
             >
               <div ref={this._ref}>
-                <Item
+                <Item // eslint-disable-line deprecation/deprecation
                   icon={icon}
                   onClick={this._handleClick}
                   onSizeKnown={this.props.onSizeKnown}
@@ -334,7 +335,7 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
                 className="ListPickerInnerContainer"
                 expanded={expandSingleSection()}
               >
-                <GroupColumn>
+                <GroupColumn> {/* eslint-disable-line deprecation/deprecation */}
                   {item.children!.map(listItemToElement)}
                 </GroupColumn>
               </ExpandableSection>
@@ -351,10 +352,10 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
       <ContainedGroup
         className="ListPickerContainer"
         columns={
-          <GroupColumn className="ListPicker-column">
+          <GroupColumn className="ListPicker-column"> {/* eslint-disable-line deprecation/deprecation */}
             {this.props.items.map(listItemToElement)}
           </GroupColumn>}
-        containFn={containHorizontally}
+        containFn={containHorizontally} // eslint-disable-line deprecation/deprecation
         onOutsideClick={this._handleOnOutsideClick}
         title={this.props.title}
       />
@@ -522,7 +523,7 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
     return (
       <FrameworkVersionSwitch
         v1={
-          <ListPickerBase
+          <ListPickerBase // eslint-disable-line deprecation/deprecation
             {...this.props}
             title={this.props.title}
             setEnabled={this._setEnabled}

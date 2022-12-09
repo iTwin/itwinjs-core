@@ -42,29 +42,37 @@
       "Samples": "sample-showcase",
       "Learning": "learning",
       "API": "reference",
-      "v2.19.0": "changehistory"
+      "v3.5.0": "changehistory"
     },
     "archivedVersions": [
       {
         "version": "v1.14.0",
         "archivedPath": "/v1"
+      },
+      {
+        "version": "v2.19.0",
+        "archivedPath": "/v2"
       }
     ],
     "packageAliases": {
       "analytical-backend": "analytical-backend",
+      "appui-abstract": "appui-abstract",
+      "appui-ninezone": "appui-ninezone",
+      "appui-react": "appui-react",
       "backend": "core-backend",
-      "transformer": "core-transformer",
       "bentley": "core-bentley",
       "common": "core-common",
-      "ecschema-metadata": "ecschema-metadata",
+      "components-react": "components-react",
       "core-electron": "core-electron",
       "core-mobile": "core-mobile",
-      "frontend-devtools": "frontend-devtools",
+      "core-react": "core-react",
+      "ecschema-metadata": "ecschema-metadata",
       "frontend": "core-frontend",
+      "frontend-devtools": "frontend-devtools",
       "geometry": "core-geometry",
       "hypermodeling": "hypermodeling-frontend",
       "i18n": "core-i18n",
-      "imodelhub-client": "imodelhub-client",
+      "imodel-components-react": "imodel-components-react",
       "itwin-client": "itwin-client",
       "linear-referencing-backend": "linear-referencing-backend",
       "linear-referencing-common": "linear-referencing-common",
@@ -74,15 +82,9 @@
       "presentation-common": "presentation-common",
       "presentation-components": "presentation-components",
       "presentation-frontend": "presentation-frontend",
-      "product-settings-client": "product-settings-client",
       "quantity": "core-quantity",
       "reality-data-client": "reality-data-client",
-      "appui-abstract": "appui-abstract",
-      "components-react": "components-react",
-      "core-react": "core-react",
-      "appui-react": "appui-react",
-      "imodel-components-react": "imodel-components-react",
-      "appui-ninezone": "appui-ninezone",
+      "transformer": "core-transformer",
       "webgl-compatibility": "webgl-compatibility"
     },
     "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"itwinjs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",

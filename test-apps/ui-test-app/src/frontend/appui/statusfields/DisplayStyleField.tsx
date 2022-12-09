@@ -11,9 +11,9 @@ import classnames from "classnames";
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@itwin/appui-react";
-import { FooterIndicator } from "@itwin/appui-layout-react";
+import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusBarIndicator } from "@itwin/appui-react";
 import { Select, SelectOption } from "@itwin/itwinui-react";
+import { CommonProps } from "@itwin/core-react";
 
 interface DisplayStyleFieldState {
   viewport?: ScreenViewport;
@@ -25,11 +25,11 @@ interface DisplayStyleFieldState {
  * Shadow Field React component. This component is designed to be specified in a status bar definition.
  * It is used to enable/disable display of shadows.
  */
-export class DisplayStyleField extends React.Component<StatusFieldProps, DisplayStyleFieldState> {
+export class DisplayStyleField extends React.Component<CommonProps, DisplayStyleFieldState> {
   private _label = IModelApp.localization.getLocalizedString("SampleApp:statusFields.displayStyle.label");
   private _tooltip = IModelApp.localization.getLocalizedString("SampleApp:statusFields.displayStyle.tooltip");
 
-  constructor(props: StatusFieldProps) {
+  constructor(props: CommonProps) {
     super(props);
 
     this.state = { viewport: undefined, displayStyles: new Map<Id64String, DisplayStyleState>(), styleEntries: [] };
@@ -109,16 +109,15 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
     const displayStyleId = this.state.viewport.view.displayStyle.id;
 
     return (
-      <FooterIndicator
+      <StatusBarIndicator
         className={classnames("uifw-statusFields-displayStyle", this.props.className)}
         style={this.props.style}
-        isInFooterMode={this.props.isInFooterMode}
       >
         <Select options={this.state.styleEntries} value={displayStyleId} onChange={this._handleDisplayStyleSelected}
           title={this._tooltip} aria-label={this._label}
           className="uifw-statusFields-displayStyle-selector"
           size="small" />
-      </FooterIndicator >
+      </StatusBarIndicator >
     );
   }
 }

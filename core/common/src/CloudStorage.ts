@@ -6,7 +6,14 @@
  * @module CloudStorage
  */
 
-/** @beta */
+import { UnexpectedErrors } from "@itwin/core-bentley";
+
+/* eslint-disable deprecation/deprecation */
+
+/**
+ * @beta
+ * @deprecated
+ */
 export enum CloudStorageProvider {
   Azure,
   Amazon,
@@ -15,14 +22,20 @@ export enum CloudStorageProvider {
   Unknown,
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export interface CloudStorageContainerDescriptor {
   provider?: CloudStorageProvider;
   name: string;
   resource?: string;
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export interface CloudStorageContainerUrl {
   descriptor: CloudStorageContainerDescriptor;
   valid: number;
@@ -33,7 +46,10 @@ export interface CloudStorageContainerUrl {
   bound?: boolean;
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export namespace CloudStorageContainerUrl {
   export function empty(): CloudStorageContainerUrl {
     return {
@@ -45,7 +61,10 @@ export namespace CloudStorageContainerUrl {
   }
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export abstract class CloudStorageCache<TContentId, TContentType> {
   private _containers: Map<string, CloudStorageContainerUrl>;
 
@@ -62,26 +81,21 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
   }
 
   public async retrieve(id: TContentId): Promise<TContentType | undefined> {
-    return new Promise(async (resolve) => {
-      try {
-        const container = await this.getContainer(id);
-        if (!container.url) {
-          resolve(undefined);
-          return;
-        }
+    try {
+      const container = await this.getContainer(id);
+      if (!container.url)
+        return undefined;
 
-        const response = await this.requestResource(container, id);
-        if (response.ok) {
-          const content = await this.instantiateResource(response);
-          resolve(content);
-        } else {
-          resolve(undefined);
-        }
-      } catch (_err) {
-        // todo: log this?
-        resolve(undefined);
+      const response = await this.requestResource(container, id);
+      if (response.ok) {
+        const content = await this.instantiateResource(response);
+        return content;
       }
-    });
+    } catch (err) {
+      UnexpectedErrors.handle(err);
+    }
+
+    return undefined;
   }
 
   protected async requestResource(container: CloudStorageContainerUrl, id: TContentId): Promise<Response> {

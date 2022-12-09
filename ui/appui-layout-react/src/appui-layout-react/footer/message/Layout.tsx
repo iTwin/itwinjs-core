@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[MessageLayout]] component.
- * @beta
+ * @internal
  */
 export interface MessageLayoutProps extends CommonProps {
   /** Message buttons. I.e. [[MessageButton]] */
@@ -24,7 +24,7 @@ export interface MessageLayoutProps extends CommonProps {
 }
 
 /** Layout used in [[Message]] component.
- * @beta
+ * @internal
  */
 export class MessageLayout extends React.PureComponent<MessageLayoutProps> {
   public override render() {

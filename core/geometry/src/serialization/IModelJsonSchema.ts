@@ -117,6 +117,10 @@ export namespace IModelJson {
     uKnots: [number];
     /** Array of knots for the v direction bspline */
     vKnots: [number];
+    /** optional flag for periodic data in the u parameter direction */
+    closedU?: boolean;
+    /** optional flag for periodic data in the v parameter direction */
+    closedV?: boolean;
   }
 
   /**
@@ -202,7 +206,7 @@ export namespace IModelJson {
      */
     xyVectors?: [XYZProps, XYZProps];
     /**
-     * Cartesian coordinate directions defined by X direction then Y direction.
+     * Cartesian coordinate directions defined by Z direction then X direction.
      * * The right side contains two vectors in an array.
      * * The first vector gives the z axis direction
      * * * This is normalized to unit length.
@@ -372,42 +376,49 @@ export namespace IModelJson {
   }
 
   /**
-   * Interface for Box (or frustum with all rectangular sections parallel to primary xy section)
-   * * Orientation may be given in any `AxesProp`s way (yawPitchRoll, xyVectors, zxVectors)
-   * * if topX or topY are omitted, each defaults to its baseX or baseY peer.
-   * * `topOrigin` is determined with this priority order:
-   * * * `topOrigin` overrides given `height`
-   * * * on the z axis at distance `height`
-   * * * If both `topOrigin` and `height` are omitted, `height` defaults to `baseX`
+   * Interface for Box (or frustum with all rectangular sections parallel to primary xy section).
+   * * Orientation may be given in any `AxesProps` way (`yawPitchRollAngles`, `xyVectors`, `zxVectors`).
+   * * If `topX` or `topY` are omitted, each defaults to its `baseX` or `baseY` peer.
+   * * If `topOrigin` is given, `height` is unused.
+   * * If `topOrigin` is omitted and `height` is given, `topOrigin` is computed along the z axis at distance `height`.
+   * * If both `topOrigin` and `height` are omitted, `height` defaults to `baseX`, and `topOrigin` is computed as above.
    * @public
    */
   export interface BoxProps extends AxesProps {
     /** Origin of the box coordinate system  (required) */
     origin: XYZProps;
+    /** A previous mismatch existed between native and TypeScript code: TypeScript used "origin" where native used "baseOrigin".
+     * Now both native and TypeScript will output both and accept either, preferring "origin".
+     * "baseOrigin" is undocumented in TypeScript; it's also "deprecated" so that the linter will warn to use the documented property instead.
+     * @internal
+     * @deprecated use origin
+     */
+    baseOrigin?: XYZProps;
     /** base x size (required) */
     baseX: number;
-    /** base size
-     * * if omitted, defaults to baseX.
+    /** base y size.
+     * * if omitted, baseX is used.
      */
-    baseY: number;
+    baseY?: number;
     /** top origin.
      * * This is NOT required to be on the z axis.
-     * * If omitted, a `heigh` must be present to given topOrigin on z axis.
+     * * If omitted, it is computed along the z axis at distance `height`.
      */
     topOrigin?: XYZProps;
-    /** optional height.  This is only used if `topOrigin` is omitted. */
+    /** optional height. This is only used if `topOrigin` is omitted.
+     * * If omitted, `baseX` is used.
+    */
     height?: number;
     /** x size on top section.
-     * * If omitted, `baseX` is used
+     * * If omitted, `baseX` is used.
      */
     topX?: number;
     /** y size on top section.
-     * * If omitted, `baseY` is used
+     * * If omitted, `baseY` is used.
      */
     topY?: number;
     /** optional capping flag. */
     capped?: boolean;
-
   }
 
   /**
@@ -453,7 +464,7 @@ export namespace IModelJson {
     /** primary radius  (elbow radius) */
     majorRadius: number;
     /** pipe radius */
-    minorRadius?: number;
+    minorRadius: number;
     /** sweep angle.
      * * if omitted, full 360 degree sweep.
      */
@@ -533,6 +544,8 @@ export namespace IModelJson {
         const value = json[propertyName];
         if (Geometry.isNumberArray(value, 3))
           return Vector3d.create(value[0], value[1], value[2]);
+        if (Geometry.isNumberArray(value, 2))
+          return Vector3d.create(value[0], value[1]);
         if (XYZ.isXAndY(value))
           return Vector3d.fromJSON(value);
       }
@@ -544,6 +557,8 @@ export namespace IModelJson {
         const value = json[propertyName];
         if (Geometry.isNumberArray(value, 3))
           return Point3d.create(value[0], value[1], value[2]);
+        if (Geometry.isNumberArray(value, 2))
+          return Point3d.create(value[0], value[1]);
         if (XYZ.isXAndY(value))
           return Point3d.fromJSON(value);
       }
@@ -1157,7 +1172,10 @@ export namespace IModelJson {
     /** Parse box contents to `Box` instance */
     public static parseBox(json?: BoxProps): Box | undefined {
       const capped = Reader.parseBooleanProperty(json, "capped", false);
-      const baseOrigin = Reader.parsePoint3dProperty(json, "baseOrigin");
+
+      // A mismatch between native and TypeScript code: TypeScript used "origin" where native used "baseOrigin".
+      // Native now outputs and accepts either, preferring "origin"; TypeScript continues to expose only "origin".
+      const origin = Reader.parsePoint3dProperty(json, "origin") ?? Reader.parsePoint3dProperty(json, "baseOrigin");
       const baseX = Reader.parseNumberProperty(json, "baseX");
       const baseY = Reader.parseNumberProperty(json, "baseY", baseX);
       let topOrigin = Reader.parsePoint3dProperty(json, "topOrigin");
@@ -1166,8 +1184,8 @@ export namespace IModelJson {
       const height = Reader.parseNumberProperty(json, "height", baseX);
       const axes = Reader.parseOrientation(json, true)!;
 
-      if (baseOrigin && !topOrigin)
-        topOrigin = Matrix3d.xyzMinusMatrixTimesXYZ(baseOrigin, axes, Vector3d.create(0, 0, height));
+      if (origin && !topOrigin && height)
+        topOrigin = Matrix3d.xyzPlusMatrixTimesXYZ(origin, axes, Vector3d.create(0, 0, height));
 
       if (capped !== undefined
         && baseX !== undefined
@@ -1175,10 +1193,10 @@ export namespace IModelJson {
         && topY !== undefined
         && topX !== undefined
         && axes
-        && baseOrigin
+        && origin
         && topOrigin
       ) {
-        return Box.createDgnBoxWithAxes(baseOrigin, axes, topOrigin, baseX, baseY, topX, topY, capped);
+        return Box.createDgnBoxWithAxes(origin, axes, topOrigin, baseX, baseY, topX, topY, capped);
       }
       return undefined;
     }
@@ -1190,8 +1208,8 @@ export namespace IModelJson {
       // optional specific X
       const radiusX = Reader.parseNumberProperty(json, "radiusX", radius);
       // missing Y and Z both pick up radiusX  (which may have already been defaulted from unqualified radius)
-      const radiusY = Reader.parseNumberProperty(json, "radiusX", radiusX);
-      const radiusZ = Reader.parseNumberProperty(json, "radiusX", radiusX);
+      const radiusY = Reader.parseNumberProperty(json, "radiusY", radiusX);
+      const radiusZ = Reader.parseNumberProperty(json, "radiusZ", radiusX);
       const latitudeStartEnd = Reader.parseAngleSweepProps(json, "latitudeStartEnd"); // this may be undefined!!
 
       const axes = Reader.parseOrientation(json, true)!;
@@ -1219,8 +1237,7 @@ export namespace IModelJson {
     }
     /** Parse TorusPipe props to TorusPipe instance. */
     public static parseTorusPipe(json?: TorusPipeProps): TorusPipe | undefined {
-
-      const axes = Reader.parseOrientation(json, true)!;
+      const axes = Reader.parseOrientation(json, true)!;  // force frame to be pure rotation (no scale or mirror)!
       const center = Reader.parsePoint3dProperty(json, "center");
       const radiusA = Reader.parseNumberProperty(json, "majorRadius");
       const radiusB = Reader.parseNumberProperty(json, "minorRadius");
@@ -1228,9 +1245,7 @@ export namespace IModelJson {
       const capped = Reader.parseBooleanProperty(json, "capped", false)!;
       if (center
         && radiusA !== undefined
-        && radiusB !== undefined
-      ) {
-
+        && radiusB !== undefined) {
         return TorusPipe.createDgnTorusPipe(center, axes.columnX(), axes.columnY(),
           radiusA, radiusB,
           sweepAngle ? sweepAngle : Angle.createDegrees(360), capped);
@@ -1539,13 +1554,13 @@ export namespace IModelJson {
 
     /** Convert strongly typed instance to tagged json */
     public handleTorusPipe(data: TorusPipe): any {
-
       const vectorX = data.cloneVectorX();
       const vectorY = data.cloneVectorY();
       const radiusA = data.getMajorRadius();
       const radiusB = data.getMinorRadius();
       const sweep = data.getSweepAngle();
       if (data.getIsReversed()) {
+        // the TorusPipe was created with negative sweep that was forced positive; restore original values
         vectorY.scaleInPlace(-1.0);
         sweep.setRadians(-sweep.radians);
       }
@@ -1560,7 +1575,6 @@ export namespace IModelJson {
         value.capped = data.capped;
       }
       return { torusPipe: value };
-
     }
 
     /** Convert strongly typed instance to tagged json */
@@ -1676,8 +1690,9 @@ export namespace IModelJson {
 
     /** Convert strongly typed instance to tagged json */
     public handleBox(box: Box): any {
-      const out: any = {
+      const out: SolidPrimitiveProps = {
         box: {
+          origin: box.getBaseOrigin().toJSON(),
           baseOrigin: box.getBaseOrigin().toJSON(),
           baseX: box.getBaseX(),
           baseY: box.getBaseY(),
@@ -1685,11 +1700,13 @@ export namespace IModelJson {
           topOrigin: box.getTopOrigin().toJSON(),
         },
       };
-      Writer.insertXYOrientation(out.box, box.getVectorX(), box.getVectorY(), true);
+
+      const outBox = out.box!;
+      Writer.insertXYOrientation(outBox, box.getVectorX(), box.getVectorY(), true);
       if (!Geometry.isSameCoordinate(box.getTopX(), box.getBaseX()))
-        out.box.topX = box.getTopX();
+        outBox.topX = box.getTopX();
       if (!Geometry.isSameCoordinate(box.getTopY(), box.getBaseY()))
-        out.box.topY = box.getTopY();
+        outBox.topY = box.getTopY();
 
       return out;
     }

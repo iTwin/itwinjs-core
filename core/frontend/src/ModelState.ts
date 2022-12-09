@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
-  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
+  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RealityModelDisplaySettings, RelatedElement, SpatialClassifiers,
 } from "@itwin/core-common";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import { EntityState } from "./EntityState";
@@ -20,6 +20,7 @@ import { ViewState } from "./ViewState";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
+ * @extensions
  */
 export class ModelState extends EntityState implements ModelProps {
   /** @internal */
@@ -74,6 +75,7 @@ export class ModelState extends EntityState implements ModelProps {
 /** Represents the front-end state of a [GeometricModel]($backend).
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
  * @public
+ * @extensions
  */
 export abstract class GeometricModelState extends ModelState implements GeometricModelProps {
   /** @internal */
@@ -101,13 +103,15 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   public get treeModelId(): Id64String { return this.id; }
 
   /** Query for the union of the ranges of all the elements in this GeometricModel.
-   * @internal
+   * @note This value is cached after the first time it is called.
+   * @public
    */
   public async queryModelRange(): Promise<Range3d> {
     if (undefined === this._modelRange) {
-      const ranges = await this.iModel.models.queryModelRanges(this.id);
-      this._modelRange = Range3d.fromJSON(ranges[0]);
+      const ranges = await this.iModel.models.queryExtents(this.id);
+      this._modelRange = Range3d.fromJSON(ranges[0]?.extents);
     }
+
     return this._modelRange;
   }
 
@@ -117,6 +121,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 
     const spatialModel = this.asSpatialModel;
     const rdSourceKey = this.jsonProperties.rdSourceKey;
+    const getDisplaySettings = () => view.displayStyle.settings.getRealityModelDisplaySettings(this.id) ?? RealityModelDisplaySettings.defaults;
 
     if (rdSourceKey) {
       const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
@@ -128,6 +133,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           modelId: this.id,
           // url: tilesetUrl, // If rdSourceKey is defined, url is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+          getDisplaySettings,
         }) :
         createOrbitGtTileTreeReference({
           rdSourceKey,
@@ -136,6 +142,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           modelId: this.id,
           // orbitGtBlob: props.orbitGtBlob!, // If rdSourceKey is defined, orbitGtBlob is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+          getDisplaySettings,
         });
       return treeRef;
     }
@@ -162,6 +169,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         orbitGtBlob,
         name: orbitGtName,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        getDisplaySettings,
       });
     }
 
@@ -178,6 +186,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         modelId: this.id,
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        getDisplaySettings,
       });
     }
 
@@ -186,6 +195,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 }
 /** Represents the front-end state of a [GeometricModel2d]($backend).
  * @public
+ * @extensions
  */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
   /** @internal */
@@ -212,6 +222,7 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
 
 /** Represents the front-end state of a [GeometricModel3d]($backend).
  * @public
+ * @extensions
  */
 export class GeometricModel3dState extends GeometricModelState {
   /** @internal */
@@ -256,6 +267,7 @@ export class GeometricModel3dState extends GeometricModelState {
 
 /** Represents the front-end state of a [SheetModel]($backend).
  * @public
+ * @extensions
  */
 export class SheetModelState extends GeometricModel2dState {
   /** @internal */
@@ -264,6 +276,7 @@ export class SheetModelState extends GeometricModel2dState {
 
 /** Represents the front-end state of a [SpatialModel]($backend).
  * @public
+ * @extensions
  */
 export class SpatialModelState extends GeometricModel3dState {
   /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it. */
@@ -287,6 +300,7 @@ export class SpatialModelState extends GeometricModel3dState {
 
 /** Represents the front-end state of a [PhysicalModel]($backend).
  * @public
+ * @extensions
  */
 export class PhysicalModelState extends SpatialModelState {
   /** @internal */
@@ -295,6 +309,7 @@ export class PhysicalModelState extends SpatialModelState {
 
 /** Represents the front-end state of a [SpatialLocationModel]($backend).
  * @public
+ * @extensions
  */
 export class SpatialLocationModelState extends SpatialModelState {
   /** @internal */
@@ -303,6 +318,7 @@ export class SpatialLocationModelState extends SpatialModelState {
 
 /** Represents the front-end state of a [DrawingModel]($backend).
  * @public
+ * @extensions
  */
 export class DrawingModelState extends GeometricModel2dState {
   /** @internal */
@@ -311,6 +327,7 @@ export class DrawingModelState extends GeometricModel2dState {
 
 /** Represents the front-end state of a [SectionDrawingModel]($backend).
  * @public
+ * @extensions
  */
 export class SectionDrawingModelState extends DrawingModelState {
   /** @internal */

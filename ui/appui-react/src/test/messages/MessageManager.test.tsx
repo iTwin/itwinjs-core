@@ -19,6 +19,7 @@ describe("MessageManager", () => {
 
   after(() => {
     TestUtils.terminateUiFramework();
+    MessageManager.clearMessages();
   });
 
   it("maxCachedMessages handled correctly", () => {
@@ -81,7 +82,10 @@ describe("MessageManager", () => {
     expect(MessageManager.getSeverity(details)).to.eq(MessageSeverity.Fatal);
 
     details = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.");
-    expect(MessageManager.getSeverity(details)).to.eq(MessageSeverity.None);
+    expect(MessageManager.getSeverity(details)).to.eq(MessageSeverity.Success);
+
+    details = new NotifyMessageDetails(OutputMessagePriority.Success, "A brief message.");
+    expect(MessageManager.getSeverity(details)).to.eq(MessageSeverity.Success);
   });
 
   it("non-duplicate message should be added to Message Center", () => {

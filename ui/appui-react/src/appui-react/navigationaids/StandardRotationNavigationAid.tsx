@@ -21,7 +21,7 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 import { UiFramework } from "../UiFramework";
 import { NavigationAidControl } from "./NavigationAidControl";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const NZ_ContainedTray = withContainIn(NZ_Tray);
 
 /** A 3D Standard Rotation Navigation Aid control.
@@ -159,9 +159,9 @@ export class StandardRotationNavigationAid extends React.Component<CommonProps, 
 
     return (
       <NZ_ContainedTray
-        containFn={containHorizontally}
+        containFn={containHorizontally} // eslint-disable-line deprecation/deprecation
         columns={
-          <NZ_Column>
+          <NZ_Column> {/* eslint-disable-line deprecation/deprecation */}
             {this.state.list.map((item, itemIndex) => {
               return (
                 <NZ_Item

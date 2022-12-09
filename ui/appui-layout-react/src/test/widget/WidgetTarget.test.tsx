@@ -5,16 +5,17 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, CursorTypeContext, DragManager, PanelSideContext, WidgetTarget } from "../../appui-layout-react";
+import { addPanelWidget, addTab, createNineZoneState, CursorTypeContext, DragManager, PanelSideContext, WidgetTarget } from "../../appui-layout-react";
 import { createDragStartArgs, TestNineZoneProvider } from "../Providers";
 
 describe("WidgetTarget", () => {
   it("should render with cursor type", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={sinon.spy()}
       >
         <PanelSideContext.Provider value="left">
@@ -31,11 +32,12 @@ describe("WidgetTarget", () => {
 
   it("should render targeted", () => {
     const dragManager = React.createRef<DragManager>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={sinon.spy()}
         dragManagerRef={dragManager}
       >
@@ -54,4 +56,59 @@ describe("WidgetTarget", () => {
     });
     container.firstChild!.should.matchSnapshot();
   });
+
+  it("should render first targeted", () => {
+    const dragManager = React.createRef<DragManager>();
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    const { container } = render(
+      <TestNineZoneProvider
+        state={state}
+        dispatch={sinon.spy()}
+        dragManagerRef={dragManager}
+      >
+        <PanelSideContext.Provider value="left">
+          <WidgetTarget position="first"
+            widgetIndex={0}
+          />
+        </PanelSideContext.Provider>
+      </TestNineZoneProvider>,
+    );
+    const target = container.getElementsByClassName("nz-widget-widgetTarget")[0];
+    sinon.stub(document, "elementFromPoint").returns(target);
+    act(() => {
+      dragManager.current!.handleDragStart(createDragStartArgs());
+      fireEvent.mouseMove(target);
+    });
+    container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should render last targeted", () => {
+    const dragManager = React.createRef<DragManager>();
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    const { container } = render(
+      <TestNineZoneProvider
+        state={state}
+        dispatch={sinon.spy()}
+        dragManagerRef={dragManager}
+      >
+        <PanelSideContext.Provider value="left">
+          <WidgetTarget position="last"
+            widgetIndex={0}
+          />
+        </PanelSideContext.Provider>
+      </TestNineZoneProvider>,
+    );
+    const target = container.getElementsByClassName("nz-widget-widgetTarget")[0];
+    sinon.stub(document, "elementFromPoint").returns(target);
+    act(() => {
+      dragManager.current!.handleDragStart(createDragStartArgs());
+      fireEvent.mouseMove(target);
+    });
+    container.firstChild!.should.matchSnapshot();
+  });
+
 });

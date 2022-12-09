@@ -6,15 +6,16 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { TypeConverter, TypeConverterManager } from "@itwin/components-react";
 import { Content, Item, RulesetsFactory } from "@itwin/presentation-common";
 import { createRandomRuleset, createTestContentDescriptor, createTestSimpleContentField } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
-import { TypeConverter, TypeConverterManager } from "@itwin/components-react";
 import {
   DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider,
 } from "../presentation-components";
 import { createRandomPropertyRecord, mockPresentationManager } from "./_helpers/UiComponents";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("DataProvidersFactory", () => {
 

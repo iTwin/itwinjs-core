@@ -66,13 +66,13 @@ export class MarkupApp {
       /** The attributes of the line that connects the top-center stretch handle to the rotate handle. */
       rotateLine: { "stroke": "grey", "fill-opacity": .85 },
       /** The attributes of the rotate handle. */
-      rotate: { "cursor": "url(Markup/rotate.png) 12 12, auto", "fill-opacity": .85, "stroke": "black", "fill": "lightBlue" },
+      rotate: { "cursor": `url(${IModelApp.publicPath}Markup/rotate.png) 12 12, auto`, "fill-opacity": .85, "stroke": "black", "fill": "lightBlue" },
       /** The attributes of box around the element. */
       moveOutline: { "cursor": "move", "stroke-dasharray": "6,6", "fill": "none", "stroke-opacity": .85, "stroke": "white" },
       /** The attributes of box that provides the move cursor. */
       move: { "cursor": "move", "opacity": 0, "stroke-width": 10, "stroke": "white" },
       /** The attributes of handles on the vertices of lines. */
-      vertex: { "cursor": "url(cursors/crosshair.cur), crosshair", "fill-opacity": .85, "stroke": "black", "fill": "white" },
+      vertex: { "cursor": `url(${IModelApp.publicPath}cursors/crosshair.cur), crosshair`, "fill-opacity": .85, "stroke": "black", "fill": "white" },
     },
     /** properties for providing feedback about selected elements. */
     hilite: {
@@ -169,7 +169,11 @@ export class MarkupApp {
     return (undefined !== matrix ? matrix : new Matrix());
   }
   /** @internal */
-  public static getVpToScreenMtx(): Matrix { const rect = this.markup!.markupDiv.getBoundingClientRect(); return (new Matrix()).translateO(rect.left, rect.top); }
+  public static getVpToScreenMtx(): Matrix {
+    const rect = this.markup!.markupDiv.getBoundingClientRect();
+    return (new Matrix()).translateO(rect.left, rect.top);
+  }
+
   /** @internal */
   public static getVpToVbMtx(): Matrix { return this.getVpToScreenMtx().lmultiplyO(this.screenToVbMtx()); }
   /** @internal */
@@ -366,7 +370,11 @@ export class MarkupApp {
   public static get textEditorClass() { return `${this.markupPrefix}textEditor`; }
 }
 
-const removeSvgNamespace = (svg: Svg) => { svg.node.removeAttribute("xmlns:svgjs"); return svg; };
+const removeSvgNamespace = (svg: Svg) => {
+  svg.node.removeAttribute("xmlns:svgjs");
+  return svg;
+};
+
 const newSvgElement = (name: string) => adopt(create(name));
 
 /**
@@ -393,7 +401,8 @@ export class Markup {
   /** create the drop-shadow filter in the Defs section of the supplied svg element */
   private createDropShadow(svg: Svg) {
     const filter = SVG(`#${MarkupApp.dropShadowId}`); // see if we already have one?
-    if (filter) filter.remove(); // yes, remove it. This must be someone modifying the drop shadow properties
+    if (filter)
+      filter.remove(); // yes, remove it. This must be someone modifying the drop shadow properties
 
     // create a new filter, and add it to the Defs of the supplied svg
     svg.defs()
@@ -467,7 +476,14 @@ export class Markup {
   /** Send all the entries in the selection set to the back. */
   public sendToBack() { this.selected.reposition(MarkupApp.getActionName("toBack"), this.undo, (el) => el.back()); }
   /** Group all the entries in the selection set, then select the group. */
-  public groupSelected() { if (undefined !== this.svgMarkup) this.selected.groupAll(this.undo); }
+  public groupSelected() {
+    if (undefined !== this.svgMarkup)
+      this.selected.groupAll(this.undo);
+  }
+
   /** Ungroup all the group entries in the selection set. */
-  public ungroupSelected() { if (undefined !== this.svgMarkup) this.selected.ungroupAll(this.undo); }
+  public ungroupSelected() {
+    if (undefined !== this.svgMarkup)
+      this.selected.ungroupAll(this.undo);
+  }
 }

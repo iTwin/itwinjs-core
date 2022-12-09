@@ -7,12 +7,12 @@
  */
 
 import { WebGLContext } from "@itwin/webgl-compatibility";
-import { BlurGeometry } from "../CachedGeometry";
+import { BlurGeometry, BlurType } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
-import { decodeDepthRgb } from "./Decode";
+import { addRenderOrderConstants } from "./FeatureSymbology";
 import { addWindowToTexCoords, assignFragColor } from "./Fragment";
 import { addViewport } from "./Viewport";
 import { createViewportQuadBuilder } from "./ViewportQuad";
@@ -48,16 +48,32 @@ const computeBlur = `
   return result;
 `;
 
+// This optionally skips adding in the blur texture result if the current pixel is a linear/edge/silhouette.
+const testRenderOrder = `
+  vec2 rotc = windowCoordsToTexCoords(gl_FragCoord.xy);
+  vec4 pdo = TEXTURE(u_pickDepthAndOrder, rotc);
+  float order = floor(pdo.x * 16.0 + 0.5);
+  if (order >= kRenderOrder_PlanarBit)
+    order = order - kRenderOrder_PlanarBit;
+  if (order >= kRenderOrder_Linear && order <= kRenderOrder_Silhouette)
+    return vec4(1.0);
+
+`;
+
 /** @internal */
-export function createBlurProgram(context: WebGLContext): ShaderProgram {
+export function createBlurProgram(context: WebGLContext, type: BlurType): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
   addWindowToTexCoords(frag);
 
-  frag.addFunction(decodeDepthRgb);
+  if (BlurType.TestOrder === type) {
+    addRenderOrderConstants(frag);
+    frag.set(FragmentShaderComponent.ComputeBaseColor, testRenderOrder + computeBlur);
+  } else {
+    frag.set(FragmentShaderComponent.ComputeBaseColor, computeBlur);
+  }
 
-  frag.set(FragmentShaderComponent.ComputeBaseColor, computeBlur);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   addViewport(frag);
@@ -87,8 +103,22 @@ export function createBlurProgram(context: WebGLContext): ShaderProgram {
     });
   }, VariablePrecision.High);
 
-  builder.vert.headerComment = "//!V! Blur";
-  builder.frag.headerComment = "//!F! Blur";
+  if (BlurType.TestOrder === type) {
+    frag.addUniform("u_pickDepthAndOrder", VariableType.Sampler2D, (prog) => {
+      prog.addGraphicUniform("u_pickDepthAndOrder", (uniform, params) => {
+        const geom = params.geometry as BlurGeometry;
+        if (params.target.compositor.needHiddenEdges)
+          Texture2DHandle.bindSampler(uniform, geom.depthAndOrderHidden, TextureUnit.One);
+        else
+          Texture2DHandle.bindSampler(uniform, geom.depthAndOrder, TextureUnit.One);
+      });
+    });
+    builder.vert.headerComment = "//!V! BlurTestOrder";
+    builder.frag.headerComment = "//!F! BlurTestOrder";
+  } else {
+    builder.vert.headerComment = "//!V! Blur";
+    builder.frag.headerComment = "//!F! Blur";
+  }
 
   return builder.buildProgram(context);
 }

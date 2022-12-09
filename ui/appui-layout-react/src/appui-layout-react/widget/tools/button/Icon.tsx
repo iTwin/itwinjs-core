@@ -12,7 +12,7 @@ import * as React from "react";
 import { ToolbarButton, ToolbarButtonProps } from "./Button";
 
 /** Properties of [[ToolbarButton]] component.
- * @alpha
+ * @internal
  */
 export interface ToolbarIconProps extends ToolbarButtonProps {
   /** Button icon. */
@@ -25,7 +25,7 @@ export interface ToolbarIconProps extends ToolbarButtonProps {
 
 /** Toolbar button which displays icon. Used in [[Toolbar]] component.
  * @note See basic button: [[ToolbarButton]]
- * @alpha
+ * @internal
  */
 export class ToolbarIcon extends React.PureComponent<ToolbarIconProps> {
   public override render() {

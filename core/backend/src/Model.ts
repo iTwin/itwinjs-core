@@ -11,8 +11,8 @@
 import { GuidString, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, InformationPartitionElementProps,
-  ModelProps, RelatedElement,
+  AxisAlignedBox3d, ElementProps, EntityReferenceSet, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel,
+  InformationPartitionElementProps, ModelProps, RelatedElement,
 } from "@itwin/core-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
@@ -64,7 +64,7 @@ export interface OnElementInModelIdArg extends OnModelIdArg {
  * See [Creating models]($docs/learning/backend/CreateModels.md)
  * @public
  */
-export class Model extends Entity implements ModelProps {
+export class Model extends Entity {
   /** @internal */
   public static override get className(): string { return "Model"; }
   /** @internal */
@@ -195,7 +195,12 @@ export class Model extends Entity implements ModelProps {
    */
   protected static onDeletedElement(_arg: OnElementInModelIdArg): void { }
 
-  private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
+  private getAllUserProperties(): any {
+    if (!this.jsonProperties.UserProps)
+      this.jsonProperties.UserProps = new Object();
+
+    return this.jsonProperties.UserProps;
+  }
 
   /** Get a set of JSON user properties by namespace */
   public getUserProperties(namespace: string) { return this.getAllUserProperties()[namespace]; }
@@ -210,17 +215,26 @@ export class Model extends Entity implements ModelProps {
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 
   /** Insert this Model in the iModel */
-  public insert() { return this.iModel.models.insertModel(this); }
+  public insert() { return this.id = this.iModel.models.insertModel(this.toJSON()); }
   /** Update this Model in the iModel. */
-  public update() { this.iModel.models.updateModel(this); }
+  public update() { this.iModel.models.updateModel(this.toJSON()); }
   /** Delete this Model from the iModel. */
   public delete() { this.iModel.models.deleteModel(this.id); }
+
+  // NOTE: non-element entities do not yet have a concept of required references
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    if (this.parentModel)
+      referenceIds.addModel(this.parentModel);
+    referenceIds.addElement(this.modeledElement.id);
+  }
 }
 
 /** A container for persisting geometric elements.
  * @public
  */
-export class GeometricModel extends Model implements GeometricModelProps {
+export class GeometricModel extends Model {
   public geometryGuid?: GuidString; // Initialized by the Entity constructor
 
   /** @internal */
@@ -228,17 +242,24 @@ export class GeometricModel extends Model implements GeometricModelProps {
   /** @internal */
   constructor(props: GeometricModelProps, iModel: IModelDb) { super(props, iModel); }
 
-  /** Query for the union of the extents of the elements contained by this model. */
+  /** Query for the union of the extents of the elements contained by this model.
+   * @note This function blocks the JavaScript event loop. Consider using [[queryRange]] instead.
+   */
   public queryExtents(): AxisAlignedBox3d {
     const extents = this.iModel.nativeDb.queryModelExtents({ id: this.id }).modelExtents;
     return Range3d.fromJSON(extents);
+  }
+
+  /** Query for the union of the extents of all elements contained within this model. */
+  public async queryRange(): Promise<AxisAlignedBox3d> {
+    return this.iModel.models.queryRange(this.id);
   }
 }
 
 /** A container for persisting 3d geometric elements.
  * @public
  */
-export abstract class GeometricModel3d extends GeometricModel implements GeometricModel3dProps {
+export abstract class GeometricModel3d extends GeometricModel {
   /** If true, then the elements in this GeometricModel3d are expected to be in an XY plane.
    * @note The associated ECProperty was added to the BisCore schema in version 1.0.8
    */
@@ -261,8 +282,12 @@ export abstract class GeometricModel3d extends GeometricModel implements Geometr
   /** @internal */
   public override toJSON(): GeometricModel3dProps {
     const val = super.toJSON() as GeometricModel3dProps;
-    if (this.isNotSpatiallyLocated) val.isNotSpatiallyLocated = true;
-    if (this.isPlanProjection) val.isPlanProjection = true;
+    if (this.isNotSpatiallyLocated)
+      val.isNotSpatiallyLocated = true;
+
+    if (this.isPlanProjection)
+      val.isPlanProjection = true;
+
     return val;
   }
 }
@@ -270,7 +295,7 @@ export abstract class GeometricModel3d extends GeometricModel implements Geometr
 /** A container for persisting 2d geometric elements.
  * @public
  */
-export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
+export abstract class GeometricModel2d extends GeometricModel {
   /** The actual coordinates of (0,0) in modeling coordinates. An offset applied to all modeling coordinates. */
   public globalOrigin?: Point2d; // Initialized by the Entity constructor
   /** @internal */
@@ -280,7 +305,9 @@ export abstract class GeometricModel2d extends GeometricModel implements Geometr
   /** @internal */
   public override toJSON(): GeometricModel2dProps {
     const val = super.toJSON() as GeometricModel2dProps;
-    if (undefined !== this.globalOrigin) val.globalOrigin = Point2d.fromJSON(this.globalOrigin);
+    if (undefined !== this.globalOrigin)
+      val.globalOrigin = Point2d.fromJSON(this.globalOrigin);
+
     return val;
   }
 }

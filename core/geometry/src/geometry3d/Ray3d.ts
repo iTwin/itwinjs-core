@@ -119,7 +119,7 @@ export class Ray3d implements BeJSONFunctions {
       result.direction.setStartEnd(origin, target);
       return result;
     }
-    return new Ray3d(origin, Vector3d.createStartEnd(origin, target));
+    return new Ray3d(origin.clone(), Vector3d.createStartEnd(origin, target));
   }
   /** Return a reference to the ray's origin. */
   public getOriginRef(): Point3d { return this.origin; }
@@ -337,5 +337,29 @@ export class Ray3d implements BeJSONFunctions {
       CurveLocationDetail.createRayFractionPoint(rayB, fractionB, rayB.fractionToPoint(fractionB)));
     pair.approachType = pairType;
     return pair;
+  }
+
+  /**
+   * Return a ray with `ray.origin` interpolated between pt1 and pt2 at the given fraction
+   * and `ray.direction` set to the vector from pt1 to pt2 multiplied by the given scale factor.
+   * @param pt1 start point of interpolation.
+   * @param fraction fractional position between points.
+   * @param pt2 endpoint of interpolation.
+   * @param tangentScale scale factor to apply to the startToEnd vector.
+   * @param result optional receiver.
+   */
+  public static interpolatePointAndTangent(pt1: XYAndZ, fraction: number, pt2: XYAndZ, tangentScale: number, result?: Ray3d): Ray3d {
+    result = result ?? Ray3d.createZero();
+    const dx = pt2.x - pt1.x;
+    const dy = pt2.y - pt1.y;
+    const dz = pt2.z - pt1.z;
+    result.direction.set(tangentScale * dx, tangentScale * dy, tangentScale * dz);
+    if (fraction <= 0.5)
+      result.origin.set(pt1.x + fraction * dx, pt1.y + fraction * dy, pt1.z + fraction * dz);
+    else {
+      const t: number = fraction - 1.0;
+      result.origin.set(pt2.x + t * dx, pt2.y + t * dy, pt2.z + t * dz);
+    }
+    return result;
   }
 }

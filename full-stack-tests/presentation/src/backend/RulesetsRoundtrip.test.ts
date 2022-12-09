@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { using } from "@itwin/core-bentley";
-import { PresentationManagerMode, RulesetManagerImpl} from "@itwin/presentation-backend";
+import { RulesetManagerImpl } from "@itwin/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@itwin/presentation-backend/lib/cjs/presentation-backend/NativePlatform";
 import { Ruleset } from "@itwin/presentation-common";
 import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
@@ -21,9 +21,7 @@ describe("Rulesets roundtrip", () => {
 
     const TNativePlatform = createDefaultNativePlatform({ // eslint-disable-line @typescript-eslint/naming-convention
       id: "",
-      localeDirectories: [],
       taskAllocationsMap: {},
-      mode: PresentationManagerMode.ReadWrite,
       isChangeTrackingEnabled: false,
     });
     nativePlatform = new TNativePlatform();

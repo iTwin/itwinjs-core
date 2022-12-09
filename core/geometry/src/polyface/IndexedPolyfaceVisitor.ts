@@ -158,7 +158,6 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     if (this.normal && other.normal && index0 < other.normal.length && index1 < other.normal.length)
       this.normal.pushInterpolatedFromGrowableXYZArray(other.normal, index0, fraction, index1);
   }
-
 }
 /**
  * * shift to right by shiftBits.
@@ -215,7 +214,7 @@ export function interpolateColor(color0: number, fraction: number, color1: numbe
  */
 export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
   private _parentFacetIndices: number[];
-  // index WITHIN THE _activeFacetIndices array.
+  // index WITHIN THE _parentFacetIndices array.
   private _nextActiveIndex: number;
   private constructor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number) {
     super(polyface, numWrap);
@@ -230,7 +229,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
    * * The activeFacetIndices array indicates all facets to be visited.
    */
   public static createSubsetVisitor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number): IndexedPolyfaceSubsetVisitor {
-    return new IndexedPolyfaceSubsetVisitor(polyface, activeFacetIndices.slice(), numWrap);
+    return new IndexedPolyfaceSubsetVisitor(polyface, activeFacetIndices, numWrap);
   }
   /** Advance the iterator to a particular facet in the client polyface */
   public override moveToReadIndex(activeIndex: number): boolean {

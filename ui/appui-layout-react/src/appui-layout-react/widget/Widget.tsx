@@ -9,11 +9,12 @@
 import "./Widget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Rectangle, SizeProps } from "@itwin/core-react";
+import { CommonProps, Rectangle, SizeProps, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, MeasureContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
-import { TabState, WidgetState } from "../base/NineZoneState";
+import { WidgetState } from "../state/WidgetState";
+import { TabState } from "../state/TabState";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 
@@ -39,18 +40,15 @@ export const WidgetProvider = React.memo<WidgetProviderProps>(function WidgetPro
 /** @internal */
 export interface WidgetProps extends CommonProps {
   children?: React.ReactNode;
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
   onTransitionEnd?(): void;
   widgetId?: string;
 }
 
 /** @internal */
-export interface WidgetComponent {
-  measure: () => SizeProps;
-}
-
-/** @internal */
 export const Widget = React.memo( // eslint-disable-line react/display-name, @typescript-eslint/naming-convention
-  React.forwardRef<WidgetComponent, WidgetProps>(
+  React.forwardRef<HTMLDivElement, WidgetProps>(
     function Widget(props, ref) { // eslint-disable-line @typescript-eslint/naming-convention
       const dispatch = React.useContext(NineZoneDispatchContext);
       const side = React.useContext(PanelSideContext);
@@ -60,7 +58,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
       const activeTab = useActiveTab();
       const elementRef = React.useRef<HTMLDivElement>(null);
       const widgetId = floatingWidgetId === undefined ? id : floatingWidgetId;
-      const onDragStart = React.useCallback<NonNullable<UseDragWidgetArgs["onDragStart"]>>((updateId, initialPointerPosition) => {
+      const onDragStart = React.useCallback<NonNullable<UseDragWidgetArgs["onDragStart"]>>((updateId, initialPointerPosition, pointerPosition) => {
         assert(!!elementRef.current);
         if (floatingWidgetId !== undefined)
           return;
@@ -74,11 +72,17 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
           bounds = bounds.setSize(activeTab.preferredFloatingWidgetSize);
         }
 
+        /* istanbul ignore next */
+        const userSized = activeTab?.userSized || (activeTab?.isFloatingStateWindowResizable && !!activeTab.preferredFloatingWidgetSize);
+
         // Pointer is outside of tab area. Need to re-adjust widget bounds so that tab is behind pointer
         if (initialPointerPosition.x > bounds.right) {
           const offset = initialPointerPosition.x - bounds.right + 20;
           bounds = bounds.offsetX(offset);
         }
+
+        const dragOffset = initialPointerPosition.getOffsetTo(pointerPosition);
+        bounds = bounds.offset(dragOffset);
 
         // Adjust bounds to be relative to 9z origin
         bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
@@ -91,6 +95,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
           id,
           bounds,
           side,
+          userSized,
         });
       }, [activeTab, dispatch, floatingWidgetId, id, side, measureNz]);
       useDragWidget({
@@ -112,14 +117,12 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
       }, [dispatch, floatingWidgetId]);
       const measure = React.useCallback<WidgetContextArgs["measure"]>(() => {
         const bounds = elementRef.current!.getBoundingClientRect();
-        return bounds;
+        return Rectangle.create(bounds);
       }, []);
       const widgetContextValue = React.useMemo<WidgetContextArgs>(() => ({
         measure,
       }), [measure]);
-      React.useImperativeHandle(ref, () => ({
-        measure,
-      }), [measure]);
+      const refs = useRefs(ref, elementRef);
       const className = classnames(
         "nz-widget-widget",
         props.className,
@@ -128,14 +131,16 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
         <WidgetContext.Provider value={widgetContextValue}>
           <div
             className={className}
+            onMouseEnter={props.onMouseEnter}
+            onMouseLeave={props.onMouseLeave}
             onTransitionEnd={props.onTransitionEnd}
-            ref={elementRef}
+            ref={refs}
             style={props.style}
             data-widget-id={props.widgetId}
           >
             {props.children}
           </div>
-        </WidgetContext.Provider>
+        </WidgetContext.Provider >
       );
     }),
 );
@@ -149,12 +154,12 @@ export const WidgetStateContext = React.createContext<WidgetState | undefined>(u
 WidgetStateContext.displayName = "nz:WidgetStateContext";
 
 /** @internal */
-export const ActiveTabIdContext = React.createContext<WidgetState["activeTabId"]>(null!); // eslint-disable-line @typescript-eslint/naming-convention
+export const ActiveTabIdContext = React.createContext<TabState["id"]>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 ActiveTabIdContext.displayName = "nz:ActiveTabIdContext";
 
 /** @internal */
 export interface WidgetContextArgs {
-  measure: () => SizeProps;
+  measure: () => Rectangle;
 }
 
 /** @internal */
@@ -176,9 +181,7 @@ export function restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): S
 
 /** @internal */
 export function useActiveTab(): TabState | undefined {
-  const widget = React.useContext(WidgetStateContext);
+  const tabId = React.useContext(ActiveTabIdContext);
   const tabs = React.useContext(TabsStateContext);
-  assert(!!widget);
-  const tabId = widget.activeTabId;
   return tabs[tabId];
 }

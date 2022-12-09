@@ -10,12 +10,9 @@ import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
 import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
 
 /**
- * Creates content for ECInstance(s) of specified classes.
+ * This specification creates content for all instances of specific ECClasses.
  *
- * **Note**: this specification doesn't rely on selection. It always returns instances no matter
- * what the selection is, so pre-filtering should be done in [[ContentRule]] condition and [[instanceFilter]].
- *
- * @see [More details]($docs/presentation/Content/ContentInstancesOfSpecificClasses.md)
+ * @see [Content instances of specific classes specification reference documentation page]($docs/presentation/content/ContentInstancesOfSpecificClasses.md)
  * @public
  */
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
@@ -23,23 +20,33 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
   specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses;
 
   /**
-   * List of ECClass specifications whose ECInstances should be selected.
+   * Defines a set of [multi schema classes]($docs/presentation/MultiSchemaClassesSpecification.md) that specify which
+   * ECClasses need to be selected to form the result.
    */
   classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
-  /** Whether to get content from instances of derived `classes`. */
+  /**
+   * Defines a set of [multi schema classes]($docs/presentation/MultiSchemaClassesSpecification.md) that prevents specified
+   * ECClasses and subclasses from being selected by [[classes]] attribute.
+   */
+  excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+
+  /**
+   * Tells whether selecting instances from ECClasses specified in [[classes]] and [[excludedClasses]]
+   * attributes should be polymorphic or not.
+   *
+   * @deprecated Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
+   */
   handleInstancesPolymorphically?: boolean;
 
   /**
-   * Whether to get content from properties of derived `classes`. If `true`, properties from `classes` with no instances
-   * do not appear in the result set.
+   * Specifies whether properties of derived [[classes]] should be included in the content.
    */
   handlePropertiesPolymorphically?: boolean;
 
   /**
-   * Condition for filtering instances of defined classes.
-   *
-   * **See:** [ECExpressions available in instance filter]($docs/presentation/Content/ECExpressions.md#instance-filter)
+   * Specifies an [ECExpression]($docs/presentation/content/ECExpressions.md#instance-filter) for filtering instances
+   * of ECClasses specified through the [[classes]] attribute.
    */
   instanceFilter?: string;
 }

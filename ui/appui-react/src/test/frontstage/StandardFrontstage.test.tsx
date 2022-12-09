@@ -48,7 +48,7 @@ class BasicContentGroupProvider extends ContentGroupProvider {
     ],
   };
 
-  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     return new ContentGroup(this.initialContentGroupProps);
   }
 }
@@ -92,7 +92,7 @@ class TestContentGroupProvider extends ContentGroupProvider {
     return { ...contentGroupProps, contents: newContentsArray };
   }
 
-  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     if (this.hasSavedData) {
       const savedViewLayoutProps = await getSavedViewLayoutProps();
       if (savedViewLayoutProps) {
@@ -109,7 +109,7 @@ describe("ContentGroupProvider", () => {
   before(async () => {
     await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
   });
 
   after(async () => {
@@ -119,12 +119,12 @@ describe("ContentGroupProvider", () => {
 
   beforeEach(() => {
     sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
   });
 
   it("should exercise base Content Group Provider", async () => {
     const provider = new BasicContentGroupProvider();
-    const contentGroup = await provider.provideContentGroup({ id: "test", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: provider });
+    const contentGroup = await provider.provideContentGroup({ id: "test", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: provider }); // eslint-disable-line deprecation/deprecation
     const savedContentGroupProps = provider.prepareToSaveProps(contentGroup.toJSON());
     expect(savedContentGroupProps).to.exist;
     const retrievedContentGroupProps = provider.applyUpdatesToSavedProps(savedContentGroupProps);
@@ -134,7 +134,7 @@ describe("ContentGroupProvider", () => {
   it("Should provide Content Group", async () => {
     const provider = new TestContentGroupProvider();
 
-    const frontstageProps: FrontstageProps = {
+    const frontstageProps: FrontstageProps = { // eslint-disable-line deprecation/deprecation
       id: "test",
       usage: "General",
       defaultTool: CoreTools.selectElementCommand,
@@ -145,7 +145,7 @@ describe("ContentGroupProvider", () => {
     };
 
     expect(provider).to.exist;
-    const contentGroup = await provider.provideContentGroup(frontstageProps);
+    const contentGroup = await provider.provideContentGroup(frontstageProps); // eslint-disable-line deprecation/deprecation
     expect(contentGroup).to.exist;
 
     expect(contentGroup.groupId).to.contain("main-content-group-");

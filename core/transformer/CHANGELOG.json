@@ -2,6 +2,324 @@
   "name": "@itwin/core-transformer",
   "entries": [
     {
+      "version": "3.5.0",
+      "tag": "@itwin/core-transformer_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "use EntityReferences to support deferring non-element entities"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.7",
+      "tag": "@itwin/core-transformer_v3.4.7",
+      "date": "Wed, 30 Nov 2022 14:28:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.6",
+      "tag": "@itwin/core-transformer_v3.4.6",
+      "date": "Tue, 22 Nov 2022 14:24:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.5",
+      "tag": "@itwin/core-transformer_v3.4.5",
+      "date": "Thu, 17 Nov 2022 21:32:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.4",
+      "tag": "@itwin/core-transformer_v3.4.4",
+      "date": "Thu, 10 Nov 2022 19:32:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "handle null ExternalSourceAspect.scope, process system schemas by default"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.3",
+      "tag": "@itwin/core-transformer_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.2",
+      "tag": "@itwin/core-transformer_v3.4.2",
+      "date": "Mon, 24 Oct 2022 13:23:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.1",
+      "tag": "@itwin/core-transformer_v3.4.1",
+      "date": "Mon, 17 Oct 2022 20:06:51 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "use EntityReferences to support deferring non-element entities"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.0",
+      "tag": "@itwin/core-transformer_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Switch from the IModelSchemaLoader to the SchemaLoader"
+          },
+          {
+            "comment": "select * on link tables now also includes SourceECClassId and TargetECClassId"
+          },
+          {
+            "comment": "lock down @types/semver to 7.3.10"
+          },
+          {
+            "comment": "Updated Node types declaration to support latest v16"
+          },
+          {
+            "comment": "handle cascading deletes in IModelTransformer.processChanges"
+          },
+          {
+            "comment": "fix element deletions in reverse synchronization"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.5",
+      "tag": "@itwin/core-transformer_v3.3.5",
+      "date": "Tue, 27 Sep 2022 11:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.4",
+      "tag": "@itwin/core-transformer_v3.3.4",
+      "date": "Thu, 08 Sep 2022 19:00:05 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.3",
+      "tag": "@itwin/core-transformer_v3.3.3",
+      "date": "Tue, 06 Sep 2022 20:54:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.2",
+      "tag": "@itwin/core-transformer_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/core-transformer_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/core-transformer_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "always close transformer resumption state db even on errors"
+          },
+          {
+            "comment": "make sure tests use a unique cacheDir"
+          },
+          {
+            "comment": "IModelHost.startup now accepts IModelHostOptions interface rather than IModelHostConfiguration instance"
+          },
+          {
+            "comment": "move HubMock to core-backend"
+          },
+          {
+            "comment": "deprecate danglingPredecessorsBehavior in favor of danglingReferencesBehavior"
+          },
+          {
+            "comment": "fix IModelExporter not exporting brep data when exporting geometry"
+          },
+          {
+            "comment": "Fix assertion on valid case in mapId64."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/core-transformer_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/core-transformer_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.7",
+      "tag": "@itwin/core-transformer_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@itwin/core-transformer_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.5",
+      "tag": "@itwin/core-transformer_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.4",
+      "tag": "@itwin/core-transformer_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.3",
+      "tag": "@itwin/core-transformer_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.2",
+      "tag": "@itwin/core-transformer_v3.2.2",
+      "date": "Fri, 10 Jun 2022 16:11:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.1",
+      "tag": "@itwin/core-transformer_v3.2.1",
+      "date": "Tue, 07 Jun 2022 15:02:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.0",
+      "tag": "@itwin/core-transformer_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "always close transformer resumption state db even on errors"
+          },
+          {
+            "comment": "Add an option to IModelImporter to optimize geometry by identifying geometry parts with only one reference and embedding the part's geometry directly into the referencing element's geometry stream."
+          },
+          {
+            "comment": "add transformer resumption API"
+          },
+          {
+            "comment": "use refactored internal extractChangedIdsFromChangesets"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/core-transformer_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/core-transformer_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/core-transformer_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/core-transformer_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "mitigate memory leak in large model processing"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/core-transformer_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/core-transformer_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/core-transformer_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add ignoreDeadPredecessors option to transformer, deprecate direct importer options access"
+          },
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "rename to @itwin/core-transformer"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "removed deprecated API surface"
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "Renamed all occurrences of the term revision0 to version0."
+          },
+          {
+            "comment": "remove requestContext argument from importSchemas"
+          },
+          {
+            "comment": "create new imodel-transformer package separate from backend package"
+          },
+          {
+            "comment": "fix bug where element aspect export could be mishandled when the element was deferred"
+          },
+          {
+            "comment": "add preserveElementIdsForFiltering option for transformations"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.0.0",
       "tag": "@itwin/core-transformer_v3.0.0",
       "date": "Fri, 20 Aug 2021 20:34:29 GMT",

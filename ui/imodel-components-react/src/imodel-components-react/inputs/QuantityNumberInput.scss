@@ -39,6 +39,7 @@
       right: 0;
       width: 20px;
       height: 22px;
+      padding-top: 1.5px;
       @include uicore-centered;
       flex-direction: column;
 
@@ -84,6 +85,23 @@
           }
         }
       }
+    }
+  }
+
+  &.component-quantity-number-input-disabled {
+    .component-quantity-number-input-suffix {
+      -webkit-user-select: none;
+      user-select: none;
+      color: $buic-foreground-disabled;
+    }
+    .component-quantity-number-input-button-up {
+      pointer-events: none;
+      color: $buic-foreground-disabled;
+    }
+
+    .component-quantity-number-input-button-down {
+      pointer-events: none;
+      color: $buic-foreground-disabled;
     }
   }
 }

@@ -4,15 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import sinon from "sinon";
-import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyData } from "@itwin/components-react";
+import { IModelApp, IModelConnection, ITwinIdArg, PreferenceArg, PreferenceKeyArg, SnapshotConnection, TokenArg } from "@itwin/core-frontend";
 import { Field, KeySet } from "@itwin/presentation-common";
 import { DEFAULT_PROPERTY_GRID_RULESET, FAVORITES_CATEGORY_NAME, PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import {
   createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, FavoritePropertiesManager, FavoritePropertiesScope, Presentation,
 } from "@itwin/presentation-frontend";
-import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyData } from "@itwin/components-react";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
 
 describe("Favorite properties", () => {
@@ -264,7 +263,7 @@ describe("Favorite properties", () => {
 
     function setupFavoritesStorageWithSettingsService() {
       Presentation.setFavoritePropertiesManager(new FavoritePropertiesManager({
-        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage),
       }));
     }
 
@@ -279,13 +278,11 @@ describe("Favorite properties", () => {
 
     it("favorite properties survive Presentation re-initialization", async () => {
       const storage = new Map<string, any>();
-      sinon.stub(IModelApp.settings, "saveUserSetting").callsFake(async (_, value, _settingNs, settingId) => {
-        storage.set(settingId, value);
-        return new SettingsResult(SettingsStatus.Success);
-      });
-      sinon.stub(IModelApp.settings, "getUserSetting").callsFake(async (_, _settingNs, settingId) => {
-        return new SettingsResult(SettingsStatus.Success, undefined, storage.get(settingId));
-      });
+      sinon.stub(IModelApp, "userPreferences").get(() => ({
+        get: async (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => storage.get(arg.key),
+        save: async (arg: PreferenceArg & ITwinIdArg & TokenArg) => storage.set(arg.key, arg.content),
+        delete: async (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => storage.delete(arg.key),
+      }));
 
       propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
       let propertyData = await propertiesDataProvider.getData();

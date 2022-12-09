@@ -140,7 +140,7 @@ export class StopWatch {
   public get current(): BeDuration { return BeDuration.fromMilliseconds(BeTimePoint.now().milliseconds - (!!this._start ? this._start.milliseconds : 0)); }
   /** Get the elapsed time, in seconds, since start() on a running timer. */
   public get currentSeconds(): number { return this.current.seconds; }
-  /** Get the elapsed time between start() and stop() on this timer. */
+  /** Get the elapsed time between start() and stop() on this timer in milliseconds. */
   public get elapsed(): BeDuration { return BeDuration.fromMilliseconds((!!this._stop ? this._stop.milliseconds : BeTimePoint.now().milliseconds) - (!!this._start ? this._start.milliseconds : 0)); }
   /** Get the elapsed time, in seconds, between start() and stop() on this  timer. */
   public get elapsedSeconds(): number { return this.elapsed.seconds; }
@@ -148,11 +148,23 @@ export class StopWatch {
    * @param description optional string stored with the StopWatch
    * @param startImmediately if true, StopWatch is started when created. Otherwise, call start() explicitly.
    */
-  constructor(public description?: string, startImmediately = false) { if (startImmediately) this.start(); }
+  constructor(public description?: string, startImmediately = false) {
+    if (startImmediately)
+      this.start();
+  }
+
   /** Start the stopwatch. Any future time measurements will be based on this new value. */
-  public start(): void { this.reset(); this._start = BeTimePoint.now(); }
+  public start(): void {
+    this.reset();
+    this._start = BeTimePoint.now();
+  }
+
   /** Stop the stopwatch so that the duration can be viewed later. */
-  public stop(): BeDuration { this._stop = BeTimePoint.now(); return this.elapsed; }
+  public stop(): BeDuration {
+    this._stop = BeTimePoint.now();
+    return this.elapsed;
+  }
+
   /** Clear the StopWatch */
   public reset(): void { this._start = this._stop = undefined; }
 }

@@ -2,7 +2,7 @@
 
 exports[`BasicToolWidget BasicToolWidget should render correctly 1`] = `
 <ToolWidgetComposer
-  className="nz-hidden"
+  className=""
   cornerItem={
     <BackstageAppButton
       icon={undefined}
@@ -257,7 +257,7 @@ exports[`BasicToolWidget BasicToolWidget should render correctly 1`] = `
 
 exports[`BasicToolWidget BasicToolWidget with bentley B should render 1`] = `
 <ToolWidgetComposer
-  className="nz-hidden"
+  className=""
   cornerItem={
     <BackstageAppButton
       icon="icon-bentley-systems"
@@ -606,7 +606,7 @@ exports[`BasicToolWidget BasicToolWidget with bentley B should render 1`] = `
 
 exports[`BasicToolWidget BasicToolWidget with suffix and prefix items should render correctly 1`] = `
 <ToolWidgetComposer
-  className="nz-hidden"
+  className=""
   cornerItem={
     <BackstageAppButton
       icon={undefined}

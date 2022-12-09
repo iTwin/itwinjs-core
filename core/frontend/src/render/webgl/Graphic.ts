@@ -7,16 +7,17 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, FeatureAppearanceProvider, PackedFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
+import { Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
-import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { BatchOptions } from "../GraphicBuilder";
+import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { ClipVolume } from "./ClipVolume";
 import { WebGLDisposable } from "./Disposable";
+import { EdgeSettings } from "./EdgeSettings";
 import { FeatureOverrides } from "./FeatureOverrides";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { Primitive } from "./Primitive";
@@ -24,7 +25,6 @@ import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
 import { TextureDrape } from "./TextureDrape";
-import { EdgeSettings } from "./EdgeSettings";
 import { ThematicSensors } from "./ThematicSensors";
 
 /** @internal */
@@ -288,10 +288,12 @@ export class Branch extends Graphic {
   public readonly clips?: ClipVolume;
   public readonly planarClassifier?: PlanarClassifier;
   public readonly textureDrape?: TextureDrape;
+  public readonly layerClassifiers?: Map<number, PlanarClassifier>;
   public readonly edgeSettings?: EdgeSettings;
   public readonly iModel?: IModelConnection; // used chiefly for readPixels to identify context of picked Ids.
   public readonly frustum?: GraphicBranchFrustum;
   public readonly appearanceProvider?: FeatureAppearanceProvider;
+  public readonly secondaryClassifiers?: PlanarClassifier[];
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -316,6 +318,14 @@ export class Branch extends Graphic {
       this.planarClassifier = opts.classifierOrDrape;
     else if (opts.classifierOrDrape instanceof TextureDrape)
       this.textureDrape = opts.classifierOrDrape;
+
+    if (opts.secondaryClassifiers) {
+      this.secondaryClassifiers = new Array<PlanarClassifier>();
+      opts.secondaryClassifiers.forEach((classifier) => {
+        if (classifier instanceof PlanarClassifier)
+          this.secondaryClassifiers?.push(classifier);
+      });
+    }
   }
 
   public get isDisposed(): boolean {
@@ -334,12 +344,60 @@ export class Branch extends Graphic {
     this.branch.collectStatistics(stats);
   }
 
+  private shouldAddCommands(commands: RenderCommands): boolean {
+    const nodeId = commands.target.getAnimationTransformNodeId(this.branch.animationNodeId);
+    return undefined === nodeId || nodeId === commands.target.currentAnimationTransformNodeId;
+  }
+
   public addCommands(commands: RenderCommands): void {
-    commands.addBranch(this);
+    if (this.shouldAddCommands(commands))
+      commands.addBranch(this);
   }
 
   public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
-    commands.addHiliteBranch(this, pass);
+    if (this.shouldAddCommands(commands))
+      commands.addHiliteBranch(this, pass);
+  }
+}
+
+/** @internal */
+export class AnimationTransformBranch extends Graphic {
+  public readonly nodeId: number;
+  public readonly graphic: Graphic;
+
+  public constructor(graphic: RenderGraphic, nodeId: number) {
+    super();
+    assert(graphic instanceof Graphic);
+    this.graphic = graphic;
+    this.nodeId = nodeId;
+  }
+
+  public override dispose() {
+    this.graphic.dispose();
+  }
+
+  public override get isDisposed() {
+    return this.graphic.isDisposed;
+  }
+
+  public override get isPickable() {
+    return this.graphic.isPickable;
+  }
+
+  public override collectStatistics(stats: RenderMemory.Statistics) {
+    this.graphic.collectStatistics(stats);
+  }
+
+  public override addCommands(commands: RenderCommands) {
+    commands.target.currentAnimationTransformNodeId = this.nodeId;
+    this.graphic.addCommands(commands);
+    commands.target.currentAnimationTransformNodeId = undefined;
+  }
+
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass) {
+    commands.target.currentAnimationTransformNodeId = this.nodeId;
+    this.graphic.addHiliteCommands(commands, pass);
+    commands.target.currentAnimationTransformNodeId = undefined;
   }
 }
 

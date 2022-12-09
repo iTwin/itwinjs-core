@@ -17,6 +17,7 @@ interface MobileAddon {
 
 let addon: MobileAddon | undefined;
 
+/** @beta */
 export class MobileRpcServer {
   private static _nextId = -1;
 
@@ -34,7 +35,7 @@ export class MobileRpcServer {
   private _connectionId: number;
   private _pingTimer: NodeJS.Timeout;
   public constructor() {
-    /* _pingTime is a fix for ios/mobile case where when app move into foreground from
+    /* _pingTime is a fix for ios/mobile case where when the app moves into foreground from
      * background backend restart ws.Server and then notify frontend to reconnect. But ws.Server
      * listening event is not fired as node yield to kevent and wait for some io event to happen.
      * This causes a delay in reconnection which may be as long a 40 secs. To solve the issue we

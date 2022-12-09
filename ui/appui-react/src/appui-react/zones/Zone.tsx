@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Zone
  */
@@ -26,7 +27,7 @@ import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
 import { ZoneDef, ZoneState } from "./ZoneDef";
 
 /** Enum for [[Zone]] Location.
- * @public
+ * @public @deprecated
  */
 export enum ZoneLocation {
   TopLeft = 1,
@@ -40,6 +41,7 @@ export enum ZoneLocation {
 }
 
 /** Properties of a [[Zone]] component
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface ZoneProps extends CommonProps {
@@ -71,23 +73,23 @@ export interface ZoneRuntimeProps {
   activeTabIndex: number;
   disabledResizeHandles: DisabledResizeHandles | undefined;
   draggedWidget: DraggedWidgetManagerProps | undefined;
-  dropTarget: ZoneTargetType | undefined;
-  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  dropTarget: ZoneTargetType | undefined; // eslint-disable-line deprecation/deprecation
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
   ghostOutline: RectangleProps | undefined;
   isHidden: boolean;
   isInFooterMode: boolean;
-  openWidgetId: WidgetZoneId | undefined;
-  targetChangeHandler: TargetChangeHandler;
+  openWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
+  targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
   widget: WidgetManagerProps | undefined;
   widgetTabs: WidgetTabs;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   zoneDefProvider: ZoneDefProvider;
   zoneDef: ZoneDef;
   zone: ZoneManagerProps;
 }
 
 /** @internal */
-export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string) {
+export function getStableWidgetProps<T extends { id?: string }>(widgetProps: T, stableId: string) {
   let props = widgetProps;
   if (props.id === undefined)
     props = {
@@ -99,6 +101,7 @@ export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string)
 
 /** Zone React component.
  * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
+ * @deprecated Use [[WidgetConfig]] or [[StagePanelConfig]] instead.
  * @public
  */
 export class Zone extends React.Component<ZoneProps> {
@@ -256,7 +259,7 @@ export class Zone extends React.Component<ZoneProps> {
     }
   };
 
-  private getWidgetIdForDef(widgetDef: WidgetDef): WidgetZoneId | undefined {
+  private getWidgetIdForDef(widgetDef: WidgetDef): WidgetZoneId | undefined { // eslint-disable-line deprecation/deprecation
     // istanbul ignore if
     if (!this.props.runtimeProps)
       return undefined;

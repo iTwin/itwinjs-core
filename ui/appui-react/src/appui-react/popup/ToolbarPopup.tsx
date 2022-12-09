@@ -14,7 +14,8 @@ import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup } from "./PositionPopup";
 
-/** @alpha */
+/** Props for a popup toolbar
+ * @beta */
 export interface ToolbarPopupProps extends PopupPropsBase {
   items: CommonToolbarItem[];
   relativePosition: RelativePosition;
@@ -28,8 +29,8 @@ interface ToolbarPopupState {
   size: Size;
 }
 
-/** Popup component for Input Editor
- * @alpha
+/** Popup component for Toolbar
+ * @beta
  */
 export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps, ToolbarPopupState> {
   /** @internal */

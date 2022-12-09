@@ -1,0 +1,53 @@
+{
+  "$id": "http://itwinjs.org/json-schema/workspace",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Workspace settings",
+  "description": "settings for accessing data from workspaces",
+  "type": "object",
+  "groupName": "workspace",
+  "properties": {
+    "workspace/databases": {
+      "type": "array",
+      "cumulative": true,
+      "description": "array of workspace databases",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "dbName",
+          "containerName"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "the alias name of the workspace database"
+          },
+          "dbName": {
+            "type": "string",
+            "description": "the name of the database within its cloud container"
+          },
+          "containerName": {
+            "type": "string",
+            "description": "the container name"
+          },
+          "version": {
+            "type": "string",
+            "description": "the (semver) range of acceptable versions"
+          },
+          "includePrerelease": {
+            "type": "boolean",
+            "description": "include prerelease version as acceptable versions"
+          },
+          "priority": {
+            "type": "number",
+            "description": "for sorted databases, higher values are searched first"
+          },
+          "prefetch": {
+            "type": "boolean",
+            "description": "if true, pre-fetch all of the data from the cloud in the background"
+          }
+        }
+      }
+    }
+  }
+}

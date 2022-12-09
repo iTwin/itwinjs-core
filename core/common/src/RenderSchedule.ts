@@ -6,7 +6,11 @@
  * @module DisplayStyles
  */
 
-import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import {
+  assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStrings, compareStringsOrUndefined,
+  CompressedId64Set, Constructor, Id64, Id64String, OrderedId64Iterable,
+} from "@itwin/core-bentley";
+import { EntityReferenceSet } from "./EntityReference";
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
 } from "@itwin/core-geometry";
@@ -19,6 +23,26 @@ function interpolate(start: number, end: number, fraction: number): number {
 
 function interpolateRgb(start: RgbColor, end: RgbColor, fraction: number): RgbColor {
   return new RgbColor(interpolate(start.r, end.r, fraction), interpolate(start.g, end.g, fraction), interpolate(start.b, end.b, fraction));
+}
+
+function compareXYZ(lhs: XYAndZ, rhs: XYAndZ): number {
+  return compareNumbers(lhs.x, rhs.x) || compareNumbers(lhs.y, rhs.y) || compareNumbers(lhs.z, rhs.z);
+}
+
+function compare4d(lhs: Point4d, rhs: Point4d): number {
+  return compareNumbers(lhs.x, rhs.x) || compareNumbers(lhs.y, rhs.y) || compareNumbers(lhs.z, rhs.z) || compareNumbers(lhs.w, rhs.w);
+}
+
+const scratchVec3a = new Vector3d();
+const scratchVec3b = new Vector3d();
+function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
+  return compareXYZ(lhs.columnX(scratchVec3a), rhs.columnX(scratchVec3b))
+    || compareXYZ(lhs.columnY(scratchVec3a), rhs.columnY(scratchVec3b))
+    || compareXYZ(lhs.columnZ(scratchVec3a), rhs.columnZ(scratchVec3b));
+}
+
+function compareDurations(lhs: Range1d, rhs: Range1d): number {
+  return compareNumbers(lhs.low, rhs.low) || compareNumbers(lhs.high, rhs.high);
 }
 
 /** Namespace containing types that collectively define a script that animates the contents of a view by adjusting the visibility, position,
@@ -176,6 +200,14 @@ export namespace RenderSchedule {
 
       return props;
     }
+
+    public compareTo(other: TimelineEntry): number {
+      return compareNumbers(this.interpolation, other.interpolation) || compareNumbers(this.time, other.time);
+    }
+
+    public equals(other: TimelineEntry): boolean {
+      return 0 === this.compareTo(other);
+    }
   }
 
   /** A timeline entry that controls the visibility of the associated geometry. */
@@ -199,6 +231,11 @@ export namespace RenderSchedule {
         props.value = this.value;
 
       return props;
+    }
+
+    public override compareTo(other: VisibilityEntry): number {
+      assert(other instanceof VisibilityEntry);
+      return super.compareTo(other) || compareNumbers(this.value, other.value);
     }
   }
 
@@ -224,6 +261,11 @@ export namespace RenderSchedule {
       }
 
       return props;
+    }
+
+    public override compareTo(other: ColorEntry): number {
+      assert(other instanceof ColorEntry);
+      return super.compareTo(other) || comparePossiblyUndefined((lhs, rhs) => lhs.compareTo(rhs), this.value, other.value);
     }
   }
 
@@ -256,6 +298,14 @@ export namespace RenderSchedule {
         orientation: [this.orientation.x, this.orientation.y, this.orientation.z, this.orientation.w],
       };
     }
+
+    public compareTo(other: TransformComponents): number {
+      return compareXYZ(this.pivot, other.pivot) || compareXYZ(this.position, other.position) || compare4d(this.orientation, other.orientation);
+    }
+
+    public equals(other: TransformComponents): boolean {
+      return this.pivot.isAlmostEqual(other.pivot) && this.position.isAlmostEqual(other.position) && this.orientation.isAlmostEqual(other.orientation);
+    }
   }
 
   /** A timeline entry that applies rotation, scaling, and/or translation to the affected geometry. */
@@ -282,6 +332,22 @@ export namespace RenderSchedule {
       }
 
       return props;
+    }
+
+    public override compareTo(other: TransformEntry): number {
+      assert(other instanceof TransformEntry);
+      const cmp = super.compareTo(other);
+      if (0 !== cmp)
+        return cmp;
+
+      if (this.components || other.components) {
+        if (!this.components || !other.components)
+          return this.components ? 1 : -1;
+
+        return this.components.compareTo(other.components);
+      }
+
+      return compareXYZ(this.value.origin, other.value.origin) || compareMatrices(this.value.matrix, other.value.matrix);
     }
   }
 
@@ -317,6 +383,14 @@ export namespace RenderSchedule {
 
       return props;
     }
+
+    public compareTo(other: CuttingPlane): number {
+      return compareXYZ(this.position, other.position) || compareXYZ(this.direction, other.direction) || compareBooleans(this.visible, other.visible) || compareBooleans(this.hidden, other.hidden);
+    }
+
+    public equals(other: CuttingPlane): boolean {
+      return 0 === this.compareTo(other);
+    }
   }
 
   /** A timeline entry that applies a [ClipPlane]($core-geometry) to the affected geometry. */
@@ -336,6 +410,11 @@ export namespace RenderSchedule {
         props.value = this.value.toJSON();
 
       return props;
+    }
+
+    public override compareTo(other: CuttingPlaneEntry): number {
+      assert(other instanceof CuttingPlaneEntry);
+      return super.compareTo(other) || comparePossiblyUndefined((x, y) => x.compareTo(y), this.value, other.value);
     }
   }
 
@@ -402,6 +481,21 @@ export namespace RenderSchedule {
 
     public toJSON(): P[] {
       return this._entries.map((x) => x.toJSON() as P);
+    }
+
+    public compareTo(other: TimelineEntryList<T, P, V>): number {
+      let cmp = compareNumbers(this._entries.length, other._entries.length) || compareDurations(this.duration, other.duration);
+      if (0 === cmp) {
+        for (let i = 0; i < this.length; i++)
+          if (0 !== (cmp = this._entries[i].compareTo(other._entries[i])))
+            break;
+      }
+
+      return cmp;
+    }
+
+    public equals(other: TimelineEntryList<T, P, V>): boolean {
+      return 0 === this.compareTo(other);
     }
 
     /** @internal */
@@ -505,6 +599,29 @@ export namespace RenderSchedule {
         transformTimeline: this.transform?.toJSON(),
         cuttingPlaneTimeline: this.cuttingPlane?.toJSON(),
       };
+    }
+
+    public compareTo(other: Timeline): number {
+      const cmp = compareDurations(this.duration, other.duration);
+      if (0 !== cmp)
+        return cmp;
+
+      // Do cheaper checks before iterating through timeline entries
+      if (!!this.visibility !== !!other.visibility)
+        return this.visibility ? 1 : -1;
+      else if (!!this.color !== !!other.color)
+        return this.color ? 1 : -1;
+      else if (!!this.transform !== !!other.transform)
+        return this.transform ? 1 : -1;
+      else if (!!this.cuttingPlane !== !!other.cuttingPlane)
+        return this.cuttingPlane ? 1 : -1;
+
+      return comparePossiblyUndefined((x, y) => x.compareTo(y), this.visibility, other.visibility) || comparePossiblyUndefined((x, y) => x.compareTo(y), this.color, other.color)
+        || comparePossiblyUndefined((x, y) => x.compareTo(y), this.transform, other.transform) || comparePossiblyUndefined((x, y) => x.compareTo(y), this.cuttingPlane, other.cuttingPlane);
+    }
+
+    public equals(other: Timeline): boolean {
+      return 0 === this.compareTo(other);
     }
 
     /** Get the visibility of the geometry at the specified time point. */
@@ -643,6 +760,44 @@ export namespace RenderSchedule {
       };
     }
 
+    public get containsElementIds(): boolean {
+      return this._elementIds.length > 0;
+    }
+
+    private compareElementIds(other: ElementTimeline): number {
+      if (typeof this._elementIds === typeof other._elementIds) {
+        const cmp = compareNumbers(this._elementIds.length, other._elementIds.length);
+        if (0 !== cmp)
+          return cmp;
+
+        if (typeof this._elementIds === "string") {
+          assert(typeof other._elementIds === "string");
+          return compareStrings(this._elementIds, other._elementIds);
+        }
+      }
+
+      // One or both are stored as arrays, in which case they might contain the same Ids in different orders. We will consider them different in that case.
+      const mine = this.elementIds[Symbol.iterator]();
+      const theirs = other.elementIds[Symbol.iterator]();
+      while (true) {
+        const a = mine.next();
+        const b = theirs.next();
+        if (a.done !== b.done)
+          return compareBooleans(!!a.done, !!b.done);
+        else if (a.done)
+          return 0;
+
+        const cmp = compareStrings(a.value, b.value);
+        if (0 !== cmp)
+          return cmp;
+      }
+    }
+
+    public override compareTo(other: ElementTimeline): number {
+      assert(other instanceof ElementTimeline);
+      return compareNumbers(this.batchId, other.batchId) || this.compareElementIds(other) || super.compareTo(other);
+    }
+
     /** @internal */
     public static getElementIds(ids: Id64String[] | CompressedId64Set): Iterable<Id64String> {
       if (typeof ids === "string")
@@ -715,6 +870,16 @@ export namespace RenderSchedule {
     public readonly requiresBatching: boolean;
     /** True if this timeline affects the position, orientation, or scale of the geometry. */
     public readonly containsTransform: boolean;
+    /** True if any [[RenderSchedule.ElementTimeline]]s exist and none of them contain any element Ids. This generally indicates that
+     * the backend was instructed to omit the Ids to save space when supplying the script.
+     */
+    public readonly omitsElementIds: boolean;
+    private _maxBatchId?: number;
+    /** Tile tree suppliers perform **very** frequent ordered comparisons of ModelTimelines. They need to be fast. */
+    private readonly _cachedComparisons = new WeakMap<ModelTimeline, number>();
+    /** When loading tiles we need to quickly map element Ids to batch Ids. This map is initialized on first call to [[getTimelineForElement]] to facilitate that lookup. */
+    private _idPairToElementTimeline?: Id64.Uint32Map<ElementTimeline>;
+    private _discreteBatchIds?: Set<number>;
 
     private constructor(props: ModelTimelineProps) {
       super(props);
@@ -729,7 +894,7 @@ export namespace RenderSchedule {
 
       const transformBatchIds: number[] = [];
       const elementTimelines: ElementTimeline[] = [];
-
+      let containsElementIds = false;
       for (const elProps of props.elementTimelines) {
         const el = ElementTimeline.fromJSON(elProps);
         elementTimelines.push(el);
@@ -744,10 +909,12 @@ export namespace RenderSchedule {
 
         containsFeatureOverrides ||= el.containsFeatureOverrides;
         requiresBatching ||= el.requiresBatching;
+        containsElementIds = containsElementIds || el.containsElementIds;
       }
 
       this.elementTimelines = elementTimelines;
       this.transformBatchIds = transformBatchIds;
+      this.omitsElementIds = elementTimelines.length > 0 && !containsElementIds;
 
       this.containsFeatureOverrides = containsFeatureOverrides;
       this.requiresBatching = requiresBatching;
@@ -767,6 +934,31 @@ export namespace RenderSchedule {
       };
     }
 
+    public override compareTo(other: ModelTimeline): number {
+      if (this === other)
+        return 0;
+
+      const cached = this._cachedComparisons.get(other);
+      if (undefined !== cached)
+        return cached;
+
+      assert(other instanceof ModelTimeline);
+      let cmp = compareStrings(this.modelId, other.modelId) || compareStringsOrUndefined(this.realityModelUrl, other.realityModelUrl)
+        || compareNumbers(this.elementTimelines.length, other.elementTimelines.length) || compareBooleans(this.containsFeatureOverrides, other.containsFeatureOverrides)
+        || compareBooleans(this.containsModelClipping, other.containsModelClipping) || compareBooleans(this.containsTransform, other.containsTransform)
+        || super.compareTo(other);
+
+      if (0 === cmp) {
+        for (let i = 0; i < this.elementTimelines.length; i++)
+          if (0 !== (cmp = this.elementTimelines[i].compareTo(other.elementTimelines[i])))
+            break;
+      }
+
+      this._cachedComparisons.set(other, cmp);
+      other._cachedComparisons.set(this, -cmp);
+      return cmp;
+    }
+
     /** Look up the element timeline with the specified batch Id. */
     public findByBatchId(batchId: number): ElementTimeline | undefined {
       return this.elementTimelines.find((x) => x.batchId === batchId);
@@ -776,7 +968,7 @@ export namespace RenderSchedule {
     public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
       const appearance = this.getFeatureAppearance(this.getVisibility(time), time);
       if (appearance)
-        overrides.overrideModel(this.modelId, appearance);
+        overrides.override({ modelId: this.modelId, appearance });
 
       for (const timeline of this.elementTimelines)
         timeline.addSymbologyOverrides(overrides, time);
@@ -785,6 +977,49 @@ export namespace RenderSchedule {
     /** Obtain the transform applied to the model at the specified time point, if any. */
     public getTransform(batchId: number, time: number): Readonly<Transform> | undefined {
       return this.findByBatchId(batchId)?.getAnimationTransform(time);
+    }
+
+    /** Get the highest batchId of any ElementTimeline in this timeline. */
+    public get maxBatchId(): number {
+      if (undefined === this._maxBatchId) {
+        this._maxBatchId = 0;
+        for (const elem of this.elementTimelines)
+          this._maxBatchId = Math.max(this._maxBatchId, elem.batchId);
+      }
+
+      return this._maxBatchId;
+    }
+
+    /** Given the two halves of an [Id64]($bentley) return the [[ElementTimeline]] containing the corresponding element.
+     * @note The first call to this method populates a mapping for fast lookup.
+     * @alpha
+     */
+    public getTimelineForElement(idLo: number, idHi: number): ElementTimeline | undefined {
+      if (!this._idPairToElementTimeline) {
+        this._idPairToElementTimeline = new Id64.Uint32Map<ElementTimeline>();
+        for (const timeline of this.elementTimelines) {
+          for (const elementId of timeline.elementIds) {
+            // NB: a malformed script may place the same element Id into multiple timelines. We're not going to check for such data errors here.
+            this._idPairToElementTimeline.setById(elementId, timeline);
+          }
+        }
+      }
+
+      return this._idPairToElementTimeline.get(idLo, idHi);
+    }
+
+    /** The batch Ids of the subset of [[elementTimelines]] that apply a transform and/or cutting plane.
+     * @alpha
+     */
+    public get discreteBatchIds(): Set<number> {
+      if (!this._discreteBatchIds) {
+        this._discreteBatchIds = new Set<number>(this.transformBatchIds);
+        for (const timeline of this.elementTimelines)
+          if (!timeline.containsTransform && undefined !== timeline.cuttingPlane)
+            this._discreteBatchIds.add(timeline.batchId);
+      }
+
+      return this._discreteBatchIds;
     }
   }
 
@@ -810,9 +1045,42 @@ export namespace RenderSchedule {
     public readonly containsFeatureOverrides: boolean;
     /** The total time period over which this script animates. */
     public readonly duration: Range1d;
+    /** The batchIds of all nodes in all timelines that apply a transform.
+     * @internal
+     */
+    public readonly transformBatchIds: ReadonlySet<number>;
+    /** Tile tree references perform **very** frequent ordered comparisons of Scripts. They need to be fast. */
+    private readonly _cachedComparisons = new WeakMap<Script, number>();
+
+    public compareTo(other: Script): number {
+      if (this === other)
+        return 0;
+
+      const cached = this._cachedComparisons.get(other);
+      if (undefined !== cached)
+        return cached;
+
+      let cmp = compareNumbers(this.modelTimelines.length, other.modelTimelines.length) || compareBooleans(this.containsModelClipping, other.containsModelClipping)
+        || compareBooleans(this.requiresBatching, other.requiresBatching) || compareBooleans(this.containsTransform, other.containsTransform)
+        || compareBooleans(this.containsFeatureOverrides, other.containsFeatureOverrides) || compareDurations(this.duration, other.duration);
+
+      if (0 === cmp) {
+        for (let i = 0; i < this.modelTimelines.length; i++)
+          if (0 !== (cmp = this.modelTimelines[i].compareTo(other.modelTimelines[i])))
+            break;
+      }
+
+      this._cachedComparisons.set(other, cmp);
+      other._cachedComparisons.set(this, -cmp);
+      return cmp;
+    }
+    public equals(other: Script): boolean {
+      return 0 === this.compareTo(other);
+    }
 
     protected constructor(props: Readonly<ScriptProps>) {
       this.duration = Range1d.createNull();
+      const transformBatchIds = new Set<number>();
 
       const modelTimelines: ModelTimeline[] = [];
       let containsModelClipping = false;
@@ -830,6 +1098,9 @@ export namespace RenderSchedule {
         requiresBatching ||= model.requiresBatching;
         containsTransform ||= model.containsTransform;
         containsFeatureOverrides ||= model.containsFeatureOverrides;
+
+        for (const batchId of model.transformBatchIds)
+          transformBatchIds.add(batchId);
       }
 
       this.modelTimelines = modelTimelines;
@@ -837,6 +1108,7 @@ export namespace RenderSchedule {
       this.containsTransform = containsTransform;
       this.requiresBatching = requiresBatching || this.containsTransform;
       this.containsFeatureOverrides = containsFeatureOverrides;
+      this.transformBatchIds = transformBatchIds;
     }
 
     public static fromJSON(props: Readonly<ScriptProps>): Script | undefined {
@@ -871,37 +1143,70 @@ export namespace RenderSchedule {
         timeline.addSymbologyOverrides(overrides, time);
     }
 
-    /** Used by collectPredecessorIds methods of RenderTimeline and DisplayStyle.
+    /** Used by the [Entity.collectReferenceIds]($backend) method overrides in RenderTimeline and DisplayStyle.
      * @internal
      */
-    public discloseIds(ids: Id64Set): void {
+    public discloseIds(ids: EntityReferenceSet) {
       for (const model of this.modelTimelines) {
-        ids.add(model.modelId);
+        ids.addModel(model.modelId);
         for (const element of model.elementTimelines)
           for (const id of element.elementIds)
-            ids.add(id);
+            ids.addElement(id);
+      }
+    }
+
+    /** @internal */
+    public modelRequiresBatching(modelId: Id64String): boolean {
+      // Only if the script contains animation (cutting plane, transform or visibility by node ID) do we require separate tilesets for animations.
+      return this.requiresBatching && this.modelTimelines.some((x) => x.modelId === modelId && x.requiresBatching);
+    }
+  }
+
+  /** A reference to a [[RenderSchedule.Script]], optionally identifying the source of the script.
+   * @see [DisplayStyle.loadScheduleScript]($backend) and [DisplayStyleState.scheduleScript]($frontend) to obtain the script reference for a display style on the frontend
+   * and backend respectively.
+   * @see [DisplayStyleState.scheduleScript]($frontend) or [DisplayStyleState.changeRenderTimeline]($frontend) to change a display style's script on the frontend.
+   */
+  export class ScriptReference {
+    /** The Id of the element - if any - from which the script originated.
+     * A schedule script may originate from one of the following sources:
+     *  - A [RenderTimeline]($backend) element stored in the iModel; or
+     *  - The `scheduleScript` JSON property of a [DisplayStyle]($backend) element stored in the iModel; or
+     *  - Any other source outside of the iModel, such as code that generates the script on the frontend, a script obtained from some server, etc.
+     *
+     * The [[sourceId]] property identifies the Id of the element from which the script originated; an empty or invalid [Id64String]($bentley) indicates the script did not
+     * originate from any persistent element. If the Id is valid, the contents of [[script]] are assumed to match those stored on the source element.
+     */
+    public readonly sourceId: Id64String;
+    /** The script defining the rendering timelines to be applied. */
+    public readonly script: Script;
+
+    /** Create a reference to a [[script]] with no [[sourceId]]. */
+    public constructor(script: Script);
+
+    /** Create a reference to a [[script]] with the specified [[sourceId]]. */
+    public constructor(sourceId: Id64String, script: Script);
+
+    /** @internal Use one of the public constructor overloads which forward to this one. */
+    public constructor(sourceIdOrScript: Id64String | Script, scriptIfSourceId?: Script);
+
+    /** @internal Use one of the public constructor overloads which forward to this one. */
+    public constructor(sourceIdOrScript: Id64String | Script, scriptIfSourceId?: Script) {
+      if (typeof sourceIdOrScript === "string") {
+        assert(scriptIfSourceId instanceof Script);
+        this.sourceId = sourceIdOrScript;
+        this.script = scriptIfSourceId;
+      } else {
+        assert(undefined === scriptIfSourceId);
+        this.script = sourceIdOrScript;
+        this.sourceId = Id64.invalid;
       }
     }
   }
 
-  /** A reference to a [[RenderSchedule.Script]] indicating the persistent [Element]($backend) from which the script was obtained.
-   * Prior to the introduction of the [RenderTimeline]($backend) class in version 01.00.13 of the BisCore ECSchema, scripts were
-   * stored in the JSON properties of [DisplayStyle]($backend) elements. Now they are stored in the Script property of a RenderTimeline element.
-   * The `sourceId` can refer to either a DisplayStyle or a RenderTimeline.
-   */
-  export class ScriptReference {
-    /** The Id of the [RenderTimeline]($backend) or [DisplayStyle]($backend) element that hosts the script. */
-    public readonly sourceId: Id64String;
-    /** The script. */
-    public readonly script: Script;
-
-    public constructor(sourceId: Id64String, script: Script) {
-      this.sourceId = sourceId;
-      this.script = script;
-    }
-  }
-
-  /** Used as part of a [[RenderSchedule.ScriptBuilder]] to define a [[RenderSchedule.Timeline]].
+  /** Used as part of a [[RenderSchedule.ScriptBuilder]] to define a [[RenderSchedule.Timeline]]. Functions that append
+   * to the timeline expect entries to be appended in chronological order - i.e., you cannot append an entry that is earlier
+   * than a previously appended entry.
    * @see [[RenderSchedule.ElementTimelineBuilder]] and [[RenderSchedule.ModelTimelineBuilder]].
    */
   export class TimelineBuilder {
@@ -914,7 +1219,7 @@ export namespace RenderSchedule {
     /** Timeline controlling clipping. */
     public cuttingPlane?: CuttingPlaneEntryProps[];
 
-    /** Append a new [[RenderSchedule.VisibilityEntry]] to the timeline. */
+    /** Append a new [[RenderSchedule.VisibilityEntry]] to the timeline. `time` must be more recent than any previously-appended visibility entries. */
     public addVisibility(time: number, visibility: number | undefined, interpolation = Interpolation.Linear): void {
       if (!this.visibility)
         this.visibility = [];
@@ -922,7 +1227,7 @@ export namespace RenderSchedule {
       this.visibility.push({ time, value: visibility, interpolation });
     }
 
-    /** Append a new [[RenderSchedule.ColorEntry]] to the timeline. */
+    /** Append a new [[RenderSchedule.ColorEntry]] to the timeline. `time` must be more recent than any previously-appended color entries. */
     public addColor(time: number, color: RgbColor | { red: number, green: number, blue: number } | undefined, interpolation = Interpolation.Linear): void {
       if (!this.color)
         this.color = [];
@@ -931,7 +1236,7 @@ export namespace RenderSchedule {
       this.color.push({ time, value, interpolation });
     }
 
-    /** Append a new [[RenderSchedule.CuttingPlaneEntry]] to the timeline. */
+    /** Append a new [[RenderSchedule.CuttingPlaneEntry]] to the timeline.  `time` must be more recent than any previously-appended cutting plane entries. */
     public addCuttingPlane(time: number, plane: { position: XYAndZ, direction: XYAndZ, visible?: boolean, hidden?: boolean } | undefined, interpolation = Interpolation.Linear): void {
       if (!this.cuttingPlane)
         this.cuttingPlane = [];
@@ -953,8 +1258,8 @@ export namespace RenderSchedule {
       this.cuttingPlane.push({ time, value, interpolation });
     }
 
-    /** Append a new [[RenderSchedule.TransformEntry]] to the timeline. */
-    public addTransform(time: number, transform: Transform | undefined, components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ }, interpolation = Interpolation.Linear): void {
+    /** Append a new [[RenderSchedule.TransformEntry]] to the timeline.  `time` must be more recent than any previously-appended transform entries. */
+    public addTransform(time: number, transform: Readonly<Transform> | undefined, components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ }, interpolation = Interpolation.Linear): void {
       if (!this.transform)
         this.transform = [];
 
@@ -1080,7 +1385,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Assembles the JSON representation for a new [[RenderSchedule.Script]]. As an extremely simple example, the following code produces a script that changes the color of a single element:
+  /** Assembles the JSON representation for a new [[RenderSchedule.Script]]. Ensure that entries on any given element timeline are added chronologically. As an extremely simple example, the following code produces a script that changes the color of a single element:
    * ```ts
    *  const script = new ScriptBuilder();
    *  const model = script.addModelTimeline("0x123");

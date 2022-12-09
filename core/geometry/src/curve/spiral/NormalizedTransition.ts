@@ -107,7 +107,7 @@ export class NormalizedBlossTransition extends NormalizedTransition {
     return u * u * u * (1 - 0.5 * u);
   }
 }
-/**
+
 /**
  * Transition functions for biquadratic transition
  * * Curvature is a pair of joining quadratics.

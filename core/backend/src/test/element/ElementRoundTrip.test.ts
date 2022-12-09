@@ -5,10 +5,11 @@
 import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, QueryRowFormat, SubCategoryAppearance,
+  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
+  Placement3dProps, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
-import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
+import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
+import { ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -58,12 +59,18 @@ interface TestElementAspect extends IPrimitive, IPrimitiveArray, ElementAspectPr
 interface TestElementRefersToElements extends IPrimitive, IPrimitiveArray, ElementRefersToElements { }
 
 function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimitiveBase) {
-  if (expectedValue.i) assert.equal(actualValue.i, expectedValue.i, "'integer' type property did not roundtrip as expected");
-  if (expectedValue.l) assert.equal(actualValue.l, expectedValue.l, "'long' type property did not roundtrip as expected");
-  if (expectedValue.d) assert.equal(actualValue.d, expectedValue.d, "'double' type property did not roundtrip as expected");
-  if (expectedValue.b) assert.equal(actualValue.b, expectedValue.b, "'boolean' type property did not roundtrip as expected");
-  if (expectedValue.dt) assert.equal(actualValue.dt, expectedValue.dt, "'dateTime' type property did not roundtrip as expected");
-  if (expectedValue.s) assert.equal(actualValue.s, expectedValue.s, "'string' type property did not roundtrip as expected");
+  if (expectedValue.i)
+    assert.equal(actualValue.i, expectedValue.i, "'integer' type property did not roundtrip as expected");
+  if (expectedValue.l)
+    assert.equal(actualValue.l, expectedValue.l, "'long' type property did not roundtrip as expected");
+  if (expectedValue.d)
+    assert.equal(actualValue.d, expectedValue.d, "'double' type property did not roundtrip as expected");
+  if (expectedValue.b)
+    assert.equal(actualValue.b, expectedValue.b, "'boolean' type property did not roundtrip as expected");
+  if (expectedValue.dt)
+    assert.equal(actualValue.dt, expectedValue.dt, "'dateTime' type property did not roundtrip as expected");
+  if (expectedValue.s)
+    assert.equal(actualValue.s, expectedValue.s, "'string' type property did not roundtrip as expected");
   if (expectedValue.p2d) {
     assert.equal(actualValue.p2d?.x, expectedValue.p2d?.x, "'Point2d.x' type property did not roundtrip as expected");
     assert.equal(actualValue.p2d?.y, expectedValue.p2d?.y, "'Point2d.y' type property did not roundtrip as expected");
@@ -73,8 +80,10 @@ function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimit
     assert.equal(actualValue.p3d?.y, expectedValue.p3d?.y, "'Point3d.y' type property did not roundtrip as expected");
     assert.equal(actualValue.p3d?.z, expectedValue.p3d?.z, "'Point3d.z' type property did not roundtrip as expected");
   }
-  if (expectedValue.bin) assert.isTrue(blobEqual(actualValue.bin, expectedValue.bin), "'binary' type property did not roundtrip as expected");
-  if (expectedValue.g) expect(actualValue.g, "'geometry' type property did not roundtrip as expected.").to.deep.equal(expectedValue.g);
+  if (expectedValue.bin)
+    assert.isTrue(blobEqual(actualValue.bin, expectedValue.bin), "'binary' type property did not roundtrip as expected");
+  if (expectedValue.g)
+    expect(actualValue.g, "'geometry' type property did not roundtrip as expected.").to.deep.equal(expectedValue.g);
 }
 
 function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValue: IPrimitiveArrayBase) {
@@ -488,7 +497,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // insert a element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const id = imodel.elements.insertElement(geomElement);
+    const id = imodel.elements.insertElement(geomElement.toJSON());
     assert.isTrue(Id64.isValidId64(id), "insert worked");
     imodel.saveChanges();
 
@@ -498,7 +507,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElement(row as TestElement, expectedValue);
       rowCount++;
     }
@@ -529,7 +538,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElement(row as TestElement, actualValue);
       rowCount++;
     }
@@ -556,7 +565,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // insert a element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const elId = imodel.elements.insertElement(geomElement);
+    const elId = imodel.elements.insertElement(geomElement.toJSON());
     assert.isTrue(Id64.isValidId64(elId), "insert worked");
 
     const expectedAspectValue = initElementAspectProps("TestElementAspect", imodel, elId, {
@@ -571,13 +580,13 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     imodel.saveChanges();
 
     // verify inserted element aspect properties
-    const actualAspectValue: ElementAspectProps[] = imodel.elements.getAspects(elId, expectedAspectValue.classFullName);
+    const actualAspectValue: ElementAspectProps[] = imodel.elements.getAspects(elId, expectedAspectValue.classFullName).map((x) => x.toJSON());
     assert.equal(actualAspectValue.length, 1);
     verifyTestElementAspect(actualAspectValue[0], expectedAspectValue);
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElementAspect(row as TestElementAspect, expectedAspectValue);
       rowCount++;
     }
@@ -603,13 +612,13 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     imodel.saveChanges();
 
     // verify updated values
-    const updatedAspectValue: ElementAspectProps[] = imodel.elements.getAspects(elId, expectedAspectValue.classFullName);
+    const updatedAspectValue: ElementAspectProps[] = imodel.elements.getAspects(elId, expectedAspectValue.classFullName).map((x) => x.toJSON());
     assert.equal(updatedAspectValue.length, 1);
     verifyTestElementAspect(updatedAspectValue[0], actualAspectValue[0]);
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElementAspect(row as TestElementAspect, actualAspectValue[0]);
       rowCount++;
     }
@@ -643,10 +652,10 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const element2 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {}) as TestElement;
 
     const geomElement1 = imodel.elements.createElement(element1);
-    const elId1 = imodel.elements.insertElement(geomElement1);
+    const elId1 = imodel.elements.insertElement(geomElement1.toJSON());
     assert.isTrue(Id64.isValidId64(elId1), "insert of element 1 worked");
     const geomElement2 = imodel.elements.createElement(element2);
-    const elId2 = imodel.elements.insertElement(geomElement2);
+    const elId2 = imodel.elements.insertElement(geomElement2.toJSON());
     assert.isTrue(Id64.isValidId64(elId2), "insert of element 2 worked");
 
     // TODO: Skipping structs here, because of a bug that prevents querying from link tables that have an overflow table, by skipping the struct we reduce the amount of used columns
@@ -658,18 +667,18 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     const instance = expectedRelationshipValue; // imodel.relationships.createInstance(expectedRelationshipValue);
-    const relationshipId: Id64String = imodel.relationships.insertInstance(instance);
+    const relationshipId: Id64String = imodel.relationships.insertInstance(instance as any); // initElementRefersToElementsProps lies about return type.
     imodel.saveChanges();
 
     // verify inserted properties
-    const actualRelationshipValue: TestElementRefersToElements = imodel.relationships.getInstanceProps(expectedRelationshipValue.classFullName, relationshipId);
+    const actualRelationshipValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
     assert.exists(actualRelationshipValue);
 
     verifyTestElementRefersToElements(actualRelationshipValue, expectedRelationshipValue);
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const val = row as TestElementRefersToElements;
       verifyTestElementRefersToElements(val, expectedRelationshipValue);
       rowCount++;
@@ -693,16 +702,16 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // update
-    imodel.relationships.updateInstance(updatedExpectedValue);
+    imodel.relationships.updateInstance(updatedExpectedValue.toJSON());
     imodel.saveChanges();
 
     // verify updated values
-    const updatedValue: TestElementRefersToElements = imodel.relationships.getInstanceProps(expectedRelationshipValue.classFullName, relationshipId);
+    const updatedValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
     verifyTestElementRefersToElements(updatedValue, updatedExpectedValue);
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElementRefersToElements(row as TestElementRefersToElements, updatedExpectedValue);
       rowCount++;
     }
@@ -716,5 +725,131 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     imodel.close();
+  });
+
+  it("Roundtrip placement when geom is undefined", async () => {
+    const placement = {
+      origin: { x: 10, y: 20, z: 30 },
+      angles: {
+        yaw: Angle.createDegrees(90),
+        pitch: Angle.createDegrees(180),
+        roll: Angle.createDegrees(270),
+      },
+      bbox: {
+        low: { x: -1, y: -2, z: -3 },
+        high: { x: 1, y: 2, z: 3 },
+      },
+    } as const;
+
+    const insertAndVerifyPlacement = (
+      name: string,
+      extraProps: Partial<PhysicalElementProps> = {},
+      {
+        /**
+         * setting some geometry will override the passed bounding box with a calculated one,
+         * so we need to be able to override parts of the expected placement based on the geometry used
+         */
+        expectedPlacementOverrides = {},
+      }: {
+        expectedPlacementOverrides?: Partial<Placement3dProps>;
+      } = {}
+    ) => {
+      const imodelPath = IModelTestUtils.prepareOutputFile(subDirName, `roundtrip_placement-${name}.bim`);
+      let imodel = IModelTestUtils.createSnapshotFromSeed(imodelPath, iModelPath);
+      const modelId = PhysicalModel.insert(imodel, IModelDb.rootSubjectId, "model");
+      const categoryId = SpatialCategory.insert(imodel, IModelDb.dictionaryId, "model", {});
+
+      const expectedPlacement = { ...placement, ...expectedPlacementOverrides };
+
+      const objId = imodel.elements.insertElement({
+        classFullName: PhysicalObject.classFullName,
+        code: Code.createEmpty(),
+        model: modelId,
+        placement,
+        category: categoryId,
+        ...extraProps,
+      });
+
+      imodel.saveChanges();
+
+      const inMemoryCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
+      expect(inMemoryCopy.placement).to.deep.advancedEqual(expectedPlacement);
+
+      // reload db since there is a different path for loading properties not in memory that we want to force
+      imodel.close();
+      imodel = SnapshotDb.openFile(imodelPath);
+
+      const readFromDbCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
+      expect(readFromDbCopy.placement).to.deep.advancedEqual(expectedPlacement);
+
+      imodel.close();
+    };
+
+    insertAndVerifyPlacement("no-geom", {
+      geom: undefined,
+      elementGeometryBuilderParams: undefined,
+    });
+
+    const pts = [Point3d.create(5, 10, 0), Point3d.create(10, 10, 0)];
+    const geomEntry = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[1]));
+    assert(geomEntry !== undefined);
+
+    const elementGeometryBuilderParams = { entryArray: [geomEntry] };
+    insertAndVerifyPlacement(
+      "geom-through-elementGeometryBuilderParams",
+      {
+        geom: undefined,
+        elementGeometryBuilderParams,
+      },
+      {
+        expectedPlacementOverrides: {
+          bbox: {
+            low: { x: 5, y: 10, z: 0 },
+            high: { x: 10, y: 10, z: 0 },
+          },
+        },
+      }
+    );
+
+    interface TestBoxProps {
+      originX?: number;
+      baseOriginX?: number;
+    }
+
+    // Previously, TypeScript BoxProps defined "origin" but native code only understood "baseOrigin".
+    // Now, native code accepts either, preferring "origin" if both are specified.
+    const testBox = (props: TestBoxProps, expectedXOffset: number) => {
+      const box: any = { };
+      if (undefined !== props.originX)
+        box.origin = [ props.originX, 1, 2 ];
+
+      if (undefined !== props.baseOriginX)
+        box.baseOrigin = [ props.baseOriginX, 1, 2 ];
+
+      const geom = [
+        { header: { flags: 0 } },
+        { box: { ...box, baseX: 10, baseY: 20 } },
+      ];
+
+      insertAndVerifyPlacement(
+        "geom-through-json",
+        {
+          geom,
+          elementGeometryBuilderParams: undefined,
+        },
+        {
+          expectedPlacementOverrides: {
+            bbox: {
+              low: { x: expectedXOffset, y: 1, z: 2 },
+              high: { x: expectedXOffset + 10, y: 21, z: 12 },
+            },
+          },
+        }
+      );
+    };
+
+    testBox({ originX: 0 }, 0);
+    testBox({ baseOriginX: 5 }, 5);
+    testBox({ originX: 2, baseOriginX: 4 }, 2);
   });
 });

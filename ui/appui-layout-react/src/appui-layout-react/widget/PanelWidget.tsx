@@ -9,15 +9,18 @@
 import "./PanelWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { PanelsStateContext, TabsStateContext, ToolSettingsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { isHorizontalPanelState, TabsState, WidgetsState, WidgetState } from "../base/NineZoneState";
+import { WidgetsState, WidgetState } from "../state/WidgetState";
 import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel";
 import { WidgetContentContainer } from "./ContentContainer";
 import { useTabTransientState } from "./ContentRenderer";
 import { WidgetTabBar } from "./TabBar";
-import { Widget, WidgetComponent, WidgetProvider } from "./Widget";
+import { Widget, WidgetProvider } from "./Widget";
+import { WidgetOutline } from "../outline/WidgetOutline";
+import { WidgetTarget } from "../target/WidgetTarget";
+import { isHorizontalPanelState } from "../state/PanelState";
+import { TabsState } from "../state/TabState";
 
 /** @internal */
 export interface PanelWidgetProps {
@@ -31,7 +34,7 @@ export interface PanelWidgetProps {
 
 /** @internal */
 export const PanelWidget = React.memo( // eslint-disable-line react/display-name
-  React.forwardRef<WidgetComponent, PanelWidgetProps>(
+  React.forwardRef<HTMLDivElement, PanelWidgetProps>(
     function PanelWidget({
       widgetId,
       onBeforeTransition,
@@ -45,8 +48,6 @@ export const PanelWidget = React.memo( // eslint-disable-line react/display-name
       const widgets = React.useContext(WidgetsStateContext);
       const widget = widgets[widgetId];
       const horizontal = isHorizontalPanelSide(panel.side);
-      const r = React.useRef<WidgetComponent>(null);
-      const refs = useRefs(ref, r);
       const mode = useMode(widgetId);
       const borders = useBorders(widgetId);
       const [prevMode, setPrevMode] = React.useState(mode);
@@ -74,6 +75,7 @@ export const PanelWidget = React.memo( // eslint-disable-line react/display-name
         }
         return undefined;
       }, [horizontal, size, mode, panel.widgets.length]);
+      const showTarget = panel.widgets.length !== 1;
       const className = classnames(
         "nz-widget-panelWidget",
         horizontal && "nz-horizontal",
@@ -89,10 +91,13 @@ export const PanelWidget = React.memo( // eslint-disable-line react/display-name
             className={className}
             onTransitionEnd={onTransitionEnd}
             style={style}
-            ref={refs}
+            ref={ref}
           >
             <WidgetTabBar separator={isHorizontalPanelSide(panel.side) ? true : !widget.minimized} />
-            <WidgetContentContainer />
+            <WidgetContentContainer>
+              {showTarget && <WidgetTarget />}
+              <WidgetOutline />
+            </WidgetContentContainer>
           </Widget>
         </WidgetProvider>
       );

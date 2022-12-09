@@ -256,7 +256,7 @@ describe("<ListBox />", () => {
     };
 
     const listBox = render(
-      <Listbox id="test-list" className="map-manager-source-list" selectedValue={listItems[1]} onKeyPress={spyOnKeyboard} onListboxValueChange={onListboxValueChange} >
+      <Listbox id="test-list" className="map-manager-source-list" selectedValue={listItems[1]} onKeyDown={spyOnKeyboard} onListboxValueChange={onListboxValueChange} >
         {
           listItems?.map((cityName) =>
             <ListboxItem key={cityName} className="map-source-list-entry" value={cityName}>

@@ -3,15 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
+import {
+  Gradient, ImageSource, ImageSourceFormat, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
+} from "@itwin/core-common";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
+import { CreateRenderMaterialArgs } from "../../../render/RenderMaterial";
 import { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";
+import { Material } from "../../../render/webgl/Material";
 import { RenderSystem } from "../../../render/RenderSystem";
-import { TextureTransparency } from "../../../render/RenderTexture";
 import { TileAdmin } from "../../../tile/internal";
 import { System } from "../../../render/webgl/System";
+import { createBlankConnection } from "../../createBlankConnection";
+import { unpackAndNormalizeMaterialParam } from "./Material.test";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
@@ -130,7 +135,7 @@ describe("ExternalTextures", () => {
   });
 });
 
-describe("RenderSystem", () => {
+describe("System", () => {
   it("should override webgl context attributes", () => {
     const expectAttributes = (system: System, expected: WebGLContextAttributes) => {
       const attrs = system.context.getContextAttributes()!;
@@ -201,6 +206,41 @@ describe("RenderSystem", () => {
 
     after(async () => {
       await IModelApp.shutdown();
+    });
+
+    function requestThematicGradient(stepCount: number) {
+      const symb = Gradient.Symb.fromJSON({
+        mode: Gradient.Mode.Thematic,
+        thematicSettings: {stepCount},
+        keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 229 }],
+      });
+      return IModelApp.renderSystem.getGradientTexture(symb, imodel);
+    }
+
+    it("should properly request a thematic gradient texture", async () => {
+      const g1 = requestThematicGradient(5);
+      expect(g1).to.not.be.undefined;
+      g1!.dispose();
+    });
+
+    it("should properly cache and reuse thematic gradient textures", async () => {
+      const g1 = requestThematicGradient(5);
+      expect(g1).to.not.be.undefined;
+      const g2 = requestThematicGradient(5);
+      expect(g2).to.not.be.undefined;
+      expect(g2 === g1).to.be.true;
+      g1!.dispose();
+      g2!.dispose();
+    });
+
+    it("should properly create separate thematic gradient textures if thematic settings differ", async () => {
+      const g1 = requestThematicGradient(5);
+      expect(g1).to.not.be.undefined;
+      const g2 = requestThematicGradient(6);
+      expect(g2).to.not.be.undefined;
+      expect(g2 === g1).to.be.false;
+      g1!.dispose();
+      g2!.dispose();
     });
 
     async function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {
@@ -325,6 +365,156 @@ describe("RenderSystem", () => {
       const texture = await promise;
       expect(texture).to.be.undefined;
       expect(idmap.texturesFromImageSources.size).to.equal(0);
+    });
+  });
+
+  describe("createRenderMaterial", () => {
+    let iModel: IModelConnection;
+    beforeEach(async () => {
+      await IModelApp.startup();
+      iModel = createBlankConnection();
+    });
+
+    afterEach(async () => {
+      await iModel.close();
+      await IModelApp.shutdown();
+    });
+
+    it("caches materials by Id", () => {
+      const sys = IModelApp.renderSystem;
+      expect(sys.findMaterial("0x1", iModel)).to.be.undefined;
+      const mat1 = sys.createRenderMaterial({ source: { id: "0x1", iModel } });
+      expect(sys.createRenderMaterial({ source: { id: "0x1", iModel } })).to.equal(mat1);
+
+      const mat2 = sys.createRenderMaterial({ source: { id: "0x2", iModel } });
+      expect(mat2).not.to.be.undefined;
+      expect(mat2).not.to.equal(mat1);
+
+      const mat0 = sys.createRenderMaterial({});
+      expect(mat0).not.to.be.undefined;
+      expect(mat0).not.to.equal(mat1);
+      expect(mat0).not.to.equal(mat2);
+
+      expect(sys.createRenderMaterial({})).not.to.equal(mat0);
+    });
+
+    it("requires valid Id64String for cache", () => {
+      const sys = IModelApp.renderSystem;
+      const mat1 = sys.createRenderMaterial({ source: { id: "not an id", iModel } });
+      expect(mat1).not.to.be.undefined;
+
+      const mat2 = sys.createRenderMaterial({ source: { id: "not an id", iModel } });
+      expect(mat2).not.to.be.undefined;
+      expect(mat2).not.to.equal(mat1);
+    });
+
+    it("produces expected materials from input", () => {
+      function unpackMaterial(mat: Material): CreateRenderMaterialArgs {
+        const unpackColor = (r: number, g: number, b: number): RgbColorProps => {
+          const unpack = (x: number) => Math.floor(x * 255 + 0.5);
+          return { r: unpack(r), g: unpack(g), b: unpack(b) };
+        };
+
+        const weights = unpackAndNormalizeMaterialParam(mat.fragUniforms[0]);
+        const texWeightAndSpecR = unpackAndNormalizeMaterialParam(mat.fragUniforms[1]);
+        const specGB = unpackAndNormalizeMaterialParam(mat.fragUniforms[2]);
+        const specExp = mat.fragUniforms[3];
+
+        const args: CreateRenderMaterialArgs = {
+          diffuse: { weight: Number.parseFloat(weights.x.toPrecision(1)) },
+          specular: {
+            color: unpackColor(texWeightAndSpecR.y, specGB.x, specGB.y),
+            weight: Number.parseFloat(weights.y.toPrecision(1)),
+            exponent: specExp,
+          },
+        };
+
+        if (-1 !== mat.rgba[0])
+          args.diffuse!.color = unpackColor(mat.rgba[0], mat.rgba[1], mat.rgba[2]);
+
+        if (-1 !== mat.rgba[3])
+          args.alpha = mat.rgba[3];
+
+        if (mat.textureMapping) {
+          args.textureMapping = {
+            texture: mat.textureMapping.texture,
+            mode: mat.textureMapping.params.mode,
+            weight: Number.parseFloat(texWeightAndSpecR.x.toPrecision(1)),
+            worldMapping: mat.textureMapping.params.worldMapping,
+            transform: mat.textureMapping.params.textureMatrix,
+          };
+        }
+
+        return args;
+      }
+
+      const defaults: CreateRenderMaterialArgs = {
+        diffuse: { weight: 0.6 },
+        specular: { weight: 0.4, exponent: 13.5, color: { r: 255, g: 255, b: 255 } },
+      };
+
+      const test = (args: CreateRenderMaterialArgs, expected?: CreateRenderMaterialArgs) => {
+        const mat = IModelApp.renderSystem.createRenderMaterial(args) as Material;
+        expect(mat).not.to.be.undefined;
+
+        const actual = unpackMaterial(mat);
+
+        // shallow spread operator is annoying...
+        expected = expected ?? args;
+        expected = {
+          ...defaults,
+          ...expected,
+          diffuse: expected.diffuse ? { ...defaults.diffuse, ...expected.diffuse } : defaults.diffuse,
+          specular: expected.specular ? { ...defaults.specular, ...expected.specular } : defaults.specular,
+        };
+
+        if (expected.textureMapping) {
+          expected.textureMapping = {
+            weight: 1,
+            mode: TextureMapping.Mode.Parametric,
+            worldMapping: false,
+            transform: TextureMapping.Trans2x3.identity,
+            ...expected.textureMapping,
+          };
+        }
+
+        expect(actual).to.deep.equal(expected);
+      };
+
+      test({ }, defaults);
+      test(defaults);
+
+      const color = { r: 1, g: 127, b: 255 };
+      test({ alpha: 1 });
+      test({ alpha: 0 });
+      test({ alpha: 0.5 });
+      test({ alpha: -1 }, { alpha: 0 });
+      test({ alpha: 2 }, { alpha: 1 });
+
+      test({ diffuse: { color } });
+      test({ diffuse: { color, weight: 0 } });
+      test({ diffuse: { color, weight: 1 } });
+      test({ diffuse: { color, weight: 0.5 } });
+      test({ diffuse: { color, weight: -1 } }, { diffuse: { color, weight: 0 } });
+      test({ diffuse: { color, weight: 2 } }, { diffuse: { color, weight: 1 } });
+
+      test({ specular: { weight: 0 } });
+      test({ specular: { weight: 1 } });
+      test({ specular: { weight: 0.5 } });
+      test({ specular: { weight: -1 } }, { specular: { weight: 0 } });
+      test({ specular: { weight: 2 } }, { specular: { weight: 1 } });
+      test({ specular: { exponent: 0 } });
+      test({ specular: { exponent: -12.5 } });
+      test({ specular: { exponent: 54321 } });
+      test({ specular: { color } });
+
+      const texture = { dummy: "my texture" } as unknown as RenderTexture;
+      test({ textureMapping: { texture } });
+      test({ textureMapping: { texture, weight: 0 } });
+      test({ textureMapping: { texture, weight: 1 } });
+      test({ textureMapping: { texture, weight: -1 } }, { textureMapping: { texture, weight: 0 } });
+      test({ textureMapping: { texture, weight: 2 } }, { textureMapping: { texture, weight: 1 } });
+      test({ textureMapping: { texture, weight: 0.5 } });
     });
   });
 

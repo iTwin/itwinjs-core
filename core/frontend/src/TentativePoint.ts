@@ -16,7 +16,10 @@ import { ViewHandleType, ViewManip } from "./tools/ViewTool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class TentativePoint {
   public isActive = false;
   public currSnap?: SnapDetail;
@@ -123,7 +126,9 @@ export class TentativePoint {
 
     const tpSize = Math.floor(viewport.pixelsPerInch * 0.4) + 0.5;
     const toSizeOutline = tpSize + 1;
-    const position = context.viewport.worldToView(this._point); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+    const position = context.viewport.worldToView(this._point);
+    position.x = Math.floor(position.x) + 0.5;
+    position.y = Math.floor(position.y) + 0.5;
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.strokeStyle = "rgba(0,0,0,.5)";
@@ -137,7 +142,9 @@ export class TentativePoint {
       ctx.beginPath();
       ctx.strokeStyle = "white";
       ctx.lineWidth = 1;
-      if (!this.isSnapped) ctx.setLineDash([4, 1]);
+      if (!this.isSnapped)
+        ctx.setLineDash([4, 1]);
+
       ctx.shadowColor = "black";
       ctx.shadowBlur = 5;
       ctx.moveTo(-tpSize, 0);
@@ -254,7 +261,7 @@ export class TentativePoint {
         if (currTool && currTool instanceof ViewManip && currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
           currTool.updateTargetCenter(); // Change target center to tentative location...
         else
-          IModelApp.toolAdmin.updateDynamics(); // Don't wait for motion to update tool dynamics...
+          IModelApp.toolAdmin.updateDynamics(undefined, undefined, true); // Don't wait for motion to update dynamics...
       }
     });
   }

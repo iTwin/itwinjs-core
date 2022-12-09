@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { IModelConnection } from "@itwin/core-frontend";
-import { UiEvent } from "@itwin/core-react";
+import { UiEvent } from "@itwin/appui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 
 /** NavigationAid Activated Event Args interface.

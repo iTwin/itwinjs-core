@@ -7,12 +7,9 @@
  */
 
 import * as React from "react";
-import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
+import { StatusBarContext } from "../statusbar/StatusBar";
 import { ConditionalField } from "./ConditionalField";
 import { StatusFieldProps } from "./StatusFieldProps";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const ConditionalFieldWithProps = withStatusFieldProps(ConditionalField);
 
 /** Properties for a FooterModeField component
  * @public
@@ -25,16 +22,17 @@ export interface FooterModeFieldProps extends StatusFieldProps {
 /**
  * A component that renders its children if the StatusBar is in Footer mode.
  * @public
+ * @deprecated In upcoming version, widget mode will be removed, in footer mode will always be true, making this component useless.
  */
-export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
+export function FooterModeField(props: FooterModeFieldProps) {
+  const { children, ...otherProps } = props as any;
+  const statusBarContext = React.useContext(StatusBarContext);
+  const conditionProps = {...statusBarContext, ...otherProps};
 
-  public override render(): React.ReactNode {
-    const { children, ...otherProps } = this.props as any;
-
-    return (
-      <ConditionalFieldWithProps {...otherProps} boolFunc={(props: StatusFieldProps): boolean => props.isInFooterMode} >
-        {(isInFooterMode: boolean) => isInFooterMode && children}
-      </ConditionalFieldWithProps>
-    );
-  }
+  return (
+  // eslint-disable-next-line deprecation/deprecation
+    <ConditionalField {...conditionProps} boolFunc={(innerProps): boolean => innerProps.isInFooterMode} >
+      {(isInFooterMode: boolean) => isInFooterMode && children}
+    </ConditionalField>
+  );
 }

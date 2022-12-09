@@ -21,7 +21,7 @@ import { RenderMemory } from "../RenderMemory";
 import { BranchState } from "./BranchState";
 import { BatchState } from "./BatchState";
 import {
-  AmbientOcclusionGeometry, BlurGeometry, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, ScreenPointsGeometry,
+  AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, ScreenPointsGeometry,
   SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
 } from "./CachedGeometry";
 import { Debug } from "./Diagnostics";
@@ -42,6 +42,8 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { TextureHandle } from "./Texture";
 import { RenderBufferMultiSample } from "./RenderBuffer";
+import { Primitive } from "./Primitive";
+import { ShaderProgramExecutor } from "./ShaderProgram";
 
 function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -60,13 +62,16 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
   public color?: TextureHandle;
   public featureId?: TextureHandle;
   public depthAndOrder?: TextureHandle;
+  public depthAndOrderHidden?: TextureHandle; // only used if AO and multisampling
   public hilite?: TextureHandle;
   public occlusion?: TextureHandle;
   public occlusionBlur?: TextureHandle;
   public volClassBlend?: TextureHandle;
   public colorMsBuff?: RenderBufferMultiSample;
   public featureIdMsBuff?: RenderBufferMultiSample;
+  public featureIdMsBuffHidden?: RenderBufferMultiSample;
   public depthAndOrderMsBuff?: RenderBufferMultiSample;
+  public depthAndOrderMsBuffHidden?: RenderBufferMultiSample;
   public hiliteMsBuff?: RenderBufferMultiSample;
   public volClassBlendMsBuff?: RenderBufferMultiSample;
 
@@ -76,13 +81,16 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.color
       && undefined === this.featureId
       && undefined === this.depthAndOrder
+      && undefined === this.depthAndOrderHidden
       && undefined === this.hilite
       && undefined === this.occlusion
       && undefined === this.occlusionBlur
       && undefined === this.volClassBlend
       && undefined === this.colorMsBuff
       && undefined === this.featureIdMsBuff
+      && undefined === this.featureIdMsBuffHidden
       && undefined === this.depthAndOrderMsBuff
+      && undefined === this.depthAndOrderMsBuffHidden
       && undefined === this.hiliteMsBuff
       && undefined === this.volClassBlendMsBuff;
   }
@@ -93,12 +101,15 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.color = dispose(this.color);
     this.featureId = dispose(this.featureId);
     this.depthAndOrder = dispose(this.depthAndOrder);
+    this.depthAndOrderHidden = dispose(this.depthAndOrderHidden);
     this.hilite = dispose(this.hilite);
     this.occlusion = dispose(this.occlusion);
     this.occlusionBlur = dispose(this.occlusionBlur);
     this.colorMsBuff = dispose(this.colorMsBuff);
     this.featureIdMsBuff = dispose(this.featureIdMsBuff);
+    this.featureIdMsBuffHidden = dispose(this.featureIdMsBuffHidden);
     this.depthAndOrderMsBuff = dispose(this.depthAndOrderMsBuff);
+    this.depthAndOrderMsBuffHidden = dispose(this.depthAndOrderMsBuffHidden);
     this.hiliteMsBuff = dispose(this.hiliteMsBuff);
     this.volClassBlend = dispose(this.volClassBlend);
     this.volClassBlendMsBuff = dispose(this.volClassBlendMsBuff);
@@ -110,13 +121,16 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     collectTextureStatistics(this.color, stats);
     collectTextureStatistics(this.featureId, stats);
     collectTextureStatistics(this.depthAndOrder, stats);
+    collectTextureStatistics(this.depthAndOrderHidden, stats);
     collectTextureStatistics(this.hilite, stats);
     collectTextureStatistics(this.occlusion, stats);
     collectTextureStatistics(this.occlusionBlur, stats);
     collectTextureStatistics(this.volClassBlend, stats);
     collectMsBufferStatistics(this.colorMsBuff, stats);
     collectMsBufferStatistics(this.featureIdMsBuff, stats);
+    collectMsBufferStatistics(this.featureIdMsBuffHidden, stats);
     collectMsBufferStatistics(this.depthAndOrderMsBuff, stats);
+    collectMsBufferStatistics(this.depthAndOrderMsBuffHidden, stats);
     collectMsBufferStatistics(this.hiliteMsBuff, stats);
     collectMsBufferStatistics(this.volClassBlendMsBuff, stats);
   }
@@ -174,17 +188,24 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     return rVal;
   }
 
-  public enableOcclusion(width: number, height: number): boolean {
+  public enableOcclusion(width: number, height: number, numSamples: number): boolean {
     assert(undefined === this.occlusion && undefined === this.occlusionBlur);
     this.occlusion = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     this.occlusionBlur = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    return undefined !== this.occlusion && undefined !== this.occlusionBlur;
+    let rVal = undefined !== this.occlusion && undefined !== this.occlusionBlur;
+    if (numSamples > 1) {
+      // If multisampling then we need a texture for storing depth and order for hidden edges.
+      this.depthAndOrderHidden = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+      rVal = rVal && undefined !== this.depthAndOrderHidden;
+    }
+    return rVal;
   }
 
   public disableOcclusion(): void {
     assert(undefined !== this.occlusion && undefined !== this.occlusionBlur);
     this.occlusion = dispose(this.occlusion);
     this.occlusionBlur = dispose(this.occlusionBlur);
+    this.depthAndOrderHidden = dispose(this.depthAndOrderHidden);
   }
 
   public enableVolumeClassifier(width: number, height: number, numSamples: number): boolean {
@@ -206,18 +227,24 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
   public enableMultiSampling(width: number, height: number, numSamples: number): boolean {
     this.colorMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     this.featureIdMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
+    this.featureIdMsBuffHidden = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     this.depthAndOrderMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
+    this.depthAndOrderMsBuffHidden = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     this.hiliteMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     return undefined !== this.colorMsBuff
       && undefined !== this.featureIdMsBuff
+      && undefined !== this.featureIdMsBuffHidden
       && undefined !== this.depthAndOrderMsBuff
+      && undefined !== this.depthAndOrderMsBuffHidden
       && undefined !== this.hiliteMsBuff;
   }
 
   public disableMultiSampling(): boolean {
     this.colorMsBuff = dispose(this.colorMsBuff);
     this.featureIdMsBuff = dispose(this.featureIdMsBuff);
+    this.featureIdMsBuffHidden = dispose(this.featureIdMsBuffHidden);
     this.depthAndOrderMsBuff = dispose(this.depthAndOrderMsBuff);
+    this.depthAndOrderMsBuffHidden = dispose(this.depthAndOrderMsBuffHidden);
     this.hiliteMsBuff = dispose(this.hiliteMsBuff);
     return true;
   }
@@ -265,13 +292,15 @@ class FrameBuffers implements WebGLDisposable {
       && undefined !== this.opaqueAndCompositeColor;
   }
 
-  public toggleOcclusion(textures: Textures): void {
-    if (undefined !== textures.occlusion) {
-      assert(undefined !== textures.occlusionBlur);
-      this.occlusion = FrameBuffer.create([textures.occlusion]);
-      this.occlusionBlur = FrameBuffer.create([textures.occlusionBlur]);
-    } else {
-      assert(undefined === textures.occlusionBlur);
+  public enableOcclusion(textures: Textures, _depth: DepthBuffer, _depthMs: DepthBuffer | undefined): boolean {
+    assert(undefined !== textures.occlusion && undefined !== textures.occlusionBlur);
+    this.occlusion = FrameBuffer.create([textures.occlusion]);
+    this.occlusionBlur = FrameBuffer.create([textures.occlusionBlur]);
+    return undefined !== this.occlusion && undefined !== this.occlusionBlur;
+  }
+
+  public disableOcclusion(): void {
+    if (undefined !== this.occlusion) {
       this.occlusion = dispose(this.occlusion);
       this.occlusionBlur = dispose(this.occlusionBlur);
     }
@@ -381,20 +410,20 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     return undefined !== this.composite;
   }
 
-  public toggleOcclusion(textures: Textures): void {
-    if (undefined !== textures.occlusion) {
-      assert(undefined !== textures.occlusionBlur);
-      this.composite!.occlusion = textures.occlusion.getHandle();
-      this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!);
-      this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(1.0, 0.0));
-      this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(0.0, 1.0));
-    } else {
-      assert(undefined === textures.occlusionBlur);
-      this.composite!.occlusion = undefined;
-      this.occlusion = dispose(this.occlusion);
-      this.occlusionXBlur = dispose(this.occlusionXBlur);
-      this.occlusionYBlur = dispose(this.occlusionYBlur);
-    }
+  public enableOcclusion(textures: Textures, depth: DepthBuffer): void {
+    assert(undefined !== textures.occlusion && undefined !== textures.occlusionBlur && undefined !== textures.depthAndOrder && undefined !== textures.occlusionBlur);
+    this.composite!.occlusion = textures.occlusion.getHandle();
+    this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder.getHandle()!, depth.getHandle()!);
+    this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion.getHandle()!, textures.depthAndOrder.getHandle()!, undefined, new Vector2d(1.0, 0.0), BlurType.NoTest);
+    const depthAndOrderHidden = (undefined === textures.depthAndOrderHidden ? textures.revealage?.getHandle() : textures.depthAndOrderHidden.getHandle());
+    this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur.getHandle()!, textures.depthAndOrder.getHandle()!, depthAndOrderHidden, new Vector2d(0.0, 1.0), BlurType.TestOrder);
+  }
+
+  public disableOcclusion(): void {
+    this.composite!.occlusion = undefined;
+    this.occlusion = dispose(this.occlusion);
+    this.occlusionXBlur = dispose(this.occlusionXBlur);
+    this.occlusionYBlur = dispose(this.occlusionYBlur);
   }
 
   public enableVolumeClassifier(textures: Textures, depth: DepthBuffer, width: number, height: number): boolean {
@@ -622,6 +651,7 @@ class PixelBuffer implements Pixel.Buffer {
 export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.Consumer {
   public readonly target: Target;
   public readonly solarShadowMap: SolarShadowMap;
+  protected _needHiddenEdges: boolean;
 
   public abstract get currentRenderTargetIndex(): number;
   public abstract set currentRenderTargetIndex(_index: number);
@@ -634,6 +664,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
   public abstract updateSolarShadows(context: SceneContext | undefined): void;
+  public abstract drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean): void;
 
   /** Obtain a framebuffer with a single spare RGBA texture that can be used for screen-space effect shaders. */
   public abstract get screenSpaceEffectFbo(): FrameBuffer;
@@ -642,9 +673,12 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract get depthAndOrder(): TextureHandle;
   public abstract get antialiasSamples(): number;
 
+  public get needHiddenEdges(): boolean { return this._needHiddenEdges; }
+
   protected constructor(target: Target) {
     this.target = target;
     this.solarShadowMap = new SolarShadowMap(target);
+    this._needHiddenEdges = false;
   }
 
   public static create(target: Target): SceneCompositor {
@@ -652,6 +686,13 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
+}
+
+// This describes what types of primitives a compositor should draw. See the `drawPrimitive` method of Compositor.
+enum PrimitiveDrawState {
+  Both,
+  Pickable,
+  NonPickable,
 }
 
 // The actual base class. Specializations are provided based on whether or not multiple render targets are supported.
@@ -684,6 +725,13 @@ abstract class Compositor extends SceneCompositor {
   protected _haveVolumeClassifier: boolean = false;
   protected _antialiasSamples: number = 1;
   protected readonly _viewProjectionMatrix = new Matrix4();
+  protected _primitiveDrawState = PrimitiveDrawState.Both; // used by drawPrimitive to decide whether a primitive needs to be drawn.
+
+  public drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean) {
+    if ((outputsToPick && this._primitiveDrawState !== PrimitiveDrawState.NonPickable) ||
+        (!outputsToPick && this._primitiveDrawState !== PrimitiveDrawState.Pickable))
+      primitive.draw(exec);
+  }
 
   public abstract override get currentRenderTargetIndex(): number;
   public abstract override set currentRenderTargetIndex(_index: number);
@@ -819,6 +867,14 @@ abstract class Compositor extends SceneCompositor {
         }
         this._haveVolumeClassifier = false;
       }
+      if (includeOcclusion && this._includeOcclusion) {
+        // Multisampling and AO buffers are also somewhat co-dependent, so if AO is on
+        // and is staying on, just disable AO and let it get re-enabled later.
+        this._geom.disableOcclusion();
+        this._frameBuffers.disableOcclusion();
+        this._textures.disableOcclusion();
+        this._includeOcclusion = false;
+      }
       if (this._antialiasSamples > 1) {
         if (!this.enableMultiSampling()) {
           assert(false, "Failed to initialize multisampling buffers");
@@ -836,16 +892,20 @@ abstract class Compositor extends SceneCompositor {
     if (includeOcclusion !== this._includeOcclusion) {
       this._includeOcclusion = includeOcclusion;
       if (includeOcclusion) {
-        if (!this._textures.enableOcclusion(width, height)) {
+        if (!this._textures.enableOcclusion(width, height, this._antialiasSamples)) {
           assert(false, "Failed to initialize occlusion textures");
           return false;
         }
+        if (!this._frameBuffers.enableOcclusion(this._textures, this._depth!, this._depthMS)) {
+          assert(false, "Failed to initialize occlusion frame buffers");
+          return false;
+        }
+        this._geom.enableOcclusion(this._textures, this._depth!);
       } else {
+        this._geom.disableOcclusion();
+        this._frameBuffers.disableOcclusion();
         this._textures.disableOcclusion();
       }
-
-      this._frameBuffers.toggleOcclusion(this._textures);
-      this._geom.toggleOcclusion(this._textures);
     }
 
     // Allocate or free volume classifier-related resources if necessary.  Make sure that we have depth/stencil.
@@ -1238,6 +1298,7 @@ abstract class Compositor extends SceneCompositor {
     const top = this.target.uniforms.branch.top;
     const viewFlags = top.viewFlags.copy({
       renderMode: RenderMode.SmoothShade,
+      wiremesh: false,
       lighting: false,
       forceSurfaceDiscard: false,
       hiddenEdges: false,
@@ -1776,7 +1837,9 @@ abstract class Compositor extends SceneCompositor {
 class MRTFrameBuffers extends FrameBuffers {
   public opaqueAll?: FrameBuffer;
   public opaqueAndCompositeAll?: FrameBuffer;
+  public opaqueAndCompositeAllHidden?: FrameBuffer;
   public pingPong?: FrameBuffer;
+  public pingPongMS?: FrameBuffer;
   public translucent?: FrameBuffer;
   public clearTranslucent?: FrameBuffer;
   public idsAndZ?: FrameBuffer;
@@ -1813,7 +1876,7 @@ class MRTFrameBuffers extends FrameBuffers {
 
   private initPotentialMSMRTFbos(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
     const boundColor = System.instance.frameBufferStack.currentColorBuffer;
-    assert(undefined !== boundColor && undefined !== textures.color && undefined !== textures.featureId && undefined !== textures.depthAndOrder);
+    assert(undefined !== boundColor && undefined !== textures.color && undefined !== textures.featureId && undefined !== textures.depthAndOrder && undefined !== textures.accumulation && undefined !== textures.revealage);
     const colorAndPick = [boundColor, textures.featureId, textures.depthAndOrder];
 
     if (undefined === depthMs) {
@@ -1821,7 +1884,7 @@ class MRTFrameBuffers extends FrameBuffers {
       colorAndPick[0] = textures.color;
       this.opaqueAndCompositeAll = FrameBuffer.create(colorAndPick, depth);
     } else {
-      assert(undefined !== textures.colorMsBuff && undefined !== textures.featureIdMsBuff && undefined !== textures.depthAndOrderMsBuff);
+      assert(undefined !== textures.colorMsBuff && undefined !== textures.featureIdMsBuff && undefined !== textures.featureIdMsBuffHidden && undefined !== textures.depthAndOrderMsBuff && undefined !== textures.depthAndOrderMsBuffHidden);
       const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuff, textures.depthAndOrderMsBuff];
       const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
       this.opaqueAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
@@ -1831,6 +1894,40 @@ class MRTFrameBuffers extends FrameBuffers {
 
     return undefined !== this.opaqueAll
       && undefined !== this.opaqueAndCompositeAll;
+  }
+
+  public override enableOcclusion(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
+    let rVal = super.enableOcclusion(textures, depth, depthMs);
+    if (undefined === depthMs) {
+      // If not using multisampling then we can use the accumulation and revealage textures for the hidden pick buffers,
+      assert(undefined !== textures.color && undefined !== textures.accumulation && undefined !== textures.revealage);
+      const colorAndPick = [textures.color, textures.accumulation, textures.revealage];
+      this.opaqueAndCompositeAllHidden = FrameBuffer.create(colorAndPick, depth);
+      rVal = rVal && undefined !== this.opaqueAndCompositeAllHidden;
+    } else {
+      // If multisampling then we cannot use the revealage texture for depthAndOrder for the hidden edges since it is of the wrong type for blitting,
+      // so instead use a special depthAndOrderHidden texture just for this purpose.
+      // The featureId texture is not needed for hidden edges, so the accumulation texture can be used for it if we don't blit from the multisample bufffer into it.
+      assert(undefined !== textures.color && undefined !== textures.accumulation && undefined !== textures.depthAndOrderHidden);
+      assert(undefined !== textures.colorMsBuff && undefined !== textures.featureIdMsBuffHidden && undefined !== textures.depthAndOrderMsBuffHidden);
+      const colorAndPick = [textures.color, textures.accumulation, textures.depthAndOrderHidden];
+      const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuffHidden, textures.depthAndOrderMsBuffHidden];
+      const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
+      this.opaqueAndCompositeAllHidden = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
+      // We will also need a frame buffer for copying the real pick data buffers into these hidden edge pick data buffers.
+      const pingPong = [textures.accumulation, textures.depthAndOrderHidden];
+      const pingPongMSBuffs = [textures.featureIdMsBuffHidden, textures.depthAndOrderMsBuffHidden];
+      const pingPongFilters = [GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
+      this.pingPongMS = FrameBuffer.create(pingPong, depth, pingPongMSBuffs, pingPongFilters, depthMs);
+      rVal = rVal && undefined !== this.opaqueAndCompositeAllHidden && (undefined === depthMs || undefined !== this.pingPongMS);
+    }
+    return rVal;
+  }
+
+  public override disableOcclusion(): void {
+    super.disableOcclusion();
+    this.opaqueAndCompositeAllHidden = dispose(this.opaqueAndCompositeAllHidden);
+    this.pingPongMS = dispose(this.pingPongMS);
   }
 
   public override enableVolumeClassifier(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
@@ -1879,7 +1976,9 @@ class MRTFrameBuffers extends FrameBuffers {
     return super.isDisposed
       && undefined === this.opaqueAll
       && undefined === this.opaqueAndCompositeAll
+      && undefined === this.opaqueAndCompositeAllHidden
       && undefined === this.pingPong
+      && undefined === this.pingPongMS
       && undefined === this.translucent
       && undefined === this.clearTranslucent
       && undefined === this.idsAndZ
@@ -1892,7 +1991,9 @@ class MRTFrameBuffers extends FrameBuffers {
     super.dispose();
     this.opaqueAll = dispose(this.opaqueAll);
     this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
+    this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAllHidden);
     this.pingPong = dispose(this.pingPong);
+    this.pingPongMS = dispose(this.pingPongMS);
     this.translucent = dispose(this.translucent);
     this.clearTranslucent = dispose(this.clearTranslucent);
     this.idsAndZ = dispose(this.idsAndZ);
@@ -2000,47 +2101,111 @@ class MRTCompositor extends Compositor {
   }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
-    // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
-    this._readPickDataFromPingPong = true;
-
+    if (CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion) && !renderForReadPixels) {
+      this.renderOpaqueAO(commands);
+      return;
+    }
     const needComposite = CompositeFlags.None !== compositeFlags;
-    const needAO = CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion);
-
     const fbStack = System.instance.frameBufferStack;
-    fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, this.useMsBuffers, () => {
+
+    // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels() or ambient occlusion).
+    let fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
+    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
+    fbStack.execute(fbo, true, useMsBuffers, () => {
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
-      if (needAO || renderForReadPixels) {
+      if (renderForReadPixels) {
         this.drawPass(commands, RenderPass.OpaqueGeneral, true);
-
-        if (this.useMsBuffers) {
-          const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+        if (useMsBuffers)
           fbo.blitMsBuffersToTextures(true);
-        }
-
-        if (needAO)
-          this.renderAmbientOcclusion();
       }
     });
-
     this._readPickDataFromPingPong = false;
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
-    if (!renderForReadPixels && !needAO) {
-      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, this.useMsBuffers, () => {
+    if (!renderForReadPixels) {
+      fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
+      fbStack.execute(fbo, true, useMsBuffers, () => {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
-      if (this.useMsBuffers) {
-        const fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
+      if (useMsBuffers)
         fbo.blitMsBuffersToTextures(needComposite);
-      }
     }
   }
 
+  protected renderOpaqueAO(commands: RenderCommands) {
+    const fbStack = System.instance.frameBufferStack;
+    const haveHiddenEdges = 0 !== commands.getCommands(RenderPass.HiddenEdge).length;
+
+    // Output the linear, planar, and pickable surfaces to color and pick data buffers.
+    let fbo = this._fbos.opaqueAndCompositeAll!;
+    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
+    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
+    fbStack.execute(fbo, true, useMsBuffers, () => {
+      this.drawPass(commands, RenderPass.OpaqueLinear);
+      this.drawPass(commands, RenderPass.OpaquePlanar, true);
+      this._primitiveDrawState = PrimitiveDrawState.Pickable;
+      this.drawPass(commands, RenderPass.OpaqueGeneral, true);
+      this._primitiveDrawState = PrimitiveDrawState.Both;
+      if (useMsBuffers)
+        fbo.blitMsBuffersToTextures(true);
+    });
+    this._readPickDataFromPingPong = false;
+
+    // Output the non-pickable surfaces and hidden edges to just the color buffer.
+    fbo = this._fbos.opaqueAndCompositeColor!;
+    fbStack.execute(fbo, true, useMsBuffers, () => {
+      this._primitiveDrawState = PrimitiveDrawState.NonPickable;
+      this.drawPass(commands, RenderPass.OpaqueGeneral, false);
+      if (haveHiddenEdges)
+        this.drawPass(commands, RenderPass.HiddenEdge, false);
+      this._primitiveDrawState = PrimitiveDrawState.Both;
+    });
+    if (useMsBuffers)
+      fbo.blitMsBuffersToTextures(true);
+
+    // If there are no hidden edges, then we're done & can run the AO passes using the normal depthAndOrder texture.
+    if (haveHiddenEdges) {
+      // AO needs the pick data (orderAndDepth) for the hidden edges.  We don't want it in with the other pick data though since they are not pickable, so we will use other textures.
+      // If not multisampling we will re-use the ping-pong/transparency textures since we are done with ping-ponging at this point and transparency happens later.
+      // If multisampling then we will use the accumulation texture for featureIDs and a special texture for depthAndOrder since the revealage texture is not the right type for multisampling.
+      // First we will need to copy what's in the pick buffers so far into the hidden pick buffers.
+      System.instance.applyRenderState(this._noDepthMaskRenderState);
+      fbo = (useMsBuffers ? this._fbos.pingPongMS! : this._fbos.pingPong!);
+      fbStack.execute(fbo, true, useMsBuffers, () => {
+        const params = getDrawParams(this.target, this._geometry.copyPickBuffers!);
+        this.target.techniques.draw(params);
+      });
+      if (useMsBuffers)
+        fbo.blitMsBuffersToTextures(false, 1); // only want to blit the depth/order target
+      // Now draw the hidden edges, using an fbo which places their depth/order into the hidden pick buffers.
+      // Since we are not writing to the actual pick buffers we let this._readPickDataFromPingPong remain false.
+      fbo = this._fbos.opaqueAndCompositeAllHidden!;
+      this._primitiveDrawState = PrimitiveDrawState.Pickable;
+      fbStack.execute(fbo, true, useMsBuffers, () => {
+        this.drawPass(commands, RenderPass.HiddenEdge, false);
+      });
+      this._primitiveDrawState = PrimitiveDrawState.Both;
+      if (useMsBuffers) {
+        // Only want to blit the color and depth/order targets as the featureId target is not blit-able and will generate a GL error.
+        fbo.blitMsBuffersToTextures(false, 0);
+        fbo.blitMsBuffersToTextures(false, 2);
+      }
+      this._needHiddenEdges = false;
+    }
+
+    this._needHiddenEdges = haveHiddenEdges; // this will cause the alternate renderAndOrder texture with the hidden edges to be read for the 2nd AO blur pass.
+    this.renderAmbientOcclusion();
+    this._needHiddenEdges = false;
+  }
+
   protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
-    this._readPickDataFromPingPong = true;
-    System.instance.frameBufferStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, RenderPass.OpaqueLayers === pass && this.useMsBuffers, () => {
+    const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    const useMsBuffers = RenderPass.OpaqueLayers === pass && fbo.isMultisampled && this.useMsBuffers;
+    this._readPickDataFromPingPong = !useMsBuffers;
+    System.instance.frameBufferStack.execute(fbo, true, useMsBuffers, () => {
       this.drawPass(commands, pass, true);
     });
 
@@ -2092,7 +2257,7 @@ class MRTCompositor extends Compositor {
 
   protected pingPong() {
     if (this._fbos.opaqueAll!.isMultisampled && this.useMsBuffers) {
-      // If we are multisampling we can just blit the FeatureId and DepthAndOrder buffers to their textures.
+      // If we are multisampling we can just blit the FeatureId and DepthAndOrder MS buffers to their textures.
       this._fbos.opaqueAll!.blitMsBuffersToTextures(false, 1);
       this._fbos.opaqueAll!.blitMsBuffersToTextures(false, 2);
     } else {
@@ -2240,7 +2405,15 @@ class MPCompositor extends Compositor {
     this.clearFbo(this._fbos.featureId!, 0, 0, 0, 0, false);
   }
 
+  protected clearHiddenPick(): void {
+  }
+
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {
+    if (CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion) && !renderForReadPixels) {
+      this.renderOpaqueAO(commands);
+      return;
+    }
+
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
     const needComposite = CompositeFlags.None !== compositeFlags;
@@ -2248,22 +2421,64 @@ class MPCompositor extends Compositor {
     const colorFbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueLinear, false);
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
-    if (renderForReadPixels || needAO) {
+    if (renderForReadPixels || needAO)
       this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
-      if (needAO)
-        this.renderAmbientOcclusion();
-    }
-
     this._readPickDataFromPingPong = false;
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
-    if (!renderForReadPixels && !needAO) {
+    if (!renderForReadPixels) {
       System.instance.frameBufferStack.execute(colorFbo, true, false, () => {
         this._drawMultiPassDepth = true;  // for OpaqueGeneral
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
     }
+  }
+
+  protected renderOpaqueAO(commands: RenderCommands): void {
+    const fbStack = System.instance.frameBufferStack;
+    const haveHiddenEdges = 0 !== commands.getCommands(RenderPass.HiddenEdge).length;
+
+    // Output the linear, planar, and pickable surfaces to color and pick data buffers.
+    this._readPickDataFromPingPong = true;
+    const colorFbo = this._fbos.opaqueAndCompositeColor!;
+    this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueLinear, false);
+    this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
+    this._primitiveDrawState = PrimitiveDrawState.Pickable;
+    this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
+    this._primitiveDrawState = PrimitiveDrawState.Both;
+    this._readPickDataFromPingPong = false;
+
+    // Output the non-pickable surfaces and hidden edges to just the color buffer.
+    fbStack.execute(colorFbo, true, false, () => {
+      this._drawMultiPassDepth = true;  // for OpaqueGeneral
+      this._primitiveDrawState = PrimitiveDrawState.NonPickable;
+      this.drawPass(commands, RenderPass.OpaqueGeneral, false);
+      if (haveHiddenEdges)
+        this.drawPass(commands, RenderPass.HiddenEdge, false);
+      this._primitiveDrawState = PrimitiveDrawState.Both;
+    });
+
+    if (haveHiddenEdges) {
+      // First copy the depthAndOrder texture to the revealage texture which we will use for the hidden edge pick data (don't need full pick with featureIds).
+      System.instance.applyRenderState(this._noDepthMaskRenderState);
+      this.copyFbo(this._textures.depthAndOrder!, this._fbos.revealage!);
+      // So far only the non-pickable hidden edges have been drawn for AO, so we need to draw the pickable ones to the hidden depthAndOrder (revealage).
+      this._primitiveDrawState = PrimitiveDrawState.Pickable;
+      // Since we only need to draw color and depthAndOrder instead of calling drawOpaquePass just do what we need here.
+      this._drawMultiPassDepth = true;
+      fbStack.execute(colorFbo, true, false, () => this.drawPass(commands, RenderPass.HiddenEdge, false));
+      this._drawMultiPassDepth = false;
+      this._currentRenderTargetIndex = 2;
+      fbStack.execute(this._fbos.revealage!, true, false, () => this.drawPass(commands, RenderPass.HiddenEdge, false));
+      this._currentRenderTargetIndex = 0;
+      this._readPickDataFromPingPong = false;
+      this._primitiveDrawState = PrimitiveDrawState.Both;
+    }
+
+    this._needHiddenEdges = haveHiddenEdges; // this will cause the alternate renderAndOrder texture to be read for the 2nd AO blur pass.
+    this.renderAmbientOcclusion();
+    this._needHiddenEdges = false;
   }
 
   protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {

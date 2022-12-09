@@ -5,20 +5,22 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64Set, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DocumentListModel, Drawing, DrawingCategory,
   DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementOwnsChildElements, EntityClassType, IModelDb, IModelJsFs, LinkElement,
   PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalType, RecipeDefinitionElement, RepositoryLink, SnapshotDb,
   SpatialCategory, TemplateRecipe2d, TemplateRecipe3d, TypeDefinitionElement,
 } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { KnownTestLocations as BackendKnownTestLocations, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { DbResult, Id64, Id64Set, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import {
   Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
   RepositoryLinkProps, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../core-transformer";
+import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { IModelImporter, IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../core-transformer";
+
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 
 const createClassViews = false; // can set to true to make it easier to debug the catalog structure
 
@@ -52,7 +54,7 @@ const createClassViews = false; // can set to true to make it easier to debug th
  */
 async function createAcmeCatalog(dbFile: string): Promise<void> {
   const db = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "ACME Equipment" }, createClassViews });
-  const domainSchemaFilePath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
+  const domainSchemaFilePath = path.join(BackendKnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
   await db.importSchemas([domainSchemaFilePath]);
   const manufacturerName = "ACME";
   const productLineName = `${manufacturerName} Product Line A`;
@@ -123,7 +125,7 @@ async function createAcmeCatalog(dbFile: string): Promise<void> {
 */
 async function createBestCatalog(dbFile: string): Promise<void> {
   const db = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "Best Equipment" } });
-  const domainSchemaFilePath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
+  const domainSchemaFilePath = path.join(BackendKnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
   await db.importSchemas([domainSchemaFilePath]);
   const manufacturerName = "Best";
   const containerCodeSpecId = db.codeSpecs.insert(`${manufacturerName}:Equipment`, CodeScopeSpec.Type.Repository);
@@ -476,8 +478,8 @@ class CatalogImporter extends IModelTransformer {
       targetScopeElementId,
       noProvenance: targetScopeElementId ? undefined : true, // can't store provenance if targetScopeElementId is not defined
     };
-    super(sourceDb, targetDb, options);
-    this.importer.autoExtendProjectExtents = false;
+    const target = new IModelImporter(targetDb, { autoExtendProjectExtents: false });
+    super(sourceDb, target, options);
     this._targetSpatialCategories = targetSpatialCategories;
     this._targetDrawingCategories = targetDrawingCategories;
   }
@@ -547,14 +549,14 @@ class CatalogImporter extends IModelTransformer {
 
 /** Catalog test fixture */
 describe("Catalog", () => {
-  const outputDir = path.join(KnownTestLocations.outputDir, "Catalog");
+  const outputDir = path.join(BackendKnownTestLocations.outputDir, "Catalog");
   const acmeCatalogDbFile = IModelTestUtils.prepareOutputFile("Catalog", "AcmeEquipment.catalog"); // WIP: what file extension should catalogs have?
   const bestCatalogDbFile = IModelTestUtils.prepareOutputFile("Catalog", "BestEquipment.catalog"); // WIP: what file extension should catalogs have?
   const testCatalogDbFile = IModelTestUtils.prepareOutputFile("Catalog", "Test.catalog"); // WIP: what file extension should catalogs have?
 
   before(async () => {
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) {
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    if (!IModelJsFs.existsSync(BackendKnownTestLocations.outputDir)) {
+      IModelJsFs.mkdirSync(BackendKnownTestLocations.outputDir);
     }
     if (!IModelJsFs.existsSync(outputDir)) {
       IModelJsFs.mkdirSync(outputDir);
@@ -588,7 +590,7 @@ describe("Catalog", () => {
   it("should import from catalog", async () => {
     const iModelFile = IModelTestUtils.prepareOutputFile("Catalog", "Facility.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "Facility" }, createClassViews });
-    const domainSchemaFilePath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
+    const domainSchemaFilePath = path.join(BackendKnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await iModelDb.importSchemas([domainSchemaFilePath]);
     const physicalModelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "Physical");
     const spatialCategoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Equipment", new SubCategoryAppearance());
@@ -765,8 +767,8 @@ describe("Catalog", () => {
     const sourceDb = SnapshotDb.openFile(acmeCatalogDbFile);
     const targetFile = IModelTestUtils.prepareOutputFile("Catalog", "CloneOfAcmeEquipment.bim");
     const targetDb = SnapshotDb.createEmpty(targetFile, { rootSubject: { name: "Facility" }, createClassViews });
-    const cloner = new IModelTransformer(sourceDb, targetDb);
-    cloner.importer.autoExtendProjectExtents = false; // WIP: how should a catalog handle projectExtents?
+    const target = new IModelImporter(targetDb, { autoExtendProjectExtents: false }); // WIP: how should a catalog handle projectExtents?
+    const cloner = new IModelTransformer(sourceDb, target);
     await cloner.processSchemas();
     await cloner.processAll();
     cloner.dispose();

@@ -17,8 +17,8 @@ import ReactDataGrid from "react-data-grid";
 import { DisposableList, Guid, GuidString } from "@itwin/core-bentley";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
 import {
-  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage, Orientation, SortDirection, Timer,
-  UiSettings, UiSettingsStatus, UiSettingsStorage,
+  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalStateStorage, Orientation, SortDirection, Timer,
+  UiStateStorage, UiStateStorageStatus,
 } from "@itwin/core-react";
 import {
   MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
@@ -48,7 +48,8 @@ const TABLE_FILTER_ROW_HEIGHT = 32;
 
 /**
  * Specifies table selection target.
- * @public @deprecated
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this enum.
+ * @public
  */
 export enum TableSelectionTarget {
   Row,
@@ -83,7 +84,8 @@ interface ScrollState {
 }
 
 /** Properties for the Table React component
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface TableProps extends CommonProps {
   /** Data provider for the Table */
@@ -125,10 +127,10 @@ export interface TableProps extends CommonProps {
   /** Indicates whether the Table columns are reorderable */
   reorderableColumns?: boolean;
   /** Optional parameter for persistent UI settings. Used for column reordering and show persistency. */
-  settingsStorage?: UiSettingsStorage;
+  settingsStorage?: UiStateStorage;
   /** Optional parameter for persistent UI settings. Used for column reordering and show persistency.
    * @deprecated use settingsStorage property */
-  uiSettings?: UiSettings;
+  uiStateStorage?: UiStateStorage;
   /** Identifying string used for persistent state. */
   settingsIdentifier?: string;
   /** Custom property value renderer manager */
@@ -157,7 +159,8 @@ export interface TableProps extends CommonProps {
 }
 
 /** Properties for a Table cell
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface CellProps {
   item: CellItem;
@@ -166,7 +169,8 @@ export interface CellProps {
 }
 
 /** Properties for a Table row
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface RowProps {
   index: number;
@@ -189,7 +193,8 @@ interface ReactDataGridColumnEventArgs {
 }
 
 /** Cell/Property Editor state
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface TableCellEditorState {
   active: boolean;
@@ -199,7 +204,8 @@ export interface TableCellEditorState {
 }
 
 /** Cell/Property Updated Args
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface TableCellUpdatedArgs {
   rowIndex: number;
@@ -208,7 +214,8 @@ export interface TableCellUpdatedArgs {
 }
 
 /** Arguments for `TableProps.onCellContextMenu` callback
- * @public @deprecated Use the Table component in @itwin/itwinui-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @public
  */
 export interface TableCellContextMenuArgs {
   /** Index of the row clicked */
@@ -283,7 +290,8 @@ const enum UpdateStatus { // eslint-disable-line no-restricted-syntax
 
 /**
  * Table React component that displays rows and columns in a grid along with a header
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this class.
+ * @public
  */
 export class Table extends React.Component<TableProps, TableState> {
   private _pageAmount = 100;
@@ -521,21 +529,20 @@ export class Table extends React.Component<TableProps, TableState> {
 
     let dataGridColumns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
     if (this.props.settingsIdentifier) {
-      // eslint-disable-next-line deprecation/deprecation
-      const settingsStorage: UiSettingsStorage = this.props.settingsStorage || /* istanbul ignore next */ this.props.uiSettings || /* istanbul ignore next */ new LocalSettingsStorage();
-      const reorderResult = await settingsStorage.getSetting(this.props.settingsIdentifier, "ColumnReorder");
+      const stateStorage: UiStateStorage = this.props.settingsStorage || /* istanbul ignore next */ this.props.uiStateStorage || /* istanbul ignore next */ new LocalStateStorage();
+      const reorderResult = await stateStorage.getSetting(this.props.settingsIdentifier, "ColumnReorder");
       // istanbul ignore next
-      if (reorderResult.status === UiSettingsStatus.Success) {
+      if (reorderResult.status === UiStateStorageStatus.Success) {
         const setting = reorderResult.setting as string[];
         // map columns according to the keys in columns, in the order of the loaded array of keys
         dataGridColumns = setting.map((key) => dataGridColumns.filter((col) => col.key === key)[0]);
-      } else if (reorderResult.status === UiSettingsStatus.NotFound) {
+      } else if (reorderResult.status === UiStateStorageStatus.NotFound) {
         const keys = columnDescriptions.map((col) => col.key);
-        await settingsStorage.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+        await stateStorage.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
       }
-      const showhideResult = await settingsStorage.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
+      const showhideResult = await stateStorage.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
       // istanbul ignore next
-      if (showhideResult.status === UiSettingsStatus.Success) {
+      if (showhideResult.status === UiStateStorageStatus.Success) {
         const hiddenColumns = showhideResult.setting as string[];
         this.setState({ hiddenColumns });
       }
@@ -601,7 +608,6 @@ export class Table extends React.Component<TableProps, TableState> {
 
     this._rowGetterAsync.cache.clear!();
     this.setState({ rowsCount, rows: [] });
-    this._rowGetterAsync(0, true); // eslint-disable-line @typescript-eslint/no-floating-promises
     return UpdateStatus.Continue;
   }
 
@@ -917,13 +923,13 @@ export class Table extends React.Component<TableProps, TableState> {
     // get another page of rows
     // note: always start loading at the beginning of a page to avoid
     // requesting duplicate data (e.g. a page that starts at 0, at 1, at 2, ...)
-    this._rowGetterAsync(i - (i % this._pageAmount), false); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this._rowGetterAsync(i - (i % this._pageAmount)); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // Return placeholder object
     return { item: { key: "", cells: [] }, index: i, cells: {} };
   };
 
-  private _rowGetterAsync = memoize(async (index: number, clearRows: boolean): Promise<void> => {
+  private _rowGetterAsync = memoize(async (index: number): Promise<void> => {
     // istanbul ignore next
     if (index < 0)
       return;
@@ -950,7 +956,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     this.selectCells(loadResult.selectedCellKeys);
     this.setState((prev) => {
-      const rows = clearRows ? [] : [...prev.rows];
+      const rows = [...prev.rows];
       loadResult.rows.forEach((r, i) => { rows[index + i] = r; });
       return { rows };
     }, async () => {
@@ -1040,6 +1046,7 @@ export class Table extends React.Component<TableProps, TableState> {
       result.rows = await Promise.all(promises);
     } catch { }
 
+    // istanbul ignore else
     // Check if another loadRows got called while this one was still going
     if (currentSelectedRowGuid === this._rowLoadGuid) {
       for (const rowProps of result.rows) {
@@ -1323,9 +1330,9 @@ export class Table extends React.Component<TableProps, TableState> {
     cols.splice(columnTargetIndex, 0, cols.splice(columnSourceIndex, 1)[0]);
     // istanbul ignore else
     if (this.props.settingsIdentifier) {
-      const settingsStorage: UiSettingsStorage = this.props.settingsStorage || /* istanbul ignore next */ new LocalSettingsStorage();
+      const stateStorage: UiStateStorage = this.props.settingsStorage || /* istanbul ignore next */ new LocalStateStorage();
       const keys = cols.map((col) => col.key);
-      settingsStorage.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // eslint-disable-line @typescript-eslint/no-floating-promises
+      stateStorage.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
     this.setState({ columns: [] }, () => { // fix react-data-grid update issues
       this.setState({ columns: cols });
@@ -1392,7 +1399,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _deactivateCellEditor = (): void => {
     if (this.state.cellEditorState.active)
-      this.setState({ cellEditorState: { active: false } }, () => setImmediate(() => this.setFocusToSelected()));
+      this.setState({ cellEditorState: { active: false } }, () => setTimeout(() => this.setFocusToSelected()));
   };
 
   /** @internal */
@@ -1454,8 +1461,8 @@ export class Table extends React.Component<TableProps, TableState> {
   private _handleShowHideChange = (cols: string[]) => {
     this.setState({ hiddenColumns: cols });
     if (this.props.settingsIdentifier) {
-      const settingsStorage: UiSettingsStorage = this.props.settingsStorage || new LocalSettingsStorage();
-      settingsStorage.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // eslint-disable-line @typescript-eslint/no-floating-promises
+      const stateStorage: UiStateStorage = this.props.settingsStorage || new LocalStateStorage();
+      stateStorage.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
     return true;
   };

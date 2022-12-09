@@ -213,7 +213,7 @@ export class BackgroundMapGeometry {
   }
 
   /** @internal */
-  public getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d {
+  public getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d {
     const clipPlanes = frustum.getRangePlanes(false, false, 0);
     const eyePoint = frustum.getEyePoint(scratchEyePoint);
     const viewRotation = frustum.getRotation(scratchViewRotation);
@@ -259,7 +259,8 @@ export class BackgroundMapGeometry {
           doAccumulate(extremaPoint);
 
         if (isInside) {
-          if (eyePoint) doAccumulate(eyePoint);
+          if (eyePoint)
+            doAccumulate(eyePoint);
         } else {
           const silhouette = ellipsoid.silhouetteArc(eyePoint4d);
           if (silhouette !== undefined) {
@@ -272,7 +273,7 @@ export class BackgroundMapGeometry {
                 scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
             } else {
               /* If parallel projection - clip toward side of ellipsoid with BIM geometry */
-              if (viewZ.dotProduct(scratchSilhouetteNormal) < 0)
+              if (Vector3d.createStartEnd(silhouette.center, bimRange.center).dotProduct(scratchSilhouetteNormal) < 0)
                 scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
             }
             clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);

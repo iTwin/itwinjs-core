@@ -49,7 +49,7 @@ describe("AnalyticalSchema", () => {
   const assetsDir = path.join(__dirname, "assets");
 
   before(async () => {
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
     AnalyticalSchema.registerSchema();
     TestAnalyticalSchema.registerSchema();
     if (!IModelJsFs.existsSync(outputDir)) {
@@ -125,11 +125,21 @@ describe("AnalyticalSchema", () => {
     const element: GeometricElement3d = iModelDb.elements.getElement(elementId);
     element.forEachProperty((propertyName: string, meta: PropertyMetaData) => {
       switch (propertyName) {
-        case "model": assert.isTrue(meta.isNavigation); break;
-        case "category": assert.isTrue(meta.isNavigation); break;
-        case "typeDefinition": assert.isTrue(meta.isNavigation); break;
-        case "codeValue": assert.isFalse(meta.isNavigation); break;
-        case "userLabel": assert.isFalse(meta.isNavigation); break;
+        case "model":
+          assert.isTrue(meta.isNavigation);
+          break;
+        case "category":
+          assert.isTrue(meta.isNavigation);
+          break;
+        case "typeDefinition":
+          assert.isTrue(meta.isNavigation);
+          break;
+        case "codeValue":
+          assert.isFalse(meta.isNavigation);
+          break;
+        case "userLabel":
+          assert.isFalse(meta.isNavigation);
+          break;
       }
     });
     // test typeDefinition update scenarios
@@ -187,7 +197,7 @@ describe("AnalyticalSchema", () => {
       classFullName: TestAnalyticalModel.classFullName,
       modeledElement: { id: analyticalPartitionId },
     });
-    const analyticalModelId: Id64String = iModelDb.models.insertModel(analyticalModel);
+    const analyticalModelId: Id64String = iModelDb.models.insertModel(analyticalModel.toJSON());
     assert.isTrue(Id64.isValidId64(analyticalModelId));
 
     // Create a Test Analytical element

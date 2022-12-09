@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Frontstage
  */
@@ -41,7 +42,7 @@ import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
  */
 
 /** Properties of a Stage Panel Zone
- * @public
+ * @public @deprecated
  */
 export interface StagePanelZoneProps {
   /** Properties for the Widgets in this Zone.
@@ -54,12 +55,12 @@ export interface StagePanelZoneProps {
 }
 
 /** Properties of the Stage Panel Zones
- * @public
+ * @public @deprecated
  */
 export interface StagePanelZonesProps {
   /** Properties for the Widgets in the Start section. */
   start?: StagePanelZoneProps;
-  /** Properties for the Widgets in the Middle section. */
+  /** Properties for the Widgets in the Middle section. Deprecated - all widgets originally targeted for "middle" will now go to "end". */
   middle?: StagePanelZoneProps;
   /** Properties for the Widgets in the End section. */
   end?: StagePanelZoneProps;
@@ -72,6 +73,7 @@ export interface StagePanelZonesProps {
 export type StagePanelMaxSizeSpec = number | { percentage: number };
 
 /** Properties of a [[StagePanel]] component
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface StagePanelProps {
@@ -108,6 +110,7 @@ export interface StagePanelProps {
 }
 
 /** Default properties of [[StagePanel]] component.
+ * @deprecated Default props of a deprecated component.
  * @public
  */
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
@@ -116,14 +119,14 @@ export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
  * @internal
  */
 export interface StagePanelRuntimeProps {
-  draggedWidgetId: WidgetZoneId | undefined;
-  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  draggedWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
   isInFooterMode: boolean;
   isTargeted: boolean;
   panel: NineZoneStagePanelManagerProps;
   panelDef: StagePanelDef;
   stagePanelChangeHandler: StagePanelChangeHandler;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   widgets: ZonesManagerWidgetsProps;
   widgetTabs: WidgetTabs;
   zoneDefProvider: ZoneDefProvider;
@@ -135,6 +138,7 @@ interface StagePanelComponentState {
 }
 
 /** Frontstage Panel React component.
+ * @deprecated Use [[StagePanelConfig]] instead.
  * @public
  */
 export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {

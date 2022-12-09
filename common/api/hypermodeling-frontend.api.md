@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AbstractToolbarProps } from '@itwin/appui-abstract';
+import type { AbstractToolbarProps } from '@itwin/appui-abstract';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeEvent } from '@itwin/core-bentley';
 import { ClipVector } from '@itwin/core-geometry';
@@ -199,7 +199,7 @@ export class SectionMarker extends Marker {
 
 // @internal
 export class SectionMarkerCluster extends Marker {
-    constructor(location: XYAndZ, size: XAndY, cluster: Cluster<SectionMarker>, image: Promise<MarkerImage>);
+    constructor(location: XYAndZ, size: XAndY, cluster: Cluster<SectionMarker>, image: MarkerImage | Promise<MarkerImage> | undefined);
     drawFunc(ctx: CanvasRenderingContext2D): void;
     // (undocumented)
     onMouseButton(_ev: BeButtonEvent): boolean;
@@ -239,7 +239,6 @@ export interface SectionViewAttachment {
     readonly transformToSpatial: Transform;
     readonly viewId?: Id64String;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

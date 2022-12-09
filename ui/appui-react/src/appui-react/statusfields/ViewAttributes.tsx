@@ -10,12 +10,11 @@ import "./ViewAttributes.scss";
 import * as React from "react";
 import { ViewFlagProps, ViewFlags } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { Dialog, FooterPopup, TitleBar } from "@itwin/appui-layout-react";
 import { Checkbox } from "@itwin/itwinui-react";
-import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
 import { Indicator } from "./Indicator";
 import { StatusFieldProps } from "./StatusFieldProps";
+import { StatusBarDialog } from "../statusbar/dialog/Dialog";
 
 interface ViewAttributesStatusFieldState {
   viewFlags: ViewFlagProps;
@@ -45,17 +44,6 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
   public override componentDidMount() {
     this.updateState();
   }
-
-  /** Handle opening/closing the dialog */
-  private _handleIndicatorClick = () => {
-    this.updateState();
-
-    const isOpen = this.props.openWidget === this._className;
-    if (isOpen)
-      this.setOpenWidget(null);
-    else
-      this.setOpenWidget(this._className);
-  };
 
   // istanbul ignore next
   private updateState() {
@@ -120,45 +108,25 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
   }
 
   public override render() {
+    // eslint-disable-next-line deprecation/deprecation
     const isOpen = this.props.openWidget === this._className;
-
     return (
       <>
-        <div ref={this._handleTargetRef} title={this._title}>
-          <Indicator
-            iconName="icon-window-settings"
-            onClick={this._handleIndicatorClick}
-            opened={isOpen}
-            isInFooterMode={this.props.isInFooterMode}
-          />
-        </div>
-        <FooterPopup
-          target={this.state.target}
-          onClose={this._handleClose}
-          isOpen={isOpen}>
-          <Dialog
+        <Indicator // eslint-disable-line deprecation/deprecation
+          iconName="icon-window-settings"
+          opened={isOpen}
+          toolTip={this._title}
+          dialog={<StatusBarDialog
             titleBar={
-              <TitleBar title={this._title} />
+              <StatusBarDialog.TitleBar title={this._title} />
             }>
             {this.getViewFlags()}
-          </Dialog>
-        </FooterPopup>
+          </StatusBarDialog>}
+          // eslint-disable-next-line deprecation/deprecation
+          isInFooterMode={this.props.isInFooterMode ?? true}
+        />
       </>
     );
   }
 
-  private _handleTargetRef = (target: HTMLElement | null) => {
-    this.setState({ target });
-  };
-
-  private _handleClose = () => {
-    this.setOpenWidget(null);
-  };
-
-  /** Opens the pop-up window. */
-  private setOpenWidget(openWidget: StatusBarFieldId) {
-    // istanbul ignore else
-    if (this.props.onOpenWidget)
-      this.props.onOpenWidget(openWidget);
-  }
 }

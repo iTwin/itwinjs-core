@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Frontstage
  */
@@ -29,8 +30,8 @@ import { WidgetDef } from "../widgets/WidgetDef";
 export interface FrameworkStagePanelProps {
   allowedZones?: ZoneLocation[];
   changeHandler: StagePanelChangeHandler;
-  draggedWidgetId: WidgetZoneId | undefined;
-  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  draggedWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
   header?: React.ReactNode;
   initialSize?: number;
   isInFooterMode: boolean;
@@ -42,7 +43,7 @@ export interface FrameworkStagePanelProps {
   panelState: StagePanelState;
   renderPane: (widgetDefId: WidgetDef["id"]) => React.ReactNode;
   resizable: boolean;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   stagePanelWidgets: ReadonlyArray<WidgetDef["id"]>; // widgets defined in StagePanel
   widgets: ZonesManagerWidgetsProps; // zone widgets
   widgetTabs: WidgetTabs;

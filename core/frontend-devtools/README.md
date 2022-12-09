@@ -55,6 +55,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 
 * `fdt project extents` - Toggles display of a decoration illustrating the iModel's project extents.
 * `fdt freeze scene` - Toggles scene freeze for the active viewport. While scene freeze is enabled, the same set of tiles will continue to be displayed until the scene is unfrozen - no new tiles will be loaded. Useful for zooming in or out to inspect geometry inside specific tiles.
+* `fdt wiremesh` - Toggles the display of wiremesh overlay on surfaces in the selected viewport.
 * `fdt section cut` - Specify whether a clip volume applied to the view should produce cut geometry at intersections with the design models. This controls `ViewState.details.clipStyle.produceCutGeometry`.
 * `fdt particle snow` - Toggle a particle effect simulating snowfall for the active viewport.
 * `fdt frustum selected` - Toggles a decoration representing the current frustum of the selected viewport. The decoration is displayed in any *other* open viewports - so if no other viewports are open, this key-in has no effect.
@@ -125,40 +126,38 @@ This package provides several keyins to control model overrides.  These override
 This package provides several keyins to control the display of background maps, map layers and terrain.  Thesese settings are stored in the display style and control how the background map is displayed when that display style is used.
 
 * `fdt toggle terrain` - Toggle terrain display for background maps.
+
 * `fdt attach maplayer <name>` - Attach a background map layer from name within the map layer source list.  Partial names may be used.
 * `fdt attach mapoverlay <name>` - Attach an overlay map layer from name within the map layer source list.  Partial names may be used.
+* `fdt attach model maplayer <name>` - Attach a model map layer for each unique model of the currently selected elements.
+
 * `fdt set map base <name>` - Set the background base map from name within the map layer source list.  Partial names may be used.
 * `fdt set map base color <red, green, blue>` - Set map base color by red, green and blue values [0..255].
 * `fdt set map base transparency <transparency>` - Set map base transparency [0..1].
+
 * `fdt detach maplayers` - Detach all map layers.
+
 * `fdt set mapLayer transparency <index, transparency>`.  Set the map layer to the supplied transparency value [0..1].
 * `fdt set mapLayer visibility <index, on|off>`.  Set the map layer visibility.
 * `fdt reorder maplayer <fromIndex, toIndex>`.  Move the map layer at `fromIndex` to `toIndex`.
 * `fdt zoom maplayer <index>` Zoom to map layer. If index is omitted layer 0 is used.
-* `fdt attach wms maplayer <URL, name, username, password>` Attach a WMS map layer. WMS is a very common OGC standard map service that produces images on demand.
- The following arguments can be supplied -- only the URL is required.
-  * `URL` - The URL for the map layer.
-  * `name` - The map layer name. (if not supplied the URL is used)
-  * `username` - User Name (only required if credentials are required by server)
-  * `password` - Password (only required if credentials are required by server)
-* `fdt attach wmts maplayer <URL, name, username, password>` Attach a WTMS map layer. WTMS is an OGC standard map service that produces cached tiles.
-The following arguments can be supplied -- only the URL is required.
-  * `URL` - The URL for the map layer.
-  * `name` - The map layer name. (if not supplied the URL is used)
-  * `username` - User Name (only required if credentials are required by server)
-  * `password` - Password (only required if credentials are required by server)
-* `fdt attach arcgis maplayer <URL, name, username, password>` Attach an ArcGIS map layer.  This uses the ArcGIS rest API directly - the URL in this case will generally end with "MapServer".
-The following arguments can be supplied -- only the URL is required.
-  * `URL` - The URL for the map layer.
-  * `name` - The map layer name. (if not supplied the URL is used)
-  * `username` - User Name (only required if credentials are required by server)
-  * `password` - Password (only required if credentials are required by server)
-* `fdt attach tileurl maplayer <URL, name, username, password>` Attach a map layer from tiles directly from a file server by supplying a URL template.
-The following arguments can be supplied -- only the URL is required.
-  * `URL` - URL template with level, column and row parameters i.e. "https://b.tile.openstreetmap.org/{level}/{column}/{row}.png"
-  * `name` - The map layer name. (if not supplied the URL is used)
-  * `username` - User Name (only required if credentials are required by server)
-  * `password` - Password (only required if credentials are required by server)
+
+#### Specific map layer formats
+
+Several keyins enable attaching map layers of a particular format. Each takes the following arguments -- only the URL is required:
+
+* `URL` - The URL for the map layer.
+* `name` - The map layer name. (if not supplied the URL is used)
+* `username` - User Name (only required if credentials are required by server)
+* `password` - Password (only required if credentials are required by server)
+
+These keyins take the form `fdt attach <format> maplayer <arguments>` where `format` is one of the following:
+
+* `wms` - a very common OGC standard Web Map Service that produces images on demand.
+* `wmts` - a Web Map Tile Service that produces cached tiles.
+* `arcgis` - uses the ArcGIS REST API directly. The URL typically ends with "MapServer".
+* `arcgisfeature` - obtains vector data from the ArcGIS REST API and converts it to tiles.
+* `tileurl` - obtains tailes directly from a file server using a supplied URL template.
 
 ### Reality model key-ins
 
@@ -248,6 +247,7 @@ These keysins control the planar masking of reality models.
   * `copy`: copy result to system clipboard.
   * `quote`: format the result so it can be directly parsed by `fdt apply rendering style` as a single quoted string argument.
 * `fdt apply rendering style` - Given a rendering style as a JSON string (see `fdt save rendering style`), applies it to the active viewport's display style. See `DisplayStyleSettings.applyOverrides`. Takes a single required argument: the JSON string.
+* `fdt bgcolor` - change the background color for the active viewport. It requires a single argument - the string representation of the color. See ColorDef.fromString for supported formats.
 * `fdt change viewflags` - Changes any number of ViewFlags for the active viewport. Each argument is of the format "flag=value". For boolean flags, the value is `0` for `false` or `1` for `true`. Flag names are case-insensitive.
   * Boolean flags: "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges", "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard"
   * "renderMode": 0 = wireframe, 3 = hidden line, 4 = solid fill, 6 = smooth shade (numeric values of RenderMode enum).
@@ -256,10 +256,17 @@ These keysins control the planar masking of reality models.
   * "symbology=0|1" where `1` indicates detailed symbology information should be included in the output;
   * "placement=0|1" where `1` indicates detailed geometric element placement should be included; and
   * "verbosity=0|1|2" controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note `verbosity=2` can produce megabytes of data for certain types of geometric primitives like large meshes.
-  * "refs=0|1" where `1` indicates that if the element is a geometry part, the output should include a list of all geometric elements which reference that geometry part. This is **extremely** inefficient and may take a very long time to process in iModels containing many geometric elements.
+  * "refs=0|1" where `1` indicates that if the element is a geometry part, the output should include a list of all geometric elements which reference that geometry part. This is __extremely__ inefficient and may take a very long time to process in iModels containing many geometric elements.
   * "modal=0|1" where `1` indicates the output should be displayed in a modal dialog.
   * "copy=0|1" where `1` indicates the output should be copied to the system clipboard.
+  * "explodeparts=0|1" where `1` indicates that a summary of the geometry of each geometry part reference should also be output.
 * `fdt select elements` - given a list of element Ids separated by whitespace, replace the contents of the selection set with those Ids.
+* `fdt dump selection` - Dump the Ids of the currently select elements, optionally formatting and/or copying to the clipboard. Optional arguments:
+  * "copy=0|1" - if `1`, copy the result to the system clipboard.
+  * "format=list|json|compressed"
+    * "list" (default): Output consists of a list of element Ids each separate by a single space. e.g., `0x123 0x456 0x789`.
+    * "json": Output is a JSON array of Ids. e.g., `["0x123", "0x456", "0x789"]`.
+    * "compressed": Output is a CompressedId64String. e.g., `+123+333*2`
 * `fdt toggle skybox` - If the active viewport is displaying a spatial view, toggles display of the skybox.
 * `fdt sky sphere` - set the image used for the skybox as a Url or texture Id.
 * `fdt sky cube` - set the images used for the skybox, mapping each to one or more faces of the box. Each image is specified as a Url or texture Id. The images are mapped in the following orders based on how many are supplied:
@@ -280,7 +287,6 @@ These keysins control the planar masking of reality models.
 * `fdt clear emphasized` - Undo the effects of `fdt emphasize selection` or `fdt emphasize visible`.
 * `fdt isolate selection` - Causes all elements except those currently in the selection set to stop drawing.
 * `fdt clear isolate` - Reverse the effects of `fdt isolate selection`.
-* `fdt toggle wiremesh` - Toggles "pseudo-wiremesh" display. This causes surfaces to be rendered using `GL_LINES` instead of `GL_TRIANGLES`. Useful for visualizing the triangles of a mesh - but not suitable for "real" wiremesh display.
 * `fdt test clip style ON|OFF` - Toggles a ClipStyle for the active viewport with hard-coded symbology overrides.
 * `fdt tile bounds` - Sets the type of bounding volume decorations that will be displayed for each tile displayed in the view. Accepts at most one argument; if none is specified, it defaults to "volume", unless tile bounds are already displayed, in which it toggles them back off.
   * "none": Don't display bounding volumes.
@@ -290,6 +296,7 @@ These keysins control the planar masking of reality models.
   * "children": For each tile, draw a box around the volume of each of its child tiles, color-coded such that green indicates an empty child tile and blue a non-empty child tile.
   * "sphere": Bounding sphere representing the full range of each tile.
 * `fdt time tile load` - Purges all tile trees from memory and reloads the contents of the selected viewport. Outputs to the notifications center the time elapsed once all tiles required for the view are loaded and displayed.
+* `fdt hilite mode` - Changes the ModelSubCategoryHiliteMode for the HiliteSet associated with the selected viewport. It takes a single argument: "union" or "intersection".
 * `fdt hilite settings` - Modifies the hilite settings for the selected viewport. If no arguments are specified, it resets them to the defaults. Otherwise, each argument modifies an aspect of the current settings:
   * "r", "g", or "b": An integer in [0..255] specifying the red, green, or blue component of the hilite color.
   * "v", "h": The visible or hidden ratio in [0..1].
@@ -306,6 +313,15 @@ These keysins control the planar masking of reality models.
 * `fdt webgl lose context` - Force a webgl context loss.
 * `fdt compile shaders` - Compile all un-compiled registered shader programs and report whether any errors occurred. Useful for testing/debugging platform-specific shader issues.
 * `fdt animation interval` - Changes the `IModelApp.animationInterval` settings. Specify milliseconds in non-negative milliseconds; or anything not parseable as an integer to disable the interval callback entirely.
+* `fdt query schedule script` - Queries the schedule script associated with the RenderTimeline or DisplayStyle element specified by Id. All arguments are optional:
+  * "id=<Id>": The Id of the element hosting the script. If omitted, obtains the Id from the schedule script applied to the active viewport.
+  * "action=<break|copy>": Specifies what to do after obtaining the script. "break" causes execution to pause in the debugger. "copy" (the default) copies the script JSON to the clipboard.
+  * "elementIds=<include|count|expand>": Specifies what to do with the list of element Ids in the script. By default, they are omitted.
+    * "include": Include the Ids as they are stored in the script - possibly in compressed format.
+    * "expand": Include the Ids, decompressing them if they are in compressed format.
+    * "count": Replace each list of Ids with the number of Ids in that list.
+* `fdt set schedule script` - Sets or clears the schedule script associated with the selected viewport. The script is supplied as a JSON string complying with the format of RenderSchedule.ScriptProps. If no script is supplied, any existing script is removed from the viewport.
+* `fdt reverse schedule script` - If a schedule script is associated with the selected viewport, replaces it with a script that reverses the script's element timelines.
 * `fdt visibility` - Controls whether instanced, un-instanced (batched), or all geometry is displayed in the active viewport. Accepts at most one argument; defaults to "all" if none is specified:
   * "instanced": Display only instanced geometry.
   * "batched": Display only un-instanced (batched) geometry.
@@ -332,7 +348,7 @@ These keysins control the planar masking of reality models.
 * `fdt sourceId from elemId` and `fdt elemId from sourceId` - Converts between the Id of an element in the iModel and the corresponding object in the source document from which it originated. Outputs the result to IModelApp.notifications.
   * * `id=`: the source aspect Id or element Id.
   * * `copy=`: (optional) 1 to copy the resultant Id to the system clipboard.
-
 * `fdt aasamples <nSamples>` - Sets the number of antialias samples for the current viewport where nSamples is the number of samples to use; if 1 or less then antialiasing is turned off, if > 1 then antialiasing is turned on and it will attempt to use that many samples (restricted by the given hardware constraints)
 The following arguments can also be supplied:
   * `all`: (optional) sets it for all open viewports as well as all future viewports
+* `fdt toggle normalmaps` - toggles the display of normal maps.

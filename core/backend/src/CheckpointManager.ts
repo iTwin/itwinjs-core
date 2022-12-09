@@ -9,11 +9,15 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@itwin/core-bentley";
-import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@itwin/core-common";
-import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
+import {
+  BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
+} from "@itwin/core-common";
+import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
+import { CloudSqlite } from "./CloudSqlite";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -40,10 +44,20 @@ export interface CheckpointProps extends TokenArg {
   readonly reattachSafetySeconds?: number;
 }
 
+/** Return value from [[ProgressFunction]].
+ *  @public
+ */
+export enum ProgressStatus {
+  /** Continue download. */
+  Continue = 0,
+  /** Abort download. */
+  Abort = 1,
+}
+
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.
  *  @public
  */
-export type ProgressFunction = (loaded: number, total: number) => number;
+export type ProgressFunction = (loaded: number, total: number) => ProgressStatus;
 
 /** The parameters that specify a request to download a checkpoint file from iModelHub.
  * @internal
@@ -103,44 +117,122 @@ export class Downloads {
   }
 }
 
-/** Utility class for attaching to Daemon, opening V2 checkpoints, and downloading them.
+/**
+ * Utility class for opening V2 checkpoints from cloud containers, and also for downloading them.
  * @internal
 */
 export class V2CheckpointManager {
-  private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
+  public static readonly cloudCacheName = "v2Checkpoints";
+  private static _cloudCache?: CloudSqlite.CloudCache;
+  private static containers = new Map<string, CloudSqlite.CloudContainer>();
+
+  public static getFolder(): LocalDirName {
+    const cloudCachePath = path.join(BriefcaseManager.cacheDir, V2CheckpointManager.cloudCacheName);
+    if (!(IModelJsFs.existsSync(cloudCachePath))) {
+      IModelJsFs.recursiveMkDirSync(cloudCachePath);
+    }
+    return cloudCachePath;
+  }
+
+  /* only used by tests that reset the state of the v2checkpointmanager. all dbs should be closed before calling this function. */
+  public static cleanup(): void {
+    for (const [_, value] of this.containers.entries()) {
+      if (value.isConnected)
+        value.detach();
+    }
+    this._cloudCache?.destroy();
+    this._cloudCache = undefined;
+    this.containers.clear();
+  }
+
+  public static getFileName(checkpoint: CheckpointProps): LocalFileName {
+    const changesetId = checkpoint.changeset.id || "first";
+    return path.join(this.getFolder(), `${changesetId}.bim`);
+  }
+
+  private static get cloudCache(): CloudSqlite.CloudCache {
+    if (!this._cloudCache) {
+      let rootDir = process.env.CHECKPOINT_CACHE_DIR;
+      if (!rootDir) {
+        rootDir = this.getFolder();
+        Logger.logWarning(loggerCategory, `No CHECKPOINT_CACHE_DIR found in process.env, using ${rootDir} instead.`);
+      } else {
+        // Make sure the checkpoint_cache_dir has an iTwinDaemon specific file in it, otherwise fall back to other directory.
+        if (!(IModelJsFs.existsSync(path.join(rootDir, "portnumber.bcv")))) {
+          rootDir = this.getFolder();
+          Logger.logWarning(loggerCategory, `No evidence of the iTwinDaemon in provided CHECKPOINT_CACHE_DIR: ${process.env.CHECKPOINT_CACHE_DIR}, using ${rootDir} instead.`);
+        }
+      }
+
+      this._cloudCache = CloudSqlite.createCloudCache({ name: this.cloudCacheName, rootDir });
+
+      // Its fine if its not a daemon, but lets log an info message
+      if (!this._cloudCache.isDaemon)
+        Logger.logInfo(loggerCategory, "V2Checkpoint manager running with no iTwinDaemon.");
+    }
+    return this._cloudCache;
+  }
+
+  /** Member names differ slightly between the V2Checkpoint api and the CloudSqlite api. Add aliases `accessName` for `accountName` and `accessToken` for `sasToken` */
+  private static toCloudContainerProps(from: V2CheckpointAccessProps): CloudSqlite.ContainerAccessProps {
+    return { ...from, accessName: from.accountName, accessToken: from.sasToken };
+  }
+
+  private static getContainer(v2Props: V2CheckpointAccessProps) {
+    let container = this.containers.get(v2Props.containerId);
+    if (!container) {
+      container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2Props));
+      this.containers.set(v2Props.containerId, container);
+    }
+    return container;
+  }
+
+  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: CloudSqlite.CloudContainer }> {
+    let v2props: V2CheckpointAccessProps | undefined;
     try {
-      const v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
+      v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
       if (!v2props)
         throw new Error("no checkpoint");
-
-      return { ...v2props, daemonDir: process.env.BLOCKCACHE_DIR, writeable: false };
     } catch (err: any) {
       throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
-  }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: LocalFileName, expiryTimestamp: number }> {
-    const args = await this.getCommandArgs(checkpoint);
-    if (undefined === args.daemonDir || args.daemonDir === "")
-      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
-
-    // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
-    const attachResult = await BlobDaemon.command("attach", args);
-    if (attachResult.result !== DbResult.BE_SQLITE_OK) {
-      const error = `Daemon attach failed: ${attachResult.errMsg}`;
+    try {
+      const container = this.getContainer(v2props);
+      const dbName = v2props.dbName;
+      if (!container.isConnected)
+        container.connect(this.cloudCache);
+      container.checkForChanges();
+      if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
+        const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
+          const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
+          Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
+          const done = await prefetch.promise;
+          Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
+        };
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName));
+      }
+      return { dbName, container };
+    } catch (e: any) {
+      const error = `Cloud cache connect failed: ${e.message}`;
       if (checkpoint.expectV2)
         Logger.logError(loggerCategory, error);
 
-      throw new IModelError(attachResult.result, error);
+      throw new IModelError(e.errorNumber, error);
     }
-    const sasTokenExpiry = new URLSearchParams(args.auth).get("se");
-
-    return { filePath: BlobDaemon.getDbFileName(args), expiryTimestamp: sasTokenExpiry ? Date.parse(sasTokenExpiry) : 0 };
   }
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
+    const request = job.request;
+    const v2props = await IModelHost.hubAccess.queryV2Checkpoint(request.checkpoint);
+    if (!v2props)
+      throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
+
     CheckpointManager.onDownloadV2.raiseEvent(job);
-    return IModelHost.hubAccess.downloadV2Checkpoint(job.request);
+    const container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2props));
+    await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
+    return request.checkpoint.changeset.id;
   }
 
   /** Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
@@ -186,7 +278,8 @@ export class V1CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV1.raiseEvent(job);
-    return IModelHost.hubAccess.downloadV1Checkpoint(job.request);
+    // eslint-disable-next-line deprecation/deprecation
+    return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
   }
 }
 
@@ -200,13 +293,16 @@ export class CheckpointManager {
     try {
       // first see if there's a V2 checkpoint available.
       const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
-      Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
+      if (changesetId !== request.checkpoint.changeset.id)
+        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because checkpoint for ${request.checkpoint.changeset.id} not found.  Downloaded: IModel=${request.checkpoint.iModelId}, changeset=${changesetId}`);
+      else
+        Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
       return changesetId;
-    } catch (error) {
-      if (error instanceof IModelError && error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
+    } catch (error: any) {
+      if (error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
         return V1CheckpointManager.downloadCheckpoint(request);
 
-      throw (error); // most likely, was aborted
+      throw error; // most likely, was aborted
     }
   }
 
@@ -218,8 +314,8 @@ export class CheckpointManager {
       // Open checkpoint for write
       const db = SnapshotDb.openForApplyChangesets(targetFile);
       const nativeDb = db.nativeDb;
-
       try {
+
         if (nativeDb.hasPendingTxns()) {
           Logger.logWarning(loggerCategory, "Checkpoint with Txns found - deleting them", () => traceInfo);
           nativeDb.deleteAllTxns();

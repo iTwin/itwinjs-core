@@ -53,6 +53,6 @@ describe("DevTools", () => {
   it("can get the versions", async () => {
     const versions = await devTools.versions();
     assert.isDefined(versions.application);
-    assert.isDefined(versions.iModelJs);
+    assert.isDefined(versions.iTwinJs);
   });
 });

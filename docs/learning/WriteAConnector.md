@@ -4,6 +4,7 @@
 
 - [Write A Connector](#write-a-connector)
   - [Table of Contents](#table-of-contents)
+  - [Porting a connector to iTwin.js 3.x](#porting-a-connector)
   - [Introduction](#introduction)
     - [Preface](#preface)
       - [What is a Connector](#what-is-a-connector)
@@ -35,7 +36,7 @@
         - [Change detection](#change-detection)
   - [Connector SDK](#connector-sdk)
     - [Getting started](#getting-started)
-    - [BridgeRunner](#bridgerunner)
+    - [ConnectorRunner](#connectorrunner)
     - [Synchronizer](#synchronizer)
     - [Connector interface methods](#connector-interface-methods)
       - [InitializeJob](#initializejob)
@@ -60,6 +61,13 @@
     - [Locks & Codes](#locks--codes)
     - [More information](#more-information)
 
+### Porting a connector
+
+To port an existing Connector originally written on iModel.js 2.x, it will be necessary to:
+
+1. Change the dependencies to the latest version of [connector-framework](https://www.npmjs.com/package/@itwin/connector-framework) (version 1.0.1 or greater).  A complete list of dependencies needed for connector development is available below under [Node Packages](#node-packages)
+2. The older term "bridge" has been replaced with "connector".  Therefore, the class "BridgeRunner" for example, is now called "ConnectorRunner".  In other instances, the term "bridge" was removed altogether, so, "BridgeJobDefArgs" is now simply "JobArgs". Lastly, the term "iModel" has been similarly replaced by "iTwin" or omitted.  Instead of "iModelBridge" your connector will extend "BaseConnector".
+
 ## Introduction
 
 ### Preface
@@ -80,9 +88,9 @@ See [Section on iTwin Synchronization](#ways-to-sync-data-to-an-itwin) for more 
 
 However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iTwin.js SDK](https://github.com/iTwin/itwinjs-core)
 
-The imodel-bridge package provided as part of the iTwin.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iTwin.js library that this package depends on requires a JavaScript engine with es2017 support.
+The ConnectorFramework package provided as part of the iTwin.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iTwin.js library that this package depends on requires a JavaScript engine with es2017 support.
 
-Note: Please keep in mind iModelBridge is sometimes used as a synonym for iTwin Connector since it bridges the gap between input data and a digital twin. When discussing the classes, methods and properties of the SDK and especially in the code examples and snippets provided, this documentation will adhere to the actual names that are published to ensure it is working code. In future versions of the SDK, classes and methods will be renamed from "Bridge" to "Connector" to reflect the latest terminology. This documentation will be updated to match the new names when the new version is released.
+Note: Please keep in mind iModelBridge is sometimes used as a synonym for iTwin Connector since it bridges the gap between input data and a digital twin. When discussing the classes, methods and properties of the SDK and especially in the code examples and snippets provided, this documentation will adhere to the actual names that are published to ensure it is working code. In 3.x and future versions of the SDK, classes and methods have been renamed from "Bridge" to "Connector" to reflect the latest terminology. This documentation has been updated to match the new names.
 
 ### Who should read this guide?
 
@@ -106,8 +114,8 @@ To understand the APIs, you will need to have an understanding of typescript.
 
 Two foundational articles which are highly recommended for background knowledge of building connectors are:
 
-- [Intro to BIS - Information Hierarchy](../bis/intro/information-hierarchy)
-- [Intro to BIS - Fabric of the Universe](../bis/intro/fabric-of-the-universe)
+- [Intro to BIS - Information Hierarchy](../bis/guide/data-organization/information-hierarchy)
+- [Intro to BIS - Fabric of the Universe](../bis/guide/intro/fabric-of-the-universe)
 
 ### Structure of the guide
 
@@ -133,15 +141,15 @@ An iTwin Connector provides a workflow to easily synchronize information from va
 
 #### Briefcases
 
-[Briefcases](./glossary#briefcase) are the local copies of iModel that users can acquire to work with the iModel. A Connector will download a briefcase locally using the BridgeRunner and change their copy of iModel. Once all the work is done, the results are then pushed into the iModel. Please see the section on [Execution sequence](#execution-sequence) on the different steps involved.
+A [Briefcase](./glossary#briefcase) is a local copy of an iModel hosted on the [iModelHub](./glossary#imodelhub). A Connector will download a briefcase using the ConnectorRunner and will write changes to the briefcase. Once all the work is done, the results are then pushed back into the iModel. Please see the section on [Execution sequence](#execution-sequence) on the different steps involved.
 
 #### Element
 
-iModel uses BIS schemas to describe the persistence model of the digital twin. An element represents an instance of a [bis:Element](../bis/intro/element-fundamentals) class.
+iModel uses BIS schemas to describe the persistence model of the digital twin. An element represents an instance of a [bis:Element](../bis/guide/fundamentals/element-fundamentals) class.
 
 #### Changeset
 
-A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets, please see [ChangeSet]($imodelhub-client)
+A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets, please see [Changeset](./Glossary.md#changeset)
 
 ## The basics of writing a Connector
 
@@ -192,7 +200,7 @@ There are roughly three degrees of customizations you may need to employ to conn
 
 Bentley has authored many "domain" schemas to support connectors for many of its authoring applications. For the most aligned data (i.e., data published from your Connector uses the same classes and properties as data published from other connectors), it is best to use a domain schema.
 
-To see what domains exist in BIS, see [Domains](../bis/domains/index#domains)
+To see what domains exist in BIS, see [Domains](../bis/domains/index.md)
 
 Sometimes BIS domain schemas are not adequate to capture all the data in the authoring application. The flow chart below can be used to assist in deciding which schema methodology to use.
 
@@ -204,7 +212,7 @@ When the format for incoming data in the native source is not completely known, 
 
 For example, if the native source allows for user-defined classes or properties, then as the classes and properties are read from the native source, they can be added to an iModel schema in-memory and real-time (a.k.a. dynamically). In effect, each native source file has its unique schema.
 
-As an iTwin Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that subsequent executions can use. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](../bis/intro/schema-versioning-and-generations.md)
+As an iTwin Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that subsequent executions can use. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](../bis/guide/schema-evolution/schema-versioning-and-generations.md)
 
 The [DynamicSchema](../bis/domains/corecustomattributes.ecschema/#dynamicschema) custom attribute should be set on customer-specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes,` enabling iModelHub to detect dynamic schemas programmatically. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
 
@@ -212,7 +220,7 @@ The [DynamicSchema](../bis/domains/corecustomattributes.ecschema/#dynamicschema)
 
 Wherever practical, the Elements generated from an iTwin Connector should be identifiable through an optimal "Display Label."
 
-As discussed in [Element Fundamentals](../bis/intro/element-fundamentals.md), the Display Labels are created through the following logic:
+As discussed in [Element Fundamentals](../bis/guide/fundamentals/element-fundamentals.md), the Display Labels are created through the following logic:
 
 1. If the UserLabel property is set, it is taken as the Display Label.
 2. If the CodeValue is set (and the UserLabel is not set), the CodeValue becomes the Display Label.
@@ -237,7 +245,7 @@ A common condition occurs where a property is generally readable and unique, but
 
 For some elements in some models, such an identifier may really not exist. For example, a simple geometric line element w/o additional business data would not have an obvious, unique, and human-readable identifier, and it would generally be detrimental to generate a CodeValue solely for not leaving it blank. Additionally, generated CodeValues have a high chance of violating the "human-readable" requirement. In such a case, this section should not be taken as a directive to generate such an identifier when it doesn't exist.
 
-Refer to [Element Codes](../bis/intro/codes) in the "Introduction to BIS" documentation.
+Refer to [Element Codes](../bis/guide/fundamentals/codes) in the "Introduction to BIS" documentation.
 
 #### Sync
 
@@ -276,40 +284,27 @@ select ecinstanceid from bis.ExternalSource where repository=?
 
 If an ExternalSource is not found, insert one using
 
-```ts
- function insertExternalSource(iModelDb: IModelDb, repository: Id64String, userLabel: string): Id64String {
-    const externalSourceProps: ExternalSourceProps = {
-      classFullName: ExternalSource.classFullName,
-      model: IModel.repositoryModelId,
-      code: Code.createEmpty(),
-      userLabel,
-      repository: new ExternalSourceIsInRepository(repository),
-      connectorName: <connectorName>,
-      connectorVersion: <connectorVersion>,
-    };
-    return iModelDb.elements.insertElement(externalSourceProps);
-  }
+_Example:_
+
+``` ts
+[[include:Sychronizer-getOrCreateExternalSource.example-code]]
 ```
 
 After calling Synchronizer.updateIModel, set the source property of the element's ExternalSourceAspect to point to the correct ExternalSource. Here is a code snippet:
 
-```ts
-const ids = ExternalSourceAspect.findBySource(imodel, scope, kind, item.id);
-const aspect = imodel.elements.getAspect(ids.aspectId) as ExternalSourceAspect;
-if (aspect.source === <externalsource.id>)
-    return;
-aspect.source = {id: <externalsource.id>};
-imodel.elements.updateAspect(aspect)
+``` ts
+[[include:Synchronizer-updateIModel.example-code]]
 ```
 
 At the start of the Connector's updateExistingData function, examine all existing elements to ensure their sources are set. The code shown above can be used to update an existing element's ExternalSourceAspect.
 
 A Connector must also relate each physical model that it creates to the source document(s) that is used to make that model. Specifically, each Connector must create an ElementHasLinks ECRelationship from the InformationContentElement element representing the model to one or more RepositoryLink elements that describe the source document. When creating a physical partition model, link it to the RepositoryLink that corresponds to the source document. Synchronized.recordDocument in the Connector SDK provides the implementation for the above. Having a stable file identifier is critical to detect changes when the file is processed again by the connector. The connector provides this information in the SourceItem call.
 
-```ts
-  public recordDocument(scope: Id64String, sourceItem: SourceItem, kind: string = "DocumentWithBeGuid", knownUrn: string = ""): SynchronizationResults {
-    const key = scope + sourceItem.id.toLowerCase();
+``` ts
+[[include:Synchronizer-recordDocument.example-code]]
 ```
+
+Also refer to [Provenance in BIS](../bis/domains/Provenance-in-BIS.md) for more information about ExternalSource and related classes.
 
 ###### Case 2 : Id mapping
 
@@ -319,7 +314,7 @@ See [updateElementClass](https://github.com/imodeljs/itwin-connector-sample/blob
 
 An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to store information about the element.
 
-Note: the [Federation GUID](../bis/intro/element-fundamentals#federationguid) is an optional property available for mapping external ids to elements in the iModel. The Code is also a helpful way of searching for an element based on external data. If the source data does not have stable, unique IDs, then the Connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
+Note: the [Federation GUID](../bis/guide/fundamentals/element-fundamentals#federationguid) is an optional property available for mapping external ids to elements in the iModel. The Code is also a helpful way of searching for an element based on external data. If the source data does not have stable, unique IDs, then the Connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
 
 ##### Change detection
 
@@ -331,54 +326,28 @@ For each item found in the external source.
 
 Define a [[SourceItem]] object to capture the identifier, version, and checksum of the item.
 
-```ts
-    const sourceItem: SourceItem = {
-      id: <<identifies the item in the external source>>,
-      version: <<the item’s version number, if available>>,
-      checksum: <<the checksum of the item’s content>>,
-    };
+``` ts
+[[include:Synchronizer-recordDocument.example-code]]
 ```
 
 Then, check use [Synchronizer](#synchronizer) to see if the item was previously converted.
 
-```ts
-const results = this.synchronizer.detectChanges(scopeId, kind, sourceItem);
+``` ts
+[[include:Synchronizer-detectChanges.example-code]]
 ```
 
 If so, check to see if the item’s state is unchanged since the previous conversion. In that case, register the fact that the element in the iModel is still required and move on to the next item.
 
-```ts
-if (results.state === ItemState.Unchanged) {
-  assert(results.id !== undefined);
-  this.synchronizer.onElementSeen(results.id);
-  return results.id;
-}
-```
-
 Otherwise, the item is new or if its state has changed. The connector must generate the appropriate BIS element representation of it.
 
-```ts
-    const element = convert the item to BIS element …
-
-    if (results.id !== undefined) // in case this is an update
-      element.id = results.id;
+``` ts
+[[include:Synchronizer-onElementsSeen.example-code]]
 ```
 
 Then ask Synchronizer to write the BIS element to the briefcase. Synchronizer will update the existing element if it exists or insert a new one if not.
 
 ```ts
-    const sync: SynchronizationResults = {
-      element,
-      itemState: results.state,
-    };
-    const status = this.synchronizer.updateIModel(sync, scopeId, sourceItem, kind);
-
-    if (status !== IModelStatus.Success)
-      throw new Error(`Failed to write ${sourceItem.id}. Status=${status}`);
-
-    return sync.element.id;
-
-}
+[[include:Synchronizer-updateIModel.example-code]]
 ```
 
 Note that Synchronizer.updateIModel automatically adds an [[ExternalSourceAspect]] to the element, to keep track of the mapping between it and the external item.
@@ -389,92 +358,64 @@ The framework will automatically detect and delete elements and models if the co
 
 ### Getting started
 
-You'll need Node.js version ">=12.17.0 <15.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
+You'll need Node.js version ">=12.22.0 <19.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
 
 The node packages you'll need can be installed using
 
 ```Shell
-$npm install  @itwin/core-bentley
 $npm install  @itwin/ecschema-metadata
 $npm install  @itwin/core-geometry
-$npm install  @bentley/imodelhub-client
+$npm install  @itwin/connector-framework
 $npm install  @itwin/core-backend
 $npm install  @itwin/core-common
-$npm install  @bentley/itwin-client
-$npm install  @bentley/rbac-client
-$npm install  @bentley/telemetry-client
+$npm install  @itwin/core-bentley
+$npm install  @itwin/imodels-access-backend
+$npm install  @itwin/imodels-client-authoring
 
 $npm install  --save-dev @itwin/build-tools
-$npm install  --save-dev @bentley/config-loader
-$npm install  --save-dev @itwin/eslint-plugin
 $npm install  --save-dev @itwin/oidc-signin-tool
-
-$npm install  --save-dev chai
-$npm install  --save-dev cpx
-$npm install  --save-dev eslint
-$npm install  --save-dev mocha
-$npm install  --save-dev nyc
-$npm install  --save-dev rimraf
-$npm install  --save-dev typescript
 ```
 
 Also refer to [Supported Platforms](SupportedPlatforms.md#supported-platforms)
 
-The Connector SDK exposes its functionality through three main classes: BridgeRunner, Synchronizer, and iModelBridge Interface.
+The ConnectorFramework SDK exposes its functionality through three main classes: ConnectorRunner, Synchronizer, and BaseConnector Interface.
 
-### BridgeRunner
+### ConnectorRunner
 
 Constructor
 
-The BridgeRunner has a constructor which takes a BridgeJobDefArgs as its lone parameter. The BridgeJobDefArgs has properties to describe the significant pieces to the Connector job:
+The ConnectorRunner has a constructor which takes JobArgs and HubArgs as parameters.
 
-1. sourcePath - your native data (i.e., where the data is coming from) has nothing to do with source code.
-2. outputDir - this is the target for your iModel (i.e., where the data is going to)
-3. BridgeModule - path to your javascript source code. This must extend IModelBridge and implement its methods
-4. IsSnapshot - write the iModel to the disk
+```ts
+[[include:ConnectorRunner-constructor.example-code]]
+```
 
 Methods
 
-The BridgeRunner has a Synchronize method that runs your bridge module.
+The ConnectorRunner has a Run method that runs your connector module.
 
 ```ts
-    const bridgeJobDef = new BridgeJobDefArgs();
-    bridgeJobDef.sourcePath = "c:\tmp\mynativefile.txt";
-    bridgeJobDef.bridgeModule = "./HelloWorldConnector.js";
-    bridgeJobDef.outputDir = "c:\tmp\out\";
-    bridgeJobDef.isSnapshot = true;
-
-    const runner = new BridgeRunner(bridgeJobDef);
-    const status = await runner.synchronize();
-
+[[include:ConnectorRunnerTest.run.example-code]]
 ```
 
 ### Synchronizer
 
-An IModelBridge has a private Synchronizer member which can be gotten or set via the synchronizer accessor. The Synchronizer helps comparing different states of an iModel and updating the iModel based on the results of those comparisons. Several public methods are available to facilitate your connector's interaction with the iModel: recordDocument, detectChanges, updateIModel, setExternalSourceAspect, insertResultsIntoIModel, onElementSeen. Visit the [Change detection](#change-detection) section to see examples of several of the Synchronizer's methods in use.
+An iTwin Connector has a private Synchronizer member which can be gotten or set via the synchronizer accessor. The Synchronizer helps comparing different states of an iModel and updating the iModel based on the results of those comparisons. Several public methods are available to facilitate your connector's interaction with the iModel: recordDocument, detectChanges, updateIModel, setExternalSourceAspect, insertResultsIntoIModel, onElementSeen. Visit the [Change detection](#change-detection) section to see examples of several of the Synchronizer's methods in use.
 
 ### Connector interface methods
 
-The bridgeModule assigned to the BridgeJobDefArgs above must extend the IModelBridge class. This class has several methods that must be implemented to customize the behavior of your Connector.
+The connectorModule assigned to the JobArgs above must extend the BaseConnector class. This class has several methods that must be implemented to customize the behavior of your Connector.
 
-```ts
-class HelloWorldConnector extends IModelBridge {
-
+``` ts
+[[include:TestConnector-extendsBaseConnector.example-code]]
 ```
 
 #### InitializeJob
 
 Use this method to add any models (e.g., physical, definition, or group) required by your Connector upfront to ensure that the models exist when it is time to populate them with their respective elements.
 
-```ts
-  public async initializeJob(): Promise<void> {
-    if (ItemState.New === this._sourceDataState) {
-      this.createGroupModel();
-      this.createPhysicalModel();
-      this.createDefinitionModel();
-    }
-  }
-
+``` ts
+[[include:TestConnector-initializeJob.example-code]]
 ```
 
 See also:
@@ -486,17 +427,8 @@ See also:
 
 Use this method to read your native source data and assign it to a member property of your Connector to be accessed later on when it is time to convert your native object to their counterparts in the iModel.
 
-```ts
-  public async openSourceData(sourcePath: string): Promise<void> {
-    const json = fs.readFileSync(sourcePath, "utf8");
-    this._data = JSON.parse(json);
-    this._sourceData = sourcePath;
-
-    const documentStatus = this.getDocumentStatus(); // make sure the repository link is created now, while we are in the repository channel
-    this._sourceDataState = documentStatus.itemState;
-    this._repositoryLink = documentStatus.element;
-  }
-
+``` ts
+[[include:TestConnector-openSourceData.example-code]]
 ```
 
 #### ImportDefinitions
@@ -504,18 +436,7 @@ Use this method to read your native source data and assign it to a member proper
 Your source data may have non-graphical data best represented as definitions. Typically, this data requires a single instance for each definition, and the same instance is referenced multiple times. Therefore, it is best to import the definitions upfront all at once. Override the ImportDefinitions method for this purpose.
 
 ```ts
-  // importDefinitions is for definitions that are written to shared models such as DictionaryModel
-  public async importDefinitions(): Promise<any> {
-    if (this._sourceDataState === ItemState.Unchanged) {
-      return;
-    }
-    if (this.synchronizer.imodel.codeSpecs.hasName(CodeSpecs.Group)) {
-      return;
-    }
-    const spec = CodeSpec.create(this.synchronizer.imodel, CodeSpecs.Group, CodeScopeSpec.Type.Model);
-    this.synchronizer.imodel.codeSpecs.insert(spec);
-  }
-
+[[include:TestConnector-importDefinitions.example-code]]
 ```
 
 #### ImportDomainSchema
@@ -523,20 +444,12 @@ Your source data may have non-graphical data best represented as definitions. Ty
 Use this method to import any domain schema that is required to publish your data.
 
 ```ts
-  public async importDomainSchema(_requestContext: AuthorizedClientRequestContext | ClientRequestContext): Promise<any> {
-    if (this._sourceDataState === ItemState.Unchanged) {
-      return;
-    }
-    TestBridgeSchema.registerSchema();
-    const fileName = TestBridgeSchema.schemaFilePath;
-    await this.synchronizer.imodel.importSchemas(_requestContext, [fileName]);
-  }
-
+[[include:TestConnector-importDomainSchema.example-code]]
 ```
 
 #### ImportDynamicSchema
 
-Please refer to [Implement a Dynamic Schema](ImplementADynamicSchema.md#implement-a-dynamic-schema)
+Please refer to [Implement a Dynamic Schema](implementadynamicschema#implement-a-dynamic-schema)
 
 For background on when to use a dynamic schema, please checkout [Dynamic Schemas](#dynamic-schemas)
 
@@ -545,40 +458,17 @@ For background on when to use a dynamic schema, please checkout [Dynamic Schemas
 This method is the main workhorse of your Connector. When UpdateExistingData is called, models and definitions should be created and available for insertion of elements (if that is the desired workflow). Note: In the example below, definition elements are being inserted into the definition model at this point as well. Physical elements and Group elements can now be converted.
 
 ```ts
-  public async updateExistingData() {
-    const groupModelId = this.queryGroupModel();
-    const physicalModelId = this.queryPhysicalModel();
-    const definitionModelId = this.queryDefinitionModel();
-    if (undefined === groupModelId || undefined === physicalModelId || undefined === definitionModelId) {
-const error =`Unable to find model Id for ${undefined === groupModelId ? ModelNames.Group : (undefined === physicalModelId ? ModelNames.Physical : ModelNames.Definition)}`;
-      throw new IModelError(IModelStatus.BadArg, error, Logger.logError, loggerCategory);
-    }
-
-    if (this._sourceDataState === ItemState.Unchanged) {
-      return;
-    }
-
-    if (this._sourceDataState === ItemState.New) {
-      this.insertCategories();
-      this.insertMaterials();
-      this.insertGeometryParts();
-    }
-
-    this.convertGroupElements(groupModelId);
-    this.convertPhysicalElements(physicalModelId, definitionModelId, groupModelId);
-    this.synchronizer.imodel.views.setDefaultViewId(this.createView(definitionModelId, physicalModelId, "TestBridgeView"));
-  }
-
+[[include:TestConnector-updateExistingData.example-code]]
 ```
 
 ### Execution Sequence
 
-The ultimate purpose of a Connector is to synchronize an iModel with the data in one or more source documents. The synchronization step involves authorization, communicating with an iModel server, converting data, and concurrency control. iTwin.js defines a framework in which the Connector itself can focus on the tasks of extraction, alignment, and change-detection. The other functions are handled by classes provided by iTwin.js. The framework is implemented by the BridgeRunner class. A BridgeRunner conducts the overall synchronization process. It loads and calls functions on a Connector at the appropriate points in the sequence. The process may be summarized as follows:
+The ultimate purpose of a Connector is to synchronize an iModel with the data in one or more source documents. The synchronization step involves authorization, communicating with the [iModelHub](./glossary#imodelhub), converting data, and concurrency control. iTwin.js defines a framework in which the Connector itself can focus on the tasks of extraction, alignment, and change-detection. The other functions are handled by classes provided by iTwin.js. The framework is implemented by the ConnectorRunner class. A ConnectorRunner conducts the overall synchronization process. It loads and calls functions on a Connector at the appropriate points in the sequence. The process may be summarized as follows:
 
-- BridgeRunner: [Opens a local briefcase copy](./backend/IModelDb.md) of the iModel that is to be updated.
+- ConnectorRunner: [Opens a local briefcase copy](./backend/IModelDb.md) of the iModel that is to be updated.
 - Import or Update Schema
   - Connector: Possibly [import an appropriate BIS schema into the briefcase](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema) or upgrade an existing schema.
-  - BridgeRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModel server.
+  - ConnectorRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModelHub.
 - Convert Changed Data
   - Connector:
     - Opens to the data source.
@@ -586,8 +476,8 @@ The ultimate purpose of a Connector is to synchronize an iModel with the data in
     - [Transform](#data-alignment) the new or changed source data into the target BIS schema.
     - Write the resulting BIS data to the local briefcase.
     - Remove BIS data corresponding to deleted source data.
-  - BridgeRunner: Obtain required [Locks and Codes](./backend/ConcurrencyControl.md) from the iModel server and code server.
-- BridgeRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) changes to the iModel server.
+  - ConnectorRunner: Obtain required [Locks and Codes](./backend/ConcurrencyControl.md) from the iModelHub and code server.
+- ConnectorRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) changes to the iModelHub.
 
 ### Analyzing the Connector output
 

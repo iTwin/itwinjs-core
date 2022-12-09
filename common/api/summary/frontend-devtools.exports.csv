@@ -6,10 +6,12 @@ alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
 beta;ApplyRenderingStyleTool 
 beta;ApplyViewByIdTool 
 beta;ApplyViewTool 
+beta;AttachArcGISFeatureMapLayerByUrlTool 
 beta;AttachArcGISMapLayerByUrlTool 
 beta;AttachCesiumAssetTool 
 beta;AttachMapLayerTool 
 beta;AttachMapOverlayTool 
+beta;AttachModelMapLayerTool 
 beta;AttachRealityModelTool 
 beta;AttachTileURLMapLayerByUrlTool 
 beta;AttachWmsMapLayerByUrlTool 
@@ -17,9 +19,11 @@ beta;AttachWmtsMapLayerByUrlTool
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
+beta;ChangeBackgroundColorTool 
 beta;ChangeCameraTool 
 beta;ChangeEmphasisSettingsTool 
 beta;ChangeFlashSettingsTool 
+beta;ChangeHiliteModeTool 
 beta;ChangeHiliteSettingsTool 
 beta;class ChangeHiliteTool 
 beta;class ChangePlanProjectionSettingsTool 
@@ -68,6 +72,7 @@ beta;DiagnosticsPanel
 beta;DiagnosticsPanelProps
 beta;class DisplayStyleTool 
 beta;DumpPlanProjectionSettingsTool 
+beta;DumpSelectionSetTool 
 beta;EdgeDetectionEffect 
 beta;ElementIdFromSourceAspectIdTool 
 beta;EmbossEffect 
@@ -124,6 +129,7 @@ beta;parseBoolean(arg: string | undefined): boolean | undefined
 beta;parseToggle(arg: string | undefined): string | boolean | undefined
 beta;class PlanarMaskBaseTool 
 beta;ProjectExtentsDecoration
+beta;QueryScheduleScriptTool 
 alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
@@ -140,6 +146,7 @@ beta;class RenderTargetDebugControlToggleTool
 beta;class RenderTargetDebugControlTool 
 beta;ReorderMapLayers 
 beta;ReportWebGLCompatibilityTool 
+beta;ReverseScheduleScriptTool 
 beta;SaturationConfig 
 beta;SaturationEffect 
 beta;SaveRealityModelTool 
@@ -164,6 +171,7 @@ beta;SetRealityModelColorTool
 beta;SetRealityModelEmphasizedTool 
 beta;SetRealityModelLocateTool 
 beta;SetRealityModelTransparencyTool 
+beta;SetScheduleScriptTool 
 beta;SharpenEffect 
 beta;SharpnessEffect 
 beta;ShowTileVolumesTool 
@@ -190,6 +198,7 @@ beta;ToggleDPIForLODTool
 beta;ToggleDrapeFrustumTool 
 beta;ToggleDrawingGraphicsTool 
 beta;ToggleFrustumSnapshotTool 
+beta;ToggleNormalMaps 
 beta;ToggleOSMBuildingDisplay 
 beta;TogglePrimitiveVisibilityTool 
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
@@ -207,6 +216,7 @@ beta;ToggleSkyboxTool
 beta;ToggleTerrainTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleTileTreeBoundsDecorationTool 
+beta;ToggleTileTreeReferencesTool 
 beta;ToggleToolTipsTool 
 beta;ToggleViewAttachmentBoundariesTool 
 beta;ToggleViewAttachmentClipShapesTool 

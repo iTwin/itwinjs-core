@@ -1,0 +1,73 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/index";
+@import "~@itwin/itwinui-css/scss/button/disabled";
+
+.filter-builder > .rule-group {
+  & > .rule-group-content {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  & > .rule-group-remove-action {
+    padding-right: 0;
+  }
+}
+
+.rule-group {
+  display: grid;
+  grid-template-columns: min-content auto;
+  padding: 11px 0;
+
+  &[data-isactive=true] > .rule-group-remove-action {
+    visibility: visible;
+  }
+
+  &[data-isactive=true] > .rule-group-content {
+    @include themed {
+      border-color: t(iui-color-background-1--light);
+    }
+  }
+
+  &[data-isactive=false] > .rule-group-content > .rule-group-actions .iui-button {
+    @include themed {
+      color: t(iui-icons-color);
+    }
+  }
+
+  .rule-group-remove-action {
+    padding: 3px $iui-sm 3px 0;
+    visibility: hidden;
+  }
+
+  .rule-group-content {
+    padding-left: $iui-sm;
+    border-left: 1px solid;
+    box-sizing: border-box;
+    @include themed {
+      border-color: t(iui-color-background-border);
+    }
+
+    .rule-group-operator {
+      padding: 3px 0;
+      width: max-content;
+    }
+
+    .rule-group-actions {
+      padding: 3px 0;
+      display: grid;
+      grid-template-columns: min-content min-content;
+      gap: 8px;
+    }
+  }
+}
+
+.rule-group-items > .rule-group {
+  padding-bottom: 22px;
+
+  &:last-child {
+    padding-bottom: 11px;
+  }
+}

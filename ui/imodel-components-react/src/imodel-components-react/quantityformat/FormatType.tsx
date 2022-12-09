@@ -9,7 +9,9 @@
 import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 import { UiIModelComponents } from "../UiIModelComponents";
-import { DecimalPrecision, Format, FormatProps, FormatType, FractionalPrecision, ScientificType } from "@itwin/core-quantity";
+import { DecimalPrecision, FormatProps, FormatType, formatTypeToString, FractionalPrecision, parseFormatType,
+  ScientificType, scientificTypeToString,
+} from "@itwin/core-quantity";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 
 /** Properties of [[FormatTypeSelector]] component.
@@ -55,14 +57,14 @@ export interface FormatTypeOptionProps extends CommonProps {
 export function FormatTypeOption(props: FormatTypeOptionProps) {
   const { formatProps, onChange } = props;
   const handleFormatTypeChange = React.useCallback((newType: FormatType) => {
-    const type = Format.formatTypeToString(newType);
+    const type = formatTypeToString(newType);
     let precision: number | undefined;
     let stationOffsetSize: number | undefined;
     let scientificType: string | undefined;
     switch (newType) { // type must be decimal, fractional, scientific, or station
       case FormatType.Scientific:
         precision = DecimalPrecision.Six;
-        scientificType = Format.scientificTypeToString(ScientificType.Normalized);
+        scientificType = scientificTypeToString(ScientificType.Normalized);
         break;
       case FormatType.Decimal:
         precision = DecimalPrecision.Four;
@@ -79,7 +81,7 @@ export function FormatTypeOption(props: FormatTypeOptionProps) {
     onChange && onChange(newFormatProps);
   }, [formatProps, onChange]);
 
-  const formatType = Format.parseFormatType(formatProps.type, "format");
+  const formatType = parseFormatType(formatProps.type, "format");
   const label = React.useRef(UiIModelComponents.translate("QuantityFormat.labels.type"));
 
   return (

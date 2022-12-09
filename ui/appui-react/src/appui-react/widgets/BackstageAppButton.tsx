@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import widgetIconSvg from "@bentley/icons-generic/icons/home.svg?sprite";
+import widgetIconSvg from "@bentley/icons-generic/icons/home.svg";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
 import { Icon, useWidgetOpacityContext } from "@itwin/core-react";
 import { AppButton } from "@itwin/appui-layout-react";
@@ -36,9 +36,9 @@ export interface BackstageAppButtonProps {
 export function BackstageAppButton(props: BackstageAppButtonProps) {
   const backstageToggleCommand = React.useMemo(() => BackstageManager.getBackstageToggleCommand(props.icon), [props.icon]);
   const backstageLabel = React.useMemo(() => props.label || backstageToggleCommand.tooltip, [backstageToggleCommand.tooltip, props.label]);
-  const [icon, setIcon] = React.useState(props.icon ? props.icon : IconSpecUtilities.createSvgIconSpec(widgetIconSvg));
+  const [icon, setIcon] = React.useState(props.icon ? props.icon : IconSpecUtilities.createWebComponentIconSpec(widgetIconSvg));
   const isInitialMount = React.useRef(true);
-  const useSmallAppButton = "1" !== useFrameworkVersion();
+  const useSmallAppButton = "1" !== useFrameworkVersion(); // eslint-disable-line deprecation/deprecation
   const divClassName = useSmallAppButton ? "uifw-app-button-small" : undefined;
   const { onElementRef, proximityScale } = useWidgetOpacityContext();
   const ref = React.useRef<HTMLDivElement>(null);
@@ -56,13 +56,13 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
       isInitialMount.current = false;
       onElementRef(ref);
     } else {
-      setIcon(props.icon ? props.icon : IconSpecUtilities.createSvgIconSpec(widgetIconSvg));
+      setIcon(props.icon ? props.icon : IconSpecUtilities.createWebComponentIconSpec(widgetIconSvg));
     }
   }, [props.icon, onElementRef]);
 
   let buttonProximityScale: number | undefined;
 
-  if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) {
+  if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) { // eslint-disable-line deprecation/deprecation
     buttonProximityScale = proximityScale;
   }
 

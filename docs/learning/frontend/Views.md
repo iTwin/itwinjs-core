@@ -1,6 +1,6 @@
 # Using Views in iTwin.js
 
-A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iTwin.js applications can embed and interact with Views anywhere on a web page via an `HTMLDivElement`.
+A *View* renders geometry from one or more [Models](../../bis/guide/fundamentals/model-fundamentals) of an iModel in a web browser. iTwin.js applications can embed and interact with Views anywhere on a web page via an `HTMLDivElement`.
 
 Views are managed by the [ViewManager]($frontend) class, using [IModelApp.viewManager]($frontend).
 
@@ -175,7 +175,7 @@ Every view may have a thumbnail that shows an approximation of what it contains.
 
 ## ViewState Parameters
 
- This is what the parameters to the camera methods, and the values stored by [ViewDefinition3d]($backend) mean.
+ The diagrams below illustrate what the parameters to the camera methods, and the values stored by [ViewDefinition3d]($backend) mean. You can also visualize these parameters interactively using the [camera visualization sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Camera%20Visualizer).
 
 <img src="./ViewFrustum-D1.png" width="75%">
 

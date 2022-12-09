@@ -43,29 +43,31 @@ The iTwin.js library requires a JavaScript engine with es2017 support.
 
 ## Helpful articles
 
-- [Snapshot iModels](./backend/AccessingIModels.md)
 - [App frontend development](./frontend/index)
 - [App backend development](./backend/index)
 - [Classes packaged by both frontends and backends](./common/index)
-- [iModelHub](./iModelHub/index)
-- [GeoLocation in iModels](./GeoLocation.md)
 - [ECSQL](./ECSQL.md)
-- [Change Summaries](./ChangeSummaries.md)
-- [Remote Procedure Call (RPC) Interfaces](./RpcInterface)
+- [Display system](./display/index.md)
+- [iModelHub](./iModelHub/index)
+- [Snapshot iModels](./backend/AccessingIModels.md)
+- [GeoLocation in iModels](./GeoLocation.md)
+- [Change summaries](./ChangeSummaries.md)
+- [Remote procedure call ("RPC") Interfaces](./RpcInterface)
 
 Step by step instructions to:
 
-- [Write a Web service](./WriteAWebService.md)
-- [Write a Web agent](./WriteAWebAgent.md)
+- [Write a web service](./WriteAWebService.md)
+- [Write a web agent](./WriteAWebAgent.md)
 - [Write an interactive app](./WriteAnInteractiveApp.md)
   - [Web app](./WriteAnInteractiveWebApp.md)
   - [Desktop app](./WriteAnInteractiveDesktopApp.md)
   - [Mobile app](./WriteAnInteractiveMobileApp.md)
-- [Write a Connector](./WriteAConnector.md)
+- [Write a connector](./WriteAConnector.md)
 
 Tutorials:
 
 - [ECSQL Tutorial](./ECSQLTutorial/index.md)
+- [EC Schema Serialization](./serializing-xml-schemas.md)
 
 See also:
 

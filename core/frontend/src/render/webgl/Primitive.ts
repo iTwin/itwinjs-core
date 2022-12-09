@@ -16,7 +16,7 @@ import { DrawParams, PrimitiveCommand } from "./DrawCommand";
 import { Graphic } from "./Graphic";
 import { InstanceBuffers, InstancedGeometry, isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { RenderCommands } from "./RenderCommands";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
@@ -27,7 +27,10 @@ export class Primitive extends Graphic {
   public cachedGeometry: CachedGeometry;
   public isPixelMode: boolean = false;
 
-  protected constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
+  protected constructor(cachedGeom: CachedGeometry) {
+    super();
+    this.cachedGeometry = cachedGeom;
+  }
 
   public static create(geom: CachedGeometry | undefined, instances?: InstancedGraphicParams | RenderAreaPattern): Primitive | undefined {
     if (!geom)
@@ -77,22 +80,22 @@ export class Primitive extends Graphic {
     this.cachedGeometry.collectStatistics(stats);
   }
 
-  public getRenderPass(target: Target) {
+  public getPass(target: Target): Pass {
     if (this.isPixelMode)
-      return RenderPass.ViewOverlay;
+      return "view-overlay";
 
     switch (target.primitiveVisibility) {
       case PrimitiveVisibility.Uninstanced:
         if (this.cachedGeometry.isInstanced)
-          return RenderPass.None;
+          return "none";
         break;
       case PrimitiveVisibility.Instanced:
         if (!this.cachedGeometry.isInstanced)
-          return RenderPass.None;
+          return "none";
         break;
     }
 
-    return this.cachedGeometry.getRenderPass(target);
+    return this.cachedGeometry.getPass(target);
   }
 
   public get hasFeatures(): boolean { return this.cachedGeometry.hasFeatures; }

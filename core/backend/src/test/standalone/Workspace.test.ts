@@ -10,21 +10,24 @@ import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelJsFs } from "../../IModelJsFs";
-import { EditableWorkspaceFile, ITwinWorkspace, WorkspaceContainerId, WorkspaceFile } from "../../workspace/Workspace";
+import { BaseSettings, SettingDictionary, SettingsPriority } from "../../workspace/Settings";
+import { EditableWorkspaceDb, ITwinWorkspace, ITwinWorkspaceContainer, ITwinWorkspaceDb, WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { BaseSettings, SettingDictionary, SettingsPriority } from "../../workspace/Settings";
 
 describe("WorkspaceFile", () => {
 
   const workspace = new ITwinWorkspace(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
-  function makeContainer(id: WorkspaceContainerId) {
-    const wsFile = new EditableWorkspaceFile(id, workspace);
-    IModelJsFs.purgeDirSync(wsFile.containerFilesDir);
-    if (IModelJsFs.existsSync(wsFile.localDbName))
-      IModelJsFs.unlinkSync(wsFile.localDbName);
-    wsFile.create();
+  function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props) {
+    const container = workspace.getContainer(props);
+    const wsFile = new EditableWorkspaceDb(props, container);
+
+    IModelJsFs.purgeDirSync(container.filesDir);
+    if (IModelJsFs.existsSync(wsFile.dbFileName))
+      IModelJsFs.unlinkSync(wsFile.dbFileName);
+    EditableWorkspaceDb.createEmpty(wsFile.dbFileName);
+    wsFile.open();
     return wsFile;
   }
 
@@ -35,8 +38,38 @@ describe("WorkspaceFile", () => {
 
   it("WorkspaceContainer names", () => {
     const expectBadName = (names: string[]) => {
-      names.forEach((name) => {
-        expect(() => new WorkspaceFile(name, workspace), name).to.throw("containerId");
+      names.forEach((containerId) => {
+        expect(() => new ITwinWorkspaceContainer(workspace, { containerId }), containerId).to.throw("containerId");
+      });
+    };
+
+    expectBadName([
+      "",
+      "  ",
+      "12", // too short
+      "a\\b",
+      `a"b`,
+      "a:b",
+      "a.b",
+      "a?b",
+      "a*b",
+      "a|b",
+      "123--4",
+      "Abc",
+      "return\r",
+      "newline\n",
+      "a".repeat(64), // too long
+      "-leading-dash",
+      "trailing-dash-"]);
+
+    new ITwinWorkspaceContainer(workspace, { containerId: Guid.createValue() }); // guids should be valid
+  });
+
+  it("WorkspaceDbNames", () => {
+    const container = new ITwinWorkspaceContainer(workspace, { containerId: "test" });
+    const expectBadName = (names: string[]) => {
+      names.forEach((dbName) => {
+        expect(() => new ITwinWorkspaceDb({ dbName }, container)).to.throw("dbName");
       });
     };
 
@@ -46,6 +79,7 @@ describe("WorkspaceFile", () => {
       "1/2",
       "a\\b",
       `a"b`,
+      "base:1.2.3",
       "a:b",
       "a.b",
       "a?b",
@@ -59,11 +93,11 @@ describe("WorkspaceFile", () => {
       " leading space",
       "trailing space "]);
 
-    new WorkspaceFile(Guid.createValue(), workspace); // guids should be valid
+    new ITwinWorkspaceDb({ dbName: Guid.createValue() }, container); // guids should be valid
   });
 
-  it("create new WorkspaceFile", () => {
-    const wsFile = makeContainer("Acme Engineering Inc");
+  it("create new WorkspaceDb", async () => {
+    const wsFile = makeEditableDb({ containerId: "acme-engineering-inc-2", dbName: "db1" });
     const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
     let blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
@@ -74,7 +108,7 @@ describe("WorkspaceFile", () => {
 
     expect(() => wsFile.addFile(fileRscName, "bad file name")).to.throw("no such file");
     expect(() => wsFile.updateFile(fileRscName, inFile)).to.throw("error replacing");
-    expect(() => wsFile.removeFile(fileRscName)).to.throw("error removing");
+    expect(() => wsFile.removeFile(fileRscName)).to.throw("does not exist");
 
     wsFile.addBlob(blobRscName, blobVal);
     wsFile.addString(strRscName, strVal);
@@ -93,7 +127,7 @@ describe("WorkspaceFile", () => {
     expect(wsFile.getBlob(blobRscName)).to.be.undefined;
 
     wsFile.addFile(fileRscName, inFile);
-    const writeFile = sinon.spy((wsFile as any).db.nativeDb, "extractEmbeddedFile");
+    const writeFile = sinon.spy(wsFile.sqliteDb.nativeDb, "extractEmbeddedFile");
     expect(writeFile.callCount).eq(0);
     const outFile = wsFile.getFile(fileRscName)!;
     expect(writeFile.callCount).eq(1);
@@ -114,43 +148,51 @@ describe("WorkspaceFile", () => {
 
   it("resolve workspace alias", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
-    const defaultContainer = makeContainer("defaults");
-    defaultContainer.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
-    defaultContainer.close();
-
-    const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
-    const fontsContainer = makeContainer("fonts-01");
-    fontsContainer.addFile("Helvetica.ttf", schemaFile, "ttf");
-    fontsContainer.close();
+    const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1" });
+    defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
+    defaultDb.close();
 
     const settings = workspace.settings;
-    await workspace.loadSettingsDictionary({ rscName: "default-settings", container: "defaults" }, SettingsPriority.defaults);
+    const wsDb = workspace.getWorkspaceDbFromProps({ dbName: "db1" }, { containerId: "default" });
+    workspace.loadSettingsDictionary("default-settings", wsDb, SettingsPriority.defaults);
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
-    interface FontEntry { fontName: string, container: string }
-    const fontList = settings.getArray<FontEntry>("workspace/fontList")!;
-    const fontContainerName = fontList[0].container;
-    const fonts = await workspace.getContainer(fontContainerName);
+    const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
+    const fontsDb = makeEditableDb({ containerId: "fonts", dbName: "fonts" });
+
+    fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
+    fontsDb.close();
+
+    const fontList = settings.getArray<string>("workspace/fontDbs")!;
+    const fonts = await workspace.getWorkspaceDb(fontList[0]);
     expect(fonts).to.not.be.undefined;
-    const fontFile = fonts.getFile(fontList[0].fontName)!;
+    const fontFile = fonts.getFile("Helvetica.ttf")!;
     expect(fontFile).contains(".ttf");
     compareFiles(fontFile, schemaFile);
-    workspace.dropContainer(fonts);
+    fonts.container.dropWorkspaceDb(fonts);
 
     const setting2: SettingDictionary = {
-      "workspace/container/alias": [
-        { name: "default-icons", id: "icons-01" },
-        { name: "default-lang", id: "lang-05" },
-        { name: "default-fonts", id: "fonts-02" }, // a container id that doesn't exist
-        { name: "default-key", id: "key-05" },
+      "cloud/containers": [
+        { name: "icons/default", containerId: "icons-01", accountName: "" },
+        { name: "fonts/public", containerId: "fonts-02", accountName: "" },
       ],
     };
     settings.addDictionary("imodel-02", SettingsPriority.iModel, setting2);
-    expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-02");
-    expect(workspace.resolveContainerId({ id: "fonts-01" })).equals("fonts-01");
-    await expect(workspace.getContainer(fontContainerName)).to.be.rejectedWith("not found");
+    const gcsDb = workspace.resolveDatabase("gcs/entire-world");
+    const gcsContainer = workspace.resolveContainer(gcsDb.containerName);
+    const gcsAccount = workspace.resolveAccount(gcsContainer.accountName);
+
+    expect(gcsAccount.accessName).equals("devstoreaccount1");
+    expect(gcsAccount.storageType).equals("azure?emulator=127.0.0.1:10000&sas=1");
+    expect(gcsContainer.containerId).equals("gcs");
+    expect(gcsDb.dbName).equals("entireEarth");
+    expect(gcsDb.version).equals("^1");
+
+    const dbProps = workspace.resolveDatabase(fontList[0]);
+    expect(workspace.resolveContainer(dbProps.containerName).containerId).equals("fonts-02");
 
     settings.dropDictionary("imodel-02");
-    expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-01");
+    expect(workspace.resolveContainer(dbProps.containerName).containerId).equals("fonts");
   });
+
 });

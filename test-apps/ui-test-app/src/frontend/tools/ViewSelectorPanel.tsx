@@ -56,7 +56,7 @@ export function ViewSelectorPanel() {
             id: "views3dContainer",
             key: "views3dContainer",
             name:
-              IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "savedViews.spatialViews"),
+              IModelApp.localization.getLocalizedString("viewTypes.spatialViews", { ns: UiFramework.localizationNamespace }),
             enabled: false,
             type: ListItemType.Container,
             children: views3d,
@@ -69,7 +69,7 @@ export function ViewSelectorPanel() {
             key: "views2dContainer",
             id: "views2dContainer",
             name:
-              IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "savedViews.drawings"),
+              IModelApp.localization.getLocalizedString("viewTypes.drawings", { ns: UiFramework.localizationNamespace }),
             enabled: false,
             type: ListItemType.Container,
             children: views2d,
@@ -82,7 +82,7 @@ export function ViewSelectorPanel() {
             key: "sheetContainer",
             id: "sheetContainer",
             name:
-              IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "savedViews.sheets"),
+              IModelApp.localization.getLocalizedString("viewTypes.sheets", { ns: UiFramework.localizationNamespace }),
             enabled: false,
             type: ListItemType.Container,
             children: sheets,
@@ -111,6 +111,9 @@ export function ViewSelectorPanel() {
       setViewContainers(newContainers ?? []);
       setActiveViewId(vp.view.id);
     };
+    if (activeViewport)
+      setActiveViewId(activeViewport.view.id);
+
     return activeViewport?.onChangeView.addListener(handleViewChanged);
   }, [activeViewId, activeViewport, viewContainers]);
 

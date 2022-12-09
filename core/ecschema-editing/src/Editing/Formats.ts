@@ -6,7 +6,8 @@
  * @module Editing
  */
 
-import { FormatProps, FormatType, InvertedUnit, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { FormatProps, InvertedUnit, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
 
@@ -35,7 +36,9 @@ export class Formats {
         newFormat.addUnit(unitItem);
       }
     }
-    if (displayLabel) { newFormat.setDisplayLabel(displayLabel); }
+    if (displayLabel)
+      newFormat.setDisplayLabel(displayLabel);
+
     // TODO: Handle the setting of format traits, separators, etc....
     newFormat.setFormatType(formatType);
     return { itemKey: newFormat.key };
@@ -48,13 +51,15 @@ export class Formats {
    */
   public async createFromProps(schemaKey: SchemaKey, formatProps: FormatProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
-    if (formatProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+    if (formatProps.name === undefined)
+      return { errorMessage: `No name was supplied within props.` };
+
     const newFormat = (await schema.createFormat(formatProps.name)) as MutableFormat;
-    if (newFormat === undefined) {
+    if (newFormat === undefined)
       return { errorMessage: `Failed to create class ${formatProps.name} in schema ${schemaKey.toString(true)}.` };
-    }
 
     await newFormat.fromJSON(formatProps);
     return { itemKey: newFormat.key };

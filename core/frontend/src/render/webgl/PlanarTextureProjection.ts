@@ -7,23 +7,33 @@
  * @module Rendering
  */
 
+import { Frustum, FrustumPlanes, Npc, RenderMode } from "@itwin/core-common";
 import {
   ClipUtilities, ConvexClipPlaneSet, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range1d, Range2d, Range3d,
   Ray3d, Transform,
 } from "@itwin/core-geometry";
-import { Frustum, FrustumPlanes, Npc, RenderMode } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
-import { SceneContext } from "../../ViewContext";
 import { Tile, TileTreeReference } from "../../tile/internal";
+import { SceneContext } from "../../ViewContext";
 import { ViewState3d } from "../../ViewState";
 import { RenderState } from "./RenderState";
 import { Target } from "./Target";
 
 const scratchRange = Range3d.createNull();
+const scratchMap4d = Map4d.createIdentity();
+const scratchMatrix4d = Matrix4d.createIdentity();
 export class PlanarTextureProjection {
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
-  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, sceneContext: SceneContext, target: { tiles: Tile[], location: Transform }, drapeRefs: TileTreeReference[], viewState: ViewState3d, textureWidth: number, textureHeight: number, _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
+  public static computePlanarTextureProjection(
+    texturePlane: Plane3dByOriginAndUnitNormal,
+    sceneContext: SceneContext,
+    target: { tiles: Tile[], location: Transform },
+    drapeRefs: TileTreeReference[],
+    viewState: ViewState3d,
+    textureWidth: number,
+    textureHeight: number,
+    _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
     const textureZ = texturePlane.getNormalRef();
     const viewingSpace = sceneContext.viewingSpace;
     const viewX = viewingSpace.rotation.rowX();
@@ -69,7 +79,8 @@ export class PlanarTextureProjection {
         return {};
       if (drapeTree.isContentUnbounded) {
         let heightRange = viewingSpace.getTerrainHeightRange();
-        if (!heightRange) heightRange = ApproximateTerrainHeights.instance.globalHeightRange;
+        if (!heightRange)
+          heightRange = ApproximateTerrainHeights.instance.globalHeightRange;
 
         textureRange.low.x = Math.min(textureRange.low.x, heightRange.low);
         textureRange.high.x = Math.max(textureRange.high.x, heightRange.high);
@@ -153,8 +164,8 @@ export class PlanarTextureProjection {
       return {};
     }
     const worldToNpc = PlanarTextureProjection._postProjectionMatrixNpc.multiplyMatrixMatrix(frustumMap.transform0);
-    const npcToView = Map4d.createBoxMap(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(0, 0, 0), Point3d.create(textureWidth, textureHeight, 1))!;
-    const npcToWorld = worldToNpc.createInverse();
+    const npcToView = Map4d.createBoxMap(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(0, 0, 0), Point3d.create(textureWidth, textureHeight, 1), scratchMap4d)!;
+    const npcToWorld = worldToNpc.createInverse(scratchMatrix4d);
     if (undefined === npcToWorld) {
       return {};
     }
@@ -172,6 +183,7 @@ export class PlanarTextureProjection {
 
     const viewFlags = target.currentViewFlags.copy({
       renderMode: RenderMode.SmoothShade,
+      wiremesh: false,
       transparency: false,
       textures: false,
       lighting: false,

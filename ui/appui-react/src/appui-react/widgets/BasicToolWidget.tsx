@@ -13,9 +13,9 @@ import { CoreTools } from "../tools/CoreToolDefinitions";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { ToolWidgetComposer } from "./ToolWidgetComposer";
 import { BackstageAppButton } from "./BackstageAppButton";
+import { useUiVisibility } from "../hooks/useUiVisibility";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
  * @public
@@ -23,26 +23,12 @@ import { BackstageAppButton } from "./BackstageAppButton";
 export interface BasicToolWidgetProps {
   /** if true include hide/isolate Models and Categories */
   showCategoryAndModelsContextTools?: boolean;
-  /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
+  /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
   icon?: string;
   /** optional set of additional items to include in horizontal toolbar */
   additionalHorizontalItems?: CommonToolbarItem[];
   /** optional set of additional items to include in vertical toolbar */
   additionalVerticalItems?: CommonToolbarItem[];
-}
-
-/** @internal */
-// istanbul ignore next
-export function useUiVisibility() {
-  const [uiIsVisible, setUiIsVisible] = React.useState(UiFramework.getIsUiVisible());
-  React.useEffect(() => {
-    const handleUiVisibilityChanged = ((args: UiVisibilityEventArgs): void => setUiIsVisible(args.visible));
-    UiFramework.onUiVisibilityChanged.addListener(handleUiVisibilityChanged);
-    return () => {
-      UiFramework.onUiVisibilityChanged.removeListener(handleUiVisibilityChanged);
-    };
-  }, []);
-  return uiIsVisible;
 }
 
 /** Default Tool Widget for standard "review" applications. Provides standard tools to review, and measure elements.

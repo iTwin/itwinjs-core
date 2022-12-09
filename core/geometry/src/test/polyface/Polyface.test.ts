@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { randomInt } from "crypto";
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -852,46 +853,6 @@ describe("Polyface.Faces", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddCoordinateFacets");
   });
-  // cspell:word dgnjs
-  it.skip("Solid primitive param verification with native", () => {
-    const ck = new Checker();
-    const options = new StrokeOptions();
-    options.needParams = true;
-    options.needParams = true;
-    const builder = PolyfaceBuilder.create(options);
-    builder.toggleReversedFacetFlag();
-    const torusPipes = Sample.createTorusPipes();
-
-    builder.addTorusPipe(torusPipes[1]);
-    builder.addTorusPipe(torusPipes[2]);
-
-    const polyface = builder.claimPolyface();
-    const nativePolyface = JSON.parse(fs.readFileSync("./src/test/deepComparisonTestFiles/Polyface.ParamsAndNormals.dgnjs", "utf8"));
-
-    const jsParams = polyface.data.param;
-    const jsParamsIdx = polyface.data.paramIndex;
-    const nativeParams = nativePolyface.Group.Member[0].IndexedMesh.Param;
-    const nativeParamIdx = nativePolyface.Group.Member[0].IndexedMesh.ParamIndex;
-    ck.testExactNumber(jsParamsIdx!.length, nativeParamIdx.length, "Number of params match");
-    for (let i = 0; i < jsParams!.length; i++) {
-      ck.testCoordinate(jsParams!.getXAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams[nativeParamIdx[i]][0]);
-      ck.testCoordinate(jsParams!.getYAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams[nativeParamIdx[i]][1]);
-    }
-
-    const jsNormals = polyface.data.normal!;
-    const jsNormalIdx = polyface.data.normalIndex;
-    const nativeNormals = nativePolyface.Group.Member[0].IndexedMesh.Normal;
-    const nativeNormalIdx = nativePolyface.Group.Member[0].IndexedMesh.NormalIndex;
-    ck.testExactNumber(jsNormalIdx!.length, nativeNormalIdx.length, "Number of params match");
-    for (let i = 0; i < jsNormals.length; i++) {
-      const normal = jsNormals.getVector3dAtCheckedVectorIndex(i)!;
-      ck.testCoordinate(normal.x, nativeNormals[nativeNormalIdx[i]][0]);
-      ck.testCoordinate(normal.y, nativeNormals[nativeNormalIdx[i]][1]);
-      ck.testCoordinate(normal.z, nativeNormals[nativeNormalIdx[i]][2]);
-    }
-
-    expect(ck.getNumErrors()).equals(0);
-  });
 });
 
 it("PartialSawToothTriangulation", () => {
@@ -1051,6 +1012,7 @@ it("SolidPrimitiveBoundary", () => {
   let x0 = 0;
   const y0 = 0;
   const delta = 10;
+  const z1 = 10.0;
   for (const capped of [true, false]) {
     for (const solid of
       [Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!, TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!, Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)!]) {
@@ -1073,11 +1035,14 @@ it("SolidPrimitiveBoundary", () => {
         Angle.createDegrees(30),
         Angle.createDegrees(50)]) {
         PolyfaceQuery.markPairedEdgesInvisible(mesh, angle);
+        const boundary1 = PolyfaceQuery.boundaryEdges(mesh);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y1);
-        if (capped)
-          ck.testUndefined(boundary, "no boundary for capped solid");
-        else
-          ck.testDefined(boundary, "uncapped solid has boundary");
+        if (capped) {
+          if (!ck.testUndefined(boundary1, "capped solid should have no boundary"))
+            GeometryCoreTestIO.captureCloneGeometry (allGeometry, boundary1, x0, y1, z1);
+        } else {
+          ck.testDefined(boundary1, "uncapped solid should have boundary");
+        }
         y1 += 2 * delta;
       }
       x0 += delta;
@@ -1250,15 +1215,15 @@ it("AddPolyface", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
 
+  // triangulate to test edge hiding in reversed mesh
   const polyfaceA = Sample.createTriangularUnitGridPolyface(
     Point3d.create(0, 0, 0),
     Vector3d.unitX(),
-    Vector3d.unitY(), 2, 3, true, true, true);
-
+    Vector3d.unitY(), 2, 3, true, true, true, true);
   const polyfaceB = Sample.createTriangularUnitGridPolyface(
     Point3d.create(5, 0, 0),
     Vector3d.unitX(),
-    Vector3d.unitY(), 2, 3, true, true, true);
+    Vector3d.unitY(), 2, 3, true, true, true, true);
 
   const options = StrokeOptions.createForFacets();
   options.needNormals = true;
@@ -1276,6 +1241,65 @@ it("AddPolyface", () => {
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddPolyface");
   expect(ck.getNumErrors()).equals(0);
 });
+
+it("AddSweptIndexedPolyface", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+
+  // generate triangulated square flat grid with size pts on a side
+  const size = 10;
+  const seed = 10;
+  const baseMesh = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), size, size, true, true, true, true);
+
+  // randomly perturb grid in z, and compute new tri normals
+  const xyz = Point3d.create();
+  for (let i = 0; i < baseMesh.data.pointCount; ++i) {
+    baseMesh.data.point.getPoint3dAtUncheckedPointIndex(i, xyz);
+    baseMesh.data.point.setXYZAtCheckedPointIndex(i, xyz.x, xyz.y, xyz.z + (i % 2 ? -1 : 1) * (randomInt(0, seed) / seed) / 2);
+  }
+  const normal = Vector3d.create();
+  const visitor = baseMesh.createVisitor(0) as IndexedPolyfaceVisitor;
+  while (visitor.moveToNextFacet()) {
+    const pts = visitor.point.getPoint3dArray();
+    pts[0].crossProductToPoints(pts[1], pts[2], normal).normalizeInPlace();
+    const newNormalIndex = baseMesh.addNormal(normal);
+    for (let i = baseMesh.facetIndex0(visitor.currentReadIndex()); i < baseMesh.facetIndex1(visitor.currentReadIndex()); i++)
+      baseMesh.data.normalIndex![i] = newNormalIndex;
+  }
+
+  const options = StrokeOptions.createForFacets();
+  options.needNormals = options.needParams = options.needColors = true; // only applies to new side faces!
+  const sweepDir = Vector3d.create(1, 1, 2);
+
+  const builder3 = PolyfaceBuilder.create(options);
+  builder3.addSweptIndexedPolyface(baseMesh, sweepDir, true);
+  const sweptPolyface3 = builder3.claimPolyface(true);
+
+  const sideFacetCount = 2 * 4 * (size - 1);
+  ck.testExactNumber(2 * baseMesh.facetCount + sideFacetCount, sweptPolyface3.facetCount, "Triangulated swept polyface has expected facet count.");
+  ck.testBoolean(true, PolyfaceQuery.isPolyfaceManifold(sweptPolyface3, false), "Triangulated swept polyface is closed manifold.");
+
+  options.needColors = false;
+  const builder4 = PolyfaceBuilder.create(options);
+  builder4.addSweptIndexedPolyface(baseMesh, sweepDir, false);
+  const sweptPolyface4 = builder4.claimPolyface(true);
+
+  ck.testUndefined(sweptPolyface4.data.color, "Swept polyface colors ignored.");
+  ck.testExactNumber(2 * baseMesh.facetCount + sideFacetCount / 2, sweptPolyface4.facetCount, "Swept polyface has expected facet count.");
+  ck.testBoolean(true, PolyfaceQuery.isPolyfaceManifold(sweptPolyface4, false), "Swept polyface is closed manifold.");
+
+  const badBuilder = PolyfaceBuilder.create(options);
+  ck.testBoolean(false, badBuilder.addSweptIndexedPolyface(sweptPolyface4, sweepDir, false), "Closed mesh does not create a simple sweep.");
+  const badPolyface = badBuilder.claimPolyface(false);
+
+  GeometryCoreTestIO.captureGeometry(allGeometry, baseMesh, 0, 0, 0);
+  GeometryCoreTestIO.captureGeometry(allGeometry, sweptPolyface3, 0, 1.5 * size, 0);
+  GeometryCoreTestIO.captureGeometry(allGeometry, sweptPolyface4, 0, 3 * size, 0);
+  GeometryCoreTestIO.captureGeometry(allGeometry, badPolyface, 0, 4.5 * size, 0);
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddSweptPolyface");
+  expect(ck.getNumErrors()).equals(0);
+});
+
 it("EmptyPolyface", () => {
   const ck = new Checker();
   const emptyPolyface = IndexedPolyface.create(false, false, false);

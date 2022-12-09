@@ -6,8 +6,8 @@
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { BriefcaseDb, IModelHost, SpatialCategory } from "../core-backend";
-import { HubWrappers } from "./IModelTestUtils";
-import { HubMock, IModelTestUtils } from "./index";
+import { HubMock } from "../HubMock";
+import { HubWrappers, IModelTestUtils } from "./IModelTestUtils";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {
@@ -37,8 +37,8 @@ export class TestChangeSetUtility {
   }
 
   private async addTestElements(): Promise<void> {
-    this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId));
-    this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId));
+    this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON());
+    this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON());
     this._iModel.saveChanges("Added test elements");
   }
 

@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as React from "react";
 import { ConditionalStringValue } from "@itwin/appui-abstract";
 import { PropsHelper } from "../../appui-react";
 import TestUtils from "../TestUtils";
+import { SvgCut } from "@itwin/itwinui-icons-react";
 
 describe("PropsHelper", () => {
   before(async () => {
@@ -94,6 +96,12 @@ describe("PropsHelper", () => {
     const iconTest = PropsHelper.getIcon(new ConditionalStringValue(() => "conditional-icon", ["dummy"]));
     expect(iconTest).not.to.be.undefined;
     expect(iconTest!.props.iconSpec).to.eq("conditional-icon");
+  });
+
+  it("get abstract props for react icon", () => {
+    const props = PropsHelper.getAbstractPropsForReactIcon(<SvgCut />);
+    expect (props.icon).to.eq("#-react-iconspec-node-#");
+    expect (props.internalData).not.to.be.empty;
   });
 
 });

@@ -31,11 +31,11 @@ describe("FrontstageManager", () => {
     });
 
     await TestUtils.initializeUiFramework();
-
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
     await MockRender.App.startup();
 
     FrontstageManager.initialize();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
   });
 
   after(async () => {
@@ -58,13 +58,15 @@ describe("FrontstageManager", () => {
   it("setActiveFrontstage should set active frontstage", async () => {
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
+    expect(FrontstageManager.hasFrontstage(frontstageProvider.frontstage.props.id)).to.be.true;
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
 
     expect(frontstageDef).to.not.be.undefined;
     if (frontstageDef) {
+      expect(FrontstageManager.hasFrontstage(frontstageDef.id)).to.be.true;
       await FrontstageManager.setActiveFrontstage(frontstageDef.id);
       expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
-      expect(frontstageDef.applicationData).to.not.be.undefined;
+      expect(frontstageDef.applicationData).to.not.be.undefined; // eslint-disable-line deprecation/deprecation
     }
   });
 
@@ -99,7 +101,7 @@ describe("FrontstageManager", () => {
     if (frontstageDef) {
       await FrontstageManager.setActiveFrontstage(frontstageDef.id);
       expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
-      expect(frontstageDef.applicationData).to.not.be.undefined;
+      expect(frontstageDef.applicationData).to.not.be.undefined; // eslint-disable-line deprecation/deprecation
 
       const tool = new RestoreFrontstageLayoutTool();
       await tool.parseAndRun(frontstageDef.id);
@@ -147,10 +149,10 @@ describe("FrontstageManager", () => {
     expect(frontstageDef).to.not.be.undefined;
     if (frontstageDef) {
       // make sure zones defined by new names are properly placed into the proper spot in frontstageDef
-      expect(frontstageDef.getZoneDef(1)).not.to.be.undefined;
-      expect(frontstageDef.getZoneDef(2)).not.to.be.undefined;
-      expect(frontstageDef.getZoneDef(8)).not.to.be.undefined;
-      expect(frontstageDef.getZoneDef(3)).to.be.undefined;
+      expect(frontstageDef.getZoneDef(1)).not.to.be.undefined; // eslint-disable-line deprecation/deprecation
+      expect(frontstageDef.getZoneDef(2)).not.to.be.undefined; // eslint-disable-line deprecation/deprecation
+      expect(frontstageDef.getZoneDef(8)).not.to.be.undefined; // eslint-disable-line deprecation/deprecation
+      expect(frontstageDef.getZoneDef(3)).to.be.undefined; // eslint-disable-line deprecation/deprecation
       await FrontstageManager.setActiveFrontstage(frontstageDef.id);
       expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
     }

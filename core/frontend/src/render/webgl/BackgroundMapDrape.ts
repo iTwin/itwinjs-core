@@ -9,7 +9,7 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
-import { ColorDef, Frustum, FrustumPlanes, RenderTexture } from "@itwin/core-common";
+import { ColorDef, Frustum, FrustumPlanes, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { GraphicsCollectorDrawArgs, MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { ViewState3d } from "../../ViewState";
@@ -78,7 +78,7 @@ export class BackgroundMapDrape extends TextureDrape {
       return;
 
     const tileTree = this._mapTree.treeOwner.load();
-    if (undefined === tileTree || !this._mapTree.initializeImagery())
+    if (undefined === tileTree || !this._mapTree.initializeLayers(context))
       return;
 
     const requiredWidth = 2 * Math.max(context.target.viewRect.width, context.target.viewRect.height);     // TBD - Size to textured area.
@@ -136,7 +136,7 @@ export class BackgroundMapDrape extends TextureDrape {
         return;
       }
 
-      this._texture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: colorTextureHandle });
+      this._texture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: colorTextureHandle, transparency: TextureTransparency.Opaque });
       this._fbo = FrameBuffer.create([colorTextureHandle]);
     }
     if (undefined === this._fbo) {
@@ -176,7 +176,9 @@ export class BackgroundMapDrape extends TextureDrape {
     system.frameBufferStack.execute(this._fbo, true, false, () => {
       gl.clearColor(0, 0, 0, 0);
       gl.clear(GL.BufferBit.Color);
-      if (!useMRT) target.compositor.currentRenderTargetIndex = 0;
+      if (!useMRT)
+        target.compositor.currentRenderTargetIndex = 0;
+
       target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
     });
 

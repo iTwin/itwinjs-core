@@ -15,9 +15,9 @@
 
 Unit Test
 
-- source: imodeljs/core/geometry/src/test/clipping/PolyfaceQuery.test.ts
+- source: core/geometry/src/test/clipping/PolyfaceQuery.test.ts
 - test name: "PartitionFacetIndicesByConnectivity"
-- output: imodeljs/core/geometry/src/test/output/PolyfaceQuery/PartitionFacetsByConnectivity.imjs
+- output: core/geometry/src/test/output/PolyfaceQuery/PartitionFacetsByConnectivity.imjs
 
 ## Fixup TVertices
 
@@ -29,9 +29,9 @@ Unit Test
 
 Unit Test
 
-- source: imodeljs/core/geometry/src/test/clipping/PolyfaceQuery.test.ts
+- source: core/geometry/src/test/clipping/PolyfaceQuery.test.ts
 - test name: "cloneWithTVertexFixup"
-- output: imodeljs/core/geometry/src/test/output/PolyfaceQuery/cloneWithTVertexFixup.imjs
+- output: core/geometry/src/test/output/PolyfaceQuery/cloneWithTVertexFixup.imjs
 
 ## Fixup Colinear Edges
 
@@ -46,9 +46,9 @@ Note that colinearEdgeFixup and TVertexFixup have tricky interactions.  If colin
 
 Unit Test
 
-- source: imodeljs/core/geometry/src/test/clipping/PolyfaceQuery.test.ts
+- source: core/geometry/src/test/clipping/PolyfaceQuery.test.ts
 - test name: "cloneWithColinearEdgeFixup"
-- output: imodeljs/core/geometry/src/test/output/PolyfaceQuery/cloneWithColinearEdgeFixup.imjs
+- output: core/geometry/src/test/output/PolyfaceQuery/cloneWithColinearEdgeFixup.imjs
 
 ## Mark Edge Visibility
 
@@ -68,6 +68,6 @@ During default construction by a `PolyfaceBuilder` all edges are marked visible 
 
 Unit Test
 
-- source: imodeljs/core/geometry/src/test/clipping/Polyface.test.ts
+- source: core/geometry/src/test/clipping/Polyface.test.ts
 - test name: "SolidPrimitiveBoundary"
-- output: imodeljs/core/geometry/src/test/output/Polyface\SolidPrimitiveBoundary.imjs
+- output: core/geometry/src/test/output/Polyface\SolidPrimitiveBoundary.imjs

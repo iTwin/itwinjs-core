@@ -205,7 +205,7 @@ const ThemedMenu = (props: MenuProps<any>) => { // eslint-disable-line @typescri
     </div>
   );
 };
-/** ThemedSelect is a wrapper for react-select with iModel.js UI theming applied
+/** ThemedSelect is a wrapper for react-select with iTwin.js UI theming applied
  * @beta
  * @deprecated use Select from @itwin/itwinui-react
  */
@@ -214,7 +214,7 @@ export function ThemedSelect(props: ThemedSelectProps) {
   const noOptionLabel = React.useRef<string | undefined>();
   const defaultOptionMessage = React.useCallback(() => {
     if (!noOptionLabel.current) {
-      noOptionLabel.current = UiCore.translate("reactelect.noSelectOption");
+      noOptionLabel.current = UiCore.translate("reactselect.noSelectOption");
     }
     return noOptionLabel.current;
   }, [noOptionLabel]);

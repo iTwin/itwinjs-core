@@ -35,11 +35,13 @@ import { Cartographic } from "./geometry/Cartographic";
 import { IModel } from "./IModel";
 import { calculateSolarDirection } from "./SolarCalculate";
 import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
+import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
  * @public
+ * @extensions
  */
 export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Props {
   /** The Id of the [[SubCategory]] whose appearance is to be overridden. */
@@ -49,15 +51,26 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
 /** A [[FeatureAppearanceProps]] applied to a specific model to override its appearance within the context of a [DisplayStyle]($backend).
  * @see [[DisplayStyleSettingsProps.modelOvr]].
  * @public
+ * @extensions
  */
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
   /** The Id of the model whose appearance is to be overridden. */
+  modelId: Id64String;
+}
+
+/** [[RealityModelDisplaySettings]] applied to a reality [Model]($backend) to change how it is rendered within the context of a [DisplayStyle]($backend).
+ * @see [[DisplayStyleSettingsProps.realityModelDisplay]].
+ * @beta
+ */
+export interface DisplayStyleRealityModelDisplayProps extends RealityModelDisplayProps {
+  /** The Id of the reality [Model]($backend) to which the settings apply. */
   modelId?: Id64String;
 }
 
 /** A [[PlanarClipMaskProps]] associated with a specific reality model.
  * @see [[DisplayStyleSettingsProps.planarClipOvr]].
  * @public
+ * @extensions
  */
 export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
   /** The Id of the model to mask. */
@@ -66,6 +79,7 @@ export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
 
 /** Describes the style in which monochrome color is applied by a [[DisplayStyleSettings]].
  * @public
+ * @extensions
  */
 export enum MonochromeMode {
   /** The color of the geometry is replaced with the monochrome color. e.g., if monochrome color is white, the geometry will be white. */
@@ -77,83 +91,84 @@ export enum MonochromeMode {
   Scaled = 1,
 }
 
-/** JSON representation of the settings associated with a [[DisplayStyleProps]].
+/** JSON representation of the [[DisplayStyleSettings]] associated with a [[DisplayStyleProps]].
  * These settings are not stored directly as members of the [[DisplayStyleProps]]. Instead, they are stored
- * as members of `jsonProperties.styles`.
- * @see [[DisplayStyleSettings]].
+ * as members of [[DisplayStyleProps.jsonProperties.styles]].
  * @public
+ * @extensions
  */
 export interface DisplayStyleSettingsProps {
+  /** See [[DisplayStyleSettings.viewFlags]].
+   * @note Be careful with the case of this field - it is spelled in all lower-case letters, while [[DisplayStyleSettings.viewFlags]] is spelled `viewFlags`.
+   */
   viewflags?: ViewFlagProps;
-  /** The color displayed in the view background. Defaults to black. */
+  /** See [[DisplayStyleSettings.backgroundColor]]. */
   backgroundColor?: ColorDefProps;
-  /** The color used in monochrome mode. Defaults to white.
-   * The monochrome color is applied to all surfaces and linear geometry.
-   * It is never applied to the **edges** of surfaces, except in Wireframe render mode.
-   */
+  /** See [[DisplayStyleSettings.monochromeColor]]. */
   monochromeColor?: ColorDefProps;
-  /** The style in which the monochrome color is applied. Default: [[MonochromeMode.Scaled]]. */
+  /** See [[DisplayStyleSettings.monochromeMode]]. */
   monochromeMode?: MonochromeMode;
-  /** Settings controlling display of analytical models. */
+  /** See [[DisplayStyleSettings.analysisStyle]]. */
   analysisStyle?: AnalysisStyleProps;
-  /** A floating point value in [0..1] representing the animation state of this style's [[analysisStyle]]. Default: 0.0. */
+  /** See [[DisplayStyleSettings.analysisFraction]]. */
   analysisFraction?: number;
-  /** A schedule script embedded into the display style settings. This is how schedule scripts were stored prior to the introduction of
-   * [RenderTimeline]($backend) elements. It should no longer be used - instead, set [[renderTimeline]] to the Id of the RenderTimeline element
-   * that hosts the script.
-   * @note For a [DisplayStyleState]($frontend) obtained via [IModelConnection.Views.load]($frontend), the element Ids will be omitted from all
-   * of the script's [[ElementTimelineProps]] to conserve bandwidth and memory, because they are not needed for display on the frontend.
-   * @deprecated Use DisplayStyleSettingsProps.renderTimeline.
-   * @internal
-   */
-  scheduleScript?: RenderSchedule.ModelTimelineProps[];
-  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view. */
+  /** See [[DisplayStyleSettings.scheduleScriptProps]]. */
+  scheduleScript?: RenderSchedule.ScriptProps;
+  /** See [[DisplayStyleSettings.renderTimeline]]. */
   renderTimeline?: Id64String;
-  /** The point in time reflected by the view, in UNIX seconds.
-   * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
-   */
+  /** See [[DisplayStyleSettings.timePoint]]. */
   timePoint?: number;
-  /** Overrides applied to the appearances of subcategories in the view. */
+  /** Overrides applied to the appearances of subcategories in the view.
+   * See [[DisplayStyleSettings.overrideSubCategory]].
+   */
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
-
-  /** Settings controlling display of map within views of geolocated models. */
+  /** See [[DisplayStyleSettings.backgroundMap]]. */
   backgroundMap?: PersistentBackgroundMapProps;
-  /** @see [[DisplayStyleSettings.contextRealityModels]]. */
+  /** See [[DisplayStyleSettings.contextRealityModels]]. */
   contextRealityModels?: ContextRealityModelProps[];
-  /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large. */
+  /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large.
+   * See [[DisplayStyleSettings.excludedElements]].
+   */
   excludedElements?: Id64Array | CompressedId64Set;
-  /** Map Imagery.
-   * @alpha
+  /** See [[DisplayStyleSettings.mapImagery]].
+   * @beta
    */
   mapImagery?: MapImageryProps;
-  /** Overrides applied to the appearance of models in the view. */
+  /** Overrides applied to the appearance of models in the view.
+   * See [[DisplayStyleSettings.overrideModelAppearance]].
+   */
   modelOvr?: DisplayStyleModelAppearanceProps[];
-  /** Style applied by the view's [ClipVector]($core-geometry). */
+  /** Display settings applied to specific reality models in the view.
+   * @see [[DisplayStyleSettings.setRealityModelDisplaySettings]].
+   * @beta
+   */
+  realityModelDisplay?: DisplayStyleRealityModelDisplayProps[];
+  /** See [[DisplayStyleSettings.clipStyle]]. */
   clipStyle?: ClipStyleProps;
-  /** Planar clip masks applied to reality models. */
+  /** See [[DisplayStyleSettings.planarClipMasks]]. */
   planarClipOvr?: DisplayStylePlanarClipMaskProps[];
-  /** @see [[DisplayStyleSettings.whiteOnWhiteReversal]]. */
+  /** See [[DisplayStyleSettings.whiteOnWhiteReversal]]. */
   whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
 }
 
-/** JSON representation of settings associated with a [[DisplayStyle3dProps]].
- * @see [[DisplayStyle3dSettings]].
+/** JSON representation of [[DisplayStyle3dSettings]]  associated with a [[DisplayStyle3dProps]].
  * @public
+ * @extensions
  */
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
-  /** Settings controlling display of skybox and ground plane. */
+  /** See [[DisplayStyle3dSettings.environment. */
   environment?: EnvironmentProps;
-  /** Settings controlling thematic display. */
+  /** See [[DisplayStyle3dSettings.thematic. */
   thematic?: ThematicDisplayProps;
-  /** Settings controlling display of visible and hidden edges. */
+  /** See [[DisplayStyle3dSettings.hiddenLineSettings. */
   hline?: HiddenLine.SettingsProps;
-  /** Settings controlling display of ambient occlusion, stored in Props. */
+  /** See [[DisplayStyle3dSettings.ambientOcclusionSettings]]. */
   ao?: AmbientOcclusion.Props;
-  /** Settings controlling display of solar shadows, stored in Props. */
+  /** See [[DisplayStyle3dSettings.solarShadows]]. */
   solarShadows?: SolarShadowSettingsProps;
-  /** Settings controlling how the scene is lit. */
+  /** See [[DisplayStyle3dSettings.lights]]. */
   lights?: LightSettingsProps;
-  /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply. */
+  /** See [[DisplayStyle3dSettings.planProjections. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
   /** Old lighting settings - only `sunDir` was ever used; it is now part of [[lights]].
    * DisplayStyle3dSettings will construct a LightSettings from sceneLights.sunDir IFF [[lights]] is not present.
@@ -164,6 +179,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
 
 /** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]].
  * @public
+ * @extensions
  */
 export interface DisplayStyleProps extends DefinitionElementProps {
   /** Display styles store their settings in a `styles` property within [[ElementProps.jsonProperties]]. */
@@ -174,6 +190,7 @@ export interface DisplayStyleProps extends DefinitionElementProps {
 
 /** JSON representation of a [[DisplayStyle3d]] or [[DisplayStyle3dState]].
  * @public
+ * @extensions
  */
 export interface DisplayStyle3dProps extends DisplayStyleProps {
   /** Display styles store their settings in a `styles` property within [[ElementProps.jsonProperties]]. */
@@ -187,6 +204,7 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
  * when creating display style overrides intended for use with a specific iModel or iTwin, but should be omitted when creating general-purpose display style overrides intended
  * for use with any iModel or iTwin. This is the default behavior if no more specific options are provided.
  * @public
+ * @extensions
  */
 export interface DisplayStyleOverridesOptions {
   /** Serialize all settings. Applying the resultant [[DisplayStyleSettingsProps]] will produce a [[DisplayStyleSettings]] identical to the original settings. */
@@ -285,7 +303,7 @@ class ExcludedElements implements OrderedId64Iterable {
   }
 }
 
-type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr";
+type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr" | "realityModelDisplay";
 
 /** An implementation of Map that is based on a JSON array, used for a display styles subcategory overrides, model appearance overrides,
  * and planar clip masks. Ensures:
@@ -388,6 +406,7 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
 
 /** Options supplied when constructing a [[DisplayStyleSettings]].
  * @public
+ * @extensions
  */
 export interface DisplayStyleSettingsOptions {
   /** A function that instantiates a [[ContextRealityModel]] to be stored in [[DisplayStyleSettings.contextRealityModels]]. */
@@ -396,6 +415,7 @@ export interface DisplayStyleSettingsOptions {
 
 /** Provides access to the settings defined by a [[DisplayStyle]] or [[DisplayStyleState]], and ensures that
  * the style's JSON properties are kept in sync.
+ * @see [[DisplayStyleSettingsProps]] for the JSON representation of these settings.
  * @public
  */
 export class DisplayStyleSettings {
@@ -406,6 +426,7 @@ export class DisplayStyleSettings {
   private _monochromeMode: MonochromeMode;
   private readonly _subCategoryOverrides: OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>;
   private readonly _modelAppearanceOverrides: OverridesMap<DisplayStyleModelAppearanceProps, FeatureAppearance>;
+  private readonly _realityModelDisplaySettings: OverridesMap<DisplayStyleRealityModelDisplayProps, RealityModelDisplaySettings>;
   private readonly _planarClipMasks: OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>;
   private readonly _excludedElements: ExcludedElements;
   private _backgroundMap: BackgroundMapSettings;
@@ -415,6 +436,7 @@ export class DisplayStyleSettings {
   private readonly _contextRealityModels: ContextRealityModels;
   private _whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 
+  /** Returns true if this is a [[DisplayStyle3dSettings]]. */
   public is3d(): this is DisplayStyle3dSettings {
     return false;
   }
@@ -450,10 +472,9 @@ export class DisplayStyleSettings {
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
-   * @deprecated Use onRenderTimelineChanged
-   * @internal
+   * @see [[onRenderTimelineChanged]] to be notified when the [[renderTimeline]] property from which a script can be obtained is changed.
    */
-  public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>();
+  public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ScriptProps> | undefined) => void>();
 
   /** Event raised just prior to assignment to the [[renderTimeline]] property. */
   public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
@@ -471,6 +492,10 @@ export class DisplayStyleSettings {
   public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
   /** Event raised just before changing the appearance override for a model. */
   public readonly onModelAppearanceOverrideChanged = new BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>();
+  /** Event raised just before [[setRealityModelDisplaySettings]] changes the display settings for a reality model.
+   * @beta
+   */
+  public readonly onRealityModelDisplaySettingsChanged = new BeEvent<(modelId: Id64String, newSettings: RealityModelDisplaySettings | undefined) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.thematic]] property. */
   public readonly onThematicChanged = new BeEvent<(newThematic: ThematicDisplay) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
@@ -539,6 +564,12 @@ export class DisplayStyleSettings {
         return app.anyOverridden ? app : undefined;
       });
 
+    this._realityModelDisplaySettings = new OverridesMap<DisplayStyleRealityModelDisplayProps, RealityModelDisplaySettings>(this._json, "realityModelDisplay", this.onRealityModelDisplaySettingsChanged,
+      (props) => props.modelId,
+      (settings, modelId) => { return { ...settings.toJSON(), modelId }; },
+      (props) => RealityModelDisplaySettings.fromJSON(props),
+    );
+
     this._planarClipMasks = new OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>(this._json, "planarClipOvr", this.onPlanarClipMaskChanged,
       (props) => props.modelId,
       (ovr, modelId) => { return { ...ovr.toJSON(), modelId }; },
@@ -561,9 +592,7 @@ export class DisplayStyleSettings {
     this._json.viewflags = flags.toJSON();
   }
 
-  /** The background color.
-   * @note Do not modify the color in place. Clone it and pass the clone to the setter.
-   */
+  /** The color displayed in the view background - by default, [[ColorDef.black]]. */
   public get backgroundColor(): ColorDef { return this._background; }
   public set backgroundColor(color: ColorDef) {
     if (this.backgroundColor.equals(color))
@@ -574,9 +603,9 @@ export class DisplayStyleSettings {
     this._json.backgroundColor = color.toJSON();
   }
 
-  /** The color used to draw geometry in monochrome mode.
-   * @note Do not modify the color in place. Clone it and pass the clone to the setter.
-   * @see [[ViewFlags.monochrome]] for enabling monochrome mode.
+  /** The color used to draw geometry when [[ViewFlags.monochrome]] is enabled - by default, [[ColorDef.white]].
+   * The monochrome color is applied to all surfaces and linear geometry, but only applied to the **edges** of surfaces in [[RenderMode.Wireframe]].
+   * @see [[monochromeMode]] to control how the color is applied.
    */
   public get monochromeColor(): ColorDef { return this._monochrome; }
   public set monochromeColor(color: ColorDef) {
@@ -588,7 +617,7 @@ export class DisplayStyleSettings {
     this._json.monochromeColor = color.toJSON();
   }
 
-  /** The style in which [[monochromeColor]] is applied. */
+  /** The style in which [[monochromeColor]] is applied when [[ViewFlags.monochrome]] is enabled - by default, [[MonochromeMode.Scaled]]. */
   public get monochromeMode(): MonochromeMode { return this._monochromeMode; }
   public set monochromeMode(mode: MonochromeMode) {
     if (this.monochromeMode === mode)
@@ -599,7 +628,7 @@ export class DisplayStyleSettings {
     this._json.monochromeMode = mode;
   }
 
-  /** Settings controlling display of the background map within the view. */
+  /** Settings controlling display of the background map within views of geolocated models. */
   public get backgroundMap(): BackgroundMapSettings { return this._backgroundMap; }
 
   public set backgroundMap(map: BackgroundMapSettings) {
@@ -629,29 +658,38 @@ export class DisplayStyleSettings {
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
-  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view. */
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view.
+   * If [[scheduleScriptProps]] is defined, it takes precedence over the script supplied by the RenderTimeline.
+   * @note If this [[DisplayStyleSettings]] is associated with a [DisplayStyleState]($frontend), assigning to [[renderTimeline]] will enqueue asynchronous loading of
+   * the script from the [RenderTimeline]($backend) element; for more readable code, prefer instead to `await` [DisplayStyleState.changeRenderTimeline]($frontend).
+   * @see [[onRenderTimelineChanged]] to be notified of changes to this property.
+   */
   public get renderTimeline(): Id64String | undefined {
     return this._json.renderTimeline;
   }
   public set renderTimeline(id: Id64String | undefined) {
-    this.onRenderTimelineChanged.raiseEvent(id);
-    this._json.renderTimeline = id;
+    if (id !== this.renderTimeline) {
+      this.onRenderTimelineChanged.raiseEvent(id);
+      this._json.renderTimeline = id;
+    }
   }
 
-  /** @internal @deprecated */
-  public get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined {
-    // eslint-disable-next-line deprecation/deprecation
+  /** JSON representation of a [[RenderSchedule.Script]] embedded in the display style describing how to animate the contents of the view over time.
+   * This script, if present, takes precedence over a script supplied by [[renderTimeline]].
+   * @see [[onScheduleScriptPropsChanged]] to be notified when this property changes.
+   * @see [DisplayStyleState.scheduleScript]($frontend) to change the [[RenderSchedule.Script]] object directly rather than via JSON.
+   */
+  public get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined {
     return this._json.scheduleScript;
   }
-  public set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined) {
-    // eslint-disable-next-line deprecation/deprecation
+  public set scheduleScriptProps(props: RenderSchedule.ScriptProps | undefined) {
     this.onScheduleScriptPropsChanged.raiseEvent(props);
-    // eslint-disable-next-line deprecation/deprecation
     this._json.scheduleScript = props;
   }
 
-  /** The point in time reflected by the view, in UNIX seconds.
+  /** The point in time currently reflected by the view, expressed in seconds in the [Unix epoch](https://en.wikipedia.org/wiki/Unix_time).
    * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
+   * @see [[onTimePointChanged]] to be notified of changes to this property.
    */
   public get timePoint(): number | undefined {
     return this._json.timePoint;
@@ -679,8 +717,8 @@ export class DisplayStyleSettings {
       delete this._json.analysisStyle;
   }
 
-  /** A value in [0..1] indicating the current point in animation of the [[analysisStyle]], where 0 corresponds to the beginning of
-   * the animation and 1 to the end.
+  /** A floating point value in [0..1] indicating the current point in animation of the [[analysisStyle]], where 0 corresponds to the beginning of
+   * the animation and 1 to the end. Default: 0.0.
    */
   public get analysisFraction(): number {
     const fraction = this._json.analysisFraction ?? 0;
@@ -694,7 +732,7 @@ export class DisplayStyleSettings {
     this._json.analysisFraction = Math.max(0, Math.min(1, fraction));
   }
 
-  /** Settings controlling how white-on-white reversal is applied. */
+  /** Settings controlling how white-on-white reversal is applied when [[ViewFlags.whiteOnWhiteReversal]] is enabled. */
   public get whiteOnWhiteReversal(): WhiteOnWhiteReversalSettings { return this._whiteOnWhiteReversal; }
   public set whiteOnWhiteReversal(settings: WhiteOnWhiteReversalSettings) {
     if (settings.equals(this.whiteOnWhiteReversal))
@@ -780,6 +818,28 @@ export class DisplayStyleSettings {
   /** Returns true if model appearance overrides are defined by this style. */
   public get hasModelAppearanceOverride(): boolean {
     return this.modelAppearanceOverrides.size > 0;
+  }
+
+  /** Get any settings that override how the reality model with the specified Id is displayed.
+   * @param modelId The Id of the [Model]($backend).
+   * @returns the display settings, or `undefined` if no settings have been associated with `modelId`.
+   * @see [[setRealityModelDisplaySettings]] to change the settings.
+   * @beta
+   */
+  public getRealityModelDisplaySettings(modelId: Id64String): RealityModelDisplaySettings | undefined {
+    return this._realityModelDisplaySettings.get(modelId);
+  }
+
+  /** Change the settings that control how the reality model with the specified Id is displayed.
+   * @param modelId The Id of the [Model]($backend) to which the settings apply.
+   * @param settings The settings to apply to the model, or `undefined` to clear any previous settings for that model.
+   * @beta
+   */
+  public setRealityModelDisplaySettings(modelId: Id64String, settings: RealityModelDisplaySettings | undefined): void {
+    if (settings)
+      this._realityModelDisplaySettings.set(modelId, settings);
+    else
+      this._realityModelDisplaySettings.delete(modelId);
   }
 
   /** The set of elements that will not be drawn by this display style.
@@ -891,11 +951,8 @@ export class DisplayStyleSettings {
         props.analysisFraction = this.analysisFraction;
       }
 
-      // eslint-disable-next-line deprecation/deprecation
-      if (this.scheduleScriptProps) {
-        // eslint-disable-next-line deprecation/deprecation
+      if (this.scheduleScriptProps)
         props.scheduleScript = [...this.scheduleScriptProps];
-      }
 
       if (this.renderTimeline)
         props.renderTimeline = this.renderTimeline;
@@ -971,11 +1028,8 @@ export class DisplayStyleSettings {
     if (undefined !== overrides.analysisFraction)
       this.analysisFraction = overrides.analysisFraction;
 
-    // eslint-disable-next-line deprecation/deprecation
-    if (overrides.scheduleScript) {
-      // eslint-disable-next-line deprecation/deprecation
+    if (overrides.scheduleScript)
       this.scheduleScriptProps = [...overrides.scheduleScript];
-    }
 
     if (overrides.renderTimeline)
       this.renderTimeline = overrides.renderTimeline;
@@ -988,6 +1042,11 @@ export class DisplayStyleSettings {
     if (overrides.modelOvr) {
       this._json.modelOvr = [...overrides.modelOvr];
       this._modelAppearanceOverrides.populate();
+    }
+
+    if (overrides.realityModelDisplay) {
+      this._json.realityModelDisplay = [...overrides.realityModelDisplay];
+      this._realityModelDisplaySettings.populate();
     }
 
     if (overrides.excludedElements)

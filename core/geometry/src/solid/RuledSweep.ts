@@ -69,7 +69,7 @@ export class RuledSweep extends SolidPrimitive {
   public cloneContours(): CurveCollection[] {
     const result = [];
     for (const sweepable of this._contours) {
-      result.push(sweepable.curves.clone() as CurveCollection);
+      result.push(sweepable.curves.clone());
     }
     return result;
   }

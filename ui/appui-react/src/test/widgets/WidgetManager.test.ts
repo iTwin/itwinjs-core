@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
@@ -36,6 +37,7 @@ class TestUiProvider implements UiItemsProvider {
         restoreTransientState: () => false,
         defaultState: WidgetState.Floating,
         defaultFloatingPosition: { x: 100, y: 200 },
+        defaultFloatingSize: { width: 400, height: 200 },
         floatingContainerId: "my-floating-container",
         isFloatingStateSupported: true,
         isFloatingStateWindowResizable: false,

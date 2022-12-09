@@ -36,9 +36,14 @@ interface SelectionScopeFieldProps extends StatusFieldProps {
 class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldProps> {
   private _label = UiFramework.translate("selectionScopeField.label");
   private _toolTip = UiFramework.translate("selectionScopeField.toolTip");
+  private _scopeOptions: SelectOption<string>[] = [];
 
   constructor(props: SelectionScopeFieldProps) {
     super(props);
+    this._scopeOptions = this.props.availableSelectionScopes.map((scope: PresentationSelectionScope) => {
+      const label = !!scope.label ? scope.label : UiFramework.translate(`selectionScopeLabels.${scope.id}`);
+      return { value: scope.id, label };
+    });
   }
 
   private _updateSelectValue = (newValue: string) => {
@@ -49,17 +54,16 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
   };
 
   public override render(): React.ReactNode {
-    const scopeOptions: SelectOption<string>[] = this.props.availableSelectionScopes.map((scope: PresentationSelectionScope) => {
-      return { value: scope.id, label: scope.label };
-    });
 
     return (
-      <FooterIndicator
+      <FooterIndicator // eslint-disable-line deprecation/deprecation
         className={classnames("uifw-statusFields-selectionScope", this.props.className)}
         style={this.props.style}
-        isInFooterMode={this.props.isInFooterMode}
+        // eslint-disable-next-line deprecation/deprecation
+        isInFooterMode={this.props.isInFooterMode ?? true}
       >
-        {this.props.isInFooterMode &&
+        {// eslint-disable-next-line deprecation/deprecation
+          (this.props.isInFooterMode ?? true) &&
           <label className="uifw-statusFields-selectionScope-label">
             {this._label}:
           </label>
@@ -67,7 +71,7 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
         <Select
           className="uifw-statusFields-selectionScope-selector"
           value={this.props.activeSelectionScope}
-          options={scopeOptions}
+          options={this._scopeOptions}
           onChange={this._updateSelectValue}
           data-testid="components-selectionScope-selector"
           title={this._toolTip}

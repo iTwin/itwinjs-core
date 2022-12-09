@@ -9,11 +9,8 @@
 import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
-import { AccessToken, Logger } from "@itwin/core-bentley";
-import {
-  CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
-  UserCancelledError,
-} from "@bentley/itwin-client";
+import { AccessToken, BentleyError, GetMetaDataFunction, Logger } from "@itwin/core-bentley";
+import { ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
 import { MobileHost } from "./MobileHost";
 import { Base64 } from "js-base64";
 
@@ -24,11 +21,49 @@ const defined = (argumentName: string, argument?: any, allowEmpty: boolean = fal
     throw Error(`Argument ${argumentName} is null or undefined`);
 };
 
+/** Interface to cancel a request
+  * @beta
+  */
+export interface CancelRequest {
+  /** Returns true if cancel request was acknowledged */
+  cancel: () => boolean;
+}
+
+/** Error thrown when user cancelled operation
+  * @internal
+  */
+export class UserCancelledError extends BentleyError {
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
+    this.name = "User cancelled operation";
+  }
+}
+
+/** Error thrown fail to download file. ErrorNumber will correspond to HTTP error code.
+  * @internal
+  */
+export class DownloadFailed extends BentleyError {
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
+    this.name = "Fail to download file";
+  }
+}
+
+/** Error thrown when sas-url provided for download has expired
+  * @internal
+  */
+export class SasUrlExpired extends BentleyError {
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
+    this.name = "SaS url has expired";
+  }
+}
+
 /**
  * Provides methods to work with the file system and azure storage. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.
  * @internal
  */
-export class MobileFileHandler implements FileHandler {
+export class MobileFileHandler {
   /** @internal */
   public agent?: https.Agent;
 
@@ -131,7 +166,7 @@ export class MobileFileHandler implements FileHandler {
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
-    buffer = buffer.slice(0, bytesRead);
+    buffer = buffer.subarray(0, bytesRead);
 
     const options: RequestOptions = {
       method: "PUT",
@@ -175,7 +210,8 @@ export class MobileFileHandler implements FileHandler {
       let i = 0;
       const callback: ProgressCallback = (progress: ProgressInfo) => {
         const uploaded = i * chunkSize + progress.loaded;
-        progressCallback!({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
+        if (progressCallback)
+          progressCallback({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
       };
       for (; i * chunkSize < fileSize; ++i) {
         await this.uploadChunk(accessToken, uploadUrlString, file, i, progressCallback ? callback : undefined);

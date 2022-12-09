@@ -24,8 +24,10 @@ import { ConditionalBooleanValue, StandardContentLayouts, WidgetState } from "@i
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage2 extends FrontstageProvider {
+  public static stageId = "ui-test-app:Test2";
+
   public get id(): string {
-    return "Test2";
+    return Frontstage2.stageId;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
@@ -62,7 +64,7 @@ export class Frontstage2 extends FrontstageProvider {
       <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
-        isInFooterMode={false} applicationData={{ key: "value" }}
+        applicationData={{ key: "value" }}
 
         contentManipulationTools={
           <Zone
@@ -141,16 +143,16 @@ class FrontstageToolWidget extends React.Component {
       stateSyncIds: getSelectionContextSyncEventIds(), /* only used when in ui 1.0 mode */
       stateFunc: selectionContextStateFunc,  /* only used when in ui 1.0 mode */
       isHidden: getIsHiddenIfSelectionNotActive(),  /* only used when in ui 2.0 mode */
-      execute: () => {
+      execute: async () => {
         const iModelConnection = UiFramework.getIModelConnection();
         if (iModelConnection) {
           iModelConnection.selectionSet.emptyAll();
         }
         const tool = IModelApp.toolAdmin.primitiveTool;
         if (tool)
-          tool.onRestartTool();
+          await tool.onRestartTool();
         else
-          void IModelApp.toolAdmin.startDefaultTool();
+          await IModelApp.toolAdmin.startDefaultTool();
       },
     });
   }

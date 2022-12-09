@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { UiSettings, UiSettingsStatus } from "@itwin/core-react";
+import { UiStateStorage, UiStateStorageStatus } from "@itwin/core-react";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
 
@@ -24,30 +24,30 @@ export class UiShowHideSettingsProvider implements UserSettingsProvider {
     UiFramework.registerUserSettingsProvider(new UiShowHideSettingsProvider());
   }
 
-  public async loadUserSettings(storage: UiSettings): Promise<void> {
+  public async loadUserSettings(storage: UiStateStorage): Promise<void> {
     let result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._autoHideUiKey);
-    if (result.status === UiSettingsStatus.Success)
+    if (result.status === UiStateStorageStatus.Success)
       UiShowHideManager.setAutoHideUi(result.setting);
 
     result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._useProximityOpacityKey);
-    if (result.status === UiSettingsStatus.Success)
+    if (result.status === UiStateStorageStatus.Success)
       UiShowHideManager.setUseProximityOpacity(result.setting);
 
     result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._snapWidgetOpacityKey);
-    if (result.status === UiSettingsStatus.Success)
+    if (result.status === UiStateStorageStatus.Success)
       UiShowHideManager.setSnapWidgetOpacity(result.setting);
   }
 
-  public static async storeAutoHideUi(v: boolean, storage?: UiSettings) {
-    void (storage ?? UiFramework.getUiSettingsStorage()).saveSetting(this._settingsNamespace, this._autoHideUiKey, v);
+  public static async storeAutoHideUi(v: boolean, storage?: UiStateStorage) {
+    void (storage ?? UiFramework.getUiStateStorage()).saveSetting(this._settingsNamespace, this._autoHideUiKey, v);
   }
 
-  public static async storeUseProximityOpacity(v: boolean, storage?: UiSettings) {
-    void (storage ?? UiFramework.getUiSettingsStorage()).saveSetting(this._settingsNamespace, this._useProximityOpacityKey, v);
+  public static async storeUseProximityOpacity(v: boolean, storage?: UiStateStorage) {
+    void (storage ?? UiFramework.getUiStateStorage()).saveSetting(this._settingsNamespace, this._useProximityOpacityKey, v);
   }
 
-  public static async storeSnapWidgetOpacity(v: boolean, storage?: UiSettings) {
-    void (storage ?? UiFramework.getUiSettingsStorage()).saveSetting(this._settingsNamespace, this._snapWidgetOpacityKey, v);
+  public static async storeSnapWidgetOpacity(v: boolean, storage?: UiStateStorage) {
+    void (storage ?? UiFramework.getUiStateStorage()).saveSetting(this._settingsNamespace, this._snapWidgetOpacityKey, v);
   }
 }
 
@@ -61,12 +61,12 @@ export const INACTIVITY_TIME_DEFAULT = 3500;  /** Wait 3.5 seconds */
  */
 export class UiShowHideManager {
   private static _isUiVisible: boolean = true;
-  private static _autoHideUi: boolean = false;
+  private static _autoHideUi: boolean = true;
   private static _showHidePanels: boolean = false;
   private static _showHideFooter: boolean = false;
   private static _inactivityTime: number = INACTIVITY_TIME_DEFAULT;
   private static _timeout: NodeJS.Timeout;
-  private static _useProximityOpacity: boolean = true;
+  private static _useProximityOpacity: boolean = false;
   private static _snapWidgetOpacity: boolean = false;
 
   /** Determines if the Ui is visible */
@@ -154,6 +154,7 @@ export class UiShowHideManager {
 
   /** Handler for when a Frontstage is ready */
   public static handleFrontstageReady() {
+    // istanbul ignore next
     if (!UiShowHideManager._autoHideUi)
       return;
 
@@ -212,5 +213,13 @@ export class UiShowHideManager {
   /** @internal */
   public static terminate() {
     UiShowHideManager.cancelTimer();
+    // Ensure that next use will have default values for tests.
+    UiShowHideManager._isUiVisible = true;
+    UiShowHideManager._autoHideUi = true;
+    UiShowHideManager._showHidePanels = false;
+    UiShowHideManager._showHideFooter = false;
+    UiShowHideManager._inactivityTime = INACTIVITY_TIME_DEFAULT;
+    UiShowHideManager._useProximityOpacity = false;
+    UiShowHideManager._snapWidgetOpacity = false;
   }
 }

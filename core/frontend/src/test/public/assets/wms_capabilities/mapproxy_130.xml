@@ -1,0 +1,155 @@
+<?xml version="1.0" ?>
+<WMS_Capabilities xmlns="http://www.opengis.net/wms" xmlns:sld="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.3.0" xsi:schemaLocation="http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/sld_capabilities.xsd">
+<Service>
+  <Name>WMS</Name>
+  <Title>MapProxy WMS</Title>
+  <Abstract></Abstract>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://mapservices.onemap.sg/mapproxy/service"/>
+    <Fees>none</Fees>
+    <AccessConstraints>none</AccessConstraints>
+</Service>
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="http://mapservices.onemap.sg/mapproxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+      <Format>image/png</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="http://mapservices.onemap.sg/mapproxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/plain</Format>
+      <Format>text/html</Format>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xlink:href="http://mapservices.onemap.sg/mapproxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+  </Request>
+  <Exception>
+    <Format>XML</Format>
+    <Format>INIMAGE</Format>
+    <Format>BLANK</Format>
+  </Exception>
+  <Layer>
+    <Title>MapProxy WMS</Title>
+    <CRS>EPSG:4326</CRS>
+    <CRS>EPSG:3414</CRS>
+    <EX_GeographicBoundingBox>
+      <westBoundLongitude>103.358857333</westBoundLongitude>
+      <eastBoundLongitude>104.766280454</eastBoundLongitude>
+      <southBoundLatitude>1.05386187892</southBoundLatitude>
+      <northBoundLatitude>1.76023057282</northBoundLatitude>
+    </EX_GeographicBoundingBox>
+    <BoundingBox CRS="CRS:84" minx="103.358857333" miny="1.05386187892" maxx="104.766280454" maxy="1.76023057282" />
+    <BoundingBox CRS="EPSG:4326" minx="1.05386187892" miny="103.358857333" maxx="1.76023057282" maxy="104.766280454" />
+    <Layer>
+      <Name>Default</Name>
+      <Title>Default</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>103.359</westBoundLongitude>
+        <eastBoundLongitude>104.766</eastBoundLongitude>
+        <southBoundLatitude>1.054</southBoundLatitude>
+        <northBoundLatitude>1.76</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+      <BoundingBox CRS="EPSG:4326" minx="1.054" miny="103.359" maxx="1.76" maxy="104.766" />
+    </Layer>
+    <Layer>
+      <Name>Original</Name>
+      <Title>Original</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>103.359</westBoundLongitude>
+        <eastBoundLongitude>104.766</eastBoundLongitude>
+        <southBoundLatitude>1.054</southBoundLatitude>
+        <northBoundLatitude>1.76</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+      <BoundingBox CRS="EPSG:4326" minx="1.054" miny="103.359" maxx="1.76" maxy="104.766" />
+    </Layer>
+    <Layer>
+      <Name>Grey</Name>
+      <Title>Grey</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>103.359</westBoundLongitude>
+        <eastBoundLongitude>104.766</eastBoundLongitude>
+        <southBoundLatitude>1.054</southBoundLatitude>
+        <northBoundLatitude>1.76</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+      <BoundingBox CRS="EPSG:4326" minx="1.054" miny="103.359" maxx="1.76" maxy="104.766" />
+    </Layer>
+    <Layer>
+      <Name>Night</Name>
+      <Title>Night</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>103.359</westBoundLongitude>
+        <eastBoundLongitude>104.766</eastBoundLongitude>
+        <southBoundLatitude>1.054</southBoundLatitude>
+        <northBoundLatitude>1.76</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+      <BoundingBox CRS="EPSG:4326" minx="1.054" miny="103.359" maxx="1.76" maxy="104.766" />
+    </Layer>
+    <Layer>
+      <Name>singapore_3414_tms</Name>
+      <Title>singapore_3414_tms</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>103.595966412</westBoundLongitude>
+        <eastBoundLongitude>104.165806259</eastBoundLongitude>
+        <southBoundLatitude>1.1442806158</southBoundLatitude>
+        <northBoundLatitude>1.49822231742</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="103.595966412" miny="1.1442806158" maxx="104.165806259" maxy="1.49822231742" />
+      <BoundingBox CRS="EPSG:4326" minx="1.1442806158" miny="103.595966412" maxx="1.49822231742" maxy="104.165806259" />
+    </Layer>
+    <Layer>
+      <Name>singapore_3414_wms</Name>
+      <Title>singapore_3414_wms</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>103.358857333</westBoundLongitude>
+        <eastBoundLongitude>104.766280454</eastBoundLongitude>
+        <southBoundLatitude>1.05386187892</southBoundLatitude>
+        <northBoundLatitude>1.76023057282</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="103.358857333" miny="1.05386187892" maxx="104.766280454" maxy="1.76023057282" />
+      <BoundingBox CRS="EPSG:4326" minx="1.05386187892" miny="103.358857333" maxx="1.76023057282" maxy="104.766280454" />
+    </Layer>
+    <Layer>
+      <Name>singapore_3414_wmts</Name>
+      <Title>singapore_3414_wmts</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>103.595966412</westBoundLongitude>
+        <eastBoundLongitude>104.165806259</eastBoundLongitude>
+        <southBoundLatitude>1.1442806158</southBoundLatitude>
+        <northBoundLatitude>1.49822231742</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="103.595966412" miny="1.1442806158" maxx="104.165806259" maxy="1.49822231742" />
+      <BoundingBox CRS="EPSG:4326" minx="1.1442806158" miny="103.595966412" maxx="1.49822231742" maxy="104.165806259" />
+    </Layer>
+    <Layer>
+      <Name>singapore_landlot_wmts</Name>
+      <Title>singapore_landlot_wmts</Title>
+      <EX_GeographicBoundingBox>
+        <westBoundLongitude>103.359</westBoundLongitude>
+        <eastBoundLongitude>104.766</eastBoundLongitude>
+        <southBoundLatitude>1.054</southBoundLatitude>
+        <northBoundLatitude>1.76</northBoundLatitude>
+      </EX_GeographicBoundingBox>
+      <BoundingBox CRS="CRS:84" minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+      <BoundingBox CRS="EPSG:4326" minx="1.054" miny="103.359" maxx="1.76" maxy="104.766" />
+    </Layer>
+  </Layer>
+</Capability>
+</WMS_Capabilities>

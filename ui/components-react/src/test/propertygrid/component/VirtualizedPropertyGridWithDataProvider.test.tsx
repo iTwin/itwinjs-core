@@ -80,7 +80,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
     });
@@ -94,7 +94,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       expect(container.querySelector(".components-property-record--vertical")).to.be.not.null;
     });
@@ -115,7 +115,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
     it("renders PropertyCategoryBlocks correctly", async () => {
       const { container } = render(<VirtualizedPropertyGridWithDataProvider {...defaultProps} />);
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const categoryBlocks = container.querySelectorAll(".virtualized-grid-node-category");
       expect(categoryBlocks.length, "Wrong amount of categories").to.be.equal(2);
@@ -151,7 +151,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       const { container } = render(
         <VirtualizedPropertyGridWithDataProvider  {...defaultProps} dataProvider={dataProvider} />,
       );
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const categoryBlocks = container.querySelectorAll(".virtualized-grid-node-category");
       expect(categoryBlocks.length, "Wrong amount of categories").to.be.equal(2);
@@ -160,7 +160,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
     it("renders PropertyCategoryBlock as collapsed when it gets clicked", async () => {
       const { container } = render(<VirtualizedPropertyGridWithDataProvider  {...defaultProps} />);
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       let categoryChild = container.querySelector(".virtualized-grid-node span[title=\"CADID1\"]");
       expect(categoryChild, "Category child is not rendered").to.not.be.null;
@@ -320,7 +320,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       });
       dataProvider.onDataChanged.raiseEvent();
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const categoryBlocks = container.querySelectorAll(".virtualized-grid-node-category");
       expect(categoryBlocks.length).to.be.eq(3);
@@ -343,8 +343,8 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       dataProvider.getData = dataFake;
 
       // first render
-      render(<VirtualizedPropertyGridWithDataProvider {...defaultProps} />);
-      await TestUtils.flushAsyncOperations();
+      const { container } = render(<VirtualizedPropertyGridWithDataProvider {...defaultProps} />);
+      await waitForPropertyGridLoad(container);
 
       expect(dataFake).to.be.calledOnce;
 
@@ -358,7 +358,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       // expect data to be requested two more times.
       // Since the first request is already resolved, it should call once for initial change and once for the last change,
       // but not for intermediate ones
-      await TestUtils.flushAsyncOperations();
       expect(dataFake).to.be.calledThrice;
     });
 
@@ -371,7 +370,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
 
@@ -442,7 +441,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           isOrientationFixed={true}
         />,
       );
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
       expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
 
       rerender(
@@ -607,7 +606,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       expect(onPropertySelectionChanged.called).to.be.false;
 
@@ -625,7 +624,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         <VirtualizedPropertyGridWithDataProvider {...defaultProps} isPropertySelectionEnabled={true} />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       expect(container.querySelectorAll(".components--selected").length).to.be.equal(0);
 
@@ -652,7 +651,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const renderedRecords = container.querySelectorAll(".components-property-record--horizontal");
       expect(renderedRecords.length).to.be.greaterThan(0);
@@ -673,7 +672,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const clickableComponents = container.querySelectorAll(".components--clickable");
       expect(clickableComponents.length).to.be.greaterThan(0);
@@ -694,7 +693,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const clickableComponents = container.querySelectorAll(".components--clickable");
       expect(clickableComponents.length).to.be.greaterThan(0);
@@ -716,7 +715,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const clickableComponents = container.querySelectorAll(".components--clickable");
       expect(clickableComponents.length).to.be.greaterThan(0);
@@ -738,7 +737,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const clickableComponents = container.querySelectorAll(".components--clickable");
       expect(clickableComponents.length).to.be.greaterThan(0);
@@ -763,7 +762,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const clickableComponents = container.querySelectorAll(".components--clickable");
       expect(clickableComponents.length).to.be.greaterThan(0);
@@ -796,7 +795,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const clickableComponents = container.querySelectorAll(".components--clickable");
       expect(clickableComponents.length).to.be.greaterThan(0);
@@ -808,7 +807,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
       fireEvent.keyDown(cellEditors[0], { key: "Enter" });
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       expect(spyMethod).to.be.calledOnce;
     });
@@ -822,7 +821,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const clickableComponents = container.querySelectorAll(".components--clickable");
       expect(clickableComponents.length).to.be.greaterThan(0);
@@ -841,7 +840,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
         />,
       );
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const clickableComponents = container.querySelectorAll(".components--clickable");
       expect(clickableComponents.length).to.be.greaterThan(0);
@@ -857,7 +856,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       const inputNode = cellEditors[0];
       fireEvent.keyDown(inputNode, { key: "Escape" });
 
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       expect(container.querySelectorAll(".components-cell-editor").length, "Cell editor did not disappear after pressing Escape").to.eq(0);
     });
@@ -873,7 +872,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           isOrientationFixed={true}
         />,
       );
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const clickableComponents = container.querySelectorAll(".components-property-record--horizontal");
       expect(clickableComponents.length).to.be.greaterThan(0);
@@ -889,7 +888,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       const { container } = render(
         <VirtualizedPropertyGridWithDataProvider {...defaultProps} isOrientationFixed={true} />,
       );
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const clickableComponents = container.querySelectorAll(".virtualized-grid-node");
       expect(clickableComponents.length).to.be.equal(3);
@@ -950,7 +949,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           isOrientationFixed={true}
         />,
       );
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const clickableComponents = container.querySelectorAll(".virtualized-grid-node");
       expect(clickableComponents.length).to.be.equal(12);
@@ -998,7 +997,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           isOrientationFixed={true}
         />,
       );
-      await TestUtils.flushAsyncOperations();
+      await waitForPropertyGridLoad(container);
 
       const gridNodes = container.querySelectorAll(".virtualized-grid-node");
       expect(gridNodes.length).to.be.greaterThan(0);
@@ -1290,3 +1289,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
     });
   });
 });
+
+async function waitForPropertyGridLoad(container: HTMLElement): Promise<void> {
+  await waitFor(() => { container.querySelector(".components-virtualized-property-grid-loader") === null; });
+}

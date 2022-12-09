@@ -9,6 +9,8 @@ import { BeEvent } from "@itwin/core-bentley";
 import { IModelApp, MockRender, ScreenViewport, Viewport } from "@itwin/core-frontend";
 import { TileLoadingIndicator } from "../../../appui-react";
 import TestUtils, { mount } from "../../TestUtils";
+import { cleanup, render } from "@testing-library/react";
+import { expect } from "chai";
 
 describe("TileLoadingIndicator", () => {
 
@@ -22,20 +24,27 @@ describe("TileLoadingIndicator", () => {
     TestUtils.terminateUiFramework();
   });
 
-  it("should render correctly footer", () => {
+  it("should render correctly as footer by default", () => {
+    const wrapper = render(<TileLoadingIndicator />);
+
+    expect(wrapper.container.querySelector(".nz-footer-mode")).to.exist;
+    cleanup();
+  });
+
+  it("should render correctly footer (deprecated)", () => {
     shallow(
-      <TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />,
+      <TileLoadingIndicator isInFooterMode={true} />,
     ).should.matchSnapshot();
   });
 
-  it("should render correctly not footer", () => {
+  it("should render correctly not footer (deprecated)", () => {
     shallow(
-      <TileLoadingIndicator isInFooterMode={false} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />,
+      <TileLoadingIndicator isInFooterMode={false} />,
     ).should.matchSnapshot();
   });
 
   it("should unmount correctly", () => {
-    const sut = mount(<TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />);
+    const sut = mount(<TileLoadingIndicator />);
     sut.unmount();
   });
 
@@ -48,7 +57,7 @@ describe("TileLoadingIndicator", () => {
     viewportMock.setup((x) => x.onRender).returns(() => onRenderEvent);
 
     await IModelApp.viewManager.setSelectedView(viewportMock.object);
-    const wrapper = mount(<TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />);
+    const wrapper = mount(<TileLoadingIndicator />);
     IModelApp.viewManager.onViewOpen.emit(viewportMock.object);
     // 10% complete
     viewportMock.setup((viewport) => viewport.numRequestedTiles).returns(() => 90);

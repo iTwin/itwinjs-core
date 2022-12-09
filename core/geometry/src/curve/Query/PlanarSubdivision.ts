@@ -2,6 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Geometry } from "../../Geometry";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
@@ -14,7 +16,7 @@ import { RegionOps } from "../RegionOps";
  * @module Curve
  */
 
-class MapCurvePrimitiveToCurveLocatioNDetailPairArray {
+class MapCurvePrimitiveToCurveLocationDetailPairArray {
   public primitiveToPair = new Map<CurvePrimitive, CurveLocationDetailPair[]>();
   // index assigned to this primitive for this calculation.
   public primitiveToIndex = new Map<CurvePrimitive, number>();
@@ -64,9 +66,10 @@ function tagString(name: string, value: number | undefined): string {
  * @internal
  */
 export class PlanarSubdivision {
-  public static assembleHalfEdgeGraph(_primitives: CurvePrimitive[], allPairs: CurveLocationDetailPair[]): HalfEdgeGraph {
-    const detailByPrimitive = new MapCurvePrimitiveToCurveLocatioNDetailPairArray();   // map from key CurvePrimitive to CurveLocationDetailPair.
-    for (const p of _primitives)
+  /** Create a graph from an array of curves, and an array of the curves' precomputed intersections. */
+  public static assembleHalfEdgeGraph(primitives: CurvePrimitive[], allPairs: CurveLocationDetailPair[]): HalfEdgeGraph {
+    const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray();   // map from key CurvePrimitive to CurveLocationDetailPair.
+    for (const p of primitives)
       detailByPrimitive.assignPrimitiveIndex(p);
     for (const pair of allPairs) {
       detailByPrimitive.insertPair(pair);
@@ -83,30 +86,42 @@ export class PlanarSubdivision {
         return fractionA - fractionB;
       });
       let detail0 = getDetailOnCurve(details[0], p)!;
+      this.addHalfEdge(graph, p, p.startPoint (), 0.0, detail0.point, detail0.fraction);
       for (let i = 1; i < details.length; i++) {
         // create (both sides of) a graph edge . . .
         const detail1 = getDetailOnCurve(details[i], p)!;
-        if (detail0.point.isAlmostEqual(detail1.point)) {
-
-        } else {
-          const halfEdge = graph.createEdgeXYAndZ(detail0.point, 0, detail1.point, 0);
-          const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, detail0.fraction, detail1.fraction);
-          const mate = halfEdge.edgeMate;
-          halfEdge.edgeTag = detail01;
-          halfEdge.sortData = 1.0;
-          mate.edgeTag = detail01;
-          mate.sortData = -1.0;
-          halfEdge.sortAngle = sortAngle(detail01.curve!, detail01.fraction, false);
-          mate.sortAngle = sortAngle(detail01.curve!, detail01.fraction1!, true);
-        }
+        this.addHalfEdge(graph, p, detail0.point, detail0.fraction, detail1.point, detail1.fraction);
         detail0 = detail1;
       }
+      this.addHalfEdge(graph, p, detail0.point, detail0.fraction, p.endPoint(), 1.0);
     }
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle!);
     return graph;
   }
-
-  // based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative, or sliver loops.
+/**
+ * Create a pair of mated half edges referencing an interval of a primitive
+ *   * no action if start and end points are identical.
+ * @param graph containing graph.
+ * @param p the curve
+ * @param fraction0 starting fraction
+ * @param point0 start point
+ * @param fraction1 end fraction
+ * @param point1 end point
+ */
+  private static addHalfEdge(graph: HalfEdgeGraph, p: CurvePrimitive, point0: Point3d, fraction0: number, point1: Point3d, fraction1: number) {
+    if (!point0.isAlmostEqual (point1)){
+      const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
+      const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, fraction0, fraction1);
+      const mate = halfEdge.edgeMate;
+      halfEdge.edgeTag = detail01;
+      halfEdge.sortData = 1.0;
+      mate.edgeTag = detail01;
+      mate.sortData = -1.0;
+      halfEdge.sortAngle = sortAngle(detail01.curve!, detail01.fraction, false);
+      mate.sortAngle = sortAngle(detail01.curve!, detail01.fraction1!, true);
+      }
+    }
+// based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative, or sliver loops.
   // return the area (forced to zero if within tolerance)
   public static collectSignedLoop(loop: Loop, signedAreas: SignedLoops, zeroAreaTolerance: number = 1.0e-10): number{
     let area = RegionOps.computeXYArea(loop);
@@ -145,12 +160,19 @@ export class PlanarSubdivision {
     } while (he !== faceSeed);
     return loop;
   }
-// return true if there are only two edges.
-  // In a line-only graph, this is a null-area face.
+  // Return true if there are only two edges in the face loop, and their start curvatures are the same.
   private static isNullFace(he: HalfEdge): boolean {
-    return he.faceSuccessor.faceSuccessor === he;
+    const faceHasTwoEdges = (he.faceSuccessor.faceSuccessor === he);
+    let faceIsBanana = false;
+    if (faceHasTwoEdges) {
+      const c0 = HalfEdgeGraphMerge.curvatureSortKey(he);
+      const c1 = HalfEdgeGraphMerge.curvatureSortKey(he.faceSuccessor.edgeMate);
+      if (!Geometry.isSameCoordinate(c0, c1)) // default tol!
+        faceIsBanana = true;  // heuristic: we could also check end curvatures, and/or higher derivatives...
+    }
+    return faceHasTwoEdges && !faceIsBanana;
   }
-  // Look  across edge mates (possibly several) for a nonnull mate face.
+  // Look across edge mates (possibly several) for a nonnull mate face.
   private static nonNullEdgeMate(_graph: HalfEdgeGraph, e: HalfEdge): HalfEdge | undefined {
     if (this.isNullFace (e))
       return undefined;

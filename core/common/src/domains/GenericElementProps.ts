@@ -8,12 +8,18 @@
 
 import { GeometricElement2dProps, RelatedElementProps } from "../ElementProps";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export interface ViewAttachmentLabelProps extends GeometricElement2dProps {
   viewAttachment?: RelatedElementProps;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export interface CalloutProps extends GeometricElement2dProps {
   drawingModel?: RelatedElementProps;
 }

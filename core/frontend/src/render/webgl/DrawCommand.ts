@@ -7,7 +7,6 @@
  */
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { ViewFlagOverrides } from "@itwin/core-common";
 import { BranchState } from "./BranchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
@@ -15,11 +14,11 @@ import { isFeatureHilited } from "./FeatureOverrides";
 import { Batch, Branch } from "./Graphic";
 import { UniformHandle } from "./UniformHandle";
 import { Primitive } from "./Primitive";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Hilites, Target } from "./Target";
-import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "./TechniqueFlags";
+import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 
 /* eslint-disable no-restricted-syntax */
@@ -29,7 +28,11 @@ export class ShaderProgramParams {
   private _target?: Target;
   private _renderPass: RenderPass = RenderPass.None;
 
-  public get target(): Target { assert(undefined !== this._target); return this._target; }
+  public get target(): Target {
+    assert(undefined !== this._target);
+    return this._target;
+  }
+
   public get renderPass() { return this._renderPass; }
 
   public get projectionMatrix() { return this.target.uniforms.getProjectionMatrix32(this.isViewCoords); }
@@ -50,8 +53,15 @@ export class DrawParams {
   private _programParams?: ShaderProgramParams;
   private _geometry?: CachedGeometry;
 
-  public get geometry(): CachedGeometry { assert(undefined !== this._geometry); return this._geometry; }
-  public get programParams(): ShaderProgramParams { assert(undefined !== this._programParams); return this._programParams; }
+  public get geometry(): CachedGeometry {
+    assert(undefined !== this._geometry);
+    return this._geometry;
+  }
+
+  public get programParams(): ShaderProgramParams {
+    assert(undefined !== this._programParams);
+    return this._programParams;
+  }
 
   public get target() { return this.programParams.target; }
   public get renderPass() { return this.programParams.renderPass; }
@@ -129,8 +139,6 @@ export class PushStateCommand {
 export class PushBranchCommand {
   public readonly opcode = "pushBranch";
 
-  private static _viewFlagOverrides?: ViewFlagOverrides;
-
   public constructor(public readonly branch: Branch) { }
 
   public execute(exec: ShaderProgramExecutor): void {
@@ -204,21 +212,24 @@ export class PrimitiveCommand {
     if (isThematic && (undefined !== this.primitive.cachedGeometry.asPointCloud) && (target.uniforms.thematic.wantSlopeMode || target.uniforms.thematic.wantHillShadeMode))
       isThematic = IsThematic.No;
 
+    const wiremesh = target.currentViewFlags.wiremesh && System.instance.isWebGL2 && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
+    const isWiremesh = wiremesh ? IsWiremesh.Yes : IsWiremesh.No;
     const flags = PrimitiveCommand._scratchTechniqueFlags;
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic);
+    const posType = this.primitive.cachedGeometry.usesQuantizedPositions ? "quantized" : "unquantized";
+    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh, posType);
 
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);
 
     if (exec.setProgram(program))
-      this.primitive.draw(exec);
+      exec.target.compositor.drawPrimitive(this.primitive, exec, program.outputsToPick);
   }
 
   public get hasFeatures(): boolean { return this.primitive.hasFeatures; }
   public get renderOrder(): RenderOrder { return this.primitive.renderOrder; }
 
-  public getRenderPass(target: Target): RenderPass {
-    return this.primitive.getRenderPass(target);
+  public getPass(target: Target): Pass {
+    return this.primitive.getPass(target);
   }
 }
 
@@ -252,7 +263,9 @@ export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cm
       let j = i - 1;
       while (j >= 0 && "pushBatch" !== cmds[j].opcode) // Find batch for this primitive
         j--;
-      if (j < 0) continue;
+      if (j < 0)
+        continue;
+
       const pushBatch = cmds[j] as PushBatchCommand;
       const elemId = pushBatch.batch.featureTable.findElementId(surface.mesh.uniformFeatureId);
       if (undefined !== elemId && elemId === flashedId) {
@@ -297,7 +310,7 @@ export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: D
             continue;
 
           const feature = batch.featureTable.getPackedFeature(surface.mesh.uniformFeatureId);
-          if (undefined === feature || !isFeatureHilited(feature, hilites))
+          if (undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(batch.featureTable.modelId)))
             continue;
 
           break;

@@ -1,0 +1,429 @@
+{
+  "errors": {
+    "UnableToParseLength": "Unable to parse into a length value",
+    "UnableToParseAngle": "Unable to parse into an angle value"
+  },
+  "Header": {
+    "welcome": "Welcome to UI Test App"
+  },
+  "IModelListHeader": {
+    "projects": "Projects"
+  },
+  "IModelList": {
+    "noIModels": "There are no IModels in Project {{projectName}}"
+  },
+  "ContentLayoutDef": {
+    "OneView": "Single View",
+    "TwoAlongside": "Side by Side",
+    "TwoStacked": "Stacked",
+    "ThreeRightStacked": "Three Right Stacked",
+    "ThreeLeftStacked": "Three Left Stacked",
+    "FourQuadrants": "Four Quadrants",
+    "TwoHalvesHorizontal": "Two Halves Horizontal",
+    "TwoHalvesVertical": "Two Halves Vertical",
+    "SingleContent": "Single Content"
+  },
+  "Test": {
+    "my-label": "My Label",
+    "loading": "Loading..."
+  },
+  "settingsStage": {
+    "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
+    "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
+    "dark": "Dark",
+    "light": "Light"
+  },
+  "QuantityFormatModalFrontstage": {
+    "QuantityFormatStage": "Quantity Format Overrides"
+  },
+  "backstage": {
+    "command": "Command",
+    "viewIModel": "View iModel",
+    "editIModel": "Edit iModel",
+    "quantityFormat": "Quantity Formats",
+    "iModelStage": "Review iModel",
+    "editStage": "Edit and Modify iModel",
+    "exit": "Exit",
+    "imodelopen": "IModel Open",
+    "imodelindex": "IModel Index",
+    "fileSelect": "Open Local File",
+    "custom": "Custom",
+    "componentExamples": "Component Examples"
+  },
+  "zone6": {
+    "month": "Month",
+    "number": "Number",
+    "password": "Password",
+    "radio": "Radio",
+    "range": "Range",
+    "reset": "Reset",
+    "resetNow": "Reset Now",
+    "search": "Search",
+    "submit": "Submit",
+    "submitNow": "Submit Now",
+    "Tel": "Telephone",
+    "Text": "Text"
+  },
+  "zone7": {
+    "button": "Button",
+    "checkbox": "Checkbox",
+    "color": "Color",
+    "date": "Date",
+    "datetimeLocal": "Datetime-Local",
+    "email": "Email",
+    "file": "File"
+  },
+  "tool1": {
+    "date": "Date",
+    "month": "Month",
+    "number": "Number",
+    "password": "Password",
+    "radio": "Radio",
+    "range": "Range",
+    "color": "Color"
+  },
+  "tool2": {
+    "month": "Month2",
+    "number": "Number2"
+  },
+  "toolAssist": {
+    "startPoint": "Start Point",
+    "title": "Tool Assistance"
+  },
+  "buttons": {
+    "toolGroup": "Tool Group",
+    "anotherGroup": "Another Group",
+    "selectViewToActivate": "Select View to activate",
+    "tool1": "Tool 1",
+    "tool2": "Tool 2",
+    "tool3": "Tool 3",
+    "tool4": "Tool 4",
+    "item1": "Item 1",
+    "item2": "Item 2",
+    "item3": "Item 3",
+    "item4": "Item 4",
+    "item5": "Item 5",
+    "item6": "Item 6",
+    "item7": "Item 7",
+    "item8": "Item 8",
+    "modalFrontstage": "Modal Frontstage",
+    "successMessageBox": "Success",
+    "informationMessageBox": "Information",
+    "questionMessageBox": "Question",
+    "warningMessageBox": "Warning",
+    "errorMessageBox": "Error",
+    "alertMessageBox": "Alert",
+    "noIconMessageBox": "No Icon Message",
+    "openMessageBox": "Open Message Box",
+    "openSeveralMessages": "Open Several Messages",
+    "setLengthFormatMetric": "Set Format Metric",
+    "setLengthFormatImperial": "Set Format Imperial",
+    "toggleLengthFormatOverride": "Toggle Length Overrides",
+    "toggleItemDisplay": "Toggle Hide/Show Test",
+    "openRadial": "Open Radial Menu",
+    "openCalculator": "Open Calculator",
+    "outputMessage": "Call outputMessage",
+    "openCloseProperties": "Open/Close Property Grid",
+    "openPropertyGrid": "Open Property Grid",
+    "closePropertyGrid": "Close Property Grid",
+    "showShortcutsMenu": "Show Shortcuts Menu",
+    "shortcutsSubMenu": "Shortcuts Submenu Sample",
+    "openNestedFrontstage1": "Open Nested Frontstage 1",
+    "openNestedFrontstage2": "Open Nested Frontstage 2",
+    "switchLayout": "Switch layouts",
+    "showhideZones": "Toggle Zone Visibility",
+    "activityMessage": "Activity Message",
+    "pointerMessage": "Pointer Message",
+    "messageDemos": "Message Demos",
+    "dialogDemos": "Dialog Demos",
+    "viewportDialog": "Viewport Dialog",
+    "spinnerTestDialog": "Spinner Test",
+    "openNestedAnimationStage": "Open Stage to Play Animations",
+    "reduceWidgetOpacity": "Reduce Widget Opacity",
+    "defaultWidgetOpacity": "Default Widget Opacity",
+    "saveContentLayout": "Save Content Layout",
+    "restoreContentLayout": "Restore Content Layout",
+    "startCursorPopup": "Start Cursor Popup",
+    "addCursorPopups": "Add Cursor Popups",
+    "moreCursorPopups": "More Cursor Popups",
+    "stopCursorPopup": "Stop Cursor Popup",
+    "cmdKeyinDialog": "Command Key-in",
+    "opencmdKeyinDialog": "Open command key-in dialog",
+    "accuDrawSubMenu": "AccuDraw Tests",
+    "accuDrawLocks": "AccuDraw Locks",
+    "accuDrawRotate": "AccuDraw Rotate",
+    "addMenuButton": "Add Menu Button",
+    "hideMenuButton": "Hide Menu Button",
+    "showCalculator": "Show Calculator",
+    "showAngleEditor": "Show Angle Editor",
+    "showLengthEditor": "Show Length Editor",
+    "showHeightEditor": "Show Height Editor",
+    "showInputEditor": "Show Input Editor",
+    "showContextMenu": "Show Context Menu",
+    "showToolbar": "Show Toolbar",
+    "showHTMLElement": "Show HTML Element",
+    "clearMessages": "Clear Messages",
+    "toggleTimelinePlay": "Toggle Timeline Pause/Play",
+    "sampleModelessDialog": "Sample Modeless Dialog",
+    "sampleModalDialog": "Sample Modal Dialog",
+    "misc": "Miscellaneous",
+    "accuDrawDialogVertical": "AccuDraw Dialog - Vertical",
+    "accuDrawDialogHorizontal": "AccuDraw Dialog - Horizontal",
+    "bumpToolSettingToggle": "Bump Tool Setting Toggle",
+    "sketch": "Sketch New Geometry"
+  },
+  "tools": {
+    "ToolWithSettings": {
+      "keyin": "Tool With Settings",
+      "description": "Demo Tool with Settings",
+      "flyover": "Tool with Settings",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit",
+        "Options": "Options",
+        "Lock": "Lock",
+        "City": "City",
+        "Color": "Color",
+        "Source": "Source",
+        "Weight": "Weight",
+        "State": "State",
+        "Station": "Station",
+        "Coordinate": "Coordinate",
+        "Length": "Length",
+        "Angle": "Angle",
+        "ImageCheckBox": "Image Check Box",
+        "Number": "Number"
+      },
+      "Options": {
+        "Red": "Red",
+        "White": "White",
+        "Blue": "Blue",
+        "Yellow": "Yellow",
+        "Purple": "Purple",
+        "Pink": "Pink",
+        "Green": "Green"
+      }
+    },
+    "ToolWithDynamicSettings": {
+      "keyin": "Tool With Dynamic Settings",
+      "description": "Demo Tool With Dynamic Settings",
+      "flyover": "Tool with Dynamic Settings",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit",
+        "State": "State",
+        "City": "City"
+      },
+      "State": {
+        "None": "Undefined",
+        "Alabama": "Alabama",
+        "California": "California",
+        "Pennsylvania": "Pennsylvania",
+        "NewYork": "New York"
+      }
+    },
+    "MapFeatureInfoTool": {
+      "keyin": "MapFeatureInfo",
+      "description": "Map Feature Info",
+      "flyover": "Map Feature Info"
+    },
+    "Tool1": {
+      "keyin": "Test Tool1",
+      "description": "Test1 tool",
+      "flyover": "Tool1",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit"
+      }
+    },
+    "Tool2": {
+      "keyin": "Test Tool2",
+      "description": "Test2 tool",
+      "flyover": "Tool2",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit"
+      }
+    },
+    "Measure": {
+      "Points": {
+        "keyin": "Measure Points",
+        "description": "Measure distance between points",
+        "flyover": "Measure ByPoints",
+        "Prompts": {
+          "FirstPoint": "Enter first point",
+          "NextPoint": "Select next point / Reset"
+        }
+      }
+    },
+    "AppSelect": {
+      "keyin": "App Select Element",
+      "description": "Element Selection",
+      "flyover": "Select"
+    },
+    "TestUiProvider": {
+      "keyin": "TestUiProvider Toggle",
+      "description": "Toggle test UiProvider",
+      "flyover": "Toggle test UiProvider"
+    },
+    "TestLayoutManager": {
+      "RestoreLayout": {
+        "keyin": "layout restore",
+        "description": "Restore layout"
+      }
+    },
+    "OpenPropertyGrid": {
+      "keyin": "Test OpenPropertyGrid",
+      "description": "Open Property Grid",
+      "flyover": "Open Property Grid"
+    },
+    "select": "Select",
+    "fitView": "Fit View",
+    "windowArea": "Window Area",
+    "rotate": "Rotate",
+    "zoom": "Zoom",
+    "pan": "Pan",
+    "walk": "Walk",
+    "fly": "Fly",
+    "toggleCamera": "Toggle Camera",
+    "AnalysisAnimation": {
+      "keyin": "Analysis Animation",
+      "description": "Animate analysis solutions",
+      "flyover": "Analysis Animation",
+      "Prompts": {
+        "SelectView": "Select View and press Play button"
+      },
+      "ToolSettings": {
+        "duration": "Duration:",
+        "seconds": "sec",
+        "loop": "Loop",
+        "play": "Play",
+        "pause": "Pause",
+        "stop": "Stop"
+      }
+    },
+    "EditingSession": {
+      "keyin": "test edit"
+    },
+    "SaveContentLayoutTool": {
+      "flyover": "Save Content Layout"
+    },
+    "RestoreSavedContentLayoutTool": {
+      "flyover": "Restore Content Layout"
+    },
+    "RemoveSavedContentLayoutTool": {
+      "flyover": "Remove Saved Content Layout"
+    },
+    "PlaceBlock": {
+      "keyin": "test place block",
+      "description": "Place Block",
+      "flyover": "Place Block",
+      "prompts": {
+        "firstPoint": "First point",
+        "nextPoint": "Next point (Ctrl for polygon)",
+        "additionalPoint": "Additional point"
+      },
+      "ToolSettings": {
+        "heigh": "Height"
+      }
+    }
+  },
+  "widgets": {
+    "NavigationTree": "Navigation Tree",
+    "VisibilityTree": "Visibility Tree",
+    "BreadcrumbDemo": "Breadcrumb Demo",
+    "ModelSelector": "Model Selector",
+    "StatusBar": "Status Bar",
+    "VerticalPropertyGrid": "Vertical PropertyGrid",
+    "HorizontalPropertyGrid": "Horizontal PropertyGrid",
+    "UnifiedSelectPropertyGrid": "Unified Selection PropertyGrid",
+    "UnifiedSelectionTable": "Unified Selection Table",
+    "TableDemo": "Table Demo",
+    "TreeDemo": "Tree Demo",
+    "FeedbackDemo": "Feedback Demo",
+    "ActiveSettings": "Active Settings",
+    "ModelCreation": "Create Models"
+  },
+  "localFileStage": {
+    "localFile": "Local File",
+    "selectFile": "Select Local File"
+  },
+  "statusFields": {
+    "displayStyle": {
+      "tooltip": "Display Style",
+      "label": "Display"
+    },
+    "pullMergePushFailed": "Pull or push failed.",
+    "pullMergeFailed": "Failed to pull changes from server",
+    "pushButtonTitle": "Push",
+    "pushButtonDisabledTitle": "No local changes to push",
+    "pullButtonTitle": "Pull",
+    "pullButtonDisabledTitle": "No server changes to pull",
+    "sampleField": "Sample StatusBar Field",
+    "sampleButton": "Sample Button",
+    "unnamedDisplayStyle": "unnamed"
+  },
+  "properties": {
+    "context-menu": {
+      "add-favorite": {
+        "label": "Add to Favorite",
+        "description": "Add this property to Favorite category"
+      },
+      "remove-favorite": {
+        "label": "Remove from Favorite",
+        "description": "Remove this property from Favorite category"
+      }
+    }
+  },
+  "table": {
+    "context-menu": {
+      "sample-item": {
+        "label": "Sample menu item",
+        "description": "A sample of a context menu item"
+      }
+    }
+  },
+  "componentExamplesStage": {
+    "examples": "Component Examples",
+    "light": "Light",
+    "dark": "Dark",
+    "themeTitle": "Theme",
+    "themeDescription": "Toggle the theme between light and dark"
+  },
+  "property-grid": {
+    "too-many-elements-selected": "Too many elements selected"
+  },
+  "BearingQuantityType": {
+    "label": "Bearing",
+    "description": "Bearing",
+    "bearingGap": {
+      "label": "Add Direction Gap"
+    },
+    "bearingAngleDirection": {
+      "label": "Angle Direction",
+      "clockwise": "Clockwise",
+      "counter-clockwise": "Counter-Clockwise"
+    }
+  },
+  "signIn": {
+    "prompt": "Please sign in to access your Bentley services.",
+    "signInButton": "Sign In",
+    "profilePrompt": "Don't have a profile?",
+    "register": "Register",
+    "signingInMessage": "Sign In has started - please switch to your browser and enter your credentials"
+  },
+  "userProfile": {
+    "userprofile": "User Profile",
+    "signout": "Sign Out",
+    "signoutprompt": "Do you want to sign out?"
+  },
+  "iModelIndex": {
+    "views": "Views",
+    "3dModels": "3D Models",
+    "enteriModeling": "Enter iModel",
+    "upToDate": "You have the latest version.",
+    "updatesAvailable": "Later changes are available",
+    "toastTitle": "Need more control?",
+    "toastMessage": "Try ProjectWise Document Codes.",
+    "learnMore": "Learn more",
+    "enteriModel": "Enter iModel",
+    "noSavedView": "No saved views were found.",
+    "nextTab": "Switching you to the 3D Models tab..."
+  }
+}

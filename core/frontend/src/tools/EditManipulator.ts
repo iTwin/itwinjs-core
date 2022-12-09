@@ -25,6 +25,7 @@ import { ManipulatorToolEvent } from "./ToolAdmin";
  * - Respond to selection changed event to create control handles as pickable decorations when the desired element(s) or pickable decoration is selected.
  * - Respond to button events on the control handle decoration and run a sub-class of [[EditManipulator.HandleTool]] to modify.
  * @public
+ * @extensions
 */
 export namespace EditManipulator {
   /** Specifies the event for [[EditManipulator.HandleProvider.onManipulatorEvent]] */
@@ -61,7 +62,9 @@ export namespace EditManipulator {
       // Set this.receivedDownEvent to still get up events sent to this tool instance when installed from another tool's down event (ex. onModelStartDrag).
       this.receivedDownEvent = true;
 
-      // Override inherited tool state from suspended primitive tool...
+      // Override inherited tool state from suspended primitive tool.
+      IModelApp.accuSnap.onStartTool();
+
       if (this.wantAccuSnap)
         this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None);
       else

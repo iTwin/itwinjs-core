@@ -43,7 +43,7 @@ export abstract class SourceAspectIdTool extends Tool {
 
     let resultId;
     try {
-      for await (const row of imodel.query(this.getECSql(queryId), undefined, QueryRowFormat.UseJsPropertyNames, { limit: { count: 1 } }))
+      for await (const row of imodel.query(this.getECSql(queryId), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1 } }))
         resultId = row.resultId;
     } catch (ex) {
       resultId = BentleyError.getErrorMessage(ex);

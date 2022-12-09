@@ -68,10 +68,9 @@ function testVaryingSubsets(_ck: Checker, allGeometry: GeometryQuery[], geometry
     let y0 = 0;
     for (const f1 of fractions) {
       if (f0 !== f1) {
-        // PROBLEM: bspline does not implement clone partial !!!
         let partialB: CurvePrimitive | undefined;
         if (f0 === 0 && f1 === 1) {
-          partialB = geometryB.clone() as CurvePrimitive;
+          partialB = geometryB.clone();
         } else {
           partialB = geometryB.clonePartialCurve(f0, f1);
         }

@@ -8,6 +8,8 @@
 /* eslint-disable no-restricted-syntax */
 
 /** Ordered list of render passes which produce a rendered frame.
+ * [[RenderCommands]] organizes its [[DrawCommands]] into a list indexed by RenderPass.
+ * @see [[Pass]] for the type from which the RenderPass for a [[Primitive]] is derived.
  * @internal
  */
 export const enum RenderPass {
@@ -35,6 +37,38 @@ export const enum RenderPass {
   COUNT,
 }
 
+/** Describes the [[RenderPass]]es in which a [[Primitive]] wants to be rendered.
+ * Generally, each Pass corresponds to a single RenderPass. However a couple of passes specify that the primitive should be rendered
+ * twice, in two different render passes.
+ * [[RenderCommands.addPrimitive]] may ignore the requested Pass. For example, edges typically draw in RenderPass.OpaqueLinear, but
+ * may also draw in RenderPass.HiddenEdge; and translucent geometry may sometimes be rendered in an opaque render pass instead.
+ * @see [[CachedGeometry.getPass]].
+ * @internal
+ */
+export type Pass =
+  "skybox" | // SkyBox
+  "opaque" | // OpaqueGeneral
+  "opaque-linear" | // OpaqueLinear
+  "opaque-planar" | // OpaquePlanar
+  "translucent" | // Translucent
+  "view-overlay" | // ViewOverlay
+  "classification" | // Classification
+  "none" | // None
+  // The following apply to textured meshes when the texture image contains a mix of opaque and transparent pixels.
+  // The mesh requests to be rendered in both opaque and transparent passes, with each pass discarding pixels that don't match that pass.
+  // (i.e., discard transparent pixels during opaque pass and vice-versa).
+  "opaque-translucent" | // OpaqueGeneral and Translucent
+  "opaque-planar-translucent"; // OpaquePlanar and Translucent
+
+/** [[Pass]]es that map to two [[RenderPass]]es.
+ * @internal
+ */
+export type DoublePass = "opaque-translucent" | "opaque-planar-translucent";
+
+/** [[Pass]]es that map to a single [[RenderPass]].
+ * @internal */
+export type SinglePass = Exclude<Pass, DoublePass>;
+
 /** Describes the type of geometry rendered by a ShaderProgram.
  * @internal
  */
@@ -44,7 +78,65 @@ export const enum GeometryType {
   ArrayedPoints,
 }
 
+/** @internal */
+export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
+  /** Return the RenderPass corresponding to the specified Pass. */
+  export function toRenderPass(pass: SinglePass): RenderPass {
+    switch (pass) {
+      case "skybox": return RenderPass.SkyBox;
+      case "opaque": return RenderPass.OpaqueGeneral;
+      case "opaque-linear": return RenderPass.OpaqueLinear;
+      case "opaque-planar": return RenderPass.OpaquePlanar;
+      case "translucent": return RenderPass.Translucent;
+      case "view-overlay": return RenderPass.ViewOverlay;
+      case "classification": return RenderPass.Classification;
+      case "none": return RenderPass.None;
+    }
+  }
+
+  /** Return true if the specified Pass renders during RenderPass.Translucent.
+   * @note It is possible for both [[rendersTranslucent]] and [[rendersOpaque]] to return true (or false) for a given Pass.
+   */
+  export function rendersTranslucent(pass: Pass): boolean {
+    switch (pass) {
+      case "translucent":
+      case "opaque-translucent":
+      case "opaque-planar-translucent":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /** Return true if the specified Pass renders during one of the opaque RenderPasses.
+   * @note It is possible for both [[rendersTranslucent]] and [[rendersOpaque]] to return true for a given Pass.
+   */
+  export function rendersOpaque(pass: Pass): boolean {
+    switch (pass) {
+      case "opaque-translucent":
+      case "opaque-planar-translucent":
+      case "opaque":
+      case "opaque-planar":
+      case "opaque-linear":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /** Return true if the specified Pass renders both during RenderPass.Translucent and one of the opaque RenderPasses. */
+  export function rendersOpaqueAndTranslucent(pass: Pass): pass is DoublePass {
+    return "opaque-translucent" === pass || "opaque-planar-translucent" === pass;
+  }
+
+  export function toOpaquePass(pass: DoublePass): RenderPass {
+    return "opaque-translucent" === pass ? RenderPass.OpaqueGeneral : RenderPass.OpaquePlanar;
+  }
+}
+
 /** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures.
+ * WebGL 1 guarantees a minimum of 8 vertex texture units, and iOS provides no more than that.
+ * WebGL 2 guarantees a minimum of 15 vertex texture units.
  * @internal
  */
 export enum TextureUnit {
@@ -56,7 +148,7 @@ export enum TextureUnit {
   Four = WebGLRenderingContext.TEXTURE4,
   Five = WebGLRenderingContext.TEXTURE5,
   Six = WebGLRenderingContext.TEXTURE6,
-  Seven = WebGLRenderingContext.TEXTURE7, // Last one available for GLES2
+  Seven = WebGLRenderingContext.TEXTURE7, // Last one guaranteed available for WebGL 1
 
   ClipVolume = Zero,
   FeatureSymbology = One,
@@ -76,14 +168,24 @@ export enum TextureUnit {
   // Texture unit 7 is overloaded. Therefore receiving shadows and thematic display are mutually exclusive.
   ShadowMap = Seven,
   ThematicSensors = Seven,
-  // The number of allowable map layers for either background or overlay map is limited to 3 if only 8 texture units is available (IOS)... 6 layers are available if the hardware supports them.
+
+  // Textures used for up to 3 background or overlay map layers.
   RealityMesh0 = Two,
-  RealityMesh1 = VertexLUT,                       // Reality meshes do not use VertexLUT.
-  RealityMesh2 = ShadowMap,                       //  Shadow map when picking -- PickDepthAndOrder otherwise....
-  RealityMesh3 = WebGLRenderingContext.TEXTURE8,  // These are used only if available.
+  RealityMesh1 = VertexLUT, // Reality meshes do not use VertexLUT.
+  RealityMesh2 = ShadowMap, //  Shadow map when picking -- PickDepthAndOrder otherwise....
+
+  // If more than 8 texture units are available, 3 additional background or overlay map layers.
+  RealityMesh3 = WebGLRenderingContext.TEXTURE8,
   RealityMesh4 = WebGLRenderingContext.TEXTURE9,
   RealityMesh5 = WebGLRenderingContext.TEXTURE10,
+
   RealityMeshThematicGradient = WebGLRenderingContext.TEXTURE11,
+
+  // Lookup table for indexed edges - used only if WebGL 2 is available.
+  EdgeLUT = WebGLRenderingContext.TEXTURE12,
+
+  // Normal map texture - used only if WebGL 2 is available.
+  NormalMap = WebGLRenderingContext.TEXTURE13,
 }
 
 /**
@@ -117,7 +219,9 @@ export const enum RenderOrder {
 }
 
 /** @internal */
-export function isPlanar(order: RenderOrder): boolean { return order >= RenderOrder.PlanarBit; }
+export function isPlanar(order: RenderOrder): boolean {
+  return order >= RenderOrder.PlanarBit;
+}
 
 /** Flags indicating operations to be performed by the post-process composite step.
  * @internal
@@ -141,7 +245,7 @@ export const enum SurfaceBitIndex {
   BackgroundFill,
   HasColorAndNormal,
   OverrideRgb,
-  NoFaceFront,
+  HasNormalMap,
   HasMaterialAtlas,
   Count,
 }
@@ -171,11 +275,10 @@ export const enum SurfaceFlags {
   // For textured meshes, use rgb from v_color instead of from texture.
   OverrideRgb = 1 << SurfaceBitIndex.OverrideRgb,
   // For geometry with fixed normals (terrain meshes) we must avoid front facing normal reversal or skirts will be incorrectly lit.
-  NoFaceFront = 1 << SurfaceBitIndex.NoFaceFront,
+  HasNormalMap = 1 << SurfaceBitIndex.HasNormalMap,
   HasMaterialAtlas = 1 << SurfaceBitIndex.HasMaterialAtlas,
 }
 
-/** @internal */
 /** 16-bit flags indicating what aspects of a feature's symbology are overridden.
  * @internal
  */
@@ -191,8 +294,20 @@ export const enum OvrFlags {
   Weight = 1 << 7,
   Hilited = 1 << 8,
   Emphasized = 1 << 9, // rendered with "emphasis" hilite settings (silhouette etc).
+  ViewIndependentTransparency = 1 << 10,
 
   Rgba = Rgb | Alpha,
+}
+
+/** 8-bit flags indicating emphasis effects applied to a feature.
+ * @internal
+ */
+export const enum EmphasisFlags {
+  None = 0,
+  Hilite = 1,
+  Emphasized = 2,
+  Flashed = 4,
+  NonLocatable = 8,
 }
 
 /** @internal */

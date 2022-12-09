@@ -69,7 +69,7 @@ const fwidthWhenAvailable = `\nfloat _universal_fwidth(float coord) { return fwi
 const fwidthWhenNotAvailable = `\nfloat _universal_fwidth(float coord) { return coord; }\n`; // ###TODO: can we do something reasonable in this case?
 
 const slopeAndHillShadeShader = ` else if (kThematicDisplayMode_Slope == u_thematicDisplayMode) {
-    float d = dot(v_n, u_thematicAxis);
+    float d = dot(g_normal, u_thematicAxis);
     if (d < 0.0)
       d = -d;
 
@@ -87,11 +87,7 @@ const slopeAndHillShadeShader = ` else if (kThematicDisplayMode_Slope == u_thema
 
     ndx = d;
   } else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
-    float d = dot(v_n, u_thematicSunDirection);
-
-    // In the case of HillShade, v_thematicIndex contains the normal's z in world space.
-    if (!gl_FrontFacing && v_thematicIndex < 0.0)
-      d = -d;
+    float d = dot(g_normal, u_thematicSunDirection);
 
     ndx = max(0.0, d);
   }`;
@@ -202,12 +198,7 @@ export function getComputeThematicIndex(instanced: boolean, skipSlopeAndHillShad
     v_thematicIndex = findFractionalPositionOnLine(a, b, c);
   }`;
   const hillShadeMode = ` else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
-    vec2 tc = g_vertexBaseCoords;
-    tc.x += 3.0 * g_vert_stepX;
-    vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertexData2;
-    vec3 norm = u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? octDecodeNormal(normal) : vec3(0.0);
-    v_thematicIndex = norm.z;
+    v_thematicIndex = computeSurfaceNormal().z;
   }`;
   const hillShadeMode2 = ` else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
     v_thematicIndex = g_hillshadeIndex;

@@ -13,11 +13,12 @@ import { Gradient } from "./Gradient";
 /** JSON representation of an [[AnalysisStyleDisplacement]].
  * @see [[AnalysisStyleProps.displacement]].
  * @public
+ * @extensions
  */
 export interface AnalysisStyleDisplacementProps {
-  /** @see [[AnalysisStyleDisplacement.channelName]]. */
+  /** See [[AnalysisStyleDisplacement.channelName]]. */
   channelName: string;
-  /** @see [[AnalysisStyleDisplacement.scale]].
+  /** See [[AnalysisStyleDisplacement.scale]].
    * Default value: 1.
    */
   scale?: number;
@@ -64,13 +65,14 @@ export class AnalysisStyleDisplacement {
 /** JSON representation of an [[AnalysisStyleThematic]].
  * @see [[AnalysisStyleProps.scalar]].
  * @public
+ * @extensions
  */
 export interface AnalysisStyleThematicProps {
-  /** @see [[AnalysisStyleThematic.channelName]]. */
+  /** See [[AnalysisStyleThematic.channelName]]. */
   channelName: string;
-  /** @see [[AnalysisStyleThematic.range]]. */
+  /** See [[AnalysisStyleThematic.range]]. */
   range: Range1dProps;
-  /** @see [[AnalysisStyleThematic.thematicSettings]].
+  /** See [[AnalysisStyleThematic.thematicSettings]].
    * Default value: [[ThematicGradientSettings.defaults]].
    */
   thematicSettings?: ThematicGradientSettingsProps;
@@ -134,15 +136,16 @@ export class AnalysisStyleThematic {
 
 /** JSON representation of an [[AnalysisStyle]].
  * @public
+ * @extensions
  */
 export interface AnalysisStyleProps {
-  /** @see [[AnalysisStyle.displacement]]. */
+  /** See [[AnalysisStyle.displacement]]. */
   displacement?: AnalysisStyleDisplacementProps;
   /** JSON representation of [[AnalysisStyle.thematic]].
    * @note The name "scalar" is used instead of "thematic" for backwards compatibility.
    */
   scalar?: AnalysisStyleThematicProps;
-  /** @see [[AnalysisStyle.normalChannelName]]. */
+  /** See [[AnalysisStyle.normalChannelName]]. */
   normalChannelName?: string;
 }
 
@@ -229,7 +232,7 @@ export class AnalysisStyle {
 
   /** Convert this style to its JSON representation. */
   public toJSON(): AnalysisStyleProps {
-    const props: AnalysisStyleProps = { };
+    const props: AnalysisStyleProps = {};
     if (this === AnalysisStyle.defaults)
       return props;
 
@@ -269,5 +272,5 @@ export class AnalysisStyle {
     return undefined === this.thematic || this.thematic.equals(other.thematic!);
   }
 
-  public static readonly defaults = new AnalysisStyle({ });
+  public static readonly defaults = new AnalysisStyle({});
 }

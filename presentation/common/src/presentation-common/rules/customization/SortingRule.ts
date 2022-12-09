@@ -7,50 +7,41 @@
  */
 
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
- * Base class for all [[SortingRule]] implementations. Not
- * meant to be used directly, see `SortingRule`.
+ * Sorting rules provide a way to either disable sorting or sort instances by specific properties.
  *
+ * @see [Sorting rule reference documentation page]($docs/presentation/customization/SortingRule.md)
  * @public
  */
-export interface SortingRuleBase extends RuleBase, ConditionContainer {
+export interface SortingRuleBase extends RuleBase {
   /**
-   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/presentation/Hierarchies/ECExpressions.md#rule-condition).
+   * Defines a condition which needs to be met in order for the rule to be used. The condition is an
+   * [ECExpression]($docs/presentation/customization/ECExpressions.md#rule-condition) which has to
+   * evaluate to a boolean value.
    */
   condition?: string;
 
-  /**
-   * Specification of ECClass whose ECInstances should be sorted by this rule.
-   * Defaults to all classes in current context if not specified.
-   */
+  /** Specifies ECClass whose ECInstances should be sorted. */
   class?: SingleSchemaClassSpecification;
 
-  /** Should [[class]] defined in this rule be handled polymorphically. */
+  /** Specifies that [[class]] attribute defined in this rule should be handled polymorphically. */
   isPolymorphic?: boolean;
 }
 
 /**
- * Sorting rule implementations
+ * Sorting rules provide a way to either disable sorting or sort instances by specific properties.
  *
- * @see [More details]($docs/presentation/Customization/SortingRule.md)
+ * @see [Sorting rule reference documentation page]($docs/presentation/customization/SortingRule.md)
  * @public
  */
 export type SortingRule = PropertySortingRule | DisabledSortingRule;
 
 /**
- * Rule to configure sorting for certain ECInstances in the hierarchy and/or content.
- * It is possible to configure different sorting for different types of ECInstances.
+ * Rule to configure sorting for certain ECInstances in the hierarchy and/or content. It is possible to configure different sorting for different types of ECInstances.
  *
- * Multiple sorting rules may be applied for the same instances - in this case the
- * instances are first sorted by the highest priority rule and then the lower priority ones.
- *
- * **Note:** This rule is not meant to be used to sort grouping nodes, custom nodes or
- * other non ECInstance type of nodes.
- *
+ * @see [Property sorting rule reference documentation section]($docs/presentation/customization/SortingRule.md#property-sorting-rule)
  * @public
  */
 export interface PropertySortingRule extends SortingRuleBase {
@@ -58,24 +49,20 @@ export interface PropertySortingRule extends SortingRuleBase {
   ruleType: RuleTypes.PropertySorting;
 
   /**
-   * Name of the property which should be used for sorting
+   * Specifies name of the property which should be used for sorting.
    *
    * @minLength 1
    */
   propertyName: string;
 
-  /** Will sort in ascending order if set to true, otherwise descending. Defaults to `true`. */
+  /** Specifies whether instances should be sorted in ascending order or descending. */
   sortAscending?: boolean;
 }
 
 /**
  * Rule to disable sorting for certain ECInstances in the hierarchy and/or content.
  *
- * **Note:** Disabling sorting increases performance
- *
- * **Note:** This rule is not meant to be used to sort grouping nodes, custom nodes or
- * other non ECInstance type of nodes.
- *
+ * @see [Disabled sorting rule reference documentation section]($docs/presentation/customization/SortingRule.md#disabled-sorting-rule)
  * @public
  */
 export interface DisabledSortingRule extends SortingRuleBase {

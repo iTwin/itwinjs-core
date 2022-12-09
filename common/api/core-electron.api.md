@@ -4,25 +4,29 @@
 
 ```ts
 
-import { AccessToken } from '@itwin/core-bentley';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
-import { BrowserWindow } from 'electron';
-import { BrowserWindowConstructorOptions } from 'electron';
+import type { BrowserWindow } from 'electron';
+import type { BrowserWindowConstructorOptions } from 'electron';
+import type * as ElectronModule from 'electron';
 import { IpcHandler } from '@itwin/core-backend';
-import { NativeAppAuthorizationBackend } from '@itwin/core-backend';
-import { NativeAppAuthorizationConfiguration } from '@itwin/core-common';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
+import { PickAsyncMethods } from '@itwin/core-bentley';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { RpcConfiguration } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
-import { TokenResponse } from '@openid/appauth';
+
+// @internal (undocumented)
+export const dialogChannel = "electron-dialog";
+
+// @beta
+export type DialogModuleMethod = AsyncMethodsOf<Electron.Dialog>;
 
 // @beta
 export class ElectronApp {
-    static callApp<T extends AsyncMethodsOf<Electron.App>>(methodName: T, ...args: Parameters<Electron.App[T]>): Promise<PromiseReturnType<Electron.App[T]>>;
-    static callDialog<T extends AsyncMethodsOf<Electron.Dialog>>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): Promise<PromiseReturnType<Electron.Dialog[T]>>;
-    static callShell<T extends AsyncMethodsOf<Electron.Shell>>(methodName: T, ...args: Parameters<Electron.Shell[T]>): Promise<PromiseReturnType<Electron.Shell[T]>>;
+    // @deprecated
+    static callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): Promise<PromiseReturnType<Electron.Dialog[T]>>;
+    static dialogIpc: PickAsyncMethods<Electron.Dialog>;
     // (undocumented)
     static get isValid(): boolean;
     // (undocumented)
@@ -39,10 +43,8 @@ export class ElectronHost {
     static get app(): Electron.App;
     // (undocumented)
     static appIconPath: string;
-    // @internal (undocumented)
-    static get authorization(): ElectronAuthorizationBackend;
     // (undocumented)
-    static get electron(): typeof Electron;
+    static get electron(): typeof ElectronModule;
     // (undocumented)
     static frontendURL: string;
     static getWindowMaximizedSetting(windowName: string): boolean | undefined;
@@ -62,15 +64,11 @@ export class ElectronHost {
 
 // @beta
 export interface ElectronHostOptions {
-    // (undocumented)
-    applicationName?: never;
-    authConfig?: NativeAppAuthorizationConfiguration;
     developmentServer?: boolean;
     frontendPort?: number;
     frontendURL?: string;
     iconName?: string;
     ipcHandlers?: (typeof IpcHandler)[];
-    noInitializeAuthClient?: boolean;
     rpcInterfaces?: RpcInterfaceDefinition[];
     webResourcesPath?: string;
 }
@@ -99,7 +97,6 @@ export interface WindowSizeAndPositionProps {
     // (undocumented)
     y: number;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

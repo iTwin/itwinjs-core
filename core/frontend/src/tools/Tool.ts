@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { DialogItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
+import { DialogItem, DialogItemValue, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { assert } from "@itwin/core-bentley";
 import { GeometryStreamProps, IModelError } from "@itwin/core-common";
 import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
@@ -17,16 +17,28 @@ import { IModelApp } from "../IModelApp";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export type ToolType = typeof Tool;
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export type ToolList = ToolType[];
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum BeButton { Data = 0, Reset = 1, Middle = 2 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum CoordinateLockOverrides {
   None = 0,
   ACS = 1 << 1,
@@ -36,6 +48,7 @@ export enum CoordinateLockOverrides {
 
 /** The *source* that generated an event.
  * @public
+ * @extensions
  */
 export enum InputSource {
   /** Source not defined */
@@ -48,6 +61,7 @@ export enum InputSource {
 
 /** The *source* that generated a coordinate.
  * @public
+ * @extensions
  */
 export enum CoordSource {
   /** Event was created by an action from the user */
@@ -62,10 +76,14 @@ export enum CoordSource {
 
 /** Numeric mask for a set of modifier keys (control, shift, and alt).
  * @public
+ * @extensions
  */
 export enum BeModifierKeys { None = 0, Control = 1 << 0, Shift = 1 << 1, Alt = 1 << 2 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class BeButtonState {
   private readonly _downUorPt: Point3d = new Point3d();
   private readonly _downRawPt: Point3d = new Point3d();
@@ -93,6 +111,7 @@ export class BeButtonState {
 
 /** Properties for constructing a BeButtonEvent
  * @public
+ * @extensions
  */
 export interface BeButtonEventProps {
   /** The point for this event, in world coordinates.
@@ -124,6 +143,7 @@ export interface BeButtonEventProps {
 
 /** Object sent to Tools that holds information about button/touch/wheel events.
  * @public
+ * @extensions
  */
 export class BeButtonEvent implements BeButtonEventProps {
   private readonly _point: Point3d = new Point3d();
@@ -147,7 +167,10 @@ export class BeButtonEvent implements BeButtonEventProps {
   /** Whether this event came from a pointing device (e.g. mouse) or a touch device. */
   public inputSource = InputSource.Unknown;
 
-  public constructor(props?: BeButtonEventProps) { if (props) this.init(props); }
+  public constructor(props?: BeButtonEventProps) {
+    if (props)
+      this.init(props);
+  }
 
   /** Determine whether this BeButtonEvent has valid data.
    * @note BeButtonEvents may be constructed as "blank", and are not considered to hold valid data unless the [[viewport]] member is defined.
@@ -177,17 +200,28 @@ export class BeButtonEvent implements BeButtonEventProps {
 
   /** Initialize the values of this BeButtonEvent. */
   public init(props: BeButtonEventProps) {
-    if (undefined !== props.point) this.point = props.point;
-    if (undefined !== props.rawPoint) this.rawPoint = props.rawPoint;
-    if (undefined !== props.viewPoint) this.viewPoint = props.viewPoint;
-    if (undefined !== props.viewport) this.viewport = props.viewport;
-    if (undefined !== props.coordsFrom) this.coordsFrom = props.coordsFrom;
-    if (undefined !== props.keyModifiers) this.keyModifiers = props.keyModifiers;
-    if (undefined !== props.isDown) this.isDown = props.isDown;
-    if (undefined !== props.isDoubleClick) this.isDoubleClick = props.isDoubleClick;
-    if (undefined !== props.isDragging) this.isDragging = props.isDragging;
-    if (undefined !== props.button) this.button = props.button;
-    if (undefined !== props.inputSource) this.inputSource = props.inputSource;
+    if (undefined !== props.point)
+      this.point = props.point;
+    if (undefined !== props.rawPoint)
+      this.rawPoint = props.rawPoint;
+    if (undefined !== props.viewPoint)
+      this.viewPoint = props.viewPoint;
+    if (undefined !== props.viewport)
+      this.viewport = props.viewport;
+    if (undefined !== props.coordsFrom)
+      this.coordsFrom = props.coordsFrom;
+    if (undefined !== props.keyModifiers)
+      this.keyModifiers = props.keyModifiers;
+    if (undefined !== props.isDown)
+      this.isDown = props.isDown;
+    if (undefined !== props.isDoubleClick)
+      this.isDoubleClick = props.isDoubleClick;
+    if (undefined !== props.isDragging)
+      this.isDragging = props.isDragging;
+    if (undefined !== props.button)
+      this.button = props.button;
+    if (undefined !== props.inputSource)
+      this.inputSource = props.inputSource;
   }
 
   /** Determine whether the control key was pressed  */
@@ -218,6 +252,7 @@ export class BeButtonEvent implements BeButtonEventProps {
 
 /** Properties for initializing a BeTouchEvent
  * @public
+ * @extensions
  */
 export interface BeTouchEventProps extends BeButtonEventProps {
   touchEvent: TouchEvent;
@@ -225,6 +260,7 @@ export interface BeTouchEventProps extends BeButtonEventProps {
 
 /** A ButtonEvent generated by touch input.
  * @public
+ * @extensions
  */
 export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
   public tapCount: number = 0;
@@ -285,6 +321,7 @@ export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
 
 /** Properties for constructing a BeWheelEvent
  * @public
+ * @extensions
  */
 export interface BeWheelEventProps extends BeButtonEventProps {
   wheelDelta?: number;
@@ -293,6 +330,7 @@ export interface BeWheelEventProps extends BeButtonEventProps {
 /** A BeButtonEvent generated by movement of a mouse wheel.
  * @note wheel events include mouse location.
  * @public
+ * @extensions
  */
 export class BeWheelEvent extends BeButtonEvent implements BeWheelEventProps {
   public wheelDelta: number;
@@ -315,6 +353,7 @@ export class BeWheelEvent extends BeButtonEvent implements BeWheelEventProps {
  * @see [[InteractiveTool]] for a base Tool class to handle user input events from a Viewport.
  * @see [Tools]($docs/learning/frontend/tools.md)
  * @public
+ * @extensions
  */
 export class Tool {
   /** If true, this Tool will not appear in the list from [[ToolRegistry.getToolList]]. This should be overridden in subclasses to hide them. */
@@ -355,7 +394,7 @@ export class Tool {
 
   private static getLocalizedKey(name: string): string | undefined {
     const key = `tools.${this.toolId}.${name}`;
-    const val = IModelApp.localization.getLocalizedStringWithNamespace(this.namespace, key);
+    const val = IModelApp.localization.getLocalizedString(key, { ns: this.namespace });
     return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
   }
 
@@ -441,12 +480,16 @@ export class Tool {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum EventHandled { No = 0, Yes = 1 }
 
 /** A Tool that may be installed, via [[ToolAdmin]], to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
  * InputCollector, and IdleTool. Each must derive from this class and there may only be one of each type installed at a time.
  * @public
+ * @extensions
  */
 export abstract class InteractiveTool extends Tool {
 
@@ -538,7 +581,17 @@ export abstract class InteractiveTool extends Tool {
    * @note default placement tool behavior is to treat press, drag, and release of data button the same as click, click by calling onDataButtonDown.
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
-  public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> { if (BeButton.Data !== ev.button) return EventHandled.No; if (ev.isDown) return this.onDataButtonDown(ev); const downEv = ev.clone(); downEv.isDown = true; return this.onDataButtonDown(downEv); }
+  public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
+    if (BeButton.Data !== ev.button)
+      return EventHandled.No;
+
+    if (ev.isDown)
+      return this.onDataButtonDown(ev);
+
+    const downEv = ev.clone();
+    downEv.isDown = true;
+    return this.onDataButtonDown(downEv);
+  }
 
   /** Invoked when the mouse wheel moves.
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
@@ -674,19 +727,103 @@ export abstract class InteractiveTool extends Tool {
     this.changeLocateState(enableLocate, enableSnap, cursor, coordLockOvr);
   }
 
+  /** @internal */
+  protected toolSettingProperties?: Map<string, DialogProperty<any>>;
+
+  /** @internal */
+  protected restoreToolSettingPropertyValue(property: DialogProperty<any>): boolean {
+    const itemValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, property.name);
+    if (undefined === itemValue?.value)
+      return false;
+
+    property.dialogItemValue = itemValue;
+    return true;
+  }
+
+  /** @internal */
+  protected saveToolSettingPropertyValue(property: DialogProperty<any>, itemValue: DialogItemValue): boolean {
+    if (undefined === itemValue.value)
+      return false;
+
+    property.value = itemValue.value;
+    IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, property.item);
+    return true;
+  }
+
+  /** @internal */
+  protected syncToolSettingPropertyValue(property: DialogProperty<any>, isDisabled?: boolean): void {
+    if (undefined !== isDisabled)
+      property.isDisabled = isDisabled;
+
+    this.syncToolSettingsProperties([property.syncItem]);
+  }
+
+  /** @internal */
+  protected getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
+    const foundProperty = this.toolSettingProperties?.get(propertyName);
+    if (foundProperty)
+      return foundProperty;
+
+    throw new Error(`property not found: ${propertyName}`);
+  }
+
+  /** Override to return the property that is disabled/enabled if the supplied property is a lock property.
+   * @see [[changeToolSettingPropertyValue]]
+   * @public
+   */
+  protected getToolSettingPropertyLocked(_property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return undefined;
+  }
+
+  /** Helper method for responding to a tool setting property value change by updating saved settings.
+   * @see [[applyToolSettingPropertyChange]]
+   * @see [[getToolSettingPropertyLocked]] to return the corresponding locked property, if any.
+   * @public
+   */
+  protected changeToolSettingPropertyValue(syncItem: DialogPropertySyncItem): boolean {
+    const property = this.getToolSettingPropertyByName(syncItem.propertyName);
+
+    if (!this.saveToolSettingPropertyValue(property, syncItem.value))
+      return false;
+
+    const lockedProperty = this.getToolSettingPropertyLocked(property);
+    if (undefined !== lockedProperty)
+      this.syncToolSettingPropertyValue(lockedProperty, !property.value);
+
+    return true;
+  }
+
+  /** Helper method to establish initial values for tool setting properties from saved settings.
+   * @see [[supplyToolSettingsProperties]]
+   * @public
+   */
+  protected initializeToolSettingPropertyValues(properties: DialogProperty<any>[]): void {
+    if (undefined !== this.toolSettingProperties)
+      return;
+
+    this.toolSettingProperties = new Map<string, DialogProperty<any>>();
+
+    for (const property of properties) {
+      this.toolSettingProperties.set(property.name, property);
+      this.restoreToolSettingPropertyValue(property);
+    }
+  }
+
   /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed.
-   * @beta
+   * @see [[initializeToolSettingPropertyValues]]
+   * @public
    */
   public supplyToolSettingsProperties(): DialogItem[] | undefined { return undefined; }
 
   /** Used to receive property changes from UI. Return false if there was an error applying updatedValue.
+   * @see [[changeToolSettingPropertyValue]]
    * @beta
    */
   public async applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): Promise<boolean> { return true; }
 
   /** Called by tool to synchronize the UI with property changes made by tool. This is typically used to provide user feedback during tool dynamics.
    * If the syncData contains a quantity value and if the displayValue is not defined, the displayValue will be generated in the UI layer before displaying the value.
-   * @beta
+   * @public
    */
   public syncToolSettingsProperties(syncData: DialogPropertySyncItem[]) {
     IModelApp.toolAdmin.syncToolSettingsProperties(this.toolId, syncData);
@@ -694,7 +831,7 @@ export abstract class InteractiveTool extends Tool {
 
   /** Called by tool to inform UI to reload ToolSettings with new set of properties. This allows properties to be added or removed from ToolSetting
    * component as tool processing progresses.
-   * @beta
+   * @public
    */
   public reloadToolSettingsProperties() {
     IModelApp.toolAdmin.reloadToolSettingsProperties();
@@ -703,7 +840,7 @@ export abstract class InteractiveTool extends Tool {
   /** Used to "bump" the value of a tool setting. To "bump" a setting means to toggle a boolean value or cycle through enum values.
    * If no `settingIndex` param is specified, the first setting is bumped.
    * Return true if the setting was successfully bumped.
-   * @beta
+   * @public
    */
   public async bumpToolSetting(_settingIndex?: number): Promise<boolean> { return false; }
 }
@@ -712,6 +849,7 @@ export abstract class InteractiveTool extends Tool {
  * (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
  * An InputCollector will suspend the active PrimitiveTool and can be suspended by a ViewTool.
  * @public
+ * @extensions
  */
 export abstract class InputCollector extends InteractiveTool {
   public override async run(..._args: any[]): Promise<boolean> {
@@ -736,6 +874,7 @@ export abstract class InputCollector extends InteractiveTool {
 
 /** The result type of [[ToolRegistry.parseAndRun]].
  * @public
+ * @extensions
  */
 export enum ParseAndRunResult {
   /** The tool's `parseAndRun` method was invoked and returned `true`. */
@@ -752,6 +891,7 @@ export enum ParseAndRunResult {
 
 /** Possible errors resulting from [[ToolRegistry.parseKeyin]].
  * @public
+ * @extensions
  */
 export enum KeyinParseError {
   /** No registered tool matching the keyin was found. */
@@ -762,6 +902,7 @@ export enum KeyinParseError {
 
 /** Possible errors form [[ToolRegistry.parseKeyin]].
  * @public
+ * @extensions
  */
 export interface ParseKeyinError {
   /** Union discriminator for [[ParseKeyinResult]]. */
@@ -772,6 +913,7 @@ export interface ParseKeyinError {
 
 /** Successful result from [[ToolRegistry.parseKeyin]].
  * @public
+ * @extensions
  */
 export interface ParsedKeyin {
   /** Union discriminator for [[ParseKeyinResult]]. */
@@ -784,6 +926,7 @@ export interface ParsedKeyin {
 
 /** The result type of [[ToolRegistry.parseKeyin]].
  * @public
+ * @extensions
  */
 export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
 
@@ -999,7 +1142,10 @@ export class ToolRegistry {
   public getToolList(): ToolList {
     if (this._keyinList === undefined) {
       this._keyinList = [];
-      this.tools.forEach((thisTool) => { if (!thisTool.hidden) this._keyinList!.push(thisTool); });
+      this.tools.forEach((thisTool) => {
+        if (!thisTool.hidden)
+          this._keyinList!.push(thisTool);
+      });
     }
     return this._keyinList;
   }

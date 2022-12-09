@@ -15,6 +15,9 @@
   >.uifw-statusFields-selectionScope-label {
     display: inline;
     padding-right: 4px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 
     @include for-tablet-portrait-down {
       display: none;
@@ -23,7 +26,10 @@
   }
 
   >.uifw-statusFields-selectionScope-selector {
-    min-width: 130px;
+    min-width: 140px;
+    &.iui-select.iui-small {
+      width: auto;
+    }
 
     @include for-tablet-portrait-down {
       font-size: $font-size-medium;
@@ -32,7 +38,11 @@
     @include for-phone-only {
       font-size: $font-size-small;
     }
-
   }
-
 }
+
+.uifw-statusFields-selectionScope-label {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+

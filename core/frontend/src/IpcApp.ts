@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
+import { AsyncMethodsOf, PickAsyncMethods, PromiseReturnType } from "@itwin/core-bentley";
 import {
   BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
   iTwinChannel, RemoveFunction,
@@ -101,9 +101,39 @@ export class IpcApp {
     return retVal.result;
   }
 
+  /** Create a type safe Proxy object to make IPC calls to a registered backend interface.
+   * @param channelName the channel registered by the backend handler.
+   */
+  public static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K> {
+    return new Proxy({} as PickAsyncMethods<K>, {
+      get(_target, methodName: string) {
+        return async (...args: any[]) =>
+          IpcApp.callIpcChannel(channelName, methodName, ...args);
+      },
+    });
+  }
+
+  /** Create a type safe Proxy object to call an IPC function on a of registered backend handler that accepts a "methodName" argument followed by optional arguments
+   * @param channelName the channel registered by the backend handler.
+   * @param functionName the function to call on the handler.
+   * @internal
+   */
+  public static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K> {
+    return new Proxy({} as PickAsyncMethods<K>, {
+      get(_target, methodName: string) {
+        return async (...args: any[]) =>
+          IpcApp.callIpcChannel(channelName, functionName, methodName, ...args);
+      },
+    });
+  }
+
+  /** @deprecated use [[appFunctionIpc]] */
   public static async callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>) {
     return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
+
+  /** A Proxy to call one of the [IpcAppFunctions]($common) functions via IPC. */
+  public static appFunctionIpc = IpcApp.makeIpcProxy<IpcAppFunctions>(IpcAppChannel.Functions);
 
   /** start an IpcApp.
    * @note this should not be called directly. It is called by NativeApp.startup */
@@ -132,6 +162,7 @@ export class IpcApp {
  *
  * Then, call `MyNotificationHandler.register` at startup to connect your class to your channel.
  * @public
+ * @extensions
  */
 export abstract class NotificationHandler {
   /** All subclasses must implement this method to specify their response channel name. */

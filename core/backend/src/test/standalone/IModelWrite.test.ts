@@ -7,17 +7,17 @@ import { assert, expect } from "chai";
 import * as semver from "semver";
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  Code, ColorDef, GeometricElement2dProps, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
+import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
+import { HubWrappers, KnownTestLocations } from "../";
 import { DrawingCategory } from "../../Category";
 import {
-  BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
+  BriefcaseDb, BriefcaseManager, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, Subject,
 } from "../../core-backend";
 import { ECSqlStatement } from "../../ECSqlStatement";
-import { HubMock } from "../HubMock";
+import { HubMock } from "../../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { HubWrappers } from "..";
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
@@ -27,7 +27,7 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
-  const spatialCategoryId = rwIModel.elements.insertElement(category);
+  const spatialCategoryId = rwIModel.elements.insertElement(category.toJSON());
   category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
   // const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
@@ -44,7 +44,7 @@ describe("IModelWriteTest", () => {
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
-    HubMock.startup("IModelWriteTest");
+    HubMock.startup("IModelWriteTest", KnownTestLocations.outputDir);
 
     testITwinId = HubMock.iTwinId;
     readWriteTestIModelName = IModelTestUtils.generateUniqueName("ReadWriteTest");
@@ -337,7 +337,7 @@ describe("IModelWriteTest", () => {
       const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
       assert.equal(changesets.length, 1);
     }
-    await rwIModel.locks.acquireSharedLock(IModel.dictionaryId);
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     let totalEl = 0;
@@ -426,7 +426,7 @@ describe("IModelWriteTest", () => {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     let totalEl = 0;
-    await rwIModel.locks.acquireSharedLock(IModel.dictionaryId);
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
@@ -485,7 +485,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
     assert.equal(rows.length, 10);
@@ -503,13 +503,13 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       rows = [];
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(row);
       }
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       // create some element and push those changes
-      await rwIModel2.locks.acquireSharedLock(drawingModelId);
+      await rwIModel2.locks.acquireLocks({ shared: drawingModelId });
       insertElements(rwIModel2, "Test2dElement", 10, (n: number) => {
         return { s: `s-${n}` };
       });
@@ -557,7 +557,7 @@ describe("IModelWriteTest", () => {
       assert.equal(changesets.length, 4);
     }
     // create some element and push those changes
-    await rwIModel.locks.acquireSharedLock(drawingModelId);
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
     insertElements(rwIModel, "Test2dElement", 10, (n: number) => {
       return {
         s: `s-${n}`, v: `v-${n}`,
@@ -593,7 +593,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
     assert.equal(rows.length, 30);
@@ -610,7 +610,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
     assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
     assert.equal(rows.length, 10);
@@ -633,7 +633,7 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
       rows = [];
       // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(row);
       }
       assert.equal(rows.length, 30);
@@ -677,7 +677,7 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(row);
       }
       assert.equal(rows.length, 10);
@@ -701,4 +701,119 @@ describe("IModelWriteTest", () => {
     rwIModel.close();
     rwIModel2.close();
   });
+
+  it("parent lock should suffice when inserting into deeply nested sub-model", async () => {
+    const version0 = IModelTestUtils.resolveAssetFile("test.bim");
+    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId: testITwinId, iModelName: "subModelCoveredByParentLockTest", version0 });
+    const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId: testITwinId, iModelId });
+
+    /*
+      Job Subject
+        +- DefinitionPartition  --  [DefinitionModel]
+    */
+
+    await iModel.locks.acquireLocks({ shared: IModel.repositoryModelId });
+    const jobSubjectId = IModelTestUtils.createJobSubjectElement(iModel, "JobSubject").insert();
+    const definitionModelId = DefinitionModel.insert(iModel, jobSubjectId, "Definition");
+
+    iModel.saveChanges();
+    await iModel.pushChanges({ description: "create model" });
+
+    /*
+      Job Subject                                           <--- Lock this
+        +- DefinitionPartition  --  [DefinitionModel]
+                                        SpatialCategory     <=== insert this
+                                        DrawingCategory             "
+    */
+    assert.isFalse(iModel.locks.holdsExclusiveLock(jobSubjectId));
+    assert.isFalse(iModel.locks.holdsExclusiveLock(definitionModelId));
+    assert.isFalse(iModel.locks.holdsSharedLock(definitionModelId));
+    await iModel.locks.acquireLocks({ exclusive: jobSubjectId });
+    iModel.locks.checkExclusiveLock(jobSubjectId, "", "");
+    iModel.locks.checkSharedLock(jobSubjectId, "", "");
+    iModel.locks.checkSharedLock(definitionModelId, "", "");
+    iModel.locks.checkExclusiveLock(definitionModelId, "", "");
+
+    const spatialCategoryId = SpatialCategory.insert(iModel, definitionModelId, "SpatialCategory", new SubCategoryAppearance()); // throws if we get locking error
+    const drawingCategoryId = DrawingCategory.insert(iModel, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
+
+    assert.isTrue(iModel.elements.getElement(spatialCategoryId).model === definitionModelId);
+    assert.isTrue(iModel.elements.getElement(drawingCategoryId).model === definitionModelId);
+
+    iModel.saveChanges();
+    await iModel.pushChanges({ description: "insert category" });
+
+    /*
+      Create some more nesting.
+
+      Job Subject                                           <--- Lock this
+        +- DefinitionPartition  --  [DefinitionModel]
+          |                             SpatialCategory
+          +- Child Subject                                                            <== Insert
+              +- DocumentList         --    [DocumentListModel]                           "
+                                              Drawing             -- [DrawingModel]       "
+    */
+    assert.isFalse(iModel.locks.holdsExclusiveLock(jobSubjectId));
+    assert.isFalse(iModel.locks.holdsExclusiveLock(definitionModelId));
+    assert.isFalse(iModel.locks.holdsSharedLock(definitionModelId));
+    await iModel.locks.acquireLocks({ exclusive: jobSubjectId });
+    iModel.locks.checkExclusiveLock(jobSubjectId, "", "");
+    iModel.locks.checkSharedLock(IModel.repositoryModelId, "", "");
+
+    const childSubjectId = Subject.insert(iModel, jobSubjectId, "Child Subject");
+
+    const documentListModelId = DocumentListModel.insert(iModel, childSubjectId, "Document"); // creates DocumentList and DocumentListModel
+    assert.isTrue(Id64.isValidId64(documentListModelId));
+    const drawingModelId = Drawing.insert(iModel, documentListModelId, "Drawing"); // creates Drawing and DrawingModel
+
+    assert.isTrue(iModel.elements.getElement(childSubjectId).parent?.id === jobSubjectId);
+    assert.isTrue(iModel.elements.getElement(childSubjectId).model === IModel.repositoryModelId);
+    assert.isTrue(iModel.elements.getElement(documentListModelId).parent?.id === childSubjectId);
+    assert.isTrue(iModel.elements.getElement(documentListModelId).model === IModel.repositoryModelId);
+    assert.isTrue(iModel.elements.getElement(drawingModelId).model === documentListModelId);
+
+    iModel.saveChanges();
+    await iModel.pushChanges({ description: "insert doc list with nested drawing model" });
+
+    /*
+      Verify that even a deeply nested insertion is covered by the exclusive lock on the top-level parent.
+
+      Job Subject                                           <--- Lock this
+        +- DefinitionPartition  --  DefinitionModel
+          |                             SpatialCategory
+          +- Child Subject
+              +- DocumentList         --    [DocumentListModel]
+                                              Drawing             -- [DrawingModel]
+                                                                        DrawingGraphic   <== Insert this
+    */
+    assert.isFalse(iModel.locks.holdsExclusiveLock(jobSubjectId));
+    assert.isFalse(iModel.locks.holdsExclusiveLock(definitionModelId));
+    assert.isFalse(iModel.locks.holdsSharedLock(definitionModelId));
+    assert.isFalse(iModel.locks.holdsSharedLock(documentListModelId));
+    assert.isFalse(iModel.locks.holdsSharedLock(drawingModelId));
+    await iModel.locks.acquireLocks({ exclusive: jobSubjectId });
+    iModel.locks.checkExclusiveLock(jobSubjectId, "", "");
+    iModel.locks.checkSharedLock(IModel.repositoryModelId, "", "");
+    iModel.locks.checkSharedLock(documentListModelId, "", "");
+    iModel.locks.checkSharedLock(drawingModelId, "", "");
+
+    const drawingGraphicProps1: GeometricElement2dProps = {
+      classFullName: DrawingGraphic.classFullName,
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "DrawingGraphic1",
+      geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
+      placement: { origin: Point2d.create(2, 2), angle: 0 },
+    };
+    const drawingGraphicId1 = iModel.elements.insertElement(drawingGraphicProps1);
+
+    assert.isTrue(iModel.elements.getElement(drawingGraphicId1).model === drawingModelId);
+
+    iModel.saveChanges();
+    await iModel.pushChanges({ description: "insert graphic into nested sub-model" });
+
+    iModel.close();
+  });
+
 });

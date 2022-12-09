@@ -12,12 +12,14 @@ import {
 } from "@itwin/core-geometry";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
+import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } from "./geometry/ElementGeometry";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 
 /** Properties of a NavigationProperty.
  * @public
+ * @extensions
  */
 export interface RelatedElementProps {
   /** The Id of the element to which this element is related. */
@@ -26,24 +28,25 @@ export interface RelatedElementProps {
   relClassName?: string;
 }
 
-/** Properties of an [Element]($docs/bis/intro/element-fundamentals)
+/** Properties of an [Element]($docs/bis/guide/fundamentals/element-fundamentals)
  * @public
+ * @extensions
  */
 export interface ElementProps extends EntityProps {
-  /** The Id of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
+  /** The Id of the [Model]($docs/bis/guide/fundamentals/model-fundamentals.md) containing this element */
   model: Id64String;
-  /** The [Code]($docs/bis/intro/codes.md) for this element */
+  /** The [Code]($docs/bis/guide/fundamentals/codes.md) for this element */
   code: CodeProps;
   /** The Parent of this element, if defined. */
   parent?: RelatedElementProps;
-  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element.
+  /** A [FederationGuid]($docs/bis/guide/fundamentals/element-fundamentals.md#federationguid) assigned to this element.
    * @note  On insert, if this is a valid Guid, the value is preserved. If it is `undefined`, a new Guid is created. If it is an invalid Guid (e.g. Guid.empty), the
    * resultant element will have a `null` federationGuid. For update, `undefined` means "don't change."
    */
   federationGuid?: GuidString;
-  /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
+  /** A [user-assigned label]($docs/bis/guide/fundamentals/element-fundamentals.md#userlabel) for this element. */
   userLabel?: string;
-  /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this element. */
+  /** Optional [json properties]($docs/bis/guide/fundamentals/element-fundamentals.md#jsonproperties) of this element. */
   jsonProperties?: any;
 }
 
@@ -96,18 +99,24 @@ export class TypeDefinition extends RelatedElement {
 
 /** Properties of a [GeometricElement]($backend)
  * @public
+ * @extensions
  */
 export interface GeometricElementProps extends ElementProps {
   /** The id of the category for this geometric element. */
   category: Id64String;
   /** The geometry stream properties */
   geom?: GeometryStreamProps;
+  /** How to build the element's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
+   * @alpha
+   */
+  elementGeometryBuilderParams?: ElementGeometryBuilderParams;
   /** The placement properties */
   placement?: PlacementProps;
 }
 
 /** Properties of a [[Placement3d]]
  * @public
+ * @extensions
  */
 export interface Placement3dProps {
   origin: XYZProps;
@@ -117,6 +126,7 @@ export interface Placement3dProps {
 
 /** Properties of a [[Placement2d]]
  * @public
+ * @extensions
  */
 export interface Placement2dProps {
   origin: XYProps;
@@ -124,7 +134,10 @@ export interface Placement2dProps {
   bbox?: LowAndHighXY;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export type PlacementProps = Placement2dProps | Placement3dProps;
 
 /** determine if this is Placement2dProps
@@ -143,6 +156,7 @@ export function isPlacement3dProps(props: PlacementProps): props is Placement3dP
 
 /** Properties that define a [GeometricElement3d]($backend)
  * @public
+ * @extensions
  */
 export interface GeometricElement3dProps extends GeometricElementProps {
   placement?: Placement3dProps;
@@ -151,6 +165,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 
 /** Properties that define a [PhysicalElement]($backend)
  * @public
+ * @extensions
  */
 export interface PhysicalElementProps extends GeometricElement3dProps {
   physicalMaterial?: RelatedElementProps;
@@ -158,6 +173,7 @@ export interface PhysicalElementProps extends GeometricElement3dProps {
 
 /** An enumeration of the different types of [SectionDrawing]($backend)s.
  * @public
+ * @extensions
  */
 export enum SectionType {
   Section = 3,
@@ -168,6 +184,7 @@ export enum SectionType {
 
 /** Properties that define a [SectionDrawing]($backend).
  * @public
+ * @extensions
  */
 export interface SectionDrawingProps extends ElementProps {
   /** The type of section used to generate the drawing. Default: Section. */
@@ -191,6 +208,7 @@ export interface SectionDrawingProps extends ElementProps {
 
 /** Properties that define a [SectionDrawingLocation]($backend)
  * @public
+ * @extensions
  */
 export interface SectionDrawingLocationProps extends GeometricElement3dProps {
   /** The [ViewDefinition]($backend) to which this location refers. */
@@ -199,6 +217,7 @@ export interface SectionDrawingLocationProps extends GeometricElement3dProps {
 
 /** Properties that define a [GeometricElement2d]($backend)
  * @public
+ * @extensions
  */
 export interface GeometricElement2dProps extends GeometricElementProps {
   placement?: Placement2dProps;
@@ -207,14 +226,20 @@ export interface GeometricElement2dProps extends GeometricElementProps {
 
 /** Properties of a [GeometryPart]($backend)
  * @public
+ * @extensions
  */
 export interface GeometryPartProps extends ElementProps {
   geom?: GeometryStreamProps;
+  /** How to build the part's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
+   * @alpha
+   */
+  elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
   bbox?: LowAndHighXYZ;
 }
 
 /** Properties for a [ViewAttachment]($backend)
  * @public
+ * @extensions
  */
 export interface ViewAttachmentProps extends GeometricElement2dProps {
   view: RelatedElementProps;
@@ -237,6 +262,7 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
 
 /** Properties of a [Subject]($backend)
  * @public
+ * @extensions
  */
 export interface SubjectProps extends ElementProps {
   description?: string;
@@ -261,6 +287,7 @@ export interface SheetTemplateProps extends ElementProps {
 
 /** Properties of a [Sheet]($backend).
  * @public
+ * @extensions
  */
 export interface SheetProps extends ElementProps {
   width?: number;
@@ -272,6 +299,7 @@ export interface SheetProps extends ElementProps {
 
 /** Properties of a [DefinitionElement]($backend)
  * @public
+ * @extensions
  */
 export interface DefinitionElementProps extends ElementProps {
   isPrivate?: boolean;
@@ -279,6 +307,7 @@ export interface DefinitionElementProps extends ElementProps {
 
 /** Properties of a [TypeDefinitionElement]($backend)
  * @public
+ * @extensions
  */
 export interface TypeDefinitionElementProps extends DefinitionElementProps {
   recipe?: RelatedElementProps;
@@ -286,6 +315,7 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
 
 /** Properties of a [PhysicalType]($backend)
  * @public
+ * @extensions
  */
 export interface PhysicalTypeProps extends TypeDefinitionElementProps {
   /** The [PhysicalMaterial]($backend) that makes up this physical type. */
@@ -294,6 +324,7 @@ export interface PhysicalTypeProps extends TypeDefinitionElementProps {
 
 /** Properties of a [InformationPartitionElement]($backend)
  * @public
+ * @extensions
  */
 export interface InformationPartitionElementProps extends ElementProps {
   description?: string;
@@ -302,6 +333,7 @@ export interface InformationPartitionElementProps extends ElementProps {
 /** Options controlling which properties are included or excluded when querying [[DisplayStyleProps]].
  * @see [[ViewStateLoadProps]] and [[ElementLoadOptions]].
  * @public
+ * @extensions
  */
 export interface DisplayStyleLoadProps {
   /** If true, the lists of element Ids in the display style's schedule script will be empty.
@@ -317,6 +349,7 @@ export interface DisplayStyleLoadProps {
 /** Options controlling which properties are included or excluded when querying [[RenderTimelineProps]].
  * @see [[ElementLoadOptions.renderTimeline]].
  * @public
+ * @extensions
  */
 export interface RenderTimelineLoadProps {
   /** If true, the lists of element Ids in the schedule script will be empty.
@@ -328,8 +361,11 @@ export interface RenderTimelineLoadProps {
 /** Options used to specify properties to include or exclude when querying [[ElementProps]] with functions like
  * [IModelDb.Elements.getElementProps]($backend) and [IModelConnection.Elements.loadProps]($frontend).
  * @public
+ * @extensions
  */
 export interface ElementLoadOptions {
+  /** if true, only load the members of [[ElementProps]], and no members from subclasses */
+  onlyBaseProperties?: boolean;
   /** If true, include the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
    * Geometry streams can consist of many megabytes worth of JSON, so they are omitted by default.
    */
@@ -347,15 +383,21 @@ export interface ElementLoadOptions {
 
 /** Parameters to specify what element to load for functions like [IModelDb.Elements.getElementProps]($backend).
  * @public
+ * @extensions
  */
 export interface ElementLoadProps extends ElementLoadOptions {
   id?: Id64String;
+  /** The properties of the Code of the element to load.
+   * @note the Value member is required even though it is not declared so here. If no value is supplied, no element will ever be loaded.
+   * TODO: change to Required<CodeProps> in Version 4.0
+   */
   code?: CodeProps;
   federationGuid?: GuidString;
 }
 
 /** Properties of an [ElementAspect]($backend)
  * @public
+ * @extensions
  */
 export interface ElementAspectProps extends EntityProps {
   element: RelatedElementProps;
@@ -363,9 +405,13 @@ export interface ElementAspectProps extends EntityProps {
 
 /** Properties of an [ExternalSourceAspect]($backend) that stores synchronization information for an element originating from an external source.
  * @public
+ * @extensions
  */
 export interface ExternalSourceAspectProps extends ElementAspectProps {
-  /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source. */
+  /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source.
+   * @note Warning: in a future major release the `scope` property will be optional, since the scope is intended to be potentially invalid.
+   *       all references should treat it as potentially undefined, but we cannot change the type yet since that is a breaking change.
+   */
   scope: RelatedElementProps;
   /** The identifier of the object in the source repository. */
   identifier: string;
@@ -418,6 +464,7 @@ export interface ExternalSourceAttachmentProps extends ElementProps {
 
 /** Properties of an [ChannelRootAspect]($backend) that identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
  * @public
+ * @extensions
  */
 export interface ChannelRootAspectProps extends ElementAspectProps {
   /** The owner of the channel */
@@ -426,6 +473,7 @@ export interface ChannelRootAspectProps extends ElementAspectProps {
 
 /** Properties of a [LineStyle]($backend)
  * @public
+ * @extensions
  */
 export interface LineStyleProps extends DefinitionElementProps {
   description?: string;
@@ -442,6 +490,7 @@ export interface LightLocationProps extends GeometricElement3dProps {
 
 /** The *rank* for a Category
  * @public
+ * @extensions
  */
 export enum Rank {
   /** This category is predefined by the system */
@@ -456,6 +505,7 @@ export enum Rank {
 
 /** Parameters of a [Category]($backend)
  * @public
+ * @extensions
  */
 export interface CategoryProps extends DefinitionElementProps {
   rank?: Rank;
@@ -464,6 +514,7 @@ export interface CategoryProps extends DefinitionElementProps {
 
 /** Parameters of a [SubCategory]($backend)
  * @public
+ * @extensions
  */
 export interface SubCategoryProps extends DefinitionElementProps {
   appearance?: SubCategoryAppearance.Props;
@@ -472,6 +523,7 @@ export interface SubCategoryProps extends DefinitionElementProps {
 
 /** Parameters of a [UrlLink]($backend)
  * @public
+ * @extensions
  */
 export interface UrlLinkProps extends ElementProps {
   description?: string;
@@ -480,6 +532,7 @@ export interface UrlLinkProps extends ElementProps {
 
 /** Parameters of a [RepositoryLink]($backend)
  * @public
+ * @extensions
  */
 export interface RepositoryLinkProps extends UrlLinkProps {
   repositoryGuid?: GuidString;
@@ -495,6 +548,7 @@ export interface SynchronizationConfigLinkProps extends UrlLinkProps {
 
 /** Wire format describing a [RenderTimeline]($backend).
  * @public
+ * @extensions
  */
 export interface RenderTimelineProps extends ElementProps {
   /** An optional human-readable description of the timeline. */

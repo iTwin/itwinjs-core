@@ -52,12 +52,12 @@ export function PopupTestPanel() {
   }, [closeToolbar]);
 
   const handleOpenModalClick = React.useCallback(() => {
-    ModalDialogManager.openDialog(<TestModalDialog opened={true} />, "TestModal", divRef.current?.ownerDocument ?? document);
+    ModalDialogManager.openDialog(<TestModalDialog />, "TestModal", divRef.current?.ownerDocument ?? document);
   }, []);
 
   const handleOpenModelessClick = React.useCallback(() => {
     ModelessDialogManager.openDialog(
-      <SampleModelessDialog opened={true} movable={true} dialogId={"SampleModeless"} />, "SampleModeless", divRef.current?.ownerDocument ?? document);
+      <SampleModelessDialog movable={true} dialogId={"SampleModeless"} />, "SampleModeless", divRef.current?.ownerDocument ?? document);
   }, []);
 
   return (

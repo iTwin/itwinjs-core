@@ -20,19 +20,19 @@ import { SubCategoryAppearance } from "./SubCategoryAppearance";
  * @public
  */
 export class SubCategoryOverride {
-  /** @see [[SubCategoryAppearance.color]] */
+  /** See [[SubCategoryAppearance.color]] */
   public readonly color?: ColorDef;
-  /** @see [[SubCategoryAppearance.invisible]] */
+  /** See [[SubCategoryAppearance.invisible]] */
   public readonly invisible?: boolean;
-  /** @see [[SubCategoryAppearance.weight]] */
+  /** See [[SubCategoryAppearance.weight]] */
   public readonly weight?: number;
   /** @internal Overriding with arbitrary custom line style is not supported - overriding with LinePixels enum could be. */
   public readonly style?: Id64String;
-  /** @see [[SubCategoryAppearance.priority]] */
+  /** See [[SubCategoryAppearance.priority]] */
   public readonly priority?: number;
-  /** @see [[SubCategoryAppearance.materialId]] */
+  /** See [[SubCategoryAppearance.materialId]] */
   public readonly material?: Id64String;
-  /** @see [[SubCategoryAppearance.transparency]] */
+  /** See [[SubCategoryAppearance.transparency]] */
   public readonly transparency?: number;
 
   /** Returns true if any aspect of the appearance is overridden (i.e., if any member is not undefined). */
@@ -47,13 +47,20 @@ export class SubCategoryOverride {
 
     const props = appearance.toJSON();
     const ovrProps = this.toJSON();
-    if (undefined !== ovrProps.invisible) props.invisible = ovrProps.invisible;
-    if (undefined !== ovrProps.weight) props.weight = ovrProps.weight;
-    if (undefined !== ovrProps.style) props.style = ovrProps.style;
-    if (undefined !== ovrProps.material) props.material = ovrProps.material;
-    if (undefined !== ovrProps.priority) props.priority = ovrProps.priority;
-    if (undefined !== ovrProps.transp) props.transp = ovrProps.transp;
-    if (undefined !== ovrProps.color) props.color = ovrProps.color;
+    if (undefined !== ovrProps.invisible)
+      props.invisible = ovrProps.invisible;
+    if (undefined !== ovrProps.weight)
+      props.weight = ovrProps.weight;
+    if (undefined !== ovrProps.style)
+      props.style = ovrProps.style;
+    if (undefined !== ovrProps.material)
+      props.material = ovrProps.material;
+    if (undefined !== ovrProps.priority)
+      props.priority = ovrProps.priority;
+    if (undefined !== ovrProps.transp)
+      props.transp = ovrProps.transp;
+    if (undefined !== ovrProps.color)
+      props.color = ovrProps.color;
 
     return new SubCategoryAppearance(props);
   }
@@ -105,13 +112,20 @@ export class SubCategoryOverride {
   }
 
   private constructor(props: SubCategoryAppearance.Props) {
-    if (undefined !== props.invisible) this.invisible = JsonUtils.asBool(props.invisible);
-    if (undefined !== props.color) this.color = ColorDef.fromJSON(props.color);
-    if (undefined !== props.weight) this.weight = JsonUtils.asInt(props.weight);
-    if (undefined !== props.style) this.style = Id64.fromJSON(props.style);
-    if (undefined !== props.material) this.material = Id64.fromJSON(props.material);
-    if (undefined !== props.priority) this.priority = JsonUtils.asInt(props.priority);
-    if (undefined !== props.transp) this.transparency = JsonUtils.asDouble(props.transp);
+    if (undefined !== props.invisible)
+      this.invisible = JsonUtils.asBool(props.invisible);
+    if (undefined !== props.color)
+      this.color = ColorDef.fromJSON(props.color);
+    if (undefined !== props.weight)
+      this.weight = JsonUtils.asInt(props.weight);
+    if (undefined !== props.style)
+      this.style = Id64.fromJSON(props.style);
+    if (undefined !== props.material)
+      this.material = Id64.fromJSON(props.material);
+    if (undefined !== props.priority)
+      this.priority = JsonUtils.asInt(props.priority);
+    if (undefined !== props.transp)
+      this.transparency = JsonUtils.asDouble(props.transp);
   }
 
   /** A default SubCategoryOverride which overrides nothing. */

@@ -5,12 +5,14 @@
 import "./IModelIndex.scss";
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
-import { IModelClient, IModelHubClient, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { LoadingSpinner } from "@itwin/core-react";
+import { NamedVersion } from "@itwin/imodels-client-management";
+import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
 import { Tab, Tabs } from "./Tabs";
+import { SampleAppIModelApp } from "../../index";
 
 /* represents a tab item on the IModelIndex page */
 interface Category {
@@ -63,10 +65,6 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   /* retrieve imodel thumbnail and version information on mount */
   public override async componentDidMount() {
-    const iTwinId = this.props.iModelConnection.iTwinId!;
-    const iModelId = this.props.iModelConnection.iModelId!;
-
-    await this.startRetrieveThumbnail(iTwinId, iModelId);
     await this.startRetrieveIModelInfo();
   }
 
@@ -88,41 +86,39 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     IModelIndex._categories = IModelIndex._categories.filter((_category: Category) => _category.label !== _label);
   }
 
-  /* retrieves the iModel thumbnail. */
-  private async startRetrieveThumbnail(iTwinId: string, iModelId: string) {
-    const hubFrontend = new IModelHubFrontend();
-    const _thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.getAccessToken())!, iModelId, { iTwinId, size: "Small" });
-    this.setState({ thumbnail: _thumbnail });
-  }
-
   /* retrieve version information */
   private async startRetrieveIModelInfo() {
-    const hubClient: IModelClient = new IModelHubClient();
-    const iTwinId = this.props.iModelConnection.iTwinId!;
     const iModelId = this.props.iModelConnection.iModelId!;
     const accessToken = await IModelApp.getAccessToken();
 
-    /* get the iModel name */
-    const imodels = await hubClient.iModels.get(accessToken, iTwinId, new IModelQuery().byId(iModelId));
+    if (!SampleAppIModelApp.hubClient)
+      return;
 
-    /* get the top named version */
-    const _versions: Version[] = await hubClient.versions.get(accessToken, iModelId, new VersionQuery().top(1));
-
-    /* determine if the version is up-to-date */
-    const changeSetId = this.props.iModelConnection.changeset.id;
-    const _upToDate = (_versions.length > 0 && _versions[0].changeSetId === changeSetId);
+    const imodel = await SampleAppIModelApp.hubClient?.iModels.getSingle({
+      iModelId,
+      authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
+    });
 
     /* get the version name */
-    let currentVersions: Version[] = [];
+    const currentVersions: NamedVersion[] = [];
     let _versionName = "";
     try {
-      currentVersions = await hubClient.versions.get(accessToken, iModelId, new VersionQuery().byChangeSet(changeSetId));
-      _versionName = (currentVersions.length === 1) ? currentVersions[0].name! : "Version name not found!";
+      for await (const ver of SampleAppIModelApp.hubClient?.namedVersions.getRepresentationList({
+        urlParams: {
+          $top: 1,
+        },
+        iModelId,
+        authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
+      })) {
+        currentVersions.push(ver);
+        break;
+      }
+      _versionName = (currentVersions.length === 1) ? currentVersions[0].name : "Version name not found!";
     } catch (e) { }
 
     this.setState({
-      upToDate: _upToDate, checkingUpToDate: false, iModelName: imodels[0].name, versionName: _versionName,
-      versionDate: (currentVersions.length === 1) ? this._getReadableDate(currentVersions[0].createdDate) : "",
+      checkingUpToDate: false, iModelName: imodel.name, versionName: _versionName,
+      versionDate: (currentVersions.length === 1) ? this._getReadableDate(currentVersions[0].createdDateTime) : "",
     });
   }
 

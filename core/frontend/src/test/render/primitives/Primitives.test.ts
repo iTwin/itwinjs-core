@@ -72,13 +72,13 @@ describe("GeometryList", () => {
     const g0 = Geometry.createFromLineString([Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0)],
       Transform.createIdentity(),
       Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1),
-      dp);
+      dp, undefined);
     assert.isUndefined(g0.getPolyfaces(0.001));
 
     const g1 = Geometry.createFromPointString([Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0)],
       Transform.createIdentity(),
       Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1),
-      dp);
+      dp, undefined);
 
     glist0.push(g0);
     assert.equal(g0, glist0.first);
@@ -91,7 +91,7 @@ describe("GeometryList", () => {
       glist1.push(Geometry.createFromLineString([Point3d.create(0, y0, 0), Point3d.create(1, y0, 0)],
         Transform.createIdentity(),
         Range3d.createXYZXYZ(0, y0, 0, 1, y0, 0),
-        dp));
+        dp, undefined));
     }
     const length00 = glist0.length;
     const length1 = glist1.length;
@@ -122,7 +122,7 @@ describe("GeometryList", () => {
     const origin = Point3d.create(1, 2, 3);
     const polyface = Sample.createTriangularUnitGridPolyface(origin,
       Vector3d.create(1, 0, 0), Vector3d.create(0, 2, 0), 4, 5, true, true, false);
-    const polyfaceG0 = Geometry.createFromPolyface(polyface, Transform.createIdentity(), polyface.range(), dp);
+    const polyfaceG0 = Geometry.createFromPolyface(polyface, Transform.createIdentity(), polyface.range(), dp, undefined);
     glist0.push(polyfaceG0);
     verifyGeometryQueries(polyfaceG0, false, true, false); // maybe this has to change someday?
     const polyfaces = polyfaceG0.getPolyfaces(0.001);
@@ -136,7 +136,7 @@ describe("GeometryList", () => {
     const gp = new GraphicParams();
     const dp = DisplayParams.createForLinear(gp);
     const loop = Loop.create(LineString3d.create(Sample.createUnitCircle(5)));
-    const loopG0 = Geometry.createFromLoop(loop, Transform.createIdentity(), loop.range(), dp, false);
+    const loopG0 = Geometry.createFromLoop(loop, Transform.createIdentity(), loop.range(), dp, false, undefined);
     glist0.push(loopG0);
     verifyGeometryQueries(loopG0, false, true, false); // maybe this has to change someday?
     const strokes = loopG0.getStrokes(0.001);

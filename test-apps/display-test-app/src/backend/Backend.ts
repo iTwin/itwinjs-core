@@ -5,18 +5,15 @@
 import * as fs from "fs";
 import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { IModelBankClient } from "@bentley/imodelhub-client";
-import { IModelHubBackend, UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
-import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
-import {
-  IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
-  SnapshotIModelRpcInterface,
-} from "@itwin/core-common";
-import { AndroidHost, IOSHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
+import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
+import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
-import { FakeTileCacheService } from "./FakeTileCacheService";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 
@@ -62,6 +59,45 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return this.writeExternalFile(esvFileName, namedViews);
   }
 
+  public override async readExternalCameraPaths(bimFileName: string): Promise<string> {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
+      const docPath = process.env.DOCS;
+      bimFileName = path.join(docPath, bimFileName);
+    }
+
+    const cameraPathsFileName = this.createCameraPathsFilename(bimFileName);
+    if (!fs.existsSync(cameraPathsFileName))
+      return "";
+
+    const jsonStr = fs.readFileSync(cameraPathsFileName).toString();
+    return jsonStr ?? "";
+  }
+
+  public override async writeExternalCameraPaths(bimFileName: string, cameraPaths: string): Promise<void> {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
+      // Used to set a writeable directory on an iOS or Android device.
+      const docPath = process.env.DOCS;
+      bimFileName = path.join(docPath, bimFileName);
+    }
+
+    const cameraPathsFileName = this.createCameraPathsFilename(bimFileName);
+    return this.writeExternalFile(cameraPathsFileName, cameraPaths);
+  }
+
+  public override async readExternalFile(txtFileName: string): Promise<string> {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
+      const docPath = process.env.DOCS;
+      txtFileName = path.join(docPath, txtFileName);
+    }
+
+    const dataFileName = this.createTxtFilename(txtFileName);
+    if (!fs.existsSync(dataFileName))
+      return "";
+
+    const contents = fs.readFileSync(dataFileName).toString();
+    return contents ?? "";
+  }
+
   public override async writeExternalFile(fileName: string, content: string): Promise<void> {
     const filePath = this.getFilePath(fileName);
     if (!fs.existsSync(filePath))
@@ -101,6 +137,45 @@ class DisplayTestAppRpc extends DtaRpcInterface {
       return `${fileName.substring(0, dotIndex)}_ESV.json`;
     return `${fileName}.sv`;
   }
+
+  private createCameraPathsFilename(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf(".");
+    if (-1 !== dotIndex)
+      return `${fileName.substring(0, dotIndex)}_cameraPaths.json`;
+    return `${fileName}.cameraPaths.json`;
+  }
+
+  private createTxtFilename(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf(".");
+    if (-1 === dotIndex)
+      return `${fileName}.txt`;
+    return fileName;
+  }
+
+  public override async getEnvConfig(): Promise<DtaConfiguration> {
+    return getConfig();
+  }
+
+  public override async terminate() {
+    await IModelHost.shutdown();
+
+    // Electron only
+    try {
+      const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
+      if (app !== undefined)
+        app.exit();
+    } catch {
+
+    }
+
+    // Browser only
+    if (DtaRpcInterface.backendServer)
+      DtaRpcInterface.backendServer.close();
+  }
+
+  public override async getAccessToken(): Promise<string> {
+    return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
+  }
 }
 
 export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
@@ -117,6 +192,7 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
 export const loadBackendConfig = (): DtaConfiguration => {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
   loadEnv(path.join(__dirname, "..", "..", ".env"));
+  loadEnv(path.join(__dirname, "..", "..", ".env.local"));
 
   return getConfig();
 };
@@ -124,22 +200,24 @@ export const loadBackendConfig = (): DtaConfiguration => {
 export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
   const dtaConfig = loadBackendConfig();
 
-  const iModelHost = new IModelHostConfiguration();
-  iModelHost.logTileLoadTimeThreshold = 3;
-  iModelHost.logTileSizeThreshold = 500000;
-
-  let hubClient;
-  if (dtaConfig.customOrchestratorUri)
-    hubClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
-
-  iModelHost.hubAccess = new IModelHubBackend(hubClient);
-
-  if (dtaConfig.useFakeCloudStorageTileCache)
-    iModelHost.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
-
   let logLevel = LogLevel.None;
   if (undefined !== dtaConfig.logLevel)
     logLevel = Logger.parseLogLevel(dtaConfig.logLevel);
+
+  // Set up logging (by default, no logging is enabled)
+  Logger.initializeToConsole();
+  Logger.setLevelDefault(logLevel);
+  Logger.setLevel("SVT", LogLevel.Trace);
+
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const hubAccess = new BackendIModelsAccess(iModelClient);
+
+  const iModelHost: IModelHostOptions = {
+    logTileLoadTimeThreshold: 3,
+    logTileSizeThreshold: 500000,
+    cacheDir: process.env.IMJS_BRIEFCASE_CACHE_LOCATION,
+    hubAccess,
+  };
 
   const opts = {
     iModelHost,
@@ -155,23 +233,53 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
+  const authClient = await initializeAuthorizationClient();
   if (ProcessDetector.isElectronAppBackend) {
+    opts.iModelHost.authorizationClient = authClient;
     await ElectronHost.startup(opts);
+    await authClient?.signInSilent();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
-  } else if (ProcessDetector.isIOSAppBackend) {
-    await IOSHost.startup(opts);
-  } else if (ProcessDetector.isAndroidAppBackend) {
-    await AndroidHost.startup(opts);
+  } else if (ProcessDetector.isMobileAppBackend) {
+    await MobileHost.startup(opts);
   } else {
     await LocalhostIpcHost.startup(opts);
     EditCommandAdmin.registerModule(editorBuiltInCommands);
   }
-
-  // Set up logging (by default, no logging is enabled)
-  Logger.initializeToConsole();
-  Logger.setLevelDefault(logLevel);
-  Logger.setLevel("SVT", LogLevel.Trace);
-
-  if (dtaConfig.useFakeCloudStorageTileCache)
-    IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "tiles")), "http://localhost:3001"); // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"
 };
+
+async function initializeAuthorizationClient(): Promise<ElectronMainAuthorization  | undefined> {
+  if (
+    ProcessDetector.isElectronAppBackend &&
+    checkEnvVars(
+      "IMJS_OIDC_ELECTRON_TEST_CLIENT_ID",
+      "IMJS_OIDC_ELECTRON_TEST_SCOPES"
+    )
+  ) {
+    return new ElectronMainAuthorization({
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID!,
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES!,
+      redirectUri:
+        process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ??
+        "http://localhost:3000/signin-callback",
+      issuerUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
+    });
+  }
+  // Note: Mobile's default auth client works, and will be used if we get here on mobile.
+  return undefined;
+}
+
+/**
+ * Logs a warning if only some are provided
+ * @returns true if all are provided, false if any missing.
+ */
+function checkEnvVars(...keys: Array<string>): boolean {
+  const missing = keys.filter((name) => process.env[name] === undefined);
+  if (missing.length === 0) {
+    return true;
+  }
+  if (missing.length < keys.length) { // Some missing, warn
+    // eslint-disable-next-line no-console
+    console.log(`Skipping auth setup due to missing: ${missing.join(", ")}`);
+  }
+  return false;
+}

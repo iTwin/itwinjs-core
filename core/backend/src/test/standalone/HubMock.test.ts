@@ -11,26 +11,27 @@ import { LockProps, LockState } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
-import { HubMock } from "../HubMock";
+import { HubMock } from "../../HubMock";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
+import { LockStatusExclusive, LockStatusShared } from "../../LocalHub";
+import { ProgressFunction, ProgressStatus } from "../../CheckpointManager";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
   const iTwinId = Guid.createValue();
-  const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
+  const version0 = IModelTestUtils.resolveAssetFile("test.bim");
   const accessToken: AccessToken = "fake token";
 
-  before(async () => {
-    HubMock.startup("HubMockTest");
+  before(() => {
+    HubMock.startup("HubMockTest", KnownTestLocations.outputDir);
   });
   after(() => {
     HubMock.shutdown();
   });
 
   it("should be able to create HubMock", async () => {
-    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", revision0 });
+    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
     const localHub = HubMock.findLocalHub(iModelId);
     let checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 1);
@@ -39,7 +40,7 @@ describe("HubMock", () => {
     const cp1 = join(tmpDir, "cp-1.bim");
     localHub.downloadCheckpoint({ changeset: { index: 0 }, targetFile: cp1 });
     const stat1 = IModelJsFs.lstatSync(cp1);
-    const statRev0 = IModelJsFs.lstatSync(revision0);
+    const statRev0 = IModelJsFs.lstatSync(version0);
     assert.equal(stat1?.size, statRev0?.size);
 
     assert.equal(2, localHub.acquireNewBriefcaseId("user1", "user1 briefcase 1"));
@@ -107,7 +108,7 @@ describe("HubMock", () => {
     assert.isDefined(changesets2[1].pushDate);
     assert.equal(cs2.id, localHub.getLatestChangeset().id);
 
-    localHub.uploadCheckpoint({ changesetIndex: cs2.index, localFile: revision0 });
+    localHub.uploadCheckpoint({ changesetIndex: cs2.index, localFile: version0 });
     checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 2);
     assert.equal(checkpoints[1], 2);
@@ -262,8 +263,98 @@ describe("HubMock", () => {
     await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId });
   });
 
+  it("HubMock report progress of changesets 'downloads'", async () => {
+    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
+    const localHub = HubMock.findLocalHub(iModelId);
+    const briefcaseId = await HubMock.acquireNewBriefcaseId({iModelId});
+
+    const cs1: ChangesetFileProps = {
+      id: "changeset0", description: "first changeset", changesType: ChangesetType.Regular, parentId: "", briefcaseId, pushDate: "", index: 0,
+      userCreated: "user1", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml"),
+    };
+    const cs2: ChangesetFileProps = {
+      id: "changeset1", parentId: cs1.id, description: "second changeset", changesType: ChangesetType.Schema, briefcaseId, pushDate: "", index: 0,
+      userCreated: "user2", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
+    };
+    cs1.index = localHub.addChangeset(cs1);
+    cs2.index = localHub.addChangeset(cs2);
+
+    // Progress reporting of single changeset "download"
+    let progressReports: {downloaded: number, total: number}[] = [];
+    let progressCallback: ProgressFunction = (downloaded, total) => {
+      progressReports.push({downloaded, total});
+      return ProgressStatus.Continue;
+    };
+    let cProps = await HubMock.downloadChangeset({
+      iModelId,
+      changeset: {
+        index: cs1.index,
+      },
+      targetDir: tmpDir,
+      progressCallback,
+    });
+    let previousReport = {downloaded: 0, total: 0};
+    for (const report of progressReports){
+      assert.isTrue(report.downloaded > previousReport.downloaded);
+      assert.equal(report.total, cProps.size);
+    }
+
+    // Progress reporting of multiple changesets "download"
+    progressReports = [];
+    let cPropsSet = await HubMock.downloadChangesets({
+      iModelId,
+      targetDir: tmpDir,
+      progressCallback,
+    });
+    previousReport = {downloaded: 0, total: 0};
+    const totalSize = cPropsSet.reduce((sum, props) => sum + (props.size ?? 0), 0);
+    for (const report of progressReports){
+      assert.isTrue(report.downloaded > previousReport.downloaded);
+      assert.equal(report.total, totalSize);
+    }
+
+    // Cancel single changeset "download"
+    progressReports = [];
+    progressCallback = (downloaded, total) => {
+      progressReports.push({downloaded, total});
+      return downloaded > total / 2 ? ProgressStatus.Abort : ProgressStatus.Continue;
+    };
+    let errorThrown: boolean = false;
+    try {
+      cProps = await HubMock.downloadChangeset({
+        iModelId,
+        changeset: {
+          index: cs1.index,
+        },
+        targetDir: tmpDir,
+        progressCallback,
+      });
+    } catch (error: unknown) {
+      errorThrown = true;
+    }
+    assert.isTrue(errorThrown);
+    let lastReport = progressReports[progressReports.length - 1];
+    assert.isBelow(lastReport.downloaded, lastReport.total);
+
+    // Cancel multiple changesets "download"
+    progressReports = [];
+    errorThrown = false;
+    try {
+      cPropsSet = await HubMock.downloadChangesets({
+        iModelId,
+        targetDir: tmpDir,
+        progressCallback,
+      });
+    } catch (error: unknown) {
+      errorThrown = true;
+    }
+    assert.isTrue(errorThrown);
+    lastReport = progressReports[progressReports.length - 1];
+    assert.isBelow(lastReport.downloaded, lastReport.total);
+  });
+
   it("use HubMock with BriefcaseManager", async () => {
-    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", revision0 });
+    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
     const briefcase = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId });
     assert.equal(briefcase.briefcaseId, 2);
     assert.equal(briefcase.changeset.id, "");

@@ -8,7 +8,7 @@
 
 import { Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp, SelectedViewportChangedArgs, StandardViewId, Viewport } from "@itwin/core-frontend";
-import { UiEvent } from "@itwin/core-react";
+import { UiEvent } from "@itwin/appui-abstract";
 import { Face } from "../navigationaids/Cube";
 
 /** Arguments for [[DrawingViewportChangeEvent]]
@@ -146,6 +146,7 @@ export class ViewportComponentEvents {
   public static setViewMatrix(viewport: Viewport, animationTime?: number): void {
     // When handling onViewChanged, use setTimeout
     setTimeout(() => {
+      // istanbul ignore next
       if (viewport.view) {
         this.origin.setFrom(viewport.view.getOrigin());
         this.extents.setFrom(viewport.view.getExtents());

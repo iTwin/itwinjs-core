@@ -10,6 +10,7 @@ import { GuidString } from "@itwin/core-bentley";
 
 /** Properties that identify a session.
  * @public
+ * @extensions
  */
 export interface SessionProps {
   /** Used for logging and usage tracking to identify the application  */

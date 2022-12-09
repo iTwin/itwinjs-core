@@ -25,9 +25,12 @@ export * from "./DisplayStyleSettings";
 export * from "./domains/FunctionalElementProps";
 export * from "./domains/GenericElementProps";
 export * from "./ECSqlTypes";
+export * from "./ECSchemaProps";
+export * from "./ElementMesh";
 export * from "./ElementProps";
 export * from "./EmphasizeElementsProps";
 export * from "./EntityProps";
+export * from "./EntityReference";
 export * from "./Environment";
 export * from "./FeatureGates";
 export * from "./FeatureIndex";
@@ -67,6 +70,8 @@ export * from "./IModelError";
 export * from "./IModelVersion";
 export * from "./ipc/IpcSocket";
 export * from "./ipc/IpcWebSocket";
+export * from "./ipc/IpcWebSocketTransport";
+export * from "./ipc/IpcSession";
 export * from "./IpcAppProps";
 export * from "./LightSettings";
 export * from "./LinePixels";
@@ -84,8 +89,10 @@ export * from "./ECSqlReader";
 export * from "./PlanarClipMask";
 export * from "./ModelGeometryChanges";
 export * from "./PlanProjectionSettings";
+export * from "./BackendTypes";
 export * from "./QPoint";
 export * from "./RealityDataAccessProps";
+export * from "./RealityModelDisplaySettings";
 export * from "./Render";
 export * from "./RenderMaterial";
 export * from "./RenderSchedule";
@@ -122,6 +129,7 @@ export * from "./ViewProps";
 export * from "./rpc/core/RpcConstants";
 export * from "./rpc/core/RpcControl";
 export * from "./rpc/core/RpcInvocation";
+export * from "./rpc/core/RpcSessionInvocation";
 export * from "./rpc/core/RpcMarshaling";
 export * from "./rpc/core/RpcOperation";
 export * from "./rpc/core/RpcPendingQueue";
@@ -137,6 +145,7 @@ export * from "./rpc/web/OpenAPI";
 export * from "./rpc/web/RpcMultipart";
 export * from "./rpc/web/WebAppRpcProtocol";
 export * from "./rpc/web/WebAppRpcRequest";
+export * from "./rpc/web/WebAppRpcLogging";
 export * from "./tile/B3dmTileIO";
 export * from "./tile/CompositeTileIO";
 export * from "./tile/ElementGraphics";
@@ -157,7 +166,7 @@ export * from "./WhiteOnWhiteReversalSettings";
  */
 /**
  * @docs-group-description Codes
- * Types for working with [Codes]($docs/bis/intro/codes.md).
+ * Types for working with [Codes]($docs/bis/guide/fundamentals/codes.md).
  */
 /**
  * @docs-group-description Geometry
@@ -234,4 +243,8 @@ export * from "./WhiteOnWhiteReversalSettings";
 /**
  * @docs-group-description RealityData
  * Types for working with the RealityData API.
+ */
+/**
+ * @docs-group-description MapLayers
+ * Types for working with the MapLayers API.
  */

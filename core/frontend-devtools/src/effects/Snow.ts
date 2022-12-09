@@ -8,9 +8,9 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { Point2d, Range1d, Range2d, Vector2d } from "@itwin/core-geometry";
-import { RenderTexture } from "@itwin/core-common";
+import { RenderTexture, TextureTransparency } from "@itwin/core-common";
 import {
-  DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, TextureTransparency, Tool, Viewport,
+  DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,
 } from "@itwin/core-frontend";
 import { parseToggle } from "../tools/parseToggle";
 import { randomFloat, randomInteger } from "./Random";
@@ -225,7 +225,7 @@ export class SnowDecorator implements Decorator {
     else if (undefined === decorator && enable) {
       // Create a texture to use for the particles.
       // Note: the decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
-      const image = await imageElementFromUrl("./sprites/particle_snow.png");
+      const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/particle_snow.png`);
       const texture = IModelApp.renderSystem.createTexture({
         ownership: "external",
         image: { source: image, transparency: TextureTransparency.Mixed },

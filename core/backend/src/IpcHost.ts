@@ -8,21 +8,22 @@
 
 import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
-  IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
-  TileTreeContentIds, TxnNotifications,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
+  IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
+  PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
-import { IModelHost, IModelHostConfiguration } from "./IModelHost";
+import { IModelHost, IModelHostOptions } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
+import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 
 /**
   * Options for [[IpcHost.startup]]
   * @public
   */
 export interface IpcHostOpts {
-  iModelHost?: IModelHostConfiguration;
+  iModelHost?: IModelHostOptions;
   ipcHost?: {
     /** The Ipc socket to use for communications with frontend. Allows undefined only for headless tests. */
     socket?: IpcSocketBackend;
@@ -158,12 +159,12 @@ export abstract class IpcHandler {
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
-      } catch (err) {
+      } catch (err: any) {
         const ret: IpcInvokeReturn = {
           error: {
-            name: (err && typeof (err) === "object") ? err.constructor.name : "Unknown Error",
+            name: (err && typeof err === "object") ? err.constructor.name : "Unknown Error",
             message: BentleyError.getErrorMessage(err),
-            errorNumber: (err as any).errorNumber ?? 0,
+            errorNumber: err.errorNumber ?? 0,
           },
         };
         if (!IpcHost.noStack)
@@ -179,6 +180,8 @@ export abstract class IpcHandler {
  */
 class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public get channelName() { return IpcAppChannel.Functions; }
+
+  private _iModelKeyToPullStatus = new Map<string, ProgressStatus>();
 
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
     switch (level) {
@@ -233,11 +236,35 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.getUndoString();
   }
 
-  public async pullChanges(key: string, toIndex?: ChangesetIndex): Promise<ChangesetIndexAndId> {
+  public async pullChanges(key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    await iModelDb.pullChanges({ toIndex });
+
+    this._iModelKeyToPullStatus.set(key, ProgressStatus.Continue);
+    const checkAbort = () => this._iModelKeyToPullStatus.get(key) ?? ProgressStatus.Continue;
+
+    let onProgress: ProgressFunction | undefined;
+    if (options?.reportProgress) {
+      const progressCallback: ProgressFunction = (loaded, total) => {
+        IpcHost.send(getPullChangesIpcChannel(iModelDb.iModelId), { loaded, total });
+        return checkAbort();
+      };
+      onProgress = throttleProgressCallback(progressCallback, checkAbort, options?.progressInterval);
+    } else if (options?.enableCancellation) {
+      onProgress = checkAbort;
+    }
+
+    try {
+      await iModelDb.pullChanges({ toIndex, onProgress });
+    } finally {
+      this._iModelKeyToPullStatus.delete(key);
+    }
+
     return iModelDb.changeset as ChangesetIndexAndId;
   }
+  public async cancelPullChangesRequest(key: string): Promise<void> {
+    this._iModelKeyToPullStatus.set(key, ProgressStatus.Abort);
+  }
+
   public async pushChanges(key: string, description: string): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
     await iModelDb.pushChanges({ description });
@@ -271,4 +298,23 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
     return IModelHost.platform.queryConcurrency(pool);
   }
+}
+
+/**
+ * Prevents progress callback being called more frequently when provided interval.
+ * @internal
+ */
+export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction {
+  const interval = progressInterval ?? 250; // by default, only send progress events every 250 milliseconds
+  let nextTime = Date.now() + interval;
+  const progressCallback: ProgressFunction = (loaded, total) => {
+    const now = Date.now();
+    if (loaded >= total || now >= nextTime) {
+      nextTime = now + interval;
+      return func(loaded, total);
+    }
+    return checkAbort();
+  };
+
+  return progressCallback;
 }

@@ -60,6 +60,9 @@ describe("DisplayStyle", () => {
     roundTrip({ image: { type: SkyBoxImageType.None } });
 
     roundTrip({ image: { type: SkyBoxImageType.Spherical, texture: "0x123" } });
+    roundTrip({ image: { type: SkyBoxImageType.Spherical, texture: "images/sky.jpg" } });
+
     roundTrip({ image: { type: SkyBoxImageType.Cube, textures: { front: "0x1", back: "0x2", left: "0x3", right: "0x4", top: "0x5", bottom: "0x6" } } });
+    roundTrip({ image: { type: SkyBoxImageType.Cube, textures: { front: "front.jpg", back: "back.png", left: "left.jpeg", right: "right.jpg", top: "top.png", bottom: "bottom.png" } } });
   });
 });

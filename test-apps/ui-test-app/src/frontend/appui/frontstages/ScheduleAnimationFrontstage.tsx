@@ -7,11 +7,13 @@ import { ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvide
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 export class ScheduleAnimationFrontstage extends FrontstageProvider {
+  public static stageId = "ui-test-app:ScheduleAnimationFrontstage";
+
   public get id(): string {
-    return "ScheduleAnimationFrontstage";
+    return ScheduleAnimationFrontstage.stageId;
   }
 
-  public get frontstage(): React.ReactElement<FrontstageProps> {
+  public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
@@ -27,10 +29,9 @@ export class ScheduleAnimationFrontstage extends FrontstageProvider {
     );
 
     return (
-      <Frontstage id={this.id}
+      <Frontstage id={this.id} // eslint-disable-line deprecation/deprecation
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
-        isInFooterMode={false}
         applicationData={{ key: "value" }}
       />
     );

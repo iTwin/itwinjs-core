@@ -7,7 +7,7 @@
  */
 import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { AxisOrder, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
-import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@itwin/core-common";
+import { ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -49,14 +49,15 @@ function setTransform(transforms: Float32Array, index: number, rotation: Matrix3
 export class I3dmReader extends GltfReader {
   private _instanceCount = 0;
   private _featureTable?: FeatureTable;
+  private readonly _modelId: Id64String;
 
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d,
-    system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap): I3dmReader | undefined {
+    system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices=false): I3dmReader | undefined {
     const header = new I3dmHeader(stream);
     if (!header.isValid)
       return undefined;
 
-    const props = GltfReaderProps.create(stream, yAxisUp);
+    const props = GltfReaderProps.create(stream.nextBytes(header.length - stream.curPos), yAxisUp);
     if (undefined === props)
       return undefined;
 
@@ -67,13 +68,17 @@ export class I3dmReader extends GltfReader {
 
     const featureBinary = new Uint8Array(stream.arrayBuffer, header.featureTableJsonPosition + header.featureTableJsonLength, header.featureTableBinaryLength);
     return new I3dmReader(featureBinary, JSON.parse(featureStr), header.batchTableJson, props, iModel, modelId, is3d, system,
-      range, isLeaf, isCanceled, idMap);
+      range, isLeaf, isCanceled, idMap, deduplicateVertices);
   }
 
   private constructor(private _featureBinary: Uint8Array, private _featureJson: any, private _batchTableJson: any, props: GltfReaderProps,
     iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d,
-    private _isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap) {
-    super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled);
+    private _isLeaf: boolean, shouldAbort?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap, deduplicateVertices=false) {
+    super({
+      props, iModel, system, shouldAbort, deduplicateVertices,
+      is2d: !is3d,
+    });
+    this._modelId = modelId;
   }
 
   public async read(): Promise<GltfReaderResult> {
@@ -95,7 +100,7 @@ export class I3dmReader extends GltfReader {
       this._featureTable.insert(feature);
     }
 
-    await this.loadTextures();
+    await this.resolveResources();
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
 

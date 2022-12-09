@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
+import * as enableWs from "express-ws";
 import { Server as HttpServer } from "http";
 import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } from "@itwin/core-common";
+import { LocalhostIpcHost } from "@itwin/core-backend";
 
 /**
  * Options for configuring IModelJsExpressServer.
@@ -60,7 +62,9 @@ export class IModelJsExpressServer {
     this._app.get(/\/imodel\//, async (req, res) => this._protocol.handleOperationGetRequest(req, res));
     this._app.get("/ping", async (_req, res) => res.status(200).send("Success"));
     // for all HTTP requests, identify the server.
-    this._app.use("*", (_req, resp) => { resp.send("<h1>IModelJs RPC Server</h1>"); });
+    this._app.use("*", (_req, resp) => {
+      resp.send("<h1>IModelJs RPC Server</h1>");
+    });
   }
 
   /**
@@ -76,5 +80,20 @@ export class IModelJsExpressServer {
     return new Promise<HttpServer>((resolve) => {
       const server: HttpServer = this._app.listen(this._app.get("port"), () => resolve(server));
     });
+  }
+}
+
+/**
+ * @alpha
+ */
+export class WebEditServer extends IModelJsExpressServer {
+  protected override _configureRoutes() {
+    (this._app as any).ws("/ipc", (ws: any, _req: any) => LocalhostIpcHost.connect(ws));
+    super._configureRoutes();
+  }
+
+  constructor(protocol: WebAppRpcProtocol, config = IModelJsExpressServer.defaults) {
+    super(protocol, config);
+    enableWs(this._app);
   }
 }

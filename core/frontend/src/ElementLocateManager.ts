@@ -17,6 +17,7 @@ import { ViewRect } from "./ViewRect";
 
 /** The possible actions for which a locate filter can be called.
  * @public
+ * @extensions
  */
 export enum LocateAction {
   Identify = 0,
@@ -26,13 +27,17 @@ export enum LocateAction {
 /** Values to return from a locate filter.
  * Return `Reject` to indicate the element is unacceptable.
  * @public
+ * @extensions
  */
 export enum LocateFilterStatus {
   Accept = 0,
   Reject = 1,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum SnapStatus {
   Success = 0,
   Aborted = 1,
@@ -46,6 +51,7 @@ export enum SnapStatus {
 
 /** Options that customize the way element location (i.e. *picking*) works.
  * @public
+ * @extensions
  */
 export class LocateOptions {
   /** If true, also test graphics from view decorations. */
@@ -92,7 +98,10 @@ export class LocateOptions {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class LocateResponse {
   public snapStatus = SnapStatus.Success;
   public reason?: string;
@@ -115,12 +124,18 @@ export class LocateResponse {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export interface HitListHolder {
   setHitList(list: HitList<HitDetail> | undefined): void;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class ElementPicker {
   public viewport?: Viewport;
   public readonly pickPointWorld = new Point3d();
@@ -148,7 +163,10 @@ export class ElementPicker {
   /** Return a hit from the list of hits created the last time pickElements was called. */
   public getHit(i: number): HitDetail | undefined { return this.hitList ? this.hitList.getHit(i) : undefined; }
 
-  public resetCurrentHit(): void { if (this.hitList) this.hitList.resetCurrentHit(); }
+  public resetCurrentHit(): void {
+    if (this.hitList)
+      this.hitList.resetCurrentHit();
+  }
 
   private getPixelPriority(pixel: Pixel.Data) {
     switch (pixel.type) {
@@ -168,12 +186,19 @@ export class ElementPicker {
   private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, distXY1: number, distXY2: number) {
     const priority1 = this.getPixelPriority(pixel1);
     const priority2 = this.getPixelPriority(pixel2);
-    if (priority1 < priority2) return -1;
-    if (priority1 > priority2) return 1;
-    if (distXY1 < distXY2) return -1;
-    if (distXY1 > distXY2) return 1;
-    if (pixel1.distanceFraction > pixel2.distanceFraction) return -1;
-    if (pixel1.distanceFraction < pixel2.distanceFraction) return 1;
+    if (priority1 < priority2)
+      return -1;
+    if (priority1 > priority2)
+      return 1;
+    if (distXY1 < distXY2)
+      return -1;
+    if (distXY1 > distXY2)
+      return 1;
+    if (pixel1.distanceFraction > pixel2.distanceFraction)
+      return -1;
+    if (pixel1.distanceFraction < pixel2.distanceFraction)
+      return 1;
+
     return 0;
   }
 
@@ -264,7 +289,10 @@ export class ElementPicker {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class ElementLocateManager {
   public hitList?: HitList<HitDetail>;
   public currHit?: HitDetail;

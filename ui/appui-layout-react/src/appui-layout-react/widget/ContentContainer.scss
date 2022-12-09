@@ -2,14 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-.nz-widget-content-container {
+.nz-widget-contentContainer {
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
   position: relative;
   display: flex;
 
-  &.nz-minimized {
+  >.nz-content {
+    flex: 1;
+    display: flex;
+    min-width: 0;
+  }
+}
+
+.nz-widget-floatingWidget {
+  .nz-widget-contentContainer.nz-minimized {
     flex-basis: 0;
     overflow: hidden;
   }

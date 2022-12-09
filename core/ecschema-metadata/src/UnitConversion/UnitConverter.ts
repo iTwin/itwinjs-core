@@ -13,7 +13,7 @@ import { UnitGraph } from "./UnitTree";
 
 /**
  * Class constructed with SchemaContext and used to calculate [[UnitConversion]] between Units
- * @alpha
+ * @internal
  */
 export class UnitConverter {
   private _uGraph: UnitGraph;
@@ -63,7 +63,8 @@ export class UnitConverter {
    * @internal
    */
   private async processUnits(from: Unit | Constant, to: Unit | Constant): Promise<UnitConversion> {
-    if (from.key.matches(to.key)) return UnitConversion.identity;
+    if (from.key.matches(to.key))
+      return UnitConversion.identity;
 
     const areCompatible = await Unit.areCompatible(from as Unit, to as Unit);
     if (!areCompatible)

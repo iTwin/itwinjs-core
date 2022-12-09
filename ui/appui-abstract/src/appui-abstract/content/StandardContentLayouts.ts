@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { ContentLayoutProps } from "./ContentLayoutProps";
-
 /** @packageDocumentation
  * @module ContentView
  */
+
+import { ContentLayoutProps } from "./ContentLayoutProps";
 
 /**
  * Class that define Standard Content Layouts that can be used to specify how the content is arranged in a frontstage.

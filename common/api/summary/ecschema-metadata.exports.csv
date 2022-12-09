@@ -5,7 +5,7 @@ beta;AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | Relat
 beta;AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClassProps | RelationshipClassProps
 beta;AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute | OverrideFormat | AnyEnumerator
 beta;AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty
-beta;AnyEnumerator = Enumerator
+beta;AnyEnumerator = Enumerator_2
 beta;AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty
 beta;AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty
 beta;AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps
@@ -24,7 +24,6 @@ beta;CustomAttributeClass
 beta;CustomAttributeClassProps 
 beta;CustomAttributeContainerProps
 beta;CustomAttributeContainerType
-beta;DecimalPrecision
 beta;DelayedPromise
 beta;DelayedPromiseWithProps: DelayedPromiseWithPropsConstructor
 beta;DelayedPromiseWithProps
@@ -43,17 +42,9 @@ beta;EnumerationArrayProperty
 beta;EnumerationProperty 
 beta;EnumerationPropertyProps 
 beta;EnumerationProps 
-beta;Enumerator
 beta;EnumeratorProps
 beta;Format 
 beta;FormatProps 
-internal;formatStringRgx: RegExp
-beta;FormatTraits
-internal;formatTraitsToArray(currentFormatTrait: FormatTraits): string[]
-beta;FormatType
-internal;formatTypeToString(type: FormatType): string
-beta;FractionalPrecision
-internal;getItemNamesFromFormatString(formatString: string): Iterable
 beta;InvertedUnit 
 beta;InvertedUnitProps 
 beta;ISchemaItemLocater
@@ -87,16 +78,9 @@ beta;NoDelayedPromiseMethods
 beta;OverrideFormat
 beta;parseClassModifier(modifier: string): ECClassModifier | undefined
 beta;parseCustomAttributeContainerType(type: string): CustomAttributeContainerType | undefined
-internal;parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision | undefined
-internal;parseFormatTrait(formatTraitsString: string): FormatTraits | undefined
-internal;parseFormatType(jsonObjType: string): FormatType | undefined
-internal;parseFractionalPrecision(jsonObjPrecision: number): FractionalPrecision | undefined
-internal;parsePrecision(precision: number, type: FormatType): DecimalPrecision | FractionalPrecision | undefined
 beta;parsePrimitiveType(type: string): PrimitiveType | undefined
 beta;parseRelationshipEnd(end: string): RelationshipEnd | undefined
 beta;parseSchemaItemType(type: string): SchemaItemType | undefined
-internal;parseScientificType(scientificType: string): ScientificType | undefined
-internal;parseShowSignOption(showSignOption: string): ShowSignOption | undefined
 beta;parseStrength(strength: string): StrengthType | undefined
 beta;parseStrengthDirection(direction: string): StrengthDirection | undefined
 beta;Phenomenon 
@@ -134,19 +118,19 @@ beta;SchemaItemProps
 beta;SchemaItemType
 beta;schemaItemTypeToString(value: SchemaItemType): string
 internal;schemaItemTypeToXmlString(value: SchemaItemType): string
+alpha;SchemaJsonLocater 
 beta;SchemaKey
 beta;SchemaKeyProps
+alpha;SchemaLoader
 beta;SchemaMap 
 beta;SchemaMatchType
 beta;SchemaPartVisitorDelegate
 beta;SchemaProps
+alpha;SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined
 internal;SchemaReadHelper
 beta;SchemaReferenceProps
+alpha;SchemaUnitProvider 
 internal;SchemaWalker
-beta;ScientificType
-internal;scientificTypeToString(scientificType: ScientificType): string
-beta;ShowSignOption
-internal;showSignOptionToString(showSign: ShowSignOption): string
 beta;StrengthDirection
 beta;strengthDirectionToString(direction: StrengthDirection): string
 beta;strengthToString(strength: StrengthType): string
@@ -158,6 +142,8 @@ beta;StructClassProps = ClassProps
 beta;StructProperty 
 beta;StructPropertyProps 
 beta;Unit 
+internal;UnitConversion
+internal;UnitConverter
 beta;UnitProps 
 beta;UnitSystem 
 beta;UnitSystemProps = SchemaItemProps

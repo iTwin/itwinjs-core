@@ -10,16 +10,20 @@ import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import produce from "immer";
+import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
+import { assert } from "@itwin/core-bentley";
 import { DraggedPanelSideContext } from "../base/DragManager";
 import { NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState";
+import { WidgetState } from "../state/WidgetState";
 import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
-import { WidgetTarget } from "../widget/WidgetTarget";
 import { WidgetPanelGrip } from "./Grip";
+import { PanelTargets } from "../target/PanelTargets";
+import { SectionOutline } from "../outline/SectionOutline";
+import { PanelOutline } from "../outline/PanelOutline";
+import { WidgetTarget } from "../widget/WidgetTarget";
 import { PanelTarget } from "./PanelTarget";
-import { RectangleProps, SizeProps } from "@itwin/core-react";
-import { assert } from "@itwin/core-bentley";
-import { WidgetComponent } from "../widget/Widget";
+import { SectionTargets } from "../target/SectionTargets";
+import { isHorizontalPanelState, PanelState } from "../state/PanelState";
 
 /** @internal */
 export type TopPanelSide = "top";
@@ -39,8 +43,81 @@ export type HorizontalPanelSide = TopPanelSide | BottomPanelSide;
 /** @internal */
 export type VerticalPanelSide = LeftPanelSide | RightPanelSide;
 
-/** @internal future */
+/** @internal */
 export type PanelSide = VerticalPanelSide | HorizontalPanelSide;
+
+// istanbul ignore next
+function PanelSplitter({ isHorizontal }: { isHorizontal: boolean }) {
+  const dispatch = React.useContext(NineZoneDispatchContext);
+  const panel = React.useContext(PanelStateContext);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const splitterProcessingActiveRef = React.useRef<boolean>(false);
+
+  const getPercentage = React.useCallback((min: number, max: number, current: number) => {
+    const range = max - min;
+    const adjusted = Math.max(min, Math.min(max, current));
+    if (adjusted === min)
+      return 0;
+    if (adjusted === max)
+      return 100;
+    const percent = ((adjusted - min) * 100) / (range);
+    return percent;
+  }, []);
+
+  const updatePanelSize = React.useCallback(
+    (event: PointerEvent) => {
+      if (containerRef.current && panel?.side) {
+        const parentPanel = containerRef.current.closest(".nz-widgetPanels-panel");
+        const sectionToResize = containerRef.current.parentElement as HTMLElement;
+        if (parentPanel && sectionToResize) {
+          const rect = parentPanel.getBoundingClientRect();
+          const percent = getPercentage(
+            isHorizontal ? rect.left : rect.top,
+            isHorizontal ? rect.right : rect.bottom,
+            isHorizontal ? event.clientX : event.clientY,
+          );
+
+          dispatch({
+            type: "PANEL_SET_SPLITTER_VALUE",
+            side: panel.side,
+            percent,
+          });
+        }
+      }
+    }, [getPercentage, isHorizontal, panel, dispatch]);
+
+  const handlePointerMove = React.useCallback((event: Event): void => {
+    if (splitterProcessingActiveRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      updatePanelSize(event as PointerEvent);
+    }
+  }, [updatePanelSize]);
+
+  const handlePointerUp = React.useCallback((event: Event) => {
+    updatePanelSize(event as PointerEvent);
+    event.preventDefault();
+    event.stopPropagation();
+    containerRef.current?.ownerDocument.removeEventListener("pointermove", handlePointerMove);
+    containerRef.current?.ownerDocument.removeEventListener("pointerup", handlePointerUp);
+  }, [handlePointerMove, updatePanelSize]);
+
+  const handlePointerDownOnSplitter = React.useCallback(
+    (event: React.PointerEvent) => {
+      if (containerRef.current) {
+        containerRef.current?.ownerDocument.addEventListener("pointermove", handlePointerMove);
+        containerRef.current?.ownerDocument.addEventListener("pointerup", handlePointerUp);
+        splitterProcessingActiveRef.current = true;
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }, [handlePointerMove, handlePointerUp]);
+
+  const className = isHorizontal ? "nz-horizontal-panel-splitter" : "nz-vertical-panel-splitter";
+  return (
+    <div ref={containerRef} className={className} onPointerDown={handlePointerDownOnSplitter} />
+  );
+}
 
 /** Properties of [[WidgetPanelProvider]] component.
  * @internal
@@ -55,14 +132,16 @@ export interface WidgetPanelProviderProps {
 export const WidgetPanelProvider = React.memo<WidgetPanelProviderProps>(function WidgetPanelProvider({ side }) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const panels = React.useContext(PanelsStateContext);
   const panel = panels[side];
-  const element = panel.widgets.length === 0 ? <PanelTarget /> : <WidgetPanel
-    spanTop={panels.top.span}
-    spanBottom={panels.bottom.span}
-  />;
   return (
     <PanelStateContext.Provider value={panel}>
       <PanelSideContext.Provider value={side}>
-        {element}
+        {panel.widgets.length > 0 && <WidgetPanel
+          spanTop={panels.top.span}
+          spanBottom={panels.bottom.span}
+        />}
+        {panel.widgets.length === 0 && <PanelTarget />}
+        <PanelTargets />
+        <PanelOutline />
       </PanelSideContext.Provider>
     </PanelStateContext.Provider>
   );
@@ -91,14 +170,13 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
   const [transition, setTransition] = React.useState<"init" | "transition" | undefined>();
   const [panelSize, setPanelSize] = React.useState<number | undefined>();
   const [initializing, setInitializing] = React.useState(false);
+
   const horizontal = isHorizontalPanelSide(panel.side);
   const style = React.useMemo(() => {
-    let size = panel.collapsed ? 0 : panel.size;
+    let size = panel.collapsed ? 0 : panel.size ?? panel.minSize;
     if (panelSize !== undefined)
       size = panelSize;
 
-    if (size === undefined)
-      return undefined;
     if (isHorizontalPanelSide(panel.side))
       return {
         height: `${size}px`,
@@ -106,7 +184,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     return {
       width: `${size}px`,
     };
-  }, [panel.side, panel.size, panel.collapsed, panelSize]);
+  }, [panel.side, panel.size, panel.collapsed, panel.minSize, panelSize]);
   const contentStyle = React.useMemo(() => {
     if (contentSize === undefined)
       return undefined;
@@ -249,6 +327,24 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     spanBottom && "nz-span-bottom",
     transition && `nz-${transition}`,
   );
+
+  const splitterControlledPanelStyle = React.useMemo(() => {
+    // istanbul ignore next
+    const splitterPercent = panel.splitterPercent ?? 50;
+    const styleToApply: React.CSSProperties = {};
+    // istanbul ignore else
+    if (splitterPercent) {
+      if (horizontal)
+        styleToApply.width = `${splitterPercent}%`;
+      else
+        styleToApply.height = `${splitterPercent}%`;
+    }
+    return styleToApply;
+  }, [horizontal, panel.splitterPercent]);
+
+  const singleSection = panel.widgets.length === 1;
+  const showSectionTargets = singleSection && !panel.collapsed;
+  /* istanbul ignore next */
   return (
     <WidgetPanelContext.Provider value={widgetPanel}>
       <div
@@ -268,31 +364,44 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
           className="nz-content"
           style={contentStyle}
         >
+          {singleSection && <SectionOutline sectionIndex={0} />}
           {panel.widgets.map((widgetId, index, array) => {
             const last = index === array.length - 1;
+
+            const panelClassName = classnames(`nz-panel-section-${index}`,
+              horizontal ? "nz-widgetPanels-horizontal" : "nz-widgetPanels-vertical",
+              (last && 0 === index) && "nz-panel-section-full-size"
+            );
+
+            const panelStyle = index === 0 && array.length > 1 ? splitterControlledPanelStyle : undefined;
             return (
               <React.Fragment key={widgetId}>
-                {index === 0 && showTargets && <WidgetTarget
-                  position="first"
-                  widgetIndex={0}
-                />}
-                <PanelWidget
-                  onBeforeTransition={handleBeforeTransition}
-                  onPrepareTransition={handlePrepareTransition}
-                  onTransitionEnd={handleTransitionEnd}
-                  size={sizes[widgetId]}
-                  transition={animatePanelWidgets.transition}
-                  widgetId={widgetId}
-                  ref={getRef(widgetId)}
-                />
-                {showTargets && <WidgetTarget
-                  position={last ? "last" : undefined}
-                  widgetIndex={index + 1}
-                />}
+                <div className={panelClassName} style={panelStyle}>
+                  {index === 0 && showTargets && <WidgetTarget
+                    position="first"
+                    widgetIndex={0}
+                  />}
+                  <PanelWidget
+                    onBeforeTransition={handleBeforeTransition}
+                    onPrepareTransition={handlePrepareTransition}
+                    onTransitionEnd={handleTransitionEnd}
+                    size={sizes[widgetId]}
+                    transition={animatePanelWidgets.transition}
+                    widgetId={widgetId}
+                    ref={getRef(widgetId)}
+                  />
+                  {showTargets && <WidgetTarget
+                    position={last ? "last" : undefined}
+                    widgetIndex={index + 1}
+                  />}
+                  {(!last && 0 === index) && <PanelSplitter isHorizontal={horizontal} />}
+                </div>
               </React.Fragment>
             );
           })}
+          {singleSection && <SectionOutline sectionIndex={1} />}
         </div>
+        {showSectionTargets && <SectionTargets widgetId={panel.widgets[0]} />}
         {panel.resizable &&
           <div className="nz-grip-container">
             <WidgetPanelGrip className="nz-grip" />
@@ -338,7 +447,7 @@ export function useAnimatePanelWidgets(): {
   handleBeforeTransition: PanelWidgetProps["onBeforeTransition"];
   handlePrepareTransition: PanelWidgetProps["onPrepareTransition"];
   handleTransitionEnd: PanelWidgetProps["onTransitionEnd"];
-  getRef(widgetId: WidgetState["id"]): React.Ref<WidgetComponent>;
+  getRef(widgetId: WidgetState["id"]): React.Ref<HTMLDivElement>;
   transition: PanelWidgetProps["transition"];
   sizes: { [id: string]: PanelWidgetProps["size"] };
 } {
@@ -350,7 +459,7 @@ export function useAnimatePanelWidgets(): {
   const [prevPanelWidgets, setPrevPanelWidgets] = React.useState(panel.widgets);
   const [prevWidgets, setPrevWidgets] = React.useState(widgets);
   const [sizes, setSizes] = React.useState<{ [id: string]: number | undefined }>({});
-  const refs = React.useRef(new Map<WidgetState["id"], React.RefObject<WidgetComponent>>());
+  const refs = React.useRef(new Map<WidgetState["id"], React.RefObject<HTMLDivElement>>());
   const widgetTransitions = React.useRef(new Map<WidgetState["id"], {
     from: number;
     to: number | undefined;
@@ -367,8 +476,8 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.set(widgetId, { from: 0, to: undefined });
         continue;
       }
-      const size = ref.current.measure();
-      widgetTransitions.current.set(widgetId, { from: getSize(horizontal.current, size), to: undefined });
+      const bounds = Rectangle.create(ref.current.getBoundingClientRect());
+      widgetTransitions.current.set(widgetId, { from: getSize(horizontal.current, bounds.getSize()), to: undefined });
     }
     if (panel.widgets.length < prevPanelWidgets.length) {
       // Widget removed.
@@ -445,8 +554,8 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.clear();
         break;
       }
-      const size = ref.current.measure();
-      widgetTransition.to = getSize(horizontal.current, size);
+      const bounds = Rectangle.create(ref.current.getBoundingClientRect());
+      widgetTransition.to = getSize(horizontal.current, bounds.getSize());
 
       if (widgetTransition.from !== widgetTransition.to) {
         initTransition = true;
@@ -506,8 +615,8 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.clear();
         return;
       }
-      const size = ref.current.measure();
-      const from = getSize(horizontal.current, size);
+      const bounds = Rectangle.create(ref.current.getBoundingClientRect());
+      const from = getSize(horizontal.current, bounds.getSize());
       widgetTransitions.current.set(wId, { from, to: undefined });
     }
   }, [panel.widgets]);

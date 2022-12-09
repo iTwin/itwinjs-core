@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { UiError } from "@itwin/appui-abstract";
-import { SvgSprite, WebFontIcon, WebFontIconProps } from "@itwin/core-react";
+import { IconSpecUtilities, UiError } from "@itwin/appui-abstract";
+import { Icon, WebFontIcon, WebFontIconProps } from "@itwin/core-react";
 import { UiComponents } from "../UiComponents";
 import { Image, ImageFileFormat, LoadedBinaryImage, LoadedImage } from "./IImageLoader";
 
@@ -16,6 +16,8 @@ import { Image, ImageFileFormat, LoadedBinaryImage, LoadedImage } from "./IImage
  * @internal
  */
 export class ImageRenderer {
+  private static _svgCache: Map<string, string> = new Map();
+
   private hexToBase64(hexstring: string) {
     const match = hexstring.match(/\w{2}/g);
     // istanbul ignore next
@@ -34,10 +36,42 @@ export class ImageRenderer {
     return (<img src={`data:image/${format};base64,${dataAsBase64}`} alt="" />);
   }
 
+  private isSvg(input: string): boolean {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(input, "application/xml");
+
+    const errorNode = doc.querySelector("parsererror");
+    // istanbul ignore if
+    if (errorNode) {
+      return false;
+    }
+
+    const rootNode = doc.documentElement.nodeName.toLowerCase();
+    return "svg" === rootNode;
+  }
+
+  private convertSvgToDataUri(svg: string) {
+    // istanbul ignore if
+    if (!this.isSvg(svg)) {
+      return "";
+    }
+
+    // eslint-disable-next-line deprecation/deprecation
+    const svgAsBase64 = btoa(svg);
+    return `data:image/svg+xml;base64,${svgAsBase64}`;
+  }
+
   /** Render svg string into JSX */
   private renderSvg(svg: string) {
+    let svgAsDataUri = ImageRenderer._svgCache.get(svg);
+    if (undefined === svgAsDataUri) {
+      svgAsDataUri = this.convertSvgToDataUri(svg.trim());
+      ImageRenderer._svgCache.set(svg, svgAsDataUri);
+    }
+
+    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(svgAsDataUri);
     return (
-      <div><SvgSprite src={svg} /></div>
+      <div><Icon iconSpec={iconSpec} /></div>
     );
   }
 

@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-import { Logger } from "@itwin/core-bentley";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { ContentLayoutProps, UiError } from "@itwin/appui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
@@ -15,6 +14,7 @@ import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../UiFramework";
 import { ContentControl } from "./ContentControl";
 import { FrontstageProps } from "../frontstage/Frontstage";
+import { FrontstageConfig } from "../frontstage/FrontstageConfig";
 
 /** Properties for content displayed in a content view
  * @public
@@ -32,7 +32,7 @@ export interface ContentProps {
  * @public
  */
 export interface ContentGroupProps {
-  /** An optional id for the [[ContentGroup]] */
+  /** An id for the [[ContentGroup]]. This id is used to locate a ContentGroup and it also can be used by an ContentGroupProvider to save/restore content settings */
   id: string;
   /** Content Layout Id or complete set of [[ContentLayoutProps]]  */
   layout: ContentLayoutProps;
@@ -45,7 +45,15 @@ export interface ContentGroupProps {
  * @public
  */
 export abstract class ContentGroupProvider {
-  abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
+  /** Return the contentGroup based on the `FrontstageProps`.
+   * @deprecated Implement using `contentGroup` instead.
+   */
+  abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>; // eslint-disable-line deprecation/deprecation
+
+  /** Return the contentGroup based on the `FrontstageConfig`.
+   * @beta This method will be required in upcoming version, this method will be prioritized if it exists over `provideContentGroup`.
+   */
+  public contentGroup?(config: FrontstageConfig): Promise<ContentGroup>;
 
   /** Allow provider to update any data stored in ContentGroupProps. Typically this may
    * be to remove applicationData entries.
@@ -160,7 +168,6 @@ export class ContentGroup {
       return this._contentSetMap.get(controlId);
     }
 
-    Logger.logError(UiFramework.loggerCategory(this), `getControlFromElement: no control found for element`);
     return undefined;
   }
 

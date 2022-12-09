@@ -10,30 +10,37 @@ import { assert, base64StringToUint8Array, IModelStatus } from "@itwin/core-bent
 import { ImageSource } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
-import { ReadonlyViewportSet } from "../ViewportSet";
-import { Tile, TileContent, TileRequestChannel, TileTree } from "./internal";
+import { ReadonlyTileUserSet, Tile, TileContent, TileRequestChannel, TileTree, TileUser } from "./internal";
 
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile.requestContent]] to obtain the raw content and
  * [[Tile.readContent]] to convert the result into a [[RenderGraphic]]. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.
  * @public
+ * @extensions
  */
 export class TileRequest {
   /** The requested tile. While the request is pending or active, `tile.request` points back to this TileRequest. */
   public readonly tile: Tile;
   /** The channel via which the request will be executed. */
   public readonly channel: TileRequestChannel;
-  /** The set of [[Viewport]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no viewport cares about it. */
-  public viewports: ReadonlyViewportSet;
+  /** The set of [[TileUser]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no user cares about it.
+   * @internal
+   */
+  public users: ReadonlyTileUserSet;
   private _state: TileRequest.State;
   /** Determines the order in which pending requests are pulled off the queue to become active. A tile with a lower priority value takes precedence over one with a higher value. */
   public priority = 0;
 
   /** Constructor */
-  public constructor(tile: Tile, vp: Viewport) {
+  public constructor(tile: Tile, user: TileUser) {
     this._state = TileRequest.State.Queued;
     this.tile = tile;
     this.channel = tile.channel;
-    this.viewports = IModelApp.tileAdmin.getViewportSetForRequest(vp);
+    this.users = IModelApp.tileAdmin.getTileUserSetForRequest(user);
+  }
+
+  /** The set of [[Viewport]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no user cares about it. */
+  public get viewports(): Iterable<Viewport> {
+    return TileUser.viewportsFromUsers(this.users);
   }
 
   /** The request's current state. */
@@ -52,18 +59,18 @@ export class TileRequest {
     if (TileRequest.State.Loading === this._state)
       return false;
 
-    // If no viewport cares about this tile any more, we're canceled.
-    return this.viewports.isEmpty;
+    // If no user cares about this tile any more, we're canceled.
+    return this.users.isEmpty;
   }
 
   /** The tile tree to which the requested [[Tile]] belongs. */
   public get tree(): TileTree { return this.tile.tree; }
 
-  /** Indicate that the specified viewport is awaiting the result of this request.
+  /** Indicate that the specified user is awaiting the result of this request.
    * @internal
    */
-  public addViewport(vp: Viewport): void {
-    this.viewports = IModelApp.tileAdmin.getViewportSetForRequest(vp, this.viewports);
+  public addUser(user: TileUser): void {
+    this.users = IModelApp.tileAdmin.getTileUserSetForRequest(user, this.users);
   }
 
   /** Transition the request from "queued" to "active", kicking off a series of asynchronous operations usually beginning with an http request, and -
@@ -123,15 +130,18 @@ export class TileRequest {
     this._state = TileRequest.State.Failed;
   }
 
-  /** Invalidates the scene of each [[Viewport]] interested in this request - typically because the request succeeded, failed, or was canceled. */
+  /** Invalidates the scene of each [[TileUser]] interested in this request - typically because the request succeeded, failed, or was canceled. */
   private notify(): void {
-    this.viewports.forEach((vp) => vp.invalidateScene());
+    this.users.forEach((user) => {
+      if (user.onRequestStateChanged)
+        user.onRequestStateChanged(this);
+    });
   }
 
-  /** Invalidates the scene of each [[Viewport]] interested in this request and clears the set of interested viewports. */
+  /** Invalidates the scene of each [[TileUser]] interested in this request and clears the set of interested users. */
   private notifyAndClear(): void {
     this.notify();
-    this.viewports = IModelApp.tileAdmin.emptyViewportSet;
+    this.users = IModelApp.tileAdmin.emptyTileUserSet;
     this.tile.request = undefined;
   }
 
@@ -153,8 +163,12 @@ export class TileRequest {
         data = response;
       else if (response instanceof ArrayBuffer)
         data = new Uint8Array(response);
-      else if (typeof response === "object" && undefined !== response.content)
-        content = response.content;
+      else if (typeof response === "object") {
+        if ("content" in response)
+          content = response.content;
+        else if ("data" in response)
+          data = response;
+      }
     }
 
     if (!content && !data) {
@@ -187,12 +201,12 @@ export namespace TileRequest { // eslint-disable-line no-redeclare
    * can produce a [[RenderGraphic]].
    * @public
    */
-  export type Response = Uint8Array | ArrayBuffer | string | ImageSource | { content: TileContent } | undefined;
+  export type Response = Uint8Array | ArrayBuffer | string | ImageSource | { content: TileContent } | { data: any } | undefined;
 
   /** The input to [[Tile.readContent]], to be converted into a [[RenderGraphic]].
    * @public
    */
-  export type ResponseData = Uint8Array | ImageSource;
+  export type ResponseData = Uint8Array | ImageSource | { data: any };
 
   /** The states through which a [[TileRequest]] proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined,
    * and its [[Tile.LoadStatus]] is computed based on the state of its request.

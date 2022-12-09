@@ -14,7 +14,7 @@ import { MergeTargetProps } from "./Merge";
 import { ZoneTarget } from "./Zone";
 
 /** Properties of [[BackTarget]] component.
- * @alpha
+ * @internal
  */
 export interface BackTargetProps extends MergeTargetProps {
   /** Describes back target arrow rotation. */
@@ -22,7 +22,7 @@ export interface BackTargetProps extends MergeTargetProps {
 }
 
 /** Zone target used to merge widget back to initial zone.
- * @alpha
+ * @internal
  */
 export class BackTarget extends React.PureComponent<BackTargetProps> {
   public override render() {

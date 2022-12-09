@@ -6,16 +6,14 @@
       "commandKind": "global",
       "summary": "Runs npm audit for the entire monorepo",
       "description": "Scans the entire monorepo for security vulnerabilities via npm audit",
-      "shellCommand": "node tools/internal/scripts/rush/audit.js",
-      "allowWarningsInSuccessfulBuild": true
+      "shellCommand": "node tools/internal/scripts/rush/audit.js"
     },
     {
       "name": "fix-copyrights",
       "commandKind": "global",
       "summary": "Fixes whitespace-only changes caused by broken copyright linter",
       "description": "Manually runs the new copyright linter on all files changed between the current branch and master.",
-      "shellCommand": "node common/scripts/copyright-linter.js --fix",
-      "allowWarningsInSuccessfulBuild": true
+      "shellCommand": "node common/scripts/copyright-linter.js --fix"
     },
     {
       "name": "clean",
@@ -27,13 +25,25 @@
       "ignoreDependencyOrder": true
     },
     {
+      "name": "build",
+      "commandKind": "bulk",
+      "summary": "Run build script for each package",
+      "description": "Runs the 'build' script for each package in the monorepo. Used in some ci jobs to only build cjs.",
+      "enableParallelism": true,
+      "ignoreMissingScript": false,
+      "ignoreDependencyOrder": false,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
       "name": "build:ci",
       "commandKind": "bulk",
       "summary": "Run build:ci script for each package",
       "description": "Runs the 'build:ci' script for each package in the monorepo. Used in the ci to build both cjs and esm variants of packages, whereas build will only build cjs.",
       "enableParallelism": true,
       "ignoreMissingScript": false,
-      "ignoreDependencyOrder": false
+      "ignoreDependencyOrder": false,
+      "allowWarningsInSuccessfulBuild": true,
+      "incremental": true
     },
     {
       "name": "cover",
@@ -62,6 +72,15 @@
       "description": "Iterates through each package in the monorepo and runs the 'extract-api' script",
       "enableParallelism": true,
       "ignoreMissingScript": true,
+      "ignoreDependencyOrder": false
+    },
+    {
+      "name": "extract-extension-api",
+      "commandKind": "bulk",
+      "summary": "Run eslint rule to generate extension API files",
+      "description": "Iterates through each package in the monorepo and runs the 'extract-extension-api' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true,
       "ignoreDependencyOrder": true
     },
     {
@@ -81,6 +100,16 @@
       "description": "Iterates through each package in the monorepo and runs the 'test' script",
       "enableParallelism": true,
       "ignoreMissingScript": false,
+      "ignoreDependencyOrder": true,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
+      "name": "webpack:test",
+      "commandKind": "bulk",
+      "summary": "Run webpack:test script for each package",
+      "description": "Iterates through each package in the monorepo and runs the 'webpack:test' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true,
       "ignoreDependencyOrder": true,
       "allowWarningsInSuccessfulBuild": true
     },

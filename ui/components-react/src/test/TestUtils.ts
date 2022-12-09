@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import {
+  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, CustomFormattedNumberParams, DisplayMessageType, ImageCheckBoxParams,
+  MessagePresenter, MessageSeverity, ParseResults, Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes,
+  PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames, StructValue, UiAdmin,
+} from "@itwin/appui-abstract";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import {
-  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, CustomFormattedNumberParams, DisplayMessageType,
-  ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
-  Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
-  StandardEditorNames, StandardTypeNames, StructValue, UiAdmin,
-} from "@itwin/appui-abstract";
-import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents } from "../components-react";
+  AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents,
+} from "../components-react";
 import { TableFilterDescriptorCollection } from "../components-react/table/columnfiltering/TableFilterDescriptorCollection";
 
 // cSpell:ignore buttongroup
@@ -50,6 +51,7 @@ export class TestUtils {
     return new Promise((resolve) => setTimeout(resolve));
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public static createPropertyRecord(value: any, column: ColumnDescription, typename: string) {
     const v: PrimitiveValue = {
       valueFormat: PropertyValueFormat.Primitive,
@@ -86,6 +88,28 @@ export class TestUtils {
     property.autoExpand = autoExpand;
     if (property.autoExpand === undefined)
       delete property.autoExpand;
+
+    return property;
+  }
+
+  public static createPrimitiveDoubleProperty(name: string, rawValue: number, displayValue: string = rawValue.toString(), editorInfo?: PropertyEditorInfo) {
+    const value: PrimitiveValue = {
+      displayValue,
+      value: rawValue,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      displayLabel: name,
+      name,
+      typename: StandardTypeNames.Double,
+    };
+
+    if (editorInfo)
+      description.editor = editorInfo;
+
+    const property = new PropertyRecord(value, description);
+    property.isReadonly = false;
 
     return property;
   }
@@ -137,6 +161,7 @@ export class TestUtils {
     return property;
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public static createEnumStringProperty(name: string, index: string, column?: ColumnDescription) {
     const value: PrimitiveValue = {
       displayValue: "",
@@ -166,6 +191,7 @@ export class TestUtils {
 
     return propertyRecord;
   }
+  // eslint-disable-next-line deprecation/deprecation
   public static createEnumProperty(name: string, index: string | number, column?: ColumnDescription) {
     const value: PrimitiveValue = {
       displayValue: name,
@@ -355,20 +381,26 @@ export class TestUtils {
 }
 
 /** @internal */
+// eslint-disable-next-line deprecation/deprecation
 export class TestFilterableTable implements FilterableTable {
   private _filterDescriptors = new TableFilterDescriptorCollection();
+  // eslint-disable-next-line deprecation/deprecation
   private _columnDescriptions: ColumnDescription[];
 
+  // eslint-disable-next-line deprecation/deprecation
   constructor(colDescriptions: ColumnDescription[]) {
     this._columnDescriptions = colDescriptions;
   }
 
   /** Gets the description of a column within the table. */
+  // eslint-disable-next-line deprecation/deprecation
   public getColumnDescription(columnKey: string): ColumnDescription | undefined {
+    // eslint-disable-next-line deprecation/deprecation
     return this._columnDescriptions.find((v: ColumnDescription) => v.key === columnKey);
   }
 
   /** Gets the filter descriptors for the table. */
+  // eslint-disable-next-line deprecation/deprecation
   public get filterDescriptors(): CompositeFilterDescriptorCollection {
     return this._filterDescriptors;
   }
@@ -385,5 +417,11 @@ export class MineDataController extends DataControllerBase {
     return { encounteredError: true, errorMessage: { severity: MessageSeverity.Error, briefMessage: "Test" } };
   }
 }
+
+/**
+ * Simplified type for `sinon.SinonSpy`.
+ * @internal
+ */
+export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
 
 export default TestUtils;   // eslint-disable-line: no-default-export

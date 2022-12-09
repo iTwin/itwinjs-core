@@ -57,7 +57,7 @@ class IModelTileChannel extends TileRequestChannel {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      IpcApp.callIpcHost("cancelTileContentRequests", imodel.getRpcProps(), treeContentIds);
+      IpcApp.appFunctionIpc.cancelTileContentRequests(imodel.getRpcProps(), treeContentIds);
     }
 
     this._canceled.clear();
@@ -147,7 +147,7 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
  * @internal
  */
 export class IModelTileRequestChannels {
-  private _cloudStorage?: TileRequestChannel;
+  private _cloudStorage: TileRequestChannel;
   private readonly _contentCache?: IModelTileMetadataCacheChannel;
   public readonly rpc: TileRequestChannel;
 
@@ -155,24 +155,21 @@ export class IModelTileRequestChannels {
     concurrency: number;
     usesHttp: boolean;
     cacheMetadata: boolean;
+    cacheConcurrency: number;
   }) {
     const channelName = "itwinjs-tile-rpc";
     this.rpc = args.usesHttp ? new TileRequestChannel(channelName, args.concurrency) : new IModelTileChannel(channelName, args.concurrency);
-    if (!args.cacheMetadata)
-      return;
 
-    this._contentCache = new IModelTileMetadataCacheChannel();
-    this._contentCache.registerChannel(this.rpc);
-  }
+    if (args.cacheMetadata) {
+      this._contentCache = new IModelTileMetadataCacheChannel();
+      this._contentCache.registerChannel(this.rpc);
+    }
 
-  public get cloudStorage(): TileRequestChannel | undefined {
-    return this._cloudStorage;
-  }
-
-  public enableCloudStorageCache(concurrency: number): TileRequestChannel {
-    assert(undefined === this._cloudStorage);
-    this._cloudStorage = new CloudStorageCacheChannel("itwinjs-cloud-cache", concurrency);
+    this._cloudStorage = new CloudStorageCacheChannel("itwinjs-cloud-cache", args.cacheConcurrency);
     this._contentCache?.registerChannel(this._cloudStorage);
+  }
+
+  public get cloudStorage(): TileRequestChannel {
     return this._cloudStorage;
   }
 

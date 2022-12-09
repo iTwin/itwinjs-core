@@ -14,7 +14,7 @@ import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInse
 import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "../widget/rectangular/ResizeGrip";
 
 /** Describes available stage panel types.
- * @beta
+ * @internal
  */
 export enum StagePanelType {
   Bottom,
@@ -55,7 +55,7 @@ export class StagePanelTypeHelpers {
 }
 
 /** Properties of [[StagePanel]] component.
- * @beta
+ * @internal
  */
 export interface StagePanelProps extends CommonProps {
   /** Stage panel content. */
@@ -73,7 +73,7 @@ export interface StagePanelProps extends CommonProps {
 }
 
 /** Stage panel used in [[StagePanels]] component.
- * @beta
+ * @internal
  */
 export class StagePanel extends React.PureComponent<StagePanelProps> {
   private _lastPosition?: Point;

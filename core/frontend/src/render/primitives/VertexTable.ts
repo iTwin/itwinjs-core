@@ -7,21 +7,22 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range2d, Vector3d } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, LinePixels, MeshEdge, OctEncodedNormalPair, PolylineData, PolylineTypeFlags,
-  QParams2d, QParams3d, QPoint2d, QPoint3dList, RenderMaterial, RenderTexture,
+  ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList,
 } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { AuxChannelTable } from "./AuxChannelTable";
-import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
+import { MeshArgs, Point3dList, PolylineArgs } from "./mesh/MeshPrimitives";
+import { createSurfaceMaterial, SurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
+import { EdgeParams } from "./EdgeParams";
 
 /**
  * Holds an array of indices into a VertexTable. Each index is a 24-bit unsigned integer.
  * The order of the indices specifies the order in which vertices are drawn.
  * @internal
  */
-export class VertexIndices {
+export class VertexIndices implements Iterable<number> {
   public readonly data: Uint8Array;
 
   /**
@@ -52,6 +53,10 @@ export class VertexIndices {
     bytes[byteIndex + 2] = (index & 0x00ff0000) >> 16;
   }
 
+  public setNthIndex(n: number, value: number): void {
+    VertexIndices.encodeIndex(value, this.data, n * 3);
+  }
+
   public decodeIndex(index: number): number {
     assert(index < this.length);
     const byteIndex = index * 3;
@@ -65,6 +70,15 @@ export class VertexIndices {
 
     return indices;
   }
+
+  public [Symbol.iterator]() {
+    function * iterator(indices: VertexIndices) {
+      for (let i = 0; i < indices.length; i++)
+        yield indices.decodeIndex(i);
+    }
+
+    return iterator(this);
+  }
 }
 
 /** @internal */
@@ -74,8 +88,8 @@ export interface Dimensions {
 }
 
 /** @internal */
-export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number): Dimensions {
-  const maxSize = IModelApp.renderSystem.maxTextureSize;
+export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number, maxSize?: number): Dimensions {
+  maxSize = maxSize ?? IModelApp.renderSystem.maxTextureSize;
   const nRgba = nEntries * nRgbaPerEntry + nExtraRgba;
 
   if (nRgba < maxSize)
@@ -91,7 +105,9 @@ export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtr
   }
 
   // Compute height
-  const height = Math.ceil(nRgba / width);
+  let height = Math.ceil(nRgba / width);
+  if (width * height < nRgba)
+    ++height;
 
   assert(height <= maxSize);
   assert(width <= maxSize);
@@ -111,7 +127,13 @@ export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtr
 export interface VertexTableProps {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
   readonly data: Uint8Array;
-  /** Quantization parameters for the vertex positions encoded into the array. */
+  /** If true, positions are not quantized but instead stored as 32-bit floats.
+   * [[qparams]] will still be defined; it can be used to derive the range of positions in the table.
+   */
+  readonly usesUnquantizedPositions?: boolean;
+  /** Quantization parameters for the vertex positions encoded into the array, if the positions are quantized;
+   * and for deriving the range of positions in the table, whether quantized or not.
+   */
   readonly qparams: QParams3d;
   /** The number of 4-byte 'RGBA' values in each row of the array. Must be divisible by numRgbaPerVertex. */
   readonly width: number;
@@ -144,7 +166,13 @@ export interface VertexTableProps {
 export class VertexTable implements VertexTableProps {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
   public readonly data: Uint8Array;
-  /** Quantization parameters for the vertex positions encoded into the array. */
+  /** If true, positions are not quantized but instead stored as 32-bit floats.
+   * [[qparams]] will still be defined; it can be used to derive the range of positions in the table.
+   */
+  public readonly usesUnquantizedPositions?: boolean;
+  /** Quantization parameters for the vertex positions encoded into the array, the positions are quantized;
+   * and for deriving the range of positions in the table, whether quantized or not.
+   */
   public readonly qparams: QParams3d;
   /** The number of 4-byte 'RGBA' values in each row of the array. Must be divisible by numRgbaPerVertex. */
   public readonly width: number;
@@ -169,6 +197,7 @@ export class VertexTable implements VertexTableProps {
   public constructor(props: VertexTableProps) {
     this.data = props.data;
     this.qparams = props.qparams;
+    this.usesUnquantizedPositions = !!props.usesUnquantizedPositions;
     this.width = props.width;
     this.height = props.height;
     this.hasTranslucency = true === props.hasTranslucency;
@@ -199,6 +228,7 @@ export class VertexTable implements VertexTableProps {
     return new VertexTable({
       data,
       qparams: builder.qparams,
+      usesUnquantizedPositions: builder.usesUnquantizedPositions,
       width: dimensions.width,
       height: dimensions.height,
       hasTranslucency: colorIndex.hasAlpha,
@@ -214,484 +244,17 @@ export class VertexTable implements VertexTableProps {
   public static createForPolylines(args: PolylineArgs): VertexTable | undefined {
     const polylines = args.polylines;
     if (0 < polylines.length)
-      return this.buildFrom(new SimpleBuilder(args), args.colors, args.features);
+      return this.buildFrom(createPolylineBuilder(args), args.colors, args.features);
     else
       return undefined;
   }
 }
 
-/** Describes point string geometry to be submitted to the rendering system.
- * @internal
- */
-export class PointStringParams {
-  public readonly vertices: VertexTable;
-  public readonly indices: VertexIndices;
-  public readonly weight: number;
-
-  public constructor(vertices: VertexTable, indices: VertexIndices, weight: number) {
-    this.vertices = vertices;
-    this.indices = indices;
-    this.weight = weight;
-  }
-
-  public static create(args: PolylineArgs): PointStringParams | undefined {
-    if (!args.flags.isDisjoint)
-      return undefined;
-
-    const vertices = VertexTable.createForPolylines(args);
-    if (undefined === vertices)
-      return undefined;
-
-    const polylines = args.polylines;
-    let vertIndices = polylines[0].vertIndices;
-    if (1 < polylines.length) {
-      // We used to assert this wouldn't happen - apparently it does...
-      vertIndices = [];
-      for (const polyline of polylines)
-        for (const vertIndex of polyline.vertIndices)
-          vertIndices.push(vertIndex);
-    }
-
-    const vertexIndices = VertexIndices.fromArray(vertIndices);
-    assert(vertexIndices.length === vertIndices.length);
-
-    return new PointStringParams(vertices, vertexIndices, args.width);
-  }
-}
-
-/** Parameter associated with each vertex index of a tesselated polyline. */
-const enum PolylineParam { // eslint-disable-line no-restricted-syntax
-  kNone = 0,
-  kSquare = 1 * 3,
-  kMiter = 2 * 3,
-  kMiterInsideOnly = 3 * 3,
-  kJointBase = 4 * 3,
-  kNegatePerp = 8 * 3,
-  kNegateAlong = 16 * 3,
-  kNoneAdjustWeight = 32 * 3,
-}
-
-/**
- * Represents a tesselated polyline.
- * Given a polyline as a line string, each segment of the line string is triangulated into a quad.
- * Based on the angle between two segments, additional joint triangles may be inserted in between to enable smoothly-rounded corners.
- * @internal
- */
-export interface TesselatedPolyline {
-  /** 24-bit index of each vertex. */
-  readonly indices: VertexIndices;
-  /** 24-bit index of the previous vertex in the polyline. */
-  readonly prevIndices: VertexIndices;
-  /** 24-bit index of the next vertex in the polyline, plus 8-bit parameter describing the semantics of this vertex. */
-  readonly nextIndicesAndParams: Uint8Array;
-}
-
-class PolylineVertex {
-  public isSegmentStart: boolean = false;
-  public isPolylineStartOrEnd: boolean = false;
-  public vertexIndex: number = 0;
-  public prevIndex: number = 0;
-  public nextIndex: number = 0;
-
-  public constructor() { }
-
-  public init(isSegmentStart: boolean, isPolylineStartOrEnd: boolean, vertexIndex: number, prevIndex: number, nextIndex: number) {
-    this.isSegmentStart = isSegmentStart;
-    this.isPolylineStartOrEnd = isPolylineStartOrEnd;
-    this.vertexIndex = vertexIndex;
-    this.prevIndex = prevIndex;
-    this.nextIndex = nextIndex;
-  }
-
-  public computeParam(negatePerp: boolean, adjacentToJoint: boolean = false, joint: boolean = false, noDisplacement: boolean = false): number {
-    if (joint)
-      return PolylineParam.kJointBase;
-
-    let param: PolylineParam;
-    if (noDisplacement)
-      param = PolylineParam.kNoneAdjustWeight; // prevent getting tossed before width adjustment
-    else if (adjacentToJoint)
-      param = PolylineParam.kMiterInsideOnly;
-    else
-      param = this.isPolylineStartOrEnd ? PolylineParam.kSquare : PolylineParam.kMiter;
-
-    let adjust = 0;
-    if (negatePerp)
-      adjust = PolylineParam.kNegatePerp;
-    if (!this.isSegmentStart)
-      adjust += PolylineParam.kNegateAlong;
-
-    return param + adjust;
-  }
-}
-
-class PolylineTesselator {
-  private _polylines: PolylineData[];
-  private _points: QPoint3dList;
-  private _doJoints: boolean;
-  private _numIndices = 0;
-  private _vertIndex: number[] = [];
-  private _prevIndex: number[] = [];
-  private _nextIndex: number[] = [];
-  private _nextParam: number[] = [];
-  private _position: Point3d[] = [];
-
-  public constructor(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean) {
-    this._polylines = polylines;
-    this._points = points;
-    this._doJoints = doJointTriangles;
-  }
-
-  public static fromPolyline(args: PolylineArgs): PolylineTesselator {
-    return new PolylineTesselator(args.polylines, args.points, wantJointTriangles(args.width, args.flags.is2d));
-  }
-
-  public static fromMesh(args: MeshArgs): PolylineTesselator | undefined {
-    if (undefined !== args.edges.polylines.lines && undefined !== args.points)
-      return new PolylineTesselator(args.edges.polylines.lines, args.points, wantJointTriangles(args.edges.width, args.is2d));
-
-    return undefined;
-  }
-
-  public tesselate(): TesselatedPolyline {
-    for (const p of this._points.list)
-      this._position.push(p.unquantize(this._points.params));
-
-    this._tesselate();
-
-    const vertIndex = VertexIndices.fromArray(this._vertIndex);
-    const prevIndex = VertexIndices.fromArray(this._prevIndex);
-
-    const nextIndexAndParam = new Uint8Array(this._numIndices * 4);
-    for (let i = 0; i < this._numIndices; i++) {
-      const index = this._nextIndex[i];
-      const j = i * 4;
-      VertexIndices.encodeIndex(index, nextIndexAndParam, j);
-      nextIndexAndParam[j + 3] = this._nextParam[i] & 0x000000ff;
-    }
-
-    return {
-      indices: vertIndex,
-      prevIndices: prevIndex,
-      nextIndicesAndParams: nextIndexAndParam,
-    };
-  }
-
-  private _tesselate() {
-    const v0 = new PolylineVertex(), v1 = new PolylineVertex();
-    const maxJointDot = -0.7;
-
-    for (const line of this._polylines) {
-      if (line.numIndices < 2)
-        continue;
-
-      const last = line.numIndices - 1;
-      const isClosed: boolean = line.vertIndices[0] === line.vertIndices[last];
-
-      for (let i = 0; i < last; ++i) {
-        const idx0 = line.vertIndices[i];
-        const idx1 = line.vertIndices[i + 1];
-        const isStart: boolean = (0 === i);
-        const isEnd: boolean = (last - 1 === i);
-        const prevIdx0 = isStart ? (isClosed ? line.vertIndices[last - 1] : idx0) : line.vertIndices[i - 1];
-        const nextIdx1 = isEnd ? (isClosed ? line.vertIndices[1] : idx1) : line.vertIndices[i + 2];
-
-        v0.init(true, isStart && !isClosed, idx0, prevIdx0, idx1);
-        v1.init(false, isEnd && !isClosed, idx1, nextIdx1, idx0);
-
-        const jointAt0: boolean = this._doJoints && (isClosed || !isStart) && this._dotProduct(v0) > maxJointDot;
-        const jointAt1: boolean = this._doJoints && (isClosed || !isEnd) && this._dotProduct(v1) > maxJointDot;
-
-        if (jointAt0 || jointAt1) {
-          this._addVertex(v0, v0.computeParam(true, jointAt0, false, false));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, false));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, false));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, true));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, false));
-          this._addVertex(v0, v0.computeParam(false, jointAt0, false, false));
-          this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
-          this._addVertex(v1, v1.computeParam(true, jointAt1, false, false));
-
-          if (jointAt0)
-            this.addJointTriangles(v0, v0.computeParam(false, true, false, true), v0);
-
-          if (jointAt1)
-            this.addJointTriangles(v1, v1.computeParam(false, true, false, true), v1);
-        } else {
-          this._addVertex(v0, v0.computeParam(true));
-          this._addVertex(v1, v1.computeParam(false));
-          this._addVertex(v0, v0.computeParam(false));
-          this._addVertex(v0, v0.computeParam(false));
-          this._addVertex(v1, v1.computeParam(false));
-          this._addVertex(v1, v1.computeParam(true));
-        }
-      }
-    }
-  }
-
-  private addJointTriangles(v0: PolylineVertex, p0: number, v1: PolylineVertex): void {
-    const param = v1.computeParam(false, false, true);
-    for (let i = 0; i < 3; i++) {
-      this._addVertex(v0, p0);
-      this._addVertex(v1, param + i + 1);
-      this._addVertex(v1, param + i);
-    }
-  }
-
-  private _dotProduct(v: PolylineVertex): number {
-    const pos: Point3d = this._position[v.vertexIndex];
-    const prevDir: Vector3d = Vector3d.createStartEnd(this._position[v.prevIndex], pos);
-    const nextDir: Vector3d = Vector3d.createStartEnd(this._position[v.nextIndex], pos);
-    return prevDir.dotProduct(nextDir);
-  }
-
-  private _addVertex(vertex: PolylineVertex, param: number): void {
-    this._vertIndex[this._numIndices] = vertex.vertexIndex;
-    this._prevIndex[this._numIndices] = vertex.prevIndex;
-    this._nextIndex[this._numIndices] = vertex.nextIndex;
-    this._nextParam[this._numIndices] = param;
-    this._numIndices++;
-  }
-}
-
-/** Strictly for tests. @internal */
-export function tesselatePolyline(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean): TesselatedPolyline {
-  const tesselator = new PolylineTesselator(polylines, points, doJointTriangles);
-  return tesselator.tesselate();
-}
-
 /** @internal */
-export enum SurfaceType {
-  Unlit,
-  Lit,
-  Textured,
-  TexturedLit,
-  VolumeClassifier,
-}
-
-/** @internal */
-export function isValidSurfaceType(value: number): boolean {
-  switch (value) {
-    case SurfaceType.Unlit:
-    case SurfaceType.Lit:
-    case SurfaceType.Textured:
-    case SurfaceType.TexturedLit:
-    case SurfaceType.VolumeClassifier:
-      return true;
-    default:
-      return false;
-  }
-}
-
-/** @internal */
-export interface SurfaceRenderMaterial {
-  readonly isAtlas: false;
-  readonly material: RenderMaterial;
-}
-
-/** @internal */
-export interface SurfaceMaterialAtlas {
-  readonly isAtlas: true;
-  // Overrides surface alpha to be translucent. Implies `overridesAlpha`.
-  readonly hasTranslucency: boolean;
-  // Overrides surface alpha to be opaque or translucent.
-  readonly overridesAlpha: boolean;
-  // offset past the END of the vertex data; equivalently, number of 32-bit colors in color table preceding material atlas.
-  readonly vertexTableOffset: number;
-  readonly numMaterials: number;
-}
-
-/** @internal */
-export type SurfaceMaterial = SurfaceRenderMaterial | SurfaceMaterialAtlas;
-
-/** @internal */
-export function createSurfaceMaterial(source: RenderMaterial | undefined): SurfaceMaterial | undefined {
-  if (undefined === source)
-    return undefined;
-  else
-    return { isAtlas: false, material: source };
-}
-
-/** @internal */
-export interface SurfaceParams {
-  readonly type: SurfaceType;
-  readonly indices: VertexIndices;
-  readonly fillFlags: FillFlags;
-  readonly hasBakedLighting: boolean;
-  readonly hasFixedNormals: boolean;
-  readonly textureMapping?: {
-    texture: RenderTexture;
-    alwaysDisplayed: boolean;
-  };
-  readonly material?: SurfaceMaterial;
-}
-
-/**
- * Describes a set of line segments representing edges of a mesh.
- * Each segment is expanded into a quad defined by two triangles.
- * The positions are adjusted in the shader to account for the edge width.
- * @internal
- */
-export interface SegmentEdgeParams {
-  /** The 24-bit indices of the tesselated line segment */
-  readonly indices: VertexIndices;
-  /**
-   * For each 24-bit index, 4 bytes:
-   * the 24-bit index of the vertex at the other end of the segment, followed by
-   * an 8-bit 'quad index' in [0..3] indicating which point in the expanded quad the vertex represents.
-   */
-  readonly endPointAndQuadIndices: Uint8Array;
-}
-
-function convertPolylinesAndEdges(polylines?: PolylineData[], edges?: MeshEdge[]): SegmentEdgeParams | undefined {
-  let numIndices = undefined !== edges ? edges.length : 0;
-  if (undefined !== polylines)
-    for (const pd of polylines)
-      numIndices += (pd.vertIndices.length - 1);
-
-  if (0 === numIndices)
-    return undefined;
-
-  numIndices *= 6;
-  const indexBytes = new Uint8Array(numIndices * 3);
-  const endPointAndQuadIndexBytes = new Uint8Array(numIndices * 4);
-
-  let ndx: number = 0;
-  let ndx2: number = 0;
-
-  const addPoint = (p0: number, p1: number, quadIndex: number) => {
-    VertexIndices.encodeIndex(p0, indexBytes, ndx);
-    ndx += 3;
-    VertexIndices.encodeIndex(p1, endPointAndQuadIndexBytes, ndx2);
-    endPointAndQuadIndexBytes[ndx2 + 3] = quadIndex;
-    ndx2 += 4;
-  };
-
-  if (undefined !== polylines) {
-    for (const pd of polylines) {
-      const num = pd.vertIndices.length - 1;
-      for (let i = 0; i < num; ++i) {
-        let p0 = pd.vertIndices[i];
-        let p1 = pd.vertIndices[i + 1];
-        if (p1 < p0) { // swap so that lower index is first.
-          p0 = p1;
-          p1 = pd.vertIndices[i];
-        }
-        addPoint(p0, p1, 0);
-        addPoint(p1, p0, 2);
-        addPoint(p0, p1, 1);
-        addPoint(p0, p1, 1);
-        addPoint(p1, p0, 2);
-        addPoint(p1, p0, 3);
-      }
-    }
-  }
-
-  if (undefined !== edges) {
-    for (const meshEdge of edges) {
-      const p0 = meshEdge.indices[0];
-      const p1 = meshEdge.indices[1];
-      addPoint(p0, p1, 0);
-      addPoint(p1, p0, 2);
-      addPoint(p0, p1, 1);
-      addPoint(p0, p1, 1);
-      addPoint(p1, p0, 2);
-      addPoint(p1, p0, 3);
-    }
-  }
-
-  return {
-    indices: new VertexIndices(indexBytes),
-    endPointAndQuadIndices: endPointAndQuadIndexBytes,
-  };
-}
-
-/**
- * A set of line segments representing edges of curved portions of a mesh.
- * Each vertex is augmented with a pair of oct-encoded normals used in the shader
- * to determine whether or not the edge should be displayed.
- * @internal
- */
-export interface SilhouetteParams extends SegmentEdgeParams {
-  /** Per index, 2 16-bit oct-encoded normals */
-  readonly normalPairs: Uint8Array;
-}
-
-function convertSilhouettes(edges: MeshEdge[], normalPairs: OctEncodedNormalPair[]): SilhouetteParams | undefined {
-  const base = convertPolylinesAndEdges(undefined, edges);
-  if (undefined === base)
-    return undefined;
-
-  const normalPairBytes = new Uint8Array(normalPairs.length * 6 * 4);
-  const normalPair16 = new Uint16Array(normalPairBytes.buffer);
-
-  let ndx = 0;
-  for (const pair of normalPairs) {
-    for (let i = 0; i < 6; i++) {
-      normalPair16[ndx++] = pair.first.value;
-      normalPair16[ndx++] = pair.second.value;
-    }
-  }
-
-  return {
-    indices: base.indices,
-    endPointAndQuadIndices: base.endPointAndQuadIndices,
-    normalPairs: normalPairBytes,
-  };
-}
-
-/** Describes the edges of a mesh. */
-export interface EdgeParams {
-  /** The edge width in pixels. */
-  readonly weight: number;
-  /** The line pattern in which edges are drawn. */
-  readonly linePixels: LinePixels;
-  /** Simple single-segment edges, always displayed when edge display is enabled. */
-  readonly segments?: SegmentEdgeParams;
-  /** Single-segment edges of curved surfaces, displayed based on edge normal relative to eye. */
-  readonly silhouettes?: SilhouetteParams;
-  /** Polyline edges, always displayed when edge display is enabled. */
-  readonly polylines?: TesselatedPolyline;
-}
-
-function wantJointTriangles(weight: number, is2d: boolean): boolean {
-  // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
-  const jointWidthThreshold = 3;
-  return is2d || weight >= jointWidthThreshold;
-}
-
-function convertEdges(meshArgs: MeshArgs): EdgeParams | undefined {
-  const args = meshArgs.edges;
-  if (undefined === args)
-    return undefined;
-
-  let polylines: TesselatedPolyline | undefined;
-  let segments: SegmentEdgeParams | undefined;
-  if (wantJointTriangles(args.width, meshArgs.is2d)) {
-    segments = convertPolylinesAndEdges(args.polylines.lines, args.edges.edges);
-  } else {
-    segments = convertPolylinesAndEdges(undefined, args.edges.edges);
-    const tesselator = PolylineTesselator.fromMesh(meshArgs);
-    if (undefined !== tesselator)
-      polylines = tesselator.tesselate();
-  }
-
-  // ###TODO: why the heck are the edges and normals of SilhouetteEdgeArgs potentially undefined???
-  const silhouettes = undefined !== args.silhouettes.edges && undefined !== args.silhouettes.normals ? convertSilhouettes(args.silhouettes.edges, args.silhouettes.normals) : undefined;
-  if (undefined === segments && undefined === silhouettes && undefined === polylines)
-    return undefined;
-
-  return {
-    weight: args.width,
-    linePixels: args.linePixels,
-    segments,
-    silhouettes,
-    polylines,
-  };
+export interface VertexTableWithIndices {
+  vertices: VertexTable;
+  indices: VertexIndices;
+  material?: SurfaceMaterial;
 }
 
 /**
@@ -702,7 +265,7 @@ function convertEdges(meshArgs: MeshArgs): EdgeParams | undefined {
 export class MeshParams {
   public readonly vertices: VertexTable;
   public readonly surface: SurfaceParams;
-  public readonly edges?: EdgeParams;
+  public edges?: EdgeParams;
   public readonly isPlanar: boolean;
   public readonly auxChannels?: AuxChannelTable;
 
@@ -717,62 +280,23 @@ export class MeshParams {
 
   /** Construct from a MeshArgs. */
   public static create(args: MeshArgs): MeshParams {
-    const builder = MeshBuilder.create(args);
+    const builder = createMeshBuilder(args);
     const vertices = VertexTable.buildFrom(builder, args.colors, args.features);
 
-    const surfaceIndices = VertexIndices.fromArray(args.vertIndices!);
+    const surfaceIndices = VertexIndices.fromArray(args.vertIndices);
 
     const surface: SurfaceParams = {
       type: builder.type,
       indices: surfaceIndices,
       fillFlags: args.fillFlags,
-      hasBakedLighting: args.hasBakedLighting,
-      hasFixedNormals: args.hasFixedNormals,
-      textureMapping: undefined !== args.texture ? { texture: args.texture, alwaysDisplayed: false } : undefined,
+      hasBakedLighting: true === args.hasBakedLighting,
+      textureMapping: undefined !== args.textureMapping ? { texture: args.textureMapping.texture, alwaysDisplayed: false } : undefined,
       material: createSurfaceMaterial(args.material),
     };
 
     const channels = undefined !== args.auxChannels ? AuxChannelTable.fromChannels(args.auxChannels, vertices.numVertices) : undefined;
-    const edges = convertEdges(args);
+    const edges = EdgeParams.fromMeshArgs(args);
     return new MeshParams(vertices, surface, edges, args.isPlanar, channels);
-  }
-}
-
-/**
- * Describes a set of tesselated polylines.
- * Each segment of each polyline is triangulated into a quad. Additional triangles may be inserted
- * between segments to enable rounded corners.
- */
-export class PolylineParams {
-  public readonly vertices: VertexTable;
-  public readonly polyline: TesselatedPolyline;
-  public readonly isPlanar: boolean;
-  public readonly type: PolylineTypeFlags;
-  public readonly weight: number;
-  public readonly linePixels: LinePixels;
-
-  /** Directly construct a PolylineParams. The PolylineParams takes ownership of all input data. */
-  public constructor(vertices: VertexTable, polyline: TesselatedPolyline, weight: number, linePixels: LinePixels, isPlanar: boolean, type: PolylineTypeFlags = PolylineTypeFlags.Normal) {
-    this.vertices = vertices;
-    this.polyline = polyline;
-    this.isPlanar = isPlanar;
-    this.weight = weight;
-    this.linePixels = linePixels;
-    this.type = type;
-  }
-
-  /** Construct from an PolylineArgs. */
-  public static create(args: PolylineArgs): PolylineParams | undefined {
-    assert(!args.flags.isDisjoint);
-    const vertices = VertexTable.createForPolylines(args);
-    if (undefined === vertices)
-      return undefined;
-
-    const tesselator = PolylineTesselator.fromPolyline(args);
-    if (undefined === tesselator)
-      return undefined;
-
-    return new PolylineParams(vertices, tesselator.tesselate(), args.width, args.linePixels, args.flags.isPlanar, args.flags.type);
   }
 }
 
@@ -784,6 +308,7 @@ export abstract class VertexTableBuilder {
   public abstract get numVertices(): number;
   public abstract get numRgbaPerVertex(): number;
   public abstract get qparams(): QParams3d;
+  public abstract get usesUnquantizedPositions(): boolean;
   public get uvParams(): QParams2d | undefined { return undefined; }
   public abstract appendVertex(vertIndex: number): void;
 
@@ -847,150 +372,377 @@ export abstract class VertexTableBuilder {
   }
 }
 
-type SimpleVertexData = PolylineArgs | MeshArgs;
+type VertexData = PolylineArgs | MeshArgs;
+type Quantized<T extends VertexData> = Omit<T, "points"> & { points: QPoint3dList };
+type Unquantized<T extends VertexData> = Omit<T, "points"> & { points: Omit<Point3dList, "add"> };
 
-/**
- * Supplies vertex data from a PolylineArgs or MeshArgs. Each vertex consists of 12 bytes:
- *  pos.x           00
- *  pos.y           02
- *  pos.z           04
- *  colorIndex      06
- *  featureIndex    08
+namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
+  /**
+   * Supplies vertex data from a PolylineArgs or MeshArgs. Each vertex consists of 12 bytes:
+   *  pos.x           00
+   *  pos.y           02
+   *  pos.z           04
+   *  colorIndex      06
+   *  featureIndex    08 (24 bits)
+   *  materialIndex   0B (for meshes that use a material atlas; otherwise unused). NOTE: Currently front-end code does not produce material atlases.
+   */
+  export class SimpleBuilder<T extends Quantized<VertexData>> extends VertexTableBuilder {
+    public args: T;
+    protected _qpoints: QPoint3dList;
+
+    public constructor(args: T) {
+      super();
+      this._qpoints = args.points;
+      this.args = args;
+      assert(undefined !== this.args.points);
+    }
+
+    public get numVertices() { return this.args.points.length; }
+    public get numRgbaPerVertex() { return 3; }
+    public get usesUnquantizedPositions() { return false; }
+    public get qparams() {
+      return this._qpoints.params;
+    }
+
+    public appendVertex(vertIndex: number): void {
+      this.appendPosition(vertIndex);
+      this.appendColorIndex(vertIndex);
+      this.appendFeatureIndex(vertIndex);
+    }
+
+    protected appendPosition(vertIndex: number) {
+      this.append16(this._qpoints.list[vertIndex].x);
+      this.append16(this._qpoints.list[vertIndex].y);
+      this.append16(this._qpoints.list[vertIndex].z);
+    }
+
+    protected appendColorIndex(vertIndex: number) {
+      if (undefined !== this.args.colors.nonUniform) {
+        this.append16(this.args.colors.nonUniform.indices[vertIndex]);
+      } else {
+        this.advance(2);
+      }
+    }
+
+    protected appendFeatureIndex(vertIndex: number) {
+      if (undefined !== this.args.features.featureIDs) {
+        this.append32(this.args.features.featureIDs[vertIndex]);
+      } else {
+        this.advance(4);
+      }
+    }
+  }
+
+  /** Supplies vertex data from a MeshArgs. */
+  export class MeshBuilder extends SimpleBuilder<Quantized<MeshArgs>> {
+    public readonly type: SurfaceType;
+
+    protected constructor(args: Quantized<MeshArgs>, type: SurfaceType) {
+      super(args);
+      this.type = type;
+    }
+
+    public static create(args: Quantized<MeshArgs>): MeshBuilder {
+      if (args.isVolumeClassifier)
+        return new MeshBuilder(args, SurfaceType.VolumeClassifier);
+
+      const isLit = undefined !== args.normals && 0 < args.normals.length;
+      const isTextured = undefined !== args.textureMapping;
+
+      let uvParams: QParams2d | undefined;
+
+      if (args.textureMapping) {
+        const uvRange = Range2d.createNull();
+        const fpts = args.textureMapping.uvParams;
+        const pt2d = new Point2d();
+        if (undefined !== fpts && fpts.length > 0)
+          for (let i = 0; i < args.points.length; i++)
+            uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
+
+        uvParams = QParams2d.fromRange(uvRange);
+      }
+
+      if (isLit)
+        return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
+      else
+        return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
+    }
+  }
+
+  /** Supplies vertex data from a MeshArgs where each vertex consists of 16 bytes.
+   * In addition to the SimpleBuilder data, the final 4 bytes hold the quantized UV params
+   * The color index is left uninitialized as it is unused.
+   */
+  class TexturedMeshBuilder extends MeshBuilder {
+    private _qparams: QParams2d;
+    private _qpoint = new QPoint2d();
+
+    public constructor(args: Quantized<MeshArgs>, qparams: QParams2d, type: SurfaceType = SurfaceType.Textured) {
+      super(args, type);
+      this._qparams = qparams;
+      assert(undefined !== args.textureMapping);
+    }
+
+    public override get numRgbaPerVertex() { return 4; }
+    public override get uvParams() { return this._qparams; }
+
+    public override appendVertex(vertIndex: number) {
+      this.appendPosition(vertIndex);
+      this.appendNormal(vertIndex);
+      this.appendFeatureIndex(vertIndex);
+      this.appendUVParams(vertIndex);
+    }
+
+    protected appendNormal(_vertIndex: number): void { this.advance(2); } // no normal for unlit meshes
+
+    protected appendUVParams(vertIndex: number) {
+      this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
+      this.append16(this._qpoint.x);
+      this.append16(this._qpoint.y);
+    }
+  }
+
+  /** As with TexturedMeshBuilder, but the color index is replaced with the oct-encoded normal value. */
+  class TexturedLitMeshBuilder extends TexturedMeshBuilder {
+    public constructor(args: Quantized<MeshArgs>, qparams: QParams2d) {
+      super(args, qparams, SurfaceType.TexturedLit);
+      assert(undefined !== args.normals);
+    }
+
+    protected override appendNormal(vertIndex: number) { this.append16(this.args.normals![vertIndex].value); }
+  }
+
+  /** 16 bytes. The last 2 bytes are unused; the 2 immediately preceding it hold the oct-encoded normal value. */
+  class LitMeshBuilder extends MeshBuilder {
+    public constructor(args: Quantized<MeshArgs>) {
+      super(args, SurfaceType.Lit);
+      assert(undefined !== args.normals);
+    }
+
+    public override get numRgbaPerVertex() { return 4; }
+
+    public override appendVertex(vertIndex: number) {
+      super.appendVertex(vertIndex);
+      this.append16(this.args.normals![vertIndex].value);
+      this.advance(2); // 2 unused bytes
+    }
+  }
+}
+
+/** Builders in this namespace store vertex positions as 32-bit floats instead of quantizing to 16-bit unsigned integers.
+ * This is preferred for decoration graphics, which might contain ranges of positions that exceed the limits for quantization; if quantized,
+ * they could produce visual artifacts.
+ * Each builder produces a VertexTable that starts with the following layout:
+ *  pos.x:        00
+ *  pos.y:        04
+ *  pos.z:        08
+ *  featureIndex: 0C
+ *  materialIndex:0F (NOTE: frontend code currently doesn't produce material atlases, so this is always zero).
+ * Followed (by default) by:
+ *  colorIndex:   10
+ *  unused:       12
+ * Subclasses may add 4 more bytes and/or overwrite the final 4 bytes above.
  */
-class SimpleBuilder<T extends SimpleVertexData> extends VertexTableBuilder {
-  public args: T;
+namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
+  const u32Array = new Uint32Array(1);
+  const f32Array = new Float32Array(u32Array.buffer);
 
-  public constructor(args: T) {
-    super();
-    this.args = args;
-    assert(undefined !== this.args.points);
-  }
+  // colorIndex:  10
+  // unused:      12
+  export class SimpleBuilder<T extends Unquantized<VertexData>> extends VertexTableBuilder {
+    public args: T;
+    protected _points: Point3d[];
+    private _qparams3d: QParams3d;
 
-  public get numVertices() { return this.args.points!.length; }
-  public get numRgbaPerVertex() { return 3; }
-  public get qparams() { return this.args.points!.params; }
+    public constructor(args: T) {
+      super();
+      assert(!(args.points instanceof QPoint3dList));
+      this._qparams3d = QParams3d.fromRange(args.points.range);
+      this.args = args;
+      this._points = args.points;
+    }
 
-  public appendVertex(vertIndex: number): void {
-    this.appendPosition(vertIndex);
-    this.appendColorIndex(vertIndex);
-    this.appendFeatureIndex(vertIndex);
-  }
+    public get numVertices() { return this._points.length; }
+    public get numRgbaPerVertex() { return 5; }
+    public get usesUnquantizedPositions() { return true; }
+    public get qparams() { return this._qparams3d; }
 
-  protected appendPosition(vertIndex: number) {
-    const points = this.args.points!;
-    this.append16(points.list[vertIndex].x);
-    this.append16(points.list[vertIndex].y);
-    this.append16(points.list[vertIndex].z);
-  }
+    public appendVertex(vertIndex: number): void {
+      this.appendTransposePosAndFeatureNdx(vertIndex);
+      this.appendColorIndex(vertIndex);
+    }
 
-  protected appendColorIndex(vertIndex: number) {
-    if (undefined !== this.args.colors.nonUniform) {
-      this.append16(this.args.colors.nonUniform.indices[vertIndex]);
-    } else {
+    private appendFloat32(val: number) {
+      f32Array[0] = val;
+      this.append32(u32Array[0]);
+    }
+
+    private convertFloat32(val: number): number {
+      f32Array[0] = val;
+      return u32Array[0];
+    }
+
+    protected appendTransposePosAndFeatureNdx(vertIndex: number) {
+      // transpose position xyz vals into [0].xyz - [3].xyz, and add feature index at .w
+      // this is to order things to let shader code access much more efficiently
+      const pt = this._points[vertIndex];
+      const x = this.convertFloat32 (pt.x);
+      const y = this.convertFloat32 (pt.y);
+      const z = this.convertFloat32 (pt.z);
+      const featID = (this.args.features.featureIDs) ? this.args.features.featureIDs[vertIndex] : 0;
+      this.append8(x & 0x000000ff);
+      this.append8(y & 0x000000ff);
+      this.append8(z & 0x000000ff);
+      this.append8(featID & 0x000000ff);
+      this.append8((x >>> 8) & 0x000000ff);
+      this.append8((y >>> 8) & 0x000000ff);
+      this.append8((z >>> 8) & 0x000000ff);
+      this.append8((featID >>> 8) & 0x000000ff);
+      this.append8((x >>> 16) & 0x000000ff);
+      this.append8((y >>> 16) & 0x000000ff);
+      this.append8((z >>> 16) & 0x000000ff);
+      this.append8((featID >>> 16) & 0x000000ff);
+      this.append8(x >>> 24);
+      this.append8(y >>> 24);
+      this.append8(z >>> 24);
+      this.append8(featID >>> 24);
+    }
+
+    protected appendPosition(vertIndex: number) {
+      const pt = this._points[vertIndex];
+      this.appendFloat32(pt.x);
+      this.appendFloat32(pt.y);
+      this.appendFloat32(pt.z);
+    }
+
+    protected appendFeatureIndex(vertIndex: number) {
+      if (this.args.features.featureIDs)
+        this.append32(this.args.features.featureIDs[vertIndex]);
+      else
+        this.advance(4);
+    }
+
+    protected _appendColorIndex(vertIndex: number) {
+      if (undefined !== this.args.colors.nonUniform)
+        this.append16(this.args.colors.nonUniform.indices[vertIndex]);
+      else
+        this.advance(2);
+    }
+
+    protected appendColorIndex(vertIndex: number) {
+      this._appendColorIndex(vertIndex);
       this.advance(2);
     }
   }
 
-  protected appendFeatureIndex(vertIndex: number) {
-    if (undefined !== this.args.features.featureIDs) {
-      this.append32(this.args.features.featureIDs[vertIndex]);
-    } else {
-      this.advance(4);
+  export class MeshBuilder extends SimpleBuilder<Unquantized<MeshArgs>> {
+    public readonly type: SurfaceType;
+
+    protected constructor(args: Unquantized<MeshArgs>, type: SurfaceType) {
+      super(args);
+      this.type = type;
+    }
+
+    public static create(args: Unquantized<MeshArgs>): MeshBuilder {
+      if (args.isVolumeClassifier)
+        return new MeshBuilder(args, SurfaceType.VolumeClassifier);
+
+      const isLit = undefined !== args.normals && 0 < args.normals.length;
+      const isTextured = undefined !== args.textureMapping;
+
+      let uvParams: QParams2d | undefined;
+
+      if (args.textureMapping) {
+        const uvRange = Range2d.createNull();
+        const fpts = args.textureMapping.uvParams;
+        const pt2d = new Point2d();
+        if (undefined !== fpts && fpts.length > 0)
+          for (let i = 0; i < args.points.length; i++)
+            uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
+
+        uvParams = QParams2d.fromRange(uvRange);
+      }
+
+      if (isLit)
+        return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
+      else
+        return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
+    }
+  }
+
+  // u: 10
+  // v: 12
+  class TexturedMeshBuilder extends MeshBuilder {
+    private _qparams: QParams2d;
+    private _qpoint = new QPoint2d();
+
+    public constructor(args: Unquantized<MeshArgs>, qparams: QParams2d, type = SurfaceType.Textured) {
+      super(args, type);
+      this._qparams = qparams;
+      assert(undefined !== args.textureMapping);
+    }
+
+    public override get uvParams() { return this._qparams; }
+
+    public override appendVertex(vertIndex: number) {
+      super.appendVertex(vertIndex);
+
+      this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
+      this.append16(this._qpoint.x);
+      this.append16(this._qpoint.y);
+    }
+
+    protected override appendColorIndex() { }
+  }
+
+  // u: 10
+  // v: 12
+  // normal: 14
+  // unused: 16
+  class TexturedLitMeshBuilder extends TexturedMeshBuilder {
+    public constructor(args: Unquantized<MeshArgs>, qparams: QParams2d) {
+      super(args, qparams, SurfaceType.TexturedLit);
+      assert(undefined !== args.normals);
+    }
+
+    public override get numRgbaPerVertex() { return 6; }
+
+    public override appendVertex(vertIndex: number) {
+      super.appendVertex(vertIndex);
+      this.append16(this.args.normals![vertIndex].value);
+      this.advance(2);
+    }
+  }
+
+  // color: 10
+  // normal: 12
+  class LitMeshBuilder extends MeshBuilder {
+    public constructor(args: Unquantized<MeshArgs>) {
+      super(args, SurfaceType.Lit);
+      assert(undefined !== args.normals);
+    }
+
+    protected override appendColorIndex(vertIndex: number) {
+      super._appendColorIndex(vertIndex);
+    }
+
+    public override appendVertex(vertIndex: number) {
+      super.appendVertex(vertIndex);
+      this.append16(this.args.normals![vertIndex].value);
     }
   }
 }
 
-/** Supplies vertex data from a MeshArgs. */
-class MeshBuilder extends SimpleBuilder<MeshArgs> {
-  public readonly type: SurfaceType;
-
-  protected constructor(args: MeshArgs, type: SurfaceType) {
-    super(args);
-    this.type = type;
-  }
-
-  public static create(args: MeshArgs): MeshBuilder {
-    if (args.isVolumeClassifier)
-      return new MeshBuilder(args, SurfaceType.VolumeClassifier);
-
-    const isLit = undefined !== args.normals && 0 < args.normals.length;
-    const isTextured = undefined !== args.texture;
-
-    let uvParams: QParams2d | undefined;
-
-    if (isTextured) {
-      const uvRange = Range2d.createNull();
-      const fpts = args.textureUv;
-      const pt2d = new Point2d();
-      if (undefined !== fpts && fpts.length > 0)
-        for (let i = 0; i < args.points!.length; i++)
-          uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
-
-      uvParams = QParams2d.fromRange(uvRange);
-    }
-
-    if (isLit)
-      return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
-    else
-      return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
-  }
+function createMeshBuilder(args: MeshArgs): VertexTableBuilder & { type: SurfaceType } {
+  if (args.points instanceof QPoint3dList)
+    return Quantized.MeshBuilder.create(args as Quantized<MeshArgs>);
+  else
+    return Unquantized.MeshBuilder.create(args as Unquantized<MeshArgs>);
 }
 
-/** Supplies vertex data from a MeshArgs where each vertex consists of 16 bytes.
- * In addition to the SimpleBuilder data, the final 4 bytes hold the quantized UV params
- * The color index is left uninitialized as it is unused.
- */
-class TexturedMeshBuilder extends MeshBuilder {
-  private _qparams: QParams2d;
-  private _qpoint = new QPoint2d();
-
-  public constructor(args: MeshArgs, qparams: QParams2d, type: SurfaceType = SurfaceType.Textured) {
-    super(args, type);
-    this._qparams = qparams;
-    assert(undefined !== args.textureUv);
-  }
-
-  public override get numRgbaPerVertex() { return 4; }
-  public override get uvParams() { return this._qparams; }
-
-  public override appendVertex(vertIndex: number) {
-    this.appendPosition(vertIndex);
-    this.appendNormal(vertIndex);
-    this.appendFeatureIndex(vertIndex);
-    this.appendUVParams(vertIndex);
-  }
-
-  protected appendNormal(_vertIndex: number): void { this.advance(2); } // no normal for unlit meshes
-
-  protected appendUVParams(vertIndex: number) {
-    this._qpoint.init(this.args.textureUv![vertIndex], this._qparams);
-    this.append16(this._qpoint.x);
-    this.append16(this._qpoint.y);
-  }
-}
-
-/** As with TexturedMeshBuilder, but the color index is replaced with the oct-encoded normal value. */
-class TexturedLitMeshBuilder extends TexturedMeshBuilder {
-  public constructor(args: MeshArgs, qparams: QParams2d) {
-    super(args, qparams, SurfaceType.TexturedLit);
-    assert(undefined !== args.normals);
-  }
-
-  protected override appendNormal(vertIndex: number) { this.append16(this.args.normals![vertIndex].value); }
-}
-
-/** 16 bytes. The last 2 bytes are unused; the 2 immediately preceding it hold the oct-encoded normal value. */
-class LitMeshBuilder extends MeshBuilder {
-  public constructor(args: MeshArgs) {
-    super(args, SurfaceType.Lit);
-    assert(undefined !== args.normals);
-  }
-
-  public override get numRgbaPerVertex() { return 4; }
-
-  public override appendVertex(vertIndex: number) {
-    super.appendVertex(vertIndex);
-    this.append16(this.args.normals![vertIndex].value);
-    this.advance(2); // 2 unused bytes
-  }
+function createPolylineBuilder(args: PolylineArgs): VertexTableBuilder {
+  if (args.points instanceof QPoint3dList)
+    return new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>);
+  else
+    return new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>);
 }

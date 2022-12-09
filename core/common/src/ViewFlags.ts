@@ -13,6 +13,7 @@ import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@itwin/core-bentley
 /** Enumerates the available basic rendering modes, as part of a [DisplayStyle]($backend)'s [[ViewFlags]].
  * The rendering mode broadly affects various aspects of the display style - in particular, whether and how surfaces and their edges are drawn.
  * @public
+ * @extensions
  */
 export enum RenderMode {
   /** Renders only the edges of surfaces, with exceptions for planar regions based on their [[FillFlags]].
@@ -49,6 +50,7 @@ export enum RenderMode {
  * those of the corresponding [[ViewFlags]] properties, making usage of this type in code error-prone.
  * Prefer to use [[ViewFlagsProperties]] unless you need to work directly with the persistence format.
  * @public
+ * @extensions
  */
 export interface ViewFlagProps {
   /** If true, don't display geometry of class [[GeometryClass.Construction]]. */
@@ -73,11 +75,11 @@ export interface ViewFlagProps {
   noTexture?: boolean;
   /** If true, don't apply [[RenderMaterial]]s to surfaces. */
   noMaterial?: boolean;
-  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
+  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noCameraLights?: boolean;
-  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
+  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noSourceLights?: boolean;
-  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
+  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noSolarLight?: boolean;
   /** If true, display the edges of surfaces. */
   visEdges?: boolean;
@@ -97,6 +99,10 @@ export interface ViewFlagProps {
   ambientOcclusion?: boolean;
   /** If true, apply [[ThematicDisplay]]. */
   thematicDisplay?: boolean;
+  /** If true, overlay surfaces with wiremesh to reveal their triangulation.
+   * @beta
+   */
+  wiremesh?: boolean;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
    * non-planar surfaces always draw in front of those non-planar surfaces.
@@ -200,6 +206,10 @@ export class ViewFlags {
   public readonly ambientOcclusion: boolean;
   /** Whether to apply [[ThematicDisplay]]. Default: false. */
   public readonly thematicDisplay: boolean;
+  /** If true, overlay surfaces with wiremesh to reveal their triangulation.
+   * @beta
+   */
+  public readonly wiremesh: boolean;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
    * non-planar surfaces always draw in front of those non-planar surfaces.
@@ -244,6 +254,7 @@ export class ViewFlags {
     this.backgroundMap = flags?.backgroundMap ?? false;
     this.ambientOcclusion = flags?.ambientOcclusion ?? false;
     this.thematicDisplay = flags?.thematicDisplay ?? false;
+    this.wiremesh = flags?.wiremesh ?? false;
     this.forceSurfaceDiscard = flags?.forceSurfaceDiscard ?? false;
     this.whiteOnWhiteReversal = flags?.whiteOnWhiteReversal ?? true;
     this.lighting = flags?.lighting ?? false;
@@ -265,16 +276,31 @@ export class ViewFlags {
    * @see [[copy]] to have `undefined` properties reset to their default values.
    */
   public override(overrides: Partial<ViewFlagsProperties>): ViewFlags {
-    // Create a copy of the input with all undefined ViewFlags properties removed.
-    // Note we use the keys of `ViewFlags.defaults` instead of those of the input to avoid processing additional unrelated properties that may be present on input.
-    overrides = { ...overrides };
-    for (const propName of Object.keys(ViewFlags.defaults)) {
+    // This method can get called very frequently when a RenderTimeline script is applied to the view. Often `overrides` will be an empty object.
+    // To optimize:
+    //  - Bail as quickly as possible if nothing is actually overridden, without allocating a new ViewFlags.
+    //  - Only make a copy of the input if at least one property is explicitly `undefined`.
+    let copied = false;
+    let anyOverridden = false;
+
+    for (const propName of Object.keys(overrides)) {
       const key = propName as keyof Partial<ViewFlagsProperties>;
-      if (undefined === overrides[key])
+      const overrideValue = overrides[key];
+      if (undefined === overrideValue) {
+        if (!copied) {
+          // Don't modify input...
+          overrides = { ...overrides };
+          copied = true;
+        }
+
+        // `undefined` means "retain existing value".
         delete overrides[key];
+      } else if (overrideValue !== this[key]) {
+        anyOverridden = true;
+      }
     }
 
-    return this.copy(overrides);
+    return anyOverridden ? this.copy(overrides) : this;
   }
 
   /** Produce a copy of these ViewFlags with a single boolean property changed.
@@ -345,28 +371,52 @@ export class ViewFlags {
   /** Convert to JSON representation. */
   public toJSON(): ViewFlagProps {
     const out: ViewFlagProps = {};
-    if (!this.constructions) out.noConstruct = true;
-    if (!this.dimensions) out.noDim = true;
-    if (!this.patterns) out.noPattern = true;
-    if (!this.weights) out.noWeight = true;
-    if (!this.styles) out.noStyle = true;
-    if (!this.transparency) out.noTransp = true;
-    if (!this.fill) out.noFill = true;
-    if (this.grid) out.grid = true;
-    if (this.acsTriad) out.acs = true;
-    if (!this.textures) out.noTexture = true;
-    if (!this.materials) out.noMaterial = true;
-    if (!this.lighting) out.noCameraLights = out.noSourceLights = out.noSolarLight = true;
-    if (this.visibleEdges) out.visEdges = true;
-    if (this.hiddenEdges) out.hidEdges = true;
-    if (this.shadows) out.shadows = true;
-    if (this.clipVolume) out.clipVol = true;
-    if (this.monochrome) out.monochrome = true;
-    if (this.backgroundMap) out.backgroundMap = true;
-    if (this.ambientOcclusion) out.ambientOcclusion = true;
-    if (this.thematicDisplay) out.thematicDisplay = true;
-    if (this.forceSurfaceDiscard) out.forceSurfaceDiscard = true;
-    if (!this.whiteOnWhiteReversal) out.noWhiteOnWhiteReversal = true;
+    if (!this.constructions)
+      out.noConstruct = true;
+    if (!this.dimensions)
+      out.noDim = true;
+    if (!this.patterns)
+      out.noPattern = true;
+    if (!this.weights)
+      out.noWeight = true;
+    if (!this.styles)
+      out.noStyle = true;
+    if (!this.transparency)
+      out.noTransp = true;
+    if (!this.fill)
+      out.noFill = true;
+    if (this.grid)
+      out.grid = true;
+    if (this.acsTriad)
+      out.acs = true;
+    if (!this.textures)
+      out.noTexture = true;
+    if (!this.materials)
+      out.noMaterial = true;
+    if (!this.lighting)
+      out.noCameraLights = out.noSourceLights = out.noSolarLight = true;
+    if (this.visibleEdges)
+      out.visEdges = true;
+    if (this.hiddenEdges)
+      out.hidEdges = true;
+    if (this.shadows)
+      out.shadows = true;
+    if (this.clipVolume)
+      out.clipVol = true;
+    if (this.monochrome)
+      out.monochrome = true;
+    if (this.backgroundMap)
+      out.backgroundMap = true;
+    if (this.ambientOcclusion)
+      out.ambientOcclusion = true;
+    if (this.thematicDisplay)
+      out.thematicDisplay = true;
+    if (this.wiremesh)
+      out.wiremesh = true;
+    if (this.forceSurfaceDiscard)
+      out.forceSurfaceDiscard = true;
+    if (!this.whiteOnWhiteReversal)
+      out.noWhiteOnWhiteReversal = true;
 
     out.renderMode = this.renderMode;
     return out;
@@ -400,6 +450,7 @@ export class ViewFlags {
       backgroundMap: this.backgroundMap,
       ambientOcclusion: this.ambientOcclusion,
       thematicDisplay: this.thematicDisplay,
+      wiremesh: this.wiremesh,
       forceSurfaceDiscard: this.forceSurfaceDiscard,
       noWhiteOnWhiteReversal: !this.whiteOnWhiteReversal,
     };
@@ -459,6 +510,7 @@ export class ViewFlags {
       backgroundMap: JsonUtils.asBool(json.backgroundMap),
       ambientOcclusion: JsonUtils.asBool(json.ambientOcclusion),
       thematicDisplay: JsonUtils.asBool(json.thematicDisplay),
+      wiremesh: JsonUtils.asBool(json.wiremesh),
       forceSurfaceDiscard: JsonUtils.asBool(json.forceSurfaceDiscard),
       whiteOnWhiteReversal: !JsonUtils.asBool(json.noWhiteOnWhiteReversal),
     });
@@ -490,6 +542,7 @@ export class ViewFlags {
       && this.backgroundMap === other.backgroundMap
       && this.ambientOcclusion === other.ambientOcclusion
       && this.thematicDisplay === other.thematicDisplay
+      && this.wiremesh === other.wiremesh
       && this.forceSurfaceDiscard === other.forceSurfaceDiscard
       && this.whiteOnWhiteReversal === other.whiteOnWhiteReversal;
   }
@@ -498,11 +551,13 @@ export class ViewFlags {
 /** A type containing all of the properties of [[ViewFlags]] with none of the methods and with the `readonly` modifiers removed.
  * @see [[ViewFlags.create]], [[ViewFlags.copy]], and [[ViewFlags.override]] for methods accepting an object of this type.
  * @public
+ * @extensions
  */
 export type ViewFlagsProperties = Mutable<NonFunctionPropertiesOf<ViewFlags>>;
 
 /** A type that describes how to override selected properties of a [[ViewFlags]].
  * @see [[ViewFlags.override]] to apply the overrides to a ViewFlags object.
  * @public
+ * @extensions
  */
 export type ViewFlagOverrides = Partial<ViewFlagsProperties>;

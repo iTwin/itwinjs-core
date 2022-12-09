@@ -12,15 +12,15 @@ import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
 } from "@itwin/core-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
-import { HiliteSet } from "../../SelectionSet";
+import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
-import { Viewport } from "../../Viewport";
+import { ReadImageBufferArgs, Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
 import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { AnimationBranchStates } from "../GraphicBranch";
+import { AnimationBranchStates, AnimationNodeId } from "../GraphicBranch";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -55,7 +55,7 @@ import { System } from "./System";
 import { TargetUniforms } from "./TargetUniforms";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
-import { TextureHandle } from "./Texture";
+import { Texture2DHandle, TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
@@ -74,6 +74,7 @@ export interface Hilites {
   readonly subcategories: Id64.Uint32Set;
   readonly models: Id64.Uint32Set;
   readonly isEmpty: boolean;
+  readonly modelSubCategoryMode: ModelSubCategoryHiliteMode;
 }
 
 class EmptyHiliteSet {
@@ -81,10 +82,16 @@ class EmptyHiliteSet {
   public readonly subcategories: Id64.Uint32Set;
   public readonly models: Id64.Uint32Set;
   public readonly isEmpty = true;
+  public readonly modelSubCategoryMode = "union";
 
   public constructor() {
     this.elements = this.subcategories = this.models = new Id64.Uint32Set();
   }
+}
+
+interface ReadPixelResources {
+  readonly texture: Texture2DHandle;
+  readonly fbo: FrameBuffer;
 }
 
 /** @internal */
@@ -101,7 +108,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   protected _compositor: SceneCompositor;
-  private _fbo?: FrameBuffer;
+  protected _fbo?: FrameBuffer;
   private _dcAssigned = false;
   public performanceMetrics?: PerformanceMetrics;
   public readonly decorationsState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -116,6 +123,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _animationBranches?: AnimationBranchStates;
   private _isReadPixelsInProgress = false;
   private _readPixelsSelector = Pixel.Selector.None;
+  private _readPixelReusableResources?: ReadPixelResources;
   private _drawNonLocatable = true;
   private _currentlyDrawingClassifier?: PlanarClassifier;
   private _analysisFraction: number = 0;
@@ -127,6 +135,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassifier;
   public activeVolumeClassifierModelId?: Id64String;
+  private _currentAnimationTransformNodeId?: number;
 
   // RenderTargetDebugControl
   public vcSupportIntersectingVolumes: boolean = false;
@@ -137,6 +146,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public displayRealityTilePreload = false;
   public displayRealityTileRanges = false;
   public logRealityTiles = false;
+  public displayNormalMaps = true;
 
   public freezeRealityTiles = false;
   public get shadowFrustum(): Frustum | undefined {
@@ -417,7 +427,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     });
   }
 
-  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<Id64String, T> | undefined, newMap: Map<Id64String, T> | undefined): void {
+  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<String, T> | undefined, newMap: Map<String, T> | undefined): void {
     if (undefined === newMap) {
       if (undefined !== oldMap)
         for (const value of oldMap.values())
@@ -439,7 +449,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap) {
     this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, planarClassifiers);
     this._planarClassifiers = planarClassifiers;
-
   }
 
   public changeDynamics(dynamics?: GraphicList) {
@@ -739,30 +748,78 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
     // to the pick buffers and others we don't want - such as non-pickable decorations - do.
     // Render to an offscreen buffer so that we don't destroy the current color buffer.
-    const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === texture) {
+    const resources = this.createOrReuseReadPixelResources(rect);
+    if (resources === undefined) {
       receiver(undefined);
       return;
     }
 
     let result: Pixel.Buffer | undefined;
-    const fbo = FrameBuffer.create([texture]);
-    if (undefined !== fbo) {
-      this.renderSystem.frameBufferStack.execute(fbo, true, false, () => {
-        this._drawNonLocatable = !excludeNonLocatable;
-        result = this.readPixelsFromFbo(rect, selector);
-        this._drawNonLocatable = true;
-      });
 
-      dispose(fbo);
-    }
+    this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
+      this._drawNonLocatable = !excludeNonLocatable;
+      result = this.readPixelsFromFbo(rect, selector);
+      this._drawNonLocatable = true;
+    });
 
-    dispose(texture);
+    this.disposeOrReuseReadPixelResources(resources);
 
     receiver(result);
 
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
+  }
+
+  private createOrReuseReadPixelResources(rect: ViewRect): ReadPixelResources | undefined {
+    if (this._readPixelReusableResources !== undefined) {
+
+      // To reuse a texture, we need it to be the same size or bigger than what we need
+      if (this._readPixelReusableResources.texture.width >= rect.width && this._readPixelReusableResources.texture.height >= rect.height) {
+        const resources = this._readPixelReusableResources;
+        this._readPixelReusableResources = undefined;
+
+        return resources;
+      }
+    }
+
+    // Create a new texture/fbo
+    const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (texture === undefined)
+      return undefined;
+
+    const fbo = FrameBuffer.create([texture]);
+    if (fbo === undefined) {
+      dispose(texture);
+      return undefined;
+    }
+
+    return { texture, fbo };
+  }
+
+  private disposeOrReuseReadPixelResources({texture, fbo}: ReadPixelResources) {
+    const maxReusableTextureSize = 256;
+    const isTooBigToReuse = texture.width > maxReusableTextureSize || texture.height > maxReusableTextureSize;
+
+    let reuseResources = !isTooBigToReuse;
+
+    if (reuseResources && this._readPixelReusableResources !== undefined) {
+
+      // Keep the biggest texture
+      if (this._readPixelReusableResources.texture.width > texture.width && this._readPixelReusableResources.texture.height > texture.height) {
+        reuseResources = false; // The current resources being reused are better
+      } else {
+        // Free memory of the current reusable resources before replacing them
+        dispose(this._readPixelReusableResources.fbo);
+        dispose(this._readPixelReusableResources.texture);
+      }
+    }
+
+    if (reuseResources) {
+      this._readPixelReusableResources = {texture, fbo};
+    } else {
+      dispose(fbo);
+      dispose(texture);
+    }
   }
 
   private beginReadPixels(selector: Pixel.Selector, cullingFrustum?: Frustum): void {
@@ -916,7 +973,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   /** Returns a new size scaled up to a maximum size while maintaining proper aspect ratio.  The new size will be
    * curSize adjusted so that it fits fully within maxSize in one dimension, maintaining its original aspect ratio.
    */
-  private static _applyAspectRatioCorrection(curSize: Point2d, maxSize: Point2d): Point2d {
+  private static _applyAspectRatioCorrection(curSize: XAndY, maxSize: XAndY): Point2d {
     const widthRatio = maxSize.x / curSize.x;
     const heightRatio = maxSize.y / curSize.y;
     const bestRatio = Math.min(widthRatio, heightRatio);
@@ -924,7 +981,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   /** wantRectIn is in CSS pixels. Output ImageBuffer will be in device pixels.
-   * If wantRect.right or wantRect.bottom is -1, that means "read the entire image".
+   * If wantRect is null, that means "read the entire image".
    */
   public override readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
     if (!this.assignDC())
@@ -932,7 +989,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Determine capture rect and validate
     const actualViewRect = this.renderRect; // already has device pixel ratio applied
-    const wantRect = (wantRectIn.right === -1 || wantRectIn.bottom === -1) ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
+    const wantRect = wantRectIn.isNull ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
     const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1);
     if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
       return undefined;
@@ -974,6 +1031,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       if (isEmptyImage)
         return undefined;
     } else {
+      // Need to scale image.
       const canvas = imageBufferToCanvas(image, false); // retrieve a canvas of the image we read, throwing away alpha channel.
       if (undefined === canvas)
         return undefined;
@@ -1006,8 +1064,82 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
+  public override readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined {
+    if (!this.assignDC())
+      return undefined;
+
+    // Determine and validate capture rect.
+    const viewRect = this.renderRect; // already has device pixel ratio applied
+    const captureRect = args?.rect ? this.cssViewRectToDeviceViewRect(args.rect) : viewRect;
+    if (captureRect.isNull)
+      return undefined;
+
+    const topLeft = Point3d.create(captureRect.left, captureRect.top);
+    const bottomRight = Point2d.create(captureRect.right - 1, captureRect.bottom - 1);
+    if (!viewRect.containsPoint(topLeft) || !viewRect.containsPoint(bottomRight))
+      return undefined;
+
+    // ViewRect origin is at top-left. GL origin is at bottom-left.
+    const bottom = viewRect.height - captureRect.bottom;
+    const imageData = new Uint8Array(4 * captureRect.width * captureRect.height);
+    if (!this.readImagePixels(imageData, captureRect.left, bottom, captureRect.width, captureRect.height))
+      return undefined;
+
+    // Alpha has already been blended. Make all pixels opaque, *except* for background pixels if background color is fully transparent.
+    const preserveBGAlpha = 0 === this.uniforms.style.backgroundAlpha;
+    let isEmptyImage = true;
+    for (let i = 3; i < imageData.length; i += 4) {
+      const a = imageData[i];
+      if (!preserveBGAlpha || a > 0) {
+        imageData[i] = 0xff;
+        isEmptyImage = false;
+      }
+    }
+
+    // Optimization for view attachments: if image consists entirely of transparent background pixels, don't bother producing an image.
+    let image = !isEmptyImage ? ImageBuffer.create(imageData, ImageBufferFormat.Rgba, captureRect.width) : undefined;
+    if (!image)
+      return undefined;
+
+    // Scale image.
+    if (args?.size && (args.size.x !== captureRect.width || args.size.y !== captureRect.height)) {
+      if (args.size.x <= 0 || args.size.y <= 0)
+        return undefined;
+
+      let canvas = imageBufferToCanvas(image, true);
+      if (!canvas)
+        return undefined;
+
+      const adjustedSize = Target._applyAspectRatioCorrection({ x: captureRect.width, y: captureRect.height }, args.size);
+      canvas = canvasToResizedCanvasWithBars(canvas, adjustedSize, new Point2d(args.size.x - adjustedSize.x, args.size.y - adjustedSize.y), this.uniforms.style.backgroundHexString);
+      image = canvasToImageBuffer(canvas);
+      if (!image)
+        return undefined;
+    }
+
+    // Our image is upside-down by default. Flip it unless otherwise specified.
+    if (!args?.upsideDown) {
+      const halfHeight = Math.floor(image.height / 2);
+      const numBytesPerRow = image.width * 4;
+      for (let loY = 0; loY < halfHeight; loY++) {
+        for (let x = 0; x < image.width; x++) {
+          const hiY = (image.height - 1) - loY;
+          const loIdx = loY * numBytesPerRow + x * 4;
+          const hiIdx = hiY * numBytesPerRow + x * 4;
+
+          swapImageByte(image, loIdx, hiIdx);
+          swapImageByte(image, loIdx + 1, hiIdx + 1);
+          swapImageByte(image, loIdx + 2, hiIdx + 2);
+          swapImageByte(image, loIdx + 3, hiIdx + 3);
+        }
+      }
+    }
+
+    return image;
+  }
+
   public copyImageToCanvas(): HTMLCanvasElement {
-    const image = this.readImage(new ViewRect(0, 0, -1, -1), Point2d.createZero(), true);
+    const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
     const pixelRatio = this.devicePixelRatio;
@@ -1046,6 +1178,24 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return { viewport: this._viewport };
   }
 
+  public get currentAnimationTransformNodeId(): number | undefined {
+    return this._currentAnimationTransformNodeId;
+  }
+  public set currentAnimationTransformNodeId(id: number | undefined) {
+    assert(undefined === this._currentAnimationTransformNodeId || undefined === id);
+    this._currentAnimationTransformNodeId = id;
+  }
+
+  /** Given GraphicBranch.animationId identifying *any* node in the scene's schedule script, return the transform node Id
+   * that should be used to filter the branch's graphics for display, or undefined if no filtering should be applied.
+   */
+  public getAnimationTransformNodeId(animationNodeId: number | undefined): number | undefined {
+    if (undefined === this.animationBranches || undefined === this.currentAnimationTransformNodeId || undefined === animationNodeId)
+      return undefined;
+
+    return this.animationBranches.transformNodeIds.has(animationNodeId) ? animationNodeId : AnimationNodeId.Untransformed;
+  }
+
   protected abstract _assignDC(): boolean;
   protected abstract _beginPaint(fbo: FrameBuffer): void;
   protected abstract _endPaint(): void;
@@ -1070,6 +1220,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       Math.floor(rect.right * ratio),
       Math.floor(rect.bottom * ratio));
   }
+
+  public getRenderCommands(): Array<{ name: string, count: number }> {
+    return this._renderCommands.dump();
+  }
 }
 
 class CanvasState {
@@ -1088,7 +1242,11 @@ class CanvasState {
   public updateDimensions(pixelRatio: number): boolean {
     const w = Math.floor(this.canvas.clientWidth * pixelRatio);
     const h = Math.floor(this.canvas.clientHeight * pixelRatio);
-    if (w === this._width && h === this._height)
+
+    // Do not update the dimensions if not needed, or if new width or height is 0, which is invalid.
+    // NB: the 0-dimension check indirectly resolves an issue when a viewport is dropped and immediately re-added
+    // to the view manager. See ViewManager.test.ts for more details.
+    if (w === this._width && h === this._height || (0 === w || 0 === h))
       return false;
 
     // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance.
@@ -1167,6 +1325,16 @@ export class OnScreenTarget extends Target {
     assert(false);
   }
 
+  /** Internal-only function for testing. Returns true if the FBO dimensions match the canvas dimensions */
+  public checkFboDimensions(): boolean {
+    if (undefined !== this._fbo) {
+      const tx = this._fbo.getColor(0);
+      if (tx.width !== this._curCanvas.width || tx.height !== this._curCanvas.height)
+        return false;
+    }
+    return true;
+  }
+
   protected _assignDC(): boolean {
     this.disposeFbo();
     const fbo = this.allocateFbo();
@@ -1240,6 +1408,12 @@ export class OnScreenTarget extends Target {
       const w = this.viewRect.width, h = this.viewRect.height;
       const yOffset = system.canvas.height - h; // drawImage has top as Y=0, GL has bottom as Y=0
       onscreenContext.save();
+
+      if (this.uniforms.style.backgroundAlpha < 1) {
+        // If background is transparent, we aren't guaranteed that every pixel will be overwritten - clear it.
+        onscreenContext.clearRect(0, 0, w, h);
+      }
+
       onscreenContext.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for drawImage() call below.
       onscreenContext.drawImage(system.canvas, 0, yOffset, w, h, 0, 0, w, h);
       onscreenContext.restore();

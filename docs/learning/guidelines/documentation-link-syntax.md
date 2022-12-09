@@ -19,7 +19,7 @@ You can create links into the TypeDoc generated documentation using the same syn
 | An inner class|`[Class.InnerClass]($package)`| links to links to the documentation for *Class.InnerClass* in *package*
 | A method|`[Class.method]($package)` or `[method]($package.Class)`|links to the documentation for *Class.method* in *package*
 
-> *Package aliases* can be added to config/docSites.json to allow for shorter names to be used as the package variable. Ex: common -> imodeljs-common.
+> *Package aliases* can be added to config/docSites.json to allow for shorter names to be used as the package variable. Ex: common -> core-common.
 
 ## Linking Markdown -> Markdown
 

@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Format, FormatType, InvertedUnit, ShowSignOption, Unit } from "@itwin/ecschema-metadata";
+import { Format, InvertedUnit, Unit } from "@itwin/ecschema-metadata";
+import { FormatType, ShowSignOption } from "@itwin/core-quantity";
 
 /**
  * @internal

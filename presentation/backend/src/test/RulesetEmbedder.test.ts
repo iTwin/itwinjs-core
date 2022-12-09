@@ -187,7 +187,7 @@ describe("RulesetEmbedder", () => {
         };
       }
     }
-    imodelMock.setup((x) => x.query(moq.It.isAnyString(), QueryBinder.from({ rulesetId }), QueryRowFormat.UseJsPropertyNames)).returns(() => asyncIterator());
+    imodelMock.setup((x) => x.query(moq.It.isAnyString(), QueryBinder.from({ rulesetId }), { rowFormat: QueryRowFormat.UseJsPropertyNames })).returns(() => asyncIterator());
   }
 
   function createRulesetElementProps(ruleset: Ruleset): DefinitionElementProps {

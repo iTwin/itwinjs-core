@@ -13,6 +13,9 @@
   .core-tree-node {
     >.contents {
       padding-left: 31px;
+      >.core-image-checkbox {
+        top: 5px;
+      }
     }
   }
 
@@ -61,4 +64,7 @@
 
 .map-manager-sublayer-tree-content {
   flex-grow: 1;
+  width: "100%";
+  height: "100%";
+  overflow: "hidden"
 }

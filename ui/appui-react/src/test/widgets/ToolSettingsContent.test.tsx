@@ -13,14 +13,14 @@ import { ResizableContainerObserver } from "@itwin/core-react";
 describe("ToolSettingsContent", () => {
   it("should render in tab mode", () => {
     shallow(<ToolSettingsContent
-      anchor={HorizontalAnchor.Left}
+      anchor={HorizontalAnchor.Left} // eslint-disable-line deprecation/deprecation
       mode={ToolSettingsWidgetMode.Tab}
     />);
   });
 
   it("should render in title bar mode", () => {
     shallow(<ToolSettingsContent
-      anchor={HorizontalAnchor.Left}
+      anchor={HorizontalAnchor.Left} // eslint-disable-line deprecation/deprecation
       mode={ToolSettingsWidgetMode.TitleBar}
     />);
   });
@@ -28,7 +28,7 @@ describe("ToolSettingsContent", () => {
   it("should get available content width on resize", async () => {
     const wrapper = mount(
       <ToolSettingsContent
-        anchor={HorizontalAnchor.Left}
+        anchor={HorizontalAnchor.Left} // eslint-disable-line deprecation/deprecation
         mode={ToolSettingsWidgetMode.TitleBar}
       />);
 

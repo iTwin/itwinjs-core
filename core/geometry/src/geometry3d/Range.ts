@@ -71,6 +71,15 @@ export abstract class RangeBase {
       return x - high;
     return 0.0;
   }
+/**
+ * if a > 0, return (extrapolationFactor * a); otherwise return defaultValue
+ * @param q
+ * @param factor multiplier for positive q values.
+ */
+ public static multiplyIfPositive(q: number, factor: number, defaultValue: number = 0.0): number {
+  return q > 0 ? factor * q : defaultValue;
+}
+
 }
 /**
  * Axis aligned range in 3D.
@@ -674,6 +683,23 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     if (z > this.high.z) this.high.z = z;
   }
 
+  /** Expand this range by a point interpolated between given points. */
+  public extendInterpolated(xyz0: Point3d, fraction: number, xyz1: Point3d): void {
+    if (fraction < 0.5){
+      this.extendXYZ (
+          xyz0.x + fraction * (xyz1.x - xyz0.x),
+          xyz0.y + fraction * (xyz1.y - xyz0.y),
+          xyz0.z + fraction * (xyz1.z - xyz0.z));
+    } else {
+    // use reversed formulas for best accuracy at fraction=1.0
+      const g = 1.0 - fraction;
+      this.extendXYZ (
+            xyz1.x + g * (xyz0.x - xyz1.x),
+            xyz1.y + g * (xyz0.y - xyz1.y),
+            xyz1.z + g * (xyz0.z - xyz1.z));
+    }
+  }
+
   /** Expand this range by distances a in only the x direction.  */
   public extendXOnly(x: number): void {
     if (x < this.low.x) this.low.x = x;
@@ -724,6 +750,19 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       this.extendXYZ(other.high.x, other.high.y, other.high.z);
     }
   }
+  /** In each direction look at the difference between this range limit and that of interiorRange.
+   * * If this range is larger, expand it by extrapolationFactor.
+   */
+  public extendWhenLarger(other: LowAndHighXYZ, extrapolationFactor: number): void {
+    if (!Range3d.isNull(other) && !Range3d.isNull (this)) {
+      this.high.x += RangeBase.multiplyIfPositive (this.high.x -other.high.x, extrapolationFactor);
+      this.high.y += RangeBase.multiplyIfPositive (this.high.y - other.high.y, extrapolationFactor);
+      this.high.z += RangeBase.multiplyIfPositive (this.high.z - other.high.z, extrapolationFactor);
+      this.low.x -= RangeBase.multiplyIfPositive (other.low.x - this.low.x, extrapolationFactor);
+      this.low.y -= RangeBase.multiplyIfPositive (other.low.y - this.low.y, extrapolationFactor);
+      this.low.z -= RangeBase.multiplyIfPositive (other.low.z - this.low.z, extrapolationFactor);
+    }
+  }
 
   /** Return the intersection of ranges. */
   public intersect(other: Range3d, result?: Range3d): Range3d {
@@ -731,11 +770,10 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       return Range3d.createNull(result);
     return Range3d.createXYZXYZOrCorrectToNull
       (
-        Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y), Math.max(this.low.z, other.low.z),
-        Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y), Math.min(this.high.z, other.high.z),
-        result);
-
-  }
+      Math.max(this.low.x, other.low.x), Math.max(this.low.y, other.low.y), Math.max(this.low.z, other.low.z),
+      Math.min(this.high.x, other.high.x), Math.min(this.high.y, other.high.y), Math.min(this.high.z, other.high.z),
+      result);
+    }
 
   /** Return the union of ranges. */
   public union(other: Range3d, result?: Range3d): Range3d {
@@ -1143,7 +1181,6 @@ export class Range1d extends RangeBase {
   }
 
   /** Return the union of ranges. */
-  /** Return the intersection of ranges. */
   public union(other: Range1d, result?: Range1d): Range1d {
     // we trust null ranges have EXTREME values, so a null in either input leads to expected results.
     return Range1d.createXX
@@ -1428,7 +1465,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   /** return the diagonal vector. There is no check for isNull -- if the range isNull(), the vector will have very large negative coordinates. */
   public diagonal(result?: Vector2d): Vector2d { return this.low.vectorTo(this.high, result); }
 
-  /** return the diagonal vector. There is no check for isNull -- if the range isNull(), the vector will have very large negative coordinates. */
+  /** return the point at the specified fraction along the diagonal vector. There is no check for isNull -- if the range isNull(), the vector will have very large negative coordinates. */
   public diagonalFractionToPoint(fraction: number, result?: Point2d): Point2d { return this.low.interpolate(fraction, this.high, result); }
 
   /** return a point given by fractional positions on the XY axes. This is done with no check for isNull !!! */

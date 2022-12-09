@@ -7,12 +7,15 @@
  */
 
 import * as React from "react";
-import { UiEvent } from "@itwin/core-react";
+import { UiEvent } from "@itwin/appui-abstract";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentControl } from "./ContentControl";
 import { ContentLayoutManager } from "./ContentLayoutManager";
 import { IModelApp } from "@itwin/core-frontend";
+import { ContentGroup } from "./ContentGroup";
+import { Logger } from "@itwin/core-bentley";
+import { UiFramework } from "../UiFramework";
 
 /** [[MouseDownChangedEvent]] Args interface.
  * @public
@@ -66,9 +69,33 @@ export class ContentViewManager {
   /** Gets the [[ActiveContentChangedEvent]] */
   public static readonly onActiveContentChangedEvent = new ActiveContentChangedEvent();
 
+  /** Fires when floating contents are added or removed */
+
+  public static readonly onAvailableContentChangedEvent = new UiEvent<{ contentId: string }>();
+
   /** Gets the active content as a React.ReactNode. */
   public static getActiveContent(): React.ReactNode | undefined {
     return this._activeContent;
+  }
+
+  private static getControlFromElement(content: React.ReactNode, activeContentGroup: ContentGroup | undefined, floatingControls: ContentControl[] | undefined, logIfNotFound = false) {
+    if (floatingControls?.length) {
+      const control = floatingControls.find((contentControl) => contentControl.reactNode === content);
+      if (control)
+        return control;
+    }
+
+    // istanbul ignore else
+    if (activeContentGroup) {
+      const activeContentControl = activeContentGroup.getControlFromElement(content);
+      if (activeContentControl)
+        return activeContentControl;
+    }
+
+    if (logIfNotFound)
+      Logger.logError(UiFramework.loggerCategory(this), `getControlFromElement: no control found for element`);
+
+    return undefined;
   }
 
   /** Return the active ContentControl. */
@@ -79,13 +106,25 @@ export class ContentViewManager {
     // istanbul ignore else
     if (this._activeContent && activeFrontstageDef) {
       const activeContentGroup = activeFrontstageDef.contentGroup;
-      // istanbul ignore else
-      if (activeContentGroup) {
-        activeContentControl = activeContentGroup.getControlFromElement(this._activeContent);
-      }
+      activeContentControl = this.getControlFromElement(this._activeContent, activeContentGroup, activeFrontstageDef.floatingContentControls);
     }
 
     return activeContentControl;
+  }
+
+  public static addFloatingContentControl(contentControl?: ContentControl) {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    // istanbul ignore else
+    if (activeFrontstageDef && contentControl) {
+      activeFrontstageDef.addFloatingContentControl(contentControl);
+    }
+  }
+
+  public static dropFloatingContentControl(contentControl?: ContentControl) {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    // istanbul ignore else
+    if (activeFrontstageDef && contentControl)
+      activeFrontstageDef.dropFloatingContentControl(contentControl);
   }
 
   /** Sets the active [[ContentControl]] */
@@ -102,27 +141,25 @@ export class ContentViewManager {
         const activeContentGroup = activeFrontstageDef.contentGroup;
 
         // istanbul ignore else
-        if (activeContentGroup) {
-          const oldContentControl = oldContent ? activeContentGroup.getControlFromElement(oldContent) : undefined;
-          const activeContentControl = activeContentGroup.getControlFromElement(this._activeContent);
+        const oldContentControl = this.getControlFromElement(oldContent, activeContentGroup, activeFrontstageDef.floatingContentControls);
+        const activeContentControl = this.getControlFromElement(activeContent, activeContentGroup, activeFrontstageDef.floatingContentControls, true);
 
-          // Only call setActiveView if going to or coming from a non-viewport ContentControl
+        // Only call setActiveView if going to or coming from a non-viewport ContentControl
+        // istanbul ignore else
+        if (activeContentControl) {
+          // istanbul ignore next
+          const doSetActiveView =
+            forceEventProcessing || (!activeContentControl.viewport ||
+              (/* istanbul ignore next */ oldContentControl && /* istanbul ignore next */ !oldContentControl.viewport));
+
           // istanbul ignore else
-          if (activeContentControl) {
-            // istanbul ignore next
-            const doSetActiveView =
-              forceEventProcessing || (!activeContentControl.viewport ||
-                (/* istanbul ignore next */ oldContentControl && /* istanbul ignore next */ !oldContentControl.viewport));
-
-            // istanbul ignore else
-            if (doSetActiveView) {
-              activeFrontstageDef.setActiveView(activeContentControl, oldContentControl);
-              this.onActiveContentChangedEvent.emit({ activeContent, oldContent });
-            } else {
-              if (activeContentControl.viewport && activeContentControl.viewport !== IModelApp.viewManager.selectedView) {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                IModelApp.viewManager.setSelectedView(activeContentControl.viewport);
-              }
+          if (doSetActiveView) {
+            activeFrontstageDef.setActiveView(activeContentControl, oldContentControl);
+            this.onActiveContentChangedEvent.emit({ activeContent, oldContent });
+          } else {
+            if (activeContentControl.viewport && activeContentControl.viewport !== IModelApp.viewManager.selectedView) {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              IModelApp.viewManager.setSelectedView(activeContentControl.viewport);
             }
           }
         }
@@ -195,5 +232,4 @@ export class ContentViewManager {
       return false;
     return (ViewUtilities.viewSupportsCamera(content.viewport));
   }
-
 }

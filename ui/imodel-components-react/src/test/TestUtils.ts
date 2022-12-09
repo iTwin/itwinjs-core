@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ColorByName } from "@itwin/core-common";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import {
   ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, DisplayMessageType,
   ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
@@ -17,18 +16,10 @@ import { UiIModelComponents } from "../imodel-components-react/UiIModelComponent
 
 /** @internal */
 export class TestUtils {
-  private static _i18n?: ITwinLocalization;
   private static _uiIModelComponentsInitialized = false;
-
-  public static get i18n(): ITwinLocalization {
-    return TestUtils._i18n!;
-  }
 
   public static async initializeUiIModelComponents() {
     if (!TestUtils._uiIModelComponentsInitialized) {
-      TestUtils._i18n = new ITwinLocalization();
-      await TestUtils._i18n.initialize(["IModelJs"]);
-
       await UiIModelComponents.initialize();
       TestUtils._uiIModelComponentsInitialized = true;
 
@@ -51,6 +42,7 @@ export class TestUtils {
     return new Promise((resolve) => setTimeout(resolve));
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public static createPropertyRecord(value: any, column: ColumnDescription, typename: string) {
     const v: PrimitiveValue = {
       valueFormat: PropertyValueFormat.Primitive,
@@ -138,6 +130,7 @@ export class TestUtils {
     return property;
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public static createEnumStringProperty(name: string, index: string, column?: ColumnDescription) {
     const value: PrimitiveValue = {
       displayValue: "",
@@ -167,6 +160,7 @@ export class TestUtils {
 
     return propertyRecord;
   }
+  // eslint-disable-next-line deprecation/deprecation
   public static createEnumProperty(name: string, index: string | number, column?: ColumnDescription) {
     const value: PrimitiveValue = {
       displayValue: name,
@@ -283,14 +277,14 @@ export class TestUtils {
           {
             type: PropertyEditorParamTypes.ColorData,
             colorValues: [
-              ColorByName.blue as number,
-              ColorByName.red as number,
-              ColorByName.green as number,
-              ColorByName.yellow as number,
-              ColorByName.black as number,
-              ColorByName.gray as number,
-              ColorByName.purple as number,
-              ColorByName.pink as number,
+              ColorByName.blue,
+              ColorByName.red,
+              ColorByName.green,
+              ColorByName.yellow,
+              ColorByName.black,
+              ColorByName.gray,
+              ColorByName.purple,
+              ColorByName.pink,
             ],
             numColumns: 2,
           } as ColorEditorParams,
@@ -415,20 +409,26 @@ export class TestUtils {
 }
 
 /** @internal */
+// eslint-disable-next-line deprecation/deprecation
 export class TestFilterableTable implements FilterableTable {
   private _filterDescriptors = new TableFilterDescriptorCollection();
+  // eslint-disable-next-line deprecation/deprecation
   private _columnDescriptions: ColumnDescription[];
 
+  // eslint-disable-next-line deprecation/deprecation
   constructor(colDescriptions: ColumnDescription[]) {
     this._columnDescriptions = colDescriptions;
   }
 
   /** Gets the description of a column within the table. */
+  // eslint-disable-next-line deprecation/deprecation
   public getColumnDescription(columnKey: string): ColumnDescription | undefined {
+    // eslint-disable-next-line deprecation/deprecation
     return this._columnDescriptions.find((v: ColumnDescription) => v.key === columnKey);
   }
 
   /** Gets the filter descriptors for the table. */
+  // eslint-disable-next-line deprecation/deprecation
   public get filterDescriptors(): CompositeFilterDescriptorCollection {
     return this._filterDescriptors;
   }

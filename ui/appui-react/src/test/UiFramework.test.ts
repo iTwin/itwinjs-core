@@ -15,8 +15,8 @@ import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@itwin/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
 import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../appui-react";
-import { LocalSettingsStorage, UiSettingsStorage } from "@itwin/core-react";
-import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
+import { LocalStateStorage, UiStateStorage } from "@itwin/core-react";
+import TestUtils, { storageMock } from "./TestUtils";
 import { OpenSettingsTool } from "../appui-react/tools/OpenSettingsTool";
 
 describe("UiFramework localStorage Wrapper", () => {
@@ -35,13 +35,27 @@ describe("UiFramework localStorage Wrapper", () => {
   });
 
   describe("UiFramework basic Initialization", () => {
-    it("should initialize default StateManager", async () => {
+    it("should initialize redux to UI 2", async () => {
       await UiFramework.initialize(undefined);
-      const uiVersion = "2";
-      UiFramework.setUiVersion(uiVersion);
-      expect(UiFramework.uiVersion).to.eql(uiVersion);
+      expect(UiFramework.uiVersion).to.eql("2"); // eslint-disable-line deprecation/deprecation
       UiFramework.terminate();
     });
+
+    it("should allow initialize to UI 1", async () => {
+      await UiFramework.initialize(undefined, undefined, true); // eslint-disable-line deprecation/deprecation
+      expect(UiFramework.uiVersion).to.eql("1"); // eslint-disable-line deprecation/deprecation
+      UiFramework.terminate();
+    });
+
+    it("should initialize default StateManager to 2 and change to 1", async () => {
+      await UiFramework.initialize(undefined);
+      expect(UiFramework.uiVersion).to.eql("2"); // eslint-disable-line deprecation/deprecation
+      const uiVersion = "1";
+      UiFramework.setUiVersion(uiVersion); // eslint-disable-line deprecation/deprecation
+      expect(UiFramework.uiVersion).to.eql(uiVersion); // eslint-disable-line deprecation/deprecation
+      UiFramework.terminate();
+    });
+
   });
 
   describe("UiFramework", () => {
@@ -180,7 +194,7 @@ describe("UiFramework localStorage Wrapper", () => {
     class testSettingsProvider implements UserSettingsProvider {
       public readonly providerId = "testSettingsProvider";
       public settingsLoaded = false;
-      public async loadUserSettings(storage: UiSettingsStorage) {
+      public async loadUserSettings(storage: UiStateStorage) { // eslint-disable-line deprecation/deprecation
         if (storage)
           this.settingsLoaded = true;
       }
@@ -191,11 +205,6 @@ describe("UiFramework localStorage Wrapper", () => {
       const settingsProvider = new testSettingsProvider();
       UiFramework.registerUserSettingsProvider(settingsProvider);
 
-      const userInfo = mockUserInfo();
-
-      UiFramework.setUserInfo(userInfo);
-      expect(UiFramework.getUserInfo()!.id).to.eq(userInfo.id);
-
       UiFramework.setDefaultIModelViewportControlId("DefaultIModelViewportControlId");
       expect(UiFramework.getDefaultIModelViewportControlId()).to.eq("DefaultIModelViewportControlId");
 
@@ -205,22 +214,24 @@ describe("UiFramework localStorage Wrapper", () => {
 
       expect(settingsProvider.settingsLoaded).to.be.false;
 
-      const uisettings = new LocalSettingsStorage();
-      await UiFramework.setUiSettingsStorage(uisettings);
-      expect(UiFramework.getUiSettingsStorage()).to.eq(uisettings);
+      const uisettings = new LocalStateStorage();
+      await UiFramework.setUiStateStorage(uisettings);
+      expect(UiFramework.getUiStateStorage()).to.eq(uisettings);
       expect(settingsProvider.settingsLoaded).to.be.true;
       settingsProvider.settingsLoaded = false;
       // if we try to set storage to same object this should be a noop and the settingsLoaded property should remain false;
-      await UiFramework.setUiSettingsStorage(uisettings);
+      await UiFramework.setUiStateStorage(uisettings);
       expect(settingsProvider.settingsLoaded).to.be.false;
 
+      await UiFramework.initializeStateFromUserSettingsProviders();
+
       const uiVersion1 = "1";
-      UiFramework.setUiVersion(uiVersion1);
-      expect(UiFramework.uiVersion).to.eql(uiVersion1);
+      UiFramework.setUiVersion(uiVersion1); // eslint-disable-line deprecation/deprecation
+      expect(UiFramework.uiVersion).to.eql(uiVersion1); // eslint-disable-line deprecation/deprecation
 
       const uiVersion = "2";
-      UiFramework.setUiVersion(uiVersion);
-      expect(UiFramework.uiVersion).to.eql(uiVersion);
+      UiFramework.setUiVersion(uiVersion); // eslint-disable-line deprecation/deprecation
+      expect(UiFramework.uiVersion).to.eql(uiVersion); // eslint-disable-line deprecation/deprecation
 
       const useDragInteraction = true;
       UiFramework.setUseDragInteraction(useDragInteraction);
@@ -236,6 +247,14 @@ describe("UiFramework localStorage Wrapper", () => {
       const viewState = moq.Mock.ofType<ViewState>();
       UiFramework.setDefaultViewState(viewState.object);
       expect(UiFramework.getDefaultViewState()).not.to.be.undefined;
+
+      const displayOverlay = false;
+      UiFramework.setViewOverlayDisplay(displayOverlay);
+      expect(UiFramework.viewOverlayDisplay).to.eql(displayOverlay);
+      // test workflow that doesn't change the item
+      const currentDisplay = UiFramework.viewOverlayDisplay;
+      UiFramework.setViewOverlayDisplay(displayOverlay);
+      expect(UiFramework.viewOverlayDisplay).to.eql(currentDisplay);
 
       TestUtils.terminateUiFramework();
 

@@ -22,6 +22,7 @@ import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
  * instance of ViewingSpace is created every time the Viewport's frustum changes.
  * @see [[Viewport.viewingSpace]].
  * @public
+ * @extensions
  */
 export class ViewingSpace {
   private readonly _viewRange = new ViewRect(); // scratch variable
@@ -66,9 +67,20 @@ export class ViewingSpace {
   private readonly _clientHeight: number;
 
   /** Get the rectangle of this Viewport in ViewCoordinates. */
-  private get _viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
+  private get _viewRect(): ViewRect {
+    this._viewRange.init(0, 0, this._clientWidth, this._clientHeight);
+    return this._viewRange;
+  }
 
-  private static _copyOutput(from: XYZ, to?: XYZ) { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; }
+  private static _copyOutput(from: XYZ, to?: XYZ) {
+    let pt = from;
+    if (to) {
+      to.setFrom(from);
+      pt = to;
+    }
+
+    return pt;
+  }
 
   /** @internal */
   public toViewOrientation(from: XYZ, to?: XYZ) { this.rotation.multiplyVectorInPlace(ViewingSpace._copyOutput(from, to)); }
@@ -177,7 +189,7 @@ export class ViewingSpace {
       const viewZ = this.rotation.getRow(2);
       const eyeDepth = this.eyePoint ? viewZ.dotProduct(this.eyePoint) : undefined;
 
-      depthRange = globalGeometry.geometry.getFrustumIntersectionDepthRange(frustum, globalGeometry.heightRange, gridPlane, this.view.maxGlobalScopeFactor > 1);
+      depthRange = globalGeometry.geometry.getFrustumIntersectionDepthRange(frustum, extents, globalGeometry.heightRange, gridPlane, this.view.maxGlobalScopeFactor > 1);
 
       if (eyeDepth !== undefined) {
         const maxBackgroundFrontBackRatio = 1.0E6;

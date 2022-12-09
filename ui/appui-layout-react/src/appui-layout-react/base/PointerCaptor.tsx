@@ -55,7 +55,12 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps> {
         style={this.props.style}
         role="presentation"
       >
-        <div className="nz-overlay" />
+        <div
+          className="nz-overlay"
+          onDragStart={(e)=> {
+            e.preventDefault();
+          }}
+        />
         {this.props.children}
       </div>
     );

@@ -7,15 +7,16 @@
  */
 
 import {
-  assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
+  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
-  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d,
-  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
-  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
+  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
+  ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat,
+  RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow,
+  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -52,6 +53,7 @@ export interface BlankConnectionProps {
 
 /** A connection to a [IModelDb]($backend) hosted on the backend.
  * @public
+ * @extensions
  */
 export abstract class IModelConnection extends IModel {
   /** The [[ModelState]]s in this IModelConnection. */
@@ -68,10 +70,12 @@ export abstract class IModelConnection extends IModel {
   public readonly selectionSet: SelectionSet;
   /** The set of Tiles for this IModelConnection. */
   public readonly tiles: Tiles;
+  /** The set of [Category]($backend)'s in this IModelConnection. */
+  public readonly categories: IModelConnection.Categories;
   /** A cache of information about SubCategories chiefly used for rendering.
    * @internal
    */
-  public readonly subcategories: SubCategoriesCache;
+  public get subcategories(): SubCategoriesCache { return this.categories.cache; }
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
   /** The Geographic location services available for this iModelConnection
@@ -153,6 +157,12 @@ export abstract class IModelConnection extends IModel {
    */
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
+  /** Event called immediately after *this* IModelConnection has its displayed extents expanded.
+   * @note This event is called only for this IModelConnection.
+   * @internal
+   */
+  public readonly onDisplayedExtentsExpansion = new BeEvent<() => void>();
+
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
   public fontMap?: FontMap;
 
@@ -214,16 +224,22 @@ export abstract class IModelConnection extends IModel {
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
     this.views = new IModelConnection.Views(this);
+    this.categories = new IModelConnection.Categories(this);
+
     this.selectionSet = new SelectionSet(this);
     this.hilited = new HiliteSet(this);
+
     this.tiles = new Tiles(this);
-    this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
       this.expandDisplayedExtents(this._extentsExpansion);
+    });
+
+    this.hilited.onModelSubCategoryModeChanged.addListener(() => {
+      IModelApp.viewManager.onSelectionSetChanged(this);
     });
   }
 
@@ -255,6 +271,16 @@ export abstract class IModelConnection extends IModel {
     return new ECSqlReader(executor, ecsql, params, config);
   }
 
+  /**
+   * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
+   * @param compressedCategoryIds compressed category Ids
+   * @returns array of SubCategoryResultRow
+   * @internal
+   */
+  public async querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).querySubCategories(this.getRpcProps(), compressedCategoryIds);
+  }
+
   /** Execute a query and stream its results
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
@@ -265,20 +291,16 @@ export abstract class IModelConnection extends IModel {
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
    * @param options Allow to specify certain flags which control how query is executed.
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+  public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
-    if (rowFormat === QueryRowFormat.UseJsPropertyNames) {
-      builder.setConvertClassIdsToNames(true);
-    }
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step())
-      yield reader.formatCurrentRow(rowFormat);
+      yield reader.formatCurrentRow();
   }
 
   /** Compute number of rows that would be returned by the ECSQL.
@@ -289,7 +311,7 @@ export abstract class IModelConnection extends IModel {
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * See "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
    */
@@ -312,14 +334,13 @@ export abstract class IModelConnection extends IModel {
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
    * exception which user code must handle.
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
    * @param options Allow to specify certain flags which control how query is executed.
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
-    for await (const row of this.query(ecsql, params, rowFormat, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
+    for await (const row of this.query(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }
@@ -375,8 +396,32 @@ export abstract class IModelConnection extends IModel {
     return undefined;
   }
 
-  /** Request element mass properties from the backend. */
-  public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps); }
+  /** Request element mass properties from the backend.
+   * @note For better performance use [[getMassPropertiesPerCandidate]] when called from a loop with identical operations and a single candidate per iteration.
+   */
+  public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps);
+  }
+
+  /** Request mass properties for multiple elements from the backend. */
+  public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
+  }
+
+  /** Produce encoded [Polyface]($core-geometry)s from the geometry stream of a [GeometricElement]($backend).
+   * A polyface is produced for each geometric entry in the element's geometry stream, excluding geometry like open curves that can't be converted into polyfaces.
+   * The polyfaces can be decoded using [readElementMeshes]($common).
+   * Symbology, UV parameters, and normal vectors are not included in the result.
+   * @param requestProps A description of how to produce the polyfaces and from which element to obtain them.
+   * @returns an encoded list of polyfaces that can be decoded by [readElementMeshes]($common).
+   * @throws Error if [ElementMeshRequestProps.source]($common) does not refer to a [GeometricElement]($backend).
+   * @note This function is intended to support limited analysis of an element's geometry as a mesh. It is not intended for producing graphics.
+   * @see [[TileAdmin.requestElementGraphics]] to obtain meshes appropriate for display.
+   * @beta
+   */
+  public async generateElementMeshes(requestProps: ElementMeshRequestProps): Promise<Uint8Array> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).generateElementMeshes(this.getRpcProps(), requestProps);
+  }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
    * @param spatial A point in the iModel's spatial coordinates
@@ -463,10 +508,7 @@ export abstract class IModelConnection extends IModel {
     this.displayedExtents.setFrom(this.projectExtents);
     this.displayedExtents.extendRange(this._extentsExpansion);
 
-    for (const vp of IModelApp.viewManager) {
-      if (vp.view.isSpatialView() && vp.iModel === this)
-        vp.invalidateController();
-    }
+    this.onDisplayedExtentsExpansion.raiseEvent();
   }
 
   /** @internal */
@@ -722,7 +764,16 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
       try {
         const propArray = await this.getProps(notLoaded);
-        for (const props of propArray) {
+        await this.updateLoadedWithModelProps(propArray);
+      } catch (err) {
+        // ignore error, we had nothing to do.
+      }
+    }
+
+    /** Given an array of modelProps, find the class for each model and construct it. save it in the iModelConnection's loaded set. */
+    public async updateLoadedWithModelProps(modelProps: ModelProps[]): Promise<void> {
+      try {
+        for (const props of modelProps) {
           const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
           if (undefined === this.getLoaded(props.id!)) { // do not overwrite if someone else loads it while we await
             const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
@@ -741,10 +792,33 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       this._loaded.delete(modelId);
     }
 
-    /** Query for a set of model ranges by ModelIds. */
+    /** Query for a set of model ranges by ModelIds.
+     * @param modelIds the Id or Ids of the [GeometricModel]($backend)s for which to query the ranges.
+     * @returns An array containing the range of each model of each unique model Id, omitting the range for any Id which did no identify a GeometricModel.
+     * @note The contents of the returned array do not follow a deterministic order.
+     * @throws [IModelError]($common) if exactly one model Id is specified and that Id does not identify a GeoemtricModel.
+     * @see [[queryExtents]] for a similar function that does not throw and produces a deterministically-ordered result.
+     */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelRanges(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
+    }
+
+    /** For each [GeometricModel]($backend) specified by Id, attempts to obtain the union of the volumes of all geometric elements within that model.
+     * @param modelIds The Id or Ids of the geometric models for which to obtain the extents.
+     * @returns An array of results, one per supplied Id, in the order in which the Ids were supplied. If the extents could not be obtained, the
+     * corresponding results entry's `extents` will be a "null" range (@see [Range3d.isNull]($geometry) and its `status` will indicate
+     * why the extents could not be obtained (e.g., because the Id did not identify a [GeometricModel]($backend)).
+     */
+    public async queryExtents(modelIds: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
+      const iModel = this._iModel;
+      if (!iModel.isOpen)
+        return [];
+
+      if (typeof modelIds === "string")
+        modelIds = [modelIds];
+
+      return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelExtents(iModel.getRpcProps(), modelIds);
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams.
@@ -759,11 +833,15 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       params.from = queryParams.from || ModelState.classFullName; // use "BisCore:Model" as default class name
       params.where = queryParams.where || "";
       if (!queryParams.wantPrivate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
+
         params.where += "IsPrivate=FALSE ";
       }
       if (!queryParams.wantTemplate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
+
         params.where += "IsTemplate=FALSE ";
       }
       return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelProps(iModel.getRpcProps(), params);
@@ -796,7 +874,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** @internal */
     public constructor(private _iModel: IModelConnection) { }
 
-    /** The Id of the [root subject element]($docs/bis/intro/glossary.md#subject-root) for this iModel. */
+    /** The Id of the [root subject element]($docs/bis/guide/references/glossary.md#subject-root) for this iModel. */
     public get rootSubjectId(): Id64String { return "0x1"; }
 
     /** Get a set of element ids that satisfy a query */
@@ -899,7 +977,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      for await (const row of this._iModel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of this._iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         const origin = [row.x, row.y, row.z];
         const bbox = {
           low: { x: row.lx, y: row.ly, z: row.lz },
@@ -990,7 +1068,9 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       params.from = queryParams.from || ViewState.classFullName; // use "BisCore:ViewDefinition" as default class name
       params.where = queryParams.where || "";
       if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
+
         params.where += "IsPrivate=FALSE ";
       }
       const viewProps = await IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params);
@@ -1012,7 +1092,10 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     public async getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]> {
       const views: ViewSpec[] = [];
       const viewProps: ViewDefinitionProps[] = await this.queryProps(queryParams);
-      viewProps.forEach((viewProp) => { views.push({ id: viewProp.id as string, name: viewProp.code.value!, class: viewProp.classFullName }); });
+      viewProps.forEach((viewProp) => {
+        views.push({ id: viewProp.id as string, name: viewProp.code.value!, class: viewProp.classFullName });
+      });
+
       return views;
     }
 
@@ -1032,12 +1115,17 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
       const options: ViewStateLoadProps = {
         displayStyle: {
-          omitScheduleScriptElementIds: true,
+          omitScheduleScriptElementIds: !IModelApp.tileAdmin.enableFrontendScheduleScripts,
           compressExcludedElementIds: true,
         },
       };
       const viewProps = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewStateData(this._iModel.getRpcProps(), viewDefinitionId, options);
+      const viewState = await this.convertViewStatePropsToViewState(viewProps);
+      return viewState;
+    }
 
+    /** Return the [[ViewState]] object associated with the [[ViewStateProps]] passed in. */
+    public async convertViewStatePropsToViewState(viewProps: ViewStateProps): Promise<ViewState> {
       const className = viewProps.viewDefinitionProps.classFullName;
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 
@@ -1053,16 +1141,68 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Get a thumbnail for a view.
      * @param viewId The id of the view of the thumbnail.
      * @returns A Promise of the ThumbnailProps.
-     * @throws Error if invalid thumbnail.
+     * @throws "No content" error if invalid thumbnail.
+     * @deprecated
      */
-    public async getThumbnail(viewId: Id64String): Promise<ThumbnailProps> {
-      const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), viewId.toString());
+    public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
+      // eslint-disable-next-line deprecation/deprecation
+      const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), _viewId.toString());
       const intValues = new Uint32Array(val.buffer, 0, 4);
 
       if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
-        throw new Error("Invalid thumbnail");
+        throw new NoContentError();
 
       return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
+    }
+  }
+
+  /** @public */
+  export namespace Categories {
+    /** A subset of the information describing a [SubCategory]($backend), supplied by [[IModelConnection.Categories.getCategoryInfo]]
+     * or [[IModelConnection.Categories.getSubCategoryInfo]].
+     */
+    export interface SubCategoryInfo {
+      /** The [SubCategory]($backend)'s element Id. */
+      readonly id: Id64String;
+      /** The Id of the [Category]($backend) to which this [SubCategory]($backend) belongs. */
+      readonly categoryId: Id64String;
+      /** Visual parameters applied to geometry belonging to this [SubCategory]($backend). */
+      readonly appearance: Readonly<SubCategoryAppearance>;
+    }
+
+    /** A subset of the information describing a [Category]($backend), supplied by [[IModelConnection.Categories.getCategoryInfo]]. */
+    export interface CategoryInfo {
+      /** The category's element Id. */
+      readonly id: Id64String;
+      /** For each [SubCategory]($backend) belonging to this [Category]($backend), a mapping from the SubCategory's element Id to its properties. */
+      readonly subCategories: Map<Id64String, SubCategoryInfo>;
+    }
+  }
+
+  /** Provides access to information about the [Category]($backend)'s stored in an [[IModelConnection]].
+   * This information is cached internally so that repeated requests need not query the backend.
+   * @see [[IModelConnection.categories]] for the categories associated with a specific iModel.
+   */
+  export class Categories {
+    /** @internal */
+    public readonly cache: SubCategoriesCache;
+
+    /** @internal */
+    public constructor(iModel: IModelConnection) {
+      this.cache = new SubCategoriesCache(iModel);
+    }
+
+    /** Obtain information about one or more [Category]($backend)'s. */
+    public async getCategoryInfo(categoryIds: Iterable<Id64String>): Promise<Map<Id64String, Categories.CategoryInfo>> {
+      return this.cache.getCategoryInfo(categoryIds);
+    }
+
+    /** Obtain information about one or more [SubCategory]($backend)'s belonging to the specified [Category]($backend). */
+    public async getSubCategoryInfo(args: {
+      category: Id64String;
+      subCategories: Iterable<Id64String>;
+    }): Promise<Map<Id64String, Categories.SubCategoryInfo>> {
+      return this.cache.getSubCategoryInfo(args.category, args.subCategories);
     }
   }
 }

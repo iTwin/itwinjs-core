@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { storageMock, TestUtils } from "../TestUtils";
 import { UiFramework } from "../../appui-react/UiFramework";
-import { AppUiSettings, InitialAppUiSettings } from "../../appui-react/uisettings/AppUiSettings";
+import { AppUiSettings, InitialAppUiSettings } from "../../appui-react/uistate/AppUiSettings";
 import { SYSTEM_PREFERRED_COLOR_THEME } from "../../appui-react/theme/ThemeManager";
 
 describe("AppUiSettings", () => {
@@ -28,22 +28,38 @@ describe("AppUiSettings", () => {
 
   it("should get/set settings", async () => {
     const uiSetting = new AppUiSettings({});
-    await uiSetting.loadUserSettings(UiFramework.getUiSettingsStorage());
+    await uiSetting.loadUserSettings(UiFramework.getUiStateStorage());
     const uiVersion = "2";
     const opacity = 0.5;
+    const toolbarOpacity = 0.8;
     const colorTheme = "dark";
     const useDragInteraction = true;
-    UiFramework.setUiVersion(uiVersion);
+    const showWidgetIcon = false;
+    const animateToolSettings = false;
+    const autoCollapseUnpinnedPanels = true;
+    const useToolAsToolSettingsLabel = false;
+
+    UiFramework.setUiVersion(uiVersion); // eslint-disable-line deprecation/deprecation
     UiFramework.setWidgetOpacity(opacity);
-    UiFramework.setWidgetOpacity(opacity);
+    UiFramework.setToolbarOpacity(toolbarOpacity);
     UiFramework.setUseDragInteraction(true);
     UiFramework.setColorTheme(colorTheme);
     UiFramework.setUseDragInteraction(useDragInteraction);
+    UiFramework.setShowWidgetIcon(showWidgetIcon);
+    UiFramework.setAutoCollapseUnpinnedPanels(autoCollapseUnpinnedPanels);
+    UiFramework.setAutoCollapseUnpinnedPanels(autoCollapseUnpinnedPanels); // verify it handles the same value again
+    UiFramework.setAnimateToolSettings(animateToolSettings);
+    UiFramework.setUseToolAsToolSettingsLabel(useToolAsToolSettingsLabel);
     await TestUtils.flushAsyncOperations();
-    expect(UiFramework.uiVersion).to.eql(uiVersion);
+    expect(UiFramework.uiVersion).to.eql(uiVersion); // eslint-disable-line deprecation/deprecation
     expect(UiFramework.getWidgetOpacity()).to.eql(opacity);
+    expect(UiFramework.getToolbarOpacity()).to.eql(toolbarOpacity);
     expect(UiFramework.getColorTheme()).to.eql(colorTheme);
     expect(UiFramework.useDragInteraction).to.eql(useDragInteraction);
+    expect(UiFramework.showWidgetIcon).to.eql(showWidgetIcon);
+    expect(UiFramework.autoCollapseUnpinnedPanels).to.eql(autoCollapseUnpinnedPanels);
+    expect(UiFramework.animateToolSettings).to.eql(animateToolSettings);
+    expect(UiFramework.useToolAsToolSettingsLabel).to.eql(useToolAsToolSettingsLabel);
   });
 
   it("should used default settings", async () => {
@@ -52,15 +68,24 @@ describe("AppUiSettings", () => {
       dragInteraction: false,
       frameworkVersion: "2",
       widgetOpacity: 0.8,
+      showWidgetIcon: true,
+      autoCollapseUnpinnedPanels: true,
+      animateToolSettings: true,
+      useToolAsToolSettingsLabel: true,
+      toolbarOpacity: 0.5,
     };
 
     const uiSetting = new AppUiSettings(defaults);
-    await uiSetting.loadUserSettings(UiFramework.getUiSettingsStorage());
+    await uiSetting.loadUserSettings(UiFramework.getUiStateStorage());
     await TestUtils.flushAsyncOperations();
-    expect(UiFramework.uiVersion).to.eql(defaults.frameworkVersion);
+    expect(UiFramework.uiVersion).to.eql(defaults.frameworkVersion); // eslint-disable-line deprecation/deprecation
     expect(UiFramework.getWidgetOpacity()).to.eql(defaults.widgetOpacity);
     expect(UiFramework.getColorTheme()).to.eql(defaults.colorTheme);
     expect(UiFramework.useDragInteraction).to.eql(defaults.dragInteraction);
+    expect(UiFramework.showWidgetIcon).to.eql(defaults.showWidgetIcon);
+    expect(UiFramework.autoCollapseUnpinnedPanels).to.eql(defaults.autoCollapseUnpinnedPanels);
+    expect(UiFramework.animateToolSettings).to.eql(defaults.animateToolSettings);
+    expect(UiFramework.useToolAsToolSettingsLabel).to.eql(defaults.useToolAsToolSettingsLabel);
   });
 
 });

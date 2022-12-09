@@ -2,13 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ProcessDetector } from "@itwin/core-bentley";
-import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@itwin/core-common";
+import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { RpcConfiguration } from "@itwin/core-common";
 import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
-import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
+import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
-import { openIModel } from "./openIModel";
+import { MobileMessenger } from "./FileOpen";
+import { openIModel, OpenIModelProps } from "./openIModel";
 import { signIn } from "./signIn";
 import { Surface } from "./Surface";
 import { setTitle } from "./Title";
@@ -16,53 +18,70 @@ import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 
 const configuration: DtaConfiguration = {};
-const getFrontendConfig = () => {
+
+/**
+ * Get the value for a string configuration param.
+ * @param key The parameter name of the parameter to get.
+ * @returns The value of the string configuration param.
+ */
+export function getConfigurationString(key: keyof DtaStringConfiguration) {
+  return (configuration as DtaStringConfiguration)[key];
+}
+
+/**
+ * Get the value for a boolean configuration param.
+ * @param key The parameter name of the parameter to get.
+ * @returns The value of the boolean configuration param, or false if the param is undefined.
+ */
+export function getConfigurationBoolean(key: keyof DtaBooleanConfiguration): boolean {
+  return (configuration as DtaBooleanConfiguration)[key] ?? false;
+}
+
+/**
+ * Get the value for a numeric configuration param.
+ * @param key The parameter name of the parameter to get.
+ * @returns The value of the numeric configuration param.
+ */
+export function getConfigurationNumber(key: keyof DtaNumberConfiguration) {
+  return (configuration as DtaNumberConfiguration)[key];
+}
+
+const getFrontendConfig = async (useRPC = false) => {
   if (ProcessDetector.isMobileAppFrontend) {
     if (window) {
       const urlParams = new URLSearchParams(window.location.hash);
       urlParams.forEach((val, key) => {
         (configuration as any)[key] = val;
-        Object.assign(configuration, { iModelName: urlParams.get("iModelName") });
       });
     }
-    const newConfigurationInfo = JSON.parse(window.localStorage.getItem("imodeljs:env")!);
-    Object.assign(configuration, newConfigurationInfo);
+  } else {
+    const config: DtaConfiguration = useRPC ? await DtaRpcInterface.getClient().getEnvConfig() : getConfig();
+    Object.assign(configuration, config);
   }
 
-  Object.assign(configuration, getConfig());
-  console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
+  // Overriding the configuration generally requires setting environment variables, rebuilding the app, and restarting the app from scratch -
+  // and sometimes that doesn't even work.
+  // If you want to quickly adjust aspects of the configuration on the frontend, you can instead add your overrides below and just hot-reload the app in the browser/electron.
+  // Obviously, don't commit such changes.
+  const configurationOverrides: DtaConfiguration = {
+    /* For example:
+    iModelName: "d:\\bim\\Constructions.bim",
+    disableInstancing: true,
+    */
+  };
+  Object.assign(configuration, configurationOverrides);
+
+  console.log("Configuration", configuration); // eslint-disable-line no-console
 };
 
-async function openFile(filename: string, writable: boolean): Promise<IModelConnection> {
+async function openFile(props: OpenIModelProps): Promise<IModelConnection> {
   configuration.standalone = true;
-  const iModelConnection = await openIModel(filename, writable);
+  const iModelConnection = await openIModel(props);
   configuration.iModelName = iModelConnection.name;
   return iModelConnection;
 }
 
-class FakeTileCache extends CloudStorageTileCache {
-  public constructor() { super(); }
-
-  protected override async requestResource(container: CloudStorageContainerUrl, id: TileContentIdentifier): Promise<Response> {
-    const init: RequestInit = {
-      headers: container.headers,
-      method: "GET",
-    };
-
-    const url = `${container.url}/${this.formResourceName(id)}`;
-    return fetch(url, init);
-  }
-}
-
-// main entry point.
-const dtaFrontendMain = async () => {
-  RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
-  RpcConfiguration.disableRoutingValidation = true;
-
-  // retrieve, set, and output the global configuration variable
-  getFrontendConfig();
-
-  // Start the app. (This tries to fetch a number of localization json files from the origin.)
+function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, tileAdminProps: TileAdmin.Props] {
   const renderSystemOptions: RenderSystem.Options = {
     disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
     preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
@@ -74,6 +93,7 @@ const dtaFrontendMain = async () => {
     dpiAwareLOD: true === configuration.dpiAwareLOD,
     useWebGL2: false !== configuration.useWebGL2,
     planProjections: true,
+    errorOnMissingUniform: false !== configuration.errorOnMissingUniform,
     debugShaders: true === configuration.debugShaders,
     antialiasSamples: configuration.antialiasSamples,
   };
@@ -81,6 +101,7 @@ const dtaFrontendMain = async () => {
   const tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
     enableInstancing: true,
+    enableIndexedEdges: true !== configuration.disableIndexedEdges,
   };
 
   if (configuration.disableInstancing)
@@ -105,6 +126,7 @@ const dtaFrontendMain = async () => {
     tileAdminProps.optimizeBRepProcessing = false;
 
   tileAdminProps.enableExternalTextures = (configuration.enableExternalTextures !== false);
+  tileAdminProps.enableFrontendScheduleScripts = (configuration.enableFrontendScheduleScripts !== false);
   tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
   tileAdminProps.tileExpirationTime = configuration.tileExpirationSeconds;
   tileAdminProps.maximumLevelsToSkip = configuration.maxTilesToSkip;
@@ -113,9 +135,21 @@ const dtaFrontendMain = async () => {
   tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
   tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
 
-  if (configuration.useFakeCloudStorageTileCache)
-    (CloudStorageTileCache as any)._instance = new FakeTileCache();
+  return [renderSystemOptions, tileAdminProps];
+}
 
+// main entry point.
+const dtaFrontendMain = async () => {
+  RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
+  RpcConfiguration.disableRoutingValidation = true;
+
+  // retrieve, set, and output the global configuration variable
+  await getFrontendConfig();
+
+  // Start the app. (This tries to fetch a number of localization json files from the origin.)
+  let tileAdminProps: TileAdmin.Props;
+  let renderSystemOptions: RenderSystem.Options;
+  [renderSystemOptions, tileAdminProps] = setConfigurationResults();
   await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
   if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
@@ -123,6 +157,24 @@ const dtaFrontendMain = async () => {
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
     alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
     return;
+  }
+
+  // We can call RPC at this point (after startup), so if not mobile, call RPC and get true env from backend,
+  // then shutdown frontend, init vars again based on possibly changed configuration, then startup again
+  // (All that to workaround the fact that we can't call RPC before we start to get the true env first.)
+  if (!ProcessDetector.isMobileAppFrontend) {
+    Object.assign(configuration, await getFrontendConfig(true));
+    // console.log("New Front End Configuration from backend:", JSON.stringify(configuration)); // eslint-disable-line no-console
+    await IModelApp.shutdown();
+    [renderSystemOptions, tileAdminProps] = setConfigurationResults();
+    await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
+    if (false !== configuration.enableDiagnostics)
+      IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+
+    if (!configuration.standalone && !configuration.customOrchestratorUri) {
+      alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
+      return;
+    }
   }
 
   const uiReady = displayUi(); // Get the browser started loading our html page and the svgs that it references but DON'T WAIT
@@ -138,12 +190,36 @@ const dtaFrontendMain = async () => {
     const iModelName = configuration.iModelName;
     if (undefined !== iModelName) {
       const writable = configuration.openReadWrite ?? false;
-      iModel = await openFile(iModelName, writable);
+      iModel = await openFile({ fileName: iModelName, writable });
+      if (ProcessDetector.isMobileAppFrontend) {
+        // attempt to send message to mobile that the model was opened
+        MobileMessenger.postMessage("modelOpened", iModelName);
+      }
       setTitle(iModel);
+    } else {
+      const origStandalone = configuration.standalone;
+      try {
+        const iModelId = configuration.iModelId;
+        const iTwinId = configuration.iTwinId;
+        if (undefined !== iModelId && undefined !== iTwinId) {
+          const writable = configuration.openReadWrite ?? false;
+          iModel = await openFile({ iModelId, iTwinId, writable });
+          setTitle(iModel);
+        }
+      } catch (error) {
+        configuration.standalone = origStandalone;
+        alert(`Error getting hub iModel: ${error}`);
+      }
     }
 
     await uiReady; // Now wait for the HTML UI to finish loading.
     await initView(iModel);
+    Logger.initializeToConsole();
+    Logger.setLevelDefault(LogLevel.Warning);
+    Logger.setLevel("core-frontend.Render", LogLevel.Error);
+
+    if (configuration.startupMacro)
+      await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);
   } catch (reason) {
     alert(reason);
     return;

@@ -29,15 +29,15 @@ export namespace HiddenLine {
      *  - width is overridden if width != undefined and width != 0
      *  - pattern is overridden if pattern != undefined and pattern != LinePixels.Invalid
      */
-    readonly ovrColor?: boolean;
+    ovrColor?: boolean;
     /** If defined, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
-    readonly color?: ColorDefProps;
+    color?: ColorDefProps;
     /** If defined, the pixel pattern used to draw the edges. If undefined, edges are drawn using the element's line pattern. */
-    readonly pattern?: LinePixels;
+    pattern?: LinePixels;
     /** If defined, the width of the edges in pixels. If undefined (or 0), edges are drawn using the element's line width.
      * @note Non-integer values are truncated, and values are clamped to the range [1, 32].
      */
-    readonly width?: number;
+    width?: number;
   }
 
   /** Describes the symbology with which edges should be drawn. */
@@ -154,20 +154,14 @@ export namespace HiddenLine {
     }
   }
 
-  /** Describes how visible and hidden edges and transparent surfaces should be rendered in "hidden line" and "solid fill" [[RenderMode]]s. */
+  /** The JSON representation of a [[HiddenLine.Settings]]. */
   export interface SettingsProps {
-    /** Describes how visible edges (those unobscured by other geometry) should be displayed. */
-    readonly visible?: StyleProps;
-    /** Describes how hidden edges (those obscured by other geometry) should be displayed. */
-    readonly hidden?: StyleProps;
-    /** A value in the range [0.0, 1.0] specifying a threshold below which transparent surfaces should not be drawn.
-     * A value of 0.0 indicates any surface that is not 100% opaque should not be drawn.
-     * A value of 0.25 indicates any surface that is less than 25% opaque should not be drawn.
-     * A value of 1.0 indicates that all surfaces should be drawn regardless of transparency.
-     * @note values will be clamped to the range [0.0, 1.0].
-     * @note Defaults to 1.0.
-     */
-    readonly transThreshold?: number;
+    /** See [[HiddenLine.Settings.visible]]. */
+    visible?: StyleProps;
+    /** See [[HiddenLine.Settings.hidden]]. */
+    hidden?: StyleProps;
+    /** See [[HiddenLine.Settings.transparencyThreshold. */
+    transThreshold?: number;
   }
 
   /** Describes how visible and hidden edges and transparent surfaces should be rendered in "hidden line" and "solid fill" [[RenderMode]]s. */
@@ -184,6 +178,8 @@ export namespace HiddenLine {
      * @note Defaults to 1.0.
      */
     public readonly transparencyThreshold: number;
+
+    /** An alias for [[transparencyThreshold]]. */
     public get transThreshold(): number { return this.transparencyThreshold; }
 
     /** The default display settings. */
@@ -200,11 +196,13 @@ export namespace HiddenLine {
     }
 
     public toJSON(): SettingsProps {
-      return {
+      const props: SettingsProps = {
         visible: this.visible.toJSON(),
         hidden: this.hidden.toJSON(),
         transThreshold: this.transThreshold,
       };
+
+      return props;
     }
 
     /** Create a Settings equivalent to this one with the exception of those properties defined in the supplied JSON. */
@@ -223,7 +221,9 @@ export namespace HiddenLine {
       if (this === other)
         return true;
 
-      return this.visible.equals(other.visible) && this.hidden.equals(other.hidden) && this.transparencyThreshold === other.transparencyThreshold;
+      return this.visible.equals(other.visible)
+        && this.hidden.equals(other.hidden)
+        && this.transparencyThreshold === other.transparencyThreshold;
     }
 
     public get matchesDefaults(): boolean {

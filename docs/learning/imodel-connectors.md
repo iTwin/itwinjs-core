@@ -22,17 +22,17 @@ Examples of iModel Connectors include:
 
 ## Connector execution
 
-Connectors are invoked by the *Bentley Orchestration Framework(OF)* product. The *Orchestration Framework* is installed on an *Automation server* machine. The *Automation Server* has access to a ProjectWise managed data source that contains the application native files. Any desired connector can be installed on the *Automation Server*. All this data is specified in the connected project web-UI under *connection*.
-The application source file and destination iModel are identified in *mapping*.
-A *connector-job* is the combination of *connection* and *mapping* and may be run on a pre-determined schedule.
+Connectors can be invoked either on the cloud using the iTwin Synchronizer Portal or from the desktop using the iTwin Synchronzier Client. This Bentley Communities article, [Ways to sync your data to an iTwin](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin) provides a detailed description of both of these options as well as the benefits and limitations of each.
+The application source file and destination iModel are identified in _mapping_.
+A _connector-job_ is the combination of _connection_ and _mapping_ and may be run on a pre-determined schedule.
 
 ## Key characteristics of iModel Connectors
 
-- Mappings of data are *from* the source *into* an iModel.
-- If necessary, connectors store enough information about source data to detect the differences in it between job-runs. In this manner connectors generate *ChangeSets* that are sent to iModelHub. This is the key difference between a Connector and a one-time converter.
+- Mappings of data are _from_ the source _into_ an iModel.
+- If necessary, connectors store enough information about source data to detect the differences in it between job-runs. In this manner connectors generate _ChangeSets_ that are sent to iModelHub. This is the key difference between a Connector and a one-time converter.
 - Connectors locally store a mapping of native source Ids to iModel global Ids. This creates a "back-link" from data in iModels to its source application.
 - Each job generates data in the iModel that is isolated from all other jobs' data. The resulting combined iModel is partitioned at the Subject level of the iModel; each connectors job has its own Subject.
-- Connector jobs *hold the locks* for all of their data, so it may not be modified by other iModel applications.
+- Connector jobs _hold the locks_ for all of their data, so it may not be modified by other iModel applications.
 
 ## Data Alignment
 
@@ -47,7 +47,7 @@ The appropriate balancing of these two conflicting goals is not an easy task. Ho
 
 Sometimes BIS domain schemas are not adequate to capture all the data in the authoring application. To avoid losing data, iModel Connectors may dynamically create application-specific schemas whose classes descend from the most appropriate BIS domain classes.
 
-As iModel Connectors always run multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that can be used by subsequent executions. To provide consistency and enable concise change sets, the Connectors add to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](../bis/intro/schema-versioning-and-generations.md)
+As iModel Connectors always run multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that can be used by subsequent executions. To provide consistency and enable concise change sets, the Connectors add to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](../bis/guide/schema-evolution/schema-versioning-and-generations.md)
 
 The `DynamicSchema` custom attribute should be set on customer specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes` and it enables iModelHub to programmatically detect dynamic schemas. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
 
@@ -55,7 +55,7 @@ The `DynamicSchema` custom attribute should be set on customer specific applicat
 
 Wherever practical, the Elements generated from iModel Connectors should be identifiable through an optimal "Display Label".
 
-As discussed in [Element Fundamentals](../bis/intro/element-fundamentals.md), the Display Labels are created through the following logic:
+As discussed in [Element Fundamentals](../bis/guide/fundamentals/element-fundamentals.md), the Display Labels are created through the following logic:
 
 1. If the UserLabel property is set, it is taken as the Display Label.
 2. If the CodeValue is set (and the UserLabel is not set), the CodeValue becomes the Display Label.
@@ -65,14 +65,14 @@ As discussed in [Element Fundamentals](../bis/intro/element-fundamentals.md), th
 
 iModel Connector data transformations should be written considering the Display Label logic; UserLabel is the appropriate property for a Connector to set to control the Display Label (CodeValue should never be set for anything other than coding purposes).
 
-*But what value should an iModel Connector set UserLabel to?* There are two goals to consider in the generation of UserLabels. Those goals, in priority order, are:
+_But what value should an iModel Connector set UserLabel to?_ There are two goals to consider in the generation of UserLabels. Those goals, in priority order, are:
 
 1. Consistency with source application label usage.
 2. Consistency with BIS domain default labeling strategy.
 
 If the source application data has a property that conceptually matches the BIS UserLabel property, that value should always be transformed to UserLabel.
 
-Each BIS domain author should provide a default Display Label strategy for each of its classes. This strategy should be determined by the optimal *user* experience and typically will represent the consensus of Product Management for applications and services that are associated with the domain. Information that is typically considered in the domain's Display Label logic is:
+Each BIS domain author should provide a default Display Label strategy for each of its classes. This strategy should be determined by the optimal _user_ experience and typically will represent the consensus of Product Management for applications and services that are associated with the domain. Information that is typically considered in the domain's Display Label logic is:
 
 - Class Name
 

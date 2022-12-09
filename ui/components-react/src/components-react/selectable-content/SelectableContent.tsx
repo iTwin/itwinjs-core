@@ -9,8 +9,7 @@
 
 import "./SelectableContent.scss";
 import * as React from "react";
-import { ActionMeta, ValueType } from "react-select/src/types";
-import { OptionType, ThemedSelect } from "@itwin/core-react";
+import { Select, SelectOption } from "@itwin/itwinui-react";
 
 /**
  * A definition for content displayed in [[ControlledSelectableContent]] and
@@ -42,22 +41,30 @@ export interface ControlledSelectableContentProps {
  */
 export function ControlledSelectableContent(props: ControlledSelectableContentProps) {
   const { onSelectedContentIdChanged } = props;
-  const onContentIdSelected = React.useCallback((value: ValueType<OptionType>, action: ActionMeta<OptionType>) => {
-    onSelectedContentIdChanged && action.action === "select-option" && value && onSelectedContentIdChanged((value as OptionType).value);
+
+  const onContentIdSelected = React.useCallback((newValue: string): void => {
+    onSelectedContentIdChanged && onSelectedContentIdChanged(newValue);
   }, [onSelectedContentIdChanged]);
+
   const selectedContent = props.children.find((contentDef) => contentDef.id === props.selectedContentId) ?? props.children[0];
+  const options = React.useMemo(() => {
+    return props.children.map((componentDef) => ({
+      label: componentDef.label,
+      value: componentDef.id,
+    })) as SelectOption<string>[];
+  }, [props.children]);
+
   return (
     <div className="components-selectable-content">
       <div className="components-selectable-content-header">
-        <ThemedSelect openMenuOnClick={true} openMenuOnFocus={true} isSearchable={false} onChange={onContentIdSelected}
-          className="components-selectable-content-selector"
-          aria-label={props.selectAriaLabel}
-          value={{ label: selectedContent?.label, value: selectedContent?.id }}
-          options={props.children.map((componentDef) => ({
-            label: componentDef.label,
-            value: componentDef.id,
-          }))}
-        />
+        {options.length > 0 &&
+          <Select onChange={onContentIdSelected} size="small"
+            className="components-selectable-content-selector"
+            aria-label={props.selectAriaLabel}
+            value={selectedContent.id}
+            options={options}
+          />
+        }
       </div>
       <div className="components-selectable-content-wrapper">
         {selectedContent?.render()}

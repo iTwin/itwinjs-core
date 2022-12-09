@@ -20,8 +20,10 @@ import { ReactTableDemoContentControl } from "../table-demo/ReactTableDemo";
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage3 extends FrontstageProvider {
+  public static stageId = "ui-test-app:Test3";
+
   public get id(): string {
-    return "Test3";
+    return Frontstage3.stageId;
   }
 
   private getDefaultViewState = () => {
@@ -62,7 +64,6 @@ export class Frontstage3 extends FrontstageProvider {
         id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
-        isInFooterMode={true}
         contentManipulationTools={
           <Zone
             widgets={[
@@ -156,7 +157,10 @@ export class Frontstage3 extends FrontstageProvider {
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
-              items={[AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand, AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2]}
+              items={[
+                AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand, AppTools.warningMessageBoxCommand,
+                AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2, AppTools.openMessageBoxCommand3,
+              ]}
               direction={Direction.Right}
               itemsInColumn={7}
             />

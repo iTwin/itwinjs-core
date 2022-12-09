@@ -4,9 +4,12 @@
 
 ```ts
 
+/// <reference types="react" />
+
 import { Cartographic } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { CommonProps } from '@itwin/core-react';
+import { DateFormatOptions } from '@itwin/components-react';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import { GenericUiEventArgs } from '@itwin/appui-abstract';
@@ -21,13 +24,13 @@ import { PropertyEditorBase } from '@itwin/components-react';
 import { PropertyEditorProps } from '@itwin/components-react';
 import { PropertyValue } from '@itwin/appui-abstract';
 import { QuantityTypeArg } from '@itwin/core-frontend';
-import * as React from 'react';
+import * as React_2 from 'react';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { ScreenViewport } from '@itwin/core-frontend';
 import { StandardViewId } from '@itwin/core-frontend';
 import { TentativePoint } from '@itwin/core-frontend';
 import { TypeEditor } from '@itwin/components-react';
-import { UiEvent } from '@itwin/core-react';
+import { UiEvent } from '@itwin/appui-abstract';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
 import { Vector3d } from '@itwin/core-geometry';
@@ -36,17 +39,17 @@ import { Viewport } from '@itwin/core-frontend';
 import { ViewState } from '@itwin/core-frontend';
 
 // @beta
-export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
+export class AlphaSlider extends React_2.PureComponent<AlphaSliderProps> {
     // @internal
     constructor(props: AlphaSliderProps);
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)
-    render(): React.ReactNode;
-    }
+    render(): React_2.ReactNode;
+}
 
 // @beta
-export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
+export interface AlphaSliderProps extends React_2.HTMLAttributes<HTMLDivElement>, CommonProps {
     alpha: number;
     isHorizontal?: boolean;
     onAlphaChange?: ((alpha: number) => void) | undefined;
@@ -106,7 +109,7 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     get viewport(): ScreenViewport | undefined;
     // (undocumented)
     protected _viewport: ScreenViewport | undefined;
-    }
+}
 
 // @alpha
 export class BaseTimelineDataProvider implements TimelineDataProvider {
@@ -147,7 +150,7 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
 }
 
 // @beta
-export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
+export class ColorEditor extends React_2.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
@@ -202,7 +205,7 @@ export interface ColorPickerPanelProps {
 export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null;
 
 // @public
-export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+export interface ColorPickerPopupProps extends React_2.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     captureClicks?: boolean;
     colorDefs?: ColorDef[];
     colorInputType?: "hsl" | "rgb" | "hex";
@@ -213,12 +216,12 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
     onColorChange?: ((newColor: ColorDef) => void) | undefined;
     popupPosition?: RelativePosition;
     readonly?: boolean;
-    ref?: React.Ref<HTMLButtonElement>;
+    ref?: React_2.Ref<HTMLButtonElement>;
     showCaret?: boolean;
 }
 
 // @beta
-export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+export interface ColorPickerProps extends React_2.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDefs?: ColorDef[];
     disabled?: boolean;
     dropDownTitle?: string;
@@ -226,7 +229,7 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
     numColumns?: number;
     onColorPick?: ((color: ColorDef) => void) | undefined;
     readonly?: boolean;
-    ref?: React.Ref<HTMLButtonElement>;
+    ref?: React_2.Ref<HTMLButtonElement>;
     round?: boolean;
     showCaret?: boolean;
 }
@@ -234,54 +237,33 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
 // @beta
 export class ColorPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    get reactNode(): React.ReactNode;
+    get reactNode(): React_2.ReactNode;
 }
 
 // @beta
 export function ColorSwatch(props: ColorSwatchProps): JSX.Element;
 
 // @beta
-export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+export interface ColorSwatchProps extends React_2.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDef: ColorDef;
-    onColorPick?: ((color: ColorDef, e: React.MouseEvent) => void) | undefined;
+    onColorPick?: ((color: ColorDef, e: React_2.MouseEvent) => void) | undefined;
     round?: boolean;
 }
 
-// @internal @deprecated
-export class ContextMenu extends React.Component<ContextMenuProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @internal @deprecated
-export class ContextMenuItem extends React.Component<MenuItem> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @internal @deprecated
-export interface ContextMenuProps extends CommonProps {
-    isOpened: boolean;
-    items?: MenuItem[];
-    onClickOutside?: () => void;
-    parent: HTMLElement | null;
-    position: RelativePosition;
-}
-
 // @public
-export class Cube extends React.PureComponent<CubeProps> {
+export class Cube extends React_2.PureComponent<CubeProps> {
     // (undocumented)
-    render(): React.ReactNode;
+    render(): React_2.ReactNode;
 }
 
 // @internal (undocumented)
-export class CubeFace extends React.Component<CubeFaceProps> {
+export class CubeFace extends React_2.Component<CubeFaceProps> {
     // (undocumented)
-    render(): React.ReactNode;
+    render(): React_2.ReactNode;
 }
 
 // @internal (undocumented)
-export interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
+export interface CubeFaceProps extends React_2.AllHTMLAttributes<HTMLDivElement> {
     // (undocumented)
     face: Face;
     // (undocumented)
@@ -299,13 +281,13 @@ export enum CubeHover {
 }
 
 // @public
-export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, CubeNavigationAidState> {
+export class CubeNavigationAid extends React_2.Component<CubeNavigationAidProps, CubeNavigationAidState> {
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React.ReactNode;
+    render(): React_2.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<CubeNavigationAidState>;
 }
@@ -353,10 +335,10 @@ export enum CubeNavigationHitBoxZ {
 }
 
 // @public
-export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
+export interface CubeProps extends React_2.AllHTMLAttributes<HTMLDivElement>, CommonProps {
     // (undocumented)
     faces?: {
-        [key: string]: React.ReactNode;
+        [key: string]: React_2.ReactNode;
     };
     // (undocumented)
     rotMatrix: Matrix3d;
@@ -380,7 +362,7 @@ export interface CubeRotationChangeEventArgs {
 export function CustomThumb(): JSX.Element;
 
 // @public
-export class DrawingNavigationAid extends React.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
+export class DrawingNavigationAid extends React_2.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
     constructor(props: DrawingNavigationAidProps);
     // (undocumented)
     componentDidMount(): void;
@@ -393,10 +375,10 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     // @internal (undocumented)
     static getDefaultOpenedMapSize: (paddingX?: number, paddingY?: number) => Vector3d;
     // @internal (undocumented)
-    render(): React.ReactNode;
+    render(): React_2.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<DrawingNavigationAidState>;
-    }
+}
 
 // @public
 export interface DrawingNavigationAidProps extends CommonProps {
@@ -425,7 +407,7 @@ export interface DrawingNavigationAidProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCanvasProps> {
+export class DrawingNavigationCanvas extends React_2.Component<DrawingNavigationCanvasProps> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
@@ -433,8 +415,8 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React.ReactNode;
-    }
+    render(): React_2.ReactNode;
+}
 
 // @internal (undocumented)
 export interface DrawingNavigationCanvasProps {
@@ -491,13 +473,13 @@ export enum Face {
 }
 
 // @internal (undocumented)
-export class FaceCell extends React.Component<FaceCellProps> {
+export class FaceCell extends React_2.Component<FaceCellProps> {
     // (undocumented)
-    render(): React.ReactNode;
-    }
+    render(): React_2.ReactNode;
+}
 
 // @internal (undocumented)
-export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
+export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement> {
     // (undocumented)
     center?: boolean;
     // (undocumented)
@@ -532,9 +514,9 @@ export interface FormatPanelProps extends CommonProps {
     // (undocumented)
     provideFormatSpec?: (formatProps: FormatProps, persistenceUnit: UnitProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
     // (undocumented)
-    providePrimaryChildren?: (formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
+    providePrimaryChildren?: (formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => React_2.ReactNode;
     // (undocumented)
-    provideSecondaryChildren?: (formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => React.ReactNode;
+    provideSecondaryChildren?: (formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) => React_2.ReactNode;
     // (undocumented)
     showSample?: boolean;
     // (undocumented)
@@ -642,23 +624,23 @@ export enum HitBoxZ {
 export function HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element;
 
 // @beta
-export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
+export interface HueSliderProps extends React_2.HTMLAttributes<HTMLDivElement>, CommonProps {
     hsv: HSVColor;
     isHorizontal?: boolean;
     onHueChange?: ((hue: HSVColor) => void) | undefined;
 }
 
 // @internal
-export class InlineEdit extends React.Component<InlineEditProps, InlineEditState> {
+export class InlineEdit extends React_2.Component<InlineEditProps, InlineEditState> {
     constructor(props: InlineEditProps);
     // (undocumented)
     componentDidUpdate(prevProps: InlineEditProps, _prevState: InlineEditState): void;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @public
-export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps> {
+export class LineWeightSwatch extends React_2.PureComponent<LineWeightSwatchProps> {
     // @internal
     constructor(props: LineWeightSwatchProps);
     // (undocumented)
@@ -668,7 +650,7 @@ export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps>
 }
 
 // @public
-export interface LineWeightSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+export interface LineWeightSwatchProps extends React_2.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDef?: ColorDef;
     disabled?: boolean;
     hideLabel?: boolean;
@@ -683,16 +665,6 @@ export enum MapMode {
     Closed = "map-closed",
     // (undocumented)
     Opened = "map-opened"
-}
-
-// @internal @deprecated
-export interface MenuItem {
-    checked?: boolean;
-    disabled?: boolean;
-    icon?: string;
-    isSeparator?: boolean;
-    name?: string;
-    onClick?: () => void;
 }
 
 // @internal @deprecated
@@ -723,7 +695,7 @@ export function MiscFormatOptions(props: MiscFormatOptionsProps): JSX.Element;
 // @alpha
 export interface MiscFormatOptionsProps extends CommonProps {
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
     enableMinimumProperties?: boolean;
     // (undocumented)
@@ -737,15 +709,15 @@ export interface MiscFormatOptionsProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export class NavCubeFace extends React.Component<NavCubeFaceProps> {
+export class NavCubeFace extends React_2.Component<NavCubeFaceProps> {
     // (undocumented)
     static faceCellToPos: (face: Face, x: number, y: number) => Vector3d;
     // (undocumented)
-    render(): React.ReactNode;
+    render(): React_2.ReactNode;
 }
 
 // @internal (undocumented)
-export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
+export interface NavCubeFaceProps extends React_2.AllHTMLAttributes<HTMLDivElement> {
     // (undocumented)
     face: Face;
     // (undocumented)
@@ -775,7 +747,7 @@ export interface PlaybackSettings {
 export type PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void;
 
 // @internal
-export class PlayButton extends React.Component<PlayerButtonProps, PlayButtonState> {
+export class PlayButton extends React_2.Component<PlayerButtonProps, PlayButtonState> {
     constructor(props: PlayerButtonProps, context?: any);
     // (undocumented)
     componentDidUpdate(): void;
@@ -784,7 +756,7 @@ export class PlayButton extends React.Component<PlayerButtonProps, PlayButtonSta
 }
 
 // @internal
-export class PlayerButton extends React.PureComponent<any> {
+export class PlayerButton extends React_2.PureComponent<any> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -831,7 +803,7 @@ export interface QuantityNumberInputProps extends Omit<InputProps, "value" | "mi
     onChange?: (value: number) => void;
     persistenceValue?: number;
     quantityType: QuantityTypeArg;
-    ref?: React.Ref<HTMLInputElement>;
+    ref?: React_2.Ref<HTMLInputElement>;
     showTouchButtons?: boolean;
     snap?: boolean;
     step?: StepFunctionProp;
@@ -843,7 +815,7 @@ export interface QuantityProps extends CommonProps {
     onQuantityChange: (newQuantityValue: number) => void;
     quantityType: QuantityTypeArg;
     readonly?: boolean;
-    ref?: React.Ref<HTMLInputElement>;
+    ref?: React_2.Ref<HTMLInputElement>;
 }
 
 // @internal (undocumented)
@@ -858,7 +830,7 @@ export function RailMarkers({ showToolTip, percent, tooltipText, markDate }: {
 export function SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element;
 
 // @beta
-export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
+export interface SaturationPickerProps extends React_2.HTMLAttributes<HTMLDivElement>, CommonProps {
     hsv: HSVColor;
     onSaturationChange?: ((saturation: HSVColor) => void) | undefined;
 }
@@ -915,7 +887,7 @@ export interface SolarDataProvider {
 export type SolarPlaybackProgressHandler = (time: Date) => void;
 
 // @alpha
-export class SolarTimeline extends React.PureComponent<SolarTimelineComponentProps, SolarTimelineComponentState> {
+export class SolarTimeline extends React_2.PureComponent<SolarTimelineComponentProps, SolarTimelineComponentState> {
     constructor(props: SolarTimelineComponentProps);
     // (undocumented)
     componentWillUnmount(): void;
@@ -923,7 +895,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     getLocalTime(ticks: number): Date;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @public
 export class StandardRotationChangeEvent extends UiEvent<StandardRotationChangeEventArgs> {
@@ -939,7 +911,7 @@ export interface StandardRotationChangeEventArgs {
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
 // @public
-export class TimelineComponent extends React.Component<TimelineComponentProps, TimelineComponentState> {
+export class TimelineComponent extends React_2.Component<TimelineComponentProps, TimelineComponentState> {
     constructor(props: TimelineComponentProps);
     // (undocumented)
     componentDidUpdate(prevProps: TimelineComponentProps): void;
@@ -949,7 +921,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     render(): JSX.Element;
     // (undocumented)
     shouldComponentUpdate(nextProps: TimelineComponentProps, nextState: TimelineComponentState): boolean;
-    }
+}
 
 // @public
 export interface TimelineComponentProps {
@@ -957,6 +929,7 @@ export interface TimelineComponentProps {
     appMenuItemOption?: TimelineMenuItemOption;
     appMenuItems?: TimelineMenuItemProps[];
     componentId?: string;
+    dateFormatOptions?: DateFormatOptions;
     endDate?: Date;
     includeRepeat?: boolean;
     initialDuration?: number;
@@ -969,6 +942,7 @@ export interface TimelineComponentProps {
     repeat?: boolean;
     showDuration?: boolean;
     startDate?: Date;
+    timeFormatOptions?: DateFormatOptions;
     timeZoneOffset?: number;
     totalDuration: number;
 }
@@ -1002,7 +976,7 @@ export enum TimelineDateDisplay {
 // @public
 export interface TimelineDateMarkerProps {
     date?: Date;
-    dateMarker?: React.ReactNode;
+    dateMarker?: React_2.ReactNode;
 }
 
 // @public
@@ -1085,17 +1059,7 @@ export interface ViewIdChangedEventArgs {
 }
 
 // @public
-export class ViewportComponent extends React.Component<ViewportProps, ViewportState> {
-    constructor(props: ViewportProps);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    // (undocumented)
-    componentDidUpdate(prevProps: ViewportProps): Promise<void>;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function ViewportComponent(props: ViewportProps): JSX.Element;
 
 // @public
 export class ViewportComponentEvents {
@@ -1138,10 +1102,10 @@ export interface ViewportProps extends CommonProps {
     // @internal
     controlId?: string;
     // @internal (undocumented)
-    getViewOverlay?: (viewport: ScreenViewport) => React.ReactNode;
+    getViewOverlay?: (viewport: ScreenViewport) => React_2.ReactNode;
     imodel: IModelConnection;
     // @internal (undocumented)
-    onContextMenu?: (e: React.MouseEvent) => boolean;
+    onContextMenu?: (e: React_2.MouseEvent) => boolean;
     // @internal
     screenViewportOverride?: typeof ScreenViewport;
     // @internal
@@ -1169,7 +1133,7 @@ export interface ViewRotationChangeEventArgs {
 export type ViewStateProp = ViewState | (() => ViewState);
 
 // @public
-export class WeightEditor extends React.PureComponent<PropertyEditorProps, WeightEditorState> implements TypeEditor {
+export class WeightEditor extends React_2.PureComponent<PropertyEditorProps, WeightEditorState> implements TypeEditor {
     constructor(props: PropertyEditorProps);
     // @internal (undocumented)
     componentDidMount(): void;
@@ -1190,7 +1154,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
 }
 
 // @public
-export class WeightPickerButton extends React.PureComponent<WeightPickerProps, WeightPickerState> {
+export class WeightPickerButton extends React_2.PureComponent<WeightPickerProps, WeightPickerState> {
     // @internal
     constructor(props: WeightPickerProps);
     // (undocumented)
@@ -1203,10 +1167,10 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     render(): JSX.Element;
     // (undocumented)
     setFocus(): void;
-    }
+}
 
 // @public
-export interface WeightPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+export interface WeightPickerProps extends React_2.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     activeWeight: number;
     colorDef?: ColorDef;
     disabled?: boolean;
@@ -1220,9 +1184,8 @@ export interface WeightPickerProps extends React.ButtonHTMLAttributes<HTMLButton
 // @public
 export class WeightPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    get reactNode(): React.ReactNode;
+    get reactNode(): React_2.ReactNode;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

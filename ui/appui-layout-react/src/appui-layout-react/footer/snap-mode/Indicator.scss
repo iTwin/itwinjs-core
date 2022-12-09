@@ -18,6 +18,9 @@
       margin-right: 6px;
       font-size: $text-font-size;
       text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
 
       @include for-tablet-landscape-down {
         display: none;

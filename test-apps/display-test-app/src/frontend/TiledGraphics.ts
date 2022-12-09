@@ -73,7 +73,7 @@ class Provider implements TiledGraphicsProvider {
     // Enable all categories (and subcategories thereof)
     const ecsql = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
     const catIds: string[] = [];
-    for await (const catId of iModel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames))
+    for await (const catId of iModel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       catIds.push(catId.categoryId);
 
     const subcatsRequest = iModel.subcategories.load(catIds);

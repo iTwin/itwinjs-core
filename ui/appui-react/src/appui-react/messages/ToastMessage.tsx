@@ -8,13 +8,19 @@
 
 import * as React from "react";
 import { MessageSeverity } from "@itwin/appui-abstract";
-import { MessageLayout, Toast } from "@itwin/appui-layout-react";
-import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
+import {
+  Message,
+  MessageLayout,
+  StatusHelpers,
+  Toast,
+} from "@itwin/appui-layout-react";
 import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
 import { MessageLabel } from "./MessageLabel";
-import { getToastCategory } from "./getToastCategory";
+import { HollowIcon } from "./HollowIcon";
+import { MessageContainer } from "@itwin/core-react";
 
 /** Properties for a [[ToastMessage]]
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface ToastMessageProps {
@@ -27,28 +33,32 @@ export interface ToastMessageProps {
 
 /** Toast Message React component
  * @public
+ * @deprecated
  */
-export function ToastMessage(props: ToastMessageProps) {
+export function ToastMessage(props: ToastMessageProps) { // eslint-disable-line deprecation/deprecation
   const { id, messageDetails, severity, toastTarget, closeMessage } = props;
-  const category = getToastCategory(severity);
 
   return (
-    <Toast
+    <Toast // eslint-disable-line deprecation/deprecation
       animateOutTo={toastTarget}
       onAnimatedOut={() => closeMessage(id)}
       timeout={messageDetails.displayTime.milliseconds}
       content={
-        <ToastPresentation
-          category={category}
-          content={
-            <MessageLayout>
-              <MessageLabel message={messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
-              {messageDetails.detailedMessage &&
-                <MessageLabel message={messageDetails.detailedMessage} className="uifw-statusbar-message-detailed" />
-              }
-            </MessageLayout>
+        <Message // eslint-disable-line deprecation/deprecation
+          status={StatusHelpers.severityToStatus(severity)}
+          icon={
+            <HollowIcon
+              iconSpec={MessageContainer.getIconClassName(severity, true)}
+            />
           }
-        />
+        >
+          <MessageLayout>
+            <MessageLabel message={messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
+            {messageDetails.detailedMessage &&
+              <MessageLabel message={messageDetails.detailedMessage} className="uifw-statusbar-message-detailed" />
+            }
+          </MessageLayout>
+        </Message>
       }
     />
   );

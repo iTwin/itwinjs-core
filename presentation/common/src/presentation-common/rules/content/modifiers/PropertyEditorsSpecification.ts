@@ -7,17 +7,22 @@
  */
 
 /**
- * Specification for custom property editor
+ * This specification allows assigning a custom property editor to specific properties.
  *
- * @see [More details]($docs/presentation/Content/PropertyEditorSpecification.md)
+ * @see [Property editor specification specification reference documentation page]($docs/presentation/content/PropertyEditorSpecification.md)
  * @public
  */
 export interface PropertyEditorSpecification {
-  /** Name of the custom editor */
+  /**
+   * Name of the property editor that's going to be used in UI components. This name is carried over to
+   * [[Field.editor]] and it's up to the UI component to make sure appropriate editor
+   * is used to edit the property.
+   */
   editorName: string;
 
   /**
-   * Parameters for the editor
+   * Parameters for the editor.
+   * @note At this moment the attribute is not used.
    * @public
    */
   parameters?: PropertyEditorParameters[];

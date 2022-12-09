@@ -4,12 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as path from "path";
+import { WebPreferences } from "electron";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { relaunchInElectron } from "../../utils/SpawnUtils";
 import { CertaConfig } from "../../CertaConfig";
 
 export class ElectronTestRunner {
   public static readonly supportsCoverage = false;
+  public static readonly supportsCleanup = false;
   public static async initialize(config: CertaConfig): Promise<void> {
     // Restart under electron if we're running in node
     if (!("electron" in process.versions))
@@ -27,14 +29,16 @@ export class ElectronTestRunner {
   public static async runTests(config: CertaConfig): Promise<void> {
     const { BrowserWindow, app, ipcMain } = require("electron"); // eslint-disable-line @typescript-eslint/naming-convention
 
+    const webPreferences: WebPreferences & { nativeWindowOpen: true } = { // nativeWindowOpen was removed starting Electron 18
+      nodeIntegration: true,
+      contextIsolation: false,
+      nativeWindowOpen: true,
+      sandbox: false,
+    };
+
     const rendererWindow = new BrowserWindow({
       show: config.debug,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
-        nativeWindowOpen: true,
-        sandbox: false,
-      },
+      webPreferences,
     });
 
     const exitElectronApp = (exitCode: number) => {

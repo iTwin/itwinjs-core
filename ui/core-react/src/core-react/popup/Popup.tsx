@@ -77,6 +77,12 @@ export interface PopupProps extends CommonProps {
   /** If true the children are mounted once and unmounted when this component is unmounted. If false the
    * children are unmounted each time the popup is closed. */
   keepContentsMounted?: boolean;
+
+  /**
+   * If true the popup will remain open and will be repositioned when window resize events occur, default to false.
+   * @beta
+   * */
+  repositionOnResize?: boolean;
 }
 
 /** @internal */
@@ -86,6 +92,7 @@ interface PopupState {
   left: number;
   position: RelativePosition;
   parentDocument: Document;
+  animationEnded: boolean;
 }
 
 /** Popup React component displays a popup relative to an optional target element.
@@ -99,6 +106,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     const parentDocument = this.props.target?.ownerDocument ?? document;
 
     this.state = {
+      animationEnded: false,
       isOpen: this.props.isOpen,
       top: 0,
       left: 0,
@@ -128,7 +136,11 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     return this.state.parentDocument.defaultView ?? window;
   }
 
-  public override componentDidUpdate(previousProps: PopupProps) {
+  public override componentDidUpdate(previousProps: PopupProps, prevState: PopupState) {
+    if (this.state.position !== prevState.position) {
+      this.setState( { animationEnded: false });
+    }
+
     if (this.props.target !== previousProps.target) {
       // istanbul ignore next
       {
@@ -172,7 +184,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   private _bindWindowEvents = () => {
     const activeWindow = this.getParentWindow();
     activeWindow.addEventListener("pointerdown", this._handleOutsideClick);
-    activeWindow.addEventListener("resize", this._hide);
+    activeWindow.addEventListener("resize", this._resize);
     activeWindow.addEventListener("contextmenu", this._handleContextMenu);
     activeWindow.addEventListener("scroll", this._hide);
     activeWindow.addEventListener("wheel", this._handleWheel);
@@ -182,7 +194,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   private _unBindWindowEvents = () => {
     const activeWindow = this.getParentWindow();
     activeWindow.removeEventListener("pointerdown", this._handleOutsideClick);
-    activeWindow.removeEventListener("resize", this._hide);
+    activeWindow.removeEventListener("resize", this._resize);
     activeWindow.removeEventListener("contextmenu", this._handleContextMenu);
     activeWindow.removeEventListener("scroll", this._hide);
     activeWindow.removeEventListener("wheel", this._handleWheel);
@@ -260,6 +272,16 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       } else {
         this._onClose(false);
       }
+    }
+  };
+
+  private _resize = () => {
+    if (this.props.repositionOnResize) {
+      const position = this._toggleRelativePosition();
+      const point = this._fitPopup(this._getPosition(position));
+      this.setState({ left: point.x, top: point.y, position });
+    } else {
+      this._hide(); // legacy behavior
     }
   };
 
@@ -525,6 +547,12 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     return fittedPoint;
   };
 
+  private _handleAnimationEnd = (event: React.AnimationEvent<HTMLDivElement>) => {
+    if (event.target === this._popup) {
+      this.setState({ animationEnded: true });
+    }
+  };
+
   public override render() {
     const animate = this.props.animate !== undefined ? this.props.animate : true;
     const className = classnames(
@@ -534,6 +562,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       this.props.showArrow && "arrow",
       !animate && "core-popup-animation-none",
       this.props.className,
+      this.state.animationEnded && "core-animation-ended",
       (!this.props.isOpen && this.props.keepContentsMounted) && "core-popup-hidden"
     );
 
@@ -559,6 +588,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
           aria-modal={true}
           tabIndex={-1}
           aria-label={this.props.ariaLabel}
+          onAnimationEnd={this._handleAnimationEnd}
         >
           <FocusTrap active={!!this.props.moveFocus} initialFocusElement={this.props.focusTarget} returnFocusOnDeactivate={true}>
             {this.props.children}

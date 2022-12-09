@@ -4,21 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { IModelApp, SelectionTool } from "@itwin/core-frontend";
+import { IModelApp, NoRenderApp, SelectionTool, Tool } from "@itwin/core-frontend";
 import { ConditionalStringValue } from "@itwin/appui-abstract";
 import { Orientation, Size } from "@itwin/core-react";
 import { ActionButtonItemDef, CommandItemDef, ItemProps, ToolItemDef } from "../../appui-react";
 import TestUtils from "../TestUtils";
-import { Tool1 } from "../tools/Tool1";
 
 describe("Item", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    await NoRenderApp.startup();
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
+    await IModelApp.shutdown();
   });
 
   it("CommandItemDef with no commandId should get generated id", () => {
@@ -98,7 +99,7 @@ describe("Item", () => {
   });
 
   it("ToolItemDef helper function", () => {
-    const toolItem = ToolItemDef.getItemDefForTool(SelectionTool, "icon-override", ["args1", "args2"]);
+    const toolItem = ToolItemDef.getItemDefForTool(SelectionTool, "icon-override");
     expect(toolItem.iconSpec).to.be.eq("icon-override");
     expect(toolItem.label).not.to.be.undefined;
     expect(toolItem.tooltip).not.to.be.undefined;
@@ -106,13 +107,38 @@ describe("Item", () => {
     expect(toolItem.description).not.to.be.undefined;
   });
 
-  it("ToolItemDef helper function with default args", () => {
-    const toolItem = ToolItemDef.getItemDefForTool(Tool1);
+  class TestImmediate extends Tool {
+    public static isValid = false;
+
+    public static override toolId = "Test.Immediate";
+    public override async run(v1: string, v2: number): Promise<boolean> {
+      TestImmediate.isValid = (v1 === "test-string" && v2 === 2);
+      return true;
+    }
+    public static override get minArgs() { return 2; }
+    public static override get maxArgs() { return 2; }
+    public override async parseAndRun(v1: string, v2: string): Promise<boolean> {
+      if (arguments.length !== 2)
+        return false;
+      return this.run(v1, parseInt(v2, 10));
+    }
+  }
+
+  it("ToolItemDef helper function should process tool with multiple args of different types", async () => {
+    const namespaceName = "dummy";
+    await IModelApp.localization.registerNamespace(namespaceName);
+    TestImmediate.register(namespaceName);
+
+    const toolItem = ToolItemDef.getItemDefForTool(TestImmediate, undefined, "test-string", 2);
     expect(toolItem.iconSpec).to.be.eq(undefined);
+    expect(TestImmediate.isValid).to.be.false;
+
+    toolItem.execute();
 
     const spyMethod = sinon.spy(IModelApp.tools, "run");
     toolItem.execute();
-    spyMethod.calledOnce.should.true;
+    expect(TestImmediate.isValid).to.be.true;
+    spyMethod.calledOnceWithExactly("1");
   });
 
   class TestItemDef extends ActionButtonItemDef {

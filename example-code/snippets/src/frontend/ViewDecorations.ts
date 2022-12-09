@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@itwin/core-bentley";
-import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { Id64String, Logger } from "@itwin/core-bentley";
+import { AngleSweep, Arc3d, Point2d, Point3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, ColorByName, ColorDef, NpcCenter } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, Marker, MarkerImage, MarkerSet,
-  MessageBoxIconType, MessageBoxType,
+  BeButton, BeButtonEvent, Cluster, DecorateContext, Decorator, GraphicBranch, GraphicType, HitDetail, imageElementFromUrl,
+  IModelApp, IModelConnection, Marker, MarkerImage, MarkerSet, MessageBoxIconType, MessageBoxType, readGltfGraphics, RenderGraphic,
 } from "@itwin/core-frontend";
 
 // cSpell:ignore lerp
@@ -66,7 +66,9 @@ export class ExampleCanvasDecoration {
     const vp = context.viewport;
     const size = Math.floor(vp.pixelsPerInch * 0.25) + 0.5;
     const sizeOutline = size + 1;
-    const position = context.viewport.npcToView(NpcCenter); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+    const position = context.viewport.npcToView(NpcCenter);
+    position.x = Math.floor(position.x) + 0.5;
+    position.y = Math.floor(position.y) + 0.5;
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {
       // Show black outline (with shadow) around white line for good visibility regardless of view background color.
       ctx.beginPath();
@@ -166,7 +168,7 @@ class IncidentClusterMarker extends Marker {
   }
 
   /** Create a new cluster marker with label and color based on the content of the cluster */
-  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<IncidentMarker>, image: Promise<MarkerImage>) {
+  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<IncidentMarker>, image: Promise<MarkerImage> | MarkerImage | undefined) {
     super(location, size);
 
     // get the top 10 incidents by severity
@@ -201,14 +203,15 @@ class IncidentClusterMarker extends Marker {
 
     this.title = title;
     this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
-    this.setImage(image);
+    if (image)
+      this.setImage(image);
   }
 }
 
 /** A MarkerSet to hold incidents. This class supplies to `getClusterMarker` method to create IncidentClusterMarkers. */
 class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
   protected getClusterMarker(cluster: Cluster<IncidentMarker>): Marker {
-    return IncidentClusterMarker.makeFrom(cluster.markers[0], cluster, IncidentMarkerDemo.decorator!.warningSign);
+    return new IncidentClusterMarker(cluster.getClusterLocation(), cluster.markers[0].size, cluster, IncidentMarkerDemo.decorator!.warningSign);
   }
 }
 
@@ -309,5 +312,108 @@ export class IncidentMarkerDemo {
 IModelApp.applicationLogoCard = () => {
   return IModelApp.makeLogoCard({ iconSrc: "MyApp.png", heading: "My Great Application", notice: "Example Application<br>Version 2.0" });
 };
+
+// __PUBLISH_EXTRACT_END__
+
+// __PUBLISH_EXTRACT_START__ Gltf_Decoration
+
+/** A view decoration that draws a graphic created from a glTF asset. */
+class GltfDecoration implements Decorator {
+  /** A graphic created from a glTF asset. */
+  private readonly _graphic: RenderGraphic;
+  /** The tooltip to be displayed when the graphic is moused-over. */
+  private readonly _tooltip: string;
+  /** The Id of the graphic used for picking. */
+  private readonly _pickableId: Id64String;
+
+  public constructor(graphic: RenderGraphic, tooltip: string, pickableId: Id64String) {
+    this._graphic = graphic;
+    this._tooltip = tooltip;
+    this._pickableId = pickableId;
+  }
+
+  /** Tell the display system not to recreate our graphics every time the mouse cursor moves. */
+  public readonly useCachedDecorations = true;
+
+  /** Draw our graphics into the viewport. */
+  public decorate(context: DecorateContext): void {
+    // Our graphics are defined in spatial coordinates so should only be drawn in a spatial view
+    if (context.viewport.view.isSpatialView()) {
+      // Produce a "scene" graphic so that it will be affected by lighting and other aspects of the viewport's display style.
+      context.addDecoration(GraphicType.Scene, this._graphic);
+    }
+  }
+
+  /** Return true if the specified Id matches our graphic's pickable Id. */
+  public testDecorationHit(id: string): boolean {
+    return id === this._pickableId;
+  }
+
+  /** Provide a tooltip when our graphic is moused-over. */
+  public async getDecorationToolTip(): Promise<string> {
+    return this._tooltip;
+  }
+}
+
+/** Open a file picker to allow the user to select a .gltf or .glb file describing a glTF asset, convert the asset into a RenderGraphic,
+ * then install a Decorator to display the graphic in the center of the project extents.
+ * @param iModel The iModel with which the graphic will be associated. Any viewports viewing a spatial view of this iModel will be decorated with the glTF asset.
+ * @returns true if the graphic was successfully created.
+ */
+export async function displayGltfAsset(iModel: IModelConnection): Promise<boolean> {
+  // Allow the user to select the glTF asset.
+  try {
+    // We need to cast `window` to `any` because the TypeScript type definition doesn't expose the `showOpenFilePicker` function.
+    const [handle] = await (window as any).showOpenFilePicker({
+      types: [
+        {
+          description: "glTF",
+          accept: { "model/*": [".gltf", ".glb"] },
+        },
+      ],
+    });
+
+    // Read the file's contents into memory.
+    const file = await handle.getFile();
+    const buffer = await file.arrayBuffer();
+
+    // Allocate a new transient Id to identify the graphic so it can be picked.
+    const id = iModel.transientIds.next;
+
+    // Convert the glTF into a RenderGraphic.
+    let graphic = await readGltfGraphics({
+      gltf: new Uint8Array(buffer),
+      iModel,
+      pickableOptions: { id },
+    });
+
+    if (!graphic)
+      return false;
+
+    // Transform the graphic to the center of the project extents.
+    const transform = Transform.createTranslation(iModel.projectExtents.center);
+    const branch = new GraphicBranch();
+    branch.add(graphic);
+    graphic = IModelApp.renderSystem.createGraphicBranch(branch, transform);
+
+    // Take ownership of the graphic so that it is not disposed of until we're finished with it.
+    // By doing so we take responsibility for disposing of it ourselves.
+    const owner = IModelApp.renderSystem.createGraphicOwner(graphic);
+
+    // Install the decorator, using the file name as the tooltip.
+    const decorator = new GltfDecoration(owner, file.name, id);
+    IModelApp.viewManager.addDecorator(decorator);
+
+    // When the iModel is closed, dispose of the graphic and uninstall the decorator.
+    iModel.onClose.addOnce(() => {
+      owner.disposeGraphic();
+      IModelApp.viewManager.dropDecorator(decorator);
+    });
+
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
 // __PUBLISH_EXTRACT_END__

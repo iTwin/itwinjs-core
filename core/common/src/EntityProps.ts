@@ -10,20 +10,29 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { RelatedElement } from "./ElementProps";
 
-/** The properties of an [Entity]($backend) as they are read/stored from/to the iModel.
+/** The persistent format of an [Entity]($backend), also used as the "wire format" when transmitting information about entities
+ * between the backend and frontend.
+ * EntityProps and all of its sub-types like [[ElementProps]] are "plain old Javascript objects" - that is, objects containing
+ * no methods and no properties of `class` type.
  * @public
+ * @extensions
  */
 export interface EntityProps {
-  /** The full name of the [ECClass]($docs/bis/intro/glossary/#ecclass) for this entity, in the form "Schema:ClassName" */
+  /** A non-existent property used to discriminate between [[EntityProps]] and [Entity]($backend).
+   * @see [Entity.isInstanceOfEntity]($backend).
+   */
+  readonly isInstanceOfEntity?: never;
+  /** The full name of the [ECClass]($docs/bis/guide/references/glossary/#ecclass) for this entity, in the form "Schema:ClassName" */
   classFullName: string;
   /** The Id of the entity. Must be present for SELECT, UPDATE, or DELETE, ignored for INSERT. */
   id?: Id64String;
-  /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this Entity. */
+  /** Optional [json properties]($docs/bis/guide/fundamentals/element-fundamentals.md#jsonproperties) of this Entity. */
   jsonProperties?: { [key: string]: any };
 }
 
 /** Specifies the source and target elements of a [[Relationship]] instance.
  * @public
+ * @extensions
  */
 export interface SourceAndTarget {
   sourceId: Id64String;
@@ -32,12 +41,14 @@ export interface SourceAndTarget {
 
 /** Properties that are common to all types of link table ECRelationships
  * @public
+ * @extensions
  */
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 /** Parameters for performing a query on [Entity]($backend) classes.
  * @public
+ * @extensions
  */
 export interface EntityQueryParams {
   /** The sql className, in the form "Schema.ClassName", of the class to search. */

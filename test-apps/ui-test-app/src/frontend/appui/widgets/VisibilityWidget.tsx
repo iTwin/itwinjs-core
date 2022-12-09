@@ -12,7 +12,7 @@ import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode 
 import { Icon, WebFontIcon } from "@itwin/core-react";
 import {
   CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories,
-  WidgetControl,
+  useTransientState, WidgetControl,
 } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 import { SampleAppIModelApp } from "../..";
@@ -22,7 +22,7 @@ import filterIconSvg from "../icons/filter.svg?sprite";
 export class VisibilityWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactNode = <VisibilityTreeComponent imodel={options.iModelConnection} activeView={IModelApp.viewManager.selectedView} enablePreloading={options.enablePreloading}
+    this.reactNode = <VisibilityTreeComponent imodel={options.iModelConnection} activeView={IModelApp.viewManager.selectedView}
       config={options.config} />;
   }
 }
@@ -30,7 +30,6 @@ export class VisibilityWidgetControl extends WidgetControl {
 interface VisibilityTreeComponentProps {
   imodel: IModelConnection;
   activeView?: Viewport;
-  enablePreloading?: boolean;
   config?: {
     modelsTree: {
       selectionMode?: SelectionMode;
@@ -42,8 +41,8 @@ interface VisibilityTreeComponentProps {
   };
 }
 
-function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
-  const { imodel, activeView, enablePreloading } = props;
+export function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
+  const { imodel, activeView } = props;
   const modelsTreeProps = props.config?.modelsTree;
   const categoriesTreeProps = props.config?.categoriesTree;
   const selectLabel = IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.options");
@@ -55,16 +54,16 @@ function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
           id: "models-tree",
           label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.modeltree"),
           render: React.useCallback(
-            () => <ModelsTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...modelsTreeProps} filteredElementIds={filteredElementIds} />,
-            [imodel, activeView, enablePreloading, modelsTreeProps, filteredElementIds],
+            () => <ModelsTreeComponent iModel={imodel} activeView={activeView} {...modelsTreeProps} filteredElementIds={filteredElementIds} />,
+            [imodel, activeView, modelsTreeProps, filteredElementIds],
           ),
         },
         {
           id: "categories-tree",
           label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.categories"),
           render: React.useCallback(
-            () => <CategoriesTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...categoriesTreeProps} />,
-            [imodel, activeView, enablePreloading, categoriesTreeProps],
+            () => <CategoriesTreeComponent iModel={imodel} activeView={activeView} {...categoriesTreeProps} />,
+            [imodel, activeView, categoriesTreeProps],
           ),
         }]}
       </SelectableContent>
@@ -72,11 +71,42 @@ function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
   );
 }
 
+/* This hook saves and restores the scroll position of a ModelsTree. */
+function useModelsTreeTransientState() {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const scrollTop = React.useRef(0);
+  const getListElement = () => {
+    if (!ref.current)
+      return undefined;
+    // Element that holds a virtualized list.
+    const element = ref.current.getElementsByClassName("ReactWindow__VariableSizeList")[0];
+    if (!element)
+      return;
+    return element as HTMLDivElement;
+  };
+  useTransientState(() => {
+    const element = getListElement();
+    if (!element)
+      return;
+    // Save scroll position.
+    scrollTop.current = element.scrollTop;
+  }, () => {
+    // Widget is rendered with height=0 when restoring, restore after resize.
+    setTimeout(() => {
+      const element = getListElement();
+      if (!element)
+        return;
+      // Restore scroll position.
+      element.scrollTop = scrollTop.current;
+    }, 0);
+  });
+  return ref;
+}
+
 interface ModelsTreeComponentProps {
   iModel: IModelConnection;
   selectionMode?: SelectionMode;
   selectionPredicate?: ModelsTreeSelectionPredicate;
-  enablePreloading?: boolean;
   activeView?: Viewport;
   filteredElementIds?: Id64Array;
 }
@@ -89,6 +119,7 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
     onFilterApplied,
   } = useTreeFilteringState();
   const { width, height, ref } = useResizeDetector();
+  const rootElementRef = useModelsTreeTransientState();
   return (
     <>
       <Toolbar
@@ -107,7 +138,7 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
         ]}
       </Toolbar>
       <div ref={ref} className="ui-test-app-visibility-tree-content">
-        {width && height ? <ModelsTree
+        {width !== undefined && height !== undefined ? <ModelsTree
           {...props}
           enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
           filterInfo={{
@@ -117,6 +148,7 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
           onFilterApplied={onFilterApplied}
           width={width}
           height={height}
+          rootElementRef={rootElementRef}
         /> : null}
       </div>
     </>
@@ -127,7 +159,6 @@ interface CategoriesTreeComponentProps {
   iModel: IModelConnection;
   allViewports?: boolean;
   activeView?: Viewport;
-  enablePreloading?: boolean;
 }
 
 function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
@@ -163,7 +194,7 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
           </Button>,
         ]}
       </Toolbar>
-      <div ref={ref} style={{ width: "100%", height: "100%" }}>
+      <div ref={ref} style={{ width: "100%", height: "100%", overflow: "hidden" }}>
         {width && height ? <CategoryTree
           {...props}
           filterInfo={{

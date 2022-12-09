@@ -24,6 +24,7 @@ import { PointerMessage } from "../messages/Pointer";
 import { PopupRenderer } from "../popup/PopupManager";
 import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
+import { ContentDialogRenderer } from "../dialog/ContentDialogManager";
 
 // cSpell:ignore cursormenu cursorpopup
 
@@ -44,7 +45,7 @@ export interface ConfigurableUiContentProps extends CommonProps {
  * @public
  */
 export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
-  const version = useFrameworkVersion();
+  const version = useFrameworkVersion(); // eslint-disable-line deprecation/deprecation
   React.useEffect(() => {
     KeyboardShortcutManager.setFocusToHome();
   }, []);
@@ -68,7 +69,9 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
       onMouseMove={handleMouseMove}
     >
       {props.appBackstage}
-      {version === "1" ? <FrontstageComposer style={{ position: "relative", height: "100%" }} /> : /* istanbul ignore next */ <WidgetPanelsFrontstage />}
+      {/* eslint-disable-next-line deprecation/deprecation */}
+      {version === "1" ?  /* istanbul ignore next */ <FrontstageComposer style={{ position: "relative", height: "100%" }} /> : /* istanbul ignore next */ <WidgetPanelsFrontstage />}
+      <ContentDialogRenderer />
       <ModelessDialogRenderer />
       <ModalDialogRenderer />
       <ElementTooltip />

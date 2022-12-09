@@ -8,9 +8,9 @@ import classnames from "classnames";
 import * as React from "react";
 import { AccessToken, BeDuration } from "@itwin/core-bentley";
 import { Project as ITwin, ProjectsAccessClient } from "@itwin/projects-client";
-import { HubIModel, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
 import { ActivityMessagePopup } from "@itwin/appui-react";
+import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 import { Button } from "@itwin/itwinui-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { BasicIModelInfo, IModelInfo } from "../ExternalIModel";
@@ -18,6 +18,8 @@ import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ITwinDropdown } from "./ITwinDropdown";
+import { SampleAppIModelApp } from "../..";
+import { take } from "@itwin/imodels-client-management";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
@@ -83,29 +85,30 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       this._selectITwin(iTwins[0]);  // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  public async getIModels(iTwinId: string, top: number, skip: number): Promise<IModelInfo[]> {
+  public async getIModels(iTwinId: string, top: number): Promise<IModelInfo[]> {
 
     const accessToken = await IModelApp.getAccessToken();
-    const hubAccess = new IModelHubFrontend();
+    const authorization = AccessTokenAdapter.toAuthorizationCallback(accessToken);
 
     const iModelInfos: IModelInfo[] = [];
-    const queryOptions = new IModelQuery();
-    queryOptions.select("*").top(top).skip(skip);
+    if (!SampleAppIModelApp.hubClient)
+      return iModelInfos;
+
     try {
-      const iModels: HubIModel[] = await hubAccess.hubClient.iModels.get(accessToken, iTwinId, queryOptions);
+      const iter = SampleAppIModelApp.hubClient?.iModels.getRepresentationList({
+        urlParams: {
+          projectId: iTwinId,
+        },
+        authorization,
+      });
+      const iModels = await take(iter, top);
+
       for (const imodel of iModels) {
-        const versions: Version[] = await hubAccess.hubClient.versions.get(accessToken, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
-        if (versions.length > 0) {
-          imodel.latestVersionName = versions[0].name;
-          imodel.latestVersionChangeSetId = versions[0].changeSetId;
-        }
-      }
-      for (const thisIModel of iModels) {
         iModelInfos.push({
           iTwinId,
-          id: thisIModel.id!,
-          name: thisIModel.name!,
-          createdDate: new Date(thisIModel.createdDate!),
+          id: imodel.id,
+          name: imodel.name,
+          createdDate: new Date(imodel.createdDateTime),
         });
       }
     } catch (e) {
@@ -123,7 +126,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       isLoadingITwins: false,
       currentITwin: iTwin,
     }, async () => {
-      const iModelInfos = await this.getIModels(iTwin.id, 80, 0);
+      const iModelInfos = await this.getIModels(iTwin.id, 80);
       this.setState({
         isLoadingIModels: false,
         iModels: iModelInfos,
@@ -219,7 +222,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
             {this.renderIModels()}
           </div>
         </div>
-        <ActivityMessagePopup />
+        <ActivityMessagePopup /> {/* eslint-disable-line deprecation/deprecation */}
       </>
     );
   }

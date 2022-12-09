@@ -15,7 +15,7 @@ function createNewModelAndCategory(rwIModel: IModelDb, parent?: Id64String) {
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
 
-  const spatialCategoryId = rwIModel.elements.insertElement(category);
+  const spatialCategoryId = category.insert();
   category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
   return { modelId, spatialCategoryId };
 }
@@ -67,14 +67,14 @@ describe("ViewDefinition", () => {
     assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, displayStyleId } as ElementProps), IModelError, "categorySelectorId is invalid");
 
     // attempt to insert a ViewDefinition with invalid properties
-    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), IModelError, "invalid displayStyle");
-    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps), IModelError, "invalid modelSelector");
-    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId: modelId, displayStyleId } as ElementProps), IModelError, "invalid categorySelector");
+    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), "invalid displayStyle");
+    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps), "invalid modelSelector");
+    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId: modelId, displayStyleId } as ElementProps), "invalid categorySelector");
 
     // Better way to create and insert
     const props: SpatialViewDefinitionProps = { ...basicProps, modelSelectorId, categorySelectorId, displayStyleId };
     const viewDefinition = iModel.elements.createElement<SpatialViewDefinition>(props);
-    let viewDefinitionId = iModel.elements.insertElement(viewDefinition);
+    let viewDefinitionId = iModel.elements.insertElement(viewDefinition.toJSON());
     assert.isNotEmpty(viewDefinitionId);
     assert.isTrue(Id64.isValid(viewDefinitionId));
 

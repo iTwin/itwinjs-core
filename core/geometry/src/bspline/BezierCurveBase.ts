@@ -6,22 +6,26 @@
  * @module Bspline
  */
 
-// import { Point2d } from "../Geometry2d";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
+import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext";
+import { OffsetOptions } from "../curve/internalContexts/PolygonOffsetContext";
 import { LineString3d } from "../curve/LineString3d";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range1d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { Point4d } from "../geometry4d/Point4d";
 import { UnivariateBezier } from "../numerics/BezierPolynomials";
 import { Bezier1dNd } from "./Bezier1dNd";
 import { KnotVector } from "./KnotVector";
+
+/* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 
 /**
  * Base class for CurvePrimitive (necessarily 3D) with _polygon.
@@ -234,8 +238,9 @@ export abstract class BezierCurveBase extends CurvePrimitive {
       if (this.degree < 3)
         radians1 *= 3;  // so quadratics aren't under-stroked
       const radians2 = Math.sqrt(radians1 * sumRadians);
+      const minCount = this.degree; // NOTE: this means 1) a small, nontrivial, straight Bezier is over-stroked, and 2) options.minStrokesPerPrimitive is ignored
       numStrokes = StrokeOptions.applyAngleTol(options,
-        StrokeOptions.applyMaxEdgeLength(options, this.degree, length2), radians2, 0.1);
+        StrokeOptions.applyMaxEdgeLength(options, minCount, length2), radians2, 0.1);
       if (options) {
         numStrokes = options.applyChordTolToLengthAndRadians(numStrokes, sumLength, radians1);
       }
@@ -243,4 +248,45 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     return numStrokes;
   }
 
+  /** Return a deep clone. */
+  public abstract override clone(): BezierCurveBase;
+
+  /** Return a transformed deep clone. */
+  public override cloneTransformed(transform: Transform): BezierCurveBase {
+    const curve1 = this.clone();
+    curve1.tryTransformInPlace(transform);
+    return curve1;
+  }
+
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
+   *   for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
+    this.emitStrokableParts(handler, options.strokeOptions);
+    return handler.claimResult();
+  }
+
+  /** Return a curve primitive which is a portion of this curve.
+   * @param fractionA [in] start fraction
+   * @param fractionB [in] end fraction
+   */
+   public override clonePartialCurve(fractionA: number, fractionB: number): BezierCurveBase {
+    const partialCurve = this.clone();
+    partialCurve._polygon.subdivideToIntervalInPlace(fractionA, fractionB);
+    return partialCurve;
+  }
+
+  /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+   * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param lowHigh optional receiver for output
+   * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
+   */
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
+  }
 }

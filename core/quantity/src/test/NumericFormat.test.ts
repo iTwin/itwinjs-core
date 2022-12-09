@@ -727,7 +727,6 @@ describe("Numeric Formats tests:", () => {
       label: "ft",
       phenomenon: "Units.LENGTH",
       isValid: true,
-      alternateLabels: [`'`, "feet", "foot"],
       system: "Units.USCUSTOM",
     };
 

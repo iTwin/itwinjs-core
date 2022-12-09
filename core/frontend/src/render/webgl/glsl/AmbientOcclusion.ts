@@ -13,19 +13,35 @@ import { AmbientOcclusionGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
+import { System } from "../System";
 import { Texture2DHandle } from "../Texture";
 import { addFrustum } from "./Common";
 import { decodeDepthRgb } from "./Decode";
 import { addRenderOrderConstants, readDepthAndOrder } from "./FeatureSymbology";
-import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";
+import { addWindowToTexCoords, assignFragColor } from "./Fragment";
 import { addViewport } from "./Viewport";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 
+// 'PB' indicates a shader variation when only the pickbuffer is available
+// 'DB' indicates a shader variation when the real floating point depth buffer is available.
+
+const computeAmbientOcclusionPrefixPB = `
+vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
+vec2 depthAndOrder = readDepthAndOrder(tc);
+float db = depthAndOrder.y;
+`;
+
+const computeAmbientOcclusionPrefixDB = `
+vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
+vec2 depthAndOrder = readDepthAndOrder(tc);
+float db = readDepth(tc);
+`;
+
 // This outputs 1 for unlit surfaces, and for polylines and point strings.
 // Otherwise it computes ambient occlusion based on normal reconstructed from pick depth.
+// NB: This shader code actually begins with a `computeAmbientOcclusionPrefix` variation as shown above.
 const computeAmbientOcclusion = `
-  vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
-  vec2 depthAndOrder = readDepthAndOrder(tc);
+  depthAndOrder.y = unfinalizeLinearDepth(db);
   float order = depthAndOrder.x;
   if (order >= kRenderOrder_PlanarBit)
     order = order - kRenderOrder_PlanarBit;
@@ -33,8 +49,10 @@ const computeAmbientOcclusion = `
   if (order < kRenderOrder_LitSurface || order == kRenderOrder_Linear)
     return vec4(1.0);
 
+  // NB: linearDepth: 1 == near, 0 == far
+
   float linearDepth = depthAndOrder.y;
-  float nonLinearDepth = computeNonLinearDepth(linearDepth);
+  float nonLinearDepth = computeNonLinearDepth(db);
   if (nonLinearDepth > u_maxDistance)
     return vec4(1.0);
 
@@ -54,7 +72,7 @@ const computeAmbientOcclusion = `
   float bias = u_hbaoSettings.x; // Represents an angle in radians. If the dot product between the normal of the sample and the vector to the camera is less than this value, sampling stops in the current direction. This is used to remove shadows from near planar edges.
   float zLengthCap = u_hbaoSettings.y; // If the distance in linear Z from the current sample to first sample is greater than this value, sampling stops in the current direction.
   float intensity = u_hbaoSettings.z; // Raise the final occlusion to the power of this value.  Larger values make the ambient shadows darker.
-  float texelStepSize = u_hbaoSettings.w; // Indicates the distance to step toward the next texel sample in the current direction.
+  float texelStepSize = clamp(u_hbaoSettings.w * linearDepth, 1.0, u_hbaoSettings.w); // Indicates the distance to step toward the next texel sample in the current direction.
 
   float tOcclusion = 0.0;
 
@@ -79,8 +97,9 @@ const computeAmbientOcclusion = `
           break;
       }
 
-      float curLinearDepth = readDepthAndOrder(newCoords).y;
-      float curNonLinearDepth = computeNonLinearDepth(curLinearDepth);
+      db = readDepth(newCoords);
+      float curLinearDepth = unfinalizeLinearDepth(db);
+      float curNonLinearDepth = computeNonLinearDepth(db);
       vec3 curViewPos = computePositionFromDepth(newCoords, curNonLinearDepth).xyz;
       vec3 diffVec = curViewPos.xyz - viewPos.xyz;
       float zLength = abs(curLinearDepth - linearDepth);
@@ -98,17 +117,14 @@ const computeAmbientOcclusion = `
     tOcclusion += curOcclusion;
   }
 
+  float distanceFadeFactor = kFrustumType_Perspective == u_frustum.z ? 1.0 - pow(clamp(nonLinearDepth / u_maxDistance, 0.0, 1.0), 4.0) : 1.0;
+  tOcclusion *= distanceFadeFactor;
+
   tOcclusion /= 4.0;
   tOcclusion = 1.0 - clamp(tOcclusion, 0.0, 1.0);
   tOcclusion = pow(tOcclusion, intensity);
 
   return vec4(tOcclusion, tOcclusion, tOcclusion, 1.0);
-`;
-
-const computeNonLinearDepth = `
-float computeNonLinearDepth(float linearDepth) {
-  return mix(u_frustum.y, u_frustum.x, linearDepth);
-}
 `;
 
 const computePositionFromDepth = `
@@ -130,10 +146,10 @@ vec4 computePositionFromDepth(vec2 tc, float nonLinearDepth) {
 
 const computeNormalFromDepth = `
 vec3 computeNormalFromDepth(vec3 viewPos, vec2 tc, vec2 pixelSize) {
-  float nonLinearDepthU = computeNonLinearDepth(readDepthAndOrder(tc - vec2(0.0, pixelSize.y)).y);
-  float nonLinearDepthD = computeNonLinearDepth(readDepthAndOrder(tc + vec2(0.0, pixelSize.y)).y);
-  float nonLinearDepthL = computeNonLinearDepth(readDepthAndOrder(tc - vec2(pixelSize.x, 0.0)).y);
-  float nonLinearDepthR = computeNonLinearDepth(readDepthAndOrder(tc + vec2(pixelSize.x, 0.0)).y);
+  float nonLinearDepthU = computeNonLinearDepth(readDepth(tc - vec2(0.0, pixelSize.y)));
+  float nonLinearDepthD = computeNonLinearDepth(readDepth(tc + vec2(0.0, pixelSize.y)));
+  float nonLinearDepthL = computeNonLinearDepth(readDepth(tc - vec2(pixelSize.x, 0.0)));
+  float nonLinearDepthR = computeNonLinearDepth(readDepth(tc + vec2(pixelSize.x, 0.0)));
 
   vec3 viewPosUp = computePositionFromDepth(tc - vec2(0.0, pixelSize.y), nonLinearDepthU).xyz;
   vec3 viewPosDown = computePositionFromDepth(tc + vec2(0.0, pixelSize.y), nonLinearDepthD).xyz;
@@ -152,21 +168,75 @@ vec3 computeNormalFromDepth(vec3 viewPos, vec2 tc, vec2 pixelSize) {
 }
 `;
 
+const computeNonLinearDepthPB = `
+float computeNonLinearDepth(float linearDepth) {
+  return mix(u_frustum.y, u_frustum.x, linearDepth);
+}
+`;
+const computeNonLinearDepthDB = `
+float computeNonLinearDepth(float depth) {
+  return 0.0 == u_logZ.x ? depth * u_logZ.y : exp(depth * u_logZ.y) / u_logZ.x;
+}
+`;
+
+const readDepthPB = `
+float readDepth(vec2 tc) {
+  return readDepthAndOrder(tc).y;
+}
+`;
+const readDepthDB = `
+float readDepth(vec2 tc) {
+  return TEXTURE(u_depthBuffer, tc).r;
+}
+`;
+const unfinalizeLinearDepthDB = `
+  float unfinalizeLinearDepth(float depth) {
+    float eyeZ = 0.0 == u_logZ.x ? depth * u_logZ.y : exp(depth * u_logZ.y) / u_logZ.x;
+    float near = u_frustum.x, far = u_frustum.y;
+    float depthRange = far - near;
+    float linearDepth = (eyeZ - near) / depthRange;
+    return 1.0 - linearDepth;
+  }
+`;
+
+function _shouldUseDB() {
+  return System.instance.supportsLogZBuffer && System.instance.capabilities.supportsTextureFloat;
+}
+
 /** @internal */
 export function createAmbientOcclusionProgram(context: WebGLContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
+  const shouldUseDB = _shouldUseDB();
 
   addWindowToTexCoords(frag);
   frag.addFunction(decodeDepthRgb);
   frag.addFunction(readDepthAndOrder);
-  frag.addFunction(computeNonLinearDepth);
+
+  if (shouldUseDB) {
+    frag.addFunction(unfinalizeLinearDepthDB);
+    frag.addFunction(computeNonLinearDepthDB);
+    frag.addFunction(readDepthDB);
+  } else {
+    frag.addDefine("unfinalizeLinearDepth", "");
+    frag.addFunction(computeNonLinearDepthPB);
+    frag.addFunction(readDepthPB);
+  }
+
   frag.addFunction(computePositionFromDepth);
   frag.addFunction(computeNormalFromDepth);
-  frag.addFunction(computeLinearDepth);
   addRenderOrderConstants(frag);
 
-  frag.set(FragmentShaderComponent.ComputeBaseColor, computeAmbientOcclusion);
+  if (shouldUseDB)
+    frag.addUniform("u_logZ", VariableType.Vec2, (prog) => {
+      prog.addProgramUniform("u_logZ", (uniform, params) => {
+        uniform.setUniform2fv(params.target.uniforms.frustum.logZ);
+      });
+    });
+
+  frag.set(FragmentShaderComponent.ComputeBaseColor, shouldUseDB ?
+    computeAmbientOcclusionPrefixDB + computeAmbientOcclusion :
+    computeAmbientOcclusionPrefixPB + computeAmbientOcclusion);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   frag.addUniform("u_pickDepthAndOrder", VariableType.Sampler2D, (prog) => {
@@ -175,6 +245,14 @@ export function createAmbientOcclusionProgram(context: WebGLContext): ShaderProg
       Texture2DHandle.bindSampler(uniform, geom.depthAndOrder, TextureUnit.Zero);
     });
   });
+
+  if (shouldUseDB)
+    frag.addUniform("u_depthBuffer", VariableType.Sampler2D, (prog) => {
+      prog.addGraphicUniform("u_depthBuffer", (uniform, params) => {
+        const geom = params.geometry as AmbientOcclusionGeometry;
+        Texture2DHandle.bindSampler(uniform, geom.depth, TextureUnit.Two);
+      });
+    });
 
   frag.addUniform("u_noise", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_noise", (uniform, params) => {

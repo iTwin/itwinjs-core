@@ -14,6 +14,7 @@ import {
 } from "@itwin/core-geometry";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GridOrientationType,
+  HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelReadRpcInterface,
   ModelClipGroups, Npc, RenderSchedule, SubCategoryOverride,
   ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
@@ -29,7 +30,6 @@ import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
-import { RenderScheduleState } from "./RenderScheduleState";
 import { SheetViewState } from "./SheetViewState";
 import { SpatialViewState } from "./SpatialViewState";
 import { StandardView, StandardViewId } from "./StandardView";
@@ -46,6 +46,7 @@ import { EnvironmentDecorations } from "./EnvironmentDecorations";
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
  * @public
+ * @extensions
  */
 export interface ExtentLimits {
   /** The smallest allowed extent in any dimension. */
@@ -54,13 +55,35 @@ export interface ExtentLimits {
   max: number;
 }
 
-/** Interface adopted by an object that wants to apply a per-model display transform.
- * This is intended chiefly for use by model alignment tools.
- * @see [[ViewState.modelDisplayTransformProvider]].
+/** Interface adopted by an object that wants to apply per-model display transforms.
+ * A model's display transform is applied when rendering the model in a [[Viewport]].
+ * @see [[ViewState.modelDisplayTransformProvider]] to get or set the transform provider for a view.
+ * @see [[ViewState.computeDisplayTransform]] to compute a full display transform for a model or an element within it, which may include a transform supplied by a ModelDisplayTransformProvider.
  * @beta
  */
 export interface ModelDisplayTransformProvider {
-  getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
+  /** Given the Id of a model, return the transform to be applied to it at display time, or `undefined` to apply no display transform.
+   * @note Callers typically want to modify the returned Transform - make sure to return a new, mutable Transform, e.g. by using [Transform.clone]($core-geometry).
+   */
+  getModelDisplayTransform(modelId: Id64String): Transform | undefined;
+}
+
+/** Arguments supplied to [[ViewState.computeDisplayTransform]].
+ * @beta
+ */
+export interface ComputeDisplayTransformArgs {
+  /** The Id of the model for which to compute the display transform. */
+  modelId: Id64String;
+  /** The Id of a specific element belonging to the model identified by [[modelId]] for which to compute the display transform. */
+  elementId?: Id64String;
+  /** The point in time, expressed in [Unix seconds](https://en.wikipedia.org/wiki/Unix_time), at which to evaluate the display transform.
+   * Defaults to the [DisplayStyleSettings.timePoint]($common) specified by the view's display style.
+   */
+  timePoint?: number;
+  /** If supplied, [[ViewState.computeDisplayTransform]] will modify and return this Transform to hold the result instead of allocating a new Transform.
+   * @note If [[ViewState.computeDisplayTransform]] returns `undefined`, this Transform will be unmodified.
+   */
+  output?: Transform;
 }
 
 /** Arguments to [[ViewState3d.lookAt]] for either a perspective or orthographic view
@@ -157,7 +180,15 @@ const scratchRange2dIntersect = Range2d.createNull();
  * @internal
  */
 export interface AttachToViewportArgs {
+  /** A function that can be invoked to notify the viewport that its decorations should be recreated. */
   invalidateDecorations: () => void;
+  /** A bit of a hack to work around our ill-advised decision to always expect a RenderClipVolume to be defined in world coordinates.
+   * When we attach a section drawing to a sheet view, and the section drawing has a spatial view attached to *it*, the spatial view's clip
+   * is transformed into drawing space - but when we display it we need to transform it into world (sheet) coordinates.
+   * Fixing the actual problem (clips should always be defined in the coordinate space of the graphic branch containing them) would be quite error-prone
+   * and likely to break existing code -- so instead the SheetViewState specifies this transform to be consumed by DrawingViewState.attachToViewport.
+   */
+  drawingToSheetTransform?: Transform;
 }
 
 /** The front-end state of a [[ViewDefinition]] element.
@@ -167,6 +198,7 @@ export interface AttachToViewportArgs {
  * discouraged - changes made to the style by one Viewport will affect the contents of the other Viewport.
  * * @see [Views]($docs/learning/frontend/Views.md)
  * @public
+ * @extensions
  */
 export abstract class ViewState extends ElementState {
   /** @internal */
@@ -274,7 +306,7 @@ export abstract class ViewState extends ElementState {
     this.displayStyle.viewFlags = flags;
   }
 
-  /** @see [DisplayStyleSettings.analysisStyle]($common). */
+  /** See [DisplayStyleSettings.analysisStyle]($common). */
   public get analysisStyle(): AnalysisStyle | undefined {
     return this.displayStyle.settings.analysisStyle;
   }
@@ -287,8 +319,8 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public get scheduleState(): RenderScheduleState | undefined {
-    return this.displayStyle.scheduleState;
+  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined { // eslint-disable-line deprecation/deprecation
+    return this.displayStyle.scheduleScriptReference; // eslint-disable-line deprecation/deprecation
   }
 
   /** Get the globe projection mode.
@@ -321,13 +353,33 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /**
+   * Populates the hydrateRequest object stored on the ViewState with:
+   *  not loaded categoryIds based off of the ViewStates categorySelector.
+   *  Auxiliary coordinate system id if valid.
+   */
+  protected preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    const acsId = this.getAuxiliaryCoordinateSystemId();
+    if (Id64.isValid(acsId))
+      hydrateRequest.acsId = acsId;
+  }
+
   /** Asynchronously load any required data for this ViewState from the backend.
+   * FINAL, No subclass should override load. If additional load behavior is needed, see preload and postload.
    * @note callers should await the Promise returned by this method before using this ViewState.
    * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
-    const promises = [
-      this.loadAcs(),
+    // If the iModel associated with the viewState is a blankConnection,
+    // then no data can be retrieved from the backend.
+    if (this.iModel.isBlank)
+      return;
+
+    const hydrateRequest: HydrateViewStateRequestProps = {};
+    this.preload(hydrateRequest);
+    const promises: Promise<any>[] = [
+      IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), hydrateRequest).
+        then(async (hydrateResponse) => this.postload(hydrateResponse)),
       this.displayStyle.load(),
     ];
 
@@ -336,6 +388,11 @@ export abstract class ViewState extends ElementState {
       promises.push(subcategories.promise.then((_) => { }));
 
     await Promise.all(promises);
+  }
+
+  protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    if (hydrateResponse.acsElementProps)
+      this._auxCoordSystem = AuxCoordSystemState.fromProps(hydrateResponse.acsElementProps, this.iModel);
   }
 
   /** Returns true if all [[TileTree]]s required by this view have been loaded.
@@ -487,10 +544,18 @@ export abstract class ViewState extends ElementState {
     //
   }
 
-  /** @internal */
+  /** Capture a copy of this view's viewed volume.
+   * @see [[applyPose]] to apply the pose to this or another view.
+   * @public
+   * @extensions
+   */
   public abstract savePose(): ViewPose;
 
-  /** @internal */
+  /** Apply a pose to this view to change the viewed volume.
+   * @see [[savePose]] to capture the view's pose.
+   * @public
+   * @extensions
+   */
   public abstract applyPose(props: ViewPose): this;
 
   /** @internal */
@@ -541,7 +606,9 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio = true): { map: Map4d | undefined, frustFraction: number } {
-    if (viewRot === undefined) viewRot = this.getRotation();
+    if (viewRot === undefined)
+      viewRot = this.getRotation();
+
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
     const zVector = viewRot.rowZ();
@@ -740,7 +807,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public outputStatusMessage(status: ViewStatus): ViewStatus {
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString(`Viewing.${ViewStatus[status]}`)));
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString(`iModelJs:Viewing.${ViewStatus[status]}`)));
     return status;
   }
 
@@ -968,14 +1035,32 @@ export abstract class ViewState extends ElementState {
       newDelta.z = minimumDepth;
     }
 
-    const margin = options?.marginPercent;
-
     if (this.is3d() && this.isCameraOn) {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
       // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
       // the front or back of the view. For this reason, don't attempt to add any "margin" to camera views.
-    } else if (margin) {
+    } else if (undefined !== options?.paddingPercent) {
+      let left, right, top, bottom;
+      const padding = options.paddingPercent;
+      if (typeof padding === "number"){
+        left = right = top = bottom = padding;
+      } else {
+        left = padding.left ?? 0;
+        right = padding.right ?? 0;
+        top = padding.top ?? 0;
+        bottom = padding.bottom ?? 0;
+      }
+
+      const width = newDelta.x;
+      const height = newDelta.y;
+
+      newOrigin.x -= left * width;
+      newDelta.x += (right + left) * width;
+      newOrigin.y -= bottom * height;
+      newDelta.y += (top + bottom) * height;
+    } else if (options?.marginPercent) {
       // compute how much space we'll need for both of X and Y margins in root coordinates
+      const margin = options.marginPercent;
       const wPercent = margin.left + margin.right;
       const hPercent = margin.top + margin.bottom;
 
@@ -1171,8 +1256,9 @@ export abstract class ViewState extends ElementState {
    */
   public getModelElevation(_modelId: Id64String): number { return 0; }
 
-  /** Specify a provider of per-model display transforms. Intended chiefly for use by model alignment tools.
-   * @note The transform supplied is used for display purposes **only**. Do not expect operations like snapping to account for the display transform.
+  /** An object that can provide per-model transforms to be applied at display time.
+   * @note The transform is used for display purposes only. Operations upon geometry within the model may not take the display transform into account.
+   * @see [[computeDisplayTransform]] to compute a full display transform for a model or an element within it, which may include a transform supplied by this provider.
    * @beta
    */
   public get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined {
@@ -1189,33 +1275,41 @@ export abstract class ViewState extends ElementState {
     this._modelDisplayTransformProvider = provider;
   }
 
-  /** Obtain the transform with which the specified model will be displayed, accounting for this view's [[ModelDisplayTransformProvider]].
+  /** Compute the transform applied to a model or element at display time, if any.
+   * The display transform may be constructed from any combination of the following:
+   *  - [PlanProjectionSettings.elevation]($common) applied to plan projection models by [DisplayStyle3dSettings.planProjectionSettings]($common);
+   *  - A per-model transform supplied by this view's [[modelDisplayTransformProvider]]; and/or
+   *  - A transform applied to an element by an [RenderSchedule.ElementTimeline]($common) defined by this view's [[scheduleScript]].
+   * @param args A description of how to compute the transform.
+   * @returns The computed transform, or `undefined` if no display transform is to be applied.
    * @beta
    */
-  public getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform {
-    return this.modelDisplayTransformProvider ? this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, baseTransform) : baseTransform;
-  }
+  public computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
+    const elevation = this.getModelElevation(args.modelId);
+    const modelTransform = this.modelDisplayTransformProvider?.getModelDisplayTransform(args.modelId);
 
-  /** @internal */
-  public transformPointByModelDisplayTransform(modelId: string | undefined, pnt: Point3d, inverse: boolean): void {
-    if (undefined !== modelId && undefined !== this.modelDisplayTransformProvider) {
-      const transform = this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
-      const newPnt = inverse ? transform.multiplyInversePoint3d(pnt) : transform.multiplyPoint3d(pnt);
-      if (undefined !== newPnt)
-        pnt.set(newPnt.x, newPnt.y, newPnt.z);
+    // NB: A ModelTimeline can apply a transform to all elements in the model, but no code exists which actually applies that at display time.
+    // So for now we continue to only consider the ElementTimeline transform.
+    let scriptTransform;
+    if (this.scheduleScript && args.elementId) {
+      const idPair = Id64.getUint32Pair(args.elementId);
+      const modelTimeline = this.scheduleScript.find(args.modelId);
+      const elementTimeline = modelTimeline?.getTimelineForElement(idPair.lower, idPair.upper);
+      scriptTransform = elementTimeline?.getAnimationTransform(args.timePoint ?? this.displayStyle.settings.timePoint ?? 0);
     }
-  }
 
-  /** @internal */
-  public transformNormalByModelDisplayTransform(modelId: string | undefined, normal: Vector3d): void {
-    if (undefined !== modelId && undefined !== this.modelDisplayTransformProvider) {
-      const transform = this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
-      const newVec = transform.matrix.multiplyInverse(normal);
-      if (undefined !== newVec) {
-        newVec.normalizeInPlace();
-        normal.set(newVec.x, newVec.y, newVec.z);
-      }
-    }
+    if (0 === elevation && !modelTransform && !scriptTransform)
+      return undefined;
+
+    const transform = Transform.createIdentity(args.output);
+    transform.origin.z = elevation;
+    if (modelTransform)
+      transform.multiplyTransformTransform(modelTransform, transform);
+
+    if (scriptTransform)
+      transform.multiplyTransformTransform(scriptTransform as Transform, transform);
+
+    return transform;
   }
 
   /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
@@ -1278,6 +1372,7 @@ export abstract class ViewState extends ElementState {
 /** Defines the state of a view of 3d models.
  * @see [ViewState Parameters]($docs/learning/frontend/views#viewstate-parameters)
  * @public
+ * @extensions
  */
 export abstract class ViewState3d extends ViewState {
   private readonly _details: ViewDetails3d;
@@ -1346,17 +1441,20 @@ export abstract class ViewState3d extends ViewState {
     return -1 !== index ? this._modelClips[index] : undefined;
   }
 
-  /** @internal */
-  public savePose(): ViewPose { return new ViewPose3d(this); }
+  /** Capture a copy of the viewed volume and camera parameters. */
+  public savePose(): ViewPose3d { return new ViewPose3d(this); }
 
-  /** @internal */
-  public applyPose(val: ViewPose3d): this {
-    this._cameraOn = val.cameraOn;
-    this.setOrigin(val.origin);
-    this.setExtents(val.extents);
-    this.rotation.setFrom(val.rotation);
-    this.camera.setFrom(val.camera);
-    this._updateMaxGlobalScopeFactor();
+  /** @internal override */
+  public applyPose(val: ViewPose): this {
+    if (val instanceof ViewPose3d) {
+      this._cameraOn = val.cameraOn;
+      this.setOrigin(val.origin);
+      this.setExtents(val.extents);
+      this.rotation.setFrom(val.rotation);
+      this.camera.setFrom(val.camera);
+      this._updateMaxGlobalScopeFactor();
+    }
+
     return this;
   }
 
@@ -1455,7 +1553,7 @@ export abstract class ViewState3d extends ViewState {
     if (location !== undefined && location.area !== undefined)
       eyeHeight = areaToEyeHeight(this, location.area, location.center.height);
 
-    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyePoint().clone();
+    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyeOrOrthographicViewPoint().clone();
 
     let targetPoint = origEyePoint;
     const targetPointCartographic = location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
@@ -2149,6 +2247,7 @@ export abstract class ViewState3d extends ViewState {
 
 /** Defines the state of a view of a single 2d model.
  * @public
+ * @extensions
  */
 export abstract class ViewState2d extends ViewState {
   private readonly _details: ViewDetails;
@@ -2197,14 +2296,17 @@ export abstract class ViewState2d extends ViewState {
   /** @internal */
   public isSpatialView(): this is SpatialViewState { return false; }
 
-  /** @internal */
-  public savePose(): ViewPose { return new ViewPose2d(this); }
+  /** Capture a copy of the viewed area. */
+  public savePose(): ViewPose2d { return new ViewPose2d(this); }
 
-  /** @internal */
-  public applyPose(val: ViewPose2d) {
-    this.setOrigin(val.origin);
-    this.setExtents(val.delta);
-    this.angle.setFrom(val.angle);
+  /** @internal override */
+  public applyPose(val: ViewPose) {
+    if (val instanceof ViewPose2d) {
+      this.setOrigin(val.origin);
+      this.setExtents(val.delta);
+      this.angle.setFrom(val.angle);
+    }
+
     return this;
   }
 
@@ -2236,9 +2338,20 @@ export abstract class ViewState2d extends ViewState {
     return this.getViewedExtents();
   }
 
-  public override async load(): Promise<void> {
-    await super.load();
-    return this.iModel.models.load(this.baseModelId);
+  /** @internal */
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    super.preload(hydrateRequest);
+    if (this.iModel.models.getLoaded(this.baseModelId) === undefined)
+      hydrateRequest.baseModelId = this.baseModelId;
+  }
+
+  /** @internal */
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    const promises = [];
+    promises.push(super.postload(hydrateResponse));
+    if (hydrateResponse.baseModelProps !== undefined)
+      promises.push(this.iModel.models.updateLoadedWithModelProps([hydrateResponse.baseModelProps]));
+    await Promise.all(promises);
   }
 
   /** Provides access to optional detail settings for this view. */
@@ -2252,7 +2365,11 @@ export abstract class ViewState2d extends ViewState {
   public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
   public setExtents(delta: XAndY) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: XAndY) { this.origin.set(origin.x, origin.y); }
-  public setRotation(rot: Matrix3d) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
+  public setRotation(rot: Matrix3d) {
+    const xColumn = rot.getColumn(0);
+    this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x));
+  }
+
   public viewsModel(modelId: Id64String) { return this.baseModelId === modelId; }
   public forEachModel(func: (model: GeometricModelState) => void) {
     const model = this.iModel.models.getLoaded(this.baseModelId);

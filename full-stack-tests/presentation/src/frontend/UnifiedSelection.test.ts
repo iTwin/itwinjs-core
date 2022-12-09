@@ -74,7 +74,7 @@ describe("Unified Selection", () => {
 
     it("hilites subject", async () => {
       Presentation.selection.addToSelection("", imodel, new KeySet([instances.subject.key]));
-      await waitForAllAsyncs([handler]);
+      await waitForAllAsyncs([handler, Presentation.selection.getToolSelectionSyncHandler(imodel)!]);
       expect(imodel.hilited.models.size).to.eq(instances.subject.nestedModelIds.length);
       instances.subject.nestedModelIds.forEach((id: Id64String) => expect(imodel.hilited.models.hasId(id)).to.be.true);
       expect(imodel.hilited.subcategories.isEmpty).to.be.true;
@@ -84,7 +84,7 @@ describe("Unified Selection", () => {
 
     it("hilites model", async () => {
       Presentation.selection.addToSelection("", imodel, new KeySet([instances.model.key]));
-      await waitForAllAsyncs([handler]);
+      await waitForAllAsyncs([handler, Presentation.selection.getToolSelectionSyncHandler(imodel)!]);
       expect(imodel.hilited.models.size).to.eq(1 + instances.model.nestedModelIds.length);
       expect(imodel.hilited.models.hasId(instances.model.key.id)).to.be.true;
       instances.model.nestedModelIds.forEach((id: Id64String) => expect(imodel.hilited.models.hasId(id)).to.be.true);
@@ -95,7 +95,7 @@ describe("Unified Selection", () => {
 
     it("hilites category", async () => {
       Presentation.selection.addToSelection("", imodel, new KeySet([instances.category.key]));
-      await waitForAllAsyncs([handler]);
+      await waitForAllAsyncs([handler, Presentation.selection.getToolSelectionSyncHandler(imodel)!]);
       expect(imodel.hilited.models.isEmpty).to.be.true;
       expect(imodel.hilited.subcategories.size).to.eq(instances.category.subCategoryIds.length);
       instances.category.subCategoryIds.forEach((id: Id64String) => expect(imodel.hilited.subcategories.hasId(id)).to.be.true);
@@ -105,7 +105,7 @@ describe("Unified Selection", () => {
 
     it("hilites subcategory", async () => {
       Presentation.selection.addToSelection("", imodel, new KeySet([instances.subcategory.key]));
-      await waitForAllAsyncs([handler]);
+      await waitForAllAsyncs([handler, Presentation.selection.getToolSelectionSyncHandler(imodel)!]);
       expect(imodel.hilited.models.isEmpty).to.be.true;
       expect(imodel.hilited.subcategories.size).to.eq(1);
       expect(imodel.hilited.subcategories.hasId(instances.subcategory.key.id)).to.be.true;
@@ -115,7 +115,7 @@ describe("Unified Selection", () => {
 
     it("hilites assembly element", async () => {
       Presentation.selection.addToSelection("", imodel, new KeySet([instances.assemblyElement.key]));
-      await waitForAllAsyncs([handler]);
+      await waitForAllAsyncs([handler, Presentation.selection.getToolSelectionSyncHandler(imodel)!]);
       expect(imodel.hilited.models.isEmpty).to.be.true;
       expect(imodel.hilited.subcategories.isEmpty).to.be.true;
       expect(imodel.hilited.elements.size).to.eq(1 + instances.assemblyElement.childElementIds.length);
@@ -128,7 +128,7 @@ describe("Unified Selection", () => {
 
     it("hilites leaf element", async () => {
       Presentation.selection.addToSelection("", imodel, new KeySet([instances.leafElement.key]));
-      await waitForAllAsyncs([handler]);
+      await waitForAllAsyncs([handler, Presentation.selection.getToolSelectionSyncHandler(imodel)!]);
       expect(imodel.hilited.models.isEmpty).to.be.true;
       expect(imodel.hilited.subcategories.isEmpty).to.be.true;
       expect(imodel.hilited.elements.size).to.eq(1);
@@ -139,7 +139,28 @@ describe("Unified Selection", () => {
 
     it("hilites transient element", async () => {
       Presentation.selection.addToSelection("", imodel, new KeySet([instances.transientElement.key]));
-      await waitForAllAsyncs([handler]);
+      await waitForAllAsyncs([handler, Presentation.selection.getToolSelectionSyncHandler(imodel)!]);
+      expect(imodel.hilited.models.isEmpty).to.be.true;
+      expect(imodel.hilited.subcategories.isEmpty).to.be.true;
+      expect(imodel.hilited.elements.size).to.eq(1);
+      expect(imodel.hilited.elements.hasId(instances.transientElement.key.id)).to.be.true;
+      expect(imodel.selectionSet.size).to.eq(1);
+      expect(imodel.selectionSet.has(instances.transientElement.key.id)).to.be.true;
+    });
+
+    it("hilites transient element after removing and adding it back", async () => {
+      // set up the selection to contain a transient element
+      Presentation.selection.addToSelection("", imodel, new KeySet([instances.transientElement.key]));
+      await waitForAllAsyncs([handler, Presentation.selection.getToolSelectionSyncHandler(imodel)!]);
+      expect(imodel.selectionSet.size).to.eq(1);
+      expect(Presentation.selection.getSelection(imodel).instanceKeysCount).to.eq(1);
+
+      // remove and add back the transient element
+      imodel.selectionSet.remove(instances.transientElement.key.id);
+      imodel.selectionSet.replace(instances.transientElement.key.id);
+      await waitForAllAsyncs([handler, Presentation.selection.getToolSelectionSyncHandler(imodel)!]);
+
+      // expect the transient element to be both hilited and selected
       expect(imodel.hilited.models.isEmpty).to.be.true;
       expect(imodel.hilited.subcategories.isEmpty).to.be.true;
       expect(imodel.hilited.elements.size).to.eq(1);
@@ -155,7 +176,7 @@ describe("Unified Selection", () => {
       handler = new ViewportSelectionHandler({ imodel });
 
       Presentation.selection.addToSelection("", imodel, new KeySet([instances.leafElement.key]));
-      await waitForAllAsyncs([handler]);
+      await waitForAllAsyncs([handler, Presentation.selection.getToolSelectionSyncHandler(imodel)!]);
       expect(imodel.hilited.models.isEmpty).to.be.true;
       expect(imodel.hilited.subcategories.isEmpty).to.be.true;
       expect(imodel.hilited.elements.size).to.eq(1);

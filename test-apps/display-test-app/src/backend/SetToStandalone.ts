@@ -32,7 +32,7 @@ function log(msg: string) {
  *
  * To run:
 ```
-  cd imodeljs\test-apps\display-test-app
+  cd test-apps\display-test-app
   npm run build:backend
   node lib\backend\SetToStandalone.js [iModel-filename]
 ```

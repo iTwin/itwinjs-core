@@ -105,18 +105,20 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
             <span className="components-signin-prompt">{this.state.prompt}</span>
           }
           <Button className="components-signin-button" styleType="cta" disabled={this.state.isSigningIn && disableSignInOnClick}
-            onClick={this._onSignInClick} onKeyUp={(e) => this._handleKeyUp(e, this._onSigningIn)}>
+            onClick={this._onSignInClick} onKeyUp={(e: React.KeyboardEvent<HTMLButtonElement>) => this._handleKeyUp(e, this._onSigningIn)}>
             {this.state.signInButton}
           </Button>
           {this.props.onRegister !== undefined &&
             <span className="components-signin-register">
               {this.state.profilePrompt}
+              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
               <a onClick={this.props.onRegister} onKeyUp={(e) => this._handleKeyUp(e, this.props.onRegister)} role="link" tabIndex={0}>
                 {this.state.registerAnchor}
               </a>
             </span>
           }
           {this.props.onOffline !== undefined &&
+            // eslint-disable-next-line jsx-a11y/anchor-is-valid
             <a className="components-signin-offline" onClick={this.props.onOffline} onKeyUp={(e) => this._handleKeyUp(e, this.props.onOffline)} role="link" tabIndex={0}>
               {this.state.offlineButton}
             </a>

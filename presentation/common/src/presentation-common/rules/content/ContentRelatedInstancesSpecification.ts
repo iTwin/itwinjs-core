@@ -10,11 +10,9 @@ import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpec
 import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
 
 /**
- * Creates content for ECInstance(s) related to current selection.
+ * Returns content for instances related to the selected (input) instances.
  *
- * **Note:** Use [[ContentRule.condition]] to apply specification on correct selection.
- *
- * @see [More details]($docs/presentation/Content/ContentRelatedInstances.md)
+ * @see [Content related instances specification reference documentation page]($docs/presentation/content/ContentRelatedInstances.md)
  * @public
  */
 export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
@@ -22,14 +20,14 @@ export interface ContentRelatedInstancesSpecification extends ContentSpecificati
   specType: ContentSpecificationTypes.ContentRelatedInstances;
 
   /**
-   * Relationship paths from input (selected) instance class to content class.
+   * Specifies a chain of [relationship path specifications]($docs/presentation/RepeatableRelationshipPathSpecification.md) that
+   * forms a path from an input instance to the output instances. When this array is empty, the specification produces no results.
    */
   relationshipPaths: RepeatableRelationshipPathSpecification[];
 
   /**
-   * Condition for filtering instances targeted by specified relationship paths.
-   *
-   * **See:** [ECExpressions available in instance filter]($docs/presentation/Content/ECExpressions.md#instance-filter)
+   * Specifies an [ECExpression]($docs/presentation/content/ECExpressions.md#instance-filter) for filtering instances
+   * of ECClasses targeted through the [[relationshipPaths]] attribute.
    */
   instanceFilter?: string;
 }

@@ -15,32 +15,39 @@ export type LocalDirName = string;
 /** A string that identifies a changeset.
  * @note this string is *not* a Guid. It is generated internally based on the content of the changeset.
  * @public
+ * @extensions
  */
 export type ChangesetId = string;
 
 /** The index of a changeset, assigned by iModelHub.
  * @note 0 means "before the first changeset." Values less than 0 are invalid.
  * @public
+ * @extensions
  */
 export type ChangesetIndex = number;
 
 /** Both the index and Id of a changeset
  * @public
+ * @extensions
  */
 export interface ChangesetIndexAndId { readonly index: ChangesetIndex, readonly id: ChangesetId }
 
 /** The Id and optionally the index of a changeset
  * @public
+ * @extensions
  */
 export interface ChangesetIdWithIndex { readonly index?: ChangesetIndex, readonly id: ChangesetId }
 
 /** either changeset index, id, or both
 * @public
+ * @extensions
 */
 export type ChangesetIndexOrId = ChangesetIndexAndId | { readonly index: ChangesetIndex, readonly id?: never } | { readonly id: ChangesetId, readonly index?: never };
 
 /** Value to indicate whether a changeset contains schema changes or not
- * @public */
+ * @public
+ * @extensions
+ */
 export enum ChangesetType {
   /** changeset does *not* contain schema changes. */
   Regular = 0,
@@ -83,6 +90,7 @@ export interface ChangesetFileProps extends ChangesetProps {
 /**
  * A range of changesets
  * @public
+ * @extensions
  */
 export interface ChangesetRange {
   /** index of the first changeset */

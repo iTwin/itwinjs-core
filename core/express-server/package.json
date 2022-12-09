@@ -1,12 +1,12 @@
 {
   "name": "@itwin/express-server",
-  "version": "3.0.0-dev.113",
-  "description": "iModel.js express utilities",
+  "version": "3.6.0-dev.8",
+  "description": "iTwin.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
   "typings": "lib/cjs/ExpressServer",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 < 19.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
@@ -26,7 +26,9 @@
   "keywords": [
     "Bentley",
     "BIM",
-    "iModel"
+    "iModel",
+    "iTwin",
+    "iTwin.js"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -34,27 +36,32 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/body-parser": "^1.17.0",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
     "@types/express": "^4.16.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "18.11.5",
     "@types/sinon": "^9.0.0",
     "@types/supertest": "^2.0.4",
+    "@types/express-ws": "^3.0.1",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "source-map-support": "^0.5.6",
     "supertest": "^3.0.0",
     "typescript": "~4.4.0"
   },
+  "peerDependencies": {
+    "@itwin/core-backend": "workspace:*"
+  },
   "dependencies": {
-    "express": "^4.16.3"
+    "express": "^4.16.3",
+    "express-ws": "^5.0.2"
   },
   "eslintConfig": {
     "plugins": [

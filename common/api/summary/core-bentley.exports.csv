@@ -9,7 +9,6 @@ public;AsyncFunction = (...args: any) => Promise
 public;AsyncMethodsOf
 alpha;AsyncMutex
 alpha;AsyncMutexUnlockFnType = () => void
-beta;AuthStatus
 public;base64StringToUint8Array(base64: string): Uint8Array
 public;BeDuration
 public;BeEvent
@@ -46,6 +45,8 @@ public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
+alpha;class ErrorCategory 
+beta;ExtractLiterals
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => object | undefined
 public;Guid
@@ -63,6 +64,8 @@ public;IndexedValue
 public;IndexMap
 public;isIDisposable(obj: unknown): obj is IDisposable
 public;isInstanceOf
+internal;isProperSubclassOf
+internal;isSubclassOf
 public;JSONSchema
 public;JSONSchemaMap
 public;JSONSchemaSnippet
@@ -80,14 +83,17 @@ public;lowerBound
 public;LRUCache
 public;LRUDictionary
 public;LRUMap
+public;MarkRequired
 public;Mutable
 public;MutableCompressedId64Set 
 public;NonFunctionPropertiesOf
 public;NonFunctionPropertyNamesOf
 public;ObservableSet
+public;omit
 beta;OneAtATimeAction
 public;OnUnexpectedError = (error: any) => void
 public;OpenMode
+public;Optional
 public;OrderedComparator
 public;OrderedId64Array 
 public;OrderedId64Iterable = Iterable
@@ -95,19 +101,34 @@ public;OrderedId64Iterable
 public;OrderedSet
 public;partitionArray
 public;PerfLogger 
+public;PickAsyncMethods
 public;PriorityQueue
 public;ProcessDetector
 public;PromiseReturnType
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
+alpha;RealityDataStatus
 beta;RepositoryStatus
 beta;RpcInterfaceStatus
 public;shallowClone
 public;SortedArray
+alpha;SpanKind
+alpha;class StatusCategory
+alpha;StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined
 beta;StatusCodeWithMessage
 public;StopWatch
+alpha;class SuccessCategory 
+alpha;Tracing
 public;TransientIdSequence
+public;TupleKeyedMap
+public;TypedArrayBuilder
+public;TypedArrayBuilderOptions
+public;Uint16ArrayBuilder 
+public;Uint32ArrayBuilder 
+public;Uint8ArrayBuilder 
 public;UnexpectedErrors
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
 internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined
+internal;YieldManager
+internal;YieldManagerOptions

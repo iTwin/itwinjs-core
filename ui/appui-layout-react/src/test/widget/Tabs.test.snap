@@ -66,7 +66,43 @@ exports[`WidgetTabs should render overflow panel 1`] = `
     class="nz-widget-tabTarget nz-hidden"
   />
   <div
-    class="nz-widget-tab nz-active nz-first nz-last-not-overflown"
+    class="nz-widget-tab nz-active nz-first"
+    data-item-id="t1"
+    data-item-type="widget-tab"
+    role="tab"
+    title=""
+  >
+    <span />
+  </div>
+  <div
+    class="nz-widget-tabTarget nz-hidden"
+  />
+  <div
+    class="nz-widget-overflow"
+  >
+    <div
+      class="nz-button"
+      role="button"
+      tabindex="-1"
+    >
+      <div
+        class="nz-icon"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WidgetTabs should render tabs with icons 1`] = `
+<div
+  class="nz-widget-tabs"
+  role="tablist"
+>
+  <div
+    class="nz-widget-tabTarget nz-hidden"
+  />
+  <div
+    class="nz-widget-tab nz-active nz-first"
     data-item-id="t1"
     data-item-type="widget-tab"
     role="tab"

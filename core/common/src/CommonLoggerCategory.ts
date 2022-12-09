@@ -9,6 +9,7 @@
 /** Logger categories used by this package
  * @see [Logger]($bentley)
  * @public
+ * @extensions
  */
 export enum CommonLoggerCategory {
   /** The logger category used by common classes relating to ElementProps. */

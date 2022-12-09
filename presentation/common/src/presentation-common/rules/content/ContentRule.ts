@@ -6,28 +6,33 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 import { ContentSpecification } from "./ContentSpecification";
 
 /**
- * Defines content that's displayed in content controls (table view,
- * property pane, etc.) and the content that's selected in
- * [unified selection]($docs/presentation/unified-selection/index.md) controls
+ * Content rules are used to define content that is displayed for specific type of [input]($docs/presentation/content/Terminology.md#input-instance).
+ * Input consists of either ECInstances or [nodes]($docs/presentation/hierarchies/Terminology.md#node) and to make things
+ * simpler everything is considered a [node]($docs/presentation/hierarchies/Terminology.md#node) - instances get converted to
+ * *ECInstance nodes* (thus the `SelectedNode` symbol in [`condition` ECExpression]($docs/presentation/content/ECExpressions.md#rule-condition)).
  *
- * @see [More details]($docs/presentation/Content/ContentRule.md)
+ * @see [Content rule reference documentation page]($docs/presentation/content/ContentRule.md)
  * @public
  */
-export interface ContentRule extends RuleBase, ConditionContainer {
+export interface ContentRule extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.Content;
 
   /**
-   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/presentation/Content/ECExpressions.md#rule-condition).
+   * Defines a condition which needs to be met in order for the rule to be used. The condition is an
+   * [ECExpression]($docs/presentation/content/ECExpressions.md#rule-condition) which has to evaluate to
+   * a boolean value.
    */
   condition?: string;
 
-  /** Specifications that define content returned by the rule */
+  /**
+   * A list of content specifications that define what content is going to be returned. This is the most
+   * important attribute which is responsible for defining what instances' properties are included in the
+   * returned content.
+   */
   specifications: ContentSpecification[];
 }

@@ -24,7 +24,7 @@ import sketchIconSvg from "../../icons/draw.svg?sprite";
 import { InitialIModelContentStageProvider } from "../ViewsFrontstage";
 
 export class EditFrontstage extends FrontstageProvider {
-  private _contentGroupProvider = new InitialIModelContentStageProvider();
+  private _contentGroupProvider = new InitialIModelContentStageProvider(true);
   public static stageId = "EditFrontstage";
   public get id(): string {
     return EditFrontstage.stageId;
@@ -62,7 +62,7 @@ export class EditFrontstage extends FrontstageProvider {
       <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={this._contentGroupProvider}
-        isInFooterMode={true} applicationData={{ key: "value" }}
+        applicationData={{ key: "value" }}
         usage={StageUsage.Edit}
         contentManipulationTools={
           <Zone

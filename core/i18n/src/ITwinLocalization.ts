@@ -8,10 +8,11 @@
 
 import i18next, { i18n, InitOptions, Module, TOptionsBase } from "i18next";
 import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
-import { BackendOptions } from "i18next-http-backend";
-import XHR from "i18next-xhr-backend";
+import Backend, { BackendOptions } from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
-import { Localization } from "@itwin/core-common";
+import type { Localization } from "@itwin/core-common";
+
+const DEFAULT_MAX_RETRIES: number = 1; // a low number prevents wasted time and potential timeouts when requesting localization files throws an error
 
 /** Options for ITwinLocalization
  *  @public
@@ -51,9 +52,11 @@ export class ITwinLocalization implements Localization {
       caches: [],
       ...options?.detectorOptions,
     };
+
     this._initOptions = {
       interpolation: { escapeValue: true },
       fallbackLng: "en",
+      maxRetries: DEFAULT_MAX_RETRIES,
       backend: this._backendOptions,
       detection: this._detectionOptions,
       ...options?.initOptions,
@@ -61,15 +64,24 @@ export class ITwinLocalization implements Localization {
 
     this.i18next
       .use(options?.detectorPlugin ?? i18nextBrowserLanguageDetector)
-      .use(options?.backendPlugin ?? XHR)
+      .use(options?.backendPlugin ?? Backend)
       .use(TranslationLogger);
   }
 
   public async initialize(namespaces: string[]): Promise<void> {
+
+    // Also consider namespaces passed into constructor
+    const initNamespaces: string[] = [this._initOptions.ns || []].flat();
+    const combinedNamespaces: Set<string> = new Set([...namespaces, ...initNamespaces]); // without duplicates
+
+    const defaultNamespace: string | false | readonly string[] = this._initOptions.defaultNS ?? namespaces[0];
+    if (defaultNamespace)
+      combinedNamespaces.add(defaultNamespace as string); // Make sure default namespace is in namespaces list
+
     const initOptions: InitOptions = {
-      ... this._initOptions,
-      ns: namespaces,
-      defaultNS: namespaces[0],
+      ...this._initOptions,
+      defaultNS: defaultNamespace,
+      ns: [...combinedNamespaces],
     };
 
     // if in a development environment, set debugging
@@ -118,14 +130,21 @@ export class ITwinLocalization implements Localization {
    * @public
    */
   public getLocalizedString(key: string | string[], options?: TOptionsBase): string {
+    if (options?.returnDetails || options?.returnObjects) {
+      throw new Error("Translation key must map to a string, but the given options will result in an object");
+    }
+
     const value = this.i18next.t(key, options);
-    if (typeof value !== "string")
-      throw new Error("Translation key(s) not found");
+
+    if (typeof value !== "string") {
+      throw new Error("Translation key(s) string not found");
+    }
 
     return value;
   }
 
-  /** Similar to `getLocalizedString` but the namespace is a separate param and the key does not include the namespace.
+  /** Similar to `getLocalizedString` but the default namespace is a separate parameter and the key does not need
+   * to include a namespace. If a key includes a namespace, that namespace will be used for interpolating that key.
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
    * @param key - the key that matches a property in the JSON localization file.
    * @returns The string corresponding to the first key that resolves.
@@ -154,6 +173,15 @@ export class ITwinLocalization implements Localization {
    * @internal
    */
   public getEnglishString(namespace: string, key: string | string[], options?: TOptionsBase): string {
+    if (options?.returnDetails || options?.returnObjects) {
+      throw new Error("Translation key must map to a string, but the given options will result in an object");
+    }
+
+    options = {
+      ...options,
+      ns: namespace, // ensure namespace argument is used
+    };
+
     const en = this.i18next.getFixedT("en", namespace);
     const str = en(key, options);
     if (typeof str !== "string")
@@ -185,7 +213,7 @@ export class ITwinLocalization implements Localization {
    * @note - The registerNamespace method starts fetching the appropriate version of the JSON localization file from the server,
    * based on the current locale. To make sure that fetch is complete before performing translations from this namespace, await
    * fulfillment of the readPromise Promise property of the returned LocalizationNamespace.
-   * @see [Localization in iModel.js]($docs/learning/frontend/Localization.md)
+   * @see [Localization in iTwin.js]($docs/learning/frontend/Localization.md)
    * @public
    */
   public async registerNamespace(name: string): Promise<void> {
@@ -200,10 +228,10 @@ export class ITwinLocalization implements Localization {
           return resolve();
 
         // Here we got a non-null err object.
-        // This method is called when the system has attempted to load the resources for the namespace for each
-        // possible locale. For example 'fr-ca' might be the most specific local, in which case 'fr' ) and 'en are fallback locales.
-        // using i18next-xhr-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
-        // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
+        // This method is called when the system has attempted to load the resources for the namespaces for each possible locale.
+        // For example 'fr-ca' might be the most specific locale, in which case 'fr' and 'en' are fallback locales.
+        // Using Backend from i18next-http-backend, err will be an array of strings of each namespace it tried to read and its locale.
+        // There might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible locale.
         let locales = this.getLanguageList().map((thisLocale: any) => `/${thisLocale}/`);
 
         try {

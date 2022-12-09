@@ -8,10 +8,10 @@
 
 import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
-  BriefcaseId, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
-  IModelVersion, LocalDirName, LocalFileName,
+  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
+  IModelError, IModelVersion, LocalDirName, LocalFileName,
 } from "@itwin/core-common";
-import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
+import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
 import { TokenArg } from "./IModelDb";
 
 /** The state of a lock.
@@ -49,13 +49,13 @@ export class LockConflict extends IModelError {
  */
 export interface V2CheckpointAccessProps {
   /** blob store account name. */
-  readonly user: string;
-  /** The name of the iModel's blob store container holding all checkpoints. */
-  readonly container: string;
+  readonly accountName: string;
   /** AccessToken that grants access to the container. */
-  readonly auth: AccessToken;
+  readonly sasToken: AccessToken;
+  /** The name of the iModel's blob store container holding all checkpoints. */
+  readonly containerId: string;
   /** The name of the virtual file within the container, used for the checkpoint */
-  readonly dbAlias: string;
+  readonly dbName: string;
   /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
   readonly storageType: string;
 }
@@ -72,6 +72,15 @@ export interface LockProps {
   readonly id: Id64String;
   /** the lock state */
   readonly state: LockState;
+}
+
+/**
+ * Argument for cancelling and tracking download progress.
+ * @beta
+ */
+export interface DownloadProgressArg {
+  /** Called to show progress during a download. If this function returns non-zero, the download is aborted. */
+  progressCallback?: ProgressFunction;
 }
 
 /**
@@ -127,12 +136,20 @@ export interface ChangesetArg extends IModelIdArg {
   readonly changeset: ChangesetIndexOrId;
 }
 
+/** Argument for downloading a changeset.
+ * @beta
+ */
+export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg {
+  /** Directory where the changeset should be downloaded. */
+  targetDir: LocalDirName;
+}
+
 /** @internal */
 export interface ChangesetIndexArg extends IModelIdArg {
   readonly changeset: ChangesetIdWithIndex;
 }
 
-/** Argument for methods that must supply an IModelId and a range of ChangesetIds.
+/** Argument for methods that must supply an IModelId and a range of Changesets.
  * @public
  */
 export interface ChangesetRangeArg extends IModelIdArg {
@@ -140,7 +157,18 @@ export interface ChangesetRangeArg extends IModelIdArg {
   readonly range?: ChangesetRange;
 }
 
-/** @internal */
+/** Argument for downloading a changeset range.
+ * @beta
+ */
+export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg {
+  /** Directory where the changesets should be downloaded. */
+  targetDir: LocalDirName;
+}
+
+/**
+ * @deprecated
+ * @internal
+ */
 export type CheckpointArg = DownloadRequest;
 
 /**
@@ -149,7 +177,7 @@ export type CheckpointArg = DownloadRequest;
  */
 export interface CreateNewIModelProps extends IModelNameArg {
   readonly description?: string;
-  readonly revision0?: LocalFileName;
+  readonly version0?: LocalFileName;
   readonly noLocks?: true;
 }
 
@@ -160,9 +188,9 @@ export interface CreateNewIModelProps extends IModelNameArg {
  */
 export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
-  downloadChangesets: (arg: ChangesetRangeArg & { targetDir: LocalDirName }) => Promise<ChangesetFileProps[]>;
+  downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
   /** Download a single changeset. */
-  downloadChangeset: (arg: ChangesetArg & { targetDir: LocalDirName }) => Promise<ChangesetFileProps>;
+  downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
   /** Query the changeset properties given a ChangesetIndex  */
   queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
   /** Query an array of changeset properties given a range of ChangesetIndexes  */
@@ -188,20 +216,16 @@ export interface BackendHubAccess {
 
   /**
    * download a v1 checkpoint
+   * @deprecated
    * @internal
    */
-  downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetId>;
+  downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>; // eslint-disable-line deprecation/deprecation
 
   /**
    * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.
    * @internal
    */
   queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
-  /**
-   * download a v2 checkpoint
-   * @internal
-   */
-  downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetId>;
 
   /**
    * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired

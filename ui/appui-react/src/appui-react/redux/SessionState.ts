@@ -9,7 +9,6 @@
 // The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
 import { XAndY } from "@itwin/core-geometry";
 // import { IModelConnection, ViewState } from "@itwin/core-frontend";
-import { UserInfo } from "../UserInfo";
 import { MenuItemProps } from "../shared/MenuItem";
 import { ActionsUnion, createAction, DeepReadonly } from "./redux-ts";
 
@@ -44,7 +43,6 @@ export enum SessionStateActionId {
   SetSelectionScope = "sessionstate:set-selection-scope",
   SetActiveIModelId = "sessionstate:set-active-imodelid",
   SetIModelConnection = "sessionstate:set-imodel-connection",
-  SetUserInfo = "sessionstate:set-user-info",
   SetDefaultIModelViewportControlId = "sessionstate:set-default-viewportid",
   SetDefaultViewId = "sessionstate:set-default-viewid",
   SetDefaultViewState = "sessionstate:set-default-view-state",
@@ -63,7 +61,6 @@ export interface SessionState {
   defaultViewId: string | undefined;
   defaultViewState: any | undefined;
   iModelConnection: any | undefined;
-  userInfo: UserInfo | undefined;
   cursorMenuData: CursorMenuData | undefined;
 }
 
@@ -83,7 +80,6 @@ const initialState: SessionState = {
   defaultViewId: undefined,
   defaultViewState: undefined,
   iModelConnection: undefined,
-  userInfo: undefined,
   cursorMenuData: undefined,
 };
 
@@ -99,7 +95,6 @@ export interface SessionStateActionsProps {
   setIModelConnection: (typeof SessionStateActions.setIModelConnection);
   setNumItemsSelected: (typeof SessionStateActions.setNumItemsSelected);
   setSelectionScope: (typeof SessionStateActions.setSelectionScope);
-  setUserInfo: (typeof SessionStateActions.setUserInfo);
   updateCursorMenu: (typeof SessionStateActions.updateCursorMenu);
 }
 
@@ -107,9 +102,6 @@ export interface SessionStateActionsProps {
  * @public
  */
 export const SessionStateActions = {  // eslint-disable-line @typescript-eslint/naming-convention
-  setUserInfo:
-    // istanbul ignore next
-    (userInfo: UserInfo) => createAction(SessionStateActionId.SetUserInfo, userInfo),
   setActiveIModelId:
     // istanbul ignore next
     (iModelId: string) => createAction(SessionStateActionId.SetActiveIModelId, iModelId),
@@ -191,9 +183,6 @@ export function SessionStateReducer(state: SessionState = initialState, action: 
     }
     case SessionStateActionId.SetIModelConnection: {
       return { ...state, iModelConnection: action.payload };
-    }
-    case SessionStateActionId.SetUserInfo: {
-      return { ...state, userInfo: action.payload };
     }
     case SessionStateActionId.UpdateCursorMenu: {
       return { ...state, cursorMenuData: action.payload };

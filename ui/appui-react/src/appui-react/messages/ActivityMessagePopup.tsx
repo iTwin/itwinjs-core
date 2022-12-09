@@ -8,12 +8,12 @@
 
 import "./ActivityMessagePopup.scss";
 import * as React from "react";
-import classnames from "classnames";
 import { ActivityMessageEventArgs, MessageManager } from "../messages/MessageManager";
 import { CommonProps } from "@itwin/core-react";
-import { ActivityMessage } from "./ActivityMessage";
+import { useActivityMessage } from "./ActivityMessage";
 
 /** Properties for [[ActivityMessagePopup]] component
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface ActivityMessagePopupProps extends CommonProps {
@@ -22,26 +22,23 @@ export interface ActivityMessagePopupProps extends CommonProps {
 }
 
 /** Activity Message Popup React component
+ * @deprecated Activity messages are set-up automatically in a StatusBar.
  * @public
  */
-export function ActivityMessagePopup(props: ActivityMessagePopupProps) {
+export function ActivityMessagePopup(props: ActivityMessagePopupProps) { // eslint-disable-line deprecation/deprecation
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);
-  const [isActivityMessageVisible, setIsActivityMessageVisible] = React.useState(false);
 
   React.useEffect(() => {
     const handleActivityMessageUpdatedEvent = (args: ActivityMessageEventArgs) => {
       setActivityMessageInfo(args);
-      if (args.restored)
-        setIsActivityMessageVisible(true);
     };
 
     return MessageManager.onActivityMessageUpdatedEvent.addListener(handleActivityMessageUpdatedEvent);
-  }, [isActivityMessageVisible]);
+  }, []);
 
   React.useEffect(() => {
     const handleActivityMessageCancelledEvent = () => {
       setActivityMessageInfo(undefined);
-      setIsActivityMessageVisible(false);
     };
 
     return MessageManager.onActivityMessageCancelledEvent.addListener(handleActivityMessageCancelledEvent);
@@ -53,20 +50,10 @@ export function ActivityMessagePopup(props: ActivityMessagePopupProps) {
   }, [props]);
 
   const dismissActivityMessage = React.useCallback(() => {
-    setIsActivityMessageVisible(false);
     props.dismissActivityMessage && props.dismissActivityMessage();
   }, [props]);
 
-  if (!activityMessageInfo || !isActivityMessageVisible)
-    return null;
+  useActivityMessage({activityMessageInfo, cancelActivityMessage, dismissActivityMessage});
 
-  return (
-    <div className={classnames("uifw-centered-popup", props.className)} style={props.style}>
-      <ActivityMessage
-        activityMessageInfo={activityMessageInfo}
-        cancelActivityMessage={cancelActivityMessage}
-        dismissActivityMessage={dismissActivityMessage}
-      />
-    </div>
-  );
+  return <></>;
 }

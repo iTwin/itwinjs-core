@@ -29,6 +29,11 @@
     "ErrorRetrieveUserITwin": "Could not get saved Map Layers for user by iTwin: {{errorMessage}}",
     "ErrorRetrieveSharedModel": "Could not get shared Map Layers by model: {{errorMessage}}",
     "ErrorRetrieveSharedITwin": "Could not get shared Map Layers by iTwin: {{errorMessage}}",
+    "ExternalLogin": "External login",
+    "ExternalLoginFailed": "External login process failed.",
+    "ExternalLoginSucceeded": "External login process succeeded.",
+    "ExternalLoginTryAgain": "Try Again",
+    "ExternalLoginWaiting": "Waiting for external login process to complete...",
     "InvalidCredentials": "Invalid credentials provided",
     "MissingCredentials": "This layer requires credentials to be provided",
     "Name": "Name",
@@ -41,6 +46,7 @@
     "SearchPlaceholder": "Search...",
     "StoreOnModelSettings": "Store on Model Settings",
     "StoreOnITwinSettings": "Store on iTwin Settings",
+    "TechPreviewBadgeTooltip": "Technology preview",
     "Type": "Type",
     "URL": "URL",
     "UrlInputPlaceHolder": "Enter Map Source URL",
@@ -60,9 +66,11 @@
     "MapLayerAttached": "Map layer {{sourceName}} attached from URL: {{sourceUrl}}",
     "MapLayerAttachedRequiresAuth": "Map layer {{sourceName}} attached, but requires credentials to be provided",
     "MapLayerAttachError": "Error '{{error}}' occurred attaching MapLayer from URL: {{sourceUrl}}",
+    "MapLayerAttachMissingViewOrSource": "Missing view or source",
     "MapLayerEditError": "Failed to edit '{{layerName}}'",
     "MapLayerLayerSettingsConversionError": "Conversion to layer settings failed",
     "MapLayerLayerSourceCreationFailed": "Map Layer Source creation failed",
+    "MapLayerPreferencesStoreFailed": "Failed to save map layer definition in preferences",
     "MapLayerValidationFailed": "Map layer validation failed for URL: {{sourceUrl}}"
   },
   "Widget": {
@@ -76,12 +84,16 @@
     "ToggleVisibility": "Toggle Visibility",
     "SettingsButtonTooltip": "Settings"
   },
+  "FeatureInfoWidget": {
+    "Label": "Map Layers Info",
+    "NoRecords": "No Results"
+  },
   "LayerMenu": {
     "Detach": "Detach",
     "ZoomToLayer": "Zoom to layer"
   },
   "Settings": {
-    "ElevationOffset": "Elevation Offset (m)",
+    "ElevationOffset": "Elevation Offset",
     "ElevationTypeGeodetic": "None",
     "ElevationTypeGeoid": "Geoid Separation",
     "ElevationTypeGround": "Terrain Elevation",
@@ -92,7 +104,7 @@
     "InvalidElevationDetails": "Please enter a valid number for elevation.",
     "Mask": "Mask by Models",
     "MaskTransparency": "Mask Transparency",
-    "ModelHeight": "Model Height (m)",
+    "ModelHeight": "Model Height",
     "OverrideMaskTransparency": "Override Mask Transparency",
     "Settings": "Settings",
     "ShowMapLayers": "Show Map Layers",

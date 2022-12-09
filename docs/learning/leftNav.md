@@ -3,20 +3,20 @@
 - [Frontend](./frontend/index.md)
 - [Backend](./backend/index.md)
 - [Common](./common/index.md)
-- [iTwin Service Clients](./clients/index.md)
+- [iTwin service clients](./clients/index.md)
 - [Geometry](./geometry/index.md)
-- [Presentation]($docs/presentation/index.md)
+- [Presentation](../presentation/index.md)
 - [UI](./ui/index.md)
 
 ---
 
 &nbsp;
 
-### [BIS](../bis/index.md)
+### [Base Infrastructure Schemas (BIS)](../bis/index.md)
 
-- [Overview](../bis/index.md)
-- [Schema Reference](../bis/domains/index.md)
-- [EC](../bis/ec/index.md)
+- [Guide](../bis/guide/intro/overview.md)
+- [Domain Schemas](../bis/domains/index.md)
+- [Engineering Content (EC)](../bis/ec/index.md)
 
 ---
 
@@ -26,8 +26,9 @@
 
 - [Tutorials](./tutorials/index.md)
 - [ECSQL](./ECSQL.md)
+- [Display system](./display/index.md)
 - [iModelHub](./iModelHub/index.md)
-- [Wire Format](./WireFormat.md)
-- [Frequently Asked Questions](./faq.md)
-- [Guidelines and Tips](./guidelines/index.md)
+- [Wire format](./WireFormat.md)
+- [Frequently asked questions](./faq.md)
+- [Guidelines and tips](./guidelines/index.md)
 - [Glossary](./Glossary.md)

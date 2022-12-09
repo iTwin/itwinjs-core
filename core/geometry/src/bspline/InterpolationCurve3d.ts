@@ -208,8 +208,13 @@ export class InterpolationCurve3dOptions {
         if (dataA.knots === undefined && dataB.knots === undefined)
           return true;
         /* alas .. need to allow tricky mismatch of end replication */
-        const knotsA = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(dataA.knots, dataA.fitPoints.length, false);
-        const knotsB = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(dataB.knots, dataB.fitPoints.length, false);
+        let knotsA = dataA.knots, knotsB = dataB.knots;
+        if (dataA.knots === undefined)  // construct undefined knots to compare against defined knots
+          knotsA = BSplineCurveOps.C2CubicFit.constructFitParametersFromPoints(dataA.fitPoints, dataA.isChordLenKnots, dataA.closed);
+        else if (dataB.knots === undefined)
+          knotsB = BSplineCurveOps.C2CubicFit.constructFitParametersFromPoints(dataB.fitPoints, dataB.isChordLenKnots, dataB.closed);
+        knotsA = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(knotsA, dataA.fitPoints.length, false);
+        knotsB = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(knotsB, dataB.fitPoints.length, false);
         return Geometry.almostEqualNumberArrays(knotsA, knotsB, (a: number, b: number) => Geometry.isAlmostEqualNumber(a, b));
       }
     }
@@ -220,8 +225,7 @@ export class InterpolationCurve3dOptions {
     this.fitPoints.reverse();
     if (this.knots)
       this.knots.reverse();
-    // Swap pointers to tangents.
-    // NEEDS WORK: Do the vector coordinates need to be negated?
+    // Swap pointers to tangents. They don't need to be negated because they point into the curve.
     const oldStart = this._startTangent;
     this._startTangent = this.endTangent;
     this._endTangent = oldStart;
@@ -245,8 +249,12 @@ export class InterpolationCurve3d extends ProxyCurve {
     super(proxyCurve);
     this._options = properties;
   }
-  public override dispatchToGeometryHandler(handler: GeometryHandler) {
-    return handler.handleInterpolationCurve3d(this);
+
+  public override dispatchToGeometryHandler(handler: GeometryHandler): any {
+    let result = handler.handleInterpolationCurve3d(this);
+    if (undefined === result) // if handler doesn't specialize on interpolation curves, default to proxy
+      result = this._proxyCurve.dispatchToGeometryHandler(handler);
+    return result;
   }
   /**
    * Create an [[InterpolationCurve3d]] based on points, knots, and other properties in the [[InterpolationCurve3dProps]] or [[InterpolationCurve3dOptions]].
@@ -306,35 +314,26 @@ export class InterpolationCurve3d extends ProxyCurve {
     const proxyOk = this._proxyCurve.tryTransformInPlace(transform);
     if (proxyOk) {
       transform.multiplyPoint3dArrayInPlace(this._options.fitPoints);
-      // START HERE: transform start/endTangent
+      if (this._options.startTangent)
+        transform.multiplyVectorInPlace(this._options.startTangent);
+      if (this._options.endTangent)
+        transform.multiplyVectorInPlace(this._options.endTangent);
     }
     return proxyOk;
   }
-  /**
-   * Return a transformed clone.
-   */
-  public cloneTransformed(transform: Transform): GeometryQuery | undefined {
-    const myClone = this.clone();
-    if (myClone && myClone?.tryTransformInPlace(transform))
-      return myClone;
-    return undefined;
+
+  /** Return a deep clone */
+  public override clone(): InterpolationCurve3d {
+    return new InterpolationCurve3d(this._options.clone(), this._proxyCurve.clone());
   }
-  /**
-   * Return a clone.
-   */
-  public clone(): GeometryQuery | undefined {
-    const proxyClone = this._proxyCurve.clone();
-    if (proxyClone) {
-      return new InterpolationCurve3d(this._options.clone(), proxyClone as CurvePrimitive);
-    }
-    return undefined;
-  }
+
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof InterpolationCurve3d) {
       return InterpolationCurve3dOptions.areAlmostEqual(this._options, other._options);
     }
     return false;
   }
+
   /** Test if `other` is also an [[InterpolationCurve3d]] */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof InterpolationCurve3d; }
 

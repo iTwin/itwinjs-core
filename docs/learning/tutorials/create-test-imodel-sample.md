@@ -13,28 +13,28 @@ The quickest way to get access to an iTwin Platform hosted iModel is by creating
 
 A metrostation located in Philadelphia. Contains platform, rails, and subway cars.
 
-![stadium]($docs/learning/tutorials/images/metrostation.png)
+![stadium](./images/metrostation.png)
 
 ### Stadium
 
 Soccer stadium in Singapore. Features landscape details and a metro station. This is the largest sample iModel.
 
-![stadium]($docs/learning/tutorials/images/stadium.png)
+![stadium](./images/stadium.png)
 
 ### Retail Building Sample
 
 Cafe and apartments.
 
-![retail-building-sample]($docs/learning/tutorials/images/retail-building-sample.png)
+![retail-building-sample](./images/retail-building-sample.png)
 
 ### Bay Town Process Plant
 
 Simple processing plant. This is the smallest sample iModel.
 
-![bay-town-process-plant]($docs/learning/tutorials/images/bay-town-process-plant.png)
+![bay-town-process-plant](./images/bay-town-process-plant.png)
 
 ### House Sample
 
 Features several 2D drawings and sheets.
 
-![house-sample]($docs/learning/tutorials/images/house-sample.png)
+![house-sample](./images/house-sample.png)

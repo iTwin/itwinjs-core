@@ -11,6 +11,7 @@ import { Base64 } from "js-base64";
 /** Represents an array of bytes encoded in base-64 with a prefix indicating the encoding, as required when converting EC properties of `binary` type to and from JSON.
  * @see [[TextureProps.data]] and [[BRepEntity.DataProps.data]] for examples of properties of this type.
  * @public
+ * @extensions
  */
 export type Base64EncodedString = string;
 
@@ -61,4 +62,14 @@ export namespace Base64EncodedString { // eslint-disable-line @typescript-eslint
 
     return value;
   };
+
+  /* Encode a string into a Base64EncodedString. */
+  export function encode(src: string, urlSafe?: boolean): Base64EncodedString {
+    return Base64.encode(src, urlSafe);
+  }
+
+  /* Decode a Base64EncodedString into a string. */
+  export function decode(src: string): Base64EncodedString {
+    return Base64.decode(src);
+  }
 }

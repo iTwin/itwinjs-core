@@ -33,10 +33,11 @@ class SelectionInfoFieldComponent extends React.Component<SelectionInfoFieldProp
 
   public override render(): React.ReactNode {
     return (
-      <FooterIndicator
+      <FooterIndicator // eslint-disable-line deprecation/deprecation
         className={classnames("uifw-statusFields-selectionInfo", this.props.className)}
         style={this.props.style}
-        isInFooterMode={this.props.isInFooterMode}
+        // eslint-disable-next-line deprecation/deprecation
+        isInFooterMode={this.props.isInFooterMode ?? true}
       >
         {<Icon iconSpec={"icon-cursor"} />}
         {this.props.selectionCount.toString()}

@@ -2,7 +2,7 @@
   "name": "@itwin/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "3.0.0-dev.113",
+  "version": "3.6.0-dev.8",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
@@ -27,7 +27,7 @@
   "keywords": [
     "Bentley",
     "iModel",
-    "iModelJs",
+    "iTwin.js",
     "EC",
     "BIS"
   ],
@@ -38,16 +38,16 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
     "@types/chai-string": "^1.4.1",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
+    "@types/node": "18.11.5",
     "chai": "^4.1.2",
     "chai-string": "^1.5.0",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "source-map-support": "^0.5.6",
@@ -60,7 +60,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@xmldom/xmldom": "^0.7.0",
+    "@xmldom/xmldom": "~0.8.5",
     "chai-string": "^1.5.0",
     "chalk": "^3.0.0",
     "commander": "^2.14.1",

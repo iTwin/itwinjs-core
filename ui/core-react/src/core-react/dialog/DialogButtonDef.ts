@@ -8,7 +8,7 @@
 
 /** Enum for button types. Determines button label, and default button style.
   * @public
-  * @deprecated Use DialogButtonType in bentley/appui-abstract instead
+  * @deprecated Use [DialogButtonType]($appui-abstract) instead
   */
 export enum DialogButtonType {
   None = "",
@@ -24,7 +24,7 @@ export enum DialogButtonType {
 
 /** Enum for button style.
   * @public
-  * @deprecated Use DialogButtonStyle in bentley/appui-abstract instead
+  * @deprecated Use [DialogButtonStyle]($appui-abstract) instead
   */
 export enum DialogButtonStyle {
   None = "",
@@ -35,7 +35,7 @@ export enum DialogButtonStyle {
 
 /** Interface for a dialog button in a button cluster
   * @public
-  * @deprecated Use DialogButtonDef in bentley/appui-abstract instead
+  * @deprecated Use [DialogButtonDef]($appui-abstract) instead
   */
 export interface DialogButtonDef {
   /** type of button */

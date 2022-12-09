@@ -8,6 +8,10 @@ import * as glob from "glob";
 import * as path from "path";
 import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 
+/** @packageDocumentation
+ * @module Locaters
+ */
+
 const formatString = (format: string, ...args: string[]) => {
   return format.replace(/{(\d+)}/g, (match, theNumber) => {
     return typeof args[theNumber] !== "undefined"
@@ -35,7 +39,7 @@ const padStartEx = (str: string, targetLength: number, padString: string) => {
  * addition of two properties: fileName and schemaText.  The fileName contains the
  * full path to the file on disk and schemaText is the full string representation
  * of the Schema.
- * @alpha
+ * @beta
  */
 export class FileSchemaKey extends SchemaKey {
   // The schema file associated with the SchemaKey
@@ -59,7 +63,7 @@ export class FileSchemaKey extends SchemaKey {
 
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonFileLocater and SchemaXmlFileLocater
- * @alpha - Needs further testing and possibly moved to a separate package.
+ * @beta - Needs further testing and possibly moved to a separate package.
  */
 export abstract class SchemaFileLocater {
   public searchPaths: string[];
@@ -133,11 +137,13 @@ export abstract class SchemaFileLocater {
     const fullPath = path.join(schemaPath, `${schemaName}.ecschema.${format}`);
 
     // If the file does not exist, end
-    if (!fs.existsSync(fullPath)) return;
+    if (!fs.existsSync(fullPath))
+      return;
 
     // Read the file
     const file = fs.readFileSync(fullPath);
-    if (!file) return;
+    if (!file)
+      return;
 
     // Get the schema key
     const key = this.getSchemaKey(file.toString());

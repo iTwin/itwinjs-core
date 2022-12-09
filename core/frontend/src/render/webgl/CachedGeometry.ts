@@ -11,7 +11,7 @@ import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@itwin/cor
 import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@itwin/core-common";
 import { RenderSkyGradientParams, RenderSkySphereParams } from "../RenderSystem";
 import { FlashMode } from "../../FlashSettings";
-import { TesselatedPolyline } from "../primitives/VertexTable";
+import { TesselatedPolyline } from "../primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { ColorInfo } from "./ColorInfo";
@@ -23,9 +23,12 @@ import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { MaterialInfo } from "./Material";
-import { EdgeGeometry, MeshGeometry, SilhouetteEdgeGeometry, SurfaceGeometry } from "./Mesh";
+import { MeshGeometry } from "./MeshGeometry";
+import { EdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry";
+import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
+import { SurfaceGeometry } from "./SurfaceGeometry";
 import { PointCloudGeometry } from "./PointCloud";
-import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
+import { CompositeFlags, Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
@@ -57,6 +60,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get asSurface(): SurfaceGeometry | undefined { return undefined; }
   public get asMesh(): MeshGeometry | undefined { return undefined; }
   public get asEdge(): EdgeGeometry | undefined { return undefined; }
+  public get asIndexedEdge(): IndexedEdgeGeometry | undefined { return undefined; }
   public get asRealityMesh(): RealityMeshGeometry | undefined { return undefined; }
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
@@ -76,8 +80,8 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public abstract get isDisposed(): boolean;
   // Returns the Id of the Technique used to render this geometry
   public abstract get techniqueId(): TechniqueId;
-  // Returns the pass in which to render this geometry. RenderPass.None indicates it should not be rendered.
-  public abstract getRenderPass(target: Target): RenderPass;
+  // Returns the pass in which to render this geometry. "none" indicates it should not be rendered.
+  public abstract getPass(target: Target): Pass;
   // Returns the 'order' of this geometry, which determines how z-fighting is resolved.
   public abstract get renderOrder(): RenderOrder;
   // Returns true if this is a lit surface
@@ -87,6 +91,11 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   // Returns true if this primitive contains auxillary animation data.
   public get hasAnimation(): boolean { return false; }
 
+  /** If false, the geometry's positions are not quantized.
+   * qOrigin and qScale can still be used to derive the geometry's range, but will not be passed to the shader.
+   * see VertexLUT.usesQuantizedPositions.
+   */
+  public get usesQuantizedPositions(): boolean { return true; }
   /** Returns the origin of this geometry's quantization parameters. */
   public abstract get qOrigin(): Float32Array;
   /** Returns the scale of this geometry's quantization parameters. */
@@ -194,6 +203,7 @@ export abstract class LUTGeometry extends CachedGeometry {
   // Override this if your color varies based on the target
   public getColor(_target: Target): ColorInfo { return this.lut.colorInfo; }
 
+  public override get usesQuantizedPositions() { return this.lut.usesQuantizedPositions; }
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
   public override get hasAnimation() { return this.lut.hasAnimation; }
@@ -418,11 +428,13 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
   }
 
   public get techniqueId(): TechniqueId { return this._techniqueId; }
-  public getRenderPass(_target: Target) { return RenderPass.SkyBox; }
+  public override getPass(): Pass { return "skybox"; }
   public get renderOrder() { return RenderOrder.UnlitSurface; }
 
   public draw(): void {
+    this._params.buffers.bind();
     System.instance.context.drawArrays(GL.PrimitiveType.Triangles, 0, 36);
+    this._params.buffers.unbind();
   }
 
   public get qOrigin() { return this._params.positions.origin; }
@@ -500,7 +512,7 @@ export class ViewportQuadGeometry extends IndexedGeometry {
   }
 
   public get techniqueId(): TechniqueId { return this._techniqueId; }
-  public getRenderPass(_target: Target) { return RenderPass.OpaqueGeneral; }
+  public override getPass(): Pass { return "opaque"; }
   public get renderOrder() { return RenderOrder.UnlitSurface; }
 
   public collectStatistics(_stats: RenderMemory.Statistics): void {
@@ -725,17 +737,18 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
  * @internal
  */
 export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(depthAndOrder: WebGLTexture) {
+  public static createGeometry(depthAndOrder: WebGLTexture, depth: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }
 
     // Will derive positions and normals from depthAndOrder.
-    return new AmbientOcclusionGeometry(params, [depthAndOrder]);
+    return new AmbientOcclusionGeometry(params, [depth, depthAndOrder]);
   }
 
-  public get depthAndOrder() { return this._textures[0]; }
+  public get depthAndOrder() { return this._textures[1]; }
+  public get depth() { return this._textures[0]; }
   public get noise() { return System.instance.noiseTexture!.getHandle()!; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
@@ -744,22 +757,32 @@ export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
 }
 
 /** @internal */
+export enum BlurType {
+  NoTest = 0,
+  TestOrder = 1,
+}
+
+/** @internal */
 export class BlurGeometry extends TexturedViewportQuadGeometry {
   public readonly blurDir: Vector2d;
 
-  public static createGeometry(texToBlur: WebGLTexture, depthAndOrder: WebGLTexture, blurDir: Vector2d) {
+  public static createGeometry(texToBlur: WebGLTexture, depthAndOrder: WebGLTexture, depthAndOrderHidden: WebGLTexture | undefined, blurDir: Vector2d, blurType: BlurType) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }
-    return new BlurGeometry(params, [texToBlur, depthAndOrder], blurDir);
+    if (undefined === depthAndOrderHidden || BlurType.NoTest === blurType)
+      return new BlurGeometry(params, [texToBlur, depthAndOrder], blurDir, blurType);
+    else
+      return new BlurGeometry(params, [texToBlur, depthAndOrder, depthAndOrderHidden], blurDir, blurType);
   }
 
   public get textureToBlur() { return this._textures[0]; }
   public get depthAndOrder() { return this._textures[1]; }
+  public get depthAndOrderHidden() { return this._textures[2]; }
 
-  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], blurDir: Vector2d) {
-    super(params, TechniqueId.Blur, textures);
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], blurDir: Vector2d, blurType: BlurType) {
+    super(params, BlurType.NoTest === blurType ? TechniqueId.Blur : TechniqueId.BlurTestOrder, textures);
     this.blurDir = blurDir;
   }
 }
@@ -1000,7 +1023,7 @@ export class ScreenPointsGeometry extends CachedGeometry {
 
   protected _wantWoWReversal(_target: Target): boolean { return false; }
   public get techniqueId(): TechniqueId { return TechniqueId.VolClassCopyZ; }
-  public getRenderPass(_target: Target) { return RenderPass.Classification; }
+  public override getPass(): Pass { return "classification"; }
   public get renderOrder() { return RenderOrder.None; }
   public get qOrigin() { return this._origin; }
   public get qScale() { return this._scale; }

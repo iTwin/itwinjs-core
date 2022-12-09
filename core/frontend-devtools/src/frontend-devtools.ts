@@ -39,6 +39,7 @@ export * from "./tools/RenderTargetTools";
 export * from "./tools/ReportWebGLCompatibilityTool";
 export * from "./tools/SavedViews";
 export * from "./tools/SelectionTools";
+export * from "./tools/ScheduleScriptTools";
 export * from "./tools/SetGpuMemoryLimitTool";
 export * from "./tools/SourceAspectIdTools";
 export * from "./tools/TileRequestDecoration";
@@ -67,7 +68,7 @@ export * from "./widgets/TileStatisticsTracker";
 export * from "./widgets/ToolSettingsTracker";
 
 /** @docs-package-description
- * The frontend-devtools package contains various tools and widgets for monitoring and debugging the front-end state of an iModel.js application.
+ * The frontend-devtools package contains various tools and widgets for monitoring and debugging the front-end state of an iTwin.js application.
  */
 
 /**

@@ -7,6 +7,7 @@ exports[`<TextEditor /> renders correctly 1`] = `
   data-testid="components-text-editor"
   onChange={[Function]}
   readOnly={false}
+  size="small"
   style={
     Object {
       "minWidth": "6em",
@@ -24,6 +25,7 @@ exports[`<TextEditor /> renders correctly with style 1`] = `
   data-testid="components-text-editor"
   onChange={[Function]}
   readOnly={false}
+  size="small"
   style={
     Object {
       "color": "red",

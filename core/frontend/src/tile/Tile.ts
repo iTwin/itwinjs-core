@@ -18,7 +18,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import {
-  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, ViewportIdSet,
+  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, TileUser, TileUserIdSet,
 } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
@@ -58,6 +58,7 @@ const scratchFrustum = new Frustum();
  * Several public [[Tile]] methods carry a warning that they should **not** be overridden by subclasses; typically a protected method exists that can be overridden instead.
  * For example, [[loadChildren]] should not be overridden, but it calls [[_loadChildren]], which must be overridden because it is abstract.
  * @public
+ * @extensions
  */
 export abstract class Tile {
   private _state: TileState = TileState.NotReady;
@@ -106,7 +107,7 @@ export abstract class Tile {
   /** Exclusively for use by LRUTileList. @internal */
   public bytesUsed = 0;
   /** Exclusively for use by LRUTileList. @internal */
-  public viewportIds?: ViewportIdSet;
+  public tileUserIds?: TileUserIdSet;
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   protected abstract _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
@@ -189,6 +190,12 @@ export abstract class Tile {
   /** True if this tile's content has been loaded and is ready to be drawn. */
   public get isReady(): boolean { return TileLoadStatus.Ready === this.loadStatus; }
 
+  /** Indicates the tile should not be selected for display because it is out of the range of LODs supported by the tile provider.
+   * @see [[ImageryMapTile.isOutOfLodRange]].
+   * @alpha
+   */
+  public get isOutOfLodRange(): boolean { return false;}
+
   /** @public */
   public setNotFound(): void {
     this._state = TileState.NotFound;
@@ -232,11 +239,12 @@ export abstract class Tile {
   }
 
   /** Compute the load priority of this tile. This determines which tiles' contents are requested first.
-   * @param _viewports The viewports for which the tile has been requested for display.
+   * @param _viewports The subset of `users` that are [[Viewport]]s - typically, these viewports want to display the tile's content.
+   * @param users The [[TileUser]]s that are currently using the tile for some purpose, such as displaying its content.
    * @returns The priority.
    * @see [[TileLoadPriority]] for suggested priority values.
    */
-  public computeLoadPriority(_viewports: Iterable<Viewport>): number {
+  public computeLoadPriority(_viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
     return this.depth;
   }
 
@@ -414,9 +422,15 @@ export abstract class Tile {
 
   /** Determine the visibility of this tile according to the specified args. */
   public computeVisibility(args: TileDrawArgs): TileVisibility {
+    if (this.isEmpty)
+      return TileVisibility.OutsideFrustum;
+
+    if (args.boundingRange && !args.boundingRange.intersectsRange(this.range))
+      return TileVisibility.OutsideFrustum;
+
     // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
     // they are outside frustum
-    if (this.isEmpty || this.isRegionCulled(args))
+    if (this.isRegionCulled(args))
       return TileVisibility.OutsideFrustum;
 
     // some nodes are merely for structure and don't have any geometry
@@ -544,6 +558,7 @@ export abstract class Tile {
 /** Describes the current status of a [[Tile]]'s content. Tile content is loaded via an asynchronous [[TileRequest]].
  * @see [[Tile.loadStatus]].
  * @public
+ * @extensions
  */
 export enum TileLoadStatus {
   /** No attempt to load the tile's content has been made, or the tile has since been unloaded. It currently has no graphics. */
@@ -563,6 +578,7 @@ export enum TileLoadStatus {
 /**
  * Describes the visibility of a tile based on its size and a view frustum.
  * @public
+ * @extensions
  */
 export enum TileVisibility {
   /** The tile is entirely outside of the viewing frustum. */
@@ -577,6 +593,7 @@ export enum TileVisibility {
  * Loosely describes the "importance" of a [[Tile]]. Requests for tiles of greater "importance" are prioritized for loading.
  * @note A lower priority value indicates higher importance.
  * @public
+ * @extensions
  */
 export enum TileLoadPriority {
   /** Contents of geometric models that are being interactively edited. */
@@ -602,6 +619,7 @@ export enum TileLoadPriority {
  *  - Red: A tile which refines to a single higher-resolution child occupying the same volume.
  * @see [[Viewport.debugBoundingBoxes]]
  * @public
+ * @extensions
  */
 export enum TileBoundingBoxes {
   /** Display no bounding boxes */

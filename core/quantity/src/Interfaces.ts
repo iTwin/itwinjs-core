@@ -6,6 +6,13 @@
  * @module Quantity
  */
 
+/** This interface allows a provider to be specified that will define an array of alternate labels for a specific unit.
+ * @beta
+ */
+export interface AlternateUnitLabelsProvider {
+  getAlternateUnitLabels: (unit: UnitProps) => string[] | undefined;
+}
+
 /** This interface provides basic information about a Unit that is return from a UnitProvider. This info
  * uniquely identifies a unit by its name.
  * @beta
@@ -19,8 +26,6 @@ export interface UnitProps {
   readonly phenomenon: string;
   /** This is set to true if the Unit is known by the UnitsProvider. */
   readonly isValid: boolean;
-  /** Optionally defined set of unit labels that can be used to represent the unit. This is helpful when parsing quantity value strings */
-  readonly alternateLabels?: string[];
   /** Unique system name. Example "Units.USCUSTOM"," Units.METRIC", "Units.USSURVEY", "Units.IMPERIAL" */
   readonly system: string;
 }
@@ -67,12 +72,21 @@ export interface PotentialParseUnit {
   altLabels?: string[];
 }
 
+/**
+ * This interface defines extra properties to be associated with Units from Units Schema by name
+ * @alpha
+ */
+export interface UnitExtraData {
+  readonly name: string;
+  readonly altDisplayLabels: string[];
+}
+
 /** This interface is implemented by the class that is responsible for locating units by name or label and providing conversion values between units.
  * The methods to be implemented are async allowing the UnitsProvider to query the backend when necessary to look up unit definition and conversion rules.
  * @beta
  */
 export interface UnitsProvider {
-  findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
+  findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
   getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
   findUnitByName(unitName: string): Promise<UnitProps>;
   getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;

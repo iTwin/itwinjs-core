@@ -137,8 +137,10 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
 }
 
 export class Frontstage4 extends FrontstageProvider {
+  public static stageId = "ui-test-app:Test4";
+
   public get id(): string {
-    return "Test4";
+    return Frontstage4.stageId;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
@@ -161,7 +163,6 @@ export class Frontstage4 extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         defaultContentId="TestContent1"
-        isInFooterMode={true}
         contentManipulationTools={
           <Zone
             widgets={[
@@ -286,9 +287,7 @@ export class Frontstage4 extends FrontstageProvider {
 
   private modalDialog(): React.ReactNode {
     return (
-      <TestModalDialog
-        opened={true}
-      />
+      <TestModalDialog />
     );
   }
 
@@ -335,7 +334,6 @@ export class Frontstage4 extends FrontstageProvider {
       execute: () => {
         ModelessDialogManager.openDialog(
           <SampleModelessDialog
-            opened={true}
             dialogId={dialogId}
             onClose={() => this._handleModelessClose(dialogId)}
           />, dialogId);
@@ -356,7 +354,6 @@ export class Frontstage4 extends FrontstageProvider {
       execute: () => {
         ModalDialogManager.openDialog(
           <SampleModalDialog
-            opened={true}
             onResult={(result) => this._handleModalResult(result)}
           />);
       },
@@ -421,7 +418,7 @@ export class Frontstage4 extends FrontstageProvider {
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
               items={[
-                AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
+                AppTools.noIconMessageBoxCommand, AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
                 AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2,
                 this._spinnerTestDialogItem,
                 this._sampleModelessDialogItem,

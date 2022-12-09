@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Frontstage
  */
 
 import produce, { Draft } from "immer";
-import { StagePanelLocation, StagePanelSection } from "@itwin/appui-abstract";
-import { UiEvent } from "@itwin/core-react";
+import { StagePanelLocation, StagePanelSection, UiEvent } from "@itwin/appui-abstract";
 import { NineZoneState, PanelSide } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetDef } from "../widgets/WidgetDef";
@@ -35,7 +35,7 @@ export interface PanelStateChangedEventArgs {
   panelState: StagePanelState;
 }
 
-/** Widget State Changed Event class.
+/** Panel State Changed Event class.
  * @beta
  */
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> { }
@@ -79,7 +79,19 @@ export class StagePanelDef extends WidgetHost {
   public get minSize() { return this._minSize; }
 
   /** Default size of the panel */
-  public get size() { return this._size; }
+  public get size() {
+    // istanbul ignore next
+    if ("1" === UiFramework.uiVersion)
+      return this._size;
+
+    // istanbul ignore else
+    if (FrontstageManager.activeFrontstageDef) {
+      const [_, size] = FrontstageManager.activeFrontstageDef.getPanelCurrentState(this);
+      return size;
+    }
+    // istanbul ignore next
+    return this._defaultSize;
+  }
 
   public set size(size) {
     if (this._size === size)
@@ -119,7 +131,16 @@ export class StagePanelDef extends WidgetHost {
 
   /** Panel state. Defaults to PanelState.Open. */
   public get panelState() {
-    return this._panelState;
+    if ("1" === UiFramework.uiVersion)
+      return this._panelState;
+
+    // istanbul ignore else
+    if (FrontstageManager.activeFrontstageDef) {
+      const [state] = FrontstageManager.activeFrontstageDef?.getPanelCurrentState(this);
+      return state;
+    }
+    // istanbul ignore next
+    return this.defaultState;
   }
 
   public set panelState(panelState: StagePanelState) {
@@ -167,17 +188,15 @@ export class StagePanelDef extends WidgetHost {
   }
 
   /** @internal */
-  public initializeFromProps(props?: StagePanelProps, panelLocation?: StagePanelLocation): void {
-    if (panelLocation !== undefined)
-      this._location = panelLocation;
+  public initializeFromProps(props?: StagePanelProps, location?: StagePanelLocation): void {
+    if (location !== undefined)
+      this._location = location;
     if (!props)
       return;
     this._size = props.size;
     this._defaultSize = props.size;
     this._maxSizeSpec = props.maxSize;
     this._minSize = props.minSize;
-    if (panelLocation !== undefined)
-      this._location = panelLocation;
     if (props.defaultState !== undefined) {
       this._panelState = props.defaultState;
       this._defaultState = props.defaultState;
@@ -185,8 +204,7 @@ export class StagePanelDef extends WidgetHost {
     this._resizable = props.resizable;
     if (props.pinned !== undefined)
       this._pinned = props.pinned;
-    if (props.applicationData !== undefined)
-      this._applicationData = props.applicationData;
+    this._applicationData = props.applicationData;
     if (props.panelZones) {
       this._panelZones.initializeFromProps(props.panelZones, this._location);
     }
@@ -219,31 +237,26 @@ export class StagePanelDef extends WidgetHost {
 
   /** @internal */
   public override updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined,
-    widgetDefs: WidgetDef[], frontstageApplicationData?: any,
+    allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any,
   ): void {
-    this.panelZones.start.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start, widgetDefs, frontstageApplicationData);
-    this.panelZones.middle.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle, widgetDefs, frontstageApplicationData);
-    this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End, widgetDefs, frontstageApplicationData);
+    this.panelZones.start.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start, allStageWidgetDefs, frontstageApplicationData);
+    this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle, allStageWidgetDefs, frontstageApplicationData);
+    this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End, allStageWidgetDefs, frontstageApplicationData);
   }
 }
 
 /** @internal */
-export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "middle" | "end">;
+export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "end">;
 
-const stagePanelZoneDefKeys: StagePanelZoneDefKeys[] = ["start", "middle", "end"];
+const stagePanelZoneDefKeys: StagePanelZoneDefKeys[] = ["start", "end"];
 
 /** @internal */
 export class StagePanelZonesDef {
   private _start = new StagePanelZoneDef();
-  private _middle = new StagePanelZoneDef();
   private _end = new StagePanelZoneDef();
 
   public get start() {
     return this._start;
-  }
-
-  public get middle() {
-    return this._middle;
   }
 
   public get end() {
@@ -256,7 +269,7 @@ export class StagePanelZonesDef {
       this.start.initializeFromProps(props.start, panelLocation, "start");
     }
     if (props.middle) {
-      this.middle.initializeFromProps(props.middle, panelLocation, "middle");
+      this.end.initializeFromProps(props.middle, panelLocation, "end");
     }
     if (props.end) {
       this.end.initializeFromProps(props.end, panelLocation, "end");

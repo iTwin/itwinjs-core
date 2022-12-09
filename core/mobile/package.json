@@ -1,10 +1,10 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "3.0.0-dev.113",
+  "version": "3.6.0-dev.8",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 < 19.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
@@ -32,40 +32,46 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.113",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.113",
-    "@itwin/core-common": "workspace:^3.0.0-dev.113",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.113",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.113",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.113",
+    "@itwin/core-backend": "workspace:^3.6.0-dev.8",
+    "@itwin/core-bentley": "workspace:^3.6.0-dev.8",
+    "@itwin/core-common": "workspace:^3.6.0-dev.8",
+    "@itwin/core-frontend": "workspace:^3.6.0-dev.8",
+    "@itwin/presentation-common": "workspace:^3.6.0-dev.8"
+  },
+  "dependencies": {
+    "deep-assign": "^2.0.0",
+    "lodash": "^4.17.10",
     "js-base64": "^3.6.1",
+    "qs": "^6.5.3",
+    "superagent": "^7.1.5",
     "ws": "^7.5.3"
   },
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
+    "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
+    "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
-    "@types/ws": "^6.0.4",
+    "@types/node": "18.11.5",
+    "@types/qs": "^6.5.0",
+    "@types/superagent": "^4.1.14",
+    "@types/ws": "^7.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
-    "cpx": "^1.5.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "eslint": "^7.11.0",
     "js-base64": "^3.6.1",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0",
-    "ws": "^7.5.3"
+    "typescript": "~4.4.0"
   },
   "eslintConfig": {
     "plugins": [

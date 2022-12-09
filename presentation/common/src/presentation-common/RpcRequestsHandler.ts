@@ -6,12 +6,13 @@
  * @module RPC
  */
 
-import { Guid, Id64String, IDisposable } from "@itwin/core-bentley";
+import { Guid, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcManager } from "@itwin/core-common";
+import { PresentationCommonLoggerCategory } from "./CommonLoggerCategory";
 import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
-import { DiagnosticsScopeLogs } from "./Diagnostics";
+import { ClientDiagnostics, ClientDiagnosticsAttribute, ClientDiagnosticsHandler } from "./Diagnostics";
 import { InstanceKeyJSON } from "./EC";
 import { ElementProperties } from "./ElementProperties";
 import { PresentationError, PresentationStatus } from "./Error";
@@ -21,14 +22,15 @@ import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
-  ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, MultiElementPropertiesRequestOptions, Paged, RequestOptions,
-  SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
+  ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
+  ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Paged, RequestOptions,
+  RequestOptionsWithRuleset, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import {
-  ContentSourcesRpcResult, ElementPropertiesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
+  ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
 } from "./PresentationRpcInterface";
+import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
 import { PagedResponse } from "./Utils";
@@ -55,7 +57,7 @@ export interface RpcRequestsHandlerProps {
  * @internal
  */
 export class RpcRequestsHandler implements IDisposable {
-  private _maxRequestRepeatCount: number = 5;
+  public readonly maxRequestRepeatCount: number = 5;
 
   /** ID that identifies this handler as a client */
   public readonly clientId: string;
@@ -70,8 +72,8 @@ export class RpcRequestsHandler implements IDisposable {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private get rpcClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); }
 
-  private async requestRepeatedly<TResult>(func: () => PresentationRpcResponse<TResult>, diagnosticsHandler?: (logs: DiagnosticsScopeLogs[]) => void, repeatCount: number = 1): Promise<TResult> {
-    let diagnostics: DiagnosticsScopeLogs[] | undefined;
+  private async requestRepeatedly<TResult>(func: () => PresentationRpcResponse<TResult>, diagnosticsHandler?: ClientDiagnosticsHandler, repeatCount: number = 1): Promise<TResult> {
+    let diagnostics: ClientDiagnostics | undefined;
     let error: unknown | undefined;
     let shouldRepeat = false;
     try {
@@ -81,19 +83,18 @@ export class RpcRequestsHandler implements IDisposable {
       if (response.statusCode === PresentationStatus.Success)
         return response.result!;
 
-      if (response.statusCode === PresentationStatus.BackendTimeout && repeatCount < this._maxRequestRepeatCount)
+      if (response.statusCode === PresentationStatus.BackendTimeout && repeatCount < this.maxRequestRepeatCount)
         shouldRepeat = true;
       else
         error = new PresentationError(response.statusCode, response.errorMessage);
 
     } catch (e) {
       error = e;
-      if (repeatCount < this._maxRequestRepeatCount)
+      if (repeatCount < this.maxRequestRepeatCount)
         shouldRepeat = true;
 
     } finally {
-      if (diagnosticsHandler && diagnostics)
-        diagnosticsHandler(diagnostics);
+      diagnosticsHandler && diagnostics && diagnosticsHandler(diagnostics);
     }
 
     if (shouldRepeat) {
@@ -113,12 +114,15 @@ export class RpcRequestsHandler implements IDisposable {
    *
    * @internal
    */
-  public async request<TResult, TOptions extends RequestOptions<IModelRpcProps>, TArg = any>(
+  public async request<TResult, TOptions extends (RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute), TArg = any>(
     func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>,
     options: TOptions,
-    ...additionalOptions: TArg[]): Promise<TResult> {
+    ...additionalOptions: TArg[]
+  ): Promise<TResult> {
     const { imodel, diagnostics, ...optionsNoIModel } = options;
     const { handler: diagnosticsHandler, ...diagnosticsOptions } = diagnostics ?? {};
+    if (isOptionsWithRuleset(optionsNoIModel))
+      optionsNoIModel.rulesetOrId = cleanupRuleset(optionsNoIModel.rulesetOrId);
     const rpcOptions: PresentationRpcRequestOptions<TOptions> = {
       ...optionsNoIModel,
       clientId: this.clientId,
@@ -129,77 +133,107 @@ export class RpcRequestsHandler implements IDisposable {
     return this.requestRepeatedly(doRequest, diagnosticsHandler);
   }
 
-  public async getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>): Promise<number> {
-    return this.request<number, HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>>(
+  public async getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number> {
+    return this.request<number, typeof options>(
       this.rpcClient.getNodesCount.bind(this.rpcClient), options);
   }
-  public async getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>>): Promise<PagedResponse<NodeJSON>> {
-    return this.request<PagedResponse<NodeJSON>, Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>>>(
+  public async getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>> & ClientDiagnosticsAttribute): Promise<PagedResponse<NodeJSON>> {
+    return this.request<PagedResponse<NodeJSON>, typeof options>(
       this.rpcClient.getPagedNodes.bind(this.rpcClient), options);
   }
 
-  public async getNodePaths(options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON>): Promise<NodePathElementJSON[]> {
-    return this.request<NodePathElementJSON[], FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON>>(
+  public async getNodePaths(options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<NodePathElementJSON[]> {
+    return this.request<NodePathElementJSON[], typeof options>(
       this.rpcClient.getNodePaths.bind(this.rpcClient), options);
   }
-  public async getFilteredNodePaths(options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON>): Promise<NodePathElementJSON[]> {
-    return this.request<NodePathElementJSON[], FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON>>(
+  public async getFilteredNodePaths(options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<NodePathElementJSON[]> {
+    return this.request<NodePathElementJSON[], typeof options>(
       this.rpcClient.getFilteredNodePaths.bind(this.rpcClient), options);
   }
 
-  public async getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps>): Promise<ContentSourcesRpcResult> {
-    return this.request<ContentSourcesRpcResult, ContentSourcesRequestOptions<IModelRpcProps>>(
+  public async getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ContentSourcesRpcResult> {
+    return this.request<ContentSourcesRpcResult, typeof options>(
       this.rpcClient.getContentSources.bind(this.rpcClient), options);
   }
-  public async getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>): Promise<DescriptorJSON | undefined> {
-    return this.request<DescriptorJSON | undefined, ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>>(
+  public async getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<DescriptorJSON | undefined> {
+    return this.request<DescriptorJSON | undefined, typeof options>(
       this.rpcClient.getContentDescriptor.bind(this.rpcClient), options);
   }
-  public async getContentSetSize(options: ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>): Promise<number> {
-    return this.request<number, ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>(
+  public async getContentSetSize(options: ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number> {
+    return this.request<number, typeof options>(
       this.rpcClient.getContentSetSize.bind(this.rpcClient), options);
   }
-  public async getPagedContent(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>) {
-    return this.request<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined, Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>>(
+  public async getPagedContent(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>) {
+    return this.request<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined, typeof options>(
       this.rpcClient.getPagedContent.bind(this.rpcClient), options);
   }
-  public async getPagedContentSet(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>) {
-    return this.request<PagedResponse<ItemJSON>, Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>>(
+  public async getPagedContentSet(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>) {
+    return this.request<PagedResponse<ItemJSON>, typeof options>(
       this.rpcClient.getPagedContentSet.bind(this.rpcClient), options);
   }
 
-  public async getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>): Promise<PagedResponse<DisplayValueGroupJSON>> {
-    return this.request<PagedResponse<DisplayValueGroupJSON>, DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>(
+  public async getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroupJSON>> {
+    return this.request<PagedResponse<DisplayValueGroupJSON>, typeof options>(
       this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
   }
 
-  public async getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
-  public async getElementProperties(options: MultiElementPropertiesRequestOptions<IModelRpcProps>): Promise<PagedResponse<ElementProperties>>;
-  public async getElementProperties(options: ElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementPropertiesRpcResult> {
-    return this.request<ElementPropertiesRpcResult, ElementPropertiesRequestOptions<IModelRpcProps>>(
+  public async getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined> {
+    return this.request<ElementProperties | undefined, typeof options>(
       this.rpcClient.getElementProperties.bind(this.rpcClient), options);
   }
 
-  public async getContentInstanceKeys(options: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>): Promise<{ total: number, items: KeySetJSON }> {
-    return this.request<{ total: number, items: KeySetJSON }, ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>>(
+  public async getContentInstanceKeys(options: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<{ total: number, items: KeySetJSON }> {
+    return this.request<{ total: number, items: KeySetJSON }, typeof options>(
       this.rpcClient.getContentInstanceKeys.bind(this.rpcClient), options);
   }
 
-  public async getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON> {
-    return this.request<LabelDefinitionJSON, DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>, any>(
+  public async getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON> & ClientDiagnosticsAttribute): Promise<LabelDefinitionJSON> {
+    return this.request<LabelDefinitionJSON, typeof options>(
       this.rpcClient.getDisplayLabelDefinition.bind(this.rpcClient), options);
   }
-  public async getPagedDisplayLabelDefinitions(options: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<PagedResponse<LabelDefinitionJSON>> {
-    return this.request<PagedResponse<LabelDefinitionJSON>, DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON>, any>(
+  public async getPagedDisplayLabelDefinitions(options: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON> & ClientDiagnosticsAttribute): Promise<PagedResponse<LabelDefinitionJSON>> {
+    return this.request<PagedResponse<LabelDefinitionJSON>, typeof options>(
       this.rpcClient.getPagedDisplayLabelDefinitions.bind(this.rpcClient), options);
   }
 
-  public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps>): Promise<SelectionScope[]> {
-    return this.request<SelectionScope[], SelectionScopeRequestOptions<IModelRpcProps>>(
+  public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]> {
+    return this.request<SelectionScope[], typeof options>(
       this.rpcClient.getSelectionScopes.bind(this.rpcClient), options);
   }
-  public async computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON> {
-    return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
-      this.rpcClient.computeSelection.bind(this.rpcClient), options, ids, scopeId);
+  public async computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<KeySetJSON> {
+    return this.request<KeySetJSON, typeof options>(
+      this.rpcClient.computeSelection.bind(this.rpcClient), options);
   }
+}
+
+function isOptionsWithRuleset(options: Object): options is { rulesetOrId: Ruleset } {
+  return (typeof (options as RequestOptionsWithRuleset<any, any>).rulesetOrId === "object");
+}
+
+type RulesetWithRequiredProperties = {
+  [key in keyof Ruleset]-?: true;
+};
+
+const RULESET_SUPPORTED_PROPERTIES_OBJ: RulesetWithRequiredProperties = {
+  id: true,
+  rules: true,
+  version: true,
+  requiredSchemas: true,
+  supplementationInfo: true,
+  vars: true,
+};
+
+function cleanupRuleset(ruleset: Ruleset): Ruleset {
+  const cleanedUpRuleset: Ruleset = { ...ruleset };
+
+  for (const propertyKey of Object.keys(cleanedUpRuleset)) {
+    if (!RULESET_SUPPORTED_PROPERTIES_OBJ.hasOwnProperty(propertyKey)) {
+      if (propertyKey === "$schema")
+        delete (cleanedUpRuleset as any)[propertyKey];
+      else
+        Logger.logWarning(PresentationCommonLoggerCategory.Package, `Provided ruleset contains unrecognized attribute '${propertyKey}'. It either doesn't exist or may be no longer supported.`);
+    }
+  }
+
+  return cleanedUpRuleset;
 }

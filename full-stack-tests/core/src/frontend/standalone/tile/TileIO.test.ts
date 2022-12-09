@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ByteStream, Id64, Id64String } from "@itwin/core-bentley";
+import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
-  BatchType, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
+  BatchType, CurrentImdlVersion, EdgeOptions, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
   ModelProps, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@itwin/core-frontend";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/render-primitives";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { TestUtility } from "../../TestUtility";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
@@ -62,7 +63,6 @@ export class FakeREProps implements RelatedElementProps {
 }
 
 export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, renderMode?: RenderMode, is2d?: boolean, animationId?: Id64String }): ViewState {
-  const scheduleState = options?.animationId ? { getModelAnimationId: () => options.animationId } : undefined;
   return {
     iModel,
     is3d: () => true !== options?.is2d,
@@ -70,17 +70,17 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
       renderMode: options?.renderMode ?? RenderMode.SmoothShade,
       visibleEdges: options?.visibleEdges ?? false,
     }),
-    displayStyle: {
-      scheduleState,
-    },
-  } as ViewState;
+    displayStyle: { },
+  } as unknown as ViewState;
 }
 
-function delta(a: number, b: number): number { return Math.abs(a - b); }
+function delta(a: number, b: number): number {
+  return Math.abs(a - b);
+}
 type ProcessGraphic = (graphic: RenderGraphic) => void;
 
 function processHeader(data: TileTestData, test: TileTestCase, numElements: number) {
-  const stream = new ByteStream(test.bytes.buffer);
+  const stream = ByteStream.fromUint8Array(test.bytes);
   stream.reset();
   const header = new ImdlHeader(stream);
   expect(header.isValid).to.be.true;
@@ -97,8 +97,15 @@ function processHeader(data: TileTestData, test: TileTestCase, numElements: numb
 
 function createReader(imodel: IModelConnection, data: TileTestData, test: TileTestCase): ImdlReader | undefined {
   const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-  const stream = new ByteStream(test.bytes.buffer);
-  const reader = ImdlReader.create(stream, imodel, model.id, model.is3d, IModelApp.renderSystem);
+  const stream = ByteStream.fromUint8Array(test.bytes);
+  const reader = ImdlReader.create({
+    stream,
+    iModel: imodel,
+    modelId: model.id,
+    is3d: model.is3d,
+    system: IModelApp.renderSystem,
+  });
+
   expect(undefined === reader).to.equal(!!data.unreadable);
   return reader;
 }
@@ -263,7 +270,7 @@ describe("TileIO (WebGL)", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -433,15 +440,25 @@ describe("TileIO (mock render)", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
   it("should support canceling operation", async () => {
     if (IModelApp.initialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-      const stream = new ByteStream(currentTestCase.rectangle.bytes.buffer);
-      const reader = ImdlReader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, BatchType.Primary, true, (_) => true);
+      const stream = ByteStream.fromUint8Array(currentTestCase.rectangle.bytes);
+      const reader = ImdlReader.create({
+        stream,
+        iModel: model.iModel,
+        modelId: model.id,
+        is3d: model.is3d,
+        system: IModelApp.renderSystem,
+        type: BatchType.Primary,
+        loadEdges: true,
+        isCanceled: (_) => true,
+      });
+
       expect(reader).not.to.be.undefined;
 
       const result = await reader!.read();
@@ -544,7 +561,7 @@ async function getTileTree(imodel: IModelConnection, modelId: Id64String, edgesR
 }
 
 async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = true, animationId?: Id64String): Promise<IModelTileTree> {
-  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and scheduleState.getModelAnimationId(modelId) and for access to its IModelConnection.
+  // tile tree reference wants a ViewState so it can check viewFlags.edgesRequired() and for access to its IModelConnection.
   // ###TODO Make that an interface instead of requiring a ViewState.
   const view = fakeViewState(model.iModel, { animationId, visibleEdges: edgesRequired });
   const ref = model.createTileTreeReference(view);
@@ -575,6 +592,9 @@ describe("mirukuru TileTree", () => {
   before(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
     await MockRender.App.startup();
+    if (ProcessDetector.isElectronAppFrontend)
+      await ElectronApp.startup();
+
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -592,8 +612,10 @@ describe("mirukuru TileTree", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await MockRender.App.shutdown();
+    if (ProcessDetector.isElectronAppFrontend)
+      await ElectronApp.shutdown();
   });
 
   // mirukuru contains a model (ID 0x1C) containing a single rectangle.
@@ -609,9 +631,10 @@ describe("mirukuru TileTree", () => {
     const rootTile = treeProps.rootTile;
     expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
 
-    const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
+    const edges = { indexed: false, smooth: false };
+    const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true, timeline: undefined };
     const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
-    const tree = new IModelTileTree(params, { edgesRequired: true, type: BatchType.Primary });
+    const tree = new IModelTileTree(params, { edges, type: BatchType.Primary });
 
     const response: TileRequest.Response = await tree.staticBranch.requestContent();
     expect(response).not.to.be.undefined;
@@ -642,7 +665,7 @@ describe("mirukuru TileTree", () => {
       expect(response).instanceof(Uint8Array);
 
       // The model contains a single rectangular element.
-      const stream = new ByteStream((response as Uint8Array).buffer);
+      const stream = ByteStream.fromUint8Array(response as Uint8Array);
       const header = new ImdlHeader(stream);
       expect(header.isValid).to.be.true;
       expect(header.format).to.equal(TileFormat.IModel);
@@ -656,7 +679,7 @@ describe("mirukuru TileTree", () => {
       const projExt = imodel.projectExtents;
       expect(projExt.xLength()).to.equal(header.contentRange.xLength());
       expect(projExt.yLength()).to.equal(header.contentRange.yLength());
-      expect(header.contentRange.zLength()).to.equal(0); // project extents are chubbed up; content range is tight.
+      expect(header.contentRange.zLength()).to.deep.equalWithFpTolerance(0); // project extents are chubbed up; content range is tight.
     };
 
     // Test current version of tile tree by asking model to load it
@@ -667,10 +690,11 @@ describe("mirukuru TileTree", () => {
     const v3Props = await IModelApp.tileAdmin.requestTileTreeProps(imodel, "0x1c");
     expect(v3Props).not.to.be.undefined;
 
-    const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: false, allowInstancing: false };
+    const edges = false as const;
+    const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: false, timeline: undefined };
     const params = iModelTileTreeParamsFromJSON(v3Props, imodel, "0x1c", options);
 
-    const v3Tree = new IModelTileTree(params, { edgesRequired: false, type: BatchType.Primary });
+    const v3Tree = new IModelTileTree(params, { edges: false, type: BatchType.Primary });
     await test(v3Tree, 0x00030000, "_3_0_0_0_0_0_1");
   });
 
@@ -697,7 +721,7 @@ describe("mirukuru TileTree", () => {
 });
 
 // Temporarily skipped while we investigate sporadic apparent crash during Linux CI jobs. Occurs in Electron only, not Chrome.
-describe.skip("TileAdmin", () => {
+describe("TileAdmin", () => {
   let theIModel: IModelConnection | undefined;
 
   const cleanup = async () => {
@@ -722,6 +746,9 @@ describe.skip("TileAdmin", () => {
         tileAdmin: props,
       });
 
+      if (ProcessDetector.isElectronAppFrontend)
+        await ElectronApp.startup();
+
       theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
       return theIModel;
     }
@@ -743,63 +770,20 @@ describe.skip("TileAdmin", () => {
 
   it("should omit or load edges based on configuration and view flags", async () => {
     class App extends TileAdminApp {
-      private static async testPrimaryTree(imodel: IModelConnection, expectedTreeIdStr: string, animationId?: Id64String) {
-        // Test without edges
-        const requestWithoutEdges = true;
-        let expectedTreeIdStrNoEdges = expectedTreeIdStr;
-        if (requestWithoutEdges) {
-          // "0xabc" => E:0_0xabc"
-          // "A:0x123_0xabc" => "A:0x123_E:0_0xabc"
-          const lastIndex = expectedTreeIdStr.lastIndexOf("0x");
-          expectedTreeIdStrNoEdges = `${expectedTreeIdStr.substring(0, lastIndex)}E:0_${expectedTreeIdStr.substring(lastIndex)}`;
-        }
-
-        const treeId: IModelTileTreeId = { type: BatchType.Primary, edgesRequired: false, animationId };
-        let actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
-        expect(actualTreeIdStr).to.equal(expectedTreeIdStrNoEdges);
-
-        const treePropsNoEdges = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
-        expect(treePropsNoEdges.id).to.equal(actualTreeIdStr);
-
-        const treeNoEdges = await getTileTree(imodel, "0x1c", false, animationId);
-        expect(treeNoEdges.id).to.equal(actualTreeIdStr);
-
-        const treeNoEdges2 = await getTileTree(imodel, "0x1c", false, animationId);
-        expect(treeNoEdges2).to.equal(treeNoEdges);
-
-        expect(await this.rootTileHasEdges(treeNoEdges, imodel)).to.equal(!requestWithoutEdges);
-
-        // Test with edges
-        treeId.edgesRequired = true;
-        actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
-        expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
-
-        const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
-        expect(treeProps.id).to.equal(actualTreeIdStr);
-
-        const tree = await getTileTree(imodel, "0x1c", true, animationId);
-        expect(tree.id).to.equal(actualTreeIdStr);
-        expect(tree).not.to.equal(treeNoEdges);
-
-        const tree2 = await getTileTree(imodel, "0x1c", true, animationId);
-        expect(tree2).to.equal(tree);
-
-        expect(await this.rootTileHasEdges(tree, imodel)).to.be.true;
-
-        // Request without edges again.
-        // We used to keep the old tree with edges around if you later requested it without - but that wastes memory.
-        // Change in behavior potentially wastes time instead by reloading a tree without edges.
-        const treeNoEdges3 = await getTileTree(imodel, "0x1c", false, animationId);
-        expect(treeNoEdges3).not.to.equal(tree);
-      }
-
       private static async rootTileHasEdges(tree: IModelTileTree, imodel: IModelConnection): Promise<boolean> {
         const response = await tree.staticBranch.requestContent() as Uint8Array;
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
-        const stream = new ByteStream(response.buffer);
-        const reader = ImdlReader.create(stream, imodel, "0x1c", true, IModelApp.renderSystem)!;
+        const stream = ByteStream.fromUint8Array(response);
+        const reader = ImdlReader.create({
+          stream,
+          iModel: imodel,
+          modelId: "0x1c",
+          is3d: true,
+          system: IModelApp.renderSystem,
+        });
+
         expect(reader).not.to.be.undefined;
 
         const meshes = (reader as any)._meshes;
@@ -815,8 +799,26 @@ describe.skip("TileAdmin", () => {
       }
 
       public static async test(imodel: IModelConnection) {
+        const expectTreeId = async (edges: EdgeOptions | false, expectedTreeIdStr: string) => {
+          const treeId: IModelTileTreeId = { type: BatchType.Primary, edges };
+          const actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
+          expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
+
+          const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
+          expect(treeProps.id).to.equal(actualTreeIdStr);
+
+          const tree = await getTileTree(imodel, "0x1c", false !== edges);
+          expect(tree.id).to.equal(actualTreeIdStr);
+
+          const tree2 = await getTileTree(imodel, "0x1c", false !== edges);
+          expect(tree2).to.equal(tree);
+
+          expect(await this.rootTileHasEdges(tree, imodel)).to.equal(false !== edges);
+        };
+
         const version = CurrentImdlVersion.Major.toString(16);
-        await this.testPrimaryTree(imodel, `${version}_1-0x1c`);
+        await expectTreeId(false, `${version}_d-E:0_0x1c`);
+        await expectTreeId({ indexed: true, smooth: true }, `${version}_d-E:4_0x1c`);
       }
     }
 
@@ -877,9 +879,10 @@ describe.skip("TileAdmin", () => {
         if (undefined !== qualifier)
           expect(qualifier.length > 0).to.be.true;
 
-        const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
+        const edges = { indexed: false, smooth: false };
+        const options = { is3d: true, batchType: BatchType.Primary, edges, allowInstancing: true, timeline: undefined };
         const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
-        const tree = new IModelTileTree(params, { edgesRequired: true, type: BatchType.Primary });
+        const tree = new IModelTileTree(params, { edges, type: BatchType.Primary });
 
         const intfc = IModelTileRpcInterface.getClient();
         const generateTileContent = intfc.generateTileContent;

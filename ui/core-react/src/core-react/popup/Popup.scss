@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../inputs/variables";
 @import "../z-index";
+@import "~@itwin/itwinui-css/scss/style/elevation";
 
 .core-popup {
  top: 0;
@@ -28,6 +29,10 @@
 
  &.core-popup-hidden {
   display: none;
+ }
+
+ &.core-animation-ended {
+   animation-name: none;
  }
 }
 
@@ -146,8 +151,8 @@
 }
 
 .core-popup-shadow {
- -webkit-box-shadow: 0 3px 6px $buic-popup-boxshadow;
- box-shadow: 0px 3px 6px $buic-popup-boxshadow;
+ -webkit-box-shadow: $iui-elevation-16;
+ box-shadow: $iui-elevation-16;
  background-clip: padding-box;
 }
 

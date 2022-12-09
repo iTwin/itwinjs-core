@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
@@ -32,6 +33,7 @@ describe("StagePanel", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    UiFramework.setUiVersion("1");
   });
 
   after(() => {
@@ -207,7 +209,7 @@ describe("StagePanel", () => {
       expect(widgetDef).to.not.be.undefined;
     }
 
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
     expect(wrapper.find("div.uifw-stagepanel").length).to.eq(6);
     expect(wrapper.find("div.uifw-stagepanel.nz-panel-top").length).to.eq(2);

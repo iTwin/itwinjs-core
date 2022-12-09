@@ -13,6 +13,16 @@ export type Mutable<T> = {
   -readonly [K in keyof T]: T[K];
 };
 
+/** Make a new type from an existing type `T`, with set of required properties `K` optional.
+ * @public
+ */
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
+/** Make a new type from an existing type `T`, with set of optional properties `K` required.
+ * @public
+ */
+export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
+
 /** Generically represents a class `T`, for use in type annotations.
  * @note A variable of type `Constructor<T>` matches a class `T` only if `T` has a **public** constructor.
  * @see [[asInstanceOf]] to attempt to cast an arbitrary value to class `T`.
@@ -78,6 +88,11 @@ export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
  */
 export type AsyncFunction = (...args: any) => Promise<any>;
 
+/** The members of `T` that are async functions (functions that return a promise), and no other properties
+ * @public
+ */
+export type PickAsyncMethods<T> = { [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never; };
+
 /** Extracts the names of all function properties of `T` that return a Promise.
  * @public
  */
@@ -87,3 +102,22 @@ export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P
  * @public
  */
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
+
+/** Extracts a subset of literals `U` from a union of literals `T` in a type-safe way.
+ * @beta
+ */
+export type ExtractLiterals<T, U extends T> = Extract<T, U>;
+
+/** A runtime property omitter, makes a shallow copy of the given object without the specified properties
+ * Compatible with the typescript `Omit` mapped type:
+ * ```js
+ * const testvar: Omit<{x: string, y: object}, "y"> = omit({x: "hello", y: {}}, ["y"]);
+ * ```
+ * @public
+ */
+export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]> {
+  const clone = { ...t };
+  for (const key of keys)
+    delete clone[key];
+  return clone;
+}

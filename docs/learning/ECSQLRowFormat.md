@@ -4,7 +4,7 @@ When using Concurrent query a row format can be selected. By default ConcurrentQ
 
 - **UseECsqlPropertyNames**: Each row is an object in which each non-null column value can be accessed by its name as defined in the ECSql. Null values are omitted.
 - **UseJsPropertyNames**: Each row is an array of values accessed by an index corresponding to the property's position in the ECSql SELECT statement. Null values are included if they are followed by a non-null column, but trailing null values at the end of the array are omitted.
-- **UseArrayIndexes**: The default format if none is specified by the caller
+- **UseECSqlPropertyIndexes**: The default format if none is specified by the caller
 
 There is tiny overhead when accessing row as `UseECsqlPropertyNames` or `UseJsPropertyNames` as it require convert array values into a object with property name and values. We recommend using array values as is allowing much better performance.
 

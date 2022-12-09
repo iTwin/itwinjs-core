@@ -1,6 +1,318 @@
 # Change Log - @itwin/core-react
 
-This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+This log was last generated on Wed, 07 Dec 2022 19:12:37 GMT and should not be manually modified.
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:37 GMT
+
+### Updates
+
+- Unpin classnames package, fix invalid use of classnames
+- Change core-dialog-hidden class so that modeless dialogs will be compatible with iTwinUI components.
+- Use --buic-toolbar-opacity to set the opacity of toolbar items.
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:50 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:58 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
+
+## 3.4.1
+Mon, 17 Oct 2022 20:06:51 GMT
+
+_Version update only_
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Added data uri handling for svg components
+- Updated Node types declaration to support latest v16
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+_Version update only_
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:05 GMT
+
+_Version update only_
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+_Version update only_
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Fix svg-loader to only fetch svg data once. Also update buic-background-panel to use buic-background-1 so disabled itwin-ui components are properly displayed.
+- Add drop-target stacking context layer.
+- Update iTwinUI-react to 1.38.1
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:52 GMT
+
+### Updates
+
+- Added a 'repositionOnResize' property on the 'Popup' component, to avoid closing the popup everythime the browser window is resized.
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+_Version update only_
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+### Updates
+
+- Backport change to update panel background to use same as buic-background-dialog so dispabled itwin ui components display properly.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Added 'useCrossOriginPopup' and 'useInterval' hooks
+- ListBox component: `onKeyPress` has been deprecated, switch to `onKeyDown`
+- Fix for losing viewport content after clicking PW link 
+- Implement svg icons loading as a web component.
+- Allow React icons to be used on Wedget tabs, backstage, and status bar items
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Add ability to keep Dialog within application window.
+- Update to itwinui-css version "0.44.0".
+- Update to @itwin/itwinui-react: 1.32.0
+- Update to latest itwinui-react - requires new compile option allowSyntheticDefaultImports=true.
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+### Updates
+
+- `TreeNode`: Fix checkbox propagating click events to the parent element, resulting in unexpected TreeNodeProps.onClick invocations.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Update NumberInput to select on focus and to capture Enter key
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- rename to @itwin/core-react
+- remove ClientRequestContext and its subclasses
+- Replace usage of I18N with generic Localization interface.
+- Update snapshots
+- Fix Select menu position when redered in a Popup.
+- Support for TypeDoc v0.22.7. Fix various broken docs links.
+- Deprecate obsolete code.
+- Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined.
+- Add missing public/beta types to the barrel file.
+- Fix infinite loop crash in ContextMenu when the menu is too large to fit in the parent window.
+- Fix issue with PopupContextMenu not closing when click occurs in a parent popup.
+- Deprecate and promote apis
+- Deprecate obsolete APIs. Publish beta APIs from last release.
+- Upgraded itwinui-react to 1.16.2. Fixed editor sizes.
+- Fixed small ExpandableBlock padding
+- Remove files generated by bad merge
+- Update disabled styling for NumberInput.
+- Update styling on some status field items for better popup alignment.
+- Update IconComponent SCSS to ensure color for inline svg is set.
+- Allow size of NumberInput container to be sized via a style prop.
+- Deprecated HorizontalTabs in ui-core. Removed older deprecated items. Updated NextVersion.md.
+- Update to latest itwinui-react
+- Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js
+- Moved iTwinUI style overrides to ui-core from ui-framework
+- Rename ui directories to match new package names.
+- Fix bug that sets the icon on MessageBox.NoSymbol the Success icon.
+- Add prop that prevents popup children from unmounting when popup is closed.
+- Update to React 17.
+- Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract.
+- Remove react 16 peer dependency.
+- Remove itwinUi css overrides.
+- UiFramework and UiIModelComponent initialize method no longer take localization argument, uses IModelApp.localization internally.
+- Fix vertical alignment of text in message box.
+- Avoid error seen sometimes in Electron where resizeObserver.current is null.
+- Fixed z-index of status messages to be on top of a dialog
+- Deprecated ui-core Slider. Wrapped with one from iTwinUi-react to remove dependency on react-compound-slider.
+- Update to latest types/react package
+- Lock down and update version numbers so docs will build.
+
+## 2.19.28
+Wed, 12 Jan 2022 14:52:38 GMT
+
+_Version update only_
+
+## 2.19.27
+Wed, 05 Jan 2022 20:07:20 GMT
+
+_Version update only_
+
+## 2.19.26
+Wed, 08 Dec 2021 20:54:53 GMT
+
+_Version update only_
+
+## 2.19.25
+Fri, 03 Dec 2021 20:05:49 GMT
+
+_Version update only_
+
+## 2.19.24
+Mon, 29 Nov 2021 18:44:31 GMT
+
+_Version update only_
+
+## 2.19.23
+Mon, 22 Nov 2021 20:41:40 GMT
+
+_Version update only_
+
+## 2.19.22
+Wed, 17 Nov 2021 01:23:26 GMT
+
+_Version update only_
+
+## 2.19.21
+Wed, 10 Nov 2021 10:58:24 GMT
+
+_Version update only_
+
+## 2.19.20
+Fri, 29 Oct 2021 16:14:22 GMT
+
+_Version update only_
+
+## 2.19.19
+Mon, 25 Oct 2021 16:16:25 GMT
+
+### Updates
+
+- Drop unnecessary dep on @bentley/react-scripts; add a *.d.ts file for svg?sprite loader syntax
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+_Version update only_
+
+## 2.19.17
+Thu, 14 Oct 2021 21:19:43 GMT
+
+_Version update only_
+
+## 2.19.16
+Mon, 11 Oct 2021 17:37:46 GMT
+
+_Version update only_
+
+## 2.19.15
+Fri, 08 Oct 2021 16:44:23 GMT
+
+_Version update only_
+
+## 2.19.14
+Fri, 01 Oct 2021 13:07:03 GMT
+
+_Version update only_
 
 ## 2.19.13
 Tue, 21 Sep 2021 21:06:40 GMT
@@ -187,9 +499,9 @@ Mon, 24 May 2021 15:58:39 GMT
 ### Updates
 
 - Wrap resizeObserver in a windows animation frame to prevent loop limit exceeded error.
-- Add support for child popup windows.
+- Add support for child popup windows. 
 - Improved Multi-Value column filtering in the Table component
-- Update to latest classnames package
+- Update to latest classnames package 
 - Fix GlobalContextMenu layout issue in presentation-test-app by setting display:none on anchoring div.
 
 ## 2.15.6
@@ -317,7 +629,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
-- Update components that support providing refs via React.forwardRef to work better with document generation.
+- Update components that support providing refs via React.forwardRef to work better with document generation.  
 - Add option to use a 'x-small' webfont icon.
 - Add nested popup support to components that use HOC withOnOutsideClick.
 - Fix bug processing zero value in Select options.
@@ -588,7 +900,7 @@ Tue, 28 Jul 2020 16:26:24 GMT
 - Add support for a basic single selection aria compliant listbox.
 - Checkboxes in lists & trees are out of place
 - Disabled component styling. Fixed Dialog focus problems.
-- Map Layer UX
+- Map Layer UX 
 - Allowing Input component user to override the type
 - Fix ThemeSelect formatOptionLabel prop to return React.ReactNode.
 - Added Arrow key navigation in Tabs components. Added ItemKeyboardNavigator.
@@ -911,7 +1223,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Put sourcemap in npm package.
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
 - Update icons-generic-webfont version to latest available.
 - Added TableProp to hide header and supporting style changes

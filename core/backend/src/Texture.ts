@@ -96,6 +96,6 @@ export class Texture extends DefinitionElement {
    */
   public static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String {
     const texture = this.createTexture(iModelDb, definitionModelId, name, format, data, description);
-    return iModelDb.elements.insertElement(texture);
+    return iModelDb.elements.insertElement(texture.toJSON());
   }
 }

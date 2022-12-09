@@ -22,7 +22,7 @@ import {
 /** Base class for Spatial Location Element subclasses representing properties whose value is located along a Linear-Element and only applies to a portion of an Element.
  * @beta
  */
-export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps, LinearlyLocatedBase {
+export abstract class LinearlyLocatedAttribution extends SpatialLocationElement {
   /** @internal */
   public static override get className(): string { return "LinearlyLocatedAttribution"; }
 
@@ -57,7 +57,7 @@ export abstract class LinearLocationElement extends SpatialLocationElement imple
 /** Linear Referencing Location attached to an Element not inherently Linearly Referenced.
  * @beta
  */
-export class LinearLocation extends LinearLocationElement {
+export class LinearLocation extends LinearLocationElement implements LinearlyLocatedBase {
   /** @internal */
   public static override get className(): string { return "LinearLocation"; }
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
@@ -89,7 +89,7 @@ export class LinearLocation extends LinearLocationElement {
   }
 
   public insertFromTo(iModel: IModelDb, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String {
-    const newId = LinearlyLocated.insertFromTo(iModel, this, linearElementId, fromToPosition);
+    const newId = LinearlyLocated.insertFromTo(iModel, this.toJSON(), linearElementId, fromToPosition);
 
     ILinearLocationLocatesElement.insert(iModel, newId, locatedElementId);
 
@@ -106,7 +106,7 @@ export class LinearLocation extends LinearLocationElement {
   }
 
   public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String {
-    const newId = LinearlyLocated.insertAt(iModel, this, linearElementId, atPosition);
+    const newId = LinearlyLocated.insertAt(iModel, this.toJSON(), linearElementId, atPosition);
 
     ILinearLocationLocatesElement.insert(iModel, newId, locatedElementId);
 
@@ -129,7 +129,7 @@ export abstract class LinearPhysicalElement extends PhysicalElement {
 /** Spatial Location Element that can play the role of a Referent (known location along a Linear-Element).
  * @beta
  */
-export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps, LinearlyLocatedBase {
+export abstract class ReferentElement extends SpatialLocationElement implements LinearlyLocatedBase {
   /** @internal */
   public static override get className(): string { return "ReferentElement"; }
 
@@ -177,7 +177,7 @@ export class Referent extends ReferentElement {
   }
 
   public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String {
-    return LinearlyLocated.insertAt(iModel, this, linearElementId, atPosition);
+    return LinearlyLocated.insertAt(iModel, this.toJSON(), linearElementId, atPosition);
   }
 }
 
@@ -210,32 +210,48 @@ class AtAndFromToECSQLGenImpl extends ECSQLGenImpl {
 
     let ecSql = "";
     if (from !== undefined && to !== undefined) {
-      ecSql += "(AtLocation.AtPosition.DistanceAlongFromStart "; ecSql += fromCompOp;
-      ecSql += " ? AND AtLocation.AtPosition.DistanceAlongFromStart "; ecSql += toCompOp;
-      ecSql += " ?) OR (FromToLocation.FromPosition.DistanceAlongFromStart "; ecSql += fromCompOp;
-      ecSql += " ? AND FromToLocation.FromPosition.DistanceAlongFromStart "; ecSql += toCompOp; ecSql += " ?) " +
-        "OR (FromToLocation.ToPosition.DistanceAlongFromStart ";
+      ecSql += "(AtLocation.AtPosition.DistanceAlongFromStart ";
       ecSql += fromCompOp;
-      ecSql += " ? AND FromToLocation.ToPosition.DistanceAlongFromStart "; ecSql += toCompOp;
+      ecSql += " ? AND AtLocation.AtPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
+      ecSql += " ?) OR (FromToLocation.FromPosition.DistanceAlongFromStart ";
+      ecSql += fromCompOp;
+      ecSql += " ? AND FromToLocation.FromPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
+      ecSql += " ?) " + "OR (FromToLocation.ToPosition.DistanceAlongFromStart ";
+      ecSql += fromCompOp;
+      ecSql += " ? AND FromToLocation.ToPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
       ecSql += " ?) OR (FromToLocation.FromPosition.DistanceAlongFromStart <= ? AND FromToLocation.ToPosition.DistanceAlongFromStart >= ?) ";
 
-      bindVals.push(from); bindVals.push(to);
-      bindVals.push(from); bindVals.push(to);
-      bindVals.push(from); bindVals.push(to);
-      bindVals.push(from); bindVals.push(to);
+      bindVals.push(from);
+      bindVals.push(to);
+      bindVals.push(from);
+      bindVals.push(to);
+      bindVals.push(from);
+      bindVals.push(to);
+      bindVals.push(from);
+      bindVals.push(to);
     } else if (from !== undefined) {
-      ecSql += "AtLocation.AtPosition.DistanceAlongFromStart "; ecSql += fromCompOp;
-      ecSql += " ? OR FromToLocation.FromPosition.DistanceAlongFromStart "; ecSql += fromCompOp;
-      ecSql += " ? OR FromToLocation.ToPosition.DistanceAlongFromStart "; ecSql += fromCompOp;
+      ecSql += "AtLocation.AtPosition.DistanceAlongFromStart ";
+      ecSql += fromCompOp;
+      ecSql += " ? OR FromToLocation.FromPosition.DistanceAlongFromStart ";
+      ecSql += fromCompOp;
+      ecSql += " ? OR FromToLocation.ToPosition.DistanceAlongFromStart ";
+      ecSql += fromCompOp;
       ecSql += " ? ";
 
       bindVals.push(from);
       bindVals.push(from);
       bindVals.push(from);
     } else if (to !== undefined) {
-      ecSql += "AtLocation.AtPosition.DistanceAlongFromStart "; ecSql += toCompOp;
-      ecSql += " ? OR FromToLocation.FromPosition.DistanceAlongFromStart "; ecSql += toCompOp;
-      ecSql += " ? OR FromToLocation.ToPosition.DistanceAlongFromStart "; ecSql += toCompOp; ecSql += " ? ";
+      ecSql += "AtLocation.AtPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
+      ecSql += " ? OR FromToLocation.FromPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
+      ecSql += " ? OR FromToLocation.ToPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
+      ecSql += " ? ";
 
       bindVals.push(to);
       bindVals.push(to);
@@ -265,25 +281,40 @@ class FromToECSQLGenImpl extends ECSQLGenImpl {
 
     let ecSql = "";
     if (from !== undefined && to !== undefined) {
-      ecSql += "AND ((FromToLocation.FromPosition.DistanceAlongFromStart "; ecSql += fromCompOp;
-      ecSql += " ? AND FromToLocation.FromPosition.DistanceAlongFromStart "; ecSql += toCompOp;
-      ecSql += " ?) OR (FromToLocation.ToPosition.DistanceAlongFromStart "; ecSql += fromCompOp;
-      ecSql += " ? AND FromToLocation.ToPosition.DistanceAlongFromStart "; ecSql += toCompOp;
+      ecSql += "AND ((FromToLocation.FromPosition.DistanceAlongFromStart ";
+      ecSql += fromCompOp;
+      ecSql += " ? AND FromToLocation.FromPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
+      ecSql += " ?) OR (FromToLocation.ToPosition.DistanceAlongFromStart ";
+      ecSql += fromCompOp;
+      ecSql += " ? AND FromToLocation.ToPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
       ecSql += " ?) OR (FromToLocation.FromPosition.DistanceAlongFromStart <= ? AND FromToLocation.ToPosition.DistanceAlongFromStart >= ?)) ";
 
-      bindVals.push(from); bindVals.push(to);
-      bindVals.push(from); bindVals.push(to);
-      bindVals.push(from); bindVals.push(to);
+      bindVals.push(from);
+      bindVals.push(to);
+      bindVals.push(from);
+      bindVals.push(to);
+      bindVals.push(from);
+      bindVals.push(to);
     } else if (from !== undefined) {
-      ecSql += "AND (FromToLocation.FromPosition.DistanceAlongFromStart "; ecSql += fromCompOp;
-      ecSql += " ? OR FromToLocation.ToPosition.DistanceAlongFromStart "; ecSql += fromCompOp; ecSql += " ?)";
+      ecSql += "AND (FromToLocation.FromPosition.DistanceAlongFromStart ";
+      ecSql += fromCompOp;
+      ecSql += " ? OR FromToLocation.ToPosition.DistanceAlongFromStart ";
+      ecSql += fromCompOp;
+      ecSql += " ?)";
 
-      bindVals.push(from); bindVals.push(from);
+      bindVals.push(from);
+      bindVals.push(from);
     } else if (to !== undefined) {
-      ecSql += "AND (FromToLocation.FromPosition.DistanceAlongFromStart "; ecSql += toCompOp;
-      ecSql += " ? OR FromToLocation.ToPosition.DistanceAlongFromStart "; ecSql += toCompOp; ecSql += " ?) ";
+      ecSql += "AND (FromToLocation.FromPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
+      ecSql += " ? OR FromToLocation.ToPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
+      ecSql += " ?) ";
 
-      bindVals.push(to); bindVals.push(to);
+      bindVals.push(to);
+      bindVals.push(to);
     } else {
       ecSql += "FromToLocation.FromPosition.DistanceAlongFromStart IS NOT NULL ";
     }
@@ -308,16 +339,24 @@ class AtECSQLGenImpl extends ECSQLGenImpl {
 
     let ecSql = "";
     if (from !== undefined && to !== undefined) {
-      ecSql += "AtLocation.AtPosition.DistanceAlongFromStart "; ecSql += fromCompOp;
-      ecSql += " ? AND AtLocation.AtPosition.DistanceAlongFromStart "; ecSql += toCompOp; ecSql += " ? ";
+      ecSql += "AtLocation.AtPosition.DistanceAlongFromStart ";
+      ecSql += fromCompOp;
+      ecSql += " ? AND AtLocation.AtPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
+      ecSql += " ? ";
 
-      bindVals.push(from); bindVals.push(to);
+      bindVals.push(from);
+      bindVals.push(to);
     } else if (from !== undefined) {
-      ecSql += "AtLocation.AtPosition.DistanceAlongFromStart "; ecSql += fromCompOp; ecSql += " ? ";
+      ecSql += "AtLocation.AtPosition.DistanceAlongFromStart ";
+      ecSql += fromCompOp;
+      ecSql += " ? ";
 
       bindVals.push(from);
     } else if (to !== undefined) {
-      ecSql += "AtLocation.AtPosition.DistanceAlongFromStart "; ecSql += toCompOp; ecSql += " ? ";
+      ecSql += "AtLocation.AtPosition.DistanceAlongFromStart ";
+      ecSql += toCompOp;
+      ecSql += " ? ";
 
       bindVals.push(to);
     } else

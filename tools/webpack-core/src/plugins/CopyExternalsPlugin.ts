@@ -4,23 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs-extra";
 import * as path from "path";
-import { Compiler } from "webpack";
-import { getAppRelativePath, getSourcePosition } from "../utils/paths";
+import { Compilation, Compiler, ExternalModule, Module, WebpackError } from "webpack";
+import { getAppRelativePath } from "../utils/paths";
 const { resolveRecurse } = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const { builtinModules } = require("module");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
+
+type WebpackLogger = ReturnType<Compilation["getLogger"]>;
+
 export class CopyExternalsPlugin {
   private _promises: Array<Promise<any>> = [];
   private _copiedPackages: Set<string> = new Set();
-  private _logger: any;
+  private _logger: WebpackLogger | undefined;
 
   public apply(compiler: Compiler) {
-    compiler.hooks.compilation.tap("CopyExternalsPlugin", (compilation: any) => {
+    compiler.hooks.compilation.tap("CopyExternalsPlugin", (compilation: Compilation) => {
       this._logger = compilation.getLogger("CopyExternalsPlugin");
-      compilation.hooks.buildModule.tap("CopyExternalsPlugin", (currentModule: any) => {
-        if (currentModule.external) {
+      compilation.hooks.buildModule.tap("CopyExternalsPlugin", (currentModule: Module) => {
+        if (currentModule instanceof ExternalModule) {
           this._promises.push(this.handleModule(currentModule, compiler.outputPath, compilation));
         }
       });
@@ -31,27 +34,20 @@ export class CopyExternalsPlugin {
     });
   }
 
-  public async handleModule(currentModule: any, outputDir: string, compilation: any) {
-    const pkgName = this.pathToPackageName(currentModule.request);
+  public async handleModule(currentModule: ExternalModule, outputDir: string, compilation: Compilation) {
+    const pkgName = this.pathToPackageName(currentModule.userRequest);
     if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
       return;
 
     let packageJsonPath = "";
     try {
-      packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [currentModule.issuer.context] });
+      packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [compilation.moduleGraph.getIssuer(currentModule)?.context ?? ""] });
     } catch (error) {
-      // Always _log_ missing externals as a warning, but don't add it as a compilation warning if it's an "optional" dependency.
+      // Always _log_ missing externals as a warning and add it as a compilation warning.
       const warning = `Can't copy external package "${pkgName}" - it is not installed.`;
-      this._logger.warn(warning);
-      for (const reason of currentModule.reasons) {
-        if (!reason.module || !reason.dependency)
-          continue;
-
-        const location = getSourcePosition(reason.module, reason.dependency.loc);
-        this._logger.log(`"${pkgName}" included at ${location}`);
-        if (!reason.dependency.optional)
-          compilation.warnings.push(`${location}\n${warning}\nTo fix this, either npm install ${pkgName} or wrap the import in a try/catch.`);
-      }
+      this._logger?.warn(warning);
+      // TODO: only warn if a required dependency, Module.reasons was removed in webpack@5, figure out how to determine what kind of dep it is
+      compilation.warnings.push(new WebpackError(`${warning}\nTo fix this, either npm install ${pkgName} or wrap the import in a try/catch.`));
       return;
     }
 
@@ -85,7 +81,7 @@ export class CopyExternalsPlugin {
   }
 
   private async copyPackage(pkgName: string, outDir: string, pathToPackage: string) {
-    this._logger.log(`Copying ${getAppRelativePath(pathToPackage)} to ${getAppRelativePath(path.resolve(outDir, "node_modules"))}`);
+    this._logger?.log(`Copying ${getAppRelativePath(pathToPackage)} to ${getAppRelativePath(path.resolve(outDir, "node_modules"))}`);
     await fs.copy(pathToPackage, path.resolve(outDir, "node_modules", pkgName), { dereference: true });
   }
 

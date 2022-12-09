@@ -4,7 +4,7 @@
       "keyin": "fdt webgl lose context"
     },
     "ToggleWiremesh": {
-      "keyin": "fdt toggle wiremesh"
+      "keyin": "fdt wiremesh"
     },
     "ToggleDPIForLOD": {
       "keyin": "fdt dpi lod"
@@ -17,6 +17,9 @@
     },
     "ToggleDrapeFrustum": {
       "keyin": "fdt toggle drapefrustum"
+    },
+    "ToggleNormalMaps": {
+      "keyin": "fdt toggle normalmaps"
     },
     "ReportWebGLCompatibility": {
       "keyin": "fdt webgl report compatibility"
@@ -105,6 +108,9 @@
     "ChangeHiliteSettings": {
       "keyin": "fdt hilite settings"
     },
+    "ChangeHiliteMode": {
+      "keyin": "fdt hilite mode"
+    },
     "ChangeEmphasisSettings": {
       "keyin": "fdt emphasis settings"
     },
@@ -134,6 +140,9 @@
     },
     "SelectElementsById": {
       "keyin": "fdt select elements"
+    },
+    "DumpSelectionSet": {
+      "keyin": "fdt dump selection"
     },
     "AnimationInterval": {
       "keyin": "fdt animation interval"
@@ -198,8 +207,14 @@
     "AttachArcGISMapLayerTool": {
       "keyin": "fdt attach arcgis maplayer"
     },
+    "AttachArcGISFeatureMapLayerTool": {
+      "keyin": "fdt attach arcgisfeature maplayer"
+    },
     "AttachTileURLMapLayerTool": {
       "keyin": "fdt attach tileurl maplayer"
+    },
+    "AttachModelMapLayerTool": {
+      "keyin": "fdt attach model maplayer"
     },
     "SetMapBaseTool": {
       "keyin": "fdt set map base url"
@@ -442,6 +457,18 @@
         "IdentifyMaskSubCategory": "Identify mask subCategory"
       }
     },
+    "QueryScheduleScript": {
+      "keyin": "fdt query schedule script"
+    },
+    "ReverseScheduleScript": {
+      "keyin": "fdt reverse schedule script"
+    },
+    "SetScheduleScript": {
+      "keyin": "fdt set schedule script"
+    },
+    "ToggleTileTreeReferences": {
+      "keyin": "fdt toggle treerefs"
+    },
     "WoWIgnoreBackground": {
       "keyin": "fdt wow ignore background"
     },
@@ -450,6 +477,9 @@
     },
     "SetSkyCube": {
       "keyin": "fdt sky cube"
+    },
+    "ChangeBackgroundColor": {
+      "keyin": "fdt bgcolor"
     }
   }
 }

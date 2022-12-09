@@ -6,7 +6,8 @@ import * as React from "react";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import { ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider } from "@itwin/appui-react";
-import { IModelApp, NativeAppAuthorization } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { Centered } from "@itwin/core-react";
 import { SampleAppIModelApp } from "../../index";
 import { SignIn } from "../oidc/SignIn";
@@ -29,22 +30,23 @@ class SignInControl extends ContentControl {
   };
 
   private _onSignIn = () => {
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization) {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization) {
       IModelApp.authorizationClient.signIn(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   };
 
   private _onRegister = () => {
-    window.open("https://www.itwinjs.org/getting-started/#developer-registration", "_blank");
+    window.open("https://ims.bentley.com/as/4bBVJ/resume/as/authorization.ping", "_blank");
   };
 }
 
 export class SignInFrontstage extends FrontstageProvider {
+  public static stageId = "ui-test-app:SignIn";
   public get id(): string {
-    return "SignIn";
+    return SignInFrontstage.stageId;
   }
 
-  public get frontstage(): React.ReactElement<FrontstageProps> {
+  public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
     const contentGroup: ContentGroup = new ContentGroup({
       id: "sign-in-stage",
       layout: StandardContentLayouts.singleView,
@@ -57,10 +59,9 @@ export class SignInFrontstage extends FrontstageProvider {
     });
 
     return (
-      <Frontstage id={this.id}
+      <Frontstage id={this.id} // eslint-disable-line deprecation/deprecation
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
-        isInFooterMode={false}
         isIModelIndependent={true}
         usage={StageUsage.Private}
       />

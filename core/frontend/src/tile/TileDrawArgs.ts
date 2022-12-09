@@ -29,6 +29,7 @@ const scratchMatrix4d = Matrix4d.createIdentity();
 
 /** Parameters used to construct [[TileDrawArgs]].
  * @public
+ * @extensions
  */
 export interface TileDrawArgParams {
   /** Context for the scene into which the tiles are to be rendered. */
@@ -53,12 +54,23 @@ export interface TileDrawArgParams {
   hiddenLineSettings?: HiddenLine.Settings;
   /** If defined, tiles should be culled if they do not intersect this clip. */
   intersectionClip?: ClipVector;
+  /** If defined, the Id of a node in the scene's [RenderSchedule.Script]($common) that applies a transform to the graphics;
+   * or "0xffffffff" for any node that does *not* apply a transform.
+   * @internal
+   */
+  animationTransformNodeId?: number;
+  /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
+  boundingRange?: Range3d;
+  /** @alpha */
+  maximumScreenSpaceError?: number;
 }
+
 /**
  * Provides context used when selecting and drawing [[Tile]]s.
  * @see [[TileTree.selectTiles]]
  * @see [[TileTree.draw]]
  * @public
+ * @extensions
  */
 export class TileDrawArgs {
   /** Transform to the location in iModel coordinates at which the tiles are to be drawn. */
@@ -99,8 +111,14 @@ export class TileDrawArgs {
   public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
   /** If defined, tiles will be culled if they do not intersect this clip. */
   public intersectionClip?: ClipVector;
+  /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
+  public boundingRange?: Range3d;
   /** @internal */
   public readonly pixelSizeScaleFactor;
+  /** @internal */
+  public readonly animationTransformNodeId?: number;
+  /** @alpha */
+  public maximumScreenSpaceError;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -155,7 +173,7 @@ export class TileDrawArgs {
   /** Compute the size in meters of one pixel at the point on a sphere closest to the camera.
    * Device scaling is not applied.
    */
-  protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
+  public computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
     if (this.context.viewport.view.is3d() && this.context.viewport.isCameraOn && this._nearFrontCenter) {
       const toFront = Vector3d.createStartEnd(center, this._nearFrontCenter);
       const viewZ = this.context.viewport.rotation.rowZ();
@@ -163,7 +181,7 @@ export class TileDrawArgs {
       if (viewZ.dotProduct(toFront) < radius) {
         center = this._nearFrontCenter;
       } else {
-        // Find point on sphere closest to eye.
+      // Find point on sphere closest to eye.
         const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
 
         if (toEye) {  // Only if tile is not already behind the eye.
@@ -207,30 +225,29 @@ export class TileDrawArgs {
 
   private computePixelSizeScaleFactor(): number {
     // Check to see if a model display transform with non-uniform scaling is being used.
-    const tf = this.context.viewport.view.getModelDisplayTransform(this.tree.modelId, Transform.createIdentity());
-    const scale = [];
-    scale[0] = tf.matrix.getColumn(0).magnitude();
-    scale[1] = tf.matrix.getColumn(1).magnitude();
-    scale[2] = tf.matrix.getColumn(2).magnitude();
+    const mat = this.context.viewport.view.modelDisplayTransformProvider?.getModelDisplayTransform(this.tree.modelId)?.matrix;
+    if (!mat)
+      return 1;
+
+    const scale = [0, 1, 2].map((x) => mat.getColumn(x).magnitude());
     if (Math.abs(scale[0] - scale[1]) <= Geometry.smallMetricDistance && Math.abs(scale[0] - scale[2]) <= Geometry.smallMetricDistance)
       return 1;
+
     // If the component with the largest scale is not the same as the component with the largest tile range use it to adjust the pixel size.
     const rangeDiag = this.tree.range.diagonal();
     let maxS = 0;
     let maxR = 0;
-    if (scale[0] > scale[1]) {
+    if (scale[0] > scale[1])
       maxS = (scale[0] > scale[2] ? 0 : 2);
-    } else {
+    else
       maxS = (scale[1] > scale[2] ? 1 : 2);
-    }
-    if (rangeDiag.x > rangeDiag.y) {
+
+    if (rangeDiag.x > rangeDiag.y)
       maxR = (rangeDiag.x > rangeDiag.z ? 0 : 2);
-    } else {
+    else
       maxR = (rangeDiag.y > rangeDiag.z ? 1 : 2);
-    }
-    if (maxS !== maxR)
-      return scale[maxS];
-    return 1;
+
+    return maxS !== maxR ? scale[maxS] : 1;
   }
 
   /** Constructor */
@@ -242,6 +259,9 @@ export class TileDrawArgs {
     this.now = now;
     this._appearanceProvider = params.appearanceProvider;
     this.hiddenLineSettings = params.hiddenLineSettings;
+    this.animationTransformNodeId = params.animationTransformNodeId;
+    this.boundingRange = params.boundingRange;
+    this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 16; // 16 is Cesium's default.
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
@@ -314,6 +334,10 @@ export class TileDrawArgs {
   public produceGraphics(): RenderGraphic | undefined {
     return this._produceGraphicBranch(this.graphics);
   }
+  /** @internal */
+  public get secondaryClassifiers(): Map<number, RenderPlanarClassifier>| undefined {
+    return undefined;
+  }
 
   /** @internal */
   private _produceGraphicBranch(graphics: GraphicBranch): RenderGraphic | undefined {
@@ -326,9 +350,14 @@ export class TileDrawArgs {
       classifierOrDrape: this.planarClassifier ?? this.drape,
       appearanceProvider: this.appearanceProvider,
       hline: this.hiddenLineSettings,
+      secondaryClassifiers: this.secondaryClassifiers,
     };
 
-    return this.context.createGraphicBranch(graphics, this.location, opts);
+    let graphic = this.context.createGraphicBranch(graphics, this.location, opts);
+    if (undefined !== this.animationTransformNodeId)
+      graphic = this.context.renderSystem.createAnimationTransformNode(graphic, this.animationTransformNodeId);
+
+    return graphic;
   }
 
   /** Output graphics for all accumulated tiles. */

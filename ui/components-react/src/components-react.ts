@@ -85,6 +85,16 @@ export * from "./components-react/properties/renderers/value/MultilineTextProper
 export * from "./components-react/properties/renderers/value/UrlPropertyValueRenderer";
 export * from "./components-react/properties/renderers/value/WithContextStyle";
 
+export * from "./components-react/filter-builder/FilterBuilder";
+export * from "./components-react/filter-builder/FilterBuilderRule";
+export * from "./components-react/filter-builder/FilterBuilderRuleGroup";
+export * from "./components-react/filter-builder/FilterBuilderRuleOperator";
+export * from "./components-react/filter-builder/FilterBuilderRuleProperty";
+export * from "./components-react/filter-builder/FilterBuilderRuleValue";
+export * from "./components-react/filter-builder/FilterBuilderState";
+export * from "./components-react/filter-builder/Operators";
+export * from "./components-react/filter-builder/Types";
+
 export * from "./components-react/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./components-react/properties/renderers/label/PrimitivePropertyLabelRenderer";
 export * from "./components-react/properties/renderers/label/PropertyLabelRenderer";
@@ -183,10 +193,6 @@ export * from "./components-react/tree/controlled/internal/SparseTree";
  * Classes, interfaces, and components for showing and setting date and time.
  */
 /**
- * @docs-group-description DateTimeTypeConverter
- * Convert Date to string and string to Date.
- */
-/**
  * @docs-group-description DragDrop
  * Classes and Higher Order Components for working with the DragDrop API.
  */
@@ -201,10 +207,6 @@ export * from "./components-react/tree/controlled/internal/SparseTree";
 /**
  * @docs-group-description Inputs
  * Input Components that format and parse input.
- */
-/**
- * @docs-group-description OIDC
- * Components for working with OIDC and Sign-in.
  */
 /**
  * @docs-group-description SelectableContent

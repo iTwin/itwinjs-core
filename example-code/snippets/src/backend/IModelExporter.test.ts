@@ -27,7 +27,7 @@ class CodeExporter extends IModelExportHandler {
   }
 
   /** Override of IModelExportHandler.onExportElement that outputs a line of a CSV file when the Element has a Code. */
-  protected override onExportElement(element: Element, isUpdate: boolean | undefined): void {
+  public override onExportElement(element: Element, isUpdate: boolean | undefined): void {
     if (!Code.isEmpty(element.code)) { // only output when Element has a Code
       const codeSpec: CodeSpec = element.iModel.codeSpecs.getById(element.code.spec);
       fs.appendFileSync(this.outputFileName, `${element.id}, ${codeSpec.name}, ${element.code.value}\n`);
@@ -42,8 +42,12 @@ import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("IModelExporter", () => {
   let iModelDb: SnapshotDb;
-  before(() => { iModelDb = IModelTestUtils.openSnapshotFromSeed("test.bim"); });
-  after(() => { iModelDb.close(); });
+  before(() => {
+    iModelDb = IModelTestUtils.openSnapshotFromSeed("test.bim");
+  });
+  after(() => {
+    iModelDb.close();
+  });
 
   it("call CodeExporter example code", async () => {
     const outputDirName = path.join(__dirname, "output");

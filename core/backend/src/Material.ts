@@ -50,7 +50,7 @@ export abstract class PhysicalMaterial extends DefinitionElement {
  * @note See [[PhysicalMaterial]] for the DefinitionElement used to define the matter that makes up physical elements.
  * @public
  */
-export class RenderMaterialElement extends DefinitionElement implements RenderMaterialProps {
+export class RenderMaterialElement extends DefinitionElement {
   /** @internal */
   public static override get className(): string { return "RenderMaterial"; }
 
@@ -135,11 +135,13 @@ export class RenderMaterialElement extends DefinitionElement implements RenderMa
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): Id64String {
     const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
-    return iModelDb.elements.insertElement(renderMaterial);
+    return iModelDb.elements.insertElement(renderMaterial.toJSON());
   }
 }
 
-/** @public */
+/** @public
+ * @note color, specularColor and reflectColor are stored as [R,G,B] where each value is between 0 and 1
+*/
 export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
   /** Parameters used to construct a [[RenderMaterial]]. */
   export class Params {

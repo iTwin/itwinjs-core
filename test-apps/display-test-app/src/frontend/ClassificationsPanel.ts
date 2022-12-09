@@ -6,15 +6,15 @@
 import { assert, compareStringsOrUndefined, GuidString } from "@itwin/core-bentley";
 import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@itwin/frontend-devtools";
 import {
-  CartographicRange, ContextRealityModelProps, ModelProps, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
+  CartographicRange, ContextRealityModelProps, ModelProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
   SpatialClassifierOutsideDisplay, SpatialClassifiers,
 } from "@itwin/core-common";
 import {
   ContextRealityModelState, DisplayStyle3dState, IModelApp, SpatialModelState, SpatialViewState, Viewport,
 } from "@itwin/core-frontend";
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
+import { ITwinRealityData, RealityDataAccessClient, RealityDataClientOptions, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
 
 function clearElement(element: HTMLElement): void {
   while (element.hasChildNodes())
@@ -22,6 +22,16 @@ function clearElement(element: HTMLElement): void {
 }
 
 const NO_MODEL_ID = "-1";
+
+enum RealityDataType {
+  REALITYMESH3DTILES  = "REALITYMESH3DTILES",
+  OSMBUILDINGS = "OSMBUILDINGS",
+  OPC = "OPC",
+  TERRAIN3DTILES = "TERRAIN3DTILES", // Terrain3DTiles
+  OMR = "OMR", // Mapping Resource, this type is supported from Context Share but can only be displayed by Orbit Photo Navigation (not publicly available)
+  CESIUM3DTILES = "CESIUM3DTILES",
+  UNKNOWN = "UNKNOWN",
+}
 
 export class ClassificationsPanel extends ToolBarDropDown {
   private readonly _vp: Viewport;
@@ -85,6 +95,53 @@ export class ClassificationsPanel extends ToolBarDropDown {
     this._element.appendChild(this._realityModelPickerMenu.div);
   }
 
+  private createRealityDataSourceKeyFromITwinRealityData(iTwinRealityData: ITwinRealityData): RealityDataSourceKey {
+    return {
+      provider: RealityDataProvider.ContextShare,
+      format: iTwinRealityData.type === "OPC" ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile,
+      id: iTwinRealityData.id,
+    };
+  }
+
+  private hasAttachedRealityModelFromKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey ): boolean {
+    return undefined !== style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
+  }
+
+  private isSupportedType(type: string | undefined): boolean {
+    if (type === undefined)
+      return false;
+
+    switch (type.toUpperCase()) {
+      case RealityDataType.REALITYMESH3DTILES:
+        return true;
+      case RealityDataType.CESIUM3DTILES:
+        return true;
+      case RealityDataType.OPC:
+        return true;
+      case RealityDataType.OSMBUILDINGS:
+        return true;
+      case RealityDataType.TERRAIN3DTILES:
+        return true;
+      case RealityDataType.OMR:
+        return true;
+    }
+    return false;
+  }
+
+  private isSupportedDisplayType(type: string | undefined): boolean {
+    if (type === undefined)
+      return false;
+    if (this.isSupportedType(type)) {
+      switch (type.toUpperCase()) {
+        case RealityDataType.OMR:
+          return false; // this type is supported from Context Share but can only be displayed by Orbit Photo Navigation (not publicly available)
+        default:
+          return true;
+      }
+    }
+    return false;
+  }
+
   private async populateRealityModelsPicker(): Promise<void> {
     this._realityModelPickerMenu.div.style.display = "none";
     clearElement(this._realityModelPickerMenu.body);
@@ -96,30 +153,53 @@ export class ClassificationsPanel extends ToolBarDropDown {
     }
 
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
-    let available = new Array<ContextRealityModelProps>();
+    let available: RealityDataResponse = {realityDatas: []};
     try {
       if (this._iTwinId !== undefined && IModelApp.authorizationClient) {
         const accessToken = await IModelApp.authorizationClient.getAccessToken();
         if (accessToken) {
-          available = await new RealityDataAccessClient().queryRealityData(accessToken, { iTwinId: this._iTwinId, range });
+          const criteria: RealityDataQueryCriteria = {
+            extent: range,
+          };
+          const realityDataClientOptions: RealityDataClientOptions = {
+            /** API Version. v1 by default */
+            // version?: ApiVersion;
+            /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+            baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+          };
+          available = await new RealityDataAccessClient(realityDataClientOptions).getRealityDatas(accessToken, this._iTwinId, criteria);
         }
       }
     } catch (_error) {
       // eslint-disable-next-line no-console
       console.error("Error in query RealitydataList, you need to set IMJS_STANDALONE_SIGNIN=true, and is your IMJS_ITWIN_ID correctly set?");
     }
-    for (const entry of available) {
-      const name = undefined !== entry.name ? entry.name : entry.tilesetUrl;
-      createCheckBox({
-        name,
-        id: entry.tilesetUrl,
-        parent: this._realityModelPickerMenu.body,
-        isChecked: view.displayStyle.hasAttachedRealityModel(name, entry.tilesetUrl),
-        handler: (checkbox) => this.toggle(entry, checkbox.checked),
-      });
+
+    for (const rdEntry of available.realityDatas) {
+      const name = undefined !== rdEntry.displayName ? rdEntry.displayName : rdEntry.id;
+      const rdSourceKey = this.createRealityDataSourceKeyFromITwinRealityData(rdEntry);
+      const tilesetUrl = await IModelApp.realityDataAccess?.getRealityDataUrl(this._iTwinId,rdSourceKey.id);
+      const isDisplaySupported = this.isSupportedDisplayType(rdEntry.type);
+      if (tilesetUrl && isDisplaySupported) {
+        const entry: ContextRealityModelProps = {
+          rdSourceKey,
+          tilesetUrl,
+          name,
+          description: rdEntry?.description,
+          realityDataId: rdSourceKey.id,
+        };
+
+        createCheckBox({
+          name,
+          id: RealityDataSourceKey.convertToString(rdSourceKey),
+          parent: this._realityModelPickerMenu.body,
+          isChecked: this.hasAttachedRealityModelFromKey(view.displayStyle, rdSourceKey),
+          handler: (checkbox) => this.toggle(entry, checkbox.checked),
+        });
+      }
     }
     IModelApp.makeHTMLElement("hr", { parent: this._realityModelPickerMenu.body });
-    if (available.length > 0)
+    if (available.realityDatas.length > 0)
       this._realityModelPickerMenu.div.style.display = "block";
   }
 
@@ -199,7 +279,8 @@ export class ClassificationsPanel extends ToolBarDropDown {
 
   public async populate(): Promise<void> {
     this._selectedSpatialClassifiers = undefined;
-    if (this._vp.view.is2d()) return;
+    if (this._vp.view.is2d())
+      return;
 
     this._realityModelPickerMenu.div.style.display = "none";
     this.populateRealityModelList();
@@ -220,13 +301,18 @@ export class ClassificationsPanel extends ToolBarDropDown {
       this._modelComboBox.select.value = modelId;
   }
 
+  private detachRealityModelByKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey): boolean {
+    const model = style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
+    return undefined !== model && style.settings.contextRealityModels.delete(model);
+  }
+
   private toggle(entry: ContextRealityModelProps, enabled: boolean): void {
     const view = this._vp.view as SpatialViewState;
     const style = view.getDisplayStyle3d();
     if (enabled)
       style.attachRealityModel(entry);
     else
-      style.detachRealityModelByNameAndUrl(entry.name!, entry.tilesetUrl);
+      entry.rdSourceKey ? this.detachRealityModelByKey(style, entry.rdSourceKey) : style.detachRealityModelByNameAndUrl(entry.name!, entry.tilesetUrl);
 
     this.populateRealityModelList();
     this._vp.invalidateScene();

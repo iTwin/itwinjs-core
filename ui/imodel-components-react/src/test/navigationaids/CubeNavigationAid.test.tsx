@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { AxisIndex, Matrix3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { DrawingViewState, IModelConnection, ScreenViewport } from "@itwin/core-frontend";
+import { DrawingViewState, IModelApp, IModelConnection, ScreenViewport, ToolAdmin } from "@itwin/core-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { TestUtils } from "../TestUtils";
 import { CubeHover, CubeNavigationAid, CubeNavigationHitBoxX, CubeNavigationHitBoxY, CubeNavigationHitBoxZ, FaceCell, NavCubeFace } from "../../imodel-components-react/navigationaids/CubeNavigationAid";
@@ -18,6 +18,10 @@ describe("CubeNavigationAid", () => {
 
   before(async () => {
     await TestUtils.initializeUiIModelComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiIModelComponents();
   });
 
   let rotation = Matrix3d.createIdentity();
@@ -62,6 +66,9 @@ describe("CubeNavigationAid", () => {
   };
 
   describe("<CubeNavigationAid />", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
     it("should render", () => {
       render(<CubeNavigationAid iModelConnection={connection.object} />);
     });
@@ -70,205 +77,219 @@ describe("CubeNavigationAid", () => {
       const navAid = component.getByTestId("components-cube-navigation-aid");
       expect(navAid).to.exist;
     });
-    it("should change from top to front when arrow clicked", async () => {
-      const animationEnd = sinon.fake();
-      const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
+    [vp.object, undefined].map((lockedViewport) =>{
+      const shouldStr = !!lockedViewport ? "locked cube should not" : "should";
+      it(`${shouldStr} change from top to front when arrow clicked`, async () => {
+        sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
+        const animationEnd = sinon.fake();
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} viewport={lockedViewport} />);
 
-      const topFace = component.getByTestId("components-cube-face-top");
-      const pointerButton = component.getByTestId("cube-pointer-button-down");
+        const topFace = component.getByTestId("components-cube-face-top");
+        const pointerButton = component.getByTestId("cube-pointer-button-down");
 
-      const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
+        const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
 
-      pointerButton.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+        pointerButton.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
 
-      await waitForSpy(animationEnd);
+        await waitForSpy(animationEnd);
 
-      const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(1, 0, 0, 0, 0, -1, 0, 1, 0))).is.true;
+        const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(1, 0, 0, 0, 0, -1, 0, 1, 0);
+
+        const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat2.matrix.isAlmostEqual(expectedMatrix)).is.true;
+      });
+      it(`${shouldStr} change from top to back when arrow clicked`, async () => {
+        sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
+        const animationEnd = sinon.fake();
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} viewport={lockedViewport} />);
+
+        const topFace = component.getByTestId("components-cube-face-top");
+        const pointerButton = component.getByTestId("cube-pointer-button-up");
+
+        const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
+
+        pointerButton.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+
+        await waitForSpy(animationEnd);
+
+        const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(-1, 0, 0, 0, 0, -1, 0, -1, 0);
+
+        const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat2.matrix.isAlmostEqual(expectedMatrix)).is.true;
+      });
+      it(`${shouldStr} change from top to left when arrow clicked`, async () => {
+        sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
+        const animationEnd = sinon.fake();
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} viewport={lockedViewport} />);
+
+        const topFace = component.getByTestId("components-cube-face-top");
+        const pointerButton = component.getByTestId("cube-pointer-button-left");
+
+        const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
+
+        pointerButton.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+
+        await waitForSpy(animationEnd);
+
+        const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(0, 1, 0, 0, 0, -1, -1, 0, 0);
+
+        const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat2.matrix.isAlmostEqual(expectedMatrix)).is.true;
+      });
+      it(`${shouldStr} change from top to right when arrow clicked`, async () => {
+        sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
+        const animationEnd = sinon.fake();
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} viewport={lockedViewport} />);
+
+        const topFace = component.getByTestId("components-cube-face-top");
+        const pointerButton = component.getByTestId("cube-pointer-button-right");
+
+        const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
+
+        pointerButton.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+
+        await waitForSpy(animationEnd);
+
+        const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(0, -1, 0, 0, 0, -1, 1, 0, 0);
+
+        const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat2.matrix.isAlmostEqual(expectedMatrix)).is.true;
+      });
+      it(`${shouldStr} highlight hovered cell`, async () => {
+        sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} viewport={lockedViewport} />);
+
+        const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
+
+        expect(topCenterCell.classList.contains("cube-hover")).to.be.false;
+
+        topCenterCell.dispatchEvent(new MouseEvent("mouseover", { bubbles: true, cancelable: true, view: window }));
+
+        const expected = !lockedViewport;
+
+        expect(topCenterCell.classList.contains("cube-hover")).to.equal(expected);
+      });
+      it(`${shouldStr} click center cell`, async () => {
+        sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} viewport={lockedViewport} />);
+
+        const topFace = component.getByTestId("components-cube-face-top");
+        const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
+
+        expect(topCenterCell.classList.contains("cube-active")).to.be.false;
+
+        const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
+
+        topCenterCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
+        expect(topCenterCell.classList.contains("cube-active")).to.equal(!lockedViewport);
+
+        topCenterCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
+
+        const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createIdentity();
+
+        const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat2.matrix.isAlmostEqual(expectedMatrix)).is.true;
+      });
+      it(`${shouldStr} click corner cell`, async () => {
+        sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
+        const animationEnd = sinon.fake();
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} viewport={lockedViewport} />);
+
+        const topFace = component.getByTestId("components-cube-face-top");
+        const topCornerCell = component.getByTestId("nav-cube-face-cell-top-1-0-1");
+
+        expect(topCornerCell.classList.contains("cube-active")).to.be.false;
+
+        const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
+        topCornerCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
+        expect(topCornerCell.classList.contains("cube-active")).to.equal(!lockedViewport);
+        topCornerCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
+        await waitForSpy(animationEnd);
+        const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(0, -1, 0, 0.70710678, 0, -0.70710678, 0.70710678, 0, 0.70710678);
+        const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat2.matrix.isAlmostEqual(expectedMatrix)).is.true;
+      });
+      it(`${shouldStr} switch from edge to top face`, async () => {
+        sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
+        const animationEnd = sinon.fake();
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} viewport={lockedViewport} />);
+
+        const topFace = component.getByTestId("components-cube-face-top");
+        const topEdgeCell = component.getByTestId("nav-cube-face-cell-top-1-0-1");
+        const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
+
+        const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
+        topEdgeCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
+        topEdgeCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
+        await waitForSpy(animationEnd);
+
+        const expectedMatrixTemp = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(0, -1, 0, 0.70710678, 0, -0.70710678, 0.70710678, 0, 0.70710678);
+        const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat2.matrix.isAlmostEqual(expectedMatrixTemp)).is.true;
+        animationEnd.resetHistory();
+        topCenterCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
+        topCenterCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
+        await waitForSpy(animationEnd);
+        const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(0, -1, 0, 1, 0, 0, 0, 0, 1);
+        const mat3 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat3.matrix.isAlmostEqual(expectedMatrix)).is.true;
+      });
+      it(`${shouldStr} switch from edge to bottom face`, async () => {
+        sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
+        const animationEnd = sinon.fake();
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} viewport={lockedViewport} />);
+
+        const topFace = component.getByTestId("components-cube-face-top");
+        const bottomCornerCell = component.getByTestId("nav-cube-face-cell-bottom--1-0--1");
+        const bottomCornerCenter = component.getByTestId("nav-cube-face-cell-bottom-0-0--1");
+
+        const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
+        bottomCornerCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
+        bottomCornerCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
+        await waitForSpy(animationEnd);
+
+        const expectedMatrixTemp = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(0, 1, 0, 0.70710678, 0, -0.70710678, -0.70710678, 0, -0.70710678);
+        const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat2.matrix.isAlmostEqual(expectedMatrixTemp)).is.true;
+
+        animationEnd.resetHistory();
+        bottomCornerCenter.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
+        bottomCornerCenter.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
+        await waitForSpy(animationEnd);
+
+        const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(0, 1, 0, 1, 0, 0, 0, 0, -1);
+        const mat3 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat3.matrix.isAlmostEqual(expectedMatrix)).is.true;
+      });
+      it(`${shouldStr} drag cube`, async () => {
+        sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} viewport={lockedViewport} />);
+
+        const topFace = component.getByTestId("components-cube-face-top");
+        const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
+
+        expect(topCenterCell.classList.contains("cube-active")).to.be.false;
+
+        const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
+        topCenterCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 2, clientY: 2 }));
+        topCenterCell.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 10, clientY: 2 }));
+        topCenterCell.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 20, clientY: 2 }));
+        topCenterCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 20, clientY: 2 }));
+        const expectedMatrix = !!lockedViewport ? mat.matrix : Matrix3d.createRowValues(0.62160997, 0.7833269, 0, -0.7833269, 0.62160997, 0, 0, 0, 1);
+        const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
+        expect(mat2.matrix.isAlmostEqual(expectedMatrix)).is.true;
+      });
     });
-    it("should change from top to back when arrow clicked", async () => {
-      const animationEnd = sinon.fake();
-      const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
 
-      const topFace = component.getByTestId("components-cube-face-top");
-      const pointerButton = component.getByTestId("cube-pointer-button-up");
-
-      const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
-
-      pointerButton.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-
-      await waitForSpy(animationEnd);
-
-      const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(-1, 0, 0, 0, 0, -1, 0, -1, 0))).is.true;
-    });
-    it("should change from top to left when arrow clicked", async () => {
-      const animationEnd = sinon.fake();
-      const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
-
-      const topFace = component.getByTestId("components-cube-face-top");
-      const pointerButton = component.getByTestId("cube-pointer-button-left");
-
-      const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
-
-      pointerButton.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-
-      await waitForSpy(animationEnd);
-
-      const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(0, 1, 0, 0, 0, -1, -1, 0, 0))).is.true;
-    });
-    it("should change from top to right when arrow clicked", async () => {
-      const animationEnd = sinon.fake();
-      const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
-
-      const topFace = component.getByTestId("components-cube-face-top");
-      const pointerButton = component.getByTestId("cube-pointer-button-right");
-
-      const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
-
-      pointerButton.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-
-      await waitForSpy(animationEnd);
-
-      const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(0, -1, 0, 0, 0, -1, 1, 0, 0))).is.true;
-    });
-    it("should highlight hovered cell", async () => {
-      const component = render(<CubeNavigationAid iModelConnection={connection.object} />);
-
-      const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
-
-      expect(topCenterCell.classList.contains("cube-hover")).to.be.false;
-
-      topCenterCell.dispatchEvent(new MouseEvent("mouseover", { bubbles: true, cancelable: true, view: window }));
-
-      expect(topCenterCell.classList.contains("cube-hover")).to.be.true;
-    });
-    it("should click center cell", async () => {
-      const component = render(<CubeNavigationAid iModelConnection={connection.object} />);
-
-      const topFace = component.getByTestId("components-cube-face-top");
-      const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
-
-      expect(topCenterCell.classList.contains("cube-active")).to.be.false;
-
-      const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
-      topCenterCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
-      expect(topCenterCell.classList.contains("cube-active")).to.be.true;
-      topCenterCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
-      const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
-    });
-    it("should click corner cell", async () => {
-      const animationEnd = sinon.fake();
-      const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
-
-      const topFace = component.getByTestId("components-cube-face-top");
-      const topCornerCell = component.getByTestId("nav-cube-face-cell-top-1-0-1");
-
-      expect(topCornerCell.classList.contains("cube-active")).to.be.false;
-
-      const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
-      topCornerCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
-      expect(topCornerCell.classList.contains("cube-active")).to.be.true;
-      topCornerCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
-      await waitForSpy(animationEnd);
-      const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(0, -1, 0, 0.70710678, 0, -0.70710678, 0.70710678, 0, 0.70710678))).is.true;
-    });
-    it("should switch from edge to top face", async () => {
-      const animationEnd = sinon.fake();
-      const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
-
-      const topFace = component.getByTestId("components-cube-face-top");
-      const topEdgeCell = component.getByTestId("nav-cube-face-cell-top-1-0-1");
-      const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
-
-      const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
-      topEdgeCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
-      topEdgeCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
-      await waitForSpy(animationEnd);
-
-      const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(0, -1, 0, 0.70710678, 0, -0.70710678, 0.70710678, 0, 0.70710678))).is.true;
-      animationEnd.resetHistory();
-      topCenterCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
-      topCenterCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
-      await waitForSpy(animationEnd);
-      const mat3 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat3.matrix.isAlmostEqual(Matrix3d.createRowValues(0, -1, 0, 1, 0, 0, 0, 0, 1))).is.true;
-    });
-    it("should switch from edge to bottom face", async () => {
-      const animationEnd = sinon.fake();
-      const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
-
-      const topFace = component.getByTestId("components-cube-face-top");
-      const bottomCornerCell = component.getByTestId("nav-cube-face-cell-bottom--1-0--1");
-      const bottomCornerCenter = component.getByTestId("nav-cube-face-cell-bottom-0-0--1");
-
-      const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
-      bottomCornerCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
-      bottomCornerCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
-      await waitForSpy(animationEnd);
-
-      const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(0, 1, 0, 0.70710678, 0, -0.70710678, -0.70710678, 0, -0.70710678))).is.true;
-
-      animationEnd.resetHistory();
-      bottomCornerCenter.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
-      bottomCornerCenter.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
-      await waitForSpy(animationEnd);
-
-      const mat3 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat3.matrix.isAlmostEqual(Matrix3d.createRowValues(0, 1, 0, 1, 0, 0, 0, 0, -1))).is.true;
-    });
-    it("should drag cube", async () => {
-      const component = render(<CubeNavigationAid iModelConnection={connection.object} />);
-
-      const topFace = component.getByTestId("components-cube-face-top");
-      const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
-
-      expect(topCenterCell.classList.contains("cube-active")).to.be.false;
-
-      const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
-      topCenterCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 2, clientY: 2 }));
-      topCenterCell.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 10, clientY: 2 }));
-      topCenterCell.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, clientX: 20, clientY: 2 }));
-      topCenterCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 20, clientY: 2 }));
-      const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(0.62160997, 0.7833269, 0, -0.7833269, 0.62160997, 0, 0, 0, 1))).is.true;
-    });
-    it.skip("should touch drag cube", async () => { // Touch isn't currently supported so we can't test it...
-      const component = render(<CubeNavigationAid iModelConnection={connection.object} />);
-
-      const topFace = component.getByTestId("components-cube-face-top");
-      const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
-
-      expect(topCenterCell.classList.contains("cube-active")).to.be.false;
-
-      const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
-      const touchStart = new Touch({ identifier: 0, target: topCenterCell, clientX: 2, clientY: 2 }); // <== ReferenceError: Touch is not defined
-      const touchMove1 = new Touch({ identifier: 0, target: topCenterCell, clientX: 10, clientY: 2 });
-      const touchMove2 = new Touch({ identifier: 0, target: topCenterCell, clientX: 20, clientY: 2 });
-      const touchEnd = new Touch({ identifier: 0, target: topCenterCell, clientX: 20, clientY: 2 });
-      topCenterCell.dispatchEvent(new TouchEvent("touchstart", { bubbles: true, cancelable: true, view: window, touches: [touchStart], changedTouches: [touchStart], targetTouches: [touchStart] }));
-      topCenterCell.dispatchEvent(new TouchEvent("touchmove", { bubbles: true, cancelable: true, view: window, touches: [touchMove1], changedTouches: [touchMove1], targetTouches: [touchMove1] }));
-      topCenterCell.dispatchEvent(new TouchEvent("touchmove", { bubbles: true, cancelable: true, view: window, touches: [touchMove2], changedTouches: [touchMove2], targetTouches: [touchMove2] }));
-      topCenterCell.dispatchEvent(new TouchEvent("touchend", { bubbles: true, cancelable: true, view: window, touches: [touchEnd], changedTouches: [touchEnd] }));
-      const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-      expect(mat2.isIdentity).is.false;
-    });
     describe("onViewRotationChangeEvent", () => {
       beforeEach(() => {
         rotation = Matrix3d.createIdentity();

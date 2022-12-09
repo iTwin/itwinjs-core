@@ -5,19 +5,21 @@
 /** @packageDocumentation
  * @module Helpers
  */
+/* istanbul ignore file */  // TODO: Remove istanbul ignore file when https://github.com/iTwin/itwinjs-backlog/issues/463 is fixed.
+import { join } from "path";
 import * as rimraf from "rimraf";
-// common includes
+import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { Guid } from "@itwin/core-bentley";
-// backend includes
-import { IModelHost } from "@itwin/core-backend";
-// frontend includes
 import {
   IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
-import { HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode } from "@itwin/presentation-backend";
+import {
+  HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode,
+} from "@itwin/presentation-backend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import { tmpdir } from "os";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -39,18 +41,31 @@ function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
 
 let isInitialized = false;
 
+const defaultTestOutputDir = tmpdir();
+let testOutputDir: string | undefined;
+
+/** @internal */
+export const getTestOutputDir = (): string => {
+  return testOutputDir ?? defaultTestOutputDir;
+};
+
+// eslint-disable-next-line deprecation/deprecation
 export { HierarchyCacheMode, PresentationManagerMode, PresentationBackendProps };
 
 /** @public */
 export interface PresentationTestingInitProps {
   /** Properties for backend initialization */
   backendProps?: PresentationBackendProps;
+  /** Properties for `IModelHost` */
+  backendHostProps?: IModelHostOptions;
   /** Properties for frontend initialization */
   frontendProps?: PresentationFrontendProps;
   /** IModelApp implementation */
   frontendApp?: { startup: (opts?: IModelAppOptions) => Promise<void> };
-  /** IModelApp options */
+  /** `IModelApp` options */
   frontendAppOptions?: IModelAppOptions;
+  /** Custom test output directory. Defaults to temporary directory provided by the OS. */
+  testOutputDir?: string;
 }
 
 /**
@@ -68,16 +83,16 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   if (!props)
     props = {};
 
+  // set up rpc interfaces
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
+
   // init backend
   // make sure backend gets assigned an id which puts its resources into a unique directory
   props.backendProps = props.backendProps ?? {};
   if (!props.backendProps.id)
     props.backendProps.id = `test-${Guid.createValue()}`;
-  await IModelHost.startup();
+  await IModelHost.startup({ cacheDir: join(__dirname, ".cache"), ...props.backendHostProps });
   PresentationBackend.initialize(props.backendProps);
-
-  // set up rpc interfaces
-  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
 
   // init frontend
   if (!props.frontendApp)
@@ -89,6 +104,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
     },
   };
   await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });
+  testOutputDir = props.testOutputDir;
 
   isInitialized = true;
 };

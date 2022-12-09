@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CompressedId64Set, Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps,
-} from "@itwin/core-common";
-import {
-  GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements,
+  GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb,
+  SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { CompressedId64Set, Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelTransformer } from "../../core-transformer";
+
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("RenderTimeline Remap", () => {
   before(() => {
@@ -59,7 +60,7 @@ describe("RenderTimeline Remap", () => {
 
     expect(model instanceof PhysicalModel).to.be.true;
 
-    const modelId = db.models.insertModel(model);
+    const modelId = db.models.insertModel(model.toJSON());
     expect(Id64.isValidId64(modelId)).to.be.true;
     return modelId;
   }

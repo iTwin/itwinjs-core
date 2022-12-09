@@ -244,7 +244,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     // Query categories and add them to state
     const ecsql = "SELECT c.ecinstanceid FROM meta.ECClassDef c WHERE c.Name='PhysicalPartition'";
     const rows = [];
-    for await (const row of this.props.iModelConnection.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of this.props.iModelConnection.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
     if (rows.length !== 1)
@@ -253,7 +253,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     const physicalClassId = rows[0].id as string;
 
     const ecsql2 = "SELECT me.ecinstanceid, me.codevalue as codevalue, me.ecclassid as classid, l.userlabel as userlabel, l.jsonproperties as jsonproperties FROM bis.InformationContentElement me JOIN bis.repositorylink l USING bis.ElementHasLinks";
-    for await (const model of this.props.iModelConnection.query(ecsql2, undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const model of this.props.iModelConnection.query(ecsql2, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const name: string = model.codevalue ? model.codevalue as string : "";
       const description: string = model.userlabel ? model.userlabel as string : "";
       const attributes = model.jsonproperties;
@@ -467,6 +467,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
           <span>{toastMessage}</span>
         </div>
         <a target="_blank" rel="noopener noreferrer" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.learnMore")}</a>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <span className="close" onClick={this._onCloseToast}>&times;</span>
       </div>
     );

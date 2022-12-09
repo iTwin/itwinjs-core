@@ -83,6 +83,20 @@ export namespace Gradient {
     thematicSettings?: ThematicGradientSettingsProps;
   }
 
+  /** Arguments supplied to [[Gradient.Symb.produceImage]].
+   * @public
+   */
+  export interface ProduceImageArgs {
+    /** The desired width of the image in pixels. Must be an integer greater than zero. */
+    width: number;
+    /** The desired height of the image in pixels. Must be an integer greater than zero. */
+    height: number;
+    /** If true and the gradient uses [[Gradient.Mode.Thematic]], the margin color specified by [[ThematicGradientSettings.marginColor]] will be included
+     * in the top and bottom rows of the image; otherwise only the gradient colors will be included in the image.
+     */
+    includeThematicMargin?: boolean;
+  }
+
   /** Multi-color area fill defined by a range of colors that vary by position.
    * Gradient fill can be applied to planar regions.
    * @see [[Gradient.SymbProps]]
@@ -206,6 +220,16 @@ export namespace Gradient {
         if (!lhs.keys[i].color.equals(rhs.keys[i].color))
           return lhs.keys[i].color.tbgr - rhs.keys[i].color.tbgr;
       }
+      if (lhs.thematicSettings !== rhs.thematicSettings)
+        if (undefined === lhs.thematicSettings)
+          return -1;
+        else if (undefined === rhs.thematicSettings)
+          return 1;
+        else {
+          const thematicCompareResult = ThematicGradientSettings.compare(lhs.thematicSettings, rhs.thematicSettings);
+          if (0 !== thematicCompareResult)
+            return thematicCompareResult;
+        }
       return 0;
     }
 
@@ -289,14 +313,11 @@ export namespace Gradient {
 
       const stepCount = Math.min(settings.stepCount, maxDimension);
       const dimension = (ThematicGradientMode.Smooth === settings.mode) ? maxDimension : stepCount;
-      const hasAlpha = this.hasTranslucency;
-      const image = new Uint8Array(1 * dimension * (hasAlpha ? 4 : 3));
+      const image = new Uint8Array(1 * dimension * 4);
       let currentIdx = image.length - 1;
 
       function addColor(color: ColorDef) {
-        if (hasAlpha)
-          image[currentIdx--] = color.getAlpha();
-
+        image[currentIdx--] = color.getAlpha();
         image[currentIdx--] = color.colors.b;
         image[currentIdx--] = color.colors.g;
         image[currentIdx--] = color.colors.r;
@@ -331,24 +352,32 @@ export namespace Gradient {
       }
 
       assert(-1 === currentIdx);
-      const imageBuffer = ImageBuffer.create(image, hasAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb, 1);
+      const imageBuffer = ImageBuffer.create(image, ImageBufferFormat.Rgba, 1);
       assert(undefined !== imageBuffer);
       return imageBuffer;
     }
 
-    /** Applies this gradient's settings to produce a bitmap image. */
+    /** Produces a bitmap image from this gradient.
+     * @param width Width of the image
+     * @param height Height of the image
+     * @note If this gradient uses [[Gradient.Mode.Thematic]], then the width of the image will be 1 and the margin color will be included in the top and bottom rows.
+     * @see [[produceImage]] for more customization.
+     */
     public getImage(width: number, height: number): ImageBuffer {
-      if (this.mode === Mode.Thematic) {
-        // Allow caller to pass in height but not width. Thematic gradients are always one-dimensional.
-        // NB: The height used to be hardcoded to 8192 here. Now we will let the render system decide.
-        width = 1; // Force width to 1 for thematic gradients.
-      }
+      if (this.mode === Mode.Thematic)
+        width = 1;
 
-      const hasAlpha = this.hasTranslucency;
+      return this.produceImage({ width, height, includeThematicMargin: true });
+    }
+
+    /** Produces a bitmap image from this gradient. */
+    public produceImage(args: ProduceImageArgs): ImageBuffer {
+      const { width, height, includeThematicMargin } = { ...args };
+
       const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
       const cosA = Math.cos(thisAngle);
       const sinA = Math.sin(thisAngle);
-      const image = new Uint8Array(width * height * (hasAlpha ? 4 : 3));
+      const image = new Uint8Array(width * height * 4);
       let currentIdx = image.length - 1;
       const shift = Math.min(1.0, Math.abs(this.shift));
 
@@ -387,9 +416,7 @@ export namespace Gradient {
                   f = Math.sin(Math.PI / 2 * (1.0 - d / dMin));
               }
               const color = this.mapColor(f);
-              if (hasAlpha)
-                image[currentIdx--] = color.getAlpha();
-
+              image[currentIdx--] = color.getAlpha();
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -408,9 +435,7 @@ export namespace Gradient {
               const yr = y * cosA - x * sinA;
               const f = Math.sin(Math.PI / 2 * (1 - Math.sqrt(xr * xr + yr * yr)));
               const color = this.mapColor(f);
-              if (hasAlpha)
-                image[currentIdx--] = color.getAlpha();
-
+              image[currentIdx--] = color.getAlpha();
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -428,9 +453,7 @@ export namespace Gradient {
               const x = xs + i / width - 0.5;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y) / r));
               const color = this.mapColor(f);
-              if (hasAlpha)
-                image[currentIdx--] = color.getAlpha();
-
+              image[currentIdx--] = color.getAlpha();
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -447,9 +470,7 @@ export namespace Gradient {
               const x = i / width - xs;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y)));
               const color = this.mapColor(f);
-              if (hasAlpha)
-                image[currentIdx--] = color.getAlpha();
-
+              image[currentIdx--] = color.getAlpha();
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -458,16 +479,13 @@ export namespace Gradient {
           break;
         }
         case Mode.Thematic: {
-          let settings = this.thematicSettings;
-          if (settings === undefined) {
-            settings = ThematicGradientSettings.defaults;
-          }
+          const settings = this.thematicSettings ?? ThematicGradientSettings.defaults;
 
           for (let j = 0; j < height; j++) {
             let f = 1 - j / height;
             let color: ColorDef;
 
-            if (f < ThematicGradientSettings.margin || f > ThematicGradientSettings.contentMax) {
+            if (includeThematicMargin && (f < ThematicGradientSettings.margin || f > ThematicGradientSettings.contentMax)) {
               color = settings.marginColor;
             } else {
               f = (f - ThematicGradientSettings.margin) / (ThematicGradientSettings.contentRange);
@@ -486,10 +504,9 @@ export namespace Gradient {
                   break;
               }
             }
-            for (let i = 0; i < width; i++) {
-              if (hasAlpha)
-                image[currentIdx--] = color!.getAlpha();
 
+            for (let i = 0; i < width; i++) {
+              image[currentIdx--] = color!.getAlpha();
               image[currentIdx--] = color!.colors.b;
               image[currentIdx--] = color!.colors.g;
               image[currentIdx--] = color!.colors.r;
@@ -499,7 +516,7 @@ export namespace Gradient {
       }
 
       assert(-1 === currentIdx);
-      const imageBuffer = ImageBuffer.create(image, hasAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb, width);
+      const imageBuffer = ImageBuffer.create(image, ImageBufferFormat.Rgba, width);
       assert(undefined !== imageBuffer);
       return imageBuffer;
     }

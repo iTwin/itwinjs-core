@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
 
 .nz-widgetPanels-panels {
   display: grid;
@@ -11,4 +12,60 @@
   grid-template-rows: minmax(0, auto) 1fr minmax(0, auto);
   overflow: hidden;
   position: relative;
+
+  .nz-widgetPanels-vertical {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100px;
+
+    /* if only one panel section set flex:1 */
+    &:first-child.nz-panel-section-full-size {
+      flex: 1;
+    }
+
+    &:not(:first-child) {
+      flex: 1;
+    }
+  }
+
+  .nz-vertical-panel-splitter {
+    position: absolute;
+    bottom: -5px;
+    background-color: transparent;
+    display: flex;
+    width: 100%;
+    height: 10px;
+    cursor: row-resize;
+    z-index: 1;
+  }
+
+  .nz-widgetPanels-horizontal {
+    position: relative;
+    display: flex;
+    min-width: 100px;
+
+    /* if only one panel section set flex:1 */
+    &:first-child.nz-panel-section-full-size {
+      flex: 1;
+    }
+
+    &:not(:first-child) {
+      flex: 1;
+    }
+  }
+
+  .nz-horizontal-panel-splitter {
+    position: absolute;
+    right: -5px;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 10px;
+    cursor: col-resize;
+    z-index: 1;
+  }
 }
+

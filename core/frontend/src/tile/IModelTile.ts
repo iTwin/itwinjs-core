@@ -70,10 +70,10 @@ export class IModelTile extends Tile {
     super(params, tree);
     this._sizeMultiplier = params.sizeMultiplier;
 
-    if (!this.isLeaf && this.tree.is3d) { // ###TODO: Want to know specifically if tree is *spatial*.
+    if (!this.isLeaf && this.tree.is3d && !this.isReady) { // ###TODO: Want to know specifically if tree is *spatial*.
       // Do not sub-divide such that chord tolerance would be below specified minimum, if minimum defined.
       const minTolerance = IModelApp.tileAdmin.minimumSpatialTolerance;
-      if (minTolerance > 0 && computeTileChordTolerance(this, this.tree.is3d) <= minTolerance)
+      if (minTolerance > 0 && computeTileChordTolerance(this, this.tree.is3d, this.iModelTree.tileScreenSize) <= minTolerance)
         this.setLeaf();
     }
   }
@@ -101,7 +101,7 @@ export class IModelTile extends Tile {
       isCanceled = () => !this.isLoading;
 
     assert(data instanceof Uint8Array);
-    const streamBuffer = new ByteStream(data.buffer);
+    const streamBuffer = ByteStream.fromUint8Array(data);
 
     const position = streamBuffer.curPos;
     const format = streamBuffer.nextUint32;
@@ -113,8 +113,17 @@ export class IModelTile extends Tile {
       return content;
 
     const tree = this.iModelTree;
-    const mult = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
-    const reader = ImdlReader.create(streamBuffer, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, mult, { tileId: this.contentId });
+    const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
+    const { iModel, modelId, is3d, containsTransformNodes } = tree;
+    const reader = ImdlReader.create({
+      stream: streamBuffer,
+      type: tree.batchType,
+      loadEdges: false !== tree.edgeOptions,
+      options: { tileId: this.contentId },
+      timeline: tree.timeline,
+      iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
+    });
+
     if (undefined !== reader) {
       try {
         content = await reader.read();
@@ -135,7 +144,7 @@ export class IModelTile extends Tile {
     // this tile is too coarse for view based on its size in pixels.
     // That is different than an "undisplayable" tile (maximumSize=0) whose children should be loaded immediately.
     if (undefined !== content.graphic && 0 === this.maximumSize)
-      this._maximumSize = 512;
+      this._maximumSize = this.iModelTree.tileScreenSize;
 
     const sizeMult = content.sizeMultiplier;
     if (undefined !== sizeMult && (undefined === this._sizeMultiplier || sizeMult > this._sizeMultiplier)) {
@@ -174,7 +183,7 @@ export class IModelTile extends Tile {
       return;
     }
 
-    const ranges = computeChildTileRanges(this, this.tree);
+    const ranges = computeChildTileRanges(this, this.iModelTree);
     for (const range of ranges) {
       const color = range.isEmpty ? ColorDef.blue : ColorDef.green;
       const pixels = !range.isEmpty ? LinePixels.HiddenLine : LinePixels.Solid;

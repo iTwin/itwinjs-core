@@ -14,6 +14,37 @@
   "numRendersToTime": 150,
   "testSet": [
     {
+      "testName": "Lines",
+      "testType": "both",
+      "iModelName": "LinesTest.bim",
+      "tests": [
+        {
+          "viewName": "100"
+        },
+        {
+          "viewName": "100",
+          "viewFlags": {
+            "weights": false,
+            "styles": true
+          }
+        },
+        {
+          "viewName": "100",
+          "viewFlags": {
+            "weights": true,
+            "styles": false
+          }
+        },
+        {
+          "viewName": "100",
+          "viewFlags": {
+            "weights": false,
+            "styles": false
+          }
+        }
+      ]
+    },
+    {
       "testName": "Reality Meshes & Planar/Volume Classification",
       "testType": "both",
       "tests": [
@@ -582,37 +613,6 @@
         {
           "iModelName": "LargeTextTest.bim",
           "viewName": "625"
-        }
-      ]
-    },
-    {
-      "testName": "Lines",
-      "testType": "both",
-      "iModelName": "LinesTest.bim",
-      "tests": [
-        {
-          "viewName": "351"
-        },
-        {
-          "viewName": "351",
-          "viewFlags": {
-            "weights": false,
-            "styles": true
-          }
-        },
-        {
-          "viewName": "351",
-          "viewFlags": {
-            "weights": true,
-            "styles": false
-          }
-        },
-        {
-          "viewName": "351",
-          "viewFlags": {
-            "weights": false,
-            "styles": false
-          }
         }
       ]
     }

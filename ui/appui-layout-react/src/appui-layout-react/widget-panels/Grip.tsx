@@ -39,10 +39,9 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip(props: Common
       title={resizeGripTitle}
       style={props.style}
     >
-      <div className="nz-dot" />
-      <div className="nz-dot" />
-      <div className="nz-dot" />
-      <div className="nz-dot" />
+      <div className="nz-line-grip">
+        <div className="nz-line-grip-detail" />
+      </div>
       <div
         className="nz-handle"
         ref={ref}
@@ -154,6 +153,7 @@ export const useResizeGrip = <T extends HTMLElement>(): [(instance: T | null) =>
         setResizing(true);
         handlePanelGripDragStart({
           initialPointerPosition: initialPointerPosition.current,
+          pointerPosition: initialPointerPosition.current,
         });
       }
       initialPointerPosition.current = undefined;
@@ -180,6 +180,7 @@ export const useResizeGrip = <T extends HTMLElement>(): [(instance: T | null) =>
     setResizing(true);
     handlePanelGripDragStart({
       initialPointerPosition: position,
+      pointerPosition: position,
     });
     onDrag(position, initialPointerPosition.current);
     initialPointerPosition.current = undefined;

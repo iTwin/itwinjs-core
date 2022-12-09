@@ -9,29 +9,37 @@
 import { GuidString, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { IModel } from "./IModel";
 
-/** The props that hold the identity of the object defining the uniqueness scope for a set of Code values.
+/**
+ * The identity of the element defining the scope for a Code value.
+ * For query input, may either be an ElementId or a FederationGuid. When returned from a query, it will be an ElementId.
  * @public
+ * @extensions
  */
 export type CodeScopeProps = Id64String | GuidString;
 
 /** The wire format for a Code
  * @public
+ * @extensions
  */
 export interface CodeProps {
-  spec: Id64String;
+  /** Either the stringified 64-bit Id of the CodeSpec for this code, or the name of the CodeSpec. */
+  spec: Id64String | string;
+  /** Either the ElementId or the FederationGuid of the element that provides the scope for this code. */
   scope: CodeScopeProps;
+  /** the value of this code. May be undefined. */
   value?: string;
 }
 
-/** A three-part structure containing information about the [Code]($docs/bis/intro/codes) of an Element
+/**
+ * A three-part structure containing information about the [Code]($docs/bis/guide/fundamentals/codes) of an Element
  * @public
  */
 export class Code implements CodeProps {
-  /** The id of the [CodeSpec]($docs/bis/intro/codes.md#codespec) of the Element */
+  /** The id of the [CodeSpec]($docs/bis/guide/fundamentals/codes.md#codespec) of the Element */
   public spec: Id64String;
-  /** The [CodeScope]($docs/bis/intro/codes.md#codescope-property) of the Element */
-  public scope: string;
-  /** The [CodeValue]($docs/bis/intro/codes.md#codevalue-property) of the Element
+  /** The [CodeScope]($docs/bis/guide/fundamentals/codes.md#codescope-property) of the Element */
+  public scope: Id64String;
+  /** The [CodeValue]($docs/bis/guide/fundamentals/codes.md#codevalue-property) of the Element
    * @note Leading and trailing whitespace is invalid so is automatically trimmed.
    */
   public get value() { return this._value ?? ""; }
@@ -45,7 +53,11 @@ export class Code implements CodeProps {
   }
 
   /** Create an empty, non-unique code with no special meaning. */
-  public static createEmpty(): Code { const id: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
+  public static createEmpty(): Code {
+    const id = Id64.fromLocalAndBriefcaseIds(1, 0);
+    return new Code({ spec: id, scope: id });
+  }
+
   public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
   public toJSON(): CodeProps { return { spec: this.spec, scope: this.scope, value: this.value }; }
   public equals(other: Code): boolean { return Code.equalCodes(this, other); }
@@ -62,7 +74,8 @@ export class Code implements CodeProps {
 /** Names of the internal BIS CodeSpecs. These names match those specified by the native library.
  * For other domains, the best practice is to include the domain name or alias as part of the CodeSpec name to ensure global uniqueness.
  * @public
- * @see [CodeSpec]($docs/bis/intro/codes.md#codespec)
+* @extensions
+* @see [CodeSpec]($docs/bis/guide/fundamentals/codes.md#codespec)
  */
 export enum BisCodeSpec {
   /** The name of the standard [[CodeSpec]] used when creating *empty* codes.
@@ -220,7 +233,7 @@ export namespace CodeScopeSpec {
   }
 }
 
-/** A [Code Specification]($docs/bis/intro/glossary#codespec) captures the rules for encoding and decoding significant business information into
+/** A [Code Specification]($docs/bis/guide/references/glossary#codespec) captures the rules for encoding and decoding significant business information into
  * and from a Code (string). This specification is used to generate and validate Codes.
  *
  * A CodeSpec defines the format of a Code for a certain type of Element in an IModel.
@@ -256,8 +269,11 @@ export class CodeSpec {
       this.properties = { scopeSpec: {} };
       this.scopeType = CodeScopeSpec.Type.Repository;
     }
-    if (undefined !== scopeType) this.scopeType = scopeType;
-    if (undefined !== scopeReq) this.scopeReq = scopeReq;
+    if (undefined !== scopeType)
+      this.scopeType = scopeType;
+
+    if (undefined !== scopeReq)
+      this.scopeReq = scopeReq;
   }
 
   /** Create a new CodeSpec from the specified parameters
@@ -303,7 +319,9 @@ export class CodeSpec {
     return true;
   }
   public set isManagedWithIModel(value: boolean) {
-    if (!this.properties.spec) this.properties.spec = {};
+    if (!this.properties.spec)
+      this.properties.spec = {};
+
     this.properties.spec.isManagedWithDgnDb = value;
   }
 }

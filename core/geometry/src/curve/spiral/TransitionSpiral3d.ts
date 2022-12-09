@@ -7,13 +7,21 @@
  * @module Curve
  */
 
-import { CurvePrimitive } from "../CurvePrimitive";
+import { Geometry } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
-import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
-import { Geometry } from "../../Geometry";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { CurveOffsetXYHandler } from "../internalContexts/CurveOffsetXYHandler";
+import { PlaneAltitudeRangeContext } from "../internalContexts/PlaneAltitudeRangeContext";
+import { OffsetOptions } from "../internalContexts/PolygonOffsetContext";
 import { LineString3d } from "../LineString3d";
+import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
+
+import type { Vector3d } from "../../geometry3d/Point3dVector3d";
+import type { Ray3d } from "../../geometry3d/Ray3d";
+
 /**
  * This is the set of valid type names for "integrated" spirals
  * * Behavior is expressed by a `NormalizedTransition` snap function.
@@ -98,6 +106,29 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     return 1.0 / curvature;
   }
 
+  /** Return a deep clone. */
+  public abstract override clone(): TransitionSpiral3d;
+
+  /** Recompute strokes */
+  public abstract refreshComputedProperties(): void;
+
+  /** Return (if possible) a spiral which is a portion of this curve. */
+  public override clonePartialCurve(fractionA: number, fractionB: number): TransitionSpiral3d {
+    const spiralB = this.clone();
+    const globalFractionA = this._activeFractionInterval.fractionToPoint(fractionA);
+    const globalFractionB = this._activeFractionInterval.fractionToPoint(fractionB);
+    spiralB._activeFractionInterval.set(globalFractionA, globalFractionB);
+    spiralB.refreshComputedProperties();
+    return spiralB;
+  }
+
+  /** Clone with a transform applied  */
+  public override cloneTransformed(transform: Transform): TransitionSpiral3d {
+    const result = this.clone();
+    result.tryTransformInPlace(transform); // ok, we're confident it will always work.
+    return result;
+  }
+
   /** Return the average of the start and end curvatures. */
   public static averageCurvature(radiusLimits: Segment1d): number {
     return 0.5 * (TransitionSpiral3d.radiusToCurvature(radiusLimits.x0) + TransitionSpiral3d.radiusToCurvature(radiusLimits.x1));
@@ -160,5 +191,43 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
       return rigidData;
     }
     return undefined;
+  }
+
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
+   *   for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
+    this.emitStrokableParts(handler, options.strokeOptions);
+    return handler.claimResult();
+  }
+  /** extend the range by the strokes of the spiral */
+  public override extendRange(rangeToExtend: Range3d, transform?: Transform): void {
+    const myRange = this.rangeBetweenFractions (0.0, 1.0, transform);
+    rangeToExtend.extendRange (myRange);
+  }
+
+  /** return the range of spiral between fractions of the activeStrokes.
+   * * Use activeStrokes point count times interval factor for initial evaluation count, but do at least 5
+   */
+   public override rangeBetweenFractions(fractionA: number, fractionB: number, transform?: Transform): Range3d {
+    const strokes = this.activeStrokes;
+    if (undefined === strokes)
+      return Range3d.createNull ();
+    let count = Math.ceil (strokes.numPoints() * Math.abs (fractionB - fractionA));
+    count = Geometry.clamp (5, count, 30);
+    return this.rangeBetweenFractionsByCount (fractionA, fractionB, count, transform, 0.5);
+  }
+  /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+   * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
+   * @param lowHigh optional receiver for output
+   * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.
+   */
+  public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
+    return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
 }

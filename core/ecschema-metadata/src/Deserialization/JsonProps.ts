@@ -78,7 +78,7 @@ export interface SchemaItemProps {
 export interface ClassProps extends SchemaItemProps {
   readonly modifier?: string;
   readonly baseClass?: string;
-  readonly properties?: PropertyProps[];
+  readonly properties?: AnyPropertyProps[];
 }
 
 /**

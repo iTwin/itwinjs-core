@@ -9,12 +9,7 @@ import { ImportIMJS } from "./ImportIMJS";
 
 /* eslint-disable no-console */
 
-interface Args {
-  input: string;
-  output: string;
-}
-
-const argv: yargs.Arguments<Args> = yargs
+const argv = yargs
   .usage("Usage: $0 --input [GeomJsonFileName]")
   .describe("input", "Input directory.  (Each .imjs file in the directory is inserted to the bim file.)")
   .string("input")
@@ -23,7 +18,7 @@ const argv: yargs.Arguments<Args> = yargs
   .string("output")
   .alias("output", "o")
   .demandOption(["input", "output"])
-  .argv;
+  .parseSync();
 
 IModelHost.startup().then(async () => {
   console.log("start ..");
@@ -32,7 +27,7 @@ IModelHost.startup().then(async () => {
   console.log(`input from${directoryTail}`);
   if (directoryTail) {
     const fullBimName = path.isAbsolute(outputFileName) ? outputFileName : `d:\\bfiles\\importIMJS\\${directoryTail}.bim`;
-    console.log({ outputFile: fullBimName});
+    console.log({ outputFile: fullBimName });
     const importer = ImportIMJS.create(fullBimName,
       "testSubject");
 

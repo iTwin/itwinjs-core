@@ -6,7 +6,6 @@
  * @module RpcInterface
  */
 
-import { URL } from "url";
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -52,10 +51,14 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   /** Returns the operation specified by an OpenAPI-compatible URI path. */
   public override getOperationFromPath(path: string): SerializedRpcOperation {
     const url = new URL(path, "https://localhost/");
-    const components = url.pathname.split("/");
+    const components = url.pathname.split("/").filter((x) => x); // filter out empty segments
 
     const operationComponent = components.slice(-1)[0];
     const encodedRequest = url.searchParams.get("parameters") || "";
+
+    // The encodedRequest should be base64 - fail now if any other characters detected.
+    if (/[^A-z0-9=+\/]/.test(encodedRequest))
+      throw new IModelError(BentleyStatus.ERROR, `Invalid request: Malformed URL parameters detected.`);
 
     const firstHyphen = operationComponent.indexOf("-");
     const lastHyphen = operationComponent.lastIndexOf("-");

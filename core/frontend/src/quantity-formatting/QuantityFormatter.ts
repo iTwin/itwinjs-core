@@ -6,33 +6,92 @@
  * @module QuantityFormatting
  */
 
-import { BeUiEvent } from "@itwin/core-bentley";
+import { BentleyError, BeUiEvent, Logger } from "@itwin/core-bentley";
 import {
-  Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider, UnitSystemKey,
+  AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion,
+  UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { BasicUnitsProvider } from "./BasicUnitsProvider";
+import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
+import { CustomFormatPropEditorSpec } from "./QuantityTypesEditorSpecs";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
 
-/** Defines standard format types for tools that need to display measurements to user. Kept only to provide compatibility for existing API.
- * @beta
+/**
+ * Defines standard format types for tools that need to display measurements to user.
+ * @public
  */
-export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6, Stationing = 7, LengthSurvey = 8, LengthEngineering = 9 }
+export enum QuantityType {
+  /** Length which is stored in meters. Typically formatted to display in meters or feet-inches based on active unit system. */
+  Length = 1,
+  /** Angular value which is stored in radians. Typically formatted to display degrees or Degrees-Minute-Seconds based on active unit system. */
+  Angle = 2,
+  /** Area value store in meters squared. Typically formatted to display in meters squared or feet squared based on active unit system. */
+  Area = 3,
+  /** Volume value which is stored in meters cubed. Typically formatted to display in meters cubed or feet cubed based on active unit system. */
+  Volume = 4,
+  /** LatLong is an angular value which is stored in radians. Typically formatted to display degrees or Degrees-Minute-Seconds based on active unit system. */
+  LatLong = 5,
+  /** Coordinate/Location value which is stored in meters. Typically formatted to display in meters or feet based on active unit system. */
+  Coordinate = 6,
+  /** Stationing is a distance value stored in meters. Typically formatted to display `xxx+xx` or `xx+xxx` based on active unit system. */
+  Stationing = 7,
+  /** LengthSurvey is a distance value stored in meters. Typically formatted to display in meters or US Survey Feet based on active unit system.. */
+  LengthSurvey = 8,
+  /** LengthEngineering is a distance value stored in meters. Typically formatted to display either meters or feet based on active unit system. */
+  LengthEngineering = 9
+}
 
-/** Type the can be used to uniquely identify a Quantity Type.
- * @beta
+/**
+ * Used to uniquely identify the type or quantity. [[QuantityType]] are built-in types and `string` are used for custom quantity types.
+ * @public
  */
 export type QuantityTypeArg = QuantityType | string;
 
-/** String used to uniquely identify a QuantityType in the quantity registry. See function `getQuantityTypeKey`.
- * @beta
+/** String used to uniquely identify a QuantityType in the quantity registry. See function [[QuantityType.getQuantityTypeKey]].
+ * @public
  */
 export type QuantityTypeKey = string;
 
-/** Function to return a QuantityTypeKey given either a QuantityType or a string
- * @beta
+/** String used to uniquely identify a UnitProp.
+ * @public
+ */
+export type UnitNameKey = string;
+
+/**
+ * Class that contains alternate Unit Labels. These labels are used when parsing strings to quantities.
+ * One use case is to allow a "^", which is easily input, to be used to specify "°".
+ * @internal
+ */
+export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider {
+  private _alternateLabelRegistry = new Map<UnitNameKey, Set<string>>();
+
+  public addAlternateLabels(key: UnitNameKey, ...labels: string[]) {
+    [...labels].forEach((value) => this._alternateLabelRegistry.get(key)?.add(value));
+  }
+
+  constructor(defaultAlternates?: Map<UnitNameKey, Set<string>>) {
+    if (defaultAlternates) {
+      this._alternateLabelRegistry = defaultAlternates;
+    }
+  }
+
+  public getAlternateUnitLabels(unit: UnitProps): string[] | undefined {
+    const key: UnitNameKey = unit.name;
+    const labels = this._alternateLabelRegistry.get(key);
+    if (labels)
+      return [...labels.values()];
+
+    return undefined;
+  }
+}
+
+/**
+ * Function to return a QuantityTypeKey given either a QuantityType enum value or a string. This allows caching and
+ * retrieving standard and custom quantity types.
+ * @public
  */
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey {
   // For QuantityType enum values, build a string that shouldn't collide with anything a user may come up with
@@ -41,67 +100,10 @@ export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey {
   return type;
 }
 
-/** Properties that define an EditorSpec for editing a custom formatting property that is stored in the "custom" property in the FormatProps.
- * The editor controls will be automatically generated in the UI and are limited to a checkbox to set a boolean value, a text dropdown/select
- * component to pick a string value from a list of options, and a text input component that returns a string value.
- * @beta
- */
-export interface CustomFormatPropEditorSpec {
-  editorType: "checkbox" | "text" | "select";
-  label: string;
-}
-
-/** CheckboxFormatPropEditorSpec defines getter and setter method for a boolean property editor.
- * @beta
- */
-export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec {
-  editorType: "checkbox";
-  getBool: (props: FormatProps) => boolean;
-  setBool: (props: FormatProps, isChecked: boolean) => FormatProps;
-}
-
-/** CheckboxFormatPropEditorSpec type guard.
- * @beta
- */
-export const isCheckboxFormatPropEditorSpec = (item: CustomFormatPropEditorSpec): item is CheckboxFormatPropEditorSpec => {
-  return item.editorType === "checkbox";
-};
-
-/** TextInputFormatPropEditorSpec defines getter and setter method for a text input property editor.
- * @beta
- */
-export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
-  editorType: "text";
-  getString: (props: FormatProps) => string;
-  setString: (props: FormatProps, value: string) => FormatProps;
-}
-
-/** TextInputFormatPropEditorSpec type guard.
- * @beta
- */
-export const isTextInputFormatPropEditorSpec = (item: CustomFormatPropEditorSpec): item is TextInputFormatPropEditorSpec => {
-  return item.editorType === "text";
-};
-
-/** TextSelectFormatPropEditorSpec defines getter and setter method for a Select/Dropdown property editor.
- * @beta
- */
-export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSpec {
-  editorType: "select";
-  selectOptions: { label: string, value: string }[];
-  getString: (props: FormatProps) => string;
-  setString: (props: FormatProps, value: string) => FormatProps;
-}
-
-/** TextSelectFormatPropEditorSpec type guard.
- * @beta
- */
-export const isTextSelectFormatPropEditorSpec = (item: CustomFormatPropEditorSpec): item is TextSelectFormatPropEditorSpec => {
-  return item.editorType === "select";
-};
-
-/** Definition of a standard QuantityType that is registered with the QuantityFormatter.
- * @beta
+/**
+ * This interface supplies the definition of a `standard` quantity type that is registered with the QuantityFormatter.
+ * A `standard` quantity type could be one of the nine delivered QuantityTypes or a CustomQuantityTypeDefinition.
+ * @public
  */
 export interface QuantityTypeDefinition {
   /** String used as a key to look up the quantity type. If defining a [[CustomQuantityTypeDefinition]] the QuantityTypeKey
@@ -118,17 +120,17 @@ export interface QuantityTypeDefinition {
   description: string;
   /* Provide a default FormatProps for a unit system. */
   getDefaultFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
-  /** Generate a [FormatterSpec]$(core-quantity) that will be called to format values.*/
+  /** Async function to generate a [FormatterSpec]$(core-quantity) that will be called to format values.*/
   generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
-  /** Generate a [ParserSpec]$(core-quantity) that will be called to parse a string into a quantity value.*/
-  generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
+  /** Async function to generate a [ParserSpec]$(core-quantity) that will be called to parse a string into a quantity value.*/
+  generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider, alternateUnitLabelsProvider?: AlternateUnitLabelsProvider) => Promise<ParserSpec>;
 }
 
 /** CustomQuantityTypeDefinition interface is used to define a Custom quantity type that can be registered with the [[QuantityFormatter]].
  * A custom quantity formatter must be able to generate a FormatterSpec and ParserSpec that will be called to format and parse values.
  * Optionally it can provide specification of custom properties that it will use to define any formatting options. CustomQuantityTypeDefinitions
  * must be registered with the [[QuantityFormatter]] using the method `IModelApp.quantityFormatter.registerQuantityType`.
- * @beta
+ * @public
  */
 export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
   /** Return true if the FormatProps have the necessary `custom` property definition */
@@ -142,13 +144,13 @@ export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
 }
 
 /** CustomQuantityTypeDefinition type guard.
- * @beta
+ * @public
 */
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition {
   return !!(item as CustomQuantityTypeDefinition).isCompatibleFormatProps;
 }
 
-/** private class to hold standard quantity definitions and implement QuantityTypeDefinition interface */
+/** private class to hold standard quantity definitions as defined by QuantityType enum and implement QuantityTypeDefinition interface */
 class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
   private _label: string | undefined;
   private _description: string | undefined;
@@ -164,16 +166,17 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
     if (!this._label) {
       this._label = IModelApp.localization.getLocalizedString(this._labelKey);
     }
-    return this._label;
+    return this._label ?? "";
   }
 
   public get description(): string {
     if (!this._description) {
       this._description = IModelApp.localization.getLocalizedString(this._descriptionKey);
     }
-    return this._description;
+    return this._description ?? this.label;
   }
 
+  /** Get a default format to show quantity in persistence unit with precision or 6 decimal places.  */
   public getDefaultFormatPropsBySystem(requestedSystem: UnitSystemKey): FormatProps {
     // Fallback same as Format "DefaultRealU" in Formats ecschema
     const fallbackProps: FormatProps = {
@@ -197,46 +200,53 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
     return fallbackProps;
   }
 
-  public async generateFormatterSpec(formatProps: FormatProps, unitsProvider: UnitsProvider) {
+  public async generateFormatterSpec(formatProps: FormatProps, unitsProvider: UnitsProvider): Promise<FormatterSpec> {
     const format = await Format.createFromJSON(this.key, unitsProvider, formatProps);
     return FormatterSpec.create(format.name, format, unitsProvider, this.persistenceUnit);
   }
 
-  public async generateParserSpec(formatProps: FormatProps, unitsProvider: UnitsProvider) {
+  public async generateParserSpec(formatProps: FormatProps, unitsProvider: UnitsProvider, alternateUnitLabelsProvider?: AlternateUnitLabelsProvider) {
     const format = await Format.createFromJSON(this.key, unitsProvider, formatProps);
-    return ParserSpec.create(format, unitsProvider, this.persistenceUnit);
+    return ParserSpec.create(format, unitsProvider, this.persistenceUnit, alternateUnitLabelsProvider);
   }
 }
 
 /** Override format entries can define formats for any of the different unit systems.
- * @beta
+ * @public
  */
 export interface OverrideFormatEntry {
+  /** Override format for "imperial" unit system */
   imperial?: FormatProps;
+  /** Override format for "metric" unit system */
   metric?: FormatProps;
+  /** Override format for "usCustomary" unit system */
   usCustomary?: FormatProps;
+  /** Override format for "usSurvey" unit system */
   usSurvey?: FormatProps;
 }
 
 /** Interface that defines the functions required to be implemented to provide custom formatting and parsing of a custom quantity type.
- * @beta
+ * @public
  */
 export interface FormatterParserSpecsProvider {
+  /** Custom quantity id */
   quantityType: QuantityTypeArg;
+  /** Async function to return FormatterSpec for a custom quantity type */
   createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
+  /** Async function to return ParserSpec for a custom quantity type */
   createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
 }
 
 /** Arguments sent to FormattingUnitSystemChanged event listeners.
- * @beta
+ * @public
  */
 export interface FormattingUnitSystemChangedArgs {
-  /* string that defines unit system activated. */
+  /** string that defines unit system activated. */
   readonly system: UnitSystemKey;
 }
 
 /** Arguments sent to QuantityFormatsChanged event listeners.
- * @beta
+ * @public
  */
 export interface QuantityFormatsChangedArgs {
   /** string that represents the QuantityType that has been overriden or the overrides cleared. */
@@ -244,7 +254,7 @@ export interface QuantityFormatsChangedArgs {
 }
 
 /** Arguments sent to [[UnitFormattingSettingsProvider]] when overrides are changed.
- * @beta
+ * @public
  */
 export interface QuantityFormatOverridesChangedArgs {
   /** string that represents the QuantityType that has been overriden or the overrides cleared. */
@@ -255,9 +265,12 @@ export interface QuantityFormatOverridesChangedArgs {
   readonly unitSystem?: UnitSystemKey;
 }
 
-/** The UnitFormattingSettingsProvider interface is used to store and retrieve override FormatProps and Presentation Unit System for use by the QuantityFormatter.
- *  If no UnitFormattingSettingsProvider is supplied to the QuantityFormatter then any overrides set are lost when the session is closed.
- *  @beta
+/**
+ * The UnitFormattingSettingsProvider interface is used to store and retrieve override FormatProps and Presentation Unit System
+ * for use by the QuantityFormatter. If no UnitFormattingSettingsProvider is supplied to the QuantityFormatter then any overrides
+ * set are lost when the session is closed. The `ui-test-app` has and example implementation that uses browser local storage via the
+ * class [[LocalUnitFormatProvider]] [here](https://github.com/iTwin/itwinjs-core/blob/d341e030d4c1427effd80ea54b3d57fec8ad1bc1/test-apps/ui-test-app/src/frontend/index.tsx#L315).
+ *  @public
  */
 export interface UnitFormattingSettingsProvider {
   /** serializes JSON object containing format overrides for a specific quantity type. */
@@ -291,18 +304,25 @@ export interface UnitFormattingSettingsProvider {
  * identified by the [[QuantityType]] enum. [[CustomQuantityTypeDefinition]] can be registered to extend the available quantity types available
  * by frontend tools. The QuantityFormatter also allows the default formats to be overriden.
  *
- * @beta
+ * @public
  */
 export class QuantityFormatter implements UnitsProvider {
   private _unitsProvider: UnitsProvider = new BasicUnitsProvider();
+  private _alternateUnitLabelsRegistry = new AlternateUnitLabelsRegistry(getDefaultAlternateUnitLabels());
+  /** Registry containing available quantity type definitions. */
   protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition> = new Map<QuantityTypeKey, QuantityTypeDefinition>();
+  /** Active UnitSystem key - must be one of "imperial", "metric", "usCustomary", or "usSurvey". */
   protected _activeUnitSystem: UnitSystemKey = "imperial";
+  /** Map of FormatSpecs for all available QuantityTypes and the active Unit System */
   protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
+  /** Map of ParserSpecs for all available QuantityTypes and the active Unit System */
   protected _activeParserSpecsByType = new Map<QuantityTypeKey, ParserSpec>();
+  /** Map of FormatSpecs that have been overriden from the default. */
   protected _overrideFormatPropsByUnitSystem = new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>();
+  /** Optional object that gets called to store and retrieve format overrides. */
   protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
 
-  /** set the settings provider and if not imodel specific initialize setting for user. */
+  /** Set the settings provider and if not iModel specific initialize setting for user. */
   public async setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider) {
     this._unitFormattingSettingsProvider = provider;
     if (!provider.maintainOverridesPerIModel)
@@ -345,6 +365,7 @@ export class QuantityFormatter implements UnitsProvider {
     return overrideMap.get(quantityTypeKey);
   }
 
+  /** Method used to register all QuantityTypes defined in QuantityType enum. */
   protected async initializeQuantityTypesRegistry() {
     // QuantityType.Length
     const lengthUnit = await this.findUnitByName("Units.M");
@@ -407,17 +428,15 @@ export class QuantityFormatter implements UnitsProvider {
     // load cache for every registered QuantityType
     [...this.quantityTypesRegistry.keys()].forEach((key) => {
       const entry = this.quantityTypesRegistry.get(key)!;
-      formatPropsByType.set(entry, this.getFormatPropsByQuantityTypeEntyAndSystem(entry, systemKey));
+      formatPropsByType.set(entry, this.getFormatPropsByQuantityTypeEntryAndSystem(entry, systemKey));
     });
 
-    const formatPropPromises = new Array<Promise<void>>();
     for (const [entry, formatProps] of formatPropsByType) {
-      formatPropPromises.push(this.loadFormatAndParserSpec(entry, formatProps));
+      await this.loadFormatAndParserSpec(entry, formatProps);
     }
-    await Promise.all(formatPropPromises);
   }
 
-  private getFormatPropsByQuantityTypeEntyAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
+  private getFormatPropsByQuantityTypeEntryAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
     if (!ignoreOverrides) {
       const overrideProps = this.getOverrideFormatPropsByQuantityType(quantityEntry.key, requestedSystem);
       if (overrideProps)
@@ -429,7 +448,7 @@ export class QuantityFormatter implements UnitsProvider {
 
   private async loadFormatAndParserSpec(quantityTypeDefinition: QuantityTypeDefinition, formatProps: FormatProps) {
     const formatterSpec = await quantityTypeDefinition.generateFormatterSpec(formatProps, this.unitsProvider);
-    const parserSpec = await quantityTypeDefinition.generateParserSpec(formatProps, this.unitsProvider);
+    const parserSpec = await quantityTypeDefinition.generateParserSpec(formatProps, this.unitsProvider, this.alternateUnitLabelsProvider);
     this._activeFormatSpecsByType.set(quantityTypeDefinition.key, formatterSpec);
     this._activeParserSpecsByType.set(quantityTypeDefinition.key, parserSpec);
   }
@@ -501,19 +520,65 @@ export class QuantityFormatter implements UnitsProvider {
     await this.loadFormatAndParsingMapsForSystem();
   }
 
+  /** Return a map that serves as a registry of all standard and custom quantity types. */
   public get quantityTypesRegistry() {
     return this._quantityTypeRegistry;
   }
 
+  /** Return the class the contain map of all alternate labels for units. These alternate labels are used when parsing strings in quantity values. */
+  public get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider {
+    return this._alternateUnitLabelsRegistry;
+  }
+
+  /**
+   * Add one or more alternate labels for a unit - these labels are used during string parsing.
+   * @param key UnitNameKey which comes from `UnitProps.name`
+   * @param labels one or more unit labels
+   */
+  public addAlternateLabels(key: UnitNameKey, ...labels: string[]) {
+    this._alternateUnitLabelsRegistry.addAlternateLabels(key, ...labels);
+    this.onUnitsProviderChanged.emit();
+  }
+
+  /** Get/Set the active UnitsProvider class. */
   public get unitsProvider() {
     return this._unitsProvider;
   }
 
   public set unitsProvider(unitsProvider: UnitsProvider) {
+    this.setUnitsProvider(unitsProvider); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }
+
+  /** async method to set a units provider and reload caches */
+  public async setUnitsProvider(unitsProvider: UnitsProvider) {
     this._unitsProvider = unitsProvider;
+
+    try {
+      // force all cached data to be reinitialized
+      await IModelApp.quantityFormatter.onInitialized();
+    } catch(err) {
+      Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, BentleyError.getErrorMessage(err), BentleyError.getErrorMetadata(err));
+      Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.");
+      // If there is a problem initializing with the given provider, default back to the internal provider
+      await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider();
+      return;
+    }
+
+    // force default tool to start so any tool that may be using cached data will not be using bad data.
+    if (IModelApp.toolAdmin)
+      await IModelApp.toolAdmin.startDefaultTool();
     this.onUnitsProviderChanged.emit();
   }
 
+  /** Async call typically used after IModel is closed to reset UnitsProvider to default one that does not require an Units schema. */
+  public async resetToUseInternalUnitsProvider() {
+    if (this._unitsProvider instanceof BasicUnitsProvider)
+      return;
+
+    await this.setUnitsProvider(new BasicUnitsProvider());
+  }
+
+  /** Async call to register a CustomQuantityType and load the FormatSpec and ParserSpec for the new type. */
   public async registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean) {
     if (!replace && this._quantityTypeRegistry.has(entry.key))
       return false;
@@ -533,7 +598,7 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Reinitialize caches. Typically called by active UnitFormattingSettingsProvider.
    * startDefaultTool - set to true to start the Default to instead of leaving any active tool pointing to cached unit data that is no longer valid
-   * @beta
+   * @public
    */
   public async reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>,
     unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void> {
@@ -569,18 +634,20 @@ export class QuantityFormatter implements UnitsProvider {
       return IModelApp.toolAdmin.startDefaultTool();
   }
 
-  /** True if tool quantity values should be displayed in imperial units; false for metric. Changing this flag triggers an asynchronous request to refresh the cached formats. */
+  /** Retrieve the active [[UnitSystemKey]] which is used to determine what formats are to be used to display quantities */
   public get activeUnitSystem(): UnitSystemKey { return this._activeUnitSystem; }
 
+  /** Clear any formatting override for specified quantity type, but only for the "active" Unit System. */
   public async clearOverrideFormats(type: QuantityTypeArg) {
     await this.clearOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type));
   }
 
+  /** Set formatting override for specified quantity type, but only for the "active" Unit System. */
   public async setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry) {
     await this.setOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type), overrideEntry);
   }
 
-  // TODO: make more generic to support "named" systems.
+  /** Set Override Format for a quantity type, but only in the "active" Unit System. */
   public async setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps) {
     const typeKey = this.getQuantityTypeKey(type);
     let overrideEntry: OverrideFormatEntry = {};
@@ -596,6 +663,7 @@ export class QuantityFormatter implements UnitsProvider {
     await this.setOverrideFormatsByQuantityTypeKey(typeKey, overrideEntry);
   }
 
+  /** Clear formatting override for all quantity types, but only for the "active" Unit System. */
   public async clearAllOverrideFormats() {
     if (0 === this._overrideFormatPropsByUnitSystem.size)
       return;
@@ -621,11 +689,12 @@ export class QuantityFormatter implements UnitsProvider {
     }
   }
 
-  /** Converts a QuantityTypeArg into a QuantityTypeKey/string value. */
+  /** Converts a QuantityTypeArg into a QuantityTypeKey/string value that can be used to lookup custom and standard quantity types. */
   public getQuantityTypeKey(type: QuantityTypeArg): string {
     return getQuantityTypeKey(type);
   }
 
+  /** Return [[QuantityTypeDefinition]] if type has been registered. Standard QuantityTypes are automatically registered. */
   public getQuantityDefinition(type: QuantityTypeArg) {
     return this.quantityTypesRegistry.get(this.getQuantityTypeKey(type));
   }
@@ -637,6 +706,7 @@ export class QuantityFormatter implements UnitsProvider {
     return this._activeFormatSpecsByType.get(this.getQuantityTypeKey(type));
   }
 
+  /** Asynchronous Call to get a FormatterSpec for a QuantityType. This formatter spec can be used to synchronously format quantities. */
   public async generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps) {
     const quantityTypeDefinition = this.quantityTypesRegistry.get(this.getQuantityTypeKey(type));
     if (quantityTypeDefinition)
@@ -645,7 +715,7 @@ export class QuantityFormatter implements UnitsProvider {
     throw new Error(`Unable to generate FormatSpec for QuantityType ${type}`);
   }
 
-  /** Asynchronous Call to get a FormatterSpec of a QuantityType.
+  /** Asynchronous Call to get a FormatterSpec for a QuantityType and a Unit System. This formatter spec can be used to synchronously format quantities.
    * @param type        One of the built-in quantity types supported.
    * @param system      Requested unit system key. Note it is more efficient to use setActiveUnitSystem to set up formatters for all
    * quantity types of a unit system.
@@ -664,7 +734,7 @@ export class QuantityFormatter implements UnitsProvider {
     const entry = this.quantityTypesRegistry.get(quantityKey);
     if (!entry)
       throw new Error(`Unable to find registered quantity type with key ${quantityKey}`);
-    return entry.generateFormatterSpec(this.getFormatPropsByQuantityTypeEntyAndSystem(entry, requestedSystem), this.unitsProvider);
+    return entry.generateFormatterSpec(this.getFormatPropsByQuantityTypeEntryAndSystem(entry, requestedSystem), this.unitsProvider);
   }
 
   /** Asynchronous Call to get a FormatterSpec for a QuantityType.
@@ -686,6 +756,7 @@ export class QuantityFormatter implements UnitsProvider {
     return this._activeParserSpecsByType.get(this.getQuantityTypeKey(type));
   }
 
+  /** Asynchronous Call to get a ParserSpec for a QuantityType. If the UnitSystemKey is not specified the active Unit System is used. **/
   public async getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined> {
     const quantityKey = this.getQuantityTypeKey(type);
     const requestedSystem = system ?? this.activeUnitSystem;
@@ -699,7 +770,7 @@ export class QuantityFormatter implements UnitsProvider {
     const entry = this.quantityTypesRegistry.get(quantityKey);
     if (!entry)
       throw new Error(`Unable to find registered quantity type with key ${quantityKey}`);
-    return entry.generateParserSpec(this.getFormatPropsByQuantityTypeEntyAndSystem(entry, requestedSystem), this.unitsProvider);
+    return entry.generateParserSpec(this.getFormatPropsByQuantityTypeEntryAndSystem(entry, requestedSystem), this.unitsProvider);
   }
 
   /** Asynchronous Call to get a ParserSpec for a QuantityType.
@@ -737,7 +808,9 @@ export class QuantityFormatter implements UnitsProvider {
     return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
-  /** Get a UnitSystemKey from a string that may have been entered via a key-in. Support different variation of unit system names.
+  /**
+   * Get a UnitSystemKey from a string that may have been entered via a key-in. Supports different variation of
+   * unit system names that have been used in the past.
    */
   public getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey {
     switch (inputSystem.toLowerCase()) {
@@ -763,6 +836,7 @@ export class QuantityFormatter implements UnitsProvider {
     return "imperial";
   }
 
+  /** Return true if the QuantityType is using an override format. */
   public hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean {
     const quantityTypeKey = this.getQuantityTypeKey(type);
 
@@ -780,26 +854,33 @@ export class QuantityFormatter implements UnitsProvider {
     return false;
   }
 
+  /** Get the cached FormatProps give a quantity type. If ignoreOverrides is false then if the format has been overridden
+   * the overridden format is returned, else the standard format is returned.
+   */
   public getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean) {
     const quantityEntry = this.quantityTypesRegistry.get(this.getQuantityTypeKey(quantityType));
     if (quantityEntry)
-      return this.getFormatPropsByQuantityTypeEntyAndSystem(quantityEntry, requestedSystem ?? this.activeUnitSystem, ignoreOverrides);
+      return this.getFormatPropsByQuantityTypeEntryAndSystem(quantityEntry, requestedSystem ?? this.activeUnitSystem, ignoreOverrides);
     return undefined;
   }
 
   // keep following to maintain existing API of implementing UnitsProvider
-  public async findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
-    return this._unitsProvider.findUnit(unitLabel, phenomenon, unitSystem);
+  /** Find [UnitProp] for a specific unit label. */
+  public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
+    return this._unitsProvider.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
   }
 
+  /** Returns all defined units for the specified Unit Family/Phenomenon. */
   public async getUnitsByFamily(phenomenon: string): Promise<UnitProps[]> {
     return this._unitsProvider.getUnitsByFamily(phenomenon);
   }
 
+  /** Find [UnitProp] for a specific unit name. */
   public async findUnitByName(unitName: string): Promise<UnitProps> {
     return this._unitsProvider.findUnitByName(unitName);
   }
 
+  /** Returns data needed to convert from one Unit to another in the same Unit Family/Phenomenon. */
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion> {
     return this._unitsProvider.getConversion(fromUnit, toUnit);
   }

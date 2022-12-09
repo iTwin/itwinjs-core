@@ -86,9 +86,13 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     const size = `${Math.floor(Math.random() * 100).toString()} MB`;
     return (
       <tr key={iModelInfo.id}>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}><span className="icon icon-placeholder" />{iModelInfo.name}</td>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>{size}</td>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>This device</td>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>{iModelInfo.createdDate.toLocaleString()}</td>
         <td>
           <ToggleSwitch className="toggle-offline" />
@@ -165,7 +169,9 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
         <div className="header">
           <span className="title">Recent</span>
           <SearchBox placeholder="Search ..." onValueChanged={this._handleSearchValueChanged} valueChangedDelay={300} />
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <span className={classThumbnails} title="Thumbnails" onClick={this._onShowThumbnails} />
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <span className={classList} title="List" onClick={this._onShowDetails} />
         </div>
         <div className="cards-scroll-y">

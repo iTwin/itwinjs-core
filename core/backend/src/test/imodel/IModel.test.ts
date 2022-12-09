@@ -2,21 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { assert, expect } from "chai";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { BlobDaemon } from "@bentley/imodeljs-native";
-import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, using } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType,
-  GeoCoordinatesRequestProps, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
-  IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
-  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
+  FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
+  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
+  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping,
+  TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
   Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
@@ -32,9 +30,10 @@ import {
   SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
-import { HubMock } from "../HubMock";
-import { DisableNativeAssertions, IModelTestUtils } from "../index";
+import { HubMock } from "../../HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { DisableNativeAssertions } from "../TestUtils";
 
 // spell-checker: disable
 
@@ -63,6 +62,7 @@ describe("iModel", () => {
 
   before(async () => {
     originalEnv = { ...process.env };
+
     IModelTestUtils.registerTestBimSchema();
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
@@ -229,7 +229,7 @@ describe("iModel", () => {
 
     const newEl = el3;
     newEl.federationGuid = undefined;
-    const newId = imodel2.elements.insertElement(newEl);
+    const newId = imodel2.elements.insertElement(newEl.toJSON());
     assert.isTrue(Id64.isValidId64(newId), "insert worked");
   });
 
@@ -293,7 +293,7 @@ describe("iModel", () => {
       const element: Element = imodel2.elements.createElement(elementProps);
       element.setUserProperties("performanceTest", { s: `String-${i}`, n: i });
 
-      const elementId = imodel2.elements.insertElement(element);
+      const elementId = imodel2.elements.insertElement(element.toJSON());
       assert.isTrue(Id64.isValidId64(elementId));
     }
   });
@@ -305,14 +305,14 @@ describe("iModel", () => {
     const testMaterialName = "test material name";
     const testPaletteName = "test palette name";
     const testDescription = "test description";
-    const color = [25, 32, 9];
-    const specularColor = [99, 255, 1];
+    const color = [0.3, 0.7, 0.8];
+    const specularColor = [0.1, 1, 0];
     const finish = 0.4;
     const transmit = 0.1;
     const diffuse = 0.24;
     const specular = 0.9;
     const reflect = 0.3;
-    const reflectColor = [255, 0, 127];
+    const reflectColor = [1, 0, 0.5];
     /* eslint-disable @typescript-eslint/naming-convention */
     const textureMapProps: TextureMapProps = {
       pattern_angle: 3.0,
@@ -375,7 +375,7 @@ describe("iModel", () => {
     expect(patternMap.TextureId).to.equal(textureMapProps.TextureId);
   });
 
-  it.skip("attempt to apply material to new element in imodel5", () => {
+  it("attempt to apply material to new element in imodel5", () => {
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
     const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
@@ -478,6 +478,7 @@ describe("iModel", () => {
     const styleId = imodel2.elements.insertElement(props);
     let style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
     expect(style instanceof DisplayStyle3d).to.be.true;
+    expect(style.code.spec).equal(imodel2.codeSpecs.getByName(BisCodeSpec.displayStyle).id);
 
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SolidFill);
     expect(style.settings.backgroundColor.equals(ColorDef.blue)).to.be.true;
@@ -636,7 +637,8 @@ describe("iModel", () => {
     assert.exists(model);
     assert.isTrue(model instanceof geomModel);
     roundtripThroughJson(model);
-    const modelExtents: AxisAlignedBox3d = (model as PhysicalModel).queryExtents();
+    const modelExtents: AxisAlignedBox3d = (model as PhysicalModel).queryExtents(); // eslint-disable-line deprecation/deprecation
+
     assert.isBelow(modelExtents.low.x, modelExtents.high.x);
     assert.isBelow(modelExtents.low.y, modelExtents.high.y);
     assert.isBelow(modelExtents.low.z, modelExtents.high.z);
@@ -795,7 +797,11 @@ describe("iModel", () => {
   it("should iterate ViewDefinitions", () => {
     // imodel2 contains 3 SpatialViewDefinitions and no other views.
     let numViews = 0;
-    let result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return true; });
+    let result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => {
+      ++numViews;
+      return true;
+    });
+
     expect(result).to.be.true;
     expect(numViews).to.equal(3);
 
@@ -812,13 +818,21 @@ describe("iModel", () => {
 
     // Query specifically for 2d views
     numViews = 0;
-    result = imodel2.views.iterateViews({ from: "BisCore.ViewDefinition2d" }, (_view: ViewDefinition) => { ++numViews; return true; });
+    result = imodel2.views.iterateViews({ from: "BisCore.ViewDefinition2d" }, (_view: ViewDefinition) => {
+      ++numViews;
+      return true;
+    });
+
     expect(result).to.be.true;
     expect(numViews).to.equal(0);
 
     // Terminate iteration on first view
     numViews = 0;
-    result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return false; });
+    result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => {
+      ++numViews;
+      return false;
+    });
+
     expect(result).to.be.false;
     expect(numViews).to.equal(1);
   });
@@ -886,7 +900,7 @@ describe("iModel", () => {
     newTestElem.asAny.dtUtc = new Date("2015-03-25");
     newTestElem.asAny.p3d = new Point3d(1, 2, 3);
 
-    const newTestElemId = imodel4.elements.insertElement(newTestElem);
+    const newTestElemId = imodel4.elements.insertElement(newTestElem.toJSON());
 
     assert.isTrue(Id64.isValidId64(newTestElemId), "insert worked");
 
@@ -908,7 +922,7 @@ describe("iModel", () => {
     const editElem = newTestElemFetched;
     editElem.asAny.location = loc2;
     try {
-      imodel4.elements.updateElement(editElem);
+      imodel4.elements.updateElement(editElem.toJSON());
     } catch (_err) {
       assert.fail("Element.update failed");
     }
@@ -921,7 +935,7 @@ describe("iModel", () => {
     assert.equal(afterUpdateElemFetched.asAny.arrayOfInt.length, 300);
 
     afterUpdateElemFetched.asAny.arrayOfInt = [99, 3];
-    imodel4.elements.updateElement(afterUpdateElemFetched);
+    imodel4.elements.updateElement(afterUpdateElemFetched.toJSON());
 
     const afterShortenArray = imodel4.elements.getElement(afterUpdateElemFetched.id);
     assert.equal(afterUpdateElemFetched.asAny.arrayOfInt.length, 2);
@@ -929,7 +943,7 @@ describe("iModel", () => {
 
     // Make array longer
     afterShortenArray.asAny.arrayOfInt = [1, 2, 3];
-    imodel4.elements.updateElement(afterShortenArray);
+    imodel4.elements.updateElement(afterShortenArray.toJSON());
     const afterLengthenArray = imodel4.elements.getElement(afterShortenArray.id);
     assert.equal(afterLengthenArray.asAny.arrayOfInt.length, 3);
     assert.deepEqual(afterLengthenArray.asAny.arrayOfInt, [1, 2, 3]);
@@ -944,7 +958,7 @@ describe("iModel", () => {
     const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
     const category = imodel4.elements.getElement<SpatialCategory>(categoryId);
     const subCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
-    assert.throws(() => imodel4.elements.deleteElement(categoryId), IModelError);
+    assert.throws(() => imodel4.elements.deleteElement(categoryId), "error deleting element");
     assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
     assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
 
@@ -1001,8 +1015,12 @@ describe("iModel", () => {
   it("update the project extents", async () => {
     const originalExtents = imodel1.projectExtents;
     const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
-    newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
-    newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
+    newExtents.low.x -= 50;
+    newExtents.low.y -= 25;
+    newExtents.low.z -= 189;
+    newExtents.high.x += 1087;
+    newExtents.high.y += 19;
+    newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
     const updatedProps = imodel1.nativeDb.getIModelProps();
@@ -1312,7 +1330,7 @@ describe("iModel", () => {
 
     // Update the model
     newModelPersist.isPrivate = false;
-    testImodel.models.updateModel(newModelPersist);
+    testImodel.models.updateModel(newModelPersist.toJSON());
     //  ... and check that it updated the model in the db
     const newModelPersist2 = testImodel.models.getModel(newModelId);
     assert.isFalse(newModelPersist2.isPrivate);
@@ -1387,6 +1405,7 @@ describe("iModel", () => {
     const id2 = elements.insertElement(elementProps);
 
     const geometricModel = testImodel.models.getModel<GeometricModel>(newModelId);
+    // eslint-disable-next-line deprecation/deprecation
     assert.throws(() => geometricModel.queryExtents()); // no geometry
 
     // Create grouping relationships from 0 to 1 and from 0 to 2
@@ -1483,7 +1502,7 @@ describe("iModel", () => {
         code: Code.createEmpty(),
       };
 
-      id1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
+      id1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
       assert.isTrue(Id64.isValidId64(id1));
 
       // The second one should point to the first.
@@ -1492,7 +1511,7 @@ describe("iModel", () => {
       elementProps.parent = { id: id1, relClassName: trelClassName };
       (elementProps as any).longProp = 4294967295;     // make sure that we can save values in the range 0 ... UINT_MAX
 
-      id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
+      id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
       assert.isTrue(Id64.isValidId64(id2));
     }
 
@@ -1514,7 +1533,7 @@ describe("iModel", () => {
       // Change el2 to point to itself.
       const el2Modified = testImodel.elements.getElement(id2);
       el2Modified.asAny.relatedElement = { id: id2, relClassName: trelClassName };
-      testImodel.elements.updateElement(el2Modified);
+      testImodel.elements.updateElement(el2Modified.toJSON());
       // Test that el2 points to itself.
       const el2after: Element = testImodel.elements.getElement(id2);
       assert.deepEqual(el2after.asAny.relatedElement.id, id2);
@@ -1525,7 +1544,7 @@ describe("iModel", () => {
       // Test that we can null out the navigation property
       const el2Modified = testImodel.elements.getElement(id2);
       el2Modified.asAny.relatedElement = null;
-      testImodel.elements.updateElement(el2Modified);
+      testImodel.elements.updateElement(el2Modified.toJSON());
       // Test that el2 has no relatedElement property value
       const el2after: Element = testImodel.elements.getElement(id2);
       assert.isUndefined(el2after.asAny.relatedElement);
@@ -1678,216 +1697,309 @@ describe("iModel", () => {
     assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.extent !== undefined);
     assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.extent!.equals(gcs.horizontalCRS!.extent!));
 
+    // The following were not in initial definition but were completed after storage.
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.datum !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.datum!.additionalTransformPaths !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.datum!.additionalTransformPaths!.length >= 0);
+
     // When a gcs is present then the ECEF is automatically defined.
     assert.isTrue(iModel2.ecefLocation !== undefined);
 
     iModel2.close();
   });
 
-  it("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
+  if (!ProcessDetector.isIOSAppBackend) {
+    it("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
+      const convertTest = async (fileName: string, fileGCS: GeographicCRSProps, datum: string | GeographicCRSProps, inputCoord: XYZProps, outputCoord: PointWithStatus) => {
 
-    const convertTest = async (fileName: string, fileGCS: GeographicCRSProps, datum: string | GeographicCRSProps, inputCoord: XYZProps, outputCoord: PointWithStatus) => {
+        const args = {
+          rootSubject: { name: "TestSubject", description: "test project" },
+          client: "ABC Engineering",
+          globalOrigin: { x: 0.0, y: 0.0 },
+          projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+          guid: Guid.createValue(),
+        };
 
-      const args = {
-        rootSubject: { name: "TestSubject", description: "test project" },
-        client: "ABC Engineering",
-        globalOrigin: { x: 0.0, y: 0.0 },
-        projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
-        guid: Guid.createValue(),
+        let datumOrGCS: string;
+        if (typeof datum === "object")
+          datumOrGCS = JSON.stringify(datum);
+        else
+          datumOrGCS = datum;
+
+        const testFile = IModelTestUtils.prepareOutputFile("IModel", fileName);
+        const iModel = SnapshotDb.createEmpty(testFile, args);
+
+        iModel.setGeographicCoordinateSystem(fileGCS);
+        iModel.updateIModelProps();
+        iModel.saveChanges();
+
+        const testPoint1: XYZProps[] = [];
+        testPoint1.push(inputCoord);
+        const requestProps1: GeoCoordinatesRequestProps = { target: datumOrGCS, iModelCoords: testPoint1 };
+        const response1 = await iModel.getGeoCoordinatesFromIModelCoordinates(requestProps1);
+
+        expect(response1.geoCoords[0].s === outputCoord.s).to.be.true;
+
+        // If success or warning we compare result
+        if (outputCoord.s === GeoCoordStatus.Success || outputCoord.s === GeoCoordStatus.OutOfUsefulRange) {
+
+          const expectedPt1 = Point3d.fromJSON(outputCoord.p);
+          const outPt1 = Point3d.fromJSON(response1.geoCoords[0].p);
+
+          expect(Geometry.isSamePoint3dXY(expectedPt1, outPt1)).to.be.true;
+          expect(Math.abs(expectedPt1.z - outPt1.z) < 0.0001).to.be.true;
+
+          // No point testing reversal when Out of useful range since reversibility is doubtful
+          if (outputCoord.s !== GeoCoordStatus.OutOfUsefulRange) {
+            const testPoint2: XYZProps[] = [];
+            testPoint2.push(outputCoord.p);
+            const requestProps2: IModelCoordinatesRequestProps = { source: datumOrGCS, geoCoords: testPoint2 };
+            const response2 = await iModel.getIModelCoordinatesFromGeoCoordinates(requestProps2);
+
+            const expectedPt2 = Point3d.fromJSON(inputCoord);
+            const outPt2 = Point3d.fromJSON(response2.iModelCoords[0].p);
+
+            expect(expectedPt2.distanceXY(outPt2) < 0.001).to.be.true;
+            expect(Math.abs(expectedPt2.z - outPt2.z) < 0.001).to.be.true;
+          }
+        }
+
+        iModel.close();
       };
 
-      let datumOrGCS: string;
-      if (typeof (datum) === "object")
-        datumOrGCS = JSON.stringify(datum);
-      else
-        datumOrGCS = datum;
-
-      const testFile = IModelTestUtils.prepareOutputFile("IModel", fileName);
-      const iModel = SnapshotDb.createEmpty(testFile, args);
-
-      iModel.setGeographicCoordinateSystem(fileGCS);
-      iModel.updateIModelProps();
-      iModel.saveChanges();
-
-      const testPoint1: XYZProps[] = [];
-      testPoint1.push(inputCoord);
-      const requestProps1: GeoCoordinatesRequestProps = { target: datumOrGCS, iModelCoords: testPoint1 };
-      const response1 = await iModel.getGeoCoordinatesFromIModelCoordinates(requestProps1);
-
-      const expectedPt1 = Point3d.fromJSON(outputCoord.p);
-      const outPt1 = Point3d.fromJSON(response1.geoCoords[0].p);
-
-      expect(Geometry.isSamePoint3dXY(expectedPt1, outPt1)).to.be.true;
-      expect(Math.abs(expectedPt1.z - outPt1.z) < 0.0001).to.be.true;
-      expect(response1.geoCoords[0].s === outputCoord.s);
-
-      const testPoint2: XYZProps[] = [];
-      testPoint2.push(outputCoord.p);
-      const requestProps2: IModelCoordinatesRequestProps = { source: datumOrGCS, geoCoords: testPoint2 };
-      const response2 = await iModel.getIModelCoordinatesFromGeoCoordinates(requestProps2);
-
-      const expectedPt2 = Point3d.fromJSON(inputCoord);
-      const outPt2 = Point3d.fromJSON(response2.iModelCoords[0].p);
-
-      expect(expectedPt2.distanceXY(outPt2) < 0.001).to.be.true;
-      expect(Math.abs(expectedPt2.z - outPt2.z) < 0.001).to.be.true;
-      expect(response1.geoCoords[0].s === 0);
-      iModel.close();
-    };
-
-    const EWRGCS: GeographicCRSProps = {
-      horizontalCRS: {
-        id: "EPSG:27700",
-        description: "OSGB 1936 / British National Grid",
-        source: "EPSG V6 [Large and medium scale topographic mapping and engin]",
-        datumId: "EPSG:6277",
-        datum: {
-          id: "EPSG:6277",
-          description: "OSGB36 - Use OSGB-7P-2. Consider OSGB/OSTN15 instead",
-          deprecated: true,
-          source: "EPSG V6.12 operation EPSG:1314 [EPSG]",
-          ellipsoidId: "EPSG:7001",
-          ellipsoid: {
-            equatorialRadius: 6377563.396,
-            polarRadius: 6356256.909237,
-            id: "EPSG:7001",
-            description: "Airy 1830",
-            source: "EPSG, Version 6 [EPSG]"},
-          transforms: [
-            {
-              method: "PositionalVector",
-              sourceEllipsoid: {
-                equatorialRadius: 6377563.396,
-                polarRadius: 6356256.909237,
-                id: "EPSG:7001"},
-              targetEllipsoid: {
-                equatorialRadius: 6378137,
-                polarRadius: 6356752.3142,
-                id: "WGS84"},
-              positionalVector: {
-                delta: {
-                  x: 446.448,
-                  y: -125.157,
-                  z: 542.06},
-                rotation: {
-                  x: 0.15,
-                  y: 0.247,
-                  z: 0.842},
-                scalePPM: -20.489}}]},
-        unit: "Meter",
-        projection: {
-          method: "TransverseMercator",
-          falseEasting: 400000,
-          falseNorthing: -100000,
-          centralMeridian: -2,
-          latitudeOfOrigin: 49,
-          scaleFactor: 0.999601272737422},
-        extent: {
-          southWest: {
-            latitude: 49.96,
-            longitude: -7.56},
-          northEast: {
-            latitude: 60.84,
-            longitude: 1.78}}},
-      verticalCRS: {
-        id: "ELLIPSOID"},
-      additionalTransform: {
-        helmert2DWithZOffset: {
-          translationX: 284597.3343,
-          translationY: 79859.4651,
-          translationZ: 0,
-          rotDeg: 0.5263624458992088,
-          scale: 0.9996703340508721}}};
-
-    await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 199247.08883859176, y: 150141.68625139236, z: 0.0 }, { p: { x:-0.80184489371471, y:51.978341907041205, z:0.0 }, s: 0 });
-    await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 66091.33104544488, y: 394055.0279323471, z:0.0 }, { p: { x: -2.8125, y: 54.162433968067798, z: 0.0 }, s: 0 });
-
-    await convertTest("ExtonCampus1.bim", { horizontalCRS: { id: "EPSG:2272" }, verticalCRS: { id: "NAVD88" } }, "WGS84", { x: 775970.3155166894, y: 83323.24543981979, z:130.74977547686285 }, { p: { x:-75.68712011112366, y:40.06524845273591, z:95.9769083 }, s: 0 });
-
-    await convertTest("BritishNatGrid-Ellipsoid1.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: 0 });
-    await convertTest("BritishNatGrid-Ellipsoid2.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "ETRF89", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2030365061523707, y: 49.960007477936202, z: 0.0 }, s: 0 });
-    await convertTest("BritishNatGrid-Ellipsoid3.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "OSGB", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: 0 });
-    await convertTest("GermanyDHDN-3-Ellipsoid1.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.035413954488630, y: 50.575070810112159, z: 0.0 }, s: 0 });
-    await convertTest("GermanyDHDN-3-Ellipsoid2.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "DHDN/3", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.035413954488630, y: 50.575070810112159, z: 0.0 }, s: 0 });
-    await convertTest("GermanyDHDN-3-Ellipsoid3.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "WGS84", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.034215937440818, y: 50.573862480894853, z: 0.0 }, s: 0 });
-    await convertTest("UTM83-10-NGVD29-1.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: 0.0 }, s: 0 });
-    await convertTest("UTM83-10-NGVD29-2.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "NAD83", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: 0 });
-    await convertTest("UTM83-10-NGVD29-3.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "WGS84", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: 0 });
-    await convertTest("UTM27-10-Ellipsoid1.bim", { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 623075.328, y: 4265650.532, z: 0.0 }, { p: { x: -121.58798236995744, y: 38.532616292207997, z: 0.0 }, s: 0 });
-    await convertTest("UTM27-10-Ellipsoid2.bim", { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "ELLIPSOID" } }, "NAD83", { x: 623075.328, y: 4265650.532, z: 0.0 }, { p: { x: -121.58905088839697, y: 38.532522753851708, z: 0.0 }, s: 0 });
-
-    await convertTest("UTM83-10-NGVD29-4.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" } }, { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: 0 });
-
-    await convertTest("UTM83-10-NGVD29-5.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "LL84" }, verticalCRS: { id: "GEOID" } }, { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: 0.7621583779125531 }, s: 0 });
-    await convertTest("UTM83-10-NGVD29-6.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NAVD88" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: 0 });
-    await convertTest("UTM83-10-NGVD29-7.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "GEOID" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: 0 });
-    await convertTest("UTM83-10-NGVD29-8.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NGVD29" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.0 }, s: 0 });
-    await convertTest("UTM83-10-NGVD29-9.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { epsg: 26942 }, verticalCRS: { id: "NAVD88" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: 0 });
-    await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { epsg: 6418 }, verticalCRS: { id: "NAVD88" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 6506524.158595133, y: 2353354.975796927, z: 2.4472079809770739 }, s: 0 });
-    await convertTest("UTM83-10-NGVD29-11.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83/2011-IIF" }, verticalCRS: { id: "NAVD88" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 6506524.158595133, y: 2353354.975796927, z: 2.4472079809770739 }, s: 0 });
-
-    await convertTest("BritishNatGrid-Ellipsoid4.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "HS2_Snake_2015" }, verticalCRS: { id: "GEOID" } }, { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 237732.58101946692, y: 364048.01547843055, z: -47.874172425966336 }, s: 0 });
-
-    await convertTest("BritishNatGrid-Ellipsoid5.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } },
-      {
+      const EWRGCS: GeographicCRSProps = {
         horizontalCRS: {
-          id: "HS2-MOCK",
-          description: "USES CUSTOM DATUM",
-          source: "Test",
-          deprecated: false,
-          datumId: "HS2SD_2015",
+          id: "EPSG:27700",
+          description: "OSGB 1936 / British National Grid",
+          source: "EPSG V6 [Large and medium scale topographic mapping and engin]",
+          datumId: "EPSG:6277",
+          datum: {
+            id: "EPSG:6277",
+            description: "OSGB36 - Use OSGB-7P-2. Consider OSGB/OSTN15 instead",
+            deprecated: true,
+            source: "EPSG V6.12 operation EPSG:1314 [EPSG]",
+            ellipsoidId: "EPSG:7001",
+            ellipsoid: {
+              equatorialRadius: 6377563.396,
+              polarRadius: 6356256.909237,
+              id: "EPSG:7001",
+              description: "Airy 1830",
+              source: "EPSG, Version 6 [EPSG]",
+            },
+            transforms: [
+              {
+                method: "PositionalVector",
+                sourceEllipsoid: {
+                  equatorialRadius: 6377563.396,
+                  polarRadius: 6356256.909237,
+                  id: "EPSG:7001",
+                },
+                targetEllipsoid: {
+                  equatorialRadius: 6378137,
+                  polarRadius: 6356752.3142,
+                  id: "WGS84",
+                },
+                positionalVector: {
+                  delta: {
+                    x: 446.448,
+                    y: -125.157,
+                    z: 542.06,
+                  },
+                  rotation: {
+                    x: 0.15,
+                    y: 0.247,
+                    z: 0.842,
+                  },
+                  scalePPM: -20.489,
+                },
+              }],
+          },
           unit: "Meter",
           projection: {
             method: "TransverseMercator",
-            centralMeridian: -1.5,
-            latitudeOfOrigin: 52.30,
-            scaleFactor: 1.0,
-            falseEasting: 198873.0046,
-            falseNorthing: 375064.3871,
-          },
-        },
-        verticalCRS: {
-          id: "GEOID",
-        },
-      }
-      , { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 237732.58101952373, y: 364048.01548327296, z: -47.874172425966336 }, s: 0 });
-
-    await convertTest("BritishNatGrid-Ellipsoid.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: { id: "GEOID" } }, { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: 0 });
-
-    await convertTest("UTM83-10-NGVD29-12.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } },
-      {
-        horizontalCRS: {
-          id: "California2",
-          description: "USES CUSTOM DATUM",
-          source: "Test",
-          deprecated: false,
-          datumId: "NAD83",
-          unit: "Meter",
-          projection: {
-            method: "LambertConformalConicTwoParallels",
-            longitudeOfOrigin: -122,
-            latitudeOfOrigin: 37.66666666667,
-            standardParallel1: 39.833333333333336,
-            standardParallel2: 38.333333333333334,
-            falseEasting: 2000000.0,
-            falseNorthing: 500000.0,
+            falseEasting: 400000,
+            falseNorthing: -100000,
+            centralMeridian: -2,
+            latitudeOfOrigin: 49,
+            scaleFactor: 0.999601272737422,
           },
           extent: {
             southWest: {
-              latitude: 35,
-              longitude: -125,
+              latitude: 49.96,
+              longitude: -7.56,
             },
             northEast: {
-              latitude: 39.1,
-              longitude: -120.45,
+              latitude: 60.84,
+              longitude: 1.78,
             },
           },
         },
         verticalCRS: {
-          id: "GEOID",
+          id: "ELLIPSOID",
         },
-      }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: 0 });
-  });
+        additionalTransform: {
+          helmert2DWithZOffset: {
+            translationX: 284597.3343,
+            translationY: 79859.4651,
+            translationZ: 0,
+            rotDeg: 0.5263624458992088,
+            scale: 0.9996703340508721,
+          },
+        },
+      };
+
+      await convertTest("ExtonCampus1.bim", { horizontalCRS: { id: "EPSG:2272" }, verticalCRS: { id: "NAVD88" } }, "WGS84", { x: 775970.3155166894, y: 83323.24543981979, z: 130.74977547686285 }, { p: { x: -75.68712011112366, y: 40.06524845273591, z: 95.9769083 }, s: GeoCoordStatus.Success });
+
+      await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NAVD88" } }, { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, { x: 548296.472, y: 4179414.470, z: 0.8457 }, { p: { x: 548392.9689991799, y: 4179217.683834238, z: -0.0006774162750405877 }, s: GeoCoordStatus.Success });
+
+      await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 199247.08883859176, y: 150141.68625139236, z: 0.0 }, { p: { x: -0.80184489371471, y: 51.978341907041205, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 66091.33104544488, y: 394055.0279323471, z: 0.0 }, { p: { x: -2.8125, y: 54.162433968067798, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("BritishNatGrid-Ellipsoid1.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("BritishNatGrid-Ellipsoid2.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "ETRF89", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2030365061523707, y: 49.960007477936202, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("BritishNatGrid-Ellipsoid3.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "OSGB", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("GermanyDHDN-3-Ellipsoid1.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.035413954488630, y: 50.575070810112159, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("GermanyDHDN-3-Ellipsoid2.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "DHDN/3", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.035413954488630, y: 50.575070810112159, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("GermanyDHDN-3-Ellipsoid3.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "WGS84", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.034215937440818, y: 50.573862480894853, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-1.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-2.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "NAD83", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-3.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "WGS84", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM27-10-Ellipsoid1.bim", { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 623075.328, y: 4265650.532, z: 0.0 }, { p: { x: -121.58798236995744, y: 38.532616292207997, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM27-10-Ellipsoid2.bim", { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "ELLIPSOID" } }, "NAD83", { x: 623075.328, y: 4265650.532, z: 0.0 }, { p: { x: -121.58905088839697, y: 38.532522753851708, z: 0.0 }, s: GeoCoordStatus.Success });
+
+      await convertTest("UTM83-10-NGVD29-4.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" } }, { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: GeoCoordStatus.Success });
+
+      await convertTest("UTM83-10-NGVD29-5.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "LL84" }, verticalCRS: { id: "GEOID" } }, { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: 0.7621583779125531 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-6.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NAVD88" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-7.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "GEOID" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-8.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NGVD29" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-9.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { epsg: 26942 }, verticalCRS: { id: "NAVD88" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NAVD88" } }, { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, { x: 548296.472, y: 4179414.470, z: 0.8457 }, { p: { x: 548392.9689991799, y: 4179217.683834238, z: -0.0006774162750405877 }, s: GeoCoordStatus.Success });
+
+      await convertTest("BritishNatGrid-Ellipsoid4.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "HS2_Snake_2015" }, verticalCRS: { id: "GEOID" } }, { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 237732.58101946692, y: 364048.01547843055, z: -47.874172425966336 }, s: GeoCoordStatus.Success });
+
+      await convertTest("BritishNatGrid-Ellipsoid5.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } },
+        {
+          horizontalCRS: {
+            id: "HS2-MOCK",
+            description: "USES CUSTOM DATUM",
+            source: "Test",
+            deprecated: false,
+            datumId: "HS2SD_2015",
+            unit: "Meter",
+            projection: {
+              method: "TransverseMercator",
+              centralMeridian: -1.5,
+              latitudeOfOrigin: 52.30,
+              scaleFactor: 1.0,
+              falseEasting: 198873.0046,
+              falseNorthing: 375064.3871,
+            },
+          },
+          verticalCRS: {
+            id: "GEOID",
+          },
+        }
+        , { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 237732.58101952373, y: 364048.01548327296, z: -47.874172425966336 }, s: GeoCoordStatus.Success });
+
+      await convertTest("BritishNatGrid-Ellipsoid.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: { id: "GEOID" } }, { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.Success });
+
+      await convertTest("UTM83-10-NGVD29-12.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } },
+        {
+          horizontalCRS: {
+            id: "California2",
+            description: "USES CUSTOM DATUM",
+            source: "Test",
+            deprecated: false,
+            datumId: "NAD83",
+            unit: "Meter",
+            projection: {
+              method: "LambertConformalConicTwoParallels",
+              longitudeOfOrigin: -122,
+              latitudeOfOrigin: 37.66666666667,
+              standardParallel1: 39.833333333333336,
+              standardParallel2: 38.333333333333334,
+              falseEasting: 2000000.0,
+              falseNorthing: 500000.0,
+            },
+            extent: {
+              southWest: {
+                latitude: 35,
+                longitude: -125,
+              },
+              northEast: {
+                latitude: 39.1,
+                longitude: -120.45,
+              },
+            },
+          },
+          verticalCRS: {
+            id: "GEOID",
+          },
+        }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: GeoCoordStatus.Success });
+
+      // Do some test that return errors
+      // First test uses one GCS in Eastern USA and the other in UK. This will produce a hard domain error
+      await convertTest("Error1.bim", { horizontalCRS: { id: "UTM84-17N" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: { id: "GEOID" } }, { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.OutOfMathematicalDomain });
+
+      // This test performs conversion in a region outside normal use of GCS but still mathematically valid (soft domain error)
+      await convertTest("Error2.bim", { horizontalCRS: { id: "DanishS34-S99" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: -6618.5925260757449, y: 36058.097489683532, z: 0.0 }, { p: { x: 13.53250346041385, y: 54.71216475341563, z: 0.0 }, s: GeoCoordStatus.OutOfUsefulRange });
+      // -6618.5925260757449, 36058.097489683532
+      // { x: -221748.034, y: -10012.784, z: 0.0 } { p: { x: 10.36481105, y: 54.38462506, z: 0.0 }
+      // This test makes use of a GCS using a grid file that does not even exist and will return a datum conversion error.
+      const userGCSWithinexistentGridFile: GeographicCRSProps = {
+        horizontalCRS: {
+          id: "User1",
+          datumId: "UserDatum1",
+          datum: {
+            id: "UserDatum1",
+            ellipsoidId: "CLRK66",
+            transforms: [
+              {
+                method: "GridFiles",
+                sourceEllipsoid: {
+                  id: "CLRK66",
+                  equatorialRadius: 6378160.0,
+                  polarRadius: 6356774.719195305951,
+                },
+                targetEllipsoid: {
+                  id: "WGS84",
+                  equatorialRadius: 6378160.0,
+                  polarRadius: 6356774.719195305951,
+                },
+                gridFile: {
+                  files: [
+                    { fileName: "./user/inexistent.gdc", format: "NTv2", direction: "Direct" },
+                  ],
+                },
+              },
+            ],
+          },
+          unit: "Meter",
+          projection: {
+            method: "TransverseMercator",
+            centralMeridian: -115,
+            latitudeOfOrigin: 0,
+            scaleFactor: 0.9992,
+            falseEasting: 1.0,
+            falseNorthing: 2.0,
+          },
+          extent: {
+            southWest: { latitude: 48, longitude: -120.5 },
+            northEast: { latitude: 84, longitude: -109.5 },
+          },
+        }, verticalCRS: { id: "ELLIPSOID" },
+      };
+
+      await convertTest("Error3.bim", userGCSWithinexistentGridFile, "WGS84", { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.NoDatumConverter });
+
+      // The model GCS is not valid
+      await convertTest("Error4.bim", { horizontalCRS: { id: "badfood" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: { id: "GEOID" } }, { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.NoGCSDefined });
+
+      // The given GCS is not valid
+      await convertTest("Error5.bim", { horizontalCRS: { id: "UTM84-17N" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "badfood" }, verticalCRS: { id: "GEOID" } }, { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.NoGCSDefined });
+
+    });
+  }
 
   it("should be able to create a snapshot IModel and set geolocation by ECEF", async () => {
     const args = {
@@ -1904,6 +2016,39 @@ describe("iModel", () => {
     });
 
     const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot3.bim");
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    assert.isTrue(iModel.ecefLocation === undefined);
+
+    iModel.ecefLocation = ecef;
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+    assert.isTrue(iModel2.ecefLocation!.isAlmostEqual(ecef));
+
+    iModel2.close();
+  });
+
+  it("should be able to create a snapshot IModel and set geolocation by ECEF with 0,0,0 rotation", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const ecef = new EcefLocation({
+      origin: [42, 21, 0],
+      orientation: { yaw: 0, pitch: 0, roll: 0 },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot3_000.bim");
     const iModel = SnapshotDb.createEmpty(testFile, args);
 
     assert.isTrue(iModel.ecefLocation === undefined);
@@ -2004,124 +2149,89 @@ describe("iModel", () => {
   });
 
   it("should be able to open checkpoints", async () => {
-    // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
-    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
-    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const iModelId = snapshot.iModelId;
-    const iTwinId = Guid.createValue();
-    const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.setITwinId(iTwinId);
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changesetId!
-    snapshot.saveChanges();
-    snapshot.close();
+    const changeset: ChangesetIdWithIndex = { id: "fakeChangeSetId", index: 10 };
+    const iTwinId = "fakeIModelId";
+    const iModelId = "fakeIModelId";
+    const cloudContainer = { accessToken: "sas" };
+    const fakeSnapshotDb: any = {
+      cloudContainer,
+      isReadonly: () => true,
+      isOpen: () => false,
+      getIModelId: () => iModelId,
+      getITwinId: () => iTwinId,
+      getCurrentChangeset: () => changeset,
+      setIModelDb: () => { },
+      closeIModel: () => { },
+    };
 
     const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
     const infoLogStub = sinon.stub(Logger, "logInfo").callsFake(() => { });
 
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
-      user: "testAccount",
-      container: `imodelblocks-${iModelId}`,
-      auth: "testSAS",
-      dbAlias: "testDb",
+      accountName: "testAccount",
+      containerId: "imodelblocks-123",
+      sasToken: "testSAS",
+      dbName: "testDb",
       storageType: "azure?sas=1",
     };
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
+    sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
+      return { dbName: "fakeDb", container: { accessToken: "sas" } as any };
+    });
+    const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
-    // Mock BlobDaemon
-    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
-    const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
-    const daemonErrorResult = { result: DbResult.BE_SQLITE_ERROR, errMsg: "NOT GOOD" };
-    const commandStub = sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
+    const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
+    sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
 
-    process.env.BLOCKCACHE_DIR = "/foo/";
     const accessToken = "token";
     const checkpoint = await SnapshotDb.openCheckpointV2({ accessToken, iTwinId, iModelId, changeset });
+
+    expect(openDgnDbStub.calledOnce).to.be.true;
+    expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
+
     const props = checkpoint.getRpcProps();
     assert.equal(props.iModelId, iModelId);
     assert.equal(props.iTwinId, iTwinId);
     assert.equal(props.changeset?.id, changeset.id);
-    assert.equal(commandStub.callCount, 1);
-    assert.equal(commandStub.firstCall.firstArg, "attach");
     assert.equal(errorLogStub.callCount, 1);
     assert.include(errorLogStub.args[0][1], "attached with timestamp that expires before");
 
     errorLogStub.resetHistory();
-    await checkpoint.reattachDaemon(accessToken);
-    assert.equal(commandStub.callCount, 2);
-    assert.equal(commandStub.secondCall.firstArg, "attach");
+    expect(cloudContainer.accessToken).equal("sas");
+    await checkpoint.refreshContainerSas(accessToken);
+    expect(cloudContainer.accessToken).equal("testSAS");
+
     assert.equal(errorLogStub.callCount, 1);
     assert.include(errorLogStub.args[0][1], "attached with timestamp that expires before");
     assert.equal(infoLogStub.callCount, 2);
-    assert.include(infoLogStub.args[0][1], "attempting to reattach");
-    assert.include(infoLogStub.args[1][1], "reattached checkpoint");
+    assert.include(infoLogStub.args[0][1], "attempting to refresh");
+    assert.include(infoLogStub.args[1][1], "refreshed checkpoint");
 
     errorLogStub.resetHistory();
-    commandStub.callsFake(async () => daemonErrorResult);
-    await expect(checkpoint.reattachDaemon(accessToken)).to.eventually.be.rejectedWith("attach failed");
+    queryStub.callsFake(async () => {
+      throw new Error("no checkpoint");
+    });
+    await expect(checkpoint.refreshContainerSas(accessToken)).to.eventually.be.rejectedWith("no checkpoint");
 
     checkpoint.close();
   });
 
-  it("should throw for invalid v2 checkpoints", async () => {
-    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
-    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
-    const iTwinId = Guid.createValue();
-    const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.setITwinId(iTwinId);
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
-    snapshot.saveChanges();
-    snapshot.close();
-
-    // Mock iModelHub
-    const mockCheckpointV2: V2CheckpointAccessProps = {
-      user: "testAccount",
-      container: `imodelblocks-${iModelId}`,
-      auth: "testSAS",
-      dbAlias: "testDb",
-      storageType: "azure?sas=1",
-    };
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
-
-    // Mock blockcacheVFS daemon
-    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
-    const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
-    sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
-
-    const accessToken = "token";
-
-    process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
-    expectIModelError(IModelStatus.BadRequest, error); // bad request because daemon dir wasn't set
-
-    process.env.BLOCKCACHE_DIR = "/foo/";
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId, iModelId, changeset }));
-    expectIModelError(IModelStatus.ValidationFailed, error);
-  });
-
   it("should throw for missing/invalid checkpoint in hub", async () => {
-    process.env.BLOCKCACHE_DIR = "/foo/";
+    process.env.CHECKPOINT_CACHE_DIR = "/foo/";
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
 
     const accessToken = "token";
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
-    expectIModelError(IModelStatus.NotFound, error);
-
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    const error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
   });
 
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
-    process.env.BLOCKCACHE_DIR = "/foo/";
+    process.env.CHECKPOINT_CACHE_DIR = "/foo/";
     const accessToken = "token";
-    const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
-    await imodel1.reattachDaemon(accessToken);
-    assert.isTrue(attachMock.notCalled);
+    await imodel1.refreshContainerSas(accessToken);
   });
 
   function hasClassView(db: IModelDb, name: string): boolean {
@@ -2142,7 +2252,6 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(standaloneDb1.pathName, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneDb1.key), "Should be in the list of open StandaloneDbs");
-    assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
     assert.equal(standaloneDb1.elements.getRootSubject().code.value, standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
@@ -2188,10 +2297,6 @@ describe("iModel", () => {
     assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotDb1.key));
     assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotDb2.key));
     assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotDb3.key));
-    assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
-    assert.isFalse(snapshotDb2.nativeDb.isEncrypted());
-    assert.isFalse(snapshotDb3.nativeDb.isEncrypted());
-    assert.isFalse(imodel1.nativeDb.isEncrypted());
     const iModelGuid1: GuidString = snapshotDb1.iModelId;
     const iModelGuid2: GuidString = snapshotDb2.iModelId;
     const iModelGuid3: GuidString = snapshotDb3.iModelId;
@@ -2227,8 +2332,8 @@ describe("iModel", () => {
     assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotDb3.key));
     assert.equal(snapshotDb3, SnapshotDb.findByKey(snapshotDb3.key));
     assert.equal(snapshotDb3, IModelDb.findByKey(snapshotDb3.key));
-    assert.throws(() => { BriefcaseDb.findByKey(snapshotDb1.key); }); // lookup of key for SnapshotDb via BriefcaseDb should throw
-    assert.throws(() => { StandaloneDb.findByKey(snapshotDb1.key); }); // likewise for StandaloneDb
+    assert.throws(() => BriefcaseDb.findByKey(snapshotDb1.key)); // lookup of key for SnapshotDb via BriefcaseDb should throw
+    assert.throws(() => StandaloneDb.findByKey(snapshotDb1.key)); // likewise for StandaloneDb
     assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
@@ -2246,59 +2351,6 @@ describe("iModel", () => {
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb1.key));
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb2.key));
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb3.key));
-  });
-
-  it("Password-protected Snapshot iModels", () => {
-    const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "pws1.bim");
-    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "pws2.bim");
-    const snapshotFile3: string = IModelTestUtils.prepareOutputFile("IModel", "pws3.bim");
-    const snapshotFile4: string = IModelTestUtils.prepareOutputFile("IModel", "pws4.bim");
-
-    // create snapshot from scratch without a password, then unnecessarily specify a password to open
-    let snapshotDb1 = SnapshotDb.createFrom(imodel1, snapshotFile1);
-    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
-    snapshotDb1.close();
-    snapshotDb1 = SnapshotDb.openFile(snapshotFile1, { password: "unnecessaryPassword" });
-    assert.isTrue(snapshotDb1.isSnapshotDb());
-    assert.isTrue(snapshotDb1.isSnapshot);
-    assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
-    assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
-    assert.isFalse(hasClassView(snapshotDb1, "bis.Element"));
-
-    // create snapshot from scratch and give it a password
-    let snapshotDb2 = SnapshotDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password", createClassViews: true });
-    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
-    const subjectName2 = "TestSubject2";
-    const subjectId2 = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
-    assert.isTrue(Id64.isValidId64(subjectId2));
-    snapshotDb2.close();
-    snapshotDb2 = SnapshotDb.openFile(snapshotFile2, { password: "password" });
-    assert.isTrue(snapshotDb2.isSnapshotDb());
-    assert.isTrue(snapshotDb2.isSnapshot);
-    assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
-    assert.isTrue(snapshotDb2.nativeDb.isEncrypted());
-    assert.exists(snapshotDb2.elements.getElement(subjectId2));
-    assert.isTrue(hasClassView(snapshotDb2, "bis.Element"));
-
-    // create a new snapshot from a non-password-protected snapshot and then give it a password
-    let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { password: "password" });
-    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
-    snapshotDb3.close();
-    snapshotDb3 = SnapshotDb.openFile(snapshotFile3, { password: "password" });
-    assert.isTrue(snapshotDb3.isSnapshotDb());
-    assert.isTrue(snapshotDb3.isSnapshot);
-    assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
-    assert.isTrue(snapshotDb3.nativeDb.isEncrypted());
-
-    // it is invalid to create a snapshot from a password-protected iModel
-    assert.throws(() => SnapshotDb.createFrom(snapshotDb2, snapshotFile4), IModelError);
-    assert.isFalse(IModelJsFs.existsSync(snapshotFile4));
-    assert.throws(() => SnapshotDb.createFrom(snapshotDb2, snapshotFile4, { password: "password" }), IModelError);
-    assert.isFalse(IModelJsFs.existsSync(snapshotFile4));
-
-    snapshotDb1.close();
-    snapshotDb2.close();
-    snapshotDb3.close();
   });
 
   it("upgrade the domain schema in a StandaloneDb", async () => {
@@ -2506,6 +2558,17 @@ describe("iModel", () => {
     });
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.userLabel, "UserLabel"); // NOTE: userLabel is not modified when userLabel is not part of the input ElementProps
+
+    const elProps = imodel1.elements.getElementProps({ id: elementId, onlyBaseProperties: true });
+    expect(elProps.userLabel).equal(element.userLabel);
+    expect(elProps.classFullName).equal(SpatialCategory.classFullName);
+    expect(elProps.model).equal(element.model);
+    expect(elProps.code.value).equal(element.code.value);
+    expect(elProps.code.scope).equal(element.code.scope);
+    expect(elProps.code.spec).equal(element.code.spec);
+    expect(elProps.federationGuid).equal(element.federationGuid);
+    expect((elProps as any).isPrivate).undefined;
+    expect((elProps as any).isInstanceOfEntity).undefined;
 
     // update UserLabel to undefined
     element.userLabel = undefined;

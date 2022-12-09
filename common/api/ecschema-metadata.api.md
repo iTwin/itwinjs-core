@@ -4,7 +4,18 @@
 
 ```ts
 
+import { BaseFormat } from '@itwin/core-quantity';
 import { BentleyError } from '@itwin/core-bentley';
+import { DecimalPrecision } from '@itwin/core-quantity';
+import { FormatTraits } from '@itwin/core-quantity';
+import { FormatType } from '@itwin/core-quantity';
+import { FractionalPrecision } from '@itwin/core-quantity';
+import { ScientificType } from '@itwin/core-quantity';
+import { ShowSignOption } from '@itwin/core-quantity';
+import { UnitConversion as UnitConversion_2 } from '@itwin/core-quantity';
+import { UnitExtraData } from '@itwin/core-quantity';
+import { UnitProps as UnitProps_2 } from '@itwin/core-quantity';
+import { UnitsProvider } from '@itwin/core-quantity';
 
 // @beta (undocumented)
 export type AnyArrayProperty = PrimitiveArrayProperty | EnumerationArrayProperty | StructArrayProperty;
@@ -22,7 +33,7 @@ export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstrai
 export type AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty;
 
 // @beta (undocumented)
-export type AnyEnumerator = Enumerator<string | number>;
+export type AnyEnumerator = Enumerator_2<string | number>;
 
 // @beta (undocumented)
 export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
@@ -72,7 +83,7 @@ export interface ClassProps extends SchemaItemProps {
     // (undocumented)
     readonly modifier?: string;
     // (undocumented)
-    readonly properties?: PropertyProps[];
+    readonly properties?: AnyPropertyProps[];
 }
 
 // @beta
@@ -85,15 +96,19 @@ export class Constant extends SchemaItem {
     // (undocumented)
     get denominator(): number;
     // (undocumented)
-    protected _denominator: number;
+    protected _denominator?: number;
     // (undocumented)
     fromJSON(constantProps: ConstantProps): Promise<void>;
     // (undocumented)
     fromJSONSync(constantProps: ConstantProps): void;
     // (undocumented)
+    get hasDenominator(): boolean;
+    // (undocumented)
+    get hasNumerator(): boolean;
+    // (undocumented)
     get numerator(): number;
     // (undocumented)
-    protected _numerator: number;
+    protected _numerator?: number;
     // (undocumented)
     get phenomenon(): LazyLoadedPhenomenon | undefined;
     // (undocumented)
@@ -206,36 +221,6 @@ export enum CustomAttributeContainerType {
     StructProperty = 64,
     // (undocumented)
     TargetRelationshipConstraint = 2048
-}
-
-// @beta
-export enum DecimalPrecision {
-    // (undocumented)
-    Eight = 8,
-    // (undocumented)
-    Eleven = 11,
-    // (undocumented)
-    Five = 5,
-    // (undocumented)
-    Four = 4,
-    // (undocumented)
-    Nine = 9,
-    // (undocumented)
-    One = 1,
-    // (undocumented)
-    Seven = 7,
-    // (undocumented)
-    Six = 6,
-    // (undocumented)
-    Ten = 10,
-    // (undocumented)
-    Three = 3,
-    // (undocumented)
-    Twelve = 12,
-    // (undocumented)
-    Two = 2,
-    // (undocumented)
-    Zero = 0
 }
 
 // @beta
@@ -493,7 +478,7 @@ export class ECVersion {
     toString(padZeroes?: boolean): string;
     // (undocumented)
     get write(): number;
-    }
+}
 
 // @beta
 export class EntityClass extends ECClass {
@@ -546,9 +531,9 @@ export class Enumeration extends SchemaItem {
     fromJSON(enumerationProps: EnumerationProps): Promise<void>;
     // (undocumented)
     fromJSONSync(enumerationProps: EnumerationProps): void;
-    getEnumerator(value: string): Enumerator<string> | undefined;
+    getEnumerator(value: string): Enumerator_2<string> | undefined;
     // (undocumented)
-    getEnumerator(value: number): Enumerator<number> | undefined;
+    getEnumerator(value: number): Enumerator_2<number> | undefined;
     getEnumeratorByName(name: string): AnyEnumerator | undefined;
     // (undocumented)
     get isInt(): boolean;
@@ -609,7 +594,7 @@ export interface EnumerationProps extends SchemaItemProps {
 }
 
 // @beta (undocumented)
-export interface Enumerator<T> {
+interface Enumerator_2<T> {
     // (undocumented)
     readonly description?: string;
     // (undocumented)
@@ -619,6 +604,7 @@ export interface Enumerator<T> {
     // (undocumented)
     readonly value: T;
 }
+export { Enumerator_2 as Enumerator }
 
 // @beta (undocumented)
 export interface EnumeratorProps {
@@ -637,13 +623,11 @@ export class Format extends SchemaItem {
     constructor(schema: Schema, name: string);
     protected addUnit(unit: Unit | InvertedUnit, label?: string): void;
     // (undocumented)
+    protected _base: BaseFormat;
+    // (undocumented)
     get decimalSeparator(): string;
     // (undocumented)
-    protected _decimalSeparator: string;
-    // (undocumented)
     get formatTraits(): FormatTraits;
-    // (undocumented)
-    protected _formatTraits: FormatTraits;
     // (undocumented)
     fromJSON(formatProps: FormatProps): Promise<void>;
     // (undocumented)
@@ -653,25 +637,15 @@ export class Format extends SchemaItem {
     // (undocumented)
     get includeZero(): boolean | undefined;
     // (undocumented)
-    protected _includeZero: boolean;
-    // (undocumented)
     get minWidth(): number | undefined;
-    // (undocumented)
-    protected _minWidth?: number;
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
     // (undocumented)
-    protected _precision: number;
-    // (undocumented)
     get roundFactor(): number;
-    // (undocumented)
-    protected _roundFactor: number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.Format;
     // (undocumented)
     get scientificType(): ScientificType | undefined;
-    // (undocumented)
-    protected _scientificType?: ScientificType;
     // @alpha
     protected setDecimalSeparator(separator: string): void;
     // @alpha
@@ -691,38 +665,24 @@ export class Format extends SchemaItem {
     // (undocumented)
     get showSignOption(): ShowSignOption;
     // (undocumented)
-    protected _showSignOption: ShowSignOption;
-    // (undocumented)
     get spacer(): string | undefined;
-    // (undocumented)
-    protected _spacer: string;
     // (undocumented)
     get stationOffsetSize(): number | undefined;
     // (undocumented)
-    protected _stationOffsetSize?: number;
-    // (undocumented)
     get stationSeparator(): string;
     // (undocumented)
-    protected _stationSeparator: string;
-    // (undocumented)
     get thousandSeparator(): string;
-    // (undocumented)
-    protected _thousandSeparator: string;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): FormatProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    protected _type: FormatType;
-    // (undocumented)
     get units(): Array<[Unit | InvertedUnit, string | undefined]> | undefined;
     // (undocumented)
     protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
     // (undocumented)
     get uomSeparator(): string;
-    // (undocumented)
-    protected _uomSeparator: string;
 }
 
 // @beta (undocumented)
@@ -761,76 +721,6 @@ export interface FormatProps extends SchemaItemProps {
     // (undocumented)
     readonly uomSeparator?: string;
 }
-
-// @internal
-export const formatStringRgx: RegExp;
-
-// @beta
-export enum FormatTraits {
-    // (undocumented)
-    ApplyRounding = 16,
-    // (undocumented)
-    ExponentOnlyNegative = 512,
-    // (undocumented)
-    FractionDash = 32,
-    // (undocumented)
-    KeepDecimalPoint = 8,
-    // (undocumented)
-    KeepSingleZero = 2,
-    // (undocumented)
-    PrependUnitLabel = 128,
-    // (undocumented)
-    ShowUnitLabel = 64,
-    // (undocumented)
-    TrailZeroes = 1,
-    // (undocumented)
-    Use1000Separator = 256,
-    // (undocumented)
-    ZeroEmpty = 4
-}
-
-// @internal
-export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
-
-// @beta
-export enum FormatType {
-    // (undocumented)
-    Decimal = 0,
-    // (undocumented)
-    Fractional = 1,
-    // (undocumented)
-    Scientific = 2,
-    // (undocumented)
-    Station = 3
-}
-
-// @internal
-export function formatTypeToString(type: FormatType): string;
-
-// @beta
-export enum FractionalPrecision {
-    // (undocumented)
-    Eight = 8,
-    // (undocumented)
-    Four = 4,
-    // (undocumented)
-    One = 1,
-    // (undocumented)
-    OneHundredTwentyEight = 128,
-    // (undocumented)
-    Sixteen = 16,
-    // (undocumented)
-    SixtyFour = 64,
-    // (undocumented)
-    ThirtyTwo = 32,
-    // (undocumented)
-    Two = 2,
-    // (undocumented)
-    TwoHundredFiftySix = 256
-}
-
-// @internal
-export function getItemNamesFromFormatString(formatString: string): Iterable<string>;
 
 // @beta
 export class InvertedUnit extends SchemaItem {
@@ -1139,21 +1029,6 @@ export function parseClassModifier(modifier: string): ECClassModifier | undefine
 // @beta
 export function parseCustomAttributeContainerType(type: string): CustomAttributeContainerType | undefined;
 
-// @internal
-export function parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision | undefined;
-
-// @internal
-export function parseFormatTrait(formatTraitsString: string): FormatTraits | undefined;
-
-// @internal
-export function parseFormatType(jsonObjType: string): FormatType | undefined;
-
-// @internal
-export function parseFractionalPrecision(jsonObjPrecision: number): FractionalPrecision | undefined;
-
-// @internal
-export function parsePrecision(precision: number, type: FormatType): DecimalPrecision | FractionalPrecision | undefined;
-
 // @beta
 export function parsePrimitiveType(type: string): PrimitiveType | undefined;
 
@@ -1162,12 +1037,6 @@ export function parseRelationshipEnd(end: string): RelationshipEnd | undefined;
 
 // @beta
 export function parseSchemaItemType(type: string): SchemaItemType | undefined;
-
-// @internal
-export function parseScientificType(scientificType: string): ScientificType | undefined;
-
-// @internal
-export function parseShowSignOption(showSignOption: string): ShowSignOption | undefined;
 
 // @beta
 export function parseStrength(strength: string): StrengthType | undefined;
@@ -1800,10 +1669,12 @@ export class SchemaCache implements ISchemaLocater {
     addSchemaSync<T extends Schema>(schema: T): void;
     // (undocumented)
     get count(): number;
+    getAllSchemas(): Schema[];
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
+    getSchemaItems(): IterableIterator<SchemaItem>;
     // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
-    }
+}
 
 // @beta
 export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
@@ -1817,26 +1688,29 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     getCachedSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
     // @internal
     getCachedSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
+    getKnownSchemas(): Schema[];
     // (undocumented)
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
     // (undocumented)
     getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined>;
     // (undocumented)
+    getSchemaItems(): IterableIterator<SchemaItem>;
+    // (undocumented)
     getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined;
     // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
-    }
+}
 
 // @beta
 export class SchemaGraph {
     constructor(schema: Schema);
     detectCycles(): ReferenceCycle[] | undefined;
-    }
+}
 
 // @internal
 export class SchemaGraphUtil {
     static buildDependencyOrderedSchemaList(insertSchema: Schema, schemas?: Schema[]): Schema[];
-    }
+}
 
 // @beta
 export abstract class SchemaItem {
@@ -1955,6 +1829,13 @@ export function schemaItemTypeToString(value: SchemaItemType): string;
 // @internal (undocumented)
 export function schemaItemTypeToXmlString(value: SchemaItemType): string;
 
+// @alpha
+export class SchemaJsonLocater implements ISchemaLocater {
+    constructor(_getSchema: SchemaPropsGetter);
+    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<T | undefined>;
+    getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext | undefined): T | undefined;
+}
+
 // @beta
 export class SchemaKey {
     constructor(name: string, version: ECVersion);
@@ -1988,6 +1869,13 @@ export interface SchemaKeyProps {
     readonly name: string;
     readonly read: number;
     readonly write: number;
+}
+
+// @alpha
+export class SchemaLoader {
+    constructor(getSchema: SchemaPropsGetter);
+    getSchema<T extends Schema>(schemaName: string): T;
+    tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
 }
 
 // @beta (undocumented)
@@ -2043,12 +1931,15 @@ export interface SchemaProps {
     readonly version: string;
 }
 
+// @alpha
+export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
+
 // @internal
 export class SchemaReadHelper<T = unknown> {
     constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor);
     readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U>;
     readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U;
-    }
+}
 
 // @beta (undocumented)
 export interface SchemaReferenceProps {
@@ -2058,37 +1949,21 @@ export interface SchemaReferenceProps {
     readonly version: string;
 }
 
+// @alpha
+export class SchemaUnitProvider implements UnitsProvider {
+    constructor(contextOrLocater: ISchemaLocater, _unitExtraData?: UnitExtraData[]);
+    findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps_2>;
+    findUnitByName(unitName: string): Promise<UnitProps_2>;
+    getAlternateDisplayLabels(unitName: string): Array<string>;
+    getConversion(fromUnit: UnitProps_2, toUnit: UnitProps_2): Promise<UnitConversion_2>;
+    getUnitsByFamily(phenomenon: string): Promise<Array<UnitProps_2>>;
+}
+
 // @internal
 export class SchemaWalker {
     constructor(visitor: ISchemaPartVisitor);
     traverseSchema<T extends Schema>(schema: T): Promise<T>;
-    }
-
-// @beta
-export enum ScientificType {
-    // (undocumented)
-    Normalized = 0,
-    // (undocumented)
-    ZeroNormalized = 1
 }
-
-// @internal
-export function scientificTypeToString(scientificType: ScientificType): string;
-
-// @beta
-export enum ShowSignOption {
-    // (undocumented)
-    NegativeParentheses = 3,
-    // (undocumented)
-    NoSign = 0,
-    // (undocumented)
-    OnlyNegative = 1,
-    // (undocumented)
-    SignAlways = 2
-}
-
-// @internal
-export function showSignOptionToString(showSign: ShowSignOption): string;
 
 // @beta (undocumented)
 export enum StrengthDirection {
@@ -2169,19 +2044,27 @@ export class Unit extends SchemaItem {
     // (undocumented)
     get denominator(): number;
     // (undocumented)
-    protected _denominator: number;
+    protected _denominator?: number;
     // (undocumented)
     fromJSON(unitProps: UnitProps): Promise<void>;
     // (undocumented)
     fromJSONSync(unitProps: UnitProps): void;
     // (undocumented)
+    get hasDenominator(): boolean;
+    // (undocumented)
+    get hasNumerator(): boolean;
+    // (undocumented)
+    get hasOffset(): boolean;
+    // @alpha (undocumented)
+    static isUnit(object: any): object is Unit;
+    // (undocumented)
     get numerator(): number;
     // (undocumented)
-    protected _numerator: number;
+    protected _numerator?: number;
     // (undocumented)
     get offset(): number;
     // (undocumented)
-    protected _offset: number;
+    protected _offset?: number;
     // (undocumented)
     get phenomenon(): LazyLoadedPhenomenon | undefined;
     // (undocumented)
@@ -2201,6 +2084,29 @@ export class Unit extends SchemaItem {
     get unitSystem(): LazyLoadedUnitSystem | undefined;
     // (undocumented)
     protected _unitSystem?: LazyLoadedUnitSystem;
+}
+
+// @internal
+export class UnitConversion {
+    constructor(factor?: number, offset?: number);
+    compose(conversion: UnitConversion): UnitConversion;
+    evaluate(x: number): number;
+    // (undocumented)
+    readonly factor: number;
+    static from(unit: Unit | Constant): UnitConversion;
+    // (undocumented)
+    static identity: UnitConversion;
+    inverse(): UnitConversion;
+    multiply(conversion: UnitConversion): UnitConversion;
+    // (undocumented)
+    readonly offset: number;
+    raise(power: number): UnitConversion;
+}
+
+// @internal
+export class UnitConverter {
+    constructor(_context: SchemaContext);
+    calculateConversion(fromUnit: string, toUnit: string): Promise<UnitConversion>;
 }
 
 // @beta (undocumented)
@@ -2239,7 +2145,7 @@ export class XmlParser extends AbstractParser<Element> {
     // (undocumented)
     getItems(): Iterable<[string, string, Element]>;
     // (undocumented)
-    getProperties(xmlElement: Element): Iterable<[string, string, Element]>;
+    getProperties(xmlElement: Element, itemName: string): Iterable<[string, string, Element]>;
     // (undocumented)
     getPropertyCustomAttributeProviders(xmlElement: Element): Iterable<CAProviderTuple>;
     // (undocumented)
@@ -2288,8 +2194,7 @@ export class XmlParser extends AbstractParser<Element> {
     parseUnit(xmlElement: Element): UnitProps;
     // (undocumented)
     parseUnitSystem(xmlElement: Element): UnitSystemProps;
-    }
-
+}
 
 // (No @packageDocumentation comment for this package)
 

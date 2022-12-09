@@ -6,15 +6,14 @@
  * @module NativeApp
  */
 
-import { AccessToken, AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@itwin/core-bentley";
+import { AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@itwin/core-bentley";
 import {
-  AuthorizationClient, BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
-  NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
-  RequestNewBriefcaseProps, SessionProps, StorageValue, SyncMode,
+  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
+  nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
+  RemoveFunction, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@itwin/core-common";
-import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+import { ProgressCallback, RequestGlobalOptions } from "./request/Request";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { IModelApp } from "./IModelApp";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
@@ -44,76 +43,6 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
   }
-  public notifyAccessTokenChanged(accessToken: AccessToken) {
-    const client = (IModelApp.authorizationClient as NativeAppAuthorization);
-    client?.onAccessTokenChanged.raiseEvent(accessToken);
-  }
-}
-
-/**
- * Object to be set as `IModelApp.authorizationClient` for the frontend of NativeApps.
- * Since NativeApps use the backend for all authorization, this class sends signIn/signOut requests to the backend
- * and then listens for the `onAccessTokenChanged` event to cache the accessToken. The token is cached
- * here on the frontend because it is used for every RPC operation, even when we're running as a NativeApp.
- * We must therefore check for expiration and request refreshes as/when necessary.
- * @public
- */
-export class NativeAppAuthorization implements AuthorizationClient {
-  private _config?: NativeAppAuthorizationConfiguration;
-  private _cachedToken: AccessToken = "";
-  private _refreshingToken = false;
-  protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
-  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
-  public get hasSignedIn() { return this._cachedToken !== ""; }
-  public get isAuthorized(): boolean {
-    return this.hasSignedIn;
-  }
-
-  /** ctor for NativeAppAuthorization
-   * @param config if present, overrides backend supplied configuration. Generally not necessary, should be supplied
-   * in [NativeHostOpts]($backend)
-   */
-  public constructor(config?: NativeAppAuthorizationConfiguration) {
-    this._config = config;
-    this.onAccessTokenChanged.addListener((token: AccessToken) => this._cachedToken = token);
-  }
-
-  /** Used to initialize the the backend authorization. Must be awaited before any other methods are called */
-  public async initialize(props: SessionProps): Promise<void> {
-    this._expireSafety = await NativeApp.callNativeHost("initializeAuth", props, this._config);
-  }
-
-  /** Called to start the sign-in process. Subscribe to onAccessTokenChanged to be notified when sign-in completes */
-  public async signIn(): Promise<void> {
-    return NativeApp.callNativeHost("signIn");
-  }
-
-  /** Called to start the sign-out process. Subscribe to onAccessTokenChanged to be notified when sign-out completes */
-  public async signOut(): Promise<void> {
-    return NativeApp.callNativeHost("signOut");
-  }
-
-  /** Returns a promise that resolves to the AccessToken if signed in.
-   * - The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
-   * - The token is refreshed if it's possible and necessary.
-   * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
-   * - Getting or refreshing the token will trigger the [[onAccessTokenChanged]] event.
-   */
-  public async getAccessToken(): Promise<AccessToken> {
-    // if we have a valid token, return it. Otherwise call backend to refresh the token.
-    if (!this.isAuthorized) {
-      if (this._refreshingToken) {
-        return Promise.reject(); // short-circuits any recursive use of this function
-      }
-
-      this._refreshingToken = true;
-      this._cachedToken = (await NativeApp.callNativeHost("getAccessToken"));
-      this._refreshingToken = false;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    return this._cachedToken!;
-  }
 }
 
 /**
@@ -130,9 +59,14 @@ export interface NativeAppOpts extends IpcAppOptions {
  * @public
  */
 export class NativeApp {
+  private static _removeAppNotify?: RemoveFunction;
+
+  /** @deprecated use nativeAppIpc */
   public static async callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
     return IpcApp.callIpcChannel(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
   }
+  /** A Proxy to call one of the [NativeAppFunctions]($common) functions via IPC. */
+  public static nativeAppIpc = IpcApp.makeIpcProxy<NativeAppFunctions>(nativeAppChannel);
 
   private static _storages = new Map<string, Storage>();
   private static _onOnline = async () => {
@@ -143,7 +77,7 @@ export class NativeApp {
   };
   private static async setConnectivity(by: OverriddenBy, status: InternetConnectivityStatus) {
     RequestGlobalOptions.online = (status === InternetConnectivityStatus.Online);
-    await this.callNativeHost("overrideInternetConnectivity", by, status);
+    await this.nativeAppIpc.overrideInternetConnectivity(by, status);
   }
   private static hookBrowserConnectivityEvents() {
     if (typeof window === "object" && window.ononline && window.onoffline) {
@@ -162,11 +96,11 @@ export class NativeApp {
 
   /** determine whether the app currently has internet connectivity, if known */
   public static async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
-    return this.callNativeHost("checkInternetConnectivity");
+    return this.nativeAppIpc.checkInternetConnectivity();
   }
   /** @internal */
   public static async overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void> {
-    return this.callNativeHost("overrideInternetConnectivity", OverriddenBy.User, status);
+    return this.nativeAppIpc.overrideInternetConnectivity(OverriddenBy.User, status);
   }
   private static _isValid = false;
   public static get isValid(): boolean { return this._isValid; }
@@ -181,7 +115,7 @@ export class NativeApp {
       return;
     this._isValid = true;
 
-    NativeAppNotifyHandler.register(); // receives notifications from backend
+    this._removeAppNotify = NativeAppNotifyHandler.register(); // receives notifications from backend
     NativeApp.hookBrowserConnectivityEvents();
 
     // initialize current online state.
@@ -189,17 +123,11 @@ export class NativeApp {
       RequestGlobalOptions.online = window.navigator.onLine;
       await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
-
-    const auth = new NativeAppAuthorization();
-    IModelApp.authorizationClient = auth;
-    const connStatus = await NativeApp.checkInternetConnectivity();
-    if (connStatus === InternetConnectivityStatus.Online) {
-      await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
-    }
   }
 
   /** @internal */
   public static async shutdown() {
+    this._removeAppNotify?.();
     NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
     await IpcApp.shutdown();
@@ -217,21 +145,21 @@ export class NativeApp {
     }
 
     const briefcaseId = (undefined !== downloadOptions.briefcaseId) ? downloadOptions.briefcaseId :
-      (downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.callNativeHost("acquireNewBriefcaseId", iModelId));
+      (downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.nativeAppIpc.acquireNewBriefcaseId(iModelId));
 
     const fileName = downloadOptions.fileName ?? await this.getBriefcaseFileName({ briefcaseId, iModelId });
     const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, iTwinId, asOf: asOf.toJSON(), fileName };
 
     const doDownload = async (): Promise<void> => {
       try {
-        await this.callNativeHost("downloadBriefcase", requestProps, progress !== undefined, downloadOptions.progressInterval);
+        await this.nativeAppIpc.downloadBriefcase(requestProps, progress !== undefined, downloadOptions.progressInterval);
       } finally {
         stopProgressEvents();
       }
     };
 
     const requestCancel = async (): Promise<boolean> => {
-      const status = await this.callNativeHost("requestCancelDownloadBriefcase", fileName);
+      const status = await this.nativeAppIpc.requestCancelDownloadBriefcase(fileName);
       if (status)
         stopProgressEvents();
       return status;
@@ -242,19 +170,19 @@ export class NativeApp {
 
   /** Get the full path filename for a briefcase within the briefcase cache */
   public static async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
-    return this.callNativeHost("getBriefcaseFileName", props);
+    return this.nativeAppIpc.getBriefcaseFileName(props);
   }
 
   /** Delete an existing briefcase
    * @param fileName the briefcase fileName
    */
   public static async deleteBriefcase(fileName: string): Promise<void> {
-    await this.callNativeHost("deleteBriefcaseFiles", fileName);
+    await this.nativeAppIpc.deleteBriefcaseFiles(fileName);
   }
 
-  /**  Get a list of all briefcase files held in the local briefcase cache directory */
+  /** Get a list of all briefcase files held in the local briefcase cache directory */
   public static async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
-    return this.callNativeHost("getCachedBriefcases", iModelId);
+    return this.nativeAppIpc.getCachedBriefcases(iModelId);
   }
 
   /**
@@ -266,7 +194,7 @@ export class NativeApp {
     if (this._storages.has(name))
       return this._storages.get(name)!;
 
-    const storage = new Storage(await this.callNativeHost("storageMgrOpen", name));
+    const storage = new Storage(await this.nativeAppIpc.storageMgrOpen(name));
     this._storages.set(storage.id, storage);
     return storage;
   }
@@ -280,13 +208,13 @@ export class NativeApp {
     if (!this._storages.has(storage.id))
       throw new Error(`Storage [Id=${storage.id}] not open`);
 
-    await this.callNativeHost("storageMgrClose", storage.id, deleteStorage);
+    await this.nativeAppIpc.storageMgrClose(storage.id, deleteStorage);
     this._storages.delete(storage.id);
   }
 
   /** Get the list of existing Storages on the local disk. */
   public static async getStorageNames(): Promise<string[]> {
-    return NativeApp.callNativeHost("storageMgrNames");
+    return NativeApp.nativeAppIpc.storageMgrNames();
   }
 }
 
@@ -300,17 +228,17 @@ export class Storage {
 
   /** get the type of a value for a key, or undefined if not present. */
   public async getValueType(key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined> {
-    return NativeApp.callNativeHost("storageGetValueType", this.id, key);
+    return NativeApp.nativeAppIpc.storageGetValueType(this.id, key);
   }
 
   /** Get the value for a key */
   public async getData(key: string): Promise<StorageValue> {
-    return NativeApp.callNativeHost("storageGet", this.id, key);
+    return NativeApp.nativeAppIpc.storageGet(this.id, key);
   }
 
   /** Set value for a key */
   public async setData(key: string, value: StorageValue): Promise<void> {
-    return NativeApp.callNativeHost("storageSet", this.id, key, value);
+    return NativeApp.nativeAppIpc.storageSet(this.id, key, value);
   }
 
   /**
@@ -318,16 +246,16 @@ export class Storage {
    * @note This can be expensive, depending on the number of keys present.
    */
   public async getKeys(): Promise<string[]> {
-    return NativeApp.callNativeHost("storageKeys", this.id);
+    return NativeApp.nativeAppIpc.storageKeys(this.id);
   }
 
   /** Remove a key and its data. */
   public async removeData(key: string): Promise<void> {
-    return NativeApp.callNativeHost("storageRemove", this.id, key);
+    return NativeApp.nativeAppIpc.storageRemove(this.id, key);
   }
 
   /** Remove all keys and their data. */
   public async removeAll(): Promise<void> {
-    return NativeApp.callNativeHost("storageRemoveAll", this.id);
+    return NativeApp.nativeAppIpc.storageRemoveAll(this.id);
   }
 }

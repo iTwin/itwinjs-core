@@ -162,12 +162,36 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     parentWindow.removeEventListener("pointerup", this._handlePointerUp, true);
     parentWindow.removeEventListener("pointermove", this._handlePointerMove, true);
     this._parentDocument.removeEventListener("keyup", this._handleKeyUp, true);
+    parentWindow.addEventListener("resize", this._handleAppWindowResize);
   }
+
+  /** Keep title bar of movable Dialog at least partially visible */
+  // istanbul ignore next
+  private _handleAppWindowResize = (): void => {
+    if (!this._containerRef.current || !this.props.movable)
+      return;
+
+    const parentWindow = this.getParentWindow();
+    const { x, y } = this.state;
+    let newX: number | undefined;
+    let newY: number | undefined;
+
+    if (undefined !== y && undefined !== x) {
+      if (y > parentWindow.innerHeight - 32)
+        newY = parentWindow.innerHeight - 32;
+      if (x > parentWindow.innerWidth - 32)
+        newX = parentWindow.innerWidth - 32;
+    }
+
+    if (newX !== undefined || newY !== undefined)
+      this.setState({ x: newX !== undefined ? newX : x, y: newY !== undefined ? newY : y, positionSet: true });
+  };
 
   public override componentDidMount(): void {
     const parentWindow = this.getParentWindow();
     parentWindow.addEventListener("pointerup", this._handlePointerUp, true);
     this._parentDocument.addEventListener("keyup", this._handleKeyUp, true);
+    parentWindow.addEventListener("resize", this._handleAppWindowResize);
   }
 
   public handleRefSet = (containerDiv: HTMLDivElement | null) => {
@@ -260,7 +284,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         data-testid="core-dialog-root"
         {...props}
       >
-        { opened &&
+        {opened &&
           <DivWithOutsideClick onOutsideClick={onOutsideClick}>
             <FocusTrap active={trapFocus && modal} returnFocusOnDeactivate={true}>
               <div
@@ -497,9 +521,23 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       this.setState({ width, height });
     }
 
+    // istanbul ignore next
     if (movable && this.state.moving) {
       x = event.clientX - this.state.grabOffsetX;
       y = event.clientY - this.state.grabOffsetY;
+      if (y < 0)
+        y = 0;
+      if (event.view) {
+        if (y > event.view.innerHeight - 32)
+          y = event.view.innerHeight - 32;
+        if (x > event.view.innerWidth - 32)
+          x = event.view.innerWidth - 32;
+        if (width) {
+          if (x < (0 - width + 32))
+            x = 0 - width + 32;
+        }
+      }
+
       this.setState({ x, y, positionSet: true });
     }
   };

@@ -2,11 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { useResizeDetector } from "react-resize-detector";
-import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
-import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@itwin/core-react";
 import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, HighlightableTreeProps, ITreeDataProvider,
   MutableTreeModel,
@@ -14,12 +10,58 @@ import {
   SelectionMode, TreeCheckboxStateChangeEventArgs, TreeDataProvider, TreeEventHandler, TreeImageLoader, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem, TreeNodeLoader,
   TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useTreeModel,
 } from "@itwin/components-react";
-import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
-import { Input } from "@itwin/itwinui-react";
+import { ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
+import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@itwin/core-react";
+import { Button, Input } from "@itwin/itwinui-react";
+import * as React from "react";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./SubLayersTree.scss";
+import { MapLayersUI } from "../../mapLayers";
+
+const getWindow = () => {
+  return typeof window === "undefined" ? undefined : window;
+};
+
+const useResizeObserver = <T extends HTMLElement>(
+  onResize: (size: DOMRectReadOnly) => void,
+) => {
+  const resizeObserver = React.useRef<ResizeObserver>();
+
+  const elementRef = React.useCallback(
+    (element: T | null) => {
+      if (!getWindow()?.ResizeObserver) {
+        return;
+      }
+
+      resizeObserver.current?.disconnect();
+      if (element) {
+        resizeObserver.current = new ResizeObserver(([{ contentRect }]) =>
+          onResize(contentRect),
+        );
+        resizeObserver.current?.observe(element);
+      }
+    },
+    [onResize],
+  );
+
+  return [elementRef, resizeObserver.current] as const;
+};
+
+/**
+ Mimic processing of `react-resize-detector` to return width and height.
+* @internal
+ */
+function useResizeDetector(): { width: number | undefined, height: number | undefined, ref: React.Ref<HTMLDivElement> } {
+  const [width, setWidth] = React.useState<number>();
+  const [height, setHeight] = React.useState<number>();
+  const [ref] = useResizeObserver(React.useCallback((size: DOMRectReadOnly) => {
+    setWidth(size.width);
+    setHeight(size.height);
+  }, []));
+  return { width, height, ref };
+}
 
 interface ToolbarProps {
   searchField?: React.ReactNode;
@@ -42,7 +84,7 @@ function Toolbar(props: ToolbarProps) {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersPanel({ mapLayer, viewport }: { mapLayer: StyleMapLayerSettings, viewport: ScreenViewport | undefined }) {
-  const [noneAvailableLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.NoSubLayers"));
+  const [noneAvailableLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.NoSubLayers"));
   if (!viewport || (undefined === mapLayer.subLayers || 0 === mapLayer.subLayers.length)) {
     return <div className="map-manager-sublayer-panel">
       <div>{noneAvailableLabel}</div>
@@ -58,11 +100,11 @@ function getSubLayerProps(subLayerSettings: MapSubLayerSettings[]): MapSubLayerP
   return subLayerSettings.map((subLayer) => subLayer.toJSON());
 }
 
-function getStyleMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean): StyleMapLayerSettings {
+function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: boolean): StyleMapLayerSettings {
   return {
     visible: settings.visible,
     name: settings.name,
-    url: settings.url,
+    source: settings.source,
     transparency: settings.transparency,
     transparentBackground: settings.transparentBackground,
     subLayers: settings.subLayers ? getSubLayerProps(settings.subLayers) : undefined,
@@ -78,9 +120,9 @@ function getStyleMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
-  const [placeholderLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.SearchPlaceholder"));
-  const [allOnLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.AllOn"));
-  const [allOffLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.AllOff"));
+  const [placeholderLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.SearchPlaceholder"));
+  const [allOnLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.AllOn"));
+  const [allOffLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.AllOff"));
   const [mapLayer, setMapLayer] = React.useState(props.mapLayer);
   const [layerFilterString, setLayerFilterString] = React.useState<string>("");
 
@@ -108,12 +150,13 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     const vp = IModelApp.viewManager.selectedView;
     const displayStyle = vp?.displayStyle;
     if (displayStyle && vp) {
-      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(mapLayer.name, mapLayer.url, mapLayer.isOverlay) : -1;
+      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(mapLayer.name, mapLayer.source, mapLayer.isOverlay) : -1;
       displayStyle.changeMapSubLayerProps({ visible: true }, -1, indexInDisplayStyle, mapLayer.isOverlay);
       vp.invalidateRenderPlan();
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
       if (updatedMapLayer) {
-        setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay));
+        if (updatedMapLayer instanceof ImageMapLayerSettings)
+          setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay));
       }
     }
   }, [mapLayer]);
@@ -122,10 +165,10 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     const vp = IModelApp.viewManager.selectedView;
     const displayStyle = vp?.displayStyle;
     if (displayStyle && vp) {
-      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(mapLayer.name, mapLayer.url, mapLayer.isOverlay) : -1;
+      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(mapLayer.name, mapLayer.source, mapLayer.isOverlay) : -1;
       displayStyle.changeMapSubLayerProps({ visible: false }, -1, indexInDisplayStyle, mapLayer.isOverlay);
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
-      if (updatedMapLayer) {
+      if (updatedMapLayer && updatedMapLayer instanceof ImageMapLayerSettings) {
         setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay));
       }
       vp.invalidateRenderPlan();
@@ -136,7 +179,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     setLayerFilterString(event.target.value);
   }, []);
 
-  const { width, height, ref } = useResizeDetector();
+  const { width, height, ref: containerRef } = useResizeDetector();
 
   return <>
     <div className="map-manager-sublayer-tree">
@@ -150,16 +193,16 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
         }
       >
         {mapLayer.provider?.mutualExclusiveSubLayer ? undefined : [
-          <button key="show-all-btn" title={allOnLabel} onClick={showAll}>
+          <Button size="small" styleType="borderless" key="show-all-btn" title={allOnLabel} onClick={showAll}>
             <WebFontIcon iconName="icon-visibility" />
-          </button>,
-          <button key="hide-all-btn" title={allOffLabel} onClick={hideAll}>
+          </Button>,
+          <Button size="small" styleType="borderless" key="hide-all-btn" title={allOffLabel} onClick={hideAll}>
             <WebFontIcon iconName="icon-visibility-hide-2" />
-          </button>,
+          </Button>,
         ]}
       </Toolbar>
-      <div ref={ref} className="map-manager-sublayer-tree-content">
-        {width && height ? <ControlledTree
+      <div ref={containerRef} className="map-manager-sublayer-tree-content">
+        {width !== undefined && height !== undefined && <ControlledTree
           nodeLoader={nodeLoader}
           selectionMode={SelectionMode.None}
           eventsHandler={eventHandler}
@@ -168,7 +211,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
           nodeHighlightingProps={nodeHighlightingProps}
           width={width}
           height={height}
-        /> : null}
+        />}
       </div>
     </div>
   </>;
@@ -288,7 +331,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
       next: (changes) => {
         const vp = IModelApp.viewManager.selectedView;
         const displayStyle = vp?.displayStyle;
-        const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(this._mapLayer.name, this._mapLayer.url, this._mapLayer.isOverlay) : -1;
+        const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(this._mapLayer.name, this._mapLayer.source, this._mapLayer.isOverlay) : -1;
         changes.forEach((change) => {
           const isSelected = (change.newState === CheckBoxState.On);
 

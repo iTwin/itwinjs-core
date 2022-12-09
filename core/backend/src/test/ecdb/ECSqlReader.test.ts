@@ -24,13 +24,14 @@ describe("bind Id64 enumerable", async () => {
       const params = new QueryBinder();
       params.bindIdSet(1, ["0x32"]);
       const optionBuilder = new QueryOptionsBuilder();
+      optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
       const reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions());
-      const rows = await reader.toArray(QueryRowFormat.UseJsPropertyNames);
+      const rows = await reader.toArray();
       assert.equal(rows[0].id, "0x32");
       assert.equal(rows.length, 1);
     });
   });
-  it("ecsql reader simple", async () => {
+  it("ecsql reader simple using query reader", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "test.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -62,10 +63,6 @@ describe("bind Id64 enumerable", async () => {
         const row0 = reader.current.toRow();
         assert.equal(row0.ECInstanceId, "0x32");
         assert.equal(row0.Name, "CompositeUnitRefersToUnit");
-
-        const row1 = reader.current.toJsRow();
-        assert.equal(row1.id, "0x32");
-        assert.equal(row1.name, "CompositeUnitRefersToUnit");
       }
     });
   });

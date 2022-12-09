@@ -27,7 +27,7 @@ import { BagOfCurves, ConsolidateAdjacentCurvePrimitivesOptions, CurveChain, Cur
 import { CurveCurve } from "./CurveCurve";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
-import { CurveChainWireOffsetContext, JointOptions, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { CurveChainWireOffsetContext, JointOptions, OffsetOptions, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
 import { Path } from "./Path";
@@ -94,7 +94,15 @@ export class RegionOps {
     }
     return undefined;
   }
-
+  /** Return an area tolerance for a given xy-range and optional distance tolerance.
+   * @param range range of planar region to tolerance
+   * @param distanceTolerance optional absolute distance tolerance
+  */
+  public static computeXYAreaTolerance(range: Range3d, distanceTolerance: number=Geometry.smallMetricDistance): number {
+    // if A = bh and e is distance tolerance, then A' := (b+e/2)(h+e/2) = A + e/2(b+h+e/2), so A'-A = e/2(b+h+e/2).
+    const halfDistTol = 0.5 * distanceTolerance;
+    return halfDistTol * (range.xLength() + range.yLength() + halfDistTol);
+  }
   /**
    * Return an xy area for a loop, parity region, or union region.
    * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
@@ -249,13 +257,17 @@ export class RegionOps {
    * @alpha
    */
   public static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType): AnyRegion | undefined {
-    // create and load a context . . .
     const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph();
+    const range = context.groupA.range().union(context.groupB.range());
+    const areaTol = this.computeXYAreaTolerance(range);
     context.runClassificationSweep(operation, (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
-      if (face.countEdgesAroundFace() < 3 && Geometry.isSameCoordinate(area, 0)) // NEED BETTER TOLERANCE
+      // ignore danglers and null faces, but not 2-edge "banana" faces with nonzero area
+      if (face.countEdgesAroundFace() < 2)
+        return;
+      if (Math.abs(area) < areaTol)
         return;
       if (faceType === 1) {
         const loop = PlanarSubdivision.createLoopInFace(face);
@@ -330,24 +342,22 @@ export class RegionOps {
     const context = new PolygonWireOffsetContext();
     return context.constructPolygonWireXYOffset(points, wrap, offsetDistance);
   }
-  /**
-   * Construct curves that are offset from a Path or Loop
+    /**
+   * Construct curves that are offset from a Path or Loop as viewed in xy-plane (ignoring z).
    * * The construction will remove "some" local effects of features smaller than the offset distance, but will not detect self intersection among widely separated edges.
-   * * Offset distance is defined as positive to the left.
-   * * If offsetDistanceOrOptions is given as a number, default options are applied.
+   * * If offsetDistance is given as a number, default OffsetOptions are applied.
    * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
    *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * if the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight lines that are
+   *   * If the turn is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to single intersection point.
+   *   * If the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight lines that are:
    *      * outside the arc
    *      * have uniform turn angle less than `options.maxChamferDegrees`
    *      * each line segment (except first and last) touches the arc at its midpoint.
-   *   * Otherwise the prior and successor curves are extended to simple intersection.
-   * @param curves input curves
-   * @param offsetDistanceOrOptions offset controls.
+   * @param curves base curves.
+   * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */
-  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined {
-    const options = JointOptions.create(offsetDistanceOrOptions);
-    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, options);
+  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined {
+    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, offsetDistanceOrOptions);
   }
   /**
    * Test if point (x,y) is IN, OUT or ON a polygon.
@@ -593,9 +603,10 @@ export class RegionOps {
     const primitivesA = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true);
     const primitivesB = this.expandLineStrings(primitivesA);
     const range = this.curveArrayRange(primitivesB);
+    const areaTol = this.computeXYAreaTolerance(range);
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitivesB);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitivesB, intersections);
-    return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, 1.0e-12 * range.xLength() * range.yLength());
+    return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, areaTol);
   }
 
   /**

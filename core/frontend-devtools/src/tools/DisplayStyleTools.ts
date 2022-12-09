@@ -8,8 +8,8 @@
  */
 
 import {
-  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SkyCube, SkySphere, SubCategoryAppearance, SubCategoryOverride,
-  ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
+  ColorDef, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SkyCube, SkySphere,
+  SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import {
   DisplayStyle3dState, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
@@ -20,12 +20,14 @@ import { parseToggle } from "./parseToggle";
 
 type BooleanFlagName =
   "dimensions" | "patterns" | "weights" | "styles" | "transparency" | "fill" | "textures" | "materials" | "acsTriad" | "grid" | "visibleEdges" |
-  "hiddenEdges" | "lighting" | "shadows" | "clipVolume" | "constructions" | "monochrome" | "backgroundMap" | "ambientOcclusion" | "forceSurfaceDiscard";
+  "hiddenEdges" | "lighting" | "shadows" | "clipVolume" | "constructions" | "monochrome" | "backgroundMap" | "ambientOcclusion" | "forceSurfaceDiscard"
+  | "wiremesh";
 
 // Compiler has the info to construct this array for us, but we have no access to it...
 const booleanFlagNames: BooleanFlagName[] = [
   "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges",
   "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard",
+  "wiremesh",
 ];
 
 const lowercaseBooleanFlagNames = booleanFlagNames.map((name) => name.toLowerCase());
@@ -36,13 +38,13 @@ const lowercaseBooleanFlagNames = booleanFlagNames.map((name) => name.toLowerCas
 export abstract class DisplayStyleTool extends Tool {
   protected get require3d() { return false; }
   // Return true if the display style was modified - we will invalidate the viewport's render plan.
-  protected abstract execute(vp: Viewport): boolean;
+  protected abstract execute(vp: Viewport): Promise<boolean>;
   // Return false if failed to parse.
-  protected abstract parse(args: string[]): boolean;
+  protected abstract parse(args: string[], vp: Viewport): Promise<boolean>;
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.execute(vp))
+    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && await this.execute(vp))
       vp.displayStyle = vp.view.displayStyle;
 
     return true;
@@ -50,7 +52,7 @@ export abstract class DisplayStyleTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.parse(args))
+    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && await this.parse(args, vp))
       return this.run();
     else
       return false;
@@ -130,9 +132,9 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
 
   public override get require3d() { return true; }
 
-  public parse(_args: string[]) { return true; } // no arguments
+  public async parse(_args: string[]): Promise<boolean> { return true; } // no arguments
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     const style = vp.view.displayStyle as DisplayStyle3dState;
     style.environment = style.environment.withDisplay({ sky: !style.environment.displaySky });
     return true;
@@ -151,12 +153,12 @@ export class SkySphereTool extends DisplayStyleTool {
 
   public override get require3d() { return true; }
 
-  public parse(args: string[]) {
+  public async parse(args: string[]) {
     this._image = args[0];
     return true;
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     if (this._image && vp.view.is3d()) {
       vp.view.displayStyle.environment = vp.view.displayStyle.environment.clone({
         displaySky: true,
@@ -180,12 +182,12 @@ export class SkyCubeTool extends DisplayStyleTool {
 
   public override get require3d() { return true; }
 
-  public parse(args: string[]) {
+  public async parse(args: string[]) {
     this._images = [...args];
     return true;
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     const imgs = this._images;
     if (imgs.length === 0 || !vp.view.is3d())
       return true;
@@ -246,7 +248,7 @@ export class SkyCubeTool extends DisplayStyleTool {
  *  * `project`: include iTwin-specific (formerly known as project) settings.
  *  * `map`: include background map settings.
  *  * `drawingaids`: include drawing aid decoration settings.
- *  * `copy`: copy result to system clipboarad.
+ *  * `copy`: copy result to system clipboard.
  *  * `quote`: format the JSON so it can be parsed directly by [ApplyRenderingStyleTool].
  * @beta
  */
@@ -260,7 +262,7 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 7; }
 
-  public parse(inputArgs: string[]) {
+  public async parse(inputArgs: string[]) {
     const args = parseArgs(inputArgs);
     function getArg(name: string): true | undefined {
       return args.getBoolean(name) ? true : undefined;
@@ -277,7 +279,7 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
     return true;
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     let json = JSON.stringify(vp.displayStyle.settings.toOverrides(this._options));
     if (this._quote)
       json = `"${json.replace(/"/g, '""')}"`;
@@ -302,7 +304,7 @@ export class ApplyRenderingStyleTool extends DisplayStyleTool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 1; }
 
-  public parse(args: string[]) {
+  public async parse(args: string[]) {
     try {
       this._overrides = JSON.parse(args[0]);
       return true;
@@ -312,7 +314,7 @@ export class ApplyRenderingStyleTool extends DisplayStyleTool {
     }
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     if (this._overrides)
       vp.overrideDisplayStyle(this._overrides);
 
@@ -331,7 +333,7 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 7; }
 
-  public parse(inArgs: string[]): boolean {
+  public async parse(inArgs: string[]) {
     const args = parseArgs(inArgs);
     const ids = args.get("i");
     if (ids)
@@ -349,7 +351,7 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
     return true;
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     const ovr = SubCategoryOverride.fromJSON(this._overrideProps);
     for (const id of this._subcategoryIds)
       vp.displayStyle.overrideSubCategory(id, ovr);
@@ -368,7 +370,7 @@ export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public parse(args: string[]): boolean {
+  public async parse(args: string[]) {
     const ignore = parseToggle(args[0]);
     if (typeof ignore === "string")
       return false;
@@ -377,9 +379,59 @@ export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
     return true;
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     const ignoreBackgroundColor = this._ignore ?? !vp.displayStyle.settings.whiteOnWhiteReversal.ignoreBackgroundColor;
     vp.displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor });
+    return true;
+  }
+}
+
+/** Toggle whether surfaces display with overlaid wiremesh in the active viewport.
+ * @see [ViewFlags.wiremesh]($common).
+ * @beta
+ */
+export class ToggleWiremeshTool extends DisplayStyleTool {
+  private _enable?: boolean;
+
+  public static override toolId = "ToggleWiremesh";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+
+  public async parse(args: string[]) {
+    const enable = parseToggle(args[0]);
+    if (typeof enable === "string")
+      return false;
+
+    this._enable = enable;
+    return true;
+  }
+
+  public async execute(vp: Viewport) {
+    vp.viewFlags = vp.viewFlags.with("wiremesh", this._enable ?? !vp.viewFlags.wiremesh);
+    return true;
+  }
+}
+
+/** Change the background color of the active viewport and optionally its transparency.
+ * @beta
+ */
+export class ChangeBackgroundColorTool extends DisplayStyleTool {
+  private _color?: ColorDef;
+
+  public static override toolId = "ChangeBackgroundColor";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
+
+  public async parse(args: string[]) {
+    this._color = ColorDef.fromString(args[0]);
+    return true;
+  }
+
+  public async execute(vp: Viewport) {
+    if (!this._color)
+      return false;
+
+    vp.displayStyle.backgroundColor = this._color;
     return true;
   }
 }

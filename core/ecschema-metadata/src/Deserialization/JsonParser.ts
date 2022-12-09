@@ -169,27 +169,27 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     }
   }
 
-  public *getProperties(jsonObj: UnknownObject): Iterable<[string, string, UnknownObject]> {
+  public *getProperties(jsonObj: UnknownObject, itemName: string): Iterable<[string, string, UnknownObject]> {
     const properties = jsonObj.properties;
     if (undefined !== properties) {
       if (!Array.isArray(properties))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this._currentItemFullName} has an invalid 'properties' attribute. It should be of type 'object[]'.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${itemName} has an invalid 'properties' attribute. It should be of type 'object[]'.`);
 
       for (const property of properties as unknown[]) {
         if (!isObject(property))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${this._currentItemFullName} is an invalid JSON object.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${itemName} is an invalid JSON object.`);
 
         if (undefined === property.name)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${this._currentItemFullName} is missing the required 'name' attribute.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${itemName} is missing the required 'name' attribute.`);
         if (typeof (property.name) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${this._currentItemFullName} has an invalid 'name' attribute. It should be of type 'string'.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECProperty in ${itemName} has an invalid 'name' attribute. It should be of type 'string'.`);
 
         if (undefined === property.type)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${property.name} does not have the required 'type' attribute.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} does not have the required 'type' attribute.`);
         if (typeof (property.type) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${property.name} has an invalid 'type' attribute. It should be of type 'string'.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} has an invalid 'type' attribute. It should be of type 'string'.`);
         if (!this.isValidPropertyType(property.type))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${property.name} has an invalid 'type' attribute. '${property.type}' is not a valid type.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} has an invalid 'type' attribute. '${property.type}' is not a valid type.`);
 
         yield [property.name, property.type, property];
       }

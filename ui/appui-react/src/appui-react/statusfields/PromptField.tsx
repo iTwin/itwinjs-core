@@ -34,10 +34,11 @@ class PromptFieldComponent extends React.Component<PromptFieldProps> {
 
   public override render(): React.ReactNode {
     return (
-      <FooterIndicator
+      <FooterIndicator // eslint-disable-line deprecation/deprecation
         className={classnames("uifw-statusFields-promptField", this.props.className)}
         style={this.props.style}
-        isInFooterMode={this.props.isInFooterMode}
+        // eslint-disable-next-line deprecation/deprecation
+        isInFooterMode={this.props.isInFooterMode ?? true}
       >
         {this.props.toolPrompt}
       </FooterIndicator>

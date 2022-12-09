@@ -13,18 +13,19 @@ import { ProgramBuilder, ShaderBuilder, ShaderType, VariableType } from "../Shad
 import { System } from "../System";
 import { addModelViewMatrix } from "./Vertex";
 
-const chooseFloatWithBitFlag = `
-float chooseFloatWithBitFlag(float f1, float f2, float flags, float n) { return nthBitSet(flags, n) ? f2 : f1; }
-`;
-const chooseFloatWithBitFlag2 = `
-float chooseFloatWithBitFlag(float f1, float f2, uint flags, uint n) { return 0u != (flags & n) ? f2 : f1; }
-`;
+// These are not used anywhere currently, but will leave them here commented out in case we want them later.
+// const chooseFloatWithBitFlag = `
+// float chooseFloatWithBitFlag(float f1, float f2, float flags, float n) { return nthBitSet(flags, n) ? f2 : f1; }
+// `;
+// const chooseFloatWithBitFlag2 = `
+// float chooseFloatWithBitFlag(float f1, float f2, uint flags, uint n) { return 0u != (flags & n) ? f2 : f1; }
+// `;
 
-const chooseVec2WithBitFlag = `
-vec2 chooseVec2WithBitFlag(vec2 v1, vec2 v2, float flags, float n) { return nthBitSet(flags, n) ? v2 : v1; }
+const chooseVec2With2BitFlags = `
+vec2 chooseVec2With2BitFlags(vec2 v1, vec2 v2, float flags, float n1, float n2) { return (nthBitSet(flags, n1) || nthBitSet(flags, n2)) ? v2 : v1; }
 `;
-const chooseVec2WithBitFlag2 = `
-vec2 chooseVec2WithBitFlag(vec2 v1, vec2 v2, uint flags, uint n) { return 0u != (flags & n) ? v2 : v1; }
+const chooseVec2With2BitFlags2 = `
+vec2 chooseVec2With2BitFlags(vec2 v1, vec2 v2, uint flags, uint n1, uint n2) { return 0u != (flags & (n1 | n2)) ? v2 : v1; }
 `;
 
 const chooseVec3WithBitFlag = `
@@ -35,39 +36,33 @@ vec3 chooseVec3WithBitFlag(vec3 v1, vec3 v2, uint flags, uint n) { return 0u != 
 `;
 
 /** @internal */
-export function addChooseWithBitFlagFunctions(shader: ShaderBuilder) {
+export function addChooseVec2WithBitFlagsFunction(shader: ShaderBuilder) {
   if (System.instance.capabilities.isWebGL2) {
     shader.addFunction(extractNthBit2);
-    shader.addFunction(chooseFloatWithBitFlag2);
-    shader.addFunction(chooseVec2WithBitFlag2);
+    shader.addFunction(chooseVec2With2BitFlags2);
+  } else {
+    shader.addFunction(nthBitSet);
+    shader.addFunction(chooseVec2With2BitFlags);
+  }
+}
+
+/** @internal */
+export function addChooseVec3WithBitFlagFunction(shader: ShaderBuilder) {
+  if (System.instance.capabilities.isWebGL2) {
+    shader.addFunction(extractNthBit2);
     shader.addFunction(chooseVec3WithBitFlag2);
   } else {
     shader.addFunction(nthBitSet);
-    shader.addFunction(chooseFloatWithBitFlag);
-    shader.addFunction(chooseVec2WithBitFlag);
     shader.addFunction(chooseVec3WithBitFlag);
   }
 }
 
-function addShaderFlagsLookup(shader: ShaderBuilder) {
+function addShaderFlagsConstants(shader: ShaderBuilder) {
   shader.addConstant("kShaderBit_Monochrome", VariableType.Int, "0");
   shader.addConstant("kShaderBit_NonUniformColor", VariableType.Int, "1");
   shader.addConstant("kShaderBit_OITFlatAlphaWeight", VariableType.Int, "2");
   shader.addConstant("kShaderBit_OITScaleOutput", VariableType.Int, "3");
   shader.addConstant("kShaderBit_IgnoreNonLocatable", VariableType.Int, "4");
-  addChooseWithBitFlagFunctions(shader);
-  if (System.instance.capabilities.isWebGL2) {
-    shader.addFunction(extractNthBit2);
-    shader.addFunction(chooseFloatWithBitFlag2);
-    shader.addFunction(chooseVec2WithBitFlag2);
-    shader.addFunction(chooseVec3WithBitFlag2);
-  } else {
-    shader.addFunction(nthBitSet);
-    shader.addFunction(extractNthBit);
-    shader.addFunction(chooseFloatWithBitFlag);
-    shader.addFunction(chooseVec2WithBitFlag);
-    shader.addFunction(chooseVec3WithBitFlag);
-  }
 }
 
 const shaderFlagArray = new Int32Array(5);
@@ -127,11 +122,11 @@ function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
 
 /** @internal */
 export function addShaderFlags(builder: ProgramBuilder) {
-  addShaderFlagsLookup(builder.vert);
-  addShaderFlagsLookup(builder.frag);
+  addShaderFlagsConstants(builder.vert);
+  addShaderFlagsConstants(builder.frag);
 
   builder.addUniformArray("u_shaderFlags", VariableType.Boolean, 5, (prog) => {
-    prog.addGraphicUniform("u_shaderFlags", (uniform, params) => { setShaderFlags(uniform, params); });
+    prog.addGraphicUniform("u_shaderFlags", (uniform, params) => setShaderFlags(uniform, params));
   });
 }
 

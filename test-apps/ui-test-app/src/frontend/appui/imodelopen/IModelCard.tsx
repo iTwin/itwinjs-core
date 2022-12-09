@@ -4,8 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelCard.scss";
 import * as React from "react";
-import { IModelHubFrontend } from "@bentley/imodelhub-client";
-import { IModelApp } from "@itwin/core-frontend";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { BasicIModelInfo } from "../ExternalIModel";
 
@@ -34,23 +32,6 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   public static defaultProps: Partial<IModelCardProps> = {
     showDescription: true,
   };
-
-  // called when this component is first loaded
-  public override async componentDidMount() {
-    // we don't get the thumbnail until it's needed.
-    if (!this.props.iModel.thumbnail)
-      this.startRetrieveThumbnail(this.props.iModel); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
-
-  // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
-  private async startRetrieveThumbnail(arg: { iTwinId: string, id: string }) {
-    this.setState({ waitingForThumbnail: true });
-    const hubFrontend = new IModelHubFrontend();
-    try {
-      this.props.iModel.thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.getAccessToken()), arg.id, { iTwinId: arg.iTwinId, size: "Small" });
-    } catch {}
-    this.setState({ waitingForThumbnail: false });
-  }
 
   private _onCardClicked = () => {
     if (this.props.onSelectIModel)
@@ -97,6 +78,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     return (
       <div className="imodel-card" >
         <div className="imodel-card-content" >
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div className="imodel-card-preview" onClick={this._onCardClicked}>
             {this.renderThumbnail()}
           </div>

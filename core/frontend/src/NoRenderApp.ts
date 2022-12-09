@@ -36,7 +36,6 @@ export class NullTarget extends RenderTarget {
   public override dispose(): void { }
   public updateViewRect(): boolean { return false; }
   public readPixels(): void { }
-  public override readImage() { return undefined; }
   public get screenSpaceEffects(): Iterable<string> { return []; }
   public set screenSpaceEffects(_effects: Iterable<string>) { }
 }
@@ -69,6 +68,7 @@ export class NoRenderApp {
   public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.renderSys = new NullRenderSystem();
+    opts.noRender = true;
     await IModelApp.startup(opts);
   }
 }

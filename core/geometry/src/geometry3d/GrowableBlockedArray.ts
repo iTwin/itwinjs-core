@@ -22,21 +22,78 @@ export class GrowableBlockedArray {
    * * If viewing the array as a two dimensional array, this is the row size.
    */
   protected _blockSize: number;  // positive integer !!!
-  public constructor(blockSize: number, initialBlocks: number = 8) {
-    /** array contents in blocked (row-major) order, possibly with extra capacity
-     * Total capacity is `this._data.length`
-     * Actual in-use count is `this._inUse * this._blockSize`
-     */
+  /**
+   * multiplier used by ensureBlockCapacity to expand requested reallocation size
+   */
+  protected _growthFactor: number;
+
+  /**
+   * Construct an array whose contents are in blocked (row-major) order, possibly with extra capacity.
+   * * Total capacity is `this._data.length`
+   * * Actual in-use count is `this._inUse * this._blockSize`
+   * @param blockSize number of entries in each block, i.e., row size
+   * @param initialBlocks initial capacity in blocks (default 8)
+   * @param growthFactor used by ensureBlockCapacity to expand requested reallocation size (default 1.5)
+   */
+  public constructor(blockSize: number, initialBlocks: number = 8, growthFactor?: number) {
     this._data = new Float64Array(initialBlocks * blockSize);
     this._inUse = 0;
-    this._blockSize = blockSize;
+    this._blockSize = blockSize > 0 ? blockSize : 1;
+    this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
   }
+
+  /** Copy data from source array. Does not reallocate or change active block count.
+   * @param source array to copy from
+   * @param sourceCount copy the first sourceCount blocks; all blocks if undefined
+   * @param destOffset copy to instance array starting at this block index; zero if undefined
+   * @return count and offset of blocks copied
+   */
+  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {count: number, offset: number} {
+    // validate inputs and convert from blocks to entries
+    let myOffset = (undefined !== destOffset) ? destOffset * this.numPerBlock : 0;
+    if (myOffset < 0)
+      myOffset = 0;
+    if (myOffset >= this._data.length)
+      return {count: 0, offset: 0};
+    let myCount = (undefined !== sourceCount) ? sourceCount * this.numPerBlock : source.length;
+    if (myCount > 0) {
+      if (myCount > source.length)
+        myCount = source.length;
+      if (myOffset + myCount > this._data.length)
+        myCount = this._data.length - myOffset;
+      if (myCount % this.numPerBlock !== 0)
+        myCount -= myCount % this.numPerBlock;
+    }
+    if (myCount <= 0)
+      return {count: 0, offset: 0};
+    if (myCount === source.length)
+      this._data.set(source, myOffset);
+    else if (source instanceof Float64Array)
+      this._data.set(source.subarray(0, myCount), myOffset);
+    else
+      this._data.set(source.slice(0, myCount), myOffset);
+    return {count: myCount / this.numPerBlock, offset: myOffset / this.numPerBlock};
+  }
+
+  /**
+   * Make a copy of the (active) blocks in this array.
+   * (The clone does NOT get excess capacity)
+   */
+  public clone(): GrowableBlockedArray {
+    const newBlocks = new GrowableBlockedArray(this.numPerBlock, this.numBlocks, this._growthFactor);
+    newBlocks.copyData(this._data, this.numBlocks);
+    newBlocks._inUse = this.numBlocks;
+    return newBlocks;
+  }
+
+  /** computed property: length (in blocks, not doubles) */
+  public get length(): number { return this._inUse; }
   /** computed property: length (in blocks, not doubles) */
   public get numBlocks(): number { return this._inUse; }
   /** property: number of data values per block */
   public get numPerBlock(): number { return this._blockSize; }
   /**
-   * Return a single value indexed within a block
+   * Return a single value indexed within a block. Indices are unchecked.
    * @param blockIndex index of block to read
    * @param indexInBlock  offset within the block
    */
@@ -50,14 +107,14 @@ export class GrowableBlockedArray {
     return this._data.length / this._blockSize;
   }
   /** ensure capacity (in blocks, not doubles) */
-  public ensureBlockCapacity(blockCapacity: number) {
+  public ensureBlockCapacity(blockCapacity: number, applyGrowthFactor: boolean = true) {
     if (blockCapacity > this.blockCapacity()) {
-      const newData = new Float64Array(blockCapacity * this._blockSize);
-      for (let i = 0; i < this._data.length; i++) {
-        newData[i] = this._data[i];
+      if (applyGrowthFactor)
+        blockCapacity *= this._growthFactor;
+      const prevData = this._data;
+      this._data = new Float64Array(blockCapacity * this._blockSize);
+      this.copyData(prevData, this._inUse);
       }
-      this._data = newData;
-    }
   }
   /** Add a new block of data.
    * * If newData has fewer than numPerBlock entries, the remaining part of the new block is zeros.
@@ -81,7 +138,7 @@ export class GrowableBlockedArray {
   protected newBlockIndex(): number {
     const index = this._blockSize * this._inUse;
     if ((index + 1) > this._data.length)
-      this.ensureBlockCapacity(1 + 2 * this._inUse);
+      this.ensureBlockCapacity(1 + this._inUse);
     this._inUse++;
     for (let i = index; i < index + this._blockSize; i++)
       this._data[i] = 0.0;

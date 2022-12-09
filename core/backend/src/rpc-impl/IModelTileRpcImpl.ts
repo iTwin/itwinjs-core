@@ -6,6 +6,7 @@
  * @module RpcInterface
  */
 
+import type { TransferConfig } from "@itwin/object-storage-core";
 import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
 import {
   CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps,
@@ -16,7 +17,7 @@ import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
-import { RpcTrace } from "../RpcBackend";
+import { RpcTrace } from "../rpc/tracing";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
 interface TileRequestProps {
@@ -52,15 +53,13 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
     super(memoizeFn, generateKeyFn);
   }
 
-  private _superMemoize = this.memoize;
-  public override memoize = (props: Props): QueryablePromise<Result> => {
-    return this._superMemoize(props);
-  };
+  public override memoize(props: Props): QueryablePromise<Result> {
+    return super.memoize(props);
+  }
 
-  private _superDeleteMemoized = this.deleteMemoized;
-  public override deleteMemoized = (props: Props) => {
-    this._superDeleteMemoized(props);
-  };
+  public override deleteMemoized(props: Props) {
+    super.deleteMemoized(props);
+  }
 
   private log(status: string, props: Props): void {
     const descr = `${this._operationName}(${this.stringify(props)})`;
@@ -138,7 +137,7 @@ async function getTileContent(props: TileContentRequestProps): Promise<TileConte
 
   // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
   if (IModelHost.usingExternalTileCache) {
-    await IModelHost.tileUploader.cacheTile(props.tokenProps, props.treeId, props.contentId, tile.content, props.guid, {
+    await IModelHost.tileStorage?.uploadTile(db.iModelId, db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, {
       backendName: IModelHost.applicationId,
       tileGenerationTime: tile.elapsedSeconds.toString(),
       tileSize: tile.content.byteLength.toString(),
@@ -211,6 +210,14 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return db.tiles.getTileContent(key.treeId, key.contentId);
   }
 
+  public async getTileCacheConfig(tokenProps: IModelRpcProps): Promise<TransferConfig | undefined> {
+    if (IModelHost.tileStorage === undefined)
+      return undefined;
+    const iModelId = tokenProps.iModelId ?? (await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps)).iModelId;
+    return IModelHost.tileStorage.getDownloadConfig(iModelId);
+  }
+
+  /* eslint-disable deprecation/deprecation */
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     const invocation = RpcInvocation.current(this);
 
@@ -220,12 +227,14 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
     const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
     const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
-    return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return IModelHost.tileCacheService!.obtainContainerUrl(id, expiry, clientIp);
   }
 
   public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
-    return IModelHost.usingExternalTileCache;
+    return IModelHost.tileCacheService !== undefined;
   }
+  /* eslint-enable deprecation/deprecation */
 
   public async queryVersionInfo(): Promise<TileVersionInfo> {
     return IModelHost.platform.getTileVersionInfo();

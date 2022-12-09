@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[TitleBarButton]] component.
- * @beta
+ * @internal
  */
 export interface TitleBarButtonProps extends CommonProps {
   /** Button content. */
@@ -24,7 +24,7 @@ export interface TitleBarButtonProps extends CommonProps {
 }
 
 /** Button used in [[TitleBar]] component.
- * @beta
+ * @internal
  */
 export class TitleBarButton extends React.PureComponent<TitleBarButtonProps> {
   public override render() {

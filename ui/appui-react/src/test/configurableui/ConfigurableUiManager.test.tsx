@@ -49,9 +49,9 @@ describe("ConfigurableUiManager", () => {
         return Frontstage1.stageId;
       }
 
-      public get frontstage(): React.ReactElement<FrontstageProps> {
+      public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
         return (
-          <Frontstage
+          <Frontstage // eslint-disable-line deprecation/deprecation
             id={Frontstage1.stageId}
             defaultTool={CoreTools.selectElementCommand}
             contentGroup={TestUtils.TestContentGroup1}

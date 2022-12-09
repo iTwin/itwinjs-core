@@ -48,7 +48,9 @@ export default function ViewDefinitionSelector(props: ViewDefinitionSelectorProp
   }, [availableViewDefinitions]);
   return (
     <div className="ViewDefinitionSelector">
-      <Select onChange={memoizedOnViewDefinitionSelected} value={props.selectedViewDefinition} options={selectOptions} size="small" />
+      <Select onChange={memoizedOnViewDefinitionSelected} value={props.selectedViewDefinition}
+        popoverProps={{ popperOptions: { strategy: "absolute" } }}
+        options={selectOptions} size="small" />
     </div>
   );
 }

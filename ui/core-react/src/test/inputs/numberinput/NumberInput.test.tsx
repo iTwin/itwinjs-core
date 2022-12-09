@@ -37,6 +37,20 @@ function undefinedStepFunction(_direction: string) {
 }
 
 describe("<NumberInput - React Testing Library />", () => {
+  it("should render correctly disabled", () => {
+    let value: number | undefined = 0;
+    const handleChange = (v: number | undefined, _stringValue: string): void => {
+      value = v;
+    };
+    const wrapper = render(<NumberInput value={value} step={undefined} onChange={handleChange} disabled />);
+    const disabledWrapper = wrapper.container.querySelector("div.core-number-input-container.core-number-input-disabled");
+    expect(disabledWrapper).not.to.be.null;
+    const incrementor = wrapper.container.querySelector("div.core-number-input-button.core-number-input-button-up");
+    expect(incrementor).not.to.be.null;
+    fireEvent.click(incrementor!);
+    expect(value).to.eq(value);
+  });
+
   it("value should update with up/down buttons", () => {
     const spyMethod = sinon.spy();
     let updatedValue: number | undefined = 5;

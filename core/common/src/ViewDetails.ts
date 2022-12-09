@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@itwin/core-geometry";
 import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
 
@@ -14,6 +14,7 @@ import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
  * @see [[ViewDefinitionProps.jsonProperties]].
  * @see [[ViewDetails3dProps]] for additional properties specific to 3d views.
  * @public
+ * @extensions
  */
 export interface ViewDetailsProps {
   /** Id of the aux coord system. Default: invalid. */
@@ -34,6 +35,7 @@ export interface ViewDetailsProps {
 
 /** Describes the orientation of the grid displayed within a [Viewport]($frontend).
  * @public
+ * @extensions
  */
 export enum GridOrientationType {
   /** Oriented with the view. */
@@ -51,6 +53,7 @@ export enum GridOrientationType {
 /** Properties of a [[ViewDefinition3dProps]] stored as JSON.
  * @see [[ViewDefinition3dProps.jsonProperties]].
  * @public
+ * @extensions
  */
 export interface ViewDetails3dProps extends ViewDetailsProps {
   /** Whether viewing tools are prohibited from operating in 3 dimensions on this view. Default: false. */
@@ -140,10 +143,22 @@ export class ViewDetails {
     return this._clipVector.isValid ? this._clipVector : undefined;
   }
   public set clipVector(clip: ClipVector | undefined) {
-    if (!clip)
-      clip = ClipVector.createEmpty();
+    const curClip = this.clipVector;
+    if (curClip === clip)
+      return;
+
+    if (!curClip) {
+      assert(undefined !== clip);
+
+      // An empty clip is equivalent to no clip.
+      if (!clip.isValid)
+        return;
+    }
+
+    clip = clip ?? ClipVector.createEmpty();
 
     this.onClipVectorChanged.raiseEvent(clip.isValid ? clip : undefined);
+
     this._clipVector = clip;
     if (clip.isValid)
       this._json.clip = clip.toJSON();

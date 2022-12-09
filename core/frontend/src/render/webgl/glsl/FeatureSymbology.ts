@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { OvrFlags, RenderOrder, TextureUnit } from "../RenderFlags";
+import { OvrFlags, Pass, RenderOrder, TextureUnit } from "../RenderFlags";
 import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
   VertexShaderComponent,
@@ -19,7 +19,7 @@ import { decodeDepthRgb, decodeUint24 } from "./Decode";
 import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
-import { addAlpha, addFeatureAndMaterialLookup, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
+import { addAlpha, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -52,6 +52,7 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
   // NB: We treat the 16-bit flags as 2 bytes - so subtract 8 from each of these bit indices.
   builder.addBitFlagConstant("kOvrBit_Hilited", 0);
   builder.addBitFlagConstant("kOvrBit_Emphasized", 1);
+  builder.addBitFlagConstant("kOvrBit_ViewIndependentTransparency", 2);
 }
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
@@ -141,9 +142,6 @@ function addFeatureIndex(vert: VertexShaderBuilder): void {
 
   vert.addFunction(decodeUint24);
   vert.addFunction(getFeatureIndex(vert));
-
-  if (vert.usesVertexTable && !vert.usesInstancedGeometry)
-    addFeatureAndMaterialLookup(vert);
 }
 
 // Discards vertex if feature is invisible; or rendering opaque during translucent pass or vice-versa
@@ -156,14 +154,19 @@ const checkVertexDiscard = `
   if (feature_alpha > 0.0)
     hasAlpha = feature_alpha <= s_maxAlpha;
 
+  int discardFlags = u_transparencyDiscardFlags;
+  bool discardViewIndependentDuringOpaque = discardFlags >= 4;
+  if (discardViewIndependentDuringOpaque)
+    discardFlags = discardFlags - 4;
+
   bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
-  bool discardTranslucentDuringOpaquePass = 1 == u_transparencyDiscardFlags || 3 == u_transparencyDiscardFlags;
+  bool discardTranslucentDuringOpaquePass = 1 == discardFlags || 3 == discardFlags || (feature_viewIndependentTransparency && discardViewIndependentDuringOpaque);
   if (isOpaquePass && !discardTranslucentDuringOpaquePass)
     return false;
 
   bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
-  bool discardOpaqueDuringTranslucentPass = 2 == u_transparencyDiscardFlags || 3 == u_transparencyDiscardFlags;
-  if (isTranslucentPass &&!discardOpaqueDuringTranslucentPass)
+  bool discardOpaqueDuringTranslucentPass = 2 == discardFlags || 3 == discardFlags;
+  if (isTranslucentPass && !discardOpaqueDuringTranslucentPass)
     return false;
 
   return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
@@ -174,15 +177,26 @@ function addTransparencyDiscardFlags(vert: VertexShaderBuilder) {
   // is used when applying transparency threshold. However, we need to ensure we don't DISCARD transparent stuff during
   // opaque pass if transparency is off (see checkVertexDiscard). Especially important for transparency threshold and readPixels().
   // Also, if we override raster text to be opaque we must still draw it in the translucent pass.
+  // Finally, if the transparency override is view-independent (i.e., ignores view flags and render mode) we want to discard it during opaque pass
+  // unless we're reading pixels.
+  // So we have a bit field:
   // 1: discard translucent during opaque.
   // 2: discard opaque during translucent.
-  // 3: both
+  // 4: discard view-independent translucent during opaque.
   vert.addUniform("u_transparencyDiscardFlags", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_transparencyDiscardFlags", (uniform, params) => {
-      // During readPixels() we force transparency off. Make sure to ignore a Branch that turns it back on.
-      let flags = params.target.currentViewFlags.transparency && !params.target.isReadPixelsInProgress ? 1 : 0;
-      if (!params.geometry.alwaysRenderTranslucent)
-        flags += 2;
+      let flags = 0;
+
+      // Textured surfaces may render in both passes. If so, it's up to fragment shader to handle discard.
+      const pass = params.geometry.getPass(params.target);
+      if (!Pass.rendersOpaqueAndTranslucent(pass)) {
+        // During readPixels() we force transparency off. Make sure to ignore a Branch that turns it back on.
+        if (!params.target.isReadPixelsInProgress)
+          flags = params.target.currentViewFlags.transparency ? 1 : 4;
+
+        if (!params.geometry.alwaysRenderTranslucent)
+          flags += 2;
+      }
 
       uniform.setUniform1i(flags);
     });
@@ -292,6 +306,7 @@ export function addMaxAlpha(builder: ShaderBuilder): void {
 
 /** @internal */
 function addEmphasisFlags(builder: ShaderBuilder): void {
+  // Must be kept in sync with EmphasisFlags enum.
   builder.addBitFlagConstant("kEmphBit_Hilite", 0);
   builder.addBitFlagConstant("kEmphBit_Emphasize", 1);
   builder.addBitFlagConstant("kEmphBit_Flash", 2);
@@ -472,7 +487,10 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 export function addRenderOrderConstants(builder: ShaderBuilder) {
   builder.addConstant("kRenderOrder_BlankingRegion", VariableType.Float, RenderOrder.BlankingRegion.toFixed(1));
   builder.addConstant("kRenderOrder_Linear", VariableType.Float, RenderOrder.Linear.toFixed(1));
+  builder.addConstant("kRenderOrder_Edge", VariableType.Float, RenderOrder.Edge.toFixed(1));
+  builder.addConstant("kRenderOrder_PlanarEdge", VariableType.Float, RenderOrder.PlanarEdge.toFixed(1));
   builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, RenderOrder.Silhouette.toFixed(1));
+  builder.addConstant("kRenderOrder_PlanarSilhouette", VariableType.Float, RenderOrder.PlanarSilhouette.toFixed(1));
   builder.addConstant("kRenderOrder_UnlitSurface", VariableType.Float, RenderOrder.UnlitSurface.toFixed(1));
   builder.addConstant("kRenderOrder_LitSurface", VariableType.Float, RenderOrder.LitSurface.toFixed(1));
   builder.addConstant("kRenderOrder_PlanarUnlitSurface", VariableType.Float, RenderOrder.PlanarUnlitSurface.toFixed(1));
@@ -634,9 +652,11 @@ const computeFeatureOverrides = `
     if (rgbOverridden)
       feature_rgb = rgba.rgb;
 
-    if (alphaOverridden)
+    if (alphaOverridden) {
       feature_alpha = rgba.a;
+      feature_viewIndependentTransparency = nthFeatureBitSet(emphFlags, kOvrBit_ViewIndependentTransparency);
     }
+  }
 
   linear_feature_overrides = vec4(nthFeatureBitSet(flags, kOvrBit_Weight),
                                   value.w * 256.0,
@@ -741,6 +761,8 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
 
   const vert = builder.vert;
   vert.addGlobal("feature_invisible", VariableType.Boolean, "false");
+  vert.addGlobal("feature_viewIndependentTransparency", VariableType.Boolean, "false");
+
   addEmphasisFlags(vert);
   vert.addGlobal("use_material", VariableType.Boolean, "true");
   vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureOverrides);
@@ -754,7 +776,15 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
  * @internal
  */
 export function addUniformHiliter(builder: ProgramBuilder): void {
-  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, `return vec4(1.0, 0.0, 0.0, 0.0);`);
+  builder.frag.addUniform("v_feature_hilited", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("v_feature_hilited", (uniform, params) => {
+      params.target.uniforms.batch.bindUniformSymbologyFlags(uniform);
+    });
+  });
+
+  addEmphasisFlags(builder.frag);
+  addExtractNthBit(builder.frag);
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeHiliteColor);
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 }
 
@@ -805,6 +835,8 @@ export function addUniformFeatureSymbology(builder: ProgramBuilder, addFeatureCo
       params.target.uniforms.batch.bindUniformNonLocatable(uniform, params.target.drawNonLocatable);
     });
   });
+
+  builder.vert.addGlobal("feature_viewIndependentTransparency", VariableType.Boolean, "false");
 
   addApplyFlash(builder.frag);
 }

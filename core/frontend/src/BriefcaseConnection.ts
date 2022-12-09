@@ -8,15 +8,44 @@
 
 import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex,
-  ChangesetIndexAndId, IModelConnectionProps, IModelError, OpenBriefcaseProps, StandaloneOpenOptions,
+  ChangesetIndex, ChangesetIndexAndId, getPullChangesIpcChannel, IModelConnectionProps, IModelError,
+  PullChangesOptions as IpcAppPullChangesOptions, OpenBriefcaseProps, StandaloneOpenOptions,
 } from "@itwin/core-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
+import { ProgressCallback } from "./request/Request";
 import { disposeTileTreesForGeometricModels } from "./tile/internal";
+import { Viewport } from "./Viewport";
+
+/**
+ * Partial interface of AbortSignal.
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
+ * @alpha
+ */
+export interface GenericAbortSignal {
+  /** Add Listener for abort signal. */
+  addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
+  /** Remove Listener for abort signal. */
+  removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
+}
+
+/**
+ * Options for pulling iModel changes.
+ * @public
+ */
+export interface PullChangesOptions {
+  /** Function called regularly to report progress of changes download. */
+  progressCallback?: ProgressCallback;
+  /** Interval for calling progress callback (in milliseconds). */
+  progressInterval?: number;
+  /** Signal for cancelling the download.
+   * @alpha
+   */
+  abortSignal?: GenericAbortSignal;
+}
 
 /** Keeps track of changes to models, buffering them until synchronization points.
  * While a GraphicalEditingScope is open, the changes are buffered until the scope exits, at which point they are processed.
@@ -131,16 +160,67 @@ class ModelChangeMonitor {
   }
 
   private invalidateScenes(changedModels: Iterable<Id64String>): void {
-    for (const vp of IModelApp.tileAdmin.viewports) {
-      if (vp.iModel === this._briefcase) {
+    for (const user of IModelApp.tileAdmin.tileUsers) {
+      if (user instanceof Viewport && user.iModel === this._briefcase) {
         for (const modelId of changedModels) {
-          if (vp.view.viewsModel(modelId)) {
-            vp.invalidateScene();
-            vp.setFeatureOverrideProviderChanged();
+          if (user.view.viewsModel(modelId)) {
+            user.invalidateScene();
+            user.setFeatureOverrideProviderChanged();
             break;
           }
         }
       }
+    }
+  }
+}
+
+/** Settings that can be used to control the behavior of [[Tool]]s that modify a [[BriefcaseConnection]].
+ * For example, tools that want to create new elements can consult the briefcase's editor tool settings to
+ * determine into which model and category to insert the elements.
+ * Specialized tools are free to ignore these settings.
+ * @see [[BriefcaseConnection.editorToolSettings]] to query or modify the current settings for a briefcase.
+ * @see [CreateElementTool]($editor-frontend) for an example of a tool that uses these settings.
+ * @alpha
+ */
+export class BriefcaseEditorToolSettings {
+  private _category?: Id64String;
+  private _model?: Id64String;
+
+  /** An event raised just after the default [[category]] is changed. */
+  public readonly onCategoryChanged = new BeEvent<(previousCategory: Id64String | undefined) => void>();
+
+  /** An event raised just after the default [[model]] is changed. */
+  public readonly onModelChanged = new BeEvent<(previousModel: Id64String | undefined) => void>();
+
+  /** The [Category]($backend) into which new elements should be inserted by default.
+   * Specialized tools are free to ignore this setting and instead use their own logic to select an appropriate category.
+   * @see [[onCategoryChanged]] to be notified when this property is modified.
+   * @see [CreateElementTool.targetCategory]($editor-frontend) for an example of a tool that uses this setting.
+   */
+  public get category(): Id64String | undefined {
+    return this._category;
+  }
+  public set category(category: Id64String | undefined) {
+    const previousCategory = this.category;
+    if (category !== this.category) {
+      this._category = category;
+      this.onCategoryChanged.raiseEvent(previousCategory);
+    }
+  }
+
+  /** The [Model]($backend) into which new elements should be inserted by default.
+   * Specialized tools are free to ignore this setting and instead use their own logic to select an appropriate model.
+   * @see [[onModelChanged]] to be notified when this property is modified.
+   * @see [CreateElementTool.targetModel]($editor-frontend) for an example of a tool that uses this setting.
+   */
+  public get model(): Id64String | undefined {
+    return this._model;
+  }
+  public set model(model: Id64String | undefined) {
+    const previousModel = this.model;
+    if (model !== this.model) {
+      this._model = model;
+      this.onModelChanged.raiseEvent(previousModel);
     }
   }
 }
@@ -152,6 +232,10 @@ class ModelChangeMonitor {
 export class BriefcaseConnection extends IModelConnection {
   protected _isClosed?: boolean;
   private readonly _modelsMonitor: ModelChangeMonitor;
+  /** Default settings that can be used to control the behavior of [[Tool]]s that modify this briefcase.
+   * @alpha
+   */
+  public readonly editorToolSettings = new BriefcaseEditorToolSettings();
 
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
@@ -174,7 +258,7 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
   public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {
-    const iModelProps = await IpcApp.callIpcHost("openBriefcase", briefcaseProps);
+    const iModelProps = await IpcApp.appFunctionIpc.openBriefcase(briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps }, briefcaseProps.readonly ? OpenMode.Readonly : OpenMode.ReadWrite);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -184,7 +268,7 @@ export class BriefcaseConnection extends IModelConnection {
    * @note StandaloneDbs, by definition, may not push or pull changes. Attempting to do so will throw exceptions.
    */
   public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection> {
-    const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
+    const openResponse = await IpcApp.appFunctionIpc.openStandalone(filePath, openMode, opts);
     const connection = new this(openResponse, openMode);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -207,7 +291,7 @@ export class BriefcaseConnection extends IModelConnection {
     this.txns.dispose();
 
     this._isClosed = true;
-    await IpcApp.callIpcHost("closeIModel", this._fileKey);
+    await IpcApp.appFunctionIpc.closeIModel(this._fileKey);
   }
 
   private requireTimeline() {
@@ -224,16 +308,40 @@ export class BriefcaseConnection extends IModelConnection {
    * @param description Optional description of the changes.
    */
   public async saveChanges(description?: string): Promise<void> {
-    await IpcApp.callIpcHost("saveChanges", this.key, description);
+    await IpcApp.appFunctionIpc.saveChanges(this.key, description);
   }
 
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
    * @param toIndex The changeset index to pull changes to. If `undefined`, pull all changes.
+   * @param options Options for pulling changes.
    * @see [[BriefcaseTxns.onChangesPulled]] for the event dispatched after changes are pulled.
    */
-  public async pullChanges(toIndex?: ChangesetIndex): Promise<void> {
+  public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
+    const removeListeners: VoidFunction[] = [];
+    if (options?.progressCallback) {
+      const removeProgressListener = IpcApp.addListener(
+        getPullChangesIpcChannel(this.iModelId),
+        (_evt: Event, data: { loaded: number, total: number }) => options?.progressCallback?.(data),
+      );
+      removeListeners.push(removeProgressListener);
+    }
+    if (options?.abortSignal) {
+      const abort = () => void IpcApp.appFunctionIpc.cancelPullChangesRequest(this.key);
+      options?.abortSignal.addEventListener("abort", abort);
+      removeListeners.push(() => options?.abortSignal?.removeEventListener("abort", abort));
+    }
+
     this.requireTimeline();
-    this.changeset = await IpcApp.callIpcHost("pullChanges", this.key, toIndex);
+    const ipcAppOptions: IpcAppPullChangesOptions = {
+      reportProgress: !!options?.progressCallback,
+      progressInterval: options?.progressInterval,
+      enableCancellation: !!options?.abortSignal,
+    };
+    try {
+      this.changeset = await IpcApp.appFunctionIpc.pullChanges(this.key, toIndex, ipcAppOptions);
+    } finally {
+      removeListeners.forEach((remove) => remove());
+    }
   }
 
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.
@@ -243,7 +351,7 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public async pushChanges(description: string): Promise<ChangesetIndexAndId> {
     this.requireTimeline();
-    return IpcApp.callIpcHost("pushChanges", this.key, description);
+    return IpcApp.appFunctionIpc.pushChanges(this.key, description);
   }
 
   /** The current graphical editing scope, if one is in progress.
@@ -258,7 +366,7 @@ export class BriefcaseConnection extends IModelConnection {
    * @see [[enterEditingScope]] to enable graphical editing.
    */
   public async supportsGraphicalEditing(): Promise<boolean> {
-    return IpcApp.callIpcHost("isGraphicalEditingSupported", this.key);
+    return IpcApp.appFunctionIpc.isGraphicalEditingSupported(this.key);
   }
 
   /** Begin a new graphical editing scope.

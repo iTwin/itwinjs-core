@@ -1,6 +1,6 @@
 {
   "short_name": "SampleApp",
-  "name": "Imodeljs-ui Sample App",
+  "name": "iTwin.js AppUI Sample App",
   "icons": [
     {
       "src": "favicon.ico",

@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert, Id64String } from "@itwin/core-bentley";
-import {
-  IModelJson, LineString3d, Point3d, Sphere, Vector3d, YawPitchRollAngles,
-} from "@itwin/core-geometry";
 import {
   Code, ColorDef, ElementGeometry, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps,
 } from "@itwin/core-common";
-import { CreateElementTool, EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, DynamicsContext,
-  EventHandled, GraphicType, HitDetail, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
+  AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
+  NotifyMessageDetails, OutputMessagePriority, Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
+  ToolAssistanceSection,
 } from "@itwin/core-frontend";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
+import { IModelJson, LineString3d, Point3d, Sphere, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { editorBuiltInCmdIds } from "@itwin/editor-common";
+import { basicManipulationIpc, CreateElementTool, EditTools } from "@itwin/editor-frontend";
 import { setTitle } from "./Title";
 
 // Simple tools for testing interactive editing. They require the iModel to have been opened in read-write mode.
@@ -45,7 +45,7 @@ export class EditingScopeTool extends Tool {
   }
 }
 
-/** Places a line string. Uses model and category from ToolAdmin.ActiveSettings. */
+/** Places a line string. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class PlaceLineStringTool extends CreateElementTool {
   public static override toolId = "PlaceLineString";
   private readonly _points: Point3d[] = [];
@@ -61,10 +61,6 @@ export class PlaceLineStringTool extends CreateElementTool {
     if (undefined !== this._startedCmd)
       return this._startedCmd;
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
-  }
-
-  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
   }
 
   protected override setupAndPromptForNextAction(): void {
@@ -183,7 +179,7 @@ export class PlaceLineStringTool extends CreateElementTool {
             return;
 
           const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty(), geom: partBuilder.geometryStream };
-          const partId = await PlaceLineStringTool.callCommand("insertGeometryPart", partProps);
+          const partId = await basicManipulationIpc.insertGeometryPart(partProps);
 
           for (const pt of this._points) {
             if (!builder.appendGeometryPart3d(partId, pt))
@@ -192,7 +188,7 @@ export class PlaceLineStringTool extends CreateElementTool {
         }
 
         const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-        await PlaceLineStringTool.callCommand("insertGeometricElement", elemProps);
+        await basicManipulationIpc.insertGeometricElement(elemProps);
         await this.saveChanges();
       } else {
         const builder = new ElementGeometry.Builder();
@@ -210,7 +206,7 @@ export class PlaceLineStringTool extends CreateElementTool {
             return;
 
           const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty() };
-          const partId = await PlaceLineStringTool.callCommand("insertGeometryPart", partProps, { entryArray: partBuilder.entries });
+          const partId = await basicManipulationIpc.insertGeometryPart(partProps, { entryArray: partBuilder.entries });
 
           for (const pt of this._points) {
             if (!builder.appendGeometryPart3d(partId, pt))
@@ -219,7 +215,7 @@ export class PlaceLineStringTool extends CreateElementTool {
         }
 
         const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles } };
-        await PlaceLineStringTool.callCommand("insertGeometricElement", elemProps, { entryArray: builder.entries });
+        await basicManipulationIpc.insertGeometricElement(elemProps, { entryArray: builder.entries });
         await this.saveChanges();
       }
     } catch (err: any) {

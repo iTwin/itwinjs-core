@@ -18,6 +18,7 @@ import { IModelConnection } from "./IModelConnection";
  * use [[ViewState.changeCategoryDisplay]] to ensure the view updates appropriately on screen.
  * @see [[Category]]
  * @public
+ * @extensions
  */
 export class CategorySelectorState extends ElementState {
   /** @internal */
@@ -71,7 +72,7 @@ export class CategorySelectorState extends ElementState {
   public get name(): string { return this.code.value; }
 
   /** Determine whether this CategorySelector includes the specified categoryId string */
-  public has(id: Id64String): boolean { return this.categories.has(id.toString()); }
+  public has(id: Id64String): boolean { return this.categories.has(id); }
 
   /** Determine whether this CategorySelector includes the specified category */
   public isCategoryViewed(categoryId: Id64String): boolean { return this.has(categoryId); }
@@ -92,5 +93,10 @@ export class CategorySelectorState extends ElementState {
    * @param arg The categories to add or remove
    * @param add If true, categories will be added; otherwise they will be removed.
    */
-  public changeCategoryDisplay(arg: Id64Arg, add: boolean): void { if (add) this.addCategories(arg); else this.dropCategories(arg); }
+  public changeCategoryDisplay(arg: Id64Arg, add: boolean): void {
+    if (add)
+      this.addCategories(arg);
+    else
+      this.dropCategories(arg);
+  }
 }

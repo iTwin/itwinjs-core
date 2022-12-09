@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/z-index";
 @import "~@itwin/core-react/lib/cjs/core-react/geometry";
+@import "~@itwin/itwinui-css/scss/style/speed";
 @import "variables";
 
 .components-toolbar-expandable-button {
@@ -29,7 +30,9 @@
     filter: $arrow-shadow;
     pointer-events: none;
 
-    @include triangle-bottom-right($width: $triangle-width, $height: $triangle-height, $color: $buic-icon-color);
+    @include triangle-bottom-right($width: $triangle-width,
+      $height: $triangle-height,
+      $color: $buic-icon-color );
   }
 
   &:active>.components-triangle {
@@ -73,4 +76,11 @@
   border-width: 1px;
   border-style: solid;
   border-radius: 3px;
+
+  transition: visibility $iui-speed ease, opacity $iui-speed ease;
+
+  &.nz-hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
 }

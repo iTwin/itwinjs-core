@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
-import { QueryRowFormat, SubCategoryAppearance } from "@itwin/core-common";
+import { assert, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.
@@ -31,6 +31,7 @@ export class SubCategoriesCache {
   private readonly _byCategoryId = new Map<string, Id64Set>();
   private readonly _appearances = new Map<string, SubCategoryAppearance>();
   private readonly _imodel: IModelConnection;
+  private _missingAtTimeOfPreload: Id64Set | undefined;
 
   public constructor(imodel: IModelConnection) { this._imodel = imodel; }
 
@@ -46,6 +47,27 @@ export class SubCategoriesCache {
    * containing the corresponding promise and the set of categories still to be loaded.
    */
   public load(categoryIds: Id64Arg): SubCategoriesRequest | undefined {
+    const missing = this.getMissing(categoryIds);
+    if (undefined === missing)
+      return undefined;
+
+    const request = new SubCategoriesCache.Request(missing, this._imodel);
+    const promise = request.dispatch().then((result?: SubCategoriesCache.Result) => {
+      if (undefined !== result)
+        this.processResults(result, missing);
+
+      return !request.wasCanceled;
+    });
+
+    return {
+      missingCategoryIds: missing,
+      promise,
+      cancel: () => request.cancel(),
+    };
+  }
+
+  /** Given categoryIds, return which of these are not cached. */
+  private getMissing(categoryIds: Id64Arg): Id64Set | undefined {
     let missing: Id64Set | undefined;
     for (const catId of Id64.iterable(categoryIds)) {
       if (undefined === this._byCategoryId.get(catId)) {
@@ -56,22 +78,7 @@ export class SubCategoriesCache {
       }
     }
 
-    if (undefined === missing)
-      return undefined;
-
-    const request = new SubCategoriesCache.Request(missing, this._imodel);
-    const promise = request.dispatch().then((result?: SubCategoriesCache.Result) => {
-      if (undefined !== result)
-        this.processResults(result, missing!);
-
-      return !request.wasCanceled;
-    });
-
-    return {
-      missingCategoryIds: missing,
-      promise,
-      cancel: () => request.cancel(),
-    };
+    return missing;
   }
 
   public clear(): void {
@@ -109,26 +116,62 @@ export class SubCategoriesCache {
     set.add(subCategoryId);
     this._appearances.set(subCategoryId, appearance);
   }
+
+  public async getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>> {
+    // Eliminate duplicates...
+    const categoryIds = new Set<string>(typeof inputCategoryIds === "string" ? [inputCategoryIds] : inputCategoryIds);
+    const req = this.load(categoryIds);
+    if (req)
+      await req.promise;
+
+    const map = new Map<Id64String, IModelConnection.Categories.CategoryInfo>();
+    for (const categoryId of categoryIds) {
+      const subCategoryIds = this._byCategoryId.get(categoryId);
+      if (!subCategoryIds)
+        continue;
+
+      const subCategories = this.mapSubCategoryInfos(categoryId, subCategoryIds);
+      map.set(categoryId, { id: categoryId, subCategories });
+    }
+
+    return map;
+  }
+
+  public async getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>> {
+    // Eliminate duplicates...
+    const subCategoryIds = new Set<string>(typeof inputSubCategoryIds === "string" ? [inputSubCategoryIds] : inputSubCategoryIds);
+    const req = this.load(categoryId);
+    if (req)
+      await req.promise;
+
+    return this.mapSubCategoryInfos(categoryId, subCategoryIds);
+  }
+
+  private mapSubCategoryInfos(categoryId: Id64String, subCategoryIds: Set<Id64String>): Map<Id64String, IModelConnection.Categories.SubCategoryInfo> {
+    const map = new Map<Id64String, IModelConnection.Categories.SubCategoryInfo>();
+    for (const id of subCategoryIds) {
+      const appearance = this._appearances.get(id);
+      assert(undefined !== appearance);
+      if (appearance)
+        map.set(id, { id, categoryId, appearance });
+    }
+
+    return map;
+  }
 }
 
 /** This namespace and the types within it are exported strictly for use in tests.
  * @internal
  */
 export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
-  export interface ResultRow {
-    parentId: Id64String;
-    id: Id64String;
-    appearance: SubCategoryAppearance.Props;
-  }
-
-  export type Result = ResultRow[];
+  export type Result = SubCategoryResultRow[];
 
   export class Request {
     private readonly _imodel: IModelConnection;
-    private readonly _ecsql: string[] = [];
+    private readonly _categoryIds: CompressedId64Set[] = [];
     private readonly _result: Result = [];
     private _canceled = false;
-    private _curECSqlIndex = 0;
+    private _curCategoryIdsIndex = 0;
 
     public get wasCanceled() { return this._canceled || this._imodel.isClosed; }
 
@@ -136,34 +179,34 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
       this._imodel = imodel;
 
       const catIds = [...categoryIds];
+      OrderedId64Iterable.sortArray(catIds); // sort categories, so that given the same set of categoryIds we will always create the same batches.
       while (catIds.length !== 0) {
         const end = (catIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : catIds.length;
-        const where = catIds.splice(0, end).join(",");
-        this._ecsql.push(`SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`);
+        const compressedIds = CompressedId64Set.compressArray(catIds.splice(0, end));
+        this._categoryIds.push(compressedIds);
       }
     }
 
     public cancel() { this._canceled = true; }
 
     public async dispatch(): Promise<Result | undefined> {
-      if (this.wasCanceled || this._curECSqlIndex >= this._ecsql.length) // handle case of empty category Id set...
+      if (this.wasCanceled || this._curCategoryIdsIndex >= this._categoryIds.length) // handle case of empty category Id set...
         return undefined;
 
       try {
-        const ecsql = this._ecsql[this._curECSqlIndex];
-        for await (const row of this._imodel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
-          this._result.push(row as ResultRow);
-          if (this.wasCanceled)
-            return undefined;
-        }
+        const catIds = this._categoryIds[this._curCategoryIdsIndex];
+        const result = await this._imodel.querySubCategories(catIds);
+        this._result.push(...result);
+        if (this.wasCanceled)
+          return undefined;
       } catch {
         // ###TODO: detect cases in which retry is warranted
         // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
         // incomplete results. Since we're not retrying, that's the best we can do.
       }
 
-      // Finished with current ECSql query. Dispatch the next if one exists.
-      if (++this._curECSqlIndex < this._ecsql.length) {
+      // Finished with current batch of categoryIds. Dispatch the next batch if one exists.
+      if (++this._curCategoryIdsIndex < this._categoryIds.length) {
         if (this.wasCanceled)
           return undefined;
         else
@@ -254,7 +297,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
         if (this._disposed)
           return;
 
-        // Invoke all the functions which were awaiting this set of categories.
+        // Invoke all the functions which were awaiting this set of IModelConnection.Categories.
         assert(undefined !== this._current);
         if (completed)
           for (const func of this._current.funcs)

@@ -15,21 +15,32 @@ import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistor
 import { SaturationConfig, SaturationEffect } from "./effects/Saturation";
 import { SnowEffect } from "./effects/Snow";
 import { VignetteConfig, VignetteEffect } from "./effects/Vignette";
-import { MaskBackgroundMapByElementTool, MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByExcludedElementTool, MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, UnmaskMapTool, UnmaskRealityModelTool } from "./tools/PlanarMaskTools";
-import { ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool } from "./tools/ViewportTools";
+import {
+  MaskBackgroundMapByElementTool, MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByExcludedElementTool,
+  MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, UnmaskMapTool, UnmaskRealityModelTool,
+} from "./tools/PlanarMaskTools";
+import {
+  ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteModeTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool,
+  FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool,
+  ToggleTileTreeReferencesTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel,
+  ViewportTileSizeModifierTool,
+} from "./tools/ViewportTools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import {
-  ApplyRenderingStyleTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, SkyCubeTool, SkySphereTool, ToggleSkyboxTool, WoWIgnoreBackgroundTool,
+  ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, SkyCubeTool,
+  SkySphereTool, ToggleSkyboxTool, ToggleWiremeshTool, WoWIgnoreBackgroundTool,
 } from "./tools/DisplayStyleTools";
+import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool } from "./tools/ScheduleScriptTools";
 import {
   ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
 import {
-  AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
+  AttachArcGISFeatureMapLayerByUrlTool,
+  AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachModelMapLayerTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
   AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisibilityTool,
   MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool,
 } from "./tools/MapLayerTool";
@@ -45,14 +56,14 @@ import {
   SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool, ToggleOSMBuildingDisplay,
 } from "./tools/RealityModelTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
-import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool, ToggleWiremeshTool } from "./tools/RenderSystemTools";
+import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool } from "./tools/RenderSystemTools";
 import {
-  SetAASamplesTool, ToggleDrapeFrustumTool, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze,
+  SetAASamplesTool, ToggleDrapeFrustumTool, ToggleNormalMaps, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze,
   ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect,
 } from "./tools/RenderTargetTools";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
 import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
-import { SelectElementsByIdTool } from "./tools/SelectionTools";
+import { DumpSelectionSetTool, SelectElementsByIdTool } from "./tools/SelectionTools";
 import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
 import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from "./tools/SourceAspectIdTools";
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
@@ -79,12 +90,17 @@ export class FrontendDevTools {
 
     this._initialized = true;
 
+    // clean up if we're being shut down
+    IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
+
     const namespace = "FrontendDevTools";
     const namespacePromise = IModelApp.localization.registerNamespace(namespace);
     const tools = [
       AttachMapLayerTool,
       AttachMapOverlayTool,
+      AttachModelMapLayerTool,
       AttachArcGISMapLayerByUrlTool,
+      AttachArcGISFeatureMapLayerByUrlTool,
       AttachWmsMapLayerByUrlTool,
       AttachWmtsMapLayerByUrlTool,
       AttachTileURLMapLayerByUrlTool,
@@ -92,9 +108,11 @@ export class FrontendDevTools {
       ApplyRenderingStyleTool,
       ApplyViewByIdTool,
       ApplyViewTool,
+      ChangeBackgroundColorTool,
       ChangeCameraTool,
       ChangeEmphasisSettingsTool,
       ChangeFlashSettingsTool,
+      ChangeHiliteModeTool,
       ChangeHiliteSettingsTool,
       ChangePlanProjectionSettingsTool,
       ChangeUnitsTool,
@@ -107,6 +125,7 @@ export class FrontendDevTools {
       DefaultTileSizeModifierTool,
       DetachMapLayersTool,
       DumpPlanProjectionSettingsTool,
+      DumpSelectionSetTool,
       EdgeDetectionEffect,
       EmbossEffect,
       ElementIdFromSourceAspectIdTool,
@@ -133,9 +152,11 @@ export class FrontendDevTools {
       MeasureTileLoadTimeTool,
       OverrideSubCategoryTool,
       OverrideSubCategoryPriorityTool,
+      QueryScheduleScriptTool,
       RealityTransitionTool,
       ReorderMapLayers,
       ReportWebGLCompatibilityTool,
+      ReverseScheduleScriptTool,
       SaturationConfig,
       SaturationEffect,
       SaveRenderingStyleTool,
@@ -143,6 +164,7 @@ export class FrontendDevTools {
       SelectElementsByIdTool,
       SetAASamplesTool,
       SetAspectRatioSkewTool,
+      SetScheduleScriptTool,
       ToggleVolClassIntersect,
       SetMapBaseTool,
       SharpenEffect,
@@ -158,6 +180,7 @@ export class FrontendDevTools {
       ToggleDPIForLODTool,
       ToggleDrapeFrustumTool,
       ToggleFrustumSnapshotTool,
+      ToggleNormalMaps,
       TogglePrimitiveVisibilityTool,
       ToggleProjectExtentsTool,
       ToggleReadPixelsTool,
@@ -167,6 +190,7 @@ export class FrontendDevTools {
       ToggleSkyboxTool,
       ToggleTileRequestDecorationTool,
       ToggleTileTreeBoundsDecorationTool,
+      ToggleTileTreeReferencesTool,
       ToggleToolTipsTool,
       ToggleViewAttachmentBoundariesTool,
       ToggleViewAttachmentClipShapesTool,
@@ -221,5 +245,9 @@ export class FrontendDevTools {
       tool.register(namespace);
 
     return namespacePromise;
+  }
+
+  private static shutdown() {
+    this._initialized = false;
   }
 }

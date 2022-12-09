@@ -7,7 +7,10 @@
  */
 
 import * as React from "react";
-import { UiEvent } from "@itwin/core-react";
+import { Logger } from "@itwin/core-bentley";
+import { UiEvent } from "@itwin/appui-abstract";
+import { UiFramework } from "../UiFramework";
+import { getCssVariableAsNumber } from "@itwin/core-react";
 
 /** Dialog Stack Changed Event Args class.
  * @public
@@ -31,6 +34,9 @@ export interface DialogInfo {
   parentDocument: Document;
 }
 
+/** Used if the 'dialog' z-index CSS variable cannot be read */
+const ZINDEX_DEFAULT = 12000;
+
 /** Dialog Manager class.
  * @internal
  */
@@ -38,14 +44,35 @@ export class DialogManagerBase {
   private static _sId = 0;
   private _dialogs: DialogInfo[] = new Array<DialogInfo>();
   private _onDialogChangedEvent: DialogChangedEvent;
+  private static _topZIndex = ZINDEX_DEFAULT;
 
   constructor(onDialogChangedEvent: DialogChangedEvent) {
     this._onDialogChangedEvent = onDialogChangedEvent;
   }
 
+  /** Initialize the modeless dialog manager */
+  public static initialize(): void {
+    DialogManagerBase._topZIndex = DialogManagerBase.getDialogZIndexDefault();
+  }
+
+  public static get topZIndex(): number { return DialogManagerBase._topZIndex; }
+
+  public static set topZIndex(zIndex: number) { DialogManagerBase._topZIndex = zIndex; }
   public get dialogs() { return this._dialogs; }
 
   public get onDialogChangedEvent(): DialogChangedEvent { return this._onDialogChangedEvent; }
+
+  public static getDialogZIndexDefault(): number {
+    const variable = "--uicore-z-index-dialog";
+    const value = getCssVariableAsNumber(variable);
+
+    // istanbul ignore next
+    if (!isNaN(value))
+      return value;
+
+    Logger.logError(UiFramework.loggerCategory(this), `'${variable}' CSS variable not found`);
+    return ZINDEX_DEFAULT;
+  }
 
   /**
    * Triggers opening a dialog.
@@ -90,6 +117,8 @@ export class DialogManagerBase {
     });
     if (index >= 0)
       this._dialogs.splice(index, 1);
+    if (this._dialogs.length < 1)
+      DialogManagerBase.topZIndex = DialogManagerBase.getDialogZIndexDefault();
   }
 
   public emitDialogChangedEvent(): void {
@@ -117,6 +146,7 @@ export class DialogManagerBase {
  */
 export interface DialogRendererProps {
   dialogManager: DialogManagerBase;
+  style?: React.CSSProperties;
 }
 
 /** @internal */

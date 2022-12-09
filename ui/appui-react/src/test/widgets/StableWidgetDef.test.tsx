@@ -7,7 +7,7 @@ import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 
 describe("createStableWidgetDef", () => {
   it("should return stableId", () => {
-    const sut = createStableWidgetDef(new WidgetDef({}), "w1");
+    const sut = createStableWidgetDef(new WidgetDef({}), "w1"); // eslint-disable-line deprecation/deprecation
     sut.id.should.eq("w1");
   });
 });

@@ -14,7 +14,6 @@ import {
   BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
 } from "@itwin/core-common";
 import { RenderSystem } from "../render/RenderSystem";
-import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 import {
   ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
@@ -81,7 +80,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
       isLeaf: false,
       contentId: "dynamic",
       range: Range3d.createNull(),
-      maximumSize: 512,
+      maximumSize: parent.tileScreenSize,
     };
 
     super(params, parent.tree);
@@ -328,7 +327,7 @@ class GraphicsTile extends Tile {
     this.tolerance = 10 ** toleranceLog10;
   }
 
-  public override computeLoadPriority(_viewports: Iterable<Viewport>): number {
+  public override computeLoadPriority(): number {
     // We want the element's graphics to be updated as soon as possible
     return 0;
   }
@@ -360,7 +359,9 @@ class GraphicsTile extends Tile {
       formatVersion: idProvider.majorFormatVersion,
       location: this.tree.iModelTransform.toJSON(),
       contentFlags: idProvider.contentFlags,
-      omitEdges: !this.tree.hasEdges,
+      omitEdges: !this.tree.edgeOptions,
+      edgeType: this.tree.edgeOptions && this.tree.edgeOptions.indexed ? 2 : 1,
+      smoothPolyfaceEdges: this.tree.edgeOptions && this.tree.edgeOptions.smooth,
       clipToProjectExtents: true,
       sectionCut: this.tree.stringifiedSectionClip,
     };
@@ -373,7 +374,7 @@ class GraphicsTile extends Tile {
       isCanceled = () => !this.isLoading;
 
     assert(data instanceof Uint8Array);
-    const stream = new ByteStream(data.buffer);
+    const stream = ByteStream.fromUint8Array(data);
 
     const position = stream.curPos;
     const format = stream.nextUint32;
@@ -384,7 +385,13 @@ class GraphicsTile extends Tile {
 
     const tree = this.tree;
     assert(tree instanceof IModelTileTree);
-    const reader = ImdlReader.create(stream, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, undefined, { tileId: this.contentId });
+    const { iModel, modelId, is3d, containsTransformNodes } = tree;
+    const reader = ImdlReader.create({
+      stream, iModel, modelId, is3d, system, isCanceled, containsTransformNodes,
+      type: tree.batchType,
+      loadEdges: false !== tree.edgeOptions,
+      options: { tileId: this.contentId },
+    });
 
     let content: TileContent = { isLeaf: true };
     if (reader) {

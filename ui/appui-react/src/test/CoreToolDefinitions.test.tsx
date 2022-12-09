@@ -17,27 +17,40 @@ describe("CoreToolDefinitions", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
     await FrontstageManager.setActiveFrontstageDef(undefined);
 
     // Set in the before() after UiFramework.i18n is initialized
     horizontalToolbar =
-      <Toolbar
-        expandsTo={Direction.Bottom}
+      <Toolbar // eslint-disable-line deprecation/deprecation
+        expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={
           <>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.selectElementCommand} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.fitViewCommand} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.windowAreaCommand} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.zoomViewCommand} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.panViewCommand} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.rotateViewCommand} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.walkViewCommand} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.toggleCameraViewCommand} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.flyViewCommand} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.sectionByPlaneCommandItemDef} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.sectionByElementCommandItemDef} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.sectionByShapeCommandItemDef} />
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <ActionItemButton actionItem={CoreTools.sectionByRangeCommandItemDef} />
           </>
         }
@@ -46,9 +59,9 @@ describe("CoreToolDefinitions", () => {
     // Set in the before() after UiFramework.i18n is initialized
     horizontalToolbarWithOverflow =
       <ToolbarWithOverflow
-        expandsTo={Direction.Bottom}
+        expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={ToolbarHelper.createToolbarItemsFromItemDefs([
-          CoreTools.keyinBrowserButtonItemDef,
+          CoreTools.keyinBrowserButtonItemDef, // eslint-disable-line deprecation/deprecation
           CoreTools.selectElementCommand,
           CoreTools.fitViewCommand,
           CoreTools.windowAreaCommand,

@@ -152,6 +152,68 @@ export interface KindOfQuantityInfo {
 }
 
 /**
+ * Navigation property information
+ * @beta
+ */
+export interface NavigationPropertyInfo {
+  /** Information about ECProperty's relationship class */
+  classInfo: ClassInfo;
+  /** Is the direction of the relationship forward */
+  isForwardRelationship: boolean;
+  /** Information about ECProperty's target class */
+  targetClassInfo: ClassInfo;
+  /** Is ECProperty's target class polymorphic */
+  isTargetPolymorphic: boolean;
+}
+
+/** @beta */
+export namespace NavigationPropertyInfo {
+  /** Serialize [[NavigationPropertyInfo]] to JSON */
+  export function toJSON(info: NavigationPropertyInfo): NavigationPropertyInfoJSON {
+    return { ...info, classInfo: ClassInfo.toJSON(info.classInfo), targetClassInfo: ClassInfo.toJSON(info.classInfo) };
+  }
+
+  /** Serialize [[NavigationPropertyInfo]] to compressed JSON */
+  export function toCompressedJSON(navigationPropertyInfo: NavigationPropertyInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): NavigationPropertyInfoJSON<string> {
+    const { id: relationshipId, ...relationshipLeftOverInfo } = navigationPropertyInfo.classInfo;
+    const { id: targetId, ...targetLeftOverInfo} = navigationPropertyInfo.targetClassInfo;
+    classesMap[relationshipId] = relationshipLeftOverInfo;
+    classesMap[targetId] = targetLeftOverInfo;
+
+    return {
+      ...navigationPropertyInfo,
+      classInfo: relationshipId,
+      targetClassInfo: targetId,
+    };
+  }
+
+  /** Deserialize [[NavigationPropertyInfo]] from JSON */
+  export function fromJSON(json: NavigationPropertyInfo): NavigationPropertyInfo {
+    return { ...json, classInfo: ClassInfo.fromJSON(json.classInfo), targetClassInfo: ClassInfo.fromJSON(json.targetClassInfo) };
+  }
+
+  /** Deserialize [[NavigationPropertyInfo]] from compressed JSON */
+  export function fromCompressedJSON(compressedNavigationPropertyInfoJSON: NavigationPropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): NavigationPropertyInfo {
+    return {
+      ...compressedNavigationPropertyInfoJSON,
+      classInfo: { id: compressedNavigationPropertyInfoJSON.classInfo, ...classesMap[compressedNavigationPropertyInfoJSON.classInfo] },
+      targetClassInfo: { id: compressedNavigationPropertyInfoJSON.targetClassInfo, ...classesMap[compressedNavigationPropertyInfoJSON.targetClassInfo] },
+    };
+  }
+}
+
+/**
+ * A serialized version of [[NavigationPropertyInfo]]
+ * @beta
+ */
+export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+  classInfo: TClassInfoJSON;
+  isForwardRelationship: boolean;
+  targetClassInfo: TClassInfoJSON;
+  isTargetPolymorphic: boolean;
+}
+
+/**
  * A structure that describes an ECProperty
  * @public
  */
@@ -171,29 +233,44 @@ export interface PropertyInfo {
   kindOfQuantity?: KindOfQuantityInfo;
   /** Extended type name of the ECProperty if it has one */
   extendedType?: string;
+  /**
+   * Navigation property info if the field is navigation type
+   * @beta
+  */
+  navigationPropertyInfo?: NavigationPropertyInfo;
 }
 
 /** @public */
 export namespace PropertyInfo {
   /** Serialize [[PropertyInfo]] to JSON */
   export function toJSON(info: PropertyInfo): PropertyInfoJSON {
-    return { ...info, classInfo: ClassInfo.toJSON(info.classInfo) };
+    return {
+      ...info,
+      classInfo: ClassInfo.toJSON(info.classInfo),
+      ...(info.navigationPropertyInfo ? { navigationPropertyInfo: NavigationPropertyInfo.toJSON(info.navigationPropertyInfo) } : undefined),
+    };
   }
 
   /** Serialize [[PropertyInfo]] to compressed JSON */
   export function toCompressedJSON(propertyInfo: PropertyInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfoJSON<string> {
+    const { navigationPropertyInfo, ...leftOverPropertyInfo } = propertyInfo;
     const { id, ...leftOverInfo } = propertyInfo.classInfo;
     classesMap[id] = leftOverInfo;
 
     return {
-      ...propertyInfo,
+      ...leftOverPropertyInfo,
       classInfo: propertyInfo.classInfo.id,
+      ...(navigationPropertyInfo ? { navigationPropertyInfo: NavigationPropertyInfo.toCompressedJSON(navigationPropertyInfo, classesMap) } : undefined),
     };
   }
 
   /** Deserialize [[PropertyInfo]] from JSON */
   export function fromJSON(json: PropertyInfoJSON): PropertyInfo {
-    return { ...json, classInfo: ClassInfo.fromJSON(json.classInfo) };
+    return {
+      ...json,
+      classInfo: ClassInfo.fromJSON(json.classInfo),
+      ...(json.navigationPropertyInfo ? { navigationPropertyInfo: NavigationPropertyInfo.fromJSON(json.navigationPropertyInfo) } : undefined),
+    };
   }
 }
 
@@ -207,6 +284,8 @@ export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   type: string;
   enumerationInfo?: EnumerationInfo;
   kindOfQuantity?: KindOfQuantityInfo;
+  /** @beta */
+  navigationPropertyInfo?: NavigationPropertyInfoJSON<TClassInfoJSON>;
 }
 
 /**

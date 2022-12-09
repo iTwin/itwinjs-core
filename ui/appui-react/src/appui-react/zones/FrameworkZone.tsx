@@ -24,17 +24,17 @@ export interface FrameworkZoneProps extends CommonProps {
   activeTabIndex: number;
   disabledResizeHandles: DisabledResizeHandles | undefined;
   draggedWidget: DraggedWidgetManagerProps | undefined;
-  dropTarget: ZoneTargetType | undefined;
+  dropTarget: ZoneTargetType | undefined; // eslint-disable-line deprecation/deprecation
   fillZone?: boolean;
-  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
   isHidden: boolean;
   isInFooterMode: boolean;
-  openWidgetId: WidgetZoneId | undefined;
-  targetChangeHandler: TargetChangeHandler;
+  openWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
+  targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
   targetedBounds?: RectangleProps;
   widget: WidgetManagerProps | undefined;
   widgetElement: React.ReactNode;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   widgetTabs: WidgetTabs;
   zone: ZoneManagerProps;
 }

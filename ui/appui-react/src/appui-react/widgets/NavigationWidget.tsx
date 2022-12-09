@@ -27,18 +27,19 @@ import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
  * @public
  * @deprecated use NavigationWidgetComposer instead
  */
-export class NavigationWidgetDef extends ToolbarWidgetDefBase {
+export class NavigationWidgetDef extends ToolbarWidgetDefBase { // eslint-disable-line deprecation/deprecation
   private _navigationAidId: string;
   private _imodel: IModelConnection | undefined;
   private _navigationAidControl: NavigationAidControl | undefined;
   private _reactNode: React.ReactNode;
 
-  constructor(props: NavigationWidgetProps) {
+  constructor(props: NavigationWidgetProps) { // eslint-disable-line deprecation/deprecation
     super(props);
 
     this.widgetType = WidgetType.Navigation;
+    // eslint-disable-next-line deprecation/deprecation
     this.verticalDirection = (props.verticalDirection !== undefined) ? props.verticalDirection : Direction.Left;
-    this.horizontalPanelAlignment = ToolbarPanelAlignment.End;
+    this.horizontalPanelAlignment = ToolbarPanelAlignment.End; // eslint-disable-line deprecation/deprecation
     this._navigationAidId = (props.navigationAidId !== undefined) ? props.navigationAidId : "";
 
     const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : /* istanbul ignore next */ "";
@@ -100,7 +101,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
  * @public
  * @deprecated use NavigationWidgetComposer instead
  */
-export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
+export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps { // eslint-disable-line deprecation/deprecation
   iModelConnection?: IModelConnection;
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;

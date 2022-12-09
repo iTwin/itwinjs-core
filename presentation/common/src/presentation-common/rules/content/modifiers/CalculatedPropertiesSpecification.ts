@@ -7,27 +7,24 @@
  */
 
 /**
- * Sub-specification to include additional calculated properties into the content.
+ * This content modifier allows including additional calculated properties into the content.
  *
- * @see [More details]($docs/presentation/Content/CalculatedPropertiesSpecification.md)
+ * @see [Calculated properties specification reference documentation page]($docs/presentation/content/CalculatedPropertiesSpecification.md)
  * @public
  */
 export interface CalculatedPropertiesSpecification {
-  /** Label of the calculated property. May be [localized]($docs/presentation/Advanced/Localization.md). */
+  /** Specifies label of the calculated property. Supports [localization]($docs/presentation/advanced/Localization.md). */
   label: string;
 
   /**
-   * [ECExpression]($docs/presentation/Advanced/ECExpressions.md) used to calculate the value. The
-   * following symbol sets are available:
-   * - [ECInstance ECExpression context]($docs/presentation/Advanced/ECExpressions.md#ecinstance)
-   * - [Ruleset variables]($docs/presentation/Advanced/ECExpressions.md#ruleset-variables-user-settings)
+   * Defines an expression to calculate the value. The expression can use [ECInstance]($docs/presentation/advanced/ECExpressions.md#ecinstance)
+   * and [Ruleset Variables]($docs/presentation/advanced/ECExpressions.md#ruleset-variables-user-settings) symbol contexts.
    */
   value: string;
 
   /**
-   * Priority of the property. Determines the position of this property in UI
-   * components - higher priority means the property should be more visible.
-   * Defaults to `1000`.
+   * Assign a custom [[Field.priority]] to the property. It's up to the UI component to make sure that priority
+   * is respected - properties with higher priority should appear before or above properties with lower priority.
    *
    * @type integer
    */

@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
 import {
   DescriptorOverrides, DistinctValuesRpcRequestOptions, KeySet, KeySetJSON, Paged, PresentationError, PresentationRpcInterface,
@@ -14,20 +14,19 @@ import {
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import { ItemJSON } from "../presentation-common/content/Item";
-import { DiagnosticsScopeLogs } from "../presentation-common/Diagnostics";
+import { ClientDiagnostics } from "../presentation-common/Diagnostics";
 import { InstanceKeyJSON } from "../presentation-common/EC";
 import { ElementProperties } from "../presentation-common/ElementProperties";
 import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
 import {
-  ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, MultiElementPropertiesRequestOptions, SingleElementPropertiesRequestOptions,
+  ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
+  ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, SingleElementPropertiesRequestOptions,
 } from "../presentation-common/PresentationManagerOptions";
 import {
   ContentDescriptorRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
-  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, MultiElementPropertiesRpcRequestOptions,
-  SingleElementPropertiesRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { createTestContentDescriptor } from "./_helpers/Content";
@@ -41,8 +40,8 @@ describe("RpcRequestsHandler", () => {
   let clientId: string;
   let defaultRpcHandlerOptions: { imodel: IModelRpcProps };
   const token: IModelRpcProps = { key: "test", iModelId: "test", iTwinId: "test" };
-  const successResponse = async <TResult>(result: TResult, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result, diagnostics });
-  const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined, diagnostics });
+  const successResponse = async <TResult>(result: TResult, diagnostics?: ClientDiagnostics): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result, diagnostics });
+  const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string, diagnostics?: ClientDiagnostics): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined, diagnostics });
 
   beforeEach(() => {
     clientId = faker.random.uuid();
@@ -95,9 +94,33 @@ describe("RpcRequestsHandler", () => {
         const diagnosticsOptions = {
           handler: sinon.spy(),
         };
-        const diagnosticsResult: DiagnosticsScopeLogs[] = [];
+        const diagnosticsResult: ClientDiagnostics = {};
         await handler.request(async () => successResponse(result, diagnosticsResult), { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions });
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
+      });
+
+      it("removes redundant ruleset properties", async () => {
+        const func = sinon.stub(Logger, "logWarning");
+
+        const options = {
+          rulesetOrId: {
+            property: "abc",
+            $schema: "schema",
+            id: "id",
+            rules: [],
+          },
+          imodel: token,
+        };
+
+        const actualResult = await handler.request(async (_: IModelRpcProps, hierarchyOptions: HierarchyRpcRequestOptions) => {
+          return successResponse(hierarchyOptions.rulesetOrId);
+        }, options);
+
+        expect(actualResult.hasOwnProperty("property")).to.be.true;
+        expect(actualResult.hasOwnProperty("$schema")).to.be.false;
+        expect(actualResult.hasOwnProperty("id")).to.be.true;
+        expect(actualResult.hasOwnProperty("rules")).to.be.true;
+        expect(func.callCount).to.eq(1);
       });
 
     });
@@ -105,8 +128,9 @@ describe("RpcRequestsHandler", () => {
     describe("when request throws unknown exception", () => {
 
       it("re-throws exception when request throws unknown exception", async () => {
-        const func = async () => { throw new Error("test"); };
+        const func = sinon.stub().rejects(new Error("test"));
         await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(Error);
+        expect(func.callCount).to.eq(handler.maxRequestRepeatCount);
       });
 
     });
@@ -114,16 +138,17 @@ describe("RpcRequestsHandler", () => {
     describe("when request returns an unexpected status", () => {
 
       it("throws an exception", async () => {
-        const func = async () => errorResponse(PresentationStatus.Error);
+        const func = sinon.stub().resolves(errorResponse(PresentationStatus.Error));
         await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
+        expect(func.callCount).to.eq(1);
       });
 
       it("calls diagnostics handler if provided", async () => {
         const diagnosticsOptions = {
           handler: sinon.spy(),
         };
-        const diagnosticsResult: DiagnosticsScopeLogs[] = [];
-        const func = async () => errorResponse(PresentationStatus.Error, undefined, diagnosticsResult);
+        const diagnosticsResult: ClientDiagnostics = {};
+        const func = sinon.fake(async () => errorResponse(PresentationStatus.Error, undefined, diagnosticsResult));
         await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
       });
@@ -133,37 +158,20 @@ describe("RpcRequestsHandler", () => {
     describe("when request returns a status of BackendTimeout", () => {
 
       it("returns PresentationError", async () => {
-        const func = async () => errorResponse(PresentationStatus.BackendTimeout);
-        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", 65543);
+        const func = sinon.stub().resolves(errorResponse(PresentationStatus.BackendTimeout));
+        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", PresentationStatus.BackendTimeout);
+        expect(func.callCount).to.eq(handler.maxRequestRepeatCount);
       });
 
-      it("calls request handler 5 times", async () => {
-        const requestHandlerStub = sinon.stub();
-        requestHandlerStub.returns(Promise.resolve(errorResponse(PresentationStatus.BackendTimeout)));
-        const requestHandlerSpy = sinon.spy(() => requestHandlerStub());
-
-        await expect(handler.request(requestHandlerSpy, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
-        expect(requestHandlerSpy.callCount).to.be.equal(5);
-      });
-
-    });
-
-    describe("when request throws", () => {
-
-      it("returns PresentationError", async () => {
-        const err = new Error();
-        const func = async (): PresentationRpcResponse<number> => { throw err; };
-        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(err);
-      });
-
-      it("calls request handler 5 times", async () => {
-        const err = new Error();
-        const requestHandlerStub = sinon.stub();
-        requestHandlerStub.throws(err);
-        const requestHandlerSpy = sinon.spy(() => requestHandlerStub());
-
-        await expect(handler.request(requestHandlerSpy, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(err);
-        expect(requestHandlerSpy.callCount).to.be.equal(5);
+      it("calls diagnostics handler if provided", async () => {
+        const diagnosticsOptions = {
+          handler: sinon.spy(),
+        };
+        let funcCallCount = 0;
+        const func = sinon.fake(async () => errorResponse(PresentationStatus.BackendTimeout, undefined, { logs: [{ scope: `${funcCallCount++}` }] }));
+        await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
+        expect(diagnosticsOptions.handler.callCount).to.eq(handler.maxRequestRepeatCount);
+        diagnosticsOptions.handler.getCalls().forEach((call, callIndex) => expect(call).to.be.calledWith({ logs: [{ scope: `${callIndex}` }] }));
       });
 
     });
@@ -459,7 +467,7 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
-    it("forwards getElementProperties call with single element options", async () => {
+    it("forwards getElementProperties call", async () => {
       const elementId = "0x123";
       const handlerOptions: SingleElementPropertiesRequestOptions<IModelRpcProps> = {
         imodel: token,
@@ -474,36 +482,6 @@ describe("RpcRequestsHandler", () => {
         id: elementId,
         label: "test label",
         items: {},
-      };
-      rpcInterfaceMock.setup(async (x) => x.getElementProperties(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
-      expect(await handler.getElementProperties(handlerOptions)).to.deep.eq(result);
-      rpcInterfaceMock.verifyAll();
-    });
-
-    it("forwards getElementProperties call with multi element options", async () => {
-      const elementClasses = ["TestSchema:TestClass"];
-      const handlerOptions: MultiElementPropertiesRequestOptions<IModelRpcProps> = {
-        imodel: token,
-        elementClasses,
-      };
-      const rpcOptions: MultiElementPropertiesRpcRequestOptions = {
-        clientId,
-        elementClasses,
-      };
-      const result = {
-        total: 2,
-        items: [{
-          class: "test class",
-          id: "0x1",
-          label: "test label",
-          items: {},
-        },
-        {
-          class: "test class",
-          id: "0x2",
-          label: "test label",
-          items: {},
-        }],
       };
       rpcInterfaceMock.setup(async (x) => x.getElementProperties(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getElementProperties(handlerOptions)).to.deep.eq(result);
@@ -587,17 +565,19 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards computeSelection call", async () => {
-      const handlerOptions: SelectionScopeRequestOptions<IModelRpcProps> = {
+      const handlerOptions: ComputeSelectionRequestOptions<IModelRpcProps> = {
         imodel: token,
+        elementIds: [Id64.invalid],
+        scope: { id: "test scope" },
       };
-      const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<any>> = {
+      const rpcOptions: PresentationRpcRequestOptions<ComputeSelectionRequestOptions<any>> = {
         clientId,
+        elementIds: [Id64.invalid],
+        scope: { id: "test scope" },
       };
-      const ids = new Array<Id64String>();
-      const scopeId = faker.random.uuid();
       const result = new KeySet().toJSON();
-      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions, ids, scopeId)).returns(async () => successResponse(result)).verifiable();
-      expect(await handler.computeSelection(handlerOptions, ids, scopeId)).to.eq(result);
+      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.computeSelection(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

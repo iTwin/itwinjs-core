@@ -4,10 +4,12 @@ public;class AbstractTreeNodeLoader
 public;class AbstractTreeNodeLoaderWithProvider
 public;ActionButtonList 
 public;ActionButtonListProps
-public;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode
+public;ActionButtonRenderer = (props: ActionButtonRendererProps) => React_2.ReactNode
 public;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
 public;ActiveMatchInfo
+alpha;ActiveRuleGroupContext: React_2.Context
+alpha;ActiveRuleGroupContextProps
 public;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
 public;ArrayPropertyValueRenderer 
 public;AsyncErrorMessage
@@ -34,7 +36,7 @@ beta;BreadcrumbNode
 deprecated;BreadcrumbNode 
 beta;BreadcrumbNodeProps
 deprecated;BreadcrumbNodeProps
-internal;BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode
+internal;BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React_2.ReactNode
 beta;BreadcrumbPath
 deprecated;BreadcrumbPath
 beta;BreadcrumbProps 
@@ -45,20 +47,26 @@ beta;BreadcrumbUpdateEvent
 deprecated;BreadcrumbUpdateEvent 
 beta;BreadcrumbUpdateEventArgs
 deprecated;BreadcrumbUpdateEventArgs
+internal;buildPropertyFilter(groupItem: PropertyFilterBuilderRuleGroupItem): PropertyFilter | undefined
 beta;CategorizedPropertyItem 
 beta;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
 beta;CategoryRecordsDict
 public;CellItem
+deprecated;CellItem
 public;CellProps
 deprecated;CellProps
 public;CheckBoxInfo
 public;CheckboxStateChange
 public;ColumnDescription
+deprecated;ColumnDescription
 public;ColumnFilterDescriptor 
+deprecated;ColumnFilterDescriptor 
 public;CommonPropertyGridProps 
 public;CompletionObserver
 public;CompositeFilterDescriptor 
+deprecated;CompositeFilterDescriptor 
 public;CompositeFilterDescriptorCollection
+deprecated;CompositeFilterDescriptorCollection
 public;CompositeFilterType
 public;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
@@ -78,6 +86,7 @@ public;class DataControllerBase
 internal;DataRowItem 
 internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element
 internal;DateFieldProps 
+public;DateFormatOptions
 alpha;DatePicker(props: DatePickerProps): JSX.Element
 alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): JSX.Element
 alpha;DatePickerPopupButtonProps 
@@ -92,7 +101,9 @@ public;Direction
 internal;DirectionHelpers
 public;DisplayValuePropertyDataFilterer 
 public;DistinctValueCollection
+deprecated;DistinctValueCollection
 public;DistinctValuesFilterDescriptor 
+deprecated;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
 internal;DragAction
 public;EditableTreeDataProvider 
@@ -108,12 +119,19 @@ public;FavoritePropertiesRenderer
 alpha;FavoritePropertyList(props: FavoritePropertyListProps): JSX.Element | null
 alpha;FavoritePropertyListProps
 public;FieldFilterDescriptor 
+deprecated;FieldFilterDescriptor 
 public;FilterableColumn
+deprecated;FilterableColumn
 public;FilterableTable
+deprecated;FilterableTable
 public;FilterCompositionLogicalOperator
+deprecated;FilterCompositionLogicalOperator
 public;FilterDescriptor
+deprecated;FilterDescriptor
 public;FilterDescriptorCollection 
+deprecated;FilterDescriptorCollection 
 public;class FilterDescriptorCollectionBase
+deprecated;class FilterDescriptorCollectionBase
 public;FilteredPropertyData 
 public;FilteredType
 public;FilteringInput 
@@ -121,13 +139,17 @@ public;FilteringInputProps
 public;FilteringInputStatus
 public;FilteringPropertyDataProvider 
 public;FilterOperator
+deprecated;FilterOperator
 public;FilterRenderer
+deprecated;FilterRenderer
 beta;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
 beta;FlatGridItemBase
 beta;FlatGridItemType
 public;FloatTypeConverter 
 internal;formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined
 public;from
+alpha;getPropertyFilterOperatorLabel(operator: PropertyFilterRuleOperator): string
+alpha;getPropertyFilterOperators(property: PropertyDescription): PropertyFilterRuleOperator[]
 internal;getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord): string
 internal;getPropertyRecordAsString(label: PropertyRecord): string
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
@@ -136,7 +158,7 @@ beta;GridCategoryItem
 internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
-public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
+public;hasSelectionModeFlag: (selectionMode: SelectionMode_2, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
 public;HighlightableTreeNodeProps
 public;HighlightableTreeProps
@@ -147,10 +169,11 @@ public;HighlightingComponentProps
 public;HighlightingEngine
 alpha;IconEditor 
 alpha;IconPickerButton 
+deprecated;IconPickerButton 
 alpha;IconPickerProps 
+deprecated;IconPickerProps 
 alpha;IconPropertyEditor 
 public;IImageLoader
-public;Image = LoadedImage | LoadedBinaryImage
 public;ImageCheckBoxEditor 
 public;ImageCheckBoxPropertyEditor 
 public;ImageFileFormat = "png" | "jpg" | "jpge"
@@ -173,6 +196,8 @@ beta;IPropertyGridModel
 beta;IPropertyGridModelSource
 public;IPropertyValueRenderer
 internal;isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem
+alpha;isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRuleGroupItem): item is PropertyFilterBuilderRuleGroup
+alpha;isPropertyFilterRuleGroup(filter: PropertyFilter): filter is PropertyFilterRuleGroup
 public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
 public;isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod
 public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is TreeDataProviderPromise
@@ -180,6 +205,7 @@ public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is TreeDa
 public;isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode
 public;isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder
 public;isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode
+alpha;isUnaryPropertyFilterOperator(operator: PropertyFilterRuleOperator): boolean
 public;ItemColorOverrides
 public;ItemStyle
 public;ItemStyleProvider:
@@ -197,7 +223,7 @@ public;LoadedNodeHierarchy
 public;LoadedNodeHierarchyItem
 public;MergedPropertyValueRenderer 
 internal;MultilineTextPropertyValueRenderer 
-internal;MultilineTextRenderer: React.FC
+internal;MultilineTextRenderer: React_2.FC
 internal;MultiSelectionHandler
 beta;MutableCategorizedArrayProperty 
 beta;MutableCategorizedPrimitiveProperty 
@@ -209,6 +235,7 @@ beta;MutableGridCategory
 beta;MutableGridItemFactory 
 beta;MutablePropertyGridModel 
 public;MutableTableDataProvider 
+deprecated;MutableTableDataProvider 
 beta;MutableTreeDataProvider 
 deprecated;MutableTreeDataProvider 
 public;MutableTreeModel 
@@ -216,7 +243,6 @@ public;MutableTreeModelNode
 public;NavigationPropertyTypeConverter 
 public;NavigationPropertyValueRenderer 
 public;NextObserver
-internal;Node
 public;NonPrimitivePropertyLabelRenderer 
 public;NonPrimitivePropertyLabelRendererProps 
 public;NonPrimitivePropertyRenderer 
@@ -232,7 +258,9 @@ public;OnItemsSelectedCallback
 public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
 public;OperatorProcessor
 public;OperatorValueFilterDescriptor 
+deprecated;OperatorValueFilterDescriptor 
 public;OperatorValueFilterDescriptorCollection 
+deprecated;OperatorValueFilterDescriptorCollection 
 alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 public;PagedTreeNodeLoader
@@ -257,7 +285,7 @@ public;PropertyCategoryBlock
 public;PropertyCategoryBlockProps 
 public;class PropertyCategoryDataFiltererBase 
 public;PropertyCategoryLabelFilterer 
-beta;PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React.ComponentType
+beta;PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React_2.ComponentType
 beta;PropertyCategoryRendererManager
 beta;PropertyCategoryRendererProps
 public;PropertyContainerType
@@ -271,8 +299,36 @@ public;PropertyEditingArgs
 public;class PropertyEditorBase 
 public;PropertyEditorManager
 public;PropertyEditorProps 
+alpha;PropertyFilter = PropertyFilterRule | PropertyFilterRuleGroup
+alpha;PropertyFilterBuilder(props: PropertyFilterBuilderProps): JSX.Element
+alpha;PropertyFilterBuilderActions
+alpha;PropertyFilterBuilderContext: React_2.Context
+alpha;PropertyFilterBuilderContextProps
+alpha;PropertyFilterBuilderProps
+alpha;PropertyFilterBuilderRule
+alpha;PropertyFilterBuilderRuleGroup
+alpha;PropertyFilterBuilderRuleGroupItem = PropertyFilterBuilderRuleGroup | PropertyFilterBuilderRule
+alpha;PropertyFilterBuilderRuleGroupOperator(props: PropertyFilterBuilderRuleGroupOperatorProps): JSX.Element
+alpha;PropertyFilterBuilderRuleGroupOperatorProps
+alpha;PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuilderRuleGroupRendererProps): JSX.Element
+alpha;PropertyFilterBuilderRuleGroupRendererProps
+alpha;PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRuleOperatorProps): JSX.Element
+alpha;PropertyFilterBuilderRuleOperatorProps
+alpha;PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps): JSX.Element
+alpha;PropertyFilterBuilderRulePropertyProps
+alpha;PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps): JSX.Element
+alpha;PropertyFilterBuilderRuleRendererProps
+alpha;PropertyFilterBuilderRuleRenderingContext: React_2.Context
+alpha;PropertyFilterBuilderRuleRenderingContextProps
+alpha;PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps): JSX.Element
+alpha;PropertyFilterBuilderRuleValueProps
+alpha;PropertyFilterBuilderState
 public;PropertyFilterChangeEvent 
 public;PropertyFilterChangesListener = () => void
+alpha;PropertyFilterRule
+alpha;PropertyFilterRuleGroup
+alpha;PropertyFilterRuleGroupOperator
+alpha;PropertyFilterRuleOperator
 public;PropertyGrid 
 public;PropertyGridCategory
 deprecated;PropertyGridCategory
@@ -303,30 +359,37 @@ public;PropertyViewProps
 public;ReactDataGridColumn 
 deprecated;ReactDataGridColumn 
 beta;RenderedItemsRange
-public;renderLinks: (text: string, links: LinkElementsInfo, highlight?: ((text: string) => React.ReactNode) | undefined) => React.ReactNode
+public;renderLinks: (text: string, links: LinkElementsInfo, highlight?: ((text: string) => React_2.ReactNode) | undefined) => React_2.ReactNode
 public;ResultSelector 
 public;ResultSelectorProps 
 public;RowItem
+deprecated;RowItem
 public;RowProps
 deprecated;RowProps
 public;SelectableContent(props: SelectableContentProps): JSX.Element
 public;SelectableContentDefinition
 public;SelectableContentProps
 internal;SelectionHandler
-public;SelectionMode
 public;SelectionModeFlags
 public;SharedRendererProps
 public;SharedTableNonPrimitiveValueRendererProps
 internal;ShortDateTimePropertyEditor 
 public;ShortDateTypeConverter 
 public;ShowHideDialog
+deprecated;ShowHideDialog
 public;ShowHideDialogProps
+deprecated;ShowHideDialogProps
 public;ShowHideID = string | number | symbol
+deprecated;ShowHideID = string | number | symbol
 public;ShowHideItem
+deprecated;ShowHideItem
 public;ShowHideMenu
+deprecated;ShowHideMenu
 public;ShowHideMenuProps
+deprecated;ShowHideMenuProps
 public;SimplePropertyDataProvider 
 public;SimpleTableDataProvider 
+deprecated;SimpleTableDataProvider 
 public;SimpleTreeDataProvider 
 public;SimpleTreeDataProviderHierarchy = Map
 internal;SingleSelectionHandler
@@ -359,12 +422,18 @@ public;TableCellUpdatedArgs
 deprecated;TableCellUpdatedArgs
 internal;TableColumn 
 public;TableDataChangeEvent 
+deprecated;TableDataChangeEvent 
 public;TableDataChangesListener = () => void
+deprecated;TableDataChangesListener = () => void
 public;TableDataProvider
+deprecated;TableDataProvider
 public;TableDistinctValue
+deprecated;TableDistinctValue
 internal;TableFilterDescriptorCollection 
 public;TableIconCellContent 
+deprecated;TableIconCellContent 
 public;TableIconCellContentProps
+deprecated;TableIconCellContentProps
 public;TableNonPrimitiveValueRenderer 
 public;TableNonPrimitiveValueRendererProps 
 public;TableProps 
@@ -388,28 +457,29 @@ deprecated;ThemedEnumPropertyEditor
 internal;TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFieldProps): JSX.Element
 internal;TimeFieldProps
 internal;TimeSpec
-public;toDateString: (date: Date, timeZoneOffset?: number | undefined) => string
+public;toDateString: (date: Date, timeZoneOffset?: number | undefined, formatOptions?: DateFormatOptions | undefined) => string
 public;ToggleEditor 
 public;TogglePropertyEditor 
 public;Toolbar(props: ToolbarProps): JSX.Element
-public;ToolbarButtonItem: React.MemoExoticComponent
+public;ToolbarButtonItem: React_2.MemoExoticComponent
 public;ToolbarButtonItemProps 
 public;ToolbarItem = ActionButton | GroupButton | CustomToolbarItem
 internal;ToolbarItemComponent({ item, addGroupSeparator }:
-internal;ToolbarItemContext: React.Context
+internal;ToolbarItemContext: React_2.Context
 internal;ToolbarItemContextArgs
 public;ToolbarOpacitySetting
 internal;ToolbarOverflowContextProps
 public;ToolbarPanelAlignment
 internal;ToolbarPanelAlignmentHelpers
-public;ToolbarPopupContext: React.Context
+public;ToolbarPopupAutoHideContext: React_2.Context
+public;ToolbarPopupContext: React_2.Context
 public;ToolbarPopupContextProps
 public;ToolbarProps 
 public;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
-internal;ToolbarWithOverflowDirectionContext: React.Context
+internal;ToolbarWithOverflowDirectionContext: React_2.Context
 public;ToolbarWithOverflowProps 
 internal;toRxjsObservable
-public;toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string
+public;toTimeString: (date: Date, timeZoneOffset?: number | undefined, formatOptions?: DateFormatOptions | undefined) => string
 internal;toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition
 public;TreeActions
 public;TreeCheckboxStateChangeEventArgs
@@ -436,13 +506,13 @@ public;TreeModelRootNode
 public;TreeModelSource
 public;TreeNodeEditor(props: TreeNodeEditorProps): JSX.Element
 public;TreeNodeEditorProps
-public;TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React.ReactNode
+public;TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React_2.ReactNode
 public;TreeNodeEventArgs
 public;TreeNodeItem
 public;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
 public;TreeNodeLoader
 public;TreeNodeLoadResult
-public;TreeNodeRenderer: React.MemoExoticComponent
+public;TreeNodeRenderer: React_2.MemoExoticComponent
 public;TreeNodeRendererProps 
 public;TreeRenderer 
 public;TreeRendererAttributes
@@ -460,10 +530,12 @@ public;useAsyncValue:
 alpha;useDebouncedAsyncValue
 public;usePagedTreeNodeLoader
 public;usePropertyData(props:
+alpha;usePropertyFilterBuilderState():
 beta;usePropertyGridEventHandler(props:
 beta;usePropertyGridModel(props:
 beta;usePropertyGridModelSource(props:
 internal;useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise
+public;useToolbarPopupAutoHideContext(): boolean
 public;useToolbarPopupContext(): ToolbarPopupContextProps
 internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
 internal;useToolItemEntryContext(): ToolbarItemContextArgs
@@ -477,5 +549,5 @@ beta;VirtualizedPropertyGridProps
 beta;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
 beta;VirtualizedPropertyGridWithDataProviderProps 
 public;VisibleTreeNodes 
-public;withContextStyle: (node: React.ReactNode, context?: PropertyValueRendererContext | undefined) => React.ReactNode
-public;withLinks: (stringValue: string, links?: LinkElementsInfo | undefined, highlight?: ((text: string) => React.ReactNode) | undefined) => React.ReactNode
+public;withContextStyle: (node: React_2.ReactNode, context?: PropertyValueRendererContext | undefined) => React_2.ReactNode
+public;withLinks: (stringValue: string, links?: LinkElementsInfo | undefined, highlight?: ((text: string) => React_2.ReactNode) | undefined) => React_2.ReactNode

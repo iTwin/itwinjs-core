@@ -11,6 +11,7 @@ import { startDebugger } from "./utils/SpawnUtils";
 
 export interface CertaTestRunner {
   readonly supportsCoverage: boolean;
+  readonly supportsCleanup: boolean;
   initialize?(config: CertaConfig): Promise<void>;
   runTests(config: CertaConfig): Promise<void>;
 }
@@ -52,8 +53,17 @@ export async function certa(environment: string, config: CertaConfig): Promise<v
   // Source map any errors in this backend process
   require("source-map-support").install();
 
+  /**
+   * undefined if backendInitModule not specified;
+   * callback if a cleanup function is returned by the backendInitModule export;
+   * empty object if nothing is exported by the backendInitModule
+   */
+  let cleanUpCallback: undefined | (() => Promise<void>) | {};
   if (config.backendInitModule)
-    await require(config.backendInitModule);
+    cleanUpCallback = await require(config.backendInitModule);
 
   await runner.runTests(config);
+
+  if (typeof cleanUpCallback === "function" && runner.supportsCleanup)
+    await cleanUpCallback();
 }

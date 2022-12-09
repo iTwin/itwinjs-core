@@ -5,10 +5,10 @@
 
 // Barrel file for backend of a mobile application
 
-export * from "./backend/AndroidHost";
-export * from "./backend/iOSHost";
-export * from "./backend/MobileHost";
 export * from "./backend/MobileAuthorizationBackend";
-export * from "./common/MobileRpcManager";
 export * from "./backend/MobileFileHandler";
-
+export * from "./backend/MobileHost";
+export * from "./common/MobileAppProps";
+export * from "./common/MobileRpcManager";
+export * from "./common/MobileRpcProtocol";
+export * from "./common/MobileRpcRequest";

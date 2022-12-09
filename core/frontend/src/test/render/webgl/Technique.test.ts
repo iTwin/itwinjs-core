@@ -10,11 +10,12 @@ import { CompileStatus } from "../../../render/webgl/ShaderProgram";
 import { DrawParams, ShaderProgramParams } from "../../../render/webgl/DrawCommand";
 import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../render/webgl/ShaderBuilder";
-import { SingularTechnique } from "../../../render/webgl/Technique";
+import { SingularTechnique, Techniques } from "../../../render/webgl/Technique";
 import { System } from "../../../render/webgl/System";
 import { Target } from "../../../render/webgl/Target";
 import { TechniqueId } from "../../../render/webgl/TechniqueId";
 import { ViewportQuadGeometry } from "../../../render/webgl/CachedGeometry";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
@@ -54,7 +55,9 @@ describe("Techniques", () => {
     const useWebGL2 = webGLVersion === 2;
     describe(`WebGL ${webGLVersion}`, () => {
       before(async () => {
-        await IModelApp.startup({ renderSys: { useWebGL2 } });
+        await IModelApp.startup({ renderSys: { useWebGL2, errorOnMissingUniform: true } });
+        Logger.initializeToConsole();
+        Logger.setLevel("core-frontend.Render", LogLevel.Error);
       });
 
       after(async () => {
@@ -88,7 +91,8 @@ describe("Techniques", () => {
       });
 
       // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
-      const compileTimeout = "95000";
+      // A timeout of zero means no timeout.
+      const compileTimeout = 0;
       async function compileAllShaders(disabledExtension?: WebGLExtensionName): Promise<void> {
         if (disabledExtension) {
           // The extensions we're disabling are core in WebGL 2.
@@ -99,9 +103,12 @@ describe("Techniques", () => {
           await IModelApp.startup({
             renderSys: {
               useWebGL2: false,
+              errorOnMissingUniform: true,
               disabledExtensions: [disabledExtension],
             },
           });
+          Logger.initializeToConsole();
+          Logger.setLevel("core-frontend.Render", LogLevel.Error);
         }
 
         expect(System.instance.techniques.compileShaders()).to.be.true;
@@ -109,7 +116,9 @@ describe("Techniques", () => {
         if (disabledExtension) {
           // Reset render system to previous state
           await IModelApp.shutdown();
-          await IModelApp.startup({ renderSys: { useWebGL2: false } });
+          await IModelApp.startup({ renderSys: { useWebGL2: false, errorOnMissingUniform: true } });
+          Logger.initializeToConsole();
+          Logger.setLevel("core-frontend.Render", LogLevel.Error);
         }
       }
 
@@ -181,7 +190,33 @@ describe("Techniques", () => {
 
         expect(compiled).to.be.false;
         expect(ex).not.to.be.undefined;
-        expect(ex!.toString().includes("uniform u_unused not found.")).to.be.true;
+        expect(ex!.toString().includes("uniform u_unused not found")).to.be.true;
+      });
+
+      describe("Number of varying vectors", () => {
+        const buildProgram = ProgramBuilder.prototype.buildProgram; // eslint-disable-line @typescript-eslint/unbound-method
+        after(() => ProgramBuilder.prototype.buildProgram = buildProgram);
+
+        it("does not exceed minimum guaranteed", () => {
+          // GL_MAX_VARYING_VECTORS must be at least 8 on WebGL 1 and 15 on WebGL 2.
+          // iOS's WebGL 1 implementation gives us only the minimum 8.
+          // Our wiremesh shaders use 9, but they are only ever produced for WebGL 2, because they use gl_VertexID which is only supported in WebGL 2.
+          const minGuaranteed = useWebGL2 ? 15 : 8;
+
+          let numBuilt = 0;
+          let maxNumVaryings = 0;
+          ProgramBuilder.prototype.buildProgram = function (gl) {
+            ++numBuilt;
+            const numVaryings = this.vert.computeNumVaryingVectors(this.frag.buildSource());
+            expect(numVaryings).most(minGuaranteed);
+            maxNumVaryings = Math.max(numVaryings, maxNumVaryings);
+            return buildProgram.apply(this, [gl]);
+          };
+
+          Techniques.create(System.instance.context);
+          expect(numBuilt).least(100);
+          expect(maxNumVaryings).least(8);
+        });
       });
     });
   }

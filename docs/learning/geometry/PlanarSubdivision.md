@@ -36,11 +36,11 @@ export interface SignedLoops {
 
 Unit Test
 
-- source: imodeljs\core\geometry\src\test\curve\Region.test.ts
+- source: core\geometry\src\test\curve\Region.test.ts
 
 |  |  |  |  |
 |---|---|---|---|
-| `describe()`  |  `it()` | comments | output file (in imodeljs/core/geometry/src/test/output/) |
+| `describe()`  |  `it()` | comments | output file (in core/geometry/src/test/output/) |
 | "RegionBoolean" | "SimpleSplits" | lines, arc with various intersections | SimpleSplits.imjs |
 | "RegionBoolean" | "Overlaps" | boxes with overlapping edges | Overlaps.imjs |
 
@@ -57,6 +57,6 @@ This illustrates using `RegionOps.constructAllXYRegionLoops` to unscramble inter
 
 Unit Test
 
-- source: imodeljs\core\geometry\src\test\curve\Region.test.ts
+- source: `core\geometry\src\test\curve\Region.test.ts`
 - test name: "RegionBoolean.Holes
-- output file:  imodeljs/core/geometry/src/test/output/Holes.imjs
+- output file: `core\geometry\src\test\output\Holes.imjs`

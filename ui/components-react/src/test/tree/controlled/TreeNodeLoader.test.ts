@@ -5,23 +5,26 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { Observable as RxjsObservable } from "rxjs/internal/Observable";
+import { defer } from "rxjs/internal/observable/defer";
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent } from "@itwin/core-bentley";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { Observable } from "../../../components-react/tree/controlled/Observable";
-import { MutableTreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "../../../components-react/tree/controlled/TreeModel";
+import { BeEvent } from "@itwin/core-bentley";
+import { Observable, Observer } from "../../../components-react/tree/controlled/Observable";
+import {
+  MutableTreeModelNode, TreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData,
+} from "../../../components-react/tree/controlled/TreeModel";
 import { TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
 import {
-  handleLoadedNodeHierarchy, LoadedNodeHierarchy, PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, TreeNodeLoadResult,
+  AbstractTreeNodeLoader, handleLoadedNodeHierarchy, LoadedNodeHierarchy, PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, TreeNodeLoadResult,
 } from "../../../components-react/tree/controlled/TreeNodeLoader";
 import {
   ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
 } from "../../../components-react/tree/TreeDataProvider";
 import { extractSequence } from "../../common/ObservableTestHelpers";
 import { ResolvablePromise } from "../../test-helpers/misc";
-import { createRandomMutableTreeModelNode, createRandomTreeNodeItem, createRandomTreeNodeItems } from "./RandomTreeNodesHelpers";
+import { createRandomMutableTreeModelNode, createRandomTreeNodeItem, createRandomTreeNodeItems } from "./TreeHelpers";
 
 /* eslint-disable @typescript-eslint/promise-function-async */
 
@@ -113,7 +116,7 @@ describe("TreeNodeLoader", () => {
     });
 
     it("loads all root nodes", async () => {
-      const loadResultObs = treeNodeLoader.loadNode(treeRootNode, 0);
+      const loadResultObs = treeNodeLoader.loadNode(treeRootNode);
       const loadedIds = await extractLoadedNodeIds(loadResultObs);
       expect(loadedIds).to.be.deep.eq(itemIds(rootNodes));
     });
@@ -124,18 +127,36 @@ describe("TreeNodeLoader", () => {
       dataProviderMock.setup((x) => x.getNodesCount(rootWithChildren.item)).returns(async () => childNodes.length);
       dataProviderMock.setup((x) => x.getNodes(rootWithChildren.item, moq.It.isAny())).returns(async () => childNodes);
 
-      const loadResultObs = treeNodeLoader.loadNode(rootWithChildren, 0);
+      const loadResultObs = treeNodeLoader.loadNode(rootWithChildren);
       const loadedIds = await extractLoadedNodeIds(loadResultObs);
       expect(loadedIds).to.be.deep.eq(itemIds(childNodes));
     });
 
-    it("makes only one request to load nodes", async () => {
-      const loadResultObs = treeNodeLoader.loadNode(treeRootNode, 0);
-      const loadResultObs2 = treeNodeLoader.loadNode(treeRootNode, 0);
-      const loadedIds = await extractLoadedNodeIds(loadResultObs);
-      const loadedIds2 = await extractLoadedNodeIds(loadResultObs2);
-      expect(loadedIds).to.be.deep.eq(itemIds(rootNodes));
-      expect(loadedIds2).to.be.empty;
+    it("reuses existing request from data provider", async () => {
+      const dataProvider = sinon.fake(() => new ResolvablePromise());
+      treeNodeLoader = new TreeNodeLoader(dataProvider, modelSourceMock.object);
+      treeNodeLoader.loadNode(treeRootNode).subscribe();
+      treeNodeLoader.loadNode(treeRootNode).subscribe();
+      // Node loader will invoke dataProvider in another microtask
+      await Promise.resolve();
+      await dataProvider.firstCall.returnValue.resolve([]);
+      expect(dataProvider).to.have.been.calledOnce;
+    });
+
+    it("unschedules node load after cancellation", async () => {
+      const dataProvider = sinon.fake(() => new ResolvablePromise());
+      treeNodeLoader = new TreeNodeLoader(dataProvider, modelSourceMock.object);
+      const subscription = treeNodeLoader.loadNode(treeRootNode).subscribe();
+      await Promise.resolve();
+      expect(dataProvider).to.have.been.calledOnce;
+      subscription.unsubscribe();
+      // The first subscription no longer has any subscribers, so the initial load operation has been cancelled
+
+      treeNodeLoader.loadNode(treeRootNode).subscribe();
+      // Finalise the first node load to allow SubscriptionScheduler to move onto next observable. As a bonus, after the
+      // await, the second subscription will have already propagated to the node loader.
+      await dataProvider.firstCall.returnValue.resolve([]);
+      expect(dataProvider).to.have.been.calledTwice;
     });
 
     describe("using raw data provider", () => {
@@ -151,7 +172,7 @@ describe("TreeNodeLoader", () => {
 
       it("loads all immediately loaded nodes", async () => {
         treeNodeLoader = new TreeNodeLoader(nodesProvider, modelSourceMock.object);
-        const loadObs = treeNodeLoader.loadNode(treeRootNode, 0);
+        const loadObs = treeNodeLoader.loadNode(treeRootNode);
         const loadedIds = await extractLoadedNodeIds(loadObs);
         expect(loadedIds).to.be.deep.eq(["1", "1-1", "1-2", "2"]);
       });
@@ -242,13 +263,45 @@ describe("PagedTreeNodeLoader", () => {
       expect(loadedIds).to.be.deep.eq(expectedNodeIds);
     });
 
-    it("does one request when loading 2 nodes from same page", async () => {
-      const loadResultObs = pagedTreeNodeLoader.loadNode(treeRootNode, 0);
-      const loadResultObs2 = pagedTreeNodeLoader.loadNode(treeRootNode, 1);
-      const loadedIds = await extractLoadedNodeIds(loadResultObs);
-      const loadedIds2 = await extractLoadedNodeIds(loadResultObs2);
-      expect(loadedIds).to.be.deep.eq(itemIds(firstRootPage));
-      expect(loadedIds2).to.be.empty;
+    it("reuses existing page request from data provider", async () => {
+      const dataProvider = sinon.fake(() => new ResolvablePromise());
+      pagedTreeNodeLoader = new PagedTreeNodeLoader(dataProvider, modelSourceMock.object, pageSize);
+      pagedTreeNodeLoader.loadNode(treeRootNode, 0).subscribe();
+      pagedTreeNodeLoader.loadNode(treeRootNode, 1).subscribe();
+      // Node loader will invoke dataProvider in another microtask
+      await Promise.resolve();
+      await dataProvider.firstCall.returnValue.resolve([]);
+      expect(dataProvider).to.have.been.calledOnce;
+    });
+
+    it("unschedules node load after cancellation", async () => {
+      const dataProvider = sinon.fake(() => new ResolvablePromise());
+      pagedTreeNodeLoader = new PagedTreeNodeLoader(dataProvider, modelSourceMock.object, pageSize);
+      const subscription = pagedTreeNodeLoader.loadNode(treeRootNode, 0).subscribe();
+      await Promise.resolve();
+      expect(dataProvider).to.have.been.calledOnce;
+      subscription.unsubscribe();
+      // The first subscription no longer has any subscribers, so the initial load operation has been cancelled
+
+      pagedTreeNodeLoader.loadNode(treeRootNode, 0).subscribe();
+      // Finalise the first node load to allow SubscriptionScheduler to move onto next observable. As a bonus, after the
+      // await, the second subscription will have already propagated to the node loader.
+      await dataProvider.firstCall.returnValue.resolve([]);
+      expect(dataProvider).to.have.been.calledTwice;
+    });
+
+    it("does not load more than one page concurrently", async () => {
+      const dataProvider = sinon.fake(() => new ResolvablePromise());
+      pagedTreeNodeLoader = new PagedTreeNodeLoader(dataProvider, modelSourceMock.object, pageSize);
+
+      pagedTreeNodeLoader.loadNode(treeRootNode, 0).subscribe();
+      pagedTreeNodeLoader.loadNode(treeRootNode, pageSize).subscribe();
+
+      await Promise.resolve();
+      expect(dataProvider).to.have.been.calledOnce;
+
+      await dataProvider.firstCall.returnValue.resolve([]);
+      expect(dataProvider).to.have.been.calledTwice;
     });
 
     it("loads two pages of root nodes", async () => {
@@ -278,11 +331,81 @@ describe("PagedTreeNodeLoader", () => {
         const loadedIds = await extractLoadedNodeIds(loadObs);
         expect(loadedIds).to.be.deep.eq(["1", "1-1", "1-2", "2"]);
       });
+    });
+  });
+});
 
+describe("AbstractTreeNodeLoader", () => {
+  describe("loadNode", () => {
+    it("accepts non-rxjs observables", async () => {
+      const modelSource = new TreeModelSource();
+      const promise = new ResolvablePromise<void>();
+      const nodeLoader = createCustomTreeNodeLoader(
+        modelSource,
+        () => {
+          return {
+            [Symbol.observable]() {
+              return this;
+            },
+            subscribe(
+              observerOrNext?: Observer<LoadedNodeHierarchy> | ((value: LoadedNodeHierarchy) => void) | null,
+              _error?: ((error: any) => void) | null,
+              complete?: (() => void) | null,
+            ) {
+              if (typeof observerOrNext === "object") {
+                observerOrNext?.complete?.();
+              } else {
+                complete?.();
+              }
+              return { closed: true, add() { }, unsubscribe() { } };
+            },
+          };
+        }
+      );
+      nodeLoader.loadNode(modelSource.getModel().getRootNode(), 0).subscribe({ complete: () => promise.resolve() });
+      await promise;
     });
 
-  });
+    it("allows one active load at a time", async () => {
+      const modelSource = new TreeModelSource();
+      sinon.stub(modelSource, "modifyModel");
+      const dataProvider = sinon.fake(() => new ResolvablePromise());
 
+      const nodeLoader = createCustomTreeNodeLoader(
+        modelSource,
+        () => defer(() => rxjsFrom<Promise<LoadedNodeHierarchy>>(dataProvider())),
+      );
+      nodeLoader.loadNode(modelSource.getModel().getRootNode(), 0).subscribe();
+      nodeLoader.loadNode(modelSource.getModel().getRootNode(), 1).subscribe();
+
+      await Promise.resolve();
+      expect(dataProvider).to.have.been.calledOnce;
+
+      const hierarchy: LoadedNodeHierarchy = {
+        parentId: undefined,
+        offset: 0,
+        numChildren: undefined,
+        hierarchyItems: [],
+      };
+      await dataProvider.firstCall.returnValue.resolve(hierarchy);
+      expect(dataProvider).to.have.been.calledTwice;
+    });
+
+    function createCustomTreeNodeLoader(
+      modelSource: TreeModelSource,
+      load: (AbstractTreeNodeLoader["load"]),
+    ): AbstractTreeNodeLoader {
+      return new class extends AbstractTreeNodeLoader {
+        constructor() {
+          super(modelSource);
+        }
+
+        protected load(parent: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy> {
+          return load(parent, childIndex);
+        }
+      }();
+    }
+  });
 });
 
 describe("TreeDataSource", () => {

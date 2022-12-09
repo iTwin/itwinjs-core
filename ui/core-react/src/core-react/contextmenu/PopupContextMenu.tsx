@@ -66,7 +66,7 @@ export function PopupContextMenu(props: PopupContextMenuProps) {
   const { style, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, selectedIndex, children, ...popupProps } = props;
   const menuDirection = getContextMenuDirectionFromRelativePosition(popupProps.position);
   return (
-    <Popup {...popupProps}
+    <Popup {...popupProps} closeOnNestedPopupOutsideClick
       showShadow={false} showArrow={false} moveFocus={true}
       style={{ ...style, border: "none" }}>
       <ContextMenu

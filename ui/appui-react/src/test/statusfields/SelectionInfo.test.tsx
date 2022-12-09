@@ -14,66 +14,70 @@ import {
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
-describe("SelectionInfoField", () => {
-  class AppStatusBarWidgetControl extends StatusBarWidgetControl {
-    constructor(info: ConfigurableCreateInfo, options: any) {
-      super(info, options);
+[true, false].map((withDeprecated) => {
+  const testType = withDeprecated ? " (with deprecated isInFooterMode props)" : "";
+  describe(`SelectionInfoField${testType}`, () => {
+    class AppStatusBarWidgetControl extends StatusBarWidgetControl {
+      constructor(info: ConfigurableCreateInfo, options: any) {
+        super(info, options);
+      }
+
+      // eslint-disable-next-line deprecation/deprecation
+      public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
+        return (
+          <>
+            <SelectionInfoField {...(withDeprecated ? {isInFooterMode} : {})} />
+          </>
+        );
+      }
     }
 
-    public getReactNode({ isInFooterMode, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
-      if (openWidget) { }
-      return (
-        <>
-          <SelectionInfoField isInFooterMode={isInFooterMode} openWidget={null} onOpenWidget={() => { }} />
-        </>
-      );
-    }
-  }
+    let widgetControl: StatusBarWidgetControl | undefined;
 
-  let widgetControl: StatusBarWidgetControl | undefined;
+    before(async () => {
+      await TestUtils.initializeUiFramework();
 
-  before(async () => {
-    await TestUtils.initializeUiFramework();
-
-    const statusBarWidgetDef = new WidgetDef({
-      classId: AppStatusBarWidgetControl,
-      defaultState: WidgetState.Open,
-      isFreeform: false,
-      isStatusBar: true,
+      const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
+        classId: AppStatusBarWidgetControl,
+        defaultState: WidgetState.Open,
+        isFreeform: false,
+        isStatusBar: true,
+      });
+      widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
     });
-    widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
-  });
 
-  after(() => {
-    TestUtils.terminateUiFramework();
-  });
+    after(() => {
+      TestUtils.terminateUiFramework();
+    });
 
-  it("SelectionInfoField should render with 0", () => {
-    const component = render(<Provider store={TestUtils.store}>
-      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
-    </Provider>);
-    expect(component).not.to.be.undefined;
-    const foundText = component.getAllByText("0");
-    expect(foundText).not.to.be.undefined;
-  });
+    it("SelectionInfoField should render with 0", () => {
+      UiFramework.frameworkState!.sessionState.numItemsSelected = 0;
+      const component = render(<Provider store={TestUtils.store}>
+        <StatusBar widgetControl={widgetControl} />
+      </Provider>);
+      expect(component).not.to.be.undefined;
+      const foundText = component.getAllByText("0");
+      expect(foundText).not.to.be.undefined;
+    });
 
-  it("SelectionInfoField should render with 1", () => {
-    UiFramework.frameworkState!.sessionState.numItemsSelected = 1;
-    const component = render(<Provider store={TestUtils.store}>
-      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
-    </Provider>);
-    expect(component).not.to.be.undefined;
-    const foundText = component.getAllByText("1");
-    expect(foundText).not.to.be.undefined;
-  });
+    it("SelectionInfoField should render with 1", () => {
+      UiFramework.frameworkState!.sessionState.numItemsSelected = 1;
+      const component = render(<Provider store={TestUtils.store}>
+        <StatusBar widgetControl={widgetControl} />
+      </Provider>);
+      expect(component).not.to.be.undefined;
+      const foundText = component.getAllByText("1");
+      expect(foundText).not.to.be.undefined;
+    });
 
-  it("SelectionInfoField should update after Redux action", () => {
-    const component = render(<Provider store={TestUtils.store}>
-      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
-    </Provider>);
-    expect(component).not.to.be.undefined;
-    UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, 99);
-    const foundText = component.getAllByText("99");
-    expect(foundText).not.to.be.undefined;
+    it("SelectionInfoField should update after Redux action", () => {
+      const component = render(<Provider store={TestUtils.store}>
+        <StatusBar widgetControl={widgetControl} />
+      </Provider>);
+      expect(component).not.to.be.undefined;
+      UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, 99);
+      const foundText = component.getAllByText("99");
+      expect(foundText).not.to.be.undefined;
+    });
   });
 });

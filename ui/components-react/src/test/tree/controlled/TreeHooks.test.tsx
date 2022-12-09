@@ -35,27 +35,32 @@ describe("useTreeModel", () => {
       (props: { modelSource: TreeModelSource }) => useTreeModel(props.modelSource),
       { initialProps: { modelSource: modelSourceMock.object } },
     );
-
-    expect(result.current).to.not.be.undefined;
+    expect(result.all.length).to.eq(1);
+    expect(result.all[0]).to.eq(testModel);
     expect(spy).to.have.been.calledOnce;
   });
 
   it("resubscribes to onModelChangeEvent when model source changes", () => {
     const firstModelEventAddSpy = sinon.spy(onModelChangeEvent, "addListener");
     const firstModelEventRemoveSpy = sinon.spy(onModelChangeEvent, "removeListener");
-    const { rerender } = renderHook(
+    const { result, rerender } = renderHook(
       (props: { modelSource: TreeModelSource }) => useTreeModel(props.modelSource),
       { initialProps: { modelSource: modelSourceMock.object } },
     );
+    expect(result.all.length).to.eq(1);
+    expect(result.all[0]).to.eq(testModel);
     expect(firstModelEventAddSpy).to.have.been.calledOnce;
 
     const newOnModelChangeEvent = new BeUiEvent<[TreeModel, TreeModelChanges]>();
     const newModelEventAddSpy = sinon.spy(newOnModelChangeEvent, "addListener");
+    const newTestModel = new MutableTreeModel();
     const newModelSourceMock = moq.Mock.ofType<TreeModelSource>();
     newModelSourceMock.setup((x) => x.onModelChanged).returns(() => newOnModelChangeEvent);
+    newModelSourceMock.setup((x) => x.getModel()).returns(() => newTestModel);
 
     rerender({ modelSource: newModelSourceMock.object });
-
+    expect(result.all.length).to.eq(2);
+    expect(result.all[1]).to.eq(newTestModel);
     expect(firstModelEventRemoveSpy).to.have.been.calledOnce;
     expect(newModelEventAddSpy).to.have.been.calledOnce;
   });

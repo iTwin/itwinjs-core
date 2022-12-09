@@ -1,4 +1,4 @@
-# The following build handles everything needed to bump the iModel.js package versions
+# The following build handles everything needed to bump the iTwin.js Core package versions
 #
 # There are currently 4 different types of version bumps:
 #   - Nightly
@@ -28,7 +28,7 @@ parameters:
     - releaseCandidate
 
 trigger: none
-
+pr: none
 schedules:
 - cron: "0 5 * * *"
   displayName: Daily midnight build

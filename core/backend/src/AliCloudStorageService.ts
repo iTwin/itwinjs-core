@@ -6,10 +6,22 @@ import { PassThrough, Readable } from "stream";
 import * as zlib from "zlib";
 import { BentleyStatus } from "@itwin/core-bentley";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, IModelError } from "@itwin/core-common";
-import { CloudStorageService, CloudStorageServiceCredentials, CloudStorageUploadOptions } from "./CloudStorageBackend";
+import { CloudStorageService, CloudStorageUploadOptions } from "./CloudStorageBackend";
+
+/* eslint-disable deprecation/deprecation */
+
+/**
+ * @beta
+ * @deprecated
+ */
+export interface AliCloudStorageServiceCredentials {
+  region: string;
+  accessKeyId: string;
+  accessKeySecret: string;
+}
 
 declare class OSS {
-  constructor(params: { region: string, accessKeyId: string, accessKeySecret: string })
+  constructor(params: AliCloudStorageServiceCredentials)
   public useBucket(name: string): void;
   public signatureUrl(name: string, policy: OSS.SignatureUrlOptions): string;
   public list(params: { marker: string, "max-keys": number }, arg2: {}): Promise<{ objects?: Array<{ name: string }> }>;
@@ -29,20 +41,19 @@ declare namespace OSS { // eslint-disable-line no-redeclare
   }
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated Use `@itwin/object-storage-oss` instead, see https://github.com/iTwin/object-storage for more details.
+ */
 export class AliCloudStorageService extends CloudStorageService {
   private _client: OSS;
 
   public id = CloudStorageProvider.AliCloud;
 
-  public constructor(credentials: CloudStorageServiceCredentials) {
+  public constructor(credentials: AliCloudStorageServiceCredentials) {
     super();
 
-    this._client = new OSS({
-      region: "oss-cn-hangzhou",
-      accessKeyId: credentials.account,
-      accessKeySecret: credentials.accessKey,
-    });
+    this._client = new OSS(credentials);
   }
 
   public obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, _clientIp?: string): CloudStorageContainerUrl {

@@ -7,13 +7,13 @@
 - In header, click the gear icon
 - Select "Schema Explorer"
 
-![launch schema explorer]($docs/learning/tutorials/images/launch-schema-explorer.png)
+![launch schema explorer](./images/launch-schema-explorer.png)
 
 - Explore schemas in iModel
 
 ## Learn More
 
-[Learn more about Base Infrastructure Schemas (BIS)]($docs/bis)
+[Learn more about Base Infrastructure Schemas (BIS)](../../bis/index.md)
 
 <br/>
 <br/>

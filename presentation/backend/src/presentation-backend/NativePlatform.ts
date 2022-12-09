@@ -7,12 +7,12 @@
  */
 
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
-import { IDisposable } from "@itwin/core-bentley";
+import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import {
   DiagnosticsScopeLogs, NodeKeyJSON, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
-import { HierarchyCacheMode, PresentationManagerMode } from "./PresentationManager";
+import { HierarchyCacheMode } from "./PresentationManager";
 
 /** @internal */
 export enum NativePlatformRequestTypes {
@@ -26,7 +26,6 @@ export enum NativePlatformRequestTypes {
   GetContentDescriptor = "GetContentDescriptor",
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",
-  GetDistinctValues = "GetDistinctValues",
   GetPagedDistinctValues = "GetPagedDistinctValues",
   GetDisplayLabel = "GetDisplayLabel",
   CompareHierarchies = "CompareHierarchies",
@@ -77,7 +76,7 @@ export interface NativePlatformDefinition extends IDisposable {
   removeRuleset(rulesetId: string, hash: string): NativePlatformResponse<boolean>;
   clearRulesets(): NativePlatformResponse<void>;
 
-  handleRequest(db: any, options: string): Promise<NativePlatformResponse<string>>;
+  handleRequest(db: any, options: string, cancelEvent?: BeEvent<() => void>): Promise<NativePlatformResponse<string>>;
 
   getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): NativePlatformResponse<VariableValue>;
   setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValue): NativePlatformResponse<void>;
@@ -90,12 +89,11 @@ export interface NativePlatformDefinition extends IDisposable {
 /** @internal */
 export interface DefaultNativePlatformProps {
   id: string;
-  localeDirectories: string[];
   taskAllocationsMap: { [priority: number]: number };
-  mode: PresentationManagerMode;
   isChangeTrackingEnabled: boolean;
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
   contentCacheSize?: number;
+  workerConnectionCacheSize?: number;
   defaultFormats?: NativePresentationDefaultUnitFormats;
   useMmap?: boolean | number;
 }
@@ -107,10 +105,9 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
   return class implements NativePlatformDefinition {
     private _nativeAddon: IModelJsNative.ECPresentationManager;
     public constructor() {
-      const mode = (props.mode === PresentationManagerMode.ReadOnly) ? IModelJsNative.ECPresentationManagerMode.ReadOnly : IModelJsNative.ECPresentationManagerMode.ReadWrite;
       const cacheConfig = props.cacheConfig ?? { mode: HierarchyCacheMode.Disk, directory: "" };
       const defaultFormats = props.defaultFormats ? this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
-      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, mode, cacheConfig, defaultFormats });
+      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, cacheConfig, defaultFormats });
     }
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
@@ -181,22 +178,11 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public clearRulesets() {
       return this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
-    public async handleRequest(db: any, options: string) {
-      const requestGuid = this.handleResult(this._nativeAddon.queueRequest(db, options)).result;
-      return new Promise((resolve: (result: NativePlatformResponse<any>) => void, reject) => {
-        const interval = setInterval(() => {
-          const pollResult = this._nativeAddon.pollResponse(requestGuid);
-          if (pollResult.error) {
-            if (pollResult.error.status !== IModelJsNative.ECPresentationStatus.Pending) {
-              reject(new PresentationError(this.getStatus(pollResult.error.status), pollResult.error.message));
-              clearInterval(interval);
-            }
-            return; // ignore 'pending' responses
-          }
-          resolve(this.createSuccessResponse(pollResult));
-          clearInterval(interval);
-        }, 20);
-      });
+    public async handleRequest(db: any, options: string, cancelEvent?: BeEvent<() => void>) {
+      const response = this._nativeAddon.handleRequest(db, options);
+      cancelEvent?.addOnce(() => response.cancel());
+      const result = await response.result;
+      return this.handleResult(result);
     }
     public getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes) {
       return this.handleResult(this._nativeAddon.getRulesetVariableValue(rulesetId, variableId, type));

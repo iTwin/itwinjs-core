@@ -26,6 +26,7 @@ import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { MessageManager } from "../messages/MessageManager";
 import { PopupManager } from "../popup/PopupManager";
 import { ActivityTracker } from "./ActivityTracker";
+import { ContentDialogManager } from "../dialog/ContentDialogManager";
 
 /** Ui Activity Event Args interface.
  * @internal
@@ -85,8 +86,11 @@ export class ConfigurableUiManager {
     // Initialize the ToolSettingsManager that manages Tool Settings properties.
     ToolSettingsManager.initialize();
 
-    // Initialize the modeless dialog manager.
+    // Initialize dialog managers that allow one or more dialogs to be open at a time. These managers adjust the z-indexing
+    // to ensure the most recently focused dialog of a specific type displays above its siblings.
     ModelessDialogManager.initialize();
+    // ContentDialog have a z-index just above the fixed content views and below all other UI elements.
+    ContentDialogManager.initialize();
 
     // Initialize the Keyboard Shortcut manager
     KeyboardShortcutManager.initialize();
@@ -100,7 +104,7 @@ export class ConfigurableUiManager {
    * [[NavigationAidControl]],
    * [[StatusBarWidgetControl]],
    * [[WidgetControl]] or
-   * [ToolUiProvider]($appui-react).
+   * [[ToolUiProvider]].
    * @param classId the class id of the control to register
    * @param constructor the constructor of the control to register
    */
@@ -213,6 +217,7 @@ export class ConfigurableUiManager {
     MessageManager.closeAllMessages();
     ModelessDialogManager.closeAll();
     ModalDialogManager.closeAll();
+    ContentDialogManager.closeAll();
     KeyboardShortcutManager.closeShortcutsMenu();
     UiFramework.closeCursorMenu();
     PopupManager.clearPopups();

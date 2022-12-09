@@ -132,9 +132,9 @@ div.uifw-default-container {
 }
 
 .uifw-default-label {
-  text-align: right;
-  text-overflow: ellipsis;
-  width: 100%
+  width: fit-content;
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 /* Overrides when uifw-default-narrow class is added to parent container div */
@@ -207,6 +207,9 @@ div.nz-toolSettings-docked .uifw-default-editor:last-child {
 
 /* Override the GridLayout case where width is 100% */
 div.nz-toolSettings-docked {
+  border-top: none;
+  border-left: none;
+  border-right: none;
   select.uicore-inputs-select.components-cell-editor.components-enum-editor {
     width: auto;
   }

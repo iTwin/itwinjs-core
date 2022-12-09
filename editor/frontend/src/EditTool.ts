@@ -6,14 +6,22 @@
  * @module Editing
  */
 
-import { editorChannel } from "@itwin/editor-common";
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
+import { editorChannel } from "@itwin/editor-common";
 import { DeleteElementsTool } from "./DeleteElementsTool";
-import { CutSolidElementsTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool, IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, SewSheetElementsTool, SubtractSolidElementsTool, SweepAlongPathTool, UniteSolidElementsTool } from "./SolidModelingTools";
-import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
+import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool, RegionBooleanTool } from "./ModifyCurveTools";
+import {
+  ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool,
+} from "./ProjectLocation/ProjectExtentsDecoration";
 import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
 import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
-import { MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
+import {
+  ChamferEdgesTool, CutSolidElementsTool, DeleteSubEntitiesTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool,
+  IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, RoundEdgesTool, SewSheetElementsTool, SpinFacesTool, SubtractSolidElementsTool,
+  SweepAlongPathTool, SweepFacesTool, ThickenSheetElementsTool, UniteSolidElementsTool,
+} from "./SolidModelingTools";
+import { CreateBoxTool, CreateConeTool, CreateCylinderTool, CreateSphereTool, CreateTorusTool, ExtrudeCurveTool, RevolveCurveTool } from "./SolidPrimitiveTools";
+import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
 /** @alpha Options for [[EditTools.initialize]]. */
@@ -42,10 +50,6 @@ export class EditTools {
     return IpcApp.callIpcChannel(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
   }
 
-  public static async callCommand(methodName: string, ...args: any[]): Promise<any> {
-    return IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
-  }
-
   /** @internal */
   public static translate(prompt: string) { return IModelApp.localization.getLocalizedString(this.tools + prompt); }
 
@@ -64,6 +68,9 @@ export class EditTools {
     //       As tool run/install isn't currently async ToolAdmin.activeToolChanged can't be used at this time.
     //       The active command will be cleared whenever another edit tool calls startCommand.
     this._initialized = true;
+
+    // clean up if we're being shut down
+    IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
 
     const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
     const registerAllTools = options?.registerAllTools;
@@ -99,6 +106,7 @@ export class EditTools {
       const tools = [
         DeleteElementsTool,
         MoveElementsTool,
+        CopyElementsTool,
         RotateElementsTool,
       ];
 
@@ -114,6 +122,9 @@ export class EditTools {
         CreateEllipseTool,
         CreateLineStringTool,
         CreateRectangleTool,
+        BreakCurveTool,
+        ExtendCurveTool,
+        OffsetCurveTool,
       ];
 
       for (const tool of tools)
@@ -122,17 +133,31 @@ export class EditTools {
 
     if (registerAllTools || options?.registerSolidModelingTools) {
       const tools = [
-        OffsetFacesTool,
-        HollowFacesTool,
+        CreateSphereTool,
+        CreateCylinderTool,
+        CreateConeTool,
+        CreateBoxTool,
+        CreateTorusTool,
+        ExtrudeCurveTool,
+        RevolveCurveTool,
+        RegionBooleanTool,
         UniteSolidElementsTool,
         SubtractSolidElementsTool,
         IntersectSolidElementsTool,
         SewSheetElementsTool,
+        ThickenSheetElementsTool,
         CutSolidElementsTool,
         EmbossSolidElementsTool,
         ImprintSolidElementsTool,
         SweepAlongPathTool,
         LoftProfilesTool,
+        OffsetFacesTool,
+        HollowFacesTool,
+        SweepFacesTool,
+        SpinFacesTool,
+        RoundEdgesTool,
+        ChamferEdgesTool,
+        DeleteSubEntitiesTool,
       ];
 
       for (const tool of tools)
@@ -140,5 +165,9 @@ export class EditTools {
     }
 
     return namespacePromise;
+  }
+
+  private static shutdown() {
+    this._initialized = false;
   }
 }

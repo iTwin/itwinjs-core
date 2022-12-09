@@ -11,6 +11,7 @@ export * from "./BriefcaseConnection";
 export * from "./BriefcaseTxns";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
+export * from "./CheckpointConnection";
 export * from "./ContextRealityModelState";
 export * from "./CoordSystem";
 export * from "./DecorationsCache";
@@ -30,12 +31,12 @@ export * from "./FrustumAnimator";
 export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./GlobeAnimator";
+export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./ImageUtil";
 export * from "./IModelApp";
 export * from "./IModelConnection";
 export * from "./IModelRoutingContext";
-export * from "./GraphicalEditingScope";
 export * from "./IpcApp";
 export * from "./LinePlaneIntersect";
 export * from "./MarginPercent";
@@ -48,11 +49,6 @@ export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
-export * from "./quantity-formatting/QuantityFormatter";
-export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
-export * from "./quantity-formatting/LocalUnitFormatProvider";
-export * from "./RenderScheduleState";
-export * from "./CheckpointConnection";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialViewState";
@@ -61,20 +57,28 @@ export * from "./StandardView";
 export * from "./SubCategoriesCache";
 export * from "./TentativePoint";
 export * from "./Tiles";
-export * from "./TwoWayViewportSync";
+export * from "./UserPreferences";
 export * from "./ViewAnimation";
 export * from "./ViewContext";
 export * from "./ViewGlobalLocation";
 export * from "./ViewingSpace";
 export * from "./ViewManager";
 export * from "./Viewport";
+export * from "./ViewportSync";
 export * from "./ViewPose";
 export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
+export * from "./extension/Extension";
+export * from "./extension/providers/LocalExtensionProvider";
+export * from "./extension/providers/RemoteExtensionProvider";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";
 export * from "./properties/LengthDescription";
+export * from "./quantity-formatting/QuantityFormatter";
+export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
+export * from "./quantity-formatting/LocalUnitFormatProvider";
+export * from "./quantity-formatting/QuantityTypesEditorSpecs";
 export * from "./render/CanvasDecoration";
 export * from "./render/Decorations";
 export * from "./render/FeatureSymbology";
@@ -86,8 +90,11 @@ export * from "./render/InstancedGraphicParams";
 export * from "./render/MockRender";
 export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
+export * from "./render/RealityMeshGraphicParams";
+export * from "./render/RealityMeshParams";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";
+export * from "./render/RenderMaterial";
 export * from "./render/RenderMemory";
 export * from "./render/RenderPlan";
 export * from "./render/RenderPlanarClassifier";
@@ -100,8 +107,8 @@ export * from "./render/VisibleFeature";
 export * from "./render/webgl/PerformanceMetrics";
 export * from "./render/webgl/Target";
 export * from "./render/webgl/IModelFrameLifecycle";
-export * from "./tools/AccuDrawTool";
 export * from "./tile/internal";
+export * from "./tools/AccuDrawTool";
 export * from "./tools/ClipViewTool";
 export * from "./tools/EditManipulator";
 export * from "./tools/ElementSetTool";
@@ -120,6 +127,8 @@ export * from "./ViewCreator2d";
 export * from "./ViewCreator3d";
 export * from "./LocalhostIpcApp";
 export * from "./RealityDataSource";
+// TODO/FIX: "./extension/ExtensionRuntime" import has to be last to avoid circular dependency errors.
+import "./extension/ExtensionRuntime";
 
 /** @docs-package-description
  * The core-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
@@ -127,7 +136,7 @@ export * from "./RealityDataSource";
 
 /**
  * @docs-group-description IModelApp
- * Classes for configuring and administering an iModel.js application.
+ * Classes for configuring and administering an iTwin.js application.
  * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
@@ -173,7 +182,7 @@ export * from "./RealityDataSource";
  */
 /**
  * @docs-group-description Extensions
- * Classes for creating and managing runtime [Extensions]($docs/learning/frontend/Extensions.md)
+ * Classes for creating and managing Extensions.
  */
 /**
  * @docs-group-description Properties
@@ -201,14 +210,6 @@ export * from "./RealityDataSource";
  * Logger categories used by this package
  */
 /**
- * @docs-group-description SpatialClassification
- * Classes for spatial classification.
- */
-/**
- * @docs-group-description Features
- * Classes for Feature Tracking classification.
- */
-/**
  * @docs-group-description QuantityFormatting
  * Classes for formatting and parsing quantity values.
  */
@@ -217,22 +218,19 @@ export * from "./RealityDataSource";
  * Classes representing graphics as [hierarchical 3d tiles](https://github.com/CesiumGS/3d-tiles).
  */
 /**
- * @docs-group-description Authentication
- * Classes for managing authentication.
- */
-/**
- * @docs-group-description MapLayerSettingsService
- * Class for managing the storing and retrieval of map layers added by a user on the frontend
- */
-/**
- * @docs-group-description MapLayerFormatRegistry
- * Class for working with supported map layer formats.
- */
-/**
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
  */
 /**
- * @docs-group-description RealityData
- * APIs for working with ProjectWise Context Share
+ * @docs-group-description UserPreferences
+ * APIs for working with user preferences in an iModelApp.
+ * See [the learning articles]($docs/learning/frontend/preferences.md).
  */
+/**
+ * @docs-group-description MapLayers
+ * Classes supporting map layers display.
+ */
+/**
+ * @docs-group-description TileStorage
+ * Class for working with cloud storage using iTwin/object-storage cloud providers
+*/

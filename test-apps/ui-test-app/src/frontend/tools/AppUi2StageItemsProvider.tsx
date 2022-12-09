@@ -12,6 +12,7 @@ import {
 import { BackstageManager, ToolbarHelper } from "@itwin/appui-react";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../appui/widgets/LayoutWidget";
 import { AppTools } from "./ToolSpecifications";
+import { FrontstageUi2 } from "../appui/frontstages/FrontstageUi2";
 
 export class AppUi2StageItemsProvider implements UiItemsProvider {
   public static providerId = "sampleApp:ui2-stage-widget-provider";
@@ -35,6 +36,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "LeftStart1",
           label: "Start1",
+          icon: "icon-app-1",
           canPopout: true,
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Left Start1 widget</h2>,
@@ -45,16 +47,19 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           id: "LeftStart2",
           label: "Start2",
           canPopout: true,
+          icon: "icon-app-2",
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Left Start2 widget</h2>,
           isFloatingStateSupported: true,
         }
       );
-    } else if (section === StagePanelSection.Middle) {
+    // eslint-disable-next-line deprecation/deprecation
+    } else if (section === StagePanelSection.Middle) { // used to ensure deprecated panel section is properly shown in End section
       widgets.push(
         {
           id: "LeftMiddle1",
           label: "Middle1",
+          icon: "icon-smiley-happy",
           canPopout: false,
           getWidgetContent: () => <h2>Left Middle1 widget</h2>,
           isFloatingStateSupported: true,
@@ -63,6 +68,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "LeftMiddle2",
           label: "Middle2",
+          icon: "icon-smiley-sad",
           defaultState: WidgetState.Open,
           canPopout: true,
           getWidgetContent: () => <h2>Left Middle2 widget</h2>,
@@ -74,6 +80,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "LeftEnd1",
           label: "End1",
+          icon: "icon-smiley-happy-very",
           canPopout: true,
           getWidgetContent: () => <h2>Left  End1 widget</h2>,
           isFloatingStateSupported: true,
@@ -82,6 +89,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "LeftEnd2",
           label: "End2",
+          icon: "icon-smiley-sad-very",
           canPopout: true,
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Left End2 widget</h2>,
@@ -100,6 +108,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "RightStart1",
           label: "Start1",
+          icon: "icon-text-align-text-align-left",
           canPopout: true,
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Right Start1 widget</h2>,
@@ -109,17 +118,20 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "RightStart2",
           label: "Start2",
+          icon: "icon-text-align-text-align-right",
           canPopout: true,
           defaultState: WidgetState.Hidden,
           getWidgetContent: () => <h2>Right Start2 widget</h2>,
           isFloatingStateSupported: true,
         }
       );
-    } else if (section === StagePanelSection.Middle) {
+    // eslint-disable-next-line deprecation/deprecation
+    } else if (section === StagePanelSection.Middle) { // used to ensure deprecated panel section is properly shown in End section
       widgets.push(
         {
           id: "RightMiddle1",
           label: "Middle1",
+          icon: "icon-text-align-text-align-center",
           canPopout: false,
           getWidgetContent: () => <h2>Right Middle1 widget</h2>,
           isFloatingStateSupported: true,
@@ -128,6 +140,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "RightMiddle2",
           label: "Middle2",
+          icon: "icon-text-align-text-align-justify",
           defaultState: WidgetState.Open,
           canPopout: true,
           getWidgetContent: () => <h2>Right Middle2 widget</h2>,
@@ -139,6 +152,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "RightEnd1",
           label: "End1",
+          icon: "icon-user",
           canPopout: true,
           getWidgetContent: () => <h2>Right  End1 widget</h2>,
           isFloatingStateSupported: true,
@@ -147,6 +161,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "RightEnd2",
           label: "End2",
+          icon: "icon-users",
           canPopout: true,
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Right End2 widget</h2>,
@@ -169,6 +184,8 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Top Start1 widget</h2>,
           isFloatingStateSupported: true,
+          defaultFloatingSize: {width: 400, height: 600 },
+          isFloatingStateWindowResizable: true,
         });
       widgets.push(
         {
@@ -248,7 +265,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   }
 
   public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
-    const allowedStages = ["Ui2"];
+    const allowedStages = [FrontstageUi2.stageId];
     if (allowedStages.includes(stageId)) {
       switch (location) {
         case StagePanelLocation.Left:
@@ -266,7 +283,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   }
 
   public provideToolbarButtonItems(stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
-    const allowedStages = ["Ui2"];
+    const allowedStages = [FrontstageUi2.stageId];
     if (allowedStages.includes(stageId)) {
       if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
         const items: CommonToolbarItem[] = [];

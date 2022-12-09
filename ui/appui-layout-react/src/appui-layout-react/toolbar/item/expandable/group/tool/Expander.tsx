@@ -13,13 +13,13 @@ import { NoChildrenProps, Omit } from "@itwin/core-react";
 import { GroupTool, GroupToolProps } from "./Tool";
 
 /** Properties of [[GroupToolExpander]] component.
- * @alpha
+ * @internal
  */
 export interface GroupToolExpanderProps extends Omit<GroupToolProps, "isActive" | "children">, NoChildrenProps {
 }
 
 /** Expandable entry of tool group panel. Used in [[GroupColumn]] hosted in [[NestedGroup]] component.
- * @alpha
+ * @internal
  */
 export class GroupToolExpander extends React.PureComponent<GroupToolExpanderProps> {
   public override render() {

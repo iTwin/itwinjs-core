@@ -71,8 +71,8 @@ export const storageMock = () => {
  */
 export const selectChangeValueByText = (select: HTMLElement, label: string, onError?: (msg: string) => void): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const tippy = select.ownerDocument.querySelector("[data-tippy-root]") as HTMLElement;
+  const menu = tippy.querySelector(".iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
@@ -107,6 +107,16 @@ export function stubScrollIntoView() {
   afterEach(() => {
     window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
   });
+}
+
+/**
+ * Extracts e.classList.values() and return as an array for expect.
+ * @param e Element to get class list
+ * @returns Array of classes for the element
+ */
+export function classesFromElement(e: Element | null | undefined) {
+  // ! below is intended, we want this to throw if there is no element, so the test returns a comprehensive error.
+  return Array.from(e!.classList.values());
 }
 
 export default TestUtils;   // eslint-disable-line: no-default-export

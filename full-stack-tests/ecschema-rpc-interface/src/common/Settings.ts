@@ -34,11 +34,10 @@ export function getRpcInterfaces() {
 
 export class Settings {
   private _backend: Backend = {} as Backend;
-  public env: number = 0;
   public oidcClientId!: string;
   public oidcScopes!: string;
   public oidcRedirect!: string;
-  public imsUrl!: string;
+  public oidcAuthority?: string;
   public discovery!: string;
   public gprid?: string;
   public logLevel?: number;
@@ -78,11 +77,6 @@ export class Settings {
   /** Loads the necessary variables from `process.env`.
    */
   private load() {
-
-    // Parse environment
-    if (undefined !== process.env.ENVIRONMENT)
-      this.env = parseInt(process.env.ENVIRONMENT, 10);
-
     // Parse OIDC
     if (undefined === process.env.OIDC_CLIENT_ID)
       throw new Error("Missing the 'OIDC_CLIENT_ID' setting.");
@@ -91,6 +85,9 @@ export class Settings {
     if (undefined === process.env.OIDC_SCOPES)
       throw new Error("Missing the 'OIDC_SCOPES' setting");
     this.oidcScopes = process.env.OIDC_SCOPES;
+
+    if (process.env.OIDC_AUTHORITY)
+      this.oidcAuthority = process.env.OIDC_AUTHORITY;
 
     this.oidcRedirect = (undefined === process.env.OIDC_REDIRECT) ? "http://localhost:5000" : process.env.OIDC_REDIRECT;
 
@@ -140,7 +137,6 @@ export class Settings {
       email: process.env.USER_WITH_ACCESS_USERNAME || "",
       password: process.env.USER_WITH_ACCESS_PASSWORD || "",
     });
-    // this.users.push([process.env.USER_WITHOUT_ACCESS_USERNAME || "", process.env.USER_WITHOUT_ACCESS_PASSWORD || ""]);
   }
 
   public toString(): string {

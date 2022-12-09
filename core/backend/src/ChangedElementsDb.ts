@@ -27,6 +27,9 @@ export interface ProcessChangesetOptions {
   wantPropertyChecksums?: boolean;
   rulesetDir?: string;
   tempDir?: string;
+  wantRelationshipCaching?: boolean;
+  relationshipCacheSize?: number;
+  wantChunkTraversal?: boolean;
 }
 
 /** An ChangedElementsDb file
@@ -114,6 +117,7 @@ export class ChangedElementsDb implements IDisposable {
       options.wantPropertyChecksums,
       options.rulesetDir,
       options.tempDir,
+      options.wantChunkTraversal,
     );
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to process changesets");
@@ -148,6 +152,9 @@ export class ChangedElementsDb implements IDisposable {
       options.wantPropertyChecksums,
       options.rulesetDir,
       options.tempDir,
+      options.wantRelationshipCaching,
+      options.relationshipCacheSize,
+      options.wantChunkTraversal,
     );
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to process changesets");

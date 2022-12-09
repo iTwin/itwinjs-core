@@ -16,6 +16,8 @@ import { DeleteSubEntityProps } from '@itwin/editor-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { EdgeParameterRangeProps } from '@itwin/editor-common';
 import { EditCommandIpc } from '@itwin/editor-common';
+import { ElementGeometryBuilderParams } from '@itwin/core-common';
+import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryCacheFilter } from '@itwin/editor-common';
 import { ElementGeometryInfo } from '@itwin/core-common';
 import { ElementGeometryResultOptions } from '@itwin/editor-common';
@@ -25,9 +27,7 @@ import { EvaluatedEdgeProps } from '@itwin/editor-common';
 import { EvaluatedFaceProps } from '@itwin/editor-common';
 import { EvaluatedVertexProps } from '@itwin/editor-common';
 import { FaceParameterRangeProps } from '@itwin/editor-common';
-import { FlatBufferGeometricElementData } from '@itwin/editor-common';
 import { FlatBufferGeometryFilter } from '@itwin/editor-common';
-import { FlatBufferGeometryPartData } from '@itwin/editor-common';
 import { GeometricElementProps } from '@itwin/core-common';
 import { GeometryPartProps } from '@itwin/core-common';
 import { HollowFacesProps } from '@itwin/editor-common';
@@ -64,9 +64,11 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
     // (undocumented)
-    insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String>;
+    insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String>;
     // (undocumented)
-    insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String>;
+    insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
+    // (undocumented)
+    onStart(): Promise<string>;
     // (undocumented)
     requestElementGeometry(elementId: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
     // (undocumented)
@@ -78,7 +80,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     // (undocumented)
     updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void>;
     // (undocumented)
-    updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void>;
+    updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: ElementGeometryBuilderParams): Promise<void>;
     // (undocumented)
     updateProjectExtents(extents: Range3dProps): Promise<void>;
 }
@@ -179,6 +181,8 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     // (undocumented)
     isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined>;
     // (undocumented)
+    isRedundantEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+    // (undocumented)
     isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean>;
     // (undocumented)
     isSmoothEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
@@ -195,6 +199,8 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     // (undocumented)
     offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
+    onStart(): Promise<string>;
+    // (undocumented)
     sewSheets(id: Id64String, params: SewSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     spinFaces(id: Id64String, params: SpinFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
@@ -208,8 +214,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     thickenSheets(id: Id64String, params: ThickenSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     transformSubEntities(id: Id64String, params: TransformSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
-    }
-
+}
 
 // (No @packageDocumentation comment for this package)
 

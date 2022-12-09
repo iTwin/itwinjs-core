@@ -9,7 +9,7 @@ import { mergeRefs, useRefs } from "../../../core-react/utils/hooks/useRefs";
 
 describe("useRefs", () => {
   it("should set ref objects and invoke ref callbacks", () => {
-    let ref: React.RefObject<string | null> = { current: null };
+    let ref: React.MutableRefObject<string | null> = { current: null };
     let mutableRef: React.MutableRefObject<string | null> = { current: null };
     const callbackRef = sinon.spy((_: string | null) => { });
     const { result } = renderHook(() => {
@@ -29,7 +29,7 @@ describe("useRefs", () => {
 
 describe("mergeRefs", () => {
   it("should set ref objects and invoke ref callbacks", () => {
-    let ref: React.RefObject<string | null> = { current: null };
+    let ref: React.MutableRefObject<string | null> = { current: null };
     let mutableRef: React.MutableRefObject<string | null> = { current: null };
     const callbackRef = sinon.spy((_: string | null) => { });
     const { result } = renderHook(() => {

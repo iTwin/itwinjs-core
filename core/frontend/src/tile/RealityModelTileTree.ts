@@ -7,13 +7,11 @@
  */
 
 import {
-  assert, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
+  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
 } from "@itwin/core-bentley";
 import {
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
-  RealityDataProvider,
-  RealityDataSourceKey,
-  SpatialClassifiers, ViewFlagOverrides,
+  RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, SpatialClassifiers, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
@@ -25,12 +23,11 @@ import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { RealityDataSource } from "../RealityDataSource";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
-import { ScreenViewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 import {
-  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, getCesiumOSMBuildingsUrl, getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams,
-  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
-  TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
+  getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
+  TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 
 function getUrl(content: any) {
@@ -42,6 +39,8 @@ interface RealityTreeId {
   transform?: Transform;
   modelId: Id64String;
   maskModelIds?: string;
+  deduplicateVertices: boolean;
+  produceGeometry?: boolean;
   toEcefTransform?: Transform;
 }
 
@@ -88,22 +87,32 @@ class RealityTreeSupplier implements TileTreeSupplier {
     if (treeId.maskModelIds)
       await iModel.models.load(CompressedId64Set.decompressSet(treeId.maskModelIds));
 
-    return RealityModelTileTree.createRealityModelTileTree(treeId.rdSourceKey, iModel, treeId.modelId, treeId.transform);
+    const opts = { deduplicateVertices: treeId.deduplicateVertices, produceGeometry: treeId.produceGeometry };
+    return RealityModelTileTree.createRealityModelTileTree(treeId.rdSourceKey, iModel, treeId.modelId, treeId.transform, opts);
   }
 
   public compareTileTreeIds(lhs: RealityTreeId, rhs: RealityTreeId): number {
     let cmp = compareStringsOrUndefined(lhs.rdSourceKey.id, rhs.rdSourceKey.id);
-    if (0 === cmp)
+    if (0 === cmp) {
       cmp = compareStringsOrUndefined(lhs.rdSourceKey.format, rhs.rdSourceKey.format);
-    if (0 === cmp)
-      cmp = compareStringsOrUndefined(lhs.rdSourceKey.iTwinId, rhs.rdSourceKey.iTwinId);
-    if (0 === cmp)
-      cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
+      if (0 === cmp) {
+        cmp = compareStringsOrUndefined(lhs.rdSourceKey.iTwinId, rhs.rdSourceKey.iTwinId);
+        if (0 === cmp) {
+          cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
+          if (0 === cmp)
+            cmp = compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices);
+        }
+      }
+    }
 
     if (0 !== cmp)
       return cmp;
 
     cmp = compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds);
+    if (0 !== cmp)
+      return cmp;
+
+    cmp = compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry);
     if (0 !== cmp)
       return cmp;
 
@@ -276,7 +285,14 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
     this.id = tileTreeId;
     this.modelId = modelId;
     this.iModel = iModel;
-    this.rootTile = new RealityModelTileProps(loader.tree.tilesetJson, undefined, "", undefined, undefined === loader.tree.tilesetJson.refine ? undefined : loader.tree.tilesetJson.refine === "ADD");
+    const refine = loader.tree.tilesetJson.refine;
+    this.rootTile = new RealityModelTileProps({
+      json: loader.tree.tilesetJson,
+      id: "",
+      // If not specified explicitly, additiveRefinement is inherited from parent tile.
+      additiveRefinement: undefined !== refine ? "ADD" === refine : undefined,
+      usesGeometricError: loader.tree.rdSource.usesGeometricError,
+    });
   }
 }
 
@@ -293,10 +309,22 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
   public readonly region?: RealityTileRegion;
+  public readonly geometricError?: number;
 
-  constructor(json: any, parent: RealityTile | undefined, thisId: string, transformToRoot?: Transform, additiveRefinement?: boolean) {
-    this.contentId = thisId;
-    this.parent = parent;
+  constructor(args: {
+    json: any;
+    parent?: RealityTile;
+    id: string;
+    transformToRoot?: Transform;
+    additiveRefinement?: boolean;
+    usesGeometricError?: boolean;
+  }) {
+    this.contentId = args.id;
+    this.parent = args.parent;
+    this.transformToRoot = args.transformToRoot;
+    this.additiveRefinement = args.additiveRefinement;
+
+    const json = args.json;
     const boundingVolume = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume);
     if (boundingVolume) {
       this.range = boundingVolume.range;
@@ -306,20 +334,21 @@ class RealityModelTileProps implements RealityTileParams {
       this.range = Range3d.createNull();
       assert(false, "Unbounded tile");
     }
+
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
-    this.transformToRoot = transformToRoot;
-    this.additiveRefinement = additiveRefinement;
     const hasContents = undefined !== getUrl(json.content);
     if (hasContents)
       this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume)?.range;
     else {
       // A node without content should probably be selectable even if not additive refinement - But restrict it to that case here
       // to avoid potential problems with existing reality models, but still avoid overselection in the OSM world building set.
-      if (this.additiveRefinement || parent?.additiveRefinement)
+      if (this.additiveRefinement || args.parent?.additiveRefinement)
         this.noContentButTerminateOnSelection = true;
     }
 
     this.maximumSize = (this.noContentButTerminateOnSelection || hasContents) ? RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError) : 0;
+    if (args.usesGeometricError)
+      this.geometricError = json.geometricError;
   }
 }
 
@@ -330,8 +359,13 @@ class FindChildResult {
 
 /** @internal */
 function assembleUrl(prefix: string, url: string): string {
+  if (url.startsWith("/")) {
+    // Relative to base origin, not to parent tile
+    return url.substring(1);
+  }
 
   if (url.startsWith("./")) {
+    // Relative to parent tile
     url = url.substring(2);
   } else {
     const prefixParts = prefix.split("/");
@@ -340,9 +374,11 @@ function assembleUrl(prefix: string, url: string): string {
       prefixParts.pop();
       url = url.substring(3);
     }
+
     prefixParts.push("");
     prefix = prefixParts.join("/");
   }
+
   return prefix + url;
 }
 
@@ -366,16 +402,15 @@ function addUrlPrefix(subTree: any, prefix: string) {
 /** @internal */
 async function expandSubTree(root: any, rdsource: RealityDataSource): Promise<any> {
   const childUrl = getUrl(root.content);
-  if (undefined !== childUrl && childUrl.endsWith("json")) {    // A child may contain a subTree...
-    const subTree = await rdsource.getTileJson(childUrl);
-    const prefixIndex = childUrl.lastIndexOf("/");
-    if (prefixIndex > 0)
-      addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
-
-    return subTree.root;
-  } else {
+  if (undefined === childUrl || "tileset" !== rdsource.getTileContentType(childUrl))
     return root;
-  }
+
+  const subTree = await rdsource.getTileJson(childUrl);
+  const prefixIndex = childUrl.lastIndexOf("/");
+  if (prefixIndex > 0)
+    addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
+
+  return subTree.root;
 }
 
 /** @internal */
@@ -383,11 +418,14 @@ class RealityModelTileLoader extends RealityTileLoader {
   public readonly tree: RealityModelTileTreeProps;
   private readonly _batchedIdMap?: BatchedTileIdMap;
   private _viewFlagOverrides: ViewFlagOverrides;
+  private readonly _deduplicateVertices: boolean;
 
-  public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap) {
-    super();
+  public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap, opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean }) {
+    super(opts?.produceGeometry ?? false);
     this.tree = tree;
     this._batchedIdMap = batchedIdMap;
+    this._deduplicateVertices = opts?.deduplicateVertices ?? false;
+
     let clipVolume;
     if (RealityTileRegion.isGlobal(tree.tilesetJson.boundingVolume))
       clipVolume = false;
@@ -396,9 +434,13 @@ class RealityModelTileLoader extends RealityTileLoader {
     // Display edges if they are present (Cesium outline extension) and enabled for view.
     this._viewFlagOverrides.visibleEdges = undefined;
     this._viewFlagOverrides.hiddenEdges = undefined;
+
+    // Allow wiremesh display.
+    this._viewFlagOverrides.wiremesh = undefined;
   }
 
   public get doDrapeBackgroundMap(): boolean { return this.tree.doDrapeBackgroundMap; }
+  public override get wantDeduplicatedVertices() { return this._deduplicateVertices; }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public get minDepth(): number { return 0; }
@@ -406,6 +448,9 @@ class RealityModelTileLoader extends RealityTileLoader {
   public override getBatchIdMap(): BatchedTileIdMap | undefined { return this._batchedIdMap; }
   public get clipLowResolutionTiles(): boolean { return true; }
   public override get viewFlagOverrides(): ViewFlagOverrides { return this._viewFlagOverrides; }
+  public override get maximumScreenSpaceError(): number | undefined {
+    return this.tree.rdSource.maximumScreenSpaceError;
+  }
 
   public async loadChildren(tile: RealityTile): Promise<Tile[] | undefined> {
     const props = await this.getChildrenProps(tile);
@@ -428,8 +473,18 @@ class RealityModelTileLoader extends RealityTileLoader {
       for (let i = 0; i < findResult.json.children.length; i++) {
         const childId = prefix + i;
         const foundChild = await this.findTileInJson(this.tree.tilesetJson, childId, "", undefined);
-        if (undefined !== foundChild)
-          props.push(new RealityModelTileProps(foundChild.json, parent, foundChild.id, foundChild.transformToRoot, foundChild.json.refine === undefined ? undefined : foundChild.json.refine === "ADD"));
+        if (undefined !== foundChild) {
+          const refine = foundChild.json.refine;
+          props.push(new RealityModelTileProps({
+            json: foundChild.json,
+            parent,
+            id: foundChild.id,
+            transformToRoot: foundChild.transformToRoot,
+            // If not specified explicitly, additiveRefinement is inherited from parent tile.
+            additiveRefinement: undefined !== refine ? refine === "ADD" : undefined,
+            usesGeometricError: this.tree.rdSource.usesGeometricError,
+          }));
+        }
       }
     }
     return props;
@@ -499,7 +554,6 @@ export class RealityModelTileTree extends RealityTileTree {
 /** @internal */
 // eslint-disable-next-line no-redeclare
 export namespace RealityModelTileTree {
-
   export interface ReferenceBaseProps {
     iModel: IModelConnection;
     source: RealityModelSource;
@@ -510,26 +564,33 @@ export namespace RealityModelTileTree {
     name?: string;
     classifiers?: SpatialClassifiers;
     planarClipMask?: PlanarClipMaskSettings;
+    getDisplaySettings(): RealityModelDisplaySettings;
   }
+
   export interface ReferenceProps extends ReferenceBaseProps {
     url?: string;
     requestAuthorization?: string;
+    produceGeometry?: boolean;
   }
 
   export abstract class Reference extends TileTreeReference {
     protected readonly _name: string;
-
     protected _transform?: Transform;
     protected _iModel: IModelConnection;
     private _modelId: Id64String;
     private _isGlobal?: boolean;
+    protected readonly _source: RealityModelSource;
     protected _planarClipMask?: PlanarClipMaskState;
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
+    protected _getDisplaySettings: () => RealityModelDisplaySettings;
+
     public get modelId() { return this._modelId; }
-    public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
+    // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
+
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
+
     public get planarClipMaskPriority(): number {
       if (this._planarClipMask?.settings.priority !== undefined)
         return this._planarClipMask.settings.priority;
@@ -555,6 +616,9 @@ export namespace RealityModelTileTree {
       }
 
       this._iModel = props.iModel;
+      this._source = props.source;
+      this._getDisplaySettings = () => props.getDisplaySettings();
+
       if (props.planarClipMask)
         this._planarClipMask = PlanarClipMaskState.create(props.planarClipMask);
 
@@ -569,6 +633,7 @@ export namespace RealityModelTileTree {
       if (!contentRange.isNull && contentRange.diagonal().magnitude() < Constant.earthRadiusWGS84.equator)
         union.extendRange(contentRange);
     }
+
     public override get isGlobal() {
       if (undefined === this._isGlobal) {
         const range = this.computeWorldContentRange();
@@ -586,6 +651,7 @@ export namespace RealityModelTileTree {
       this.addPlanarClassifierOrMaskToScene(context);
       super.addToScene(context);
     }
+
     protected addPlanarClassifierOrMaskToScene(context: SceneContext) {
       // A planarClassifier is required if there is a classification tree OR planar masking is required.
       const classifierTree = this.planarClassifierTreeRef;
@@ -611,6 +677,7 @@ export namespace RealityModelTileTree {
       if (undefined !== this._planarClipMask)
         this._planarClipMask.discloseTileTrees(trees);
     }
+
     public override collectStatistics(stats: RenderMemory.Statistics): void {
       super.collectStatistics(stats);
 
@@ -618,18 +685,39 @@ export namespace RealityModelTileTree {
       if (undefined !== tree)
         tree.collectStatistics(stats);
     }
+
+    public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+      const args = super.createDrawArgs(context);
+      if (args) {
+        args.graphics.realityModelDisplaySettings = this._getDisplaySettings();
+
+        if (args.tree instanceof RealityTileTree) {
+          const maxSSE = args.tree.loader.maximumScreenSpaceError;
+          if (undefined !== maxSSE)
+            args.maximumScreenSpaceError = maxSSE;
+        }
+      }
+
+      return args;
+    }
   }
 
-  export async function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined> {
+  export async function createRealityModelTileTree(
+    rdSourceKey: RealityDataSourceKey,
+    iModel: IModelConnection,
+    modelId: Id64String,
+    tilesetToDb: Transform | undefined,
+    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean }
+  ): Promise<TileTree | undefined> {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     // If we can get a valid connection from sourceKey, returns the tile tree
     if (rdSource) {
       // Serialize the reality data source key into a string to uniquely identify this tile tree
-      const tileTreeId = RealityDataSource.keyToString(rdSource.key);
+      const tileTreeId = rdSource.key.toString();
       if (tileTreeId === undefined)
         return undefined;
       const props = await getTileTreeProps(rdSource, tilesetToDb, iModel);
-      const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel));
+      const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel), opts);
       const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
       const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef);
       return new RealityModelTileTree(params);
@@ -693,19 +781,54 @@ export namespace RealityModelTileTree {
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextRealityModelState]].
  * @internal
  */
-class RealityTreeReference extends RealityModelTileTree.Reference {
+export class RealityTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;
+  private readonly _produceGeometry?: boolean;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
+    this._produceGeometry = props.produceGeometry;
 
     // Maybe we should throw if both props.rdSourceKey && props.url are undefined
-    this._rdSourceKey = props.rdSourceKey ? props.rdSourceKey : props.url ? RealityDataSource.createKeyFromUrl(props.url, RealityDataProvider.ContextShare) :
-      RealityDataSource.createKeyFromUrl("", RealityDataProvider.ContextShare);
+    if (props.rdSourceKey)
+      this._rdSourceKey = props.rdSourceKey;
+    else
+      this._rdSourceKey = RealityDataSource.createKeyFromUrl(props.url ?? "", RealityDataProvider.ContextShare);
+
+    if (this._produceGeometry)
+      this.collectTileGeometry = (collector) => this._collectTileGeometry(collector);
   }
+
   public get treeOwner(): TileTreeOwner {
-    const treeId: RealityTreeId = { rdSourceKey: this._rdSourceKey, transform: this._transform, modelId: this.modelId, maskModelIds: this.maskModelIds };
+    const treeId: RealityTreeId = {
+      rdSourceKey: this._rdSourceKey,
+      transform: this._transform,
+      modelId: this.modelId,
+      maskModelIds: this.maskModelIds,
+      deduplicateVertices: this._wantWiremesh,
+      produceGeometry: this._produceGeometry,
+    };
+
     return realityTreeSupplier.getOwner(treeId, this._iModel);
+  }
+
+  protected override _createGeometryTreeReference(): GeometryTileTreeReference {
+    const ref = new RealityTreeReference({
+      iModel: this._iModel,
+      modelId: this.modelId,
+      source: this._source,
+      rdSourceKey: this._rdSourceKey,
+      name: this._name,
+      produceGeometry: true,
+      getDisplaySettings: () => RealityModelDisplaySettings.defaults,
+    });
+
+    assert(undefined !== ref.collectTileGeometry);
+    return ref as GeometryTileTreeReference;
+  }
+
+  private get _wantWiremesh(): boolean {
+    return this._source.viewFlags.wiremesh;
   }
 
   public override get castsShadows() {
@@ -794,8 +917,9 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     return div;
   }
 
-  public override addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {
-    if (this._rdSourceKey.id === getCesiumOSMBuildingsUrl()) {
+  public override addLogoCards(cards: HTMLTableElement): void {
+    if (this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset && !cards.dataset.openStreetMapLogoCard) {
+      cards.dataset.openStreetMapLogoCard = "true";
       cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
     }
   }

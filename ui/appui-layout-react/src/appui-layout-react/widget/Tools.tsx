@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@itwin/core-react";
 
 /** Properties of [[Tools]] component.
- * @alpha
+ * @internal
  */
 export interface ToolsProps extends CommonProps, NoChildrenProps {
   /**
@@ -39,7 +39,7 @@ export interface ToolsProps extends CommonProps, NoChildrenProps {
 
 /** Tools widget is used in Tools (Zone 1) and Navigation (Zone 3) zones of 9-Zone UI.
  * @note Should be placed in [[Zone]] component.
- * @alpha
+ * @internal
  */
 export class Tools extends React.PureComponent<ToolsProps> {
   public override render() {

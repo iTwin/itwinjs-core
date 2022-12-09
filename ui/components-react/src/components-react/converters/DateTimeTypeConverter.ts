@@ -1,4 +1,3 @@
-import { Logger } from "@itwin/core-bentley";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -7,6 +6,7 @@ import { Logger } from "@itwin/core-bentley";
  * @module TypeConverters
  */
 
+import { Logger } from "@itwin/core-bentley";
 import { AlternateDateFormats, Primitives, StandardTypeNames, TimeDisplay } from "@itwin/appui-abstract";
 import { TimeFormat } from "@itwin/core-react";
 import { formatInputDate } from "../datepicker/DateField";

@@ -9,6 +9,7 @@ packageClassification:  [
          "core-backend",
          "core-transformer",
          "core-markup",
+         "core-mobile",
          "core-i18n",
          "core-quantity",
          "core-bentley",
@@ -17,19 +18,9 @@ packageClassification:  [
          "core-geometry",
          "frontend-devtools",
          "hypermodeling-frontend",
-         "webgl-compatibility"
+         "webgl-compatibility",
+         "map-layers-formats"
       ]
-   },
-   {
-     "order":"2",
-     "header": "Client Packages",
-     "packages": [
-       "extension-client",
-       "imodelhub-client",
-       "itwin-client",
-       "product-settings-client",
-       "reality-data-client"
-     ]
    },
    {
       "order":"3",

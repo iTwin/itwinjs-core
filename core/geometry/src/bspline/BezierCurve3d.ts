@@ -110,23 +110,8 @@ export class BezierCurve3d extends BezierCurveBase {
     this._polygon.loadSpanPoles(data, spanIndex);
   }
   /** Clone as a bezier 3d. */
-  public clone(): BezierCurve3d {
+  public override clone(): BezierCurve3d {
     return new BezierCurve3d(this._polygon.clonePolygon());
-  }
-  /** Clone the interval from f0 to f1. */
-  public override clonePartialCurve(f0: number, f1: number): BezierCurve3d | undefined {
-    const partialCurve = new BezierCurve3d(this._polygon.clonePolygon());
-    partialCurve._polygon.subdivideToIntervalInPlace(f0, f1);
-    return partialCurve;
-  }
-
-  /**
-   * Return a curve after transform.
-   */
-  public cloneTransformed(transform: Transform): BezierCurve3d {
-    const curve1 = this.clone();
-    curve1.tryTransformInPlace(transform);
-    return curve1;
   }
   /** Return a (de-weighted) point on the curve. If de-weight fails, returns 000 */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {

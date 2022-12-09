@@ -8,4 +8,5 @@
 // Do not import it in real code!
 
 export * from "./backend/ElectronHost";
+export * from "./common/ElectronIpcInterface";
 export * from "./frontend/ElectronApp";

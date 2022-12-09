@@ -19,7 +19,10 @@ import { CoordSystem } from "./CoordSystem";
 import { Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum ACSType {
   None = 0,
   Rectangular = 1,
@@ -27,7 +30,10 @@ export enum ACSType {
   Spherical = 3,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum ACSDisplayOptions {
   None = 0, // used for testing individual bits.
   Active = (1 << 0),
@@ -53,6 +59,7 @@ const enum ACSDisplaySizes { // eslint-disable-line no-restricted-syntax
 
 /** The state of an AuxCoordSystem element in the frontend
  * @public
+ * @extensions
  */
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
   /** @internal */
@@ -242,7 +249,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     shapePts[5] = Point3d.create(ACSDisplaySizes.ArrowTipStart, -ACSDisplaySizes.ArrowBaseWidth);
     shapePts[6] = Point3d.create(ACSDisplaySizes.ArrowTipFlange, -ACSDisplaySizes.ArrowTipWidth);
     shapePts[7] = shapePts[0].clone();
-    if (1 === axis) { shapePts.forEach((tmpPt) => { tmpPt.set(tmpPt.y, tmpPt.x); }); }
+    if (1 === axis)
+      shapePts.forEach((tmpPt) => tmpPt.set(tmpPt.y, tmpPt.x));
 
     builder.setSymbology(lineColor, lineColor, 1, (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2);
     builder.addLineString(shapePts);
@@ -293,6 +301,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
 /** The state of an AuxCoordSystem2d element in the frontend
  * @public
+ * @extensions
  */
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
   /** @internal */
@@ -327,6 +336,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
 
 /** The state of an AuxCoordSystem3d element in the frontend
  * @public
+ * @extensions
  */
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
   /** @internal */
@@ -370,6 +380,7 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
 
 /** The state of an AuxCoordSystemSpatial element in the frontend
  * @public
+ * @extensions
  */
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
   /** @internal */

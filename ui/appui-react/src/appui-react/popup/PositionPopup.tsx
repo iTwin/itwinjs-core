@@ -12,7 +12,8 @@ import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
 import { CommonDivProps, CommonProps, Div, Size, SizeProps } from "@itwin/core-react";
 
-/** @alpha */
+/** Props for popup at screen position
+ * @beta */
 export interface PositionPopupProps extends CommonProps {
   /** Center point */
   point: PointProps;
@@ -20,7 +21,8 @@ export interface PositionPopupProps extends CommonProps {
   onSizeKnown?: (size: SizeProps) => void;
 }
 
-/** @alpha */
+/** Popup component at screen position
+ * @beta */
 export class PositionPopup extends React.PureComponent<PositionPopupProps> {
 
   constructor(props: PositionPopupProps) {
@@ -58,7 +60,7 @@ export class PositionPopup extends React.PureComponent<PositionPopupProps> {
 }
 
 /** PositionPopup content with padding
- * @alpha
+ * @beta
  */
 export function PositionPopupContent(props: CommonDivProps) {
   return <Div {...props} mainClassName="uifw-position-popup-content" />;

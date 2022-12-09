@@ -6,17 +6,16 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleTypes } from "../Rule";
+import { RuleTypes } from "../Rule";
 import { NavigationRuleBase } from "./NavigationRule";
 
 /**
- * Child node rules define nodes that are displayed at
- * each child hierarchy level.
+ * Child node rules are used to define child nodes in a hierarchy.
  *
- * @see [More details]($docs/presentation/Hierarchies/ChildNodeRule.md)
+ * @see [Child node rule reference documentation page]($docs/presentation/hierarchies/ChildNodeRule.md)
  * @public
  */
-export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
+export interface ChildNodeRule extends NavigationRuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.ChildNodes;
 }

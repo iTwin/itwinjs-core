@@ -2,6 +2,10 @@
 
 exports[`WidgetContentContainer  should render minimized 1`] = `
 <div
-  class="nz-widget-content-container nz-minimized"
-/>
+  class="nz-widget-contentContainer nz-minimized"
+>
+  <div
+    class="nz-content"
+  />
+</div>
 `;

@@ -10,16 +10,25 @@ import { getUiSettingsManagerEntry, UiSettingsPage } from "../../appui-react/set
 import TestUtils, { handleError, selectChangeValueByText, storageMock, stubScrollIntoView } from "../TestUtils";
 import { UiFramework } from "../../appui-react/UiFramework";
 import { ColorTheme } from "../../appui-react/theme/ThemeManager";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 
 describe("UiSettingsPage", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
   let localStorageMock = storageMock();
 
+  before(async () => {
+    await NoRenderApp.startup();
+  });
+
+  after(async () => {
+    await IModelApp.shutdown();
+  });
+
   beforeEach(async () => {
     // create a new mock each run so there are no "stored values"
     localStorageMock = storageMock();
     await TestUtils.initializeUiFramework();
-    UiFramework.setUiVersion("1");
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
     Object.defineProperty(window, "localStorage", {
       get: () => localStorageMock,
@@ -40,7 +49,7 @@ describe("UiSettingsPage", () => {
   }
 
   it("renders using getUiSettingsManagerEntry (V1)", async () => {
-    const tabEntry = getUiSettingsManagerEntry(10, false);
+    const tabEntry = getUiSettingsManagerEntry(10, false); // eslint-disable-line deprecation/deprecation
     const wrapper = render(tabEntry.page);
     expect(wrapper).not.to.be.undefined;
     expect(wrapper.container.querySelectorAll("span.title").length).to.eq(3);
@@ -54,7 +63,7 @@ describe("UiSettingsPage", () => {
   // }
 
   it("renders without version option (V1) set theme", async () => {
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
 
     // const themeSpan = wrapper.getByText("settings.uiSettingsPage.themeTitle");
@@ -80,38 +89,71 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders without version option (V1) set widget opacity", async () => {
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
+    await TestUtils.flushAsyncOperations();
+
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     const thumb = wrapper.container.ownerDocument.querySelector(".iui-slider-thumb");
     expect(thumb).to.exist;
     fireEvent.keyDown(thumb!, { key: SpecialKey.ArrowRight });
     await TestUtils.flushAsyncOperations();
-
+    let widgetOpacity = UiFramework.getWidgetOpacity();
+    expect (widgetOpacity).greaterThan(.9);
     await TestUtils.flushAsyncOperations();
     // trigger sync event processing
     UiFramework.setWidgetOpacity(.5);
     await TestUtils.flushAsyncOperations();
+    widgetOpacity = UiFramework.getWidgetOpacity();
+    expect (widgetOpacity).equals(.5);
+    wrapper.unmount();
+  });
+
+  it("renders without version option (V2) set toolbar opacity", async () => {
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
+    await TestUtils.flushAsyncOperations();
+
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
+    expect(wrapper).not.to.be.undefined;
+    const thumb = wrapper.container.ownerDocument.querySelectorAll(".iui-slider-thumb");
+    expect(thumb[0]).to.exist;
+    fireEvent.keyDown(thumb[0]!, { key: SpecialKey.ArrowRight });
+    await TestUtils.flushAsyncOperations();
+    let toolbarOpacity = UiFramework.getToolbarOpacity();
+    expect (toolbarOpacity).greaterThan(.5);
+    await TestUtils.flushAsyncOperations();
+    // trigger sync event processing
+    UiFramework.setToolbarOpacity(.9);
+    await TestUtils.flushAsyncOperations();
+    toolbarOpacity = UiFramework.getToolbarOpacity();
+    expect (toolbarOpacity).equals(.9);
     wrapper.unmount();
   });
 
   it("renders without version option (V1) toggle auto-hide", async () => {
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
+    await TestUtils.flushAsyncOperations();
+
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     const autoHideSpan = wrapper.getByText("settings.uiSettingsPage.autoHideTitle");
     const checkbox = getInputBySpanTitle(autoHideSpan);
     expect(checkbox).not.to.be.null;
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(checkbox?.checked).to.be.true;
+    expect(checkbox?.checked).to.be.false; // defaults to true so this should make if false
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(checkbox?.checked).to.be.false;
+    expect(checkbox?.checked).to.be.true;
     expect(wrapper.container.querySelectorAll("span.title").length).to.eq(3);
     wrapper.unmount();
   });
 
   it("renders with version option (V1)", async () => {
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />);
+    UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
+    await TestUtils.flushAsyncOperations();
+
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
     expect(wrapper.container.querySelectorAll("span.title").length).to.eq(4);
 
@@ -120,15 +162,15 @@ describe("UiSettingsPage", () => {
     expect(checkbox).not.to.be.null;
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(7);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(12);
 
     wrapper.unmount();
   });
 
   it("renders without version option (V2) toggle drag interaction", async () => {
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
 
     const titleSpan = wrapper.getByText("settings.uiSettingsPage.dragInteractionTitle");
@@ -143,26 +185,26 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders without version option (V2) toggle useProximityOpacity", async () => {
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
 
     const titleSpan = wrapper.getByText("settings.uiSettingsPage.useProximityOpacityTitle");
     const checkbox = getInputBySpanTitle(titleSpan);
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(checkbox?.checked).to.be.false;
+    expect(checkbox?.checked).to.be.true; // latest default value
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(checkbox?.checked).to.be.true;
+    expect(checkbox?.checked).to.be.false;
     wrapper.unmount();
   });
 
   it("renders without version option (V2) toggle snapWidgetOpacity", async () => {
-    UiFramework.setUiVersion("2");
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
 
     const titleSpan = wrapper.getByText("settings.uiSettingsPage.snapWidgetOpacityTitle");
@@ -176,12 +218,29 @@ describe("UiSettingsPage", () => {
     wrapper.unmount();
   });
 
-  it("renders with version option (V2) toggle ui-version", async () => {
-    UiFramework.setUiVersion("2");
+  it("renders showWidgetIcon toggle", async () => {
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
     await TestUtils.flushAsyncOperations();
-    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />);
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
     expect(wrapper).not.to.be.undefined;
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(7);
+
+    const titleSpan = wrapper.getByText("settings.uiSettingsPage.widgetIconTitle");
+    const checkbox = getInputBySpanTitle(titleSpan);
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.false;
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.true;
+    wrapper.unmount();
+  });
+
+  it("renders with version option (V2) toggle ui-version", async () => {
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
+    await TestUtils.flushAsyncOperations();
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />); // eslint-disable-line deprecation/deprecation
+    expect(wrapper).not.to.be.undefined;
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(12);
     const uiVersionSpan = wrapper.getByText("settings.uiSettingsPage.newUiTitle");
     const checkbox = getInputBySpanTitle(uiVersionSpan);
 
@@ -191,8 +250,42 @@ describe("UiSettingsPage", () => {
 
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(7);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(12);
 
+    wrapper.unmount();
+  });
+
+  it("renders animateToolSettings toggle", async () => {
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
+    await TestUtils.flushAsyncOperations();
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
+    expect(wrapper).not.to.be.undefined;
+
+    const titleSpan = wrapper.getByText("settings.uiSettingsPage.animateToolSettingsTitle");
+    const checkbox = getInputBySpanTitle(titleSpan);
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.true;
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.false;
+    wrapper.unmount();
+  });
+
+  it("renders useToolAsToolSettingsLabel toggle", async () => {
+    UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
+    await TestUtils.flushAsyncOperations();
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />); // eslint-disable-line deprecation/deprecation
+    expect(wrapper).not.to.be.undefined;
+
+    const titleSpan = wrapper.getByText("settings.uiSettingsPage.useToolAsToolSettingsLabelTitle");
+    const checkbox = getInputBySpanTitle(titleSpan);
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.true;
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.false;
     wrapper.unmount();
   });
 

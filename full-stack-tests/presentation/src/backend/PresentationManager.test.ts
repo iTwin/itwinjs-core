@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
-import { Guid, using } from "@itwin/core-bentley";
+import { BeEvent, Guid, using } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { PresentationManager, UnitSystemFormat } from "@itwin/presentation-backend";
 import {
-  ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, KeySet, Ruleset, RuleTypes,
+  ChildNodeSpecificationTypes, ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, ElementProperties, KeySet,
+  PresentationError, PresentationStatus, Ruleset, RuleTypes,
 } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
@@ -103,6 +104,43 @@ describe("PresentationManager", () => {
         return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;
       });
     }
+  });
+
+  describe("getElementProperties", () => {
+
+    it("returns properties for some elements of class 'PhysicalObject", async () => {
+      await using(new PresentationManager(), async (manager) => {
+        const properties: ElementProperties[] = [];
+        const { iterator } = await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] });
+        for await (const items of iterator()) {
+          properties.push(...items);
+        }
+        expect(properties).to.matchSnapshot();
+      });
+    });
+
+  });
+
+  describe("Cancel request", () => {
+
+    it("cancels 'getNodes' request", async () => {
+      await using(new PresentationManager(), async (manager) => {
+        const cancelEvent = new BeEvent<() => void>();
+        const promise = manager.getNodes({ imodel, rulesetOrId: {
+          id: "ruleset",
+          rules: [{
+            ruleType: RuleTypes.RootNodes,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
+            }],
+          }],
+        }, cancelEvent });
+        cancelEvent.raiseEvent();
+        await expect(promise).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.Canceled);
+      });
+    });
+
   });
 
 });

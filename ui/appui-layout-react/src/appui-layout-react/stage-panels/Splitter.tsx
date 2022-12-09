@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[Splitter]] component.
- * @beta
+ * @internal
  */
 export interface SplitterProps extends CommonProps {
   /** Splitter content panes. */
@@ -24,14 +24,14 @@ export interface SplitterProps extends CommonProps {
 }
 
 /** State of [[Splitter]] component.
- * @beta
+ * @internal
  */
 interface SplitterState {
   sizeByPaneId: { [paneId: number]: number };
 }
 
 /** Splitter component of 9-Zone UI app.
- * @beta
+ * @internal
  */
 export class Splitter extends React.PureComponent<SplitterProps, SplitterState> {
   private _gripRefByGripId = new Map<number, React.RefObject<HTMLDivElement>>();

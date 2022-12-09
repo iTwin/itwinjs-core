@@ -7,19 +7,23 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert,
+  ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, MockRender, NotifyMessageDetails, OutputMessageAlert,
   OutputMessagePriority, OutputMessageType,
 } from "@itwin/core-frontend";
 import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogManager, ModalDialogRenderer } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils, { userEvent } from "../TestUtils";
+import { render, screen } from "@testing-library/react";
 
 describe("AppNotificationManager", () => {
+  let theUserTo: ReturnType<typeof userEvent.setup>;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    await MockRender.App.startup();
   });
 
-  after(() => {
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
 
@@ -27,6 +31,7 @@ describe("AppNotificationManager", () => {
 
   beforeEach(() => {
     notifications = new AppNotificationManager();
+    theUserTo = userEvent.setup();
   });
 
   it("outputPromptByKey", () => {
@@ -52,7 +57,7 @@ describe("AppNotificationManager", () => {
     const spyMethod = sinon.spy(MessageManager, "addMessage");
     const alertBoxMethod = sinon.spy(MessageManager, "showAlertMessageBox");
 
-    const details = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.", "A detailed message.", OutputMessageType.Alert);
+    const details = new NotifyMessageDetails(OutputMessagePriority.Success, "A brief message.", "A detailed message.", OutputMessageType.Alert);
     notifications.outputMessage(details);
     expect(spyMethod.calledOnce).to.be.true;
     expect(alertBoxMethod.calledOnce).to.be.true;
@@ -76,7 +81,7 @@ describe("AppNotificationManager", () => {
     const spyMethod3 = sinon.spy(MessageManager, "hideInputFieldMessage");
     const details = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.", "A detailed message.", OutputMessageType.InputField);
     let divElement: HTMLElement | null;
-    mount(<div ref={(el) => { divElement = el; }} />);
+    render(<div ref={(el) => { divElement = el; }} />);
     details.setInputFieldTypeDetails(divElement!);
     notifications.outputMessage(details);
     expect(spyMethod.calledOnce).to.be.true;
@@ -95,7 +100,7 @@ describe("AppNotificationManager", () => {
   });
 
   it("openMessageBox", async () => {
-    const wrapper = mount(<ModalDialogRenderer />);
+    render(<ModalDialogRenderer />);
 
     const spyMethod = sinon.spy(MessageManager, "openMessageBox");
     expect(ModalDialogManager.dialogCount).to.eq(0);
@@ -104,8 +109,7 @@ describe("AppNotificationManager", () => {
     expect(spyMethod.calledOnce).to.be.true;
     expect(ModalDialogManager.dialogCount).to.eq(1);
 
-    wrapper.update();
-    wrapper.find("button.dialog-button-ok").simulate("click");
+    await theUserTo.click(screen.getByRole("button", {name: "dialog.ok"}));
     expect(ModalDialogManager.dialogCount).to.eq(0);
 
     const boxValue = await boxResult;
@@ -136,7 +140,7 @@ describe("AppNotificationManager", () => {
     const showMethod = sinon.spy(ElementTooltip, "showTooltip");
     const hideMethod = sinon.spy(ElementTooltip, "hideTooltip");
     let divElement: HTMLElement | null;
-    mount(<div ref={(el) => { divElement = el; }} />);
+    render(<div ref={(el) => { divElement = el; }} />);
     notifications.openToolTip(divElement!, "Tooltip message");
     notifications.clearToolTip();
     expect(showMethod.calledOnce).to.be.true;
@@ -148,7 +152,7 @@ describe("AppNotificationManager", () => {
     const showMethod = sinon.spy(ElementTooltip, "showTooltip");
     const hideMethod = sinon.spy(ElementTooltip, "hideTooltip");
     let divElement: HTMLElement | null;
-    mount(<div ref={(el) => { divElement = el; }} />);
+    render(<div ref={(el) => { divElement = el; }} />);
     const reactNode = <span>Tooltip message</span>;
     MessageManager.openToolTip(divElement!, { reactNode });
     notifications.clearToolTip();

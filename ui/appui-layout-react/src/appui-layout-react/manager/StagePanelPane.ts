@@ -9,21 +9,21 @@
 import { WidgetZoneId } from "../zones/manager/Zones";
 
 /** Properties used by [[NineZoneStagePanelPaneManager]].
- * @alpha
+ * @internal
  */
 export interface NineZoneStagePanelPaneManagerProps {
   readonly widgets: ReadonlyArray<WidgetZoneId>;
 }
 
 /** Returns default [[NineZoneStagePanelPaneManagerProps]] object.
- * @alpha
+ * @internal
  */
 export const getDefaultNineZoneStagePanelPaneManagerProps = (): NineZoneStagePanelPaneManagerProps => ({
   widgets: [],
 });
 
 /** Class used to manage [[NineZoneStagePanelPaneManagerProps]].
- * @alpha
+ * @internal
  */
 export class NineZoneStagePanelPaneManager {
   public addWidget<TProps extends NineZoneStagePanelPaneManagerProps>(widgetId: WidgetZoneId, props: TProps): TProps {

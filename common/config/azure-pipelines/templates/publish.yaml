@@ -4,122 +4,35 @@ parameters:
     default: $(System.DefaultWorkingDirectory)
 
 steps:
+- powershell: |
+    $commitMsg = '$(Build.SourceVersionMessage)'
+    if ($commitMsg -match '^(\d+.\d+.\d+)(-dev.\d+)?$') {
+      Write-Host `'$commitMsg`'` is a version bump
+      Write-Host '##vso[task.setvariable variable=ShouldPublish;]True'
+    } else {
+      Write-Host `'$commitMsg`'` is not a version bump
+      Write-Host '##vso[task.setvariable variable=ShouldPublish;]False'
+    }
+  displayName: Publish if version bump
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
+
 - script: node common/scripts/install-run-rush.js publish --publish --pack --include-all
   displayName: rush publish pack
   workingDirectory: ${{ parameters.workingDir }}
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
 
 - task: PythonScript@0
   displayName: Gather packages for release
   inputs:
     workingDirectory: ${{ parameters.workingDir }}
-    scriptSource: inline
-    script: |
-     import sys, os, glob, re, subprocess
-     import shutil
-
-     def determineDistTag(currVersion):
-       ## The master branch is the only one that should get the 'nightly' release tag
-       mainBranch = "master"
-
-       # Branch that is the current set of releases, will be given the 'latest' dist tag
-       currentReleaseBranch = "release/2."
-
-       # Branches that used to hold the current releases but will no longer now not be given the 'latest' dist tag
-       # Note: This should probably be an array in the future.
-       oldReleaseBranch = "release/1."
-
-       distTag = None
-       if len(sys.argv) == 4:
-         branchName = sys.argv[3]
-
-         print ("Branch name: " + branchName + " and current version " + currVersion)
-
-         # The most common case is the tag will be a nightly tag
-         if mainBranch in branchName:
-           distTag = "nightly"
-         elif "release/" in branchName:
-           print ("On a release branch")
-           if currentReleaseBranch in branchName:
-             distTag = "latest"
-           elif oldReleaseBranch in branchName:
-             distTag = "previous"
-
-           # Override the 2 previous checks for the case where we're releasing a -dev version off a release branch.
-           # These will always be considered rc.
-           if "-" in currVersion:
-             distTag = "rc"
-
-       if distTag is None:
-         return
-
-       print ("Setting dist tag " + distTag)
-       print ("##vso[build.addbuildtag]dist-tag " + distTag)
-       print ("##vso[task.setvariable variable=isRelease;isSecret=false;isOutput=true;]true")
-
-     artifactStagingDir = os.path.realpath(sys.argv[1])
-     sourcesDirectory = os.path.realpath(sys.argv[2])
-
-     ## Setup
-     stagingDir = os.path.join(artifactStagingDir, "imodeljs", "packages")
-     os.makedirs(stagingDir)
-
-     packageDir = os.path.join(sourcesDirectory, "common", "temp", "artifacts", "packages")
-
-     artifactPaths = glob.glob(os.path.join(packageDir, "*.tgz"))
-
-     packagesToPublish = False
-     localVer = ""
-     for artifact in artifactPaths:
-       baseName = os.path.basename(artifact)
-       print ("")
-       print ("Checking package: '" + baseName + "'...")
-
-       localVer = re.search(r'(\d\.\d.*).tgz', baseName)
-       localVer = localVer.group(1)
-
-       packageName = baseName[:(len(baseName) - len(localVer) - 5)]
-       packageName = "@" + packageName.replace("-", "/", 1)
-
-       command = "npm view " + packageName + "@" + localVer + " version"
-       proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
-
-       # We are going to assume if a version is provided back from the above call, that this version exists
-       # on the server.  Otherwise, it returns an empty string.
-       serverVer = proc.communicate()[0]
-
-       if proc.returncode != 0:
-         packagesToPublish = True
-         print ("The package does not yet exist.  Copying " + packageName + " to staging area.")
-         shutil.copy(artifact, stagingDir)
-         continue
-
-       if 0 != len(serverVer):
-         print ("The version already exists.  Skipping...")
-         continue
-
-       packagesToPublish = True
-       print ("Local version is newer than on the server.  Copying package " + packageName + " to staging area.")
-       shutil.copy(artifact, stagingDir)
-
-     determineDistTag(localVer)
-
-     if packagesToPublish:
-       print ("There are packages to publish.")
-       print ("##vso[build.addbuildtag]package-release")
-       print ("##vso[task.setvariable variable=isRelease;isSecret=false;isOutput=true;]true")
-
-       determineDistTag(localVer)
-     else:
-       print ("All packages are up-to-date.")
-
+    scriptSource: filepath
+    scriptPath: common/scripts/gather_packages.py
     arguments: '$(Build.ArtifactStagingDirectory) $(Build.SourcesDirectory) $(Build.SourceBranch)'
-    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
+    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: packages'
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)/imodeljs/packages'
     ArtifactName: packages
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
-
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))

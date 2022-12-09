@@ -2,7 +2,7 @@
 
 exports[`ContentToolWidgetComposer ContentToolWidgetComposer should render 1`] = `
 <ToolWidgetComposer
-  className="nz-hidden"
+  className=""
   horizontalToolbar={
     <ToolbarComposer
       items={Array []}
@@ -22,7 +22,7 @@ exports[`ContentToolWidgetComposer ContentToolWidgetComposer should render 1`] =
 
 exports[`ContentToolWidgetComposer ContentToolWidgetComposer with backstage button should render 1`] = `
 <ToolWidgetComposer
-  className="nz-hidden"
+  className=""
   cornerItem={
     <BackstageAppButton
       icon="icon-bentley-systems"

@@ -6,21 +6,24 @@
  * @module IModelApp
  */
 
-const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+export const ITWINJS_CORE_VERSION = require("../../package.json").version as string; // require resolves from the lib/{cjs,esm} dir
+const COPYRIGHT_NOTICE = 'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
-import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@itwin/appui-abstract";
-import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
+import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import {
   AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
 } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { TelemetryManager } from "@itwin/core-telemetry";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import * as auxCoordState from "./AuxCoordSys";
 import * as categorySelectorState from "./CategorySelectorState";
+import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
@@ -36,7 +39,8 @@ import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
-import { MapLayerFormatRegistry, MapLayerOptions, TileAdmin } from "./tile/internal";
+import { RealityDataSourceProviderRegistry } from "./RealityDataSource";
+import { MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as idleTool from "./tools/IdleTool";
@@ -45,6 +49,7 @@ import * as selectTool from "./tools/SelectTool";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
+import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
 
@@ -55,6 +60,7 @@ require("./IModeljs-css");
 
 /** Options that can be supplied with [[IModelAppOptions]] to customize frontend security.
  * @public
+ * @extensions
  */
 export interface FrontendSecurityOptions {
   /** Configures protection from Cross Site Request Forgery attacks. */
@@ -72,19 +78,21 @@ export interface FrontendSecurityOptions {
  * @public
  */
 export interface IModelAppOptions {
-  /** If present, supplies the [[IModelClient]] for this session. */
+  /** If present, supplies the [[FrontendHubAccess]] for this session. */
   hubAccess?: FrontendHubAccess;
   /** If present, supplies the Id of this application. Applications must set this to the Bentley Global Product Registry Id (GPRID) for usage logging. */
   applicationId?: string;
   /** If present, supplies the version of this application. Must be set for usage logging. */
   applicationVersion?: string;
-  /** If present, supplies the [[SettingsAdmin]] for this session. */
-  settings?: SettingsAdmin;
+  /** If present, supplies the [[UserPreferencesAccess]] for this session.
+   * @beta
+   */
+  userPreferences?: UserPreferencesAccess;
   /** If present, supplies the [[ViewManager]] for this session. */
   viewManager?: ViewManager;
   /** If present, supplies Map Layer Options for this session such as Azure Access Keys
    * @beta
-  */
+   */
   mapLayerOptions?: MapLayerOptions;
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
   tileAdmin?: TileAdmin.Props;
@@ -112,13 +120,22 @@ export interface IModelAppOptions {
   tentativePoint?: TentativePoint;
   /** @internal */
   quantityFormatter?: QuantityFormatter;
-  /** @internal */
+  /** If present, supplies an implementation of the render system, or options for initializing the default render system. */
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
+  /** If present, determines whether iModelApp is a NoRenderApp
+   *  @internal
+   */
+  noRender?: boolean;
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
   realityDataAccess?: RealityDataAccess;
+  /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
+   * The path should always end with a trailing `/`.
+   * @beta
+   */
+  publicPath?: string;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -153,11 +170,11 @@ interface IModelAppForDebugger {
 }
 
 /**
- * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
+ * Global singleton that connects the user interface with the iTwin.js services. There can be only one IModelApp active in a session. All
  * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
  *
  * Before any interactive operations may be performed by the `@itwin/core-frontend package`, [[IModelApp.startup]] must be called and awaited.
- * Applications may customize the frontend behavior of iModel.js by supplying options to [[IModelApp.startup]].
+ * Applications may customize the frontend behavior of iTwin.js by supplying options to [[IModelApp.startup]].
  *
  * @public
  */
@@ -172,26 +189,35 @@ export class IModelApp {
   private static _notifications: NotificationManager;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
-  private static _settings: SettingsAdmin;
+  private static _userPreferences?: UserPreferencesAccess;
   private static _tentativePoint: TentativePoint;
   private static _tileAdmin: TileAdmin;
   private static _toolAdmin: ToolAdmin;
   private static _viewManager: ViewManager;
   private static _uiAdmin: UiAdmin;
+  private static _noRender: boolean;
   private static _wantEventLoop = false;
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
   private static _animationIntervalId?: number;
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
+  private static _terrainProviderRegistry: TerrainProviderRegistry;
+  private static _realityDataSourceProviders: RealityDataSourceProviderRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
+  private static _publicPath: string;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
 
   /** Event raised just before the frontend IModelApp is to be shut down */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
+
+  /** Event raised after IModelApp is finished starting up.
+   * @internal
+   */
+  public static readonly onAfterStartup = new BeEvent<() => void>();
 
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: AuthorizationClient;
@@ -203,18 +229,23 @@ export class IModelApp {
    * @internal
    */
   public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
+  /** The [[TerrainProviderRegistry]] for this session.
+   * @beta
+   */
+  public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
+  /** The [[RealityDataSourceProviderRegistry]] for this session.
+   * @alpha
+   */
+  public static get realityDataSourceProviders(): RealityDataSourceProviderRegistry { return this._realityDataSourceProviders; }
   /** The [[RenderSystem]] for this session. */
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
   public static get viewManager(): ViewManager { return this._viewManager; }
-
   /** The [[NotificationManager]] for this session. */
   public static get notifications(): NotificationManager { return this._notifications; }
   /** The [[TileAdmin]] for this session. */
   public static get tileAdmin(): TileAdmin { return this._tileAdmin; }
-  /** The [[QuantityFormatter]] for this session.
-   * @alpha
-   */
+  /** The [[QuantityFormatter]] for this session. */
   public static get quantityFormatter(): QuantityFormatter { return this._quantityFormatter; }
   /** The [[ToolAdmin]] for this session. */
   public static get toolAdmin(): ToolAdmin { return this._toolAdmin; }
@@ -224,14 +255,15 @@ export class IModelApp {
   public static get accuDraw(): AccuDraw { return this._accuDraw; }
   /** The [[AccuSnap]] for this session. */
   public static get accuSnap(): AccuSnap { return this._accuSnap; }
-  /** @internal */
   public static get locateManager(): ElementLocateManager { return this._locateManager; }
   /** @internal */
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
   /** The [[Localization]] for this session. */
   public static get localization(): Localization { return this._localization; }
-  /** The [[SettingsAdmin]] for this session. */
-  public static get settings(): SettingsAdmin { return this._settings; }
+  /** The [[UserPreferencesAccess]] for this session.
+   * @beta
+   */
+  public static get userPreferences(): UserPreferencesAccess | undefined { return this._userPreferences; }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
   public static get applicationId(): string { return this._applicationId; }
   /** The version of this application. Must be set for usage logging. */
@@ -254,10 +286,17 @@ export class IModelApp {
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
   public static get securityOptions() { return this._securityOptions; }
+  /** The root URL for the assets 'public' folder.
+   * @beta
+   */
+  public static get publicPath() { return this._publicPath; }
   /** The [[TelemetryManager]] for this session
    * @internal
    */
   public static readonly telemetry: TelemetryManager = new TelemetryManager();
+
+  /** @alpha */
+  public static readonly extensionAdmin = this._createExtensionAdmin();
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -319,14 +358,17 @@ export class IModelApp {
     opts = opts ?? {};
     this._securityOptions = opts.security ?? {};
 
-    // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
-    (window as IModelAppForDebugger).iModelAppForDebugger = this;
+    if (process.env.NODE_ENV === "development") {
+      // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
+      (window as IModelAppForDebugger).iModelAppForDebugger = this;
+    }
 
     this.sessionId = opts.sessionId ?? Guid.createValue();
-    this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iModel.js
+    this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iTwin.js
     this._applicationVersion = opts.applicationVersion ?? "1.0.0";
     this.authorizationClient = opts.authorizationClient;
     this._hubAccess = opts.hubAccess;
+    this._noRender = opts.noRender ?? false;
 
     this._setupRpcRequestContext();
 
@@ -356,7 +398,8 @@ export class IModelApp {
     ].forEach((module) => this.registerModuleEntities(module));
 
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
-    this._settings = opts.settings ?? new ConnectSettingsClient(this.applicationId);
+    if (opts.userPreferences)
+      this._userPreferences = opts.userPreferences;
     this._viewManager = opts.viewManager ?? new ViewManager();
     this._tileAdmin = await TileAdmin.create(opts.tileAdmin);
     this._notifications = opts.notifications ?? new NotificationManager();
@@ -368,7 +411,10 @@ export class IModelApp {
     this._quantityFormatter = opts.quantityFormatter ?? new QuantityFormatter();
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
+    this._terrainProviderRegistry = new TerrainProviderRegistry();
+    this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
+    this._publicPath = opts.publicPath ?? "";
 
     [
       this.renderSystem,
@@ -381,7 +427,8 @@ export class IModelApp {
       this.uiAdmin,
     ].forEach((sys) => sys.onInitialized());
 
-    return this.quantityFormatter.onInitialized();
+    await this.quantityFormatter.onInitialized();
+    this.onAfterStartup.raiseEvent();
   }
 
   /** Must be called before the application exits to release any held resources. */
@@ -393,7 +440,9 @@ export class IModelApp {
     this.onBeforeShutdown.raiseEvent();
     this.onBeforeShutdown.clear();
 
-    (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
+    if (process.env.NODE_ENV === "development") {
+      (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
+    }
 
     this._wantEventLoop = false;
     window.removeEventListener("resize", IModelApp.requestNextAnimation);
@@ -404,6 +453,7 @@ export class IModelApp {
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;
+    this.onAfterStartup.clear();
   }
 
   /** Controls how frequently the application polls for changes that may require a new animation frame to be requested.
@@ -428,6 +478,10 @@ export class IModelApp {
 
   /** @internal */
   public static requestNextAnimation() {
+    // Only want to call requestAnimationFrame if it is defined. Need to check whether current iModelApp is a NoRenderApp.
+    if (IModelApp._noRender)
+      return;
+
     if (!IModelApp._animationRequested) {
       IModelApp._animationRequested = true;
       requestAnimationFrame(IModelApp.eventLoop);
@@ -513,7 +567,7 @@ export class IModelApp {
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
         sessionId: this.sessionId,
-        authorization: await this.getAccessToken(),
+        authorization: ProcessDetector.isMobileAppFrontend ? "" : await this.getAccessToken(),
       };
 
       const csrf = IModelApp.securityOptions.csrfProtection;
@@ -575,7 +629,10 @@ export class IModelApp {
     overlay.tabIndex = -1; // so we can catch keystroke events
 
     // function to remove modal dialog
-    const stop = (ev: Event) => { root.removeChild(overlay); ev.stopPropagation(); };
+    const stop = (ev: Event) => {
+      root.removeChild(overlay);
+      ev.stopPropagation();
+    };
 
     if (options.autoClose) {
       overlay.onclick = overlay.oncontextmenu = stop;
@@ -640,27 +697,27 @@ export class IModelApp {
     const noticeCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-message" });
     if (undefined !== opts.heading) {
       if (typeof opts.heading === "string")
-        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading });
+        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading, className: "logo-card-header" });
       else
         noticeCell.appendChild(opts.heading);
     }
     if (undefined !== opts.notice) {
       if (typeof opts.notice === "string")
-        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice });
+        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: "logo-cards" });
       else
         noticeCell.appendChild(opts.notice);
     }
     return card;
   }
 
-  /** Make the logo card for the iModel.js library itself. This card gets placed at the top of the stack.
+  /** Make the logo card for the library itself. This card gets placed at the top of the stack.
    *  @internal
    */
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
-      iconSrc: "images/about-imodeljs.svg",
-      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
-      notice: `${require("../../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
+      iconSrc: `${this.publicPath}images/about-imodeljs.svg`,
+      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("iModelJs:Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
+      notice: `${ITWINJS_CORE_VERSION}<br>${COPYRIGHT_NOTICE}`,
     });
   }
 
@@ -675,8 +732,8 @@ export class IModelApp {
     return div;
   }
 
-  /** Localize an error status from iModel.js
-   * @param status one of the status values from [[BentleyStatus]], [[IModelStatus]] or [[DbResult]]
+  /** Localize an error status
+   * @param status one of the status values from [BentleyStatus]($core-bentley), [IModelStatus]($core-bentley) or [DbResult]($core-bentley)
    * @returns a localized error message
    * @beta
    */
@@ -694,6 +751,17 @@ export class IModelApp {
         key = { scope: "Errors", val: "Status", status: status.toString() };
     }
 
-    return this.localization.getLocalizedString(`${key.scope}.${key.val}`, key);
+    return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);
+  }
+
+  /**
+   * Creates an instance of the ExtensionAdmin
+   * and registers an event to execute after startup is complete
+   * @returns an instance of ExtensionAdmin
+   */
+  private static _createExtensionAdmin(): ExtensionAdmin {
+    const extensionAdmin = new ExtensionAdmin();
+    IModelApp.onAfterStartup.addListener(extensionAdmin.onStartup);
+    return extensionAdmin;
   }
 }

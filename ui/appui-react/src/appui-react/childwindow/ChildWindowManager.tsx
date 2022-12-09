@@ -12,9 +12,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { copyStyles } from "./CopyStyles";
 import { Provider } from "react-redux";
-import { UiFramework } from "../UiFramework";
 import { StateManager } from "../redux/StateManager";
-import { UiSettingsProvider } from "../uisettings/useUiSettings";
+import { UiStateStorageHandler } from "../uistate/useUiStateStorage";
 import { PopupRenderer } from "../popup/PopupManager";
 import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
@@ -63,7 +62,7 @@ export interface ChildWindowLocationProps {
 
 /** Supports opening a child browser window from the main application window. The child window is managed by the main application
  * and is running in the same security context. The application must deliver the html file iTwinPopup.html along side its index.html.
- * See also: [Child Window Manager]($docs/learning/ui/framework/ChildWindows.md)
+ * See also: [Child Window Manager]($docs/learning/ui/appui-react/ChildWindows.md)
  * @public */
 export class ChildWindowManager {
   private _openChildWindows: OpenChildWindowInfo[] = [];
@@ -100,12 +99,12 @@ export class ChildWindowManager {
 
       setTimeout(() => {
         copyStyles(childWindow.document);
-        setImmediate(() => {
+        setTimeout(() => {
           ReactDOM.render(
             <Provider store={StateManager.store} >
-              <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
+              <UiStateStorageHandler>
                 <ThemeManager>
-                  <FrameworkVersion>
+                  <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
                     <div className="uifw-child-window-container-host">
                       <PopupRenderer />
                       <ModalDialogRenderer />
@@ -117,7 +116,7 @@ export class ChildWindowManager {
                     </div>
                   </FrameworkVersion>
                 </ThemeManager>
-              </UiSettingsProvider>
+              </UiStateStorageHandler>
             </Provider>,
             reactConnectionDiv
           );
@@ -126,11 +125,10 @@ export class ChildWindowManager {
 
       childWindow.onbeforeunload = () => {
         const frontStageDef = FrontstageManager.activeFrontstageDef;
-        if (frontStageDef) {
-          void frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow).then(() => {
-            this.closeChildWindow(childWindowId, false);
-          });
-        }
+        if (!frontStageDef)
+          return;
+        frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow);
+        this.closeChildWindow(childWindowId, false);
       };
     }
   }
@@ -203,7 +201,7 @@ export class ChildWindowManager {
       }, false);
     }
 
-    window.addEventListener("beforeunload", () => {
+    window.addEventListener("unload", () => {
       const frontStageDef = FrontstageManager.activeFrontstageDef;
       if (frontStageDef) {
         this.closeChildWindow(childWindowId, true);
