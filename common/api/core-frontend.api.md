@@ -14325,13 +14325,6 @@ export namespace WmtsCapability {
         readonly range?: Range2d;
     }
     // (undocumented)
-    export abstract class Constants {
-        // (undocumented)
-        static readonly GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible";
-        // (undocumented)
-        static readonly GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178;
-    }
-    // (undocumented)
     export class Contents {
         constructor(elem: Element);
         // (undocumented)
@@ -14392,57 +14385,6 @@ export namespace WmtsCapability {
         get getFeatureInfo(): Operation | undefined;
         // (undocumented)
         get getTile(): Operation | undefined;
-    }
-    // (undocumented)
-    export abstract class OwsConstants {
-        // (undocumented)
-        static readonly ABSTRACT_XMLTAG = "ows:Abstract";
-        // (undocumented)
-        static readonly ACCESSCONSTRAINTS_XMLTAG = "ows:AccessConstraints";
-        // (undocumented)
-        static readonly ALLOWEDVALUES_XMLTAG = "ows:AllowedValues";
-        // (undocumented)
-        static readonly BOUNDINGBOX_XMLTAG = "ows:BoundingBox";
-        // (undocumented)
-        static readonly CONSTRAINT_XMLTAG = "ows:Constraint";
-        // (undocumented)
-        static readonly DCP_XMLTAG = "ows:DCP";
-        // (undocumented)
-        static readonly FEES_XMLTAG = "ows:Fees";
-        // (undocumented)
-        static readonly GET_XMLTAG = "ows:Get";
-        // (undocumented)
-        static readonly HTTP_XMLTAG = "ows:HTTP";
-        // (undocumented)
-        static readonly IDENTIFIER_XMLTAG = "ows:Identifier";
-        // (undocumented)
-        static readonly KEYWORD_XMLTAG = "ows:Keyword";
-        // (undocumented)
-        static readonly KEYWORDS_XMLTAG = "ows:Keywords";
-        // (undocumented)
-        static readonly LOWERCORNER_XMLTAG = "ows:LowerCorner";
-        // (undocumented)
-        static readonly OPERATION_XMLTAG = "ows:Operation";
-        // (undocumented)
-        static readonly OPERATIONSMETADATA_XMLTAG = "ows:OperationsMetadata";
-        // (undocumented)
-        static readonly POST_XMLTAG = "ows:Post";
-        // (undocumented)
-        static readonly SERVICEIDENTIFICATION_XMLTAG = "ows:ServiceIdentification";
-        // (undocumented)
-        static readonly SERVICETYPE_XMLTAG = "ows:ServiceType";
-        // (undocumented)
-        static readonly SERVICETYPEVERSION_XMLTAG = "ows:ServiceTypeVersion";
-        // (undocumented)
-        static readonly SUPPORTEDCRS_XMLTAG = "ows:SupportedCRS";
-        // (undocumented)
-        static readonly TITLE_XMLTAG = "ows:Title";
-        // (undocumented)
-        static readonly UPPERCORNER_XMLTAG = "ows:UpperCorner";
-        // (undocumented)
-        static readonly VALUE_XMLTAG = "ows:Value";
-        // (undocumented)
-        static readonly WGS84BOUNDINGBOX_XMLTAG = "ows:WGS84BoundingBox";
     }
     // (undocumented)
     export class ServiceIdentification {
@@ -14526,39 +14468,14 @@ export namespace WmtsCapability {
         // (undocumented)
         readonly tileMatrixSetLimits: TileMatrixSetLimits[];
     }
+}
+
+// @public (undocumented)
+export enum WmtsConstants {
     // (undocumented)
-    export abstract class XmlConstants {
-        // (undocumented)
-        static readonly CONSTRAINT_NAME_FILTER = "Encoding";
-        // (undocumented)
-        static readonly GETCAPABILITIES = "GetCapabilities";
-        // (undocumented)
-        static readonly GETFEATUREINFO = "GetFeatureInfo";
-        // (undocumented)
-        static readonly GETTILE = "GetTile";
-        // (undocumented)
-        static readonly MATRIXHEIGHT_XMLTAG = "MatrixHeight";
-        // (undocumented)
-        static readonly MATRIXWIDTH_XMLTAG = "MatrixWidth";
-        // (undocumented)
-        static readonly SCALEDENOMINATOR_XMLTAG = "ScaleDenominator";
-        // (undocumented)
-        static readonly STYLE_ISDEFAULT = "IsDefault";
-        // (undocumented)
-        static readonly TILEHEIGHT_XMLTAG = "TileHeight";
-        // (undocumented)
-        static readonly TILEMATRIX_XMLTAG = "TileMatrix";
-        // (undocumented)
-        static readonly TILEMATRIXSETLINK_XMLTAG = "TileMatrixSetLink";
-        // (undocumented)
-        static readonly TILEWIDTH_XMLTAG = "TileWidth";
-        // (undocumented)
-        static readonly TOPLEFTCORNER_XMLTAG = "TopLeftCorner";
-        // (undocumented)
-        static readonly WELLKNOWNSCALESET_XMLTAG = "WellKnownScaleSet";
-        // (undocumented)
-        static readonly XLINK_HREF = "xlink:href";
-    }
+    GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible",
+    // (undocumented)
+    GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178
 }
 
 // @internal (undocumented)
