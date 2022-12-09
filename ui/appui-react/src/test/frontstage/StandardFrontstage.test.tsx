@@ -17,6 +17,7 @@ import {
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { StandardFrontstageProps, StandardFrontstageProvider } from "../../appui-react/frontstage/StandardFrontstageProvider";
+import { EmptyLocalization } from "@itwin/core-common";
 
 async function getSavedViewLayoutProps() {
   return Promise.resolve({
@@ -107,7 +108,7 @@ class TestContentGroupProvider extends ContentGroupProvider {
 
 describe("ContentGroupProvider", () => {
   before(async () => {
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
     await TestUtils.initializeUiFramework();
     FrontstageManager.clearFrontstageProviders();
   });

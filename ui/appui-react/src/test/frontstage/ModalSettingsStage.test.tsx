@@ -50,7 +50,7 @@ function renderModalFrontstage(isOpen: boolean): React.ReactElement<any> {
 describe("ModalSettingsStage", () => {
   beforeEach(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   afterEach(async () => {

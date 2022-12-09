@@ -15,6 +15,7 @@ import {
 } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
+import { EmptyLocalization } from "@itwin/core-common";
 
 const mySessionStorage = storageMock();
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;
@@ -30,7 +31,7 @@ describe("IModelViewportControl", () => {
     });
 
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
 
     ConfigurableUiManager.initialize();
     FrontstageManager.isInitialized = false;

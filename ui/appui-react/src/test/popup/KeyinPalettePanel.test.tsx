@@ -12,6 +12,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react";
 import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, UiFramework } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { UiStateStorageStatus } from "@itwin/core-react";
+import { EmptyLocalization } from "@itwin/core-common";
 
 const myLocalStorage = storageMock();
 const KEYIN_PALETTE_NAMESPACE = "KeyinPalettePanel";
@@ -36,7 +37,10 @@ describe("<KeyinPalettePanel>", () => {
 
     await TestUtils.initializeUiFramework();
     // use mock renderer so standards tools are registered.
-    const opts: IModelAppOptions = { uiAdmin: new FrameworkUiAdmin() };
+    const opts: IModelAppOptions = {
+      uiAdmin: new FrameworkUiAdmin(),
+      localization: new EmptyLocalization()
+    };
     await MockRender.App.startup(opts);
   });
 

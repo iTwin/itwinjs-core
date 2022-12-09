@@ -12,6 +12,7 @@ import {
 } from "@itwin/appui-abstract";
 import { SyncToolSettingsPropertiesEventArgs, SyncUiEventDispatcher, ToolSettingsManager } from "../../../appui-react";
 import TestUtils from "../../TestUtils";
+import { EmptyLocalization } from "@itwin/core-common";
 
 // cSpell:Ignore USELENGTH
 
@@ -53,7 +54,7 @@ describe("ToolSettingsManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

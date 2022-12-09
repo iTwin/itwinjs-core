@@ -14,6 +14,7 @@ import {
 } from "../../appui-react";
 import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
@@ -25,7 +26,7 @@ describe("Backstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
     class Frontstage1 extends FrontstageProvider {
       public static stageId = "Test1";
       public get id(): string {

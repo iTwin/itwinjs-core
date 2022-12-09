@@ -18,6 +18,7 @@ import {
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { EmptyLocalization } from "@itwin/core-common";
 
 const defaultWidgetTabs = {
   [1]: [],
@@ -32,7 +33,7 @@ const defaultWidgetTabs = {
 
 describe("WidgetStack", () => {
   before(async () => {
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
     await TestUtils.initializeUiFramework();
     FrontstageManager.clearFrontstageProviders();
 

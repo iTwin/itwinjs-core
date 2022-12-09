@@ -18,7 +18,7 @@ describe("UiSettingsPage", () => {
   let localStorageMock = storageMock();
 
   before(async () => {
-    await NoRenderApp.startup({localization: new EmptyLocalization()});
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

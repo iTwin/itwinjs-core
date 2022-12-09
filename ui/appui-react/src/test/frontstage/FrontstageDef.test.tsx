@@ -14,6 +14,7 @@ import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsMana
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState } from "@itwin/appui-layout-react";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { StagePanelState } from "../../appui-react/stagepanels/StagePanelDef";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FrontstageDef", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
@@ -22,7 +23,7 @@ describe("FrontstageDef", () => {
   before(async () => {
     Object.defineProperty(window, "localStorage", { get: () => localStorageMock });
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

@@ -21,6 +21,7 @@ import { NavigationAidControl } from "../../appui-react/navigationaids/Navigatio
 import TestUtils, { storageMock } from "../TestUtils";
 import { UiShowHideManager } from "../../appui-react/utils/UiShowHideManager";
 import { Provider } from "react-redux";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("NavigationWidget localStorage Wrapper", () => {
 
@@ -39,7 +40,7 @@ describe("NavigationWidget localStorage Wrapper", () => {
 
   describe("NavigationWidget", () => {
     before(async () => {
-      await NoRenderApp.startup();
+      await NoRenderApp.startup({ localization: new EmptyLocalization() });
       await TestUtils.initializeUiFramework();
       UiFramework.setUiVersion("1");
       await TestUtils.flushAsyncOperations();

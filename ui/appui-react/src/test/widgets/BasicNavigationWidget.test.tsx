@@ -10,11 +10,12 @@ import { Matrix3d } from "@itwin/core-geometry";
 import { MockRender, OrthographicViewState, ScreenViewport } from "@itwin/core-frontend";
 import { BasicNavigationWidget, CommandItemDef, ConfigurableUiManager, ContentViewManager, ToolbarHelper, ViewportContentControl } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("BasicNavigationWidget", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
     ConfigurableUiManager.initialize();
   });
 

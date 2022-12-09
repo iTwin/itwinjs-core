@@ -8,12 +8,13 @@ import { expect } from "chai";
 import { MockRender } from "@itwin/core-frontend";
 import { TestUtils } from "../TestUtils";
 import { BumpToolSetting, FocusToolSettings } from "../../appui-react/tools/ToolSettingsTools";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ToolSettingsTools", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

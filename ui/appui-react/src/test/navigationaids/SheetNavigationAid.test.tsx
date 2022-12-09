@@ -9,6 +9,7 @@ import { IModelConnection, MockRender } from "@itwin/core-frontend";
 import { AnyWidgetProps, CardContainer, ConfigurableUiManager, NavigationWidgetDef, SheetNavigationAid, SheetNavigationAidControl } from "../../appui-react";
 import TestUtils, { childStructure } from "../TestUtils";
 import { render } from "@testing-library/react";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("SheetNavigationAid", () => {
 
@@ -18,7 +19,7 @@ describe("SheetNavigationAid", () => {
     if (!ConfigurableUiManager.isControlRegistered("SheetNavigationAid"))
       ConfigurableUiManager.registerControl("SheetNavigationAid", SheetNavigationAidControl);
 
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

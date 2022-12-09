@@ -17,6 +17,7 @@ import {
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { Provider } from "react-redux";
+import { EmptyLocalization } from "@itwin/core-common";
 
 const title = "Test";
 const listItems = new Array<ListItem>();
@@ -25,7 +26,7 @@ const setEnabled = sinon.spy();
 describe("ListPicker", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
 
     const listItem: ListItem = {
       enabled: true,

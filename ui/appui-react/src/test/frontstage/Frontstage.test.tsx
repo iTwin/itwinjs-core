@@ -18,10 +18,11 @@ import {
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Frontstage", () => {
   before(async () => {
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
     await TestUtils.initializeUiFramework();
     UiFramework.setUiVersion("1");
     FrontstageManager.clearFrontstageProviders();

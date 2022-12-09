@@ -18,6 +18,7 @@ import * as keyinExports from "../../appui-react/popup/KeyinPalettePanel";
 import TestUtils from "../TestUtils";
 import { MockRender, Tool } from "@itwin/core-frontend";
 import { Button } from "@itwin/itwinui-react";
+import { EmptyLocalization } from "@itwin/core-common";
 
 class TestDialogUiDataProvider extends DialogLayoutDataProvider {
   public currentPageIndex = 0;
@@ -145,7 +146,7 @@ describe("FrameworkUiAdmin", () => {
 
     uiAdmin = new FrameworkUiAdmin();
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

@@ -18,6 +18,7 @@ import {
 } from "../../../appui-react";
 import TestUtils, { mount, storageMock } from "../../TestUtils";
 import { render } from "@testing-library/react";
+import { EmptyLocalization } from "@itwin/core-common";
 
 [true, false].forEach((withDeprecated) =>{
   const testType = withDeprecated ? " (with deprecated (on)openWidget props)" : "";
@@ -59,7 +60,7 @@ import { render } from "@testing-library/react";
 
     before(async () => {
       await TestUtils.initializeUiFramework();
-      await MockRender.App.startup();
+      await MockRender.App.startup({ localization: new EmptyLocalization() });
 
       const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
         classId: AppStatusBarWidgetControl,

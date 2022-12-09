@@ -9,12 +9,13 @@ import { ConditionalStringValue } from "@itwin/appui-abstract";
 import { Orientation, Size } from "@itwin/core-react";
 import { ActionButtonItemDef, CommandItemDef, ItemProps, ToolItemDef } from "../../appui-react";
 import TestUtils from "../TestUtils";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Item", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

@@ -23,7 +23,7 @@ import { CategoryTree, RULESET_CATEGORIES, toggleAllCategories } from "../../../
 import { CategoryVisibilityHandler } from "../../../appui-react/imodel-components/category-tree/CategoryVisibilityHandler";
 import { VisibilityChangeListener } from "../../../appui-react/imodel-components/VisibilityTreeEventHandler";
 import TestUtils from "../../TestUtils";
-import { BisCodeSpec, CategoryProps, Code, ElementProps, IModel, ModelProps, PhysicalElementProps, RelatedElement, RelatedElementProps } from "@itwin/core-common";
+import { BisCodeSpec, CategoryProps, Code, ElementProps, EmptyLocalization, IModel, ModelProps, PhysicalElementProps, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import { join } from "path";
 
 describe("CategoryTree", () => {
@@ -33,7 +33,7 @@ describe("CategoryTree", () => {
 
     before(async () => {
       await TestUtils.initializeUiFramework();
-      await MockRender.App.startup();
+      await MockRender.App.startup({ localization: new EmptyLocalization() });
     });
 
     after(async () => {

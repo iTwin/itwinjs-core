@@ -5,7 +5,7 @@
 /* eslint-disable deprecation/deprecation */
 import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  CategorySelectorProps, DisplayStyleProps, EcefLocation, HydrateViewStateResponseProps, IModelReadRpcInterface, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
+  CategorySelectorProps, DisplayStyleProps, EcefLocation, EmptyLocalization, HydrateViewStateResponseProps, IModelReadRpcInterface, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
 } from "@itwin/core-common";
 import { DrawingViewState, EmphasizeElements, IModelConnection, MockRender, ScreenViewport, SheetViewState, SpatialViewState, SubCategoriesCache, ViewState } from "@itwin/core-frontend";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
@@ -126,7 +126,7 @@ describe("StageContentLayout", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
 
     // Required for StageContentLayout
     ConfigurableUiManager.registerControl("TestViewport", TestViewportContentControl);

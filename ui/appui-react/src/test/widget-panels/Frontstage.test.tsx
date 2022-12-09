@@ -25,6 +25,7 @@ import TestUtils, { mount, storageMock, stubRaf, UiStateStorageStub } from "../T
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { expect } from "chai";
 import { Provider } from "react-redux";
+import { EmptyLocalization } from "@itwin/core-common";
 
 /* eslint-disable @typescript-eslint/no-floating-promises, react/display-name, deprecation/deprecation */
 
@@ -2189,7 +2190,7 @@ describe("Frontstage local storage wrapper", () => {
       stubRaf();
       beforeEach(async () => {
         await TestUtils.initializeUiFramework();
-        await NoRenderApp.startup();
+        await NoRenderApp.startup({ localization: new EmptyLocalization() });
       });
 
       afterEach(() => {

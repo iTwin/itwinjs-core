@@ -11,12 +11,13 @@ import { TileLoadingIndicator } from "../../../appui-react";
 import TestUtils, { mount } from "../../TestUtils";
 import { cleanup, render } from "@testing-library/react";
 import { expect } from "chai";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("TileLoadingIndicator", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

@@ -10,6 +10,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { IModelConnection, MockRender } from "@itwin/core-frontend";
 import { CardContainer, CardInfo, FrontstageManager, SheetCard, SheetData, SheetsModalFrontstage } from "../../appui-react";
 import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("SheetsModalFrontstage", () => {
   let modal: SheetsModalFrontstage;
@@ -20,7 +21,7 @@ describe("SheetsModalFrontstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

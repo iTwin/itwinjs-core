@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { BeEvent, Id64String, using } from "@itwin/core-bentley";
-import { QueryRowFormat } from "@itwin/core-common";
+import { EmptyLocalization, QueryRowFormat } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, NoRenderApp, PerModelCategoryVisibility, SpatialViewState, Viewport, ViewState, ViewState3d,
 } from "@itwin/core-frontend";
@@ -25,7 +25,7 @@ describe("ModelsVisibilityHandler", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

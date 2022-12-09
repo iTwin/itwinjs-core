@@ -13,6 +13,7 @@ import { ClearEmphasisStatusField } from "../../appui-react/selection/ClearEmpha
 import { HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "../../appui-react/selection/HideIsolateEmphasizeManager";
 import { StatusBarFieldId } from "../../appui-react/statusbar/StatusBarWidgetControl";
 import TestUtils from "../TestUtils";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ClearEmphasisStatusField", () => {
   const viewportMock = moq.Mock.ofType<ScreenViewport>();
@@ -22,7 +23,7 @@ describe("ClearEmphasisStatusField", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

@@ -8,13 +8,14 @@ import { IModelApp, ITwinIdArg, MockRender, PreferenceArg, PreferenceKeyArg, Tok
 import { UiStateStorageStatus } from "@itwin/core-react";
 import { UserSettingsStorage } from "../../appui-react/uistate/UserSettingsStorage";
 import { TestUtils } from "../TestUtils";
+import { EmptyLocalization } from "@itwin/core-common";
 
 /* eslint-disable deprecation/deprecation */
 
 describe("UserSettingsStorage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

@@ -16,6 +16,7 @@ import {
   StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, withMessageCenterFieldProps, withStatusFieldProps,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("StatusBarComposer", () => {
 
@@ -79,7 +80,7 @@ describe("StatusBarComposer", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
 
     const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
       classId: AppStatusBarWidgetControl,

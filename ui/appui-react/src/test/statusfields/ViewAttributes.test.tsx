@@ -14,6 +14,7 @@ import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../appui-
 import { ViewAttributesStatusField } from "../../appui-react/statusfields/ViewAttributes";
 import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 import TestUtils, { mount } from "../TestUtils";
+import { EmptyLocalization } from "@itwin/core-common";
 
 [true, false].forEach((withDeprecated) =>{
   const testType = withDeprecated ? " (with deprecated StatusFields props)" : "";
@@ -38,7 +39,7 @@ import TestUtils, { mount } from "../TestUtils";
 
     before(async () => {
       await TestUtils.initializeUiFramework();
-      await MockRender.App.startup();
+      await MockRender.App.startup({ localization: new EmptyLocalization() });
 
       const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation
         classId: AppStatusBarWidgetControl,

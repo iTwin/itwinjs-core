@@ -10,6 +10,7 @@ import {
 import TestUtils from "../TestUtils";
 import { MockRender } from "@itwin/core-frontend";
 import { DefaultNavigationTools, StandardNavigationToolsUiItemsProvider } from "../../appui-react";
+import { EmptyLocalization } from "@itwin/core-common";
 
 const testToolsArray: DefaultNavigationTools[] = [
   {
@@ -63,7 +64,7 @@ describe("StandardNavigationToolsUiItemsProvider", () => {
   // avoid problems due to no real localization resources by return dummy values for englishKeyin and keyin properties.
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

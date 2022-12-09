@@ -11,6 +11,7 @@ import {
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { MockRender } from "@itwin/core-frontend";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ActivityCenter", () => {
 
@@ -31,7 +32,7 @@ describe("ActivityCenter", () => {
   let widgetControl: StatusBarWidgetControl | undefined;
 
   before(async () => {
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
     await TestUtils.initializeUiFramework();
 
     const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation

@@ -21,7 +21,7 @@ describe("Backstage", () => {
 
     await FrontstageManager.setActiveFrontstageDef(undefined);
     SyncUiEventDispatcher.initialize();   // To process Backstage events
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

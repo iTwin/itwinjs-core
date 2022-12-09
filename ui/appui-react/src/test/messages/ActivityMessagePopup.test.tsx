@@ -17,6 +17,7 @@ import {
 } from "../../appui-react";
 import { TestUtils } from "../TestUtils";
 import { act, fireEvent, render, screen, waitForElementToBeRemoved } from "@testing-library/react";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ActivityMessagePopup", () => {
 
@@ -26,7 +27,7 @@ describe("ActivityMessagePopup", () => {
     await TestUtils.initializeUiFramework();
 
     notifications = new AppNotificationManager();
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
   });
 
   after(() => {

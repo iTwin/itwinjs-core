@@ -14,6 +14,7 @@ import { BackstageAppButton } from "../../appui-react/widgets/BackstageAppButton
 import TestUtils, { mount, storageMock } from "../TestUtils";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { expect } from "chai";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FrameworkAccuDraw localStorage Wrapper", () => {
 
@@ -33,7 +34,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
   describe("ToolWidgetComposer", () => {
     before(async () => {
       await TestUtils.initializeUiFramework();
-      await NoRenderApp.startup();
+      await NoRenderApp.startup({ localization: new EmptyLocalization() });
     });
 
     after(async () => {

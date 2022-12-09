@@ -44,7 +44,7 @@ describe("FrontstageComposer", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     UiFramework.setUiVersion("1");
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {

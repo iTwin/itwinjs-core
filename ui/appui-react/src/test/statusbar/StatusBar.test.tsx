@@ -17,6 +17,7 @@ import {
 import TestUtils from "../TestUtils";
 import { MessageManager } from "../../appui-react/messages/MessageManager";
 import { StatusMessagesContainer } from "../../appui-react/messages/StatusMessagesContainer";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("StatusBar", () => {
 
@@ -49,7 +50,7 @@ describe("StatusBar", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
 
     notifications = new AppNotificationManager();
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
     MessageManager.clearMessages();
   });
 

@@ -19,6 +19,7 @@ import TestUtils from "../TestUtils";
 import { UiFramework } from "../../appui-react/UiFramework";
 import { Provider } from "react-redux";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { EmptyLocalization } from "@itwin/core-common";
 
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "ToolbarComposer-TestUiProvider";
@@ -172,7 +173,7 @@ describe("<ToolbarComposer  />", async () => {
   }
 
   before(async () => {
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
     await TestUtils.initializeUiFramework();
     ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
     const frontstageDef = await FrontstageManager.getFrontstageDef("Test1");

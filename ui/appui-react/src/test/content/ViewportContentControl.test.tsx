@@ -17,6 +17,7 @@ import {
 import TestUtils, { storageMock } from "../TestUtils";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
+import { EmptyLocalization } from "@itwin/core-common";
 
 const mySessionStorage = storageMock();
 
@@ -33,7 +34,7 @@ describe("ViewportContentControl", () => {
     });
 
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
 
     ConfigurableUiManager.initialize();
     FrontstageManager.isInitialized = false;

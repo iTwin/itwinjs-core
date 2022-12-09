@@ -12,6 +12,7 @@ import { TestUtils } from "../TestUtils";
 import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
 import { AccuDrawDialog } from "../../appui-react/accudraw/AccuDrawDialog";
 import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("AccuDrawDialog", () => {
   before(async () => {
@@ -19,6 +20,7 @@ describe("AccuDrawDialog", () => {
 
     const opts: IModelAppOptions = {};
     opts.accuDraw = new FrameworkAccuDraw();
+    opts.localization = new EmptyLocalization();
     await MockRender.App.startup(opts);
   });
 
