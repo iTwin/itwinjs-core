@@ -40,6 +40,9 @@ yargs.strict(true)
         "excludeGlob": {
           describe: "Specify a directory, filename, or pattern to be excluded"
         },
+        "testExcludeGlob": {
+          describe: "Specify a directory, filename, or pattern to exclude tests. Default value: '**/*test*/**/*'"
+        },
         "tsIndexFile": {
           describe: "The barrel file containing the module documentation. This file is copied to the output folder for parsing."
         },
@@ -108,11 +111,12 @@ function docsCommand(options) {
   const includesOpt = options.includes ? ["--includes", options.includes] : [];
   const excludesOpt = options.excludes ? ["--excludes", options.excludes] : [];
   const excludesGlobOpt = options.excludeGlob ? ["--excludeGlob", options.excludeGlob] : [];
+  const testExcludeGlobOpt = options.testExcludeGlob ? ["--testExcludeGlob", options.testExcludeGlob] : [];
   const indexFileOpt = options.tsIndexFile ? ["--tsIndexFile", options.tsIndexFile] : [];
   const onlyJsonOpt = options.onlyJson ? ["--onlyJson"] : [];
   exec(["node", path.resolve(__dirname, "../scripts/docs.js"),
     ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt, ...includesOpt,
-    ...excludesOpt, ...excludesGlobOpt, ...indexFileOpt, ...onlyJsonOpt]);
+    ...excludesOpt, ...excludesGlobOpt, ...testExcludeGlobOpt, ...indexFileOpt, ...onlyJsonOpt]);
 }
 
 function extractCommand(options) {
