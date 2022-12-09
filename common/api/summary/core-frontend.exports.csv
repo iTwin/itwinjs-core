@@ -764,7 +764,7 @@ internal;WmsMapLayerImageryProvider
 internal;WmsUtilities
 internal;WmtsCapabilities
 internal;WmtsCapability
-public;WmtsConstants
+internal;WmtsConstants
 internal;WmtsMapLayerImageryProvider 
 public;ZoomToOptions
 public;ZoomViewTool 

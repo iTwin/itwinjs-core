@@ -14470,7 +14470,7 @@ export namespace WmtsCapability {
     }
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export enum WmtsConstants {
     // (undocumented)
     GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible",
