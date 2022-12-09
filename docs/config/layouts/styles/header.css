@@ -37,9 +37,6 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
-  font-size: var(--section-heading-size);
-  height: calc(var(--section-heading-size) + 4px);
-  line-height: var(--section-heading-size);
 }
 
 /* Branding for both header and footer */
@@ -287,4 +284,31 @@ header #search-component input[type="search"]::placeholder {
     margin: 0;
   }
 
+}
+
+
+@media screen and (max-width: 450px) {
+  header #search-component {
+    width: 100%;
+  }
+
+  #search-component {
+    width: 100%;
+  }
+
+  header #search-component input[type="search"] {
+    width: 100%;
+  }
+
+  .search-container-inactive {
+    width: calc(100% - 130px);
+  }
+
+  .search-container-inactive .search-form {
+    width: 100%;
+  }
+
+  span.search-bar>li {
+    width: 100%;
+  }
 }

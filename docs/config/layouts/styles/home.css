@@ -27,18 +27,6 @@
   --zzz-top: 900;
 }
 
-/* utilities and resets */
-.gradient-text {
-  background: var(--itwin-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-  font-size: var(--section-heading-size);
-  height: calc(var(--section-heading-size) + 4px);
-  line-height: var(--section-heading-size);
-}
-
 a.iui-button,
 a.iui-button:hover,
 a.iui-button:active {
@@ -502,22 +490,6 @@ section#community ul li a {
   border-bottom-left-radius: 12px;
 }
 
-@media screen and (max-width: 1200px) {
-  section#community ul {
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-  }
-
-  section#community ul li {
-    margin-bottom: 20px;
-  }
-
-  section#community ul li:last-of-type {
-    margin-right: 20px;
-  }
-}
 
 section#what-is-itwin {
   background-color: #fff;
@@ -533,7 +505,8 @@ section#what-is-itwin .itwin-description {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   width: 60%;
-  padding-right: 15%;
+  max-width: 590px;
+  margin-bottom: 50px;
 }
 
 section#what-is-itwin .feature-list {
@@ -630,6 +603,22 @@ section#what-is-itwin .feature-list p {
   margin-top: 5px;
 }
 
+@media screen and (max-width: 1200px) {
+  section#community ul {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+  }
+
+  section#community ul li {
+    margin-bottom: 20px;
+  }
+
+  section#community ul li:last-of-type {
+    margin-right: 20px;
+  }
+}
 
 @media screen and (max-width: 1100px) {
   :root {
@@ -845,6 +834,7 @@ section#what-is-itwin .feature-list p {
 
   section#what-is-itwin .itwin-description {
     padding-right: 0px;
+    margin-bottom: 50px;
     width: 100%;
   }
 
