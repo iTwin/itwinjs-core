@@ -2194,7 +2194,7 @@ export interface FloatingViewportContentProps {
     contentId: string;
     initialViewState: ViewStateProp;
     onContextMenu?: (e: React_2.MouseEvent) => boolean;
-    viewportRef?: (v: ScreenViewport) => void;
+    viewportRef?: React_2.ForwardedRef<ScreenViewport>;
 }
 
 // @alpha
