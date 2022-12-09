@@ -7,7 +7,7 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
-import { IModelRpcProps } from "@itwin/core-common";
+import { EmptyLocalization, IModelRpcProps } from "@itwin/core-common";
 import { RpcRequestsHandler } from "@itwin/presentation-common";
 import { createRandomSelectionScope } from "@itwin/presentation-common/lib/cjs/test";
 import { Id64String, Logger } from "@itwin/core-bentley";
@@ -135,7 +135,7 @@ describe("UiFramework localStorage Wrapper", () => {
     });
 
     it("calling initialize without I18N will use IModelApp.i18n", async () => {
-      await MockRender.App.startup();
+      await MockRender.App.startup({ localization: new EmptyLocalization() });
 
       await UiFramework.initialize(TestUtils.store);
       expect(UiFramework.localization).to.eq(IModelApp.localization);
