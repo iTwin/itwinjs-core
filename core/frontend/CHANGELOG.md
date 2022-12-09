@@ -1,6 +1,26 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 30 Nov 2022 14:28:19 GMT and should not be manually modified.
+This log was last generated on Wed, 07 Dec 2022 19:12:37 GMT and should not be manually modified.
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:37 GMT
+
+### Updates
+
+- Added a tolerance parameter to ArcgisUtilities.getZoomLevelsScales
+- Added support for ImageryTileTree with an incomplete tile tree definition (minLOD)
+- Support for reporting progress and cancelling 'BriefcaseConnection.pullChanges'.
+- Added ability to display normal maps
+- Fix for tools that supply hints to override the default AccuDraw origin.
+- Add preliminary alpha support for custom reality data providers.
+- Add IModelConnection.generateElementMeshes.
+- Fix an exception when adding an invalid map layer to a viewport.
+- Fix emphasis and hilite effects applied to point clouds.
+- Add support for customized reality model display.
+- Promote ViewPose-related APIs to public.
+- requestElementGraphics uses relative positions by default to address precision issues with coordinates far from the origin.
+- Add MarginOptions.paddingPercent for a more straightforward way to pad out a viewed volume.
+- Replace inline type definitions in CreateRenderMaterialArgs with named and documented interfaces.
 
 ## 3.4.7
 Wed, 30 Nov 2022 14:28:19 GMT

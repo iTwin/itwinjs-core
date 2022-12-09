@@ -2,6 +2,27 @@
   "name": "@itwin/editor-frontend",
   "entries": [
     {
+      "version": "3.5.0",
+      "tag": "@itwin/editor-frontend_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "replace callCommand with commandConnection typed prox"
+          },
+          {
+            "comment": "use ipc Proxy for calling EditCommand methods"
+          },
+          {
+            "comment": "New modify tool base class. Extend curve tool now supports paths."
+          },
+          {
+            "comment": "Tools to create linear/rotational swept solids and surfaces."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.7",
       "tag": "@itwin/editor-frontend_v3.4.7",
       "date": "Wed, 30 Nov 2022 14:28:19 GMT",

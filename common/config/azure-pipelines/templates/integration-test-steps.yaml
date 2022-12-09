@@ -84,7 +84,7 @@ steps:
     displayName: "Run Electron Frontend Tests"
     condition: succeededOrFailed()
 
-  - script: npm run test:integration:backend
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:backend
     workingDirectory: "core/electron"
     displayName: "Run Electron Backend Tests"
     condition: succeededOrFailed()
