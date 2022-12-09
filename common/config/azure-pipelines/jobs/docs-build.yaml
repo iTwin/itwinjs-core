@@ -69,7 +69,7 @@ jobs:
           downloadCurrentBuildArtifacts: ${{ parameters.downloadCurrentBuildArtifacts }}
 
       # Currently BeMetalsmith is an internal only tool
-      - script: npm install @bentley/bemetalsmith@4.3.0-alpha.3
+      - script: npm install @bentley/bemetalsmith@4.3.x
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
