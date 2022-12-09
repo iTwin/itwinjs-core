@@ -22,7 +22,7 @@ describe("Backstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup({ localization: new EmptyLocalization() });
 
     await FrontstageManager.setActiveFrontstageDef(undefined);
   });
@@ -83,7 +83,7 @@ describe("Backstage", () => {
       const commandHandler = () => { };
       render(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />);
 
-      expect(screen.getByRole("menuitem", {name: "UiFramework:tests.label"})).to.exist;
+      expect(screen.getByRole("menuitem", {name: "tests.label"})).to.exist;
     });
   });
 });
