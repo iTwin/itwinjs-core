@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, disposeArray, IDisposable } from "@itwin/core-bentley";
+import { assert, dispose, disposeArray, IDisposable, UintArray } from "@itwin/core-bentley";
 import { ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
 import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../GraphicBranch";
@@ -194,7 +194,7 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
     this.featureID = featureID;
   }
 
-  private static createFromBuffers(posBuf: QBufferHandle3d, uvParamBuf: QBufferHandle2d, indices: Uint16Array, normBuf: BufferHandle | undefined, featureID: number) {
+  private static createFromBuffers(posBuf: QBufferHandle3d, uvParamBuf: QBufferHandle2d, indices: UintArray, normBuf: BufferHandle | undefined, featureID: number) {
     const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
 
     if (undefined === indBuf)
