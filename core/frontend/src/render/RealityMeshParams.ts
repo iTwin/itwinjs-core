@@ -169,8 +169,13 @@ export class RealityMeshParamsBuilder {
 
   /** Construct a builder from the specified options. */
   public constructor(options: RealityMeshParamsBuilderOptions) {
+    let initialType;
+    if (undefined !== options.initialVertexCapacity && options.initialVertexCapacity > 0xff)
+      initialType = options.initialVertexCapacity > 0xffff ? Uint32Array : Uint16Array;
+
     this.indices = new UintArrayBuilder({
       initialCapacity: options.initialIndexCapacity,
+      initialType,
     });
 
     if (options.wantNormals)

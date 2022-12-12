@@ -176,9 +176,11 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
   public readonly uvParams: QBufferHandle2d;
   public readonly featureID?: number;
   public readonly normals?: BufferHandle;
+  public readonly numBytesPerIndex: 1 | 2 | 4;
 
-  protected constructor(positions: QBufferHandle3d, normals: BufferHandle | undefined, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, featureID?: number) {
+  protected constructor(positions: QBufferHandle3d, normals: BufferHandle | undefined, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, numBytesPerIndex: 1 | 2 | 4, featureID?: number) {
     super(positions, indices, numIndices);
+    this.numBytesPerIndex = numBytesPerIndex;
     let attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.RealityMesh, false);
     assert(attrParams !== undefined);
     this.buffers.addBuffer(uvParams, [BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
@@ -200,7 +202,9 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
     if (undefined === indBuf)
       return undefined;
 
-    return new RealityMeshGeometryParams(posBuf, normBuf, uvParamBuf, indBuf, indices.length, featureID);
+    const bytesPerIndex = indices.BYTES_PER_ELEMENT;
+    assert(1 === bytesPerIndex || 2 === bytesPerIndex || 4 === bytesPerIndex);
+    return new RealityMeshGeometryParams(posBuf, normBuf, uvParamBuf, indBuf, indices.length, bytesPerIndex, featureID);
 
   }
 
@@ -234,6 +238,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public get transform(): Transform | undefined { return this._transform; }
 
   private _realityMeshParams: RealityMeshGeometryParams;
+  private readonly _indexType: GL.DataType;
   public textureParams: RealityTextureParams | undefined;
   private readonly _transform: Transform | undefined;
   public readonly baseColor: ColorDef | undefined;
@@ -259,6 +264,9 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
     this._isTerrain = props.isTerrain;
     this._disableTextureDisposal = props.disableTextureDisposal;
     this.hasTextures = undefined !== this.textureParams && this.textureParams.params.some((x) => undefined !== x.texture);
+
+    const bytesPerIndex = props.realityMeshParams.numBytesPerIndex;
+    this._indexType = 1 === bytesPerIndex ? GL.DataType.UnsignedByte : (2 === bytesPerIndex ? GL.DataType.UnsignedShort : GL.DataType.UnsignedInt);
   }
 
   public override dispose() {
@@ -387,7 +395,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
   public override draw(): void {
     this._params.buffers.bind();
-    System.instance.context.drawElements(GL.PrimitiveType.Triangles, this._params.numIndices, GL.DataType.UnsignedShort, 0);
+    System.instance.context.drawElements(GL.PrimitiveType.Triangles, this._params.numIndices, this._indexType, 0);
     this._params.buffers.unbind();
   }
 }
