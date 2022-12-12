@@ -6317,6 +6317,13 @@ export type Point2dProps = number[];
 
 // @beta
 export interface PointCloudDisplayProps {
+    edlFilter?: number;
+    edlMixWts1?: number;
+    edlMixWts2?: number;
+    edlMixWts4?: number;
+    edlMode?: PointCloudEDLMode;
+    edlRadius?: number;
+    edlStrength?: number;
     maxPixelsPerVoxel?: number;
     minPixelsPerVoxel?: number;
     pixelSize?: number;
@@ -6329,6 +6336,13 @@ export interface PointCloudDisplayProps {
 export class PointCloudDisplaySettings {
     clone(changedProps: PointCloudDisplayProps): PointCloudDisplaySettings;
     static defaults: PointCloudDisplaySettings;
+    readonly edlFilter?: number;
+    readonly edlMixWts1?: number;
+    readonly edlMixWts2?: number;
+    readonly edlMixWts4?: number;
+    readonly edlMode: PointCloudEDLMode;
+    readonly edlRadius: number;
+    readonly edlStrength: number;
     equals(other: PointCloudDisplaySettings): boolean;
     static fromJSON(props?: PointCloudDisplayProps): PointCloudDisplaySettings;
     readonly maxPixelsPerVoxel: number;
@@ -6339,6 +6353,9 @@ export class PointCloudDisplaySettings {
     toJSON(): PointCloudDisplayProps | undefined;
     readonly voxelScale: number;
 }
+
+// @beta
+export type PointCloudEDLMode = "off" | "on" | "full";
 
 // @beta
 export type PointCloudShape = "square" | "round";
