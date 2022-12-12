@@ -20,10 +20,17 @@ import { Geometry } from "../../Geometry";
 import { OffsetMeshOptions } from "../PolyfaceQuery";
 import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
 
+function isDefinedAndTrue(value: boolean | undefined): boolean {
+  if (value === undefined)
+    return false;
+  return value;
+}
 /**
  * Function to be called for debugging observations at key times during offset computation.
  */
 type FacetOffsetGraphDebugFunction = (message: string, Graph: HalfEdgeGraph, breakMaskA: HalfEdgeMask, breakMaskB: HalfEdgeMask) => void;
+
+type FacetOffsetDebugString = (message: string) => void;
 // facet properties used during offset.
 //
 export class FacetOffsetProperties {
@@ -58,12 +65,14 @@ export class SectorOffsetProperties {
    * @param edgeNodeA node on one side of the edge
    * @param edgeVector pre-allocated vector to receive vector along edge.
    * @param averageNormal pre-allocated vector to receive the average normal for a chamfer of the offset edge.
+   * @param
    * @param radiansTolerance tolerance for large angle between normals.
    * @returns true if this edge has SectorOffsetProperties on both sides and the dihedral angle exceeds radiansTolerance.
    */
   public static edgeHasLargeExteriorAngleBetweenNormals(edgeNodeA: HalfEdge,
     edgeVector: Vector3d,
     averageNormal: Vector3d,
+    offsetDistance: number,
     radiansTolerance: number = Math.PI * 0.5): boolean {
     const propsA = edgeNodeA.edgeTag as SectorOffsetProperties;
     const edgeNodeB = edgeNodeA.edgeMate;
@@ -71,7 +80,7 @@ export class SectorOffsetProperties {
     if (propsA !== undefined && propsB !== undefined) {
       edgeNodeA.vectorToFaceSuccessor(edgeVector);
       const radians = propsA.normal.signedRadiansTo(propsB.normal, edgeVector);
-      if (radians >= radiansTolerance) {
+      if (offsetDistance * radians >= radiansTolerance) {
         Vector3d.createAdd2Scaled(propsA.normal, 1.0, propsB.normal, 1.0, averageNormal);
         if (averageNormal.normalizeInPlace())
           return true;
@@ -187,6 +196,7 @@ export class OffsetMeshContext {
   private _smoothAccumulatedDihedralAngleRadians: number;
   private _chamferTurnRadians: number;
   public static graphDebugFunction?: FacetOffsetGraphDebugFunction;
+  public static stringDebugFunction?: FacetOffsetDebugString;
   /**
    * * build a mesh offset by given distance.
    * * output the mesh to the given builder.
@@ -209,9 +219,19 @@ export class OffsetMeshContext {
 
       if (OffsetMeshContext.graphDebugFunction !== undefined)
         OffsetMeshContext.graphDebugFunction("after computeSectorOffsetPoints", baseGraph, offsetBuilder._breakMaskA, offsetBuilder._breakMaskB);
-      offsetBuilder.announceOffsetLoopsByFace(builder);
-      offsetBuilder.announceOffsetLoopsByEdge(builder);
-      offsetBuilder.announceOffsetLoopsByVertex(builder);
+
+      const outputSelector = options.outputSelector ? options.outputSelector : {
+        outputOffsetsFromFaces: true,
+        outputOffsetsFromEdges: true,
+        outputOffsetsFromVertices: true,
+      };
+
+      if (isDefinedAndTrue(outputSelector.outputOffsetsFromFaces))
+        offsetBuilder.announceOffsetLoopsByFace(builder);
+      if (isDefinedAndTrue(outputSelector.outputOffsetsFromEdges))
+        offsetBuilder.announceOffsetLoopsByEdge(builder);
+      if (isDefinedAndTrue(outputSelector.outputOffsetsFromVertices))
+        offsetBuilder.announceOffsetLoopsByVertex(builder);
     }
   }
 
@@ -247,13 +267,27 @@ export class OffsetMeshContext {
       if (OffsetMeshContext.graphDebugFunction !== undefined)
         OffsetMeshContext.graphDebugFunction("BaseGraph", baseGraph, offsetBuilder._breakMaskA, offsetBuilder._breakMaskB);
 
+      const outputSelector = options.outputSelector ? options.outputSelector : {
+        outputOffsetsFromFaces: true,
+        outputOffsetsFromEdges: true,
+        outputOffsetsFromVertices: true,
+      };
+
+      if (isDefinedAndTrue(outputSelector.outputOffsetsFromFacesBeforeChamfers))
+        offsetBuilder.announceFacetsWithSectorCoordinatesAroundFaces(builder);
+
       offsetBuilder.addChamferTopologyToAllEdges(options, distance);
+      offsetBuilder.computeOffsetFacetIntersections(distance);
 
       if (OffsetMeshContext.graphDebugFunction !== undefined)
         OffsetMeshContext.graphDebugFunction("after computeEdgeChamfers", baseGraph, offsetBuilder._breakMaskA, offsetBuilder._breakMaskB);
-      offsetBuilder.announceFacetsWithSectorCoordinatesAroundFaces(builder);
-      offsetBuilder.announceFacetsWithSectorCoordinatesAroundEdges(builder);
-      offsetBuilder.announceFacetsWithSectorCoordinatesAroundVertices(builder);
+
+      if (isDefinedAndTrue(outputSelector.outputOffsetsFromFaces))
+        offsetBuilder.announceFacetsWithSectorCoordinatesAroundFaces(builder);
+      if (isDefinedAndTrue(outputSelector.outputOffsetsFromEdges))
+        offsetBuilder.announceFacetsWithSectorCoordinatesAroundEdges(builder);
+      if (isDefinedAndTrue(outputSelector.outputOffsetsFromVertices))
+        offsetBuilder.announceFacetsWithSectorCoordinatesAroundVertices(builder);
     }
   }
 
@@ -361,6 +395,21 @@ export class OffsetMeshContext {
       });
   }
 
+  private inspectMasks(node: HalfEdge): string {
+    const s = "[";
+    const v = s.concat(
+      node.id.toString(),
+      node.isMaskSet(this._exteriorMask) ? "X" : "",
+      node.isMaskSet(this.breakMaskA) ? "A" : "",
+      node.isMaskSet(this.breakMaskB) ? "B" : "",
+      node.isMaskSet(this.insideEndOfChamferFace) ? "(sling)" : "",
+      node.isMaskSet(this.insideOfChamferFace) ? "(in chamfer)" : "",
+      node.isMaskSet(this.outsideEndOfChamferFace) ? "(@sling)" : "",
+      node.isMaskSet(this.outsideOfChamferFace) ? "(@chamfer)" : "",
+      "]"
+    );
+    return v;
+  }
   /**
  * For each face of the graph, output the xyz of the sector data
  * @param polyfaceBuilder
@@ -373,6 +422,7 @@ export class OffsetMeshContext {
         if (!seed.findMaskAroundVertex(this._exteriorMask)) {
           xyzLoop.length = 0;
           seed.sumAroundVertex((node: HalfEdge) => {
+            this.inspectMasks(node);
             if (!node.isMaskSet(this._insideEndOfChamferFace))
               SectorOffsetProperties.getSectorPointAtHalfEdge(node, undefined, xyzLoop);
             return 0.0;
@@ -525,14 +575,16 @@ export class OffsetMeshContext {
     for (let currentNode = vertexSeed; ; currentNode = currentNode.vertexSuccessor) {
       const props = currentNode.edgeTag as SectorOffsetProperties;
       n++;
-      if (props !== undefined)
+      if (props !== undefined) {
         f(currentNode, props);
+        n++;
+      }
       if (currentNode.isMaskSet(this._breakMaskB))
         return n;
       // REMARK: these additional exit conditions should not happen if (a) the graph is properly marked and (b) the start node is not exterior.
       if (currentNode.isMaskSet(this._exteriorMask))
         return n;
-      if (currentNode === vertexSeed)
+      if (currentNode === vertexSeed && n === 0)
         return n;
     }
   }
@@ -549,6 +601,7 @@ export class OffsetMeshContext {
     // Step 1: Examine the edge between nodeA and the sector on its vertex predecessor side.  This (alone) determines single angle breaks.
     let numBreaks = 0;
     let nodeA = vertexSeed;
+    let _numSmooth = 0;
     do {
       const nodeB = nodeA.edgeMate;
       const nodeC = nodeB.faceSuccessor;    // same as nodeA.vertexPredecessor
@@ -563,6 +616,8 @@ export class OffsetMeshContext {
         } else if (nodeA.isMaskSet(this._outsideEndOfChamferFace)) {
           nodeA.setMask(this._breakMaskA);
           nodeA.setMask(this._breakMaskB);
+        } else if (nodeA.isMaskSet(this._insideEndOfChamferFace)) {
+          // This is the sling.   It's normal is along edge -- not really a break.
         } else if (nodeA.isMaskSet(this._insideOfChamferFace)) {
           nodeA.setMask(this._breakMaskA);
           nodeA.setMask(this._breakMaskB);
@@ -577,10 +632,14 @@ export class OffsetMeshContext {
           nodeA.setMask(this._breakMaskA);
           numBreaks++;
           nodeC.setMask(this._breakMaskB);
+        } else {
+          _numSmooth++;
         }
       }
       nodeA = nodeA.vertexSuccessor;
     } while (nodeA !== vertexSeed);
+    if (OffsetMeshContext.stringDebugFunction !== undefined)
+      OffsetMeshContext.stringDebugFunction(`   numSkip   ${_numSmooth}`);
     if (numBreaks === 0) {
       // make the first vertex a break so subsequent searches have a place to start
       vertexSeed.setMask(this._breakMaskA);
@@ -655,12 +714,28 @@ export class OffsetMeshContext {
     const sectorA = nodeA.edgeTag as SectorOffsetProperties;
     const sectorB = nodeB.edgeTag as SectorOffsetProperties;
     const sectorC = nodeC.edgeTag as SectorOffsetProperties;
-    return SmallSystem.intersect3Planes(
+    const vector = SmallSystem.intersect3Planes(
       sectorA.xyz, sectorA.normal,
       sectorB.xyz, sectorB.normal,
       sectorC.xyz, sectorC.normal,
       result);
+    return vector;
   }
+  /** Compute the point of intersection of the planes in the sectors of 3 half edges */
+  private compute3SectorIntersectionDebug(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge, result?: Vector3d): Vector3d | undefined {
+    if (OffsetMeshContext.stringDebugFunction !== undefined)
+      OffsetMeshContext.stringDebugFunction(`compute3${this.inspectMasks(nodeA)}${this.inspectMasks(nodeB)}${this.inspectMasks(nodeC)}`);
+    const vector = this.compute3SectorIntersection(nodeA, nodeB, nodeC, result);
+
+    if (OffsetMeshContext.stringDebugFunction !== undefined) {
+      if (vector === undefined)
+        OffsetMeshContext.stringDebugFunction(" NO INTERSECTION");
+      else
+        OffsetMeshContext.stringDebugFunction(` ComputedVector ${vector}`);
+    }
+    return vector;
+  }
+
   /** Compute the point of intersection of the planes in the sectors of 2 half edges, using cross product of their normals to resolve */
   private compute2SectorIntersection(nodeA: HalfEdge, nodeB: HalfEdge, result?: Vector3d): Vector3d | undefined {
     const sectorA = nodeA.edgeTag as SectorOffsetProperties;
@@ -692,7 +767,7 @@ export class OffsetMeshContext {
    *        * chamfer plane
    *        * sling plane
    *        * adjacent plane of the face on the other side of the edge being chamfered.
-   * @param distance distance to offset.
+   * @param distance distance to offset.  The sign of this is important in the chamfer construction.
    */
   private addChamferTopologyToAllEdges(options: OffsetMeshOptions, distance: number) {
     const edgesToChamfer: HalfEdge[] = [];
@@ -705,6 +780,7 @@ export class OffsetMeshContext {
     this._baseGraph.announceEdges(
       (_graph: HalfEdgeGraph, edgeNode: HalfEdge) => {
         if (SectorOffsetProperties.edgeHasLargeExteriorAngleBetweenNormals(edgeNode, edgeVector, averageNormal,
+          distance,
           chamferRadians)) {
           edgesToChamfer.push(edgeNode);
           return true;
@@ -739,11 +815,7 @@ export class OffsetMeshContext {
           outsideOfSling.setMask(this._outsideEndOfChamferFace);
           outsideOfSling.faceTag = facetProperties;
           insideOfSling.setMask(this._insideEndOfChamferFace);
-          const n0 = insideA.countEdgesAroundFace();
           HalfEdge.pinch(nodeE, outsideOfSling);
-          const n1 = insideA.countEdgesAroundFace();
-          const n2 = insideOfSling.countEdgesAroundFace();
-          const n3 = outsideOfSling.countEdgesAroundFace();
           const endNormal = Ray3d.create(vertexXYZ, outwardEdgeVector);  // clones the inputs
           const slingFaceProperties = new FacetOffsetProperties(-1, endNormal);
           insideOfSling.faceTag = slingFaceProperties;
@@ -752,7 +824,7 @@ export class OffsetMeshContext {
           nodeE.edgeTag = new SectorOffsetProperties(averageNormal.clone(), vertexXYZ.clone());
           outsideOfSling.edgeTag = new SectorOffsetProperties(averageNormal.clone(), vertexXYZ.clone());
           insideOfSling.edgeTag = new SectorOffsetProperties(outwardEdgeVector.clone(), vertexXYZ.clone());
-
+          // OffsetMeshContext.stringDebugFunction("Chamfer Setup");
           const chamferPointE = this.compute3SectorIntersection(nodeE, nodeE.edgeMate, insideOfSling);
           const chamferPointF = this.compute3SectorIntersection(outsideOfSling, outsideOfSling.vertexSuccessor, insideOfSling);
           nodeE.edgeTag = new SectorOffsetProperties(averageNormal.clone(), vertexXYZ.clone());
@@ -786,7 +858,7 @@ export class OffsetMeshContext {
           this.setOffsetXYAndZAroundVertex(vertexSeed, vectorFromOrigin);
         }
       } else if (breakEdges.length === 3) {
-        const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[0], breakEdges[1], breakEdges[2]);
+        const vectorFromOrigin = this.compute3SectorIntersectionDebug(breakEdges[0], breakEdges[1], breakEdges[2]);
         if (vectorFromOrigin !== undefined) {
           this.setOffsetXYAndZAroundVertex(vertexSeed, vectorFromOrigin);
         }
@@ -798,9 +870,9 @@ export class OffsetMeshContext {
         breakEdges.push(breakEdges[0]);
         breakEdges.push(breakEdges[1]);
         for (let i = 0; i + 2 < breakEdges.length; i++) {
-          const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[i], breakEdges[i + 1], breakEdges[i + 2]);
+          const vectorFromOrigin = this.compute3SectorIntersectionDebug(breakEdges[i], breakEdges[i + 1], breakEdges[i + 2]);
           if (vectorFromOrigin !== undefined) {
-            this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[i + 1],
+            this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[i],
               (_node: HalfEdge, properties: SectorOffsetProperties) => {
                 properties.setXYAndZ(vectorFromOrigin);
               });
@@ -810,6 +882,117 @@ export class OffsetMeshContext {
       return true;
     });
   }
+
+  /**
+   * * at input:
+   *   * Each node points to sectorOffsetProperties with previously computed XYZ (presumably mismatched)
+   * * at exit:
+   *    * Each sectorOffsetProperties has an offset point computed with consideration of offset planes in the neighborhood.
+   * @param distance distance to offset.
+   */
+  private computeOffsetFacetIntersections(distance: number) {
+    if (OffsetMeshContext.stringDebugFunction !== undefined)
+      OffsetMeshContext.stringDebugFunction("*****                                 recompute intersections");
+    const breakEdges: HalfEdge[] = [];
+    this._baseGraph.announceVertexLoops((_graph: HalfEdgeGraph, vertexSeedA: HalfEdge) => {
+      // reposition to an important vertex.
+      // first choice: a chamfer face.
+      let vertexSeed = vertexSeedA.findMaskAroundVertex(this._outsideEndOfChamferFace);
+      if (vertexSeed === undefined)
+        vertexSeed = vertexSeedA.findMaskAroundVertex(this._breakMaskA);
+      if (vertexSeed === undefined)
+        vertexSeed = vertexSeedA;
+      if (OffsetMeshContext.stringDebugFunction !== undefined) {
+        OffsetMeshContext.stringDebugFunction(` VERTEX LOOP${vertexSeed.getPoint3d().toJSON()}`);
+        vertexSeed.sumAroundVertex(
+          (node: HalfEdge) => { OffsetMeshContext.stringDebugFunction!(this.inspectMasks(node)); return 0; });
+      }
+      this.markAndCollectBreakEdgesAroundVertex(vertexSeed);
+      this.setOffsetAtDistanceAroundVertex(vertexSeed, distance);
+      vertexSeed.collectMaskedEdgesAroundVertex(this._breakMaskA, true, breakEdges);
+      if (OffsetMeshContext.stringDebugFunction !== undefined) {
+        OffsetMeshContext.stringDebugFunction(" BREAK EDGES");
+        for (const node of breakEdges) { OffsetMeshContext.stringDebugFunction(this.inspectMasks(node)); }
+      }
+      if (breakEdges.length <= 1) {
+        // just one smooth sequence.
+        // everything is set already.
+      } else if (breakEdges.length === 2) {
+        // exterior vertex with two incident smooth
+        const vectorFromOrigin = this.compute2SectorIntersection(breakEdges[0], breakEdges[1]);
+        if (vectorFromOrigin !== undefined) {
+          this.setOffsetXYAndZAroundVertex(vertexSeed, vectorFromOrigin);
+        }
+      } else if (breakEdges.length === 3) {
+        if (OffsetMeshContext.stringDebugFunction !== undefined)
+          OffsetMeshContext.stringDebugFunction(` Vertex Update just ${breakEdges.length}`);
+        const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[0], breakEdges[1], breakEdges[2]);
+        if (vectorFromOrigin !== undefined) {
+          this.setOffsetXYAndZAroundVertex(vertexSeed, vectorFromOrigin);
+        }
+        // simple 3-face corner . . .
+      } else {
+        // Lots and Lots of edges
+        // each set of 3 sectors independently generates an offset for its central sector.
+        if (OffsetMeshContext.stringDebugFunction !== undefined)
+          OffsetMeshContext.stringDebugFunction(` Vertex Update breakEdges ${breakEdges.length}`);
+        for (let i = 0; i + 2 < breakEdges.length; i++) {
+          const i0 = i;
+          const i1 = (i0 + 1) % breakEdges.length;
+          const i2 = (i1 + 1) % breakEdges.length;
+          if (this.isInsideSling(breakEdges[i0]))
+            continue;
+          if (OffsetMeshContext.stringDebugFunction !== undefined)
+            OffsetMeshContext.stringDebugFunction(`    Intersection Fixup ${this.inspectMasks(breakEdges[i0])} ${this.inspectMasks(breakEdges[i1])} ${this.inspectMasks(breakEdges[i2])} `);
+          const chamferState = this.chamferParse(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
+          if (chamferState === 1) {
+            const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
+            if (vectorFromOrigin !== undefined) {
+              // Treat all 3 spots as possibly compound sequences
+              for (const iOutput of [i0, i1, i2]) {
+                this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[iOutput],
+                  (_node: HalfEdge, properties: SectorOffsetProperties) => {
+                    properties.setXYAndZ(vectorFromOrigin);
+                  });
+              }
+              // Since all three were reset, skip past.  This is done on the acyclic integer that controls the loop.
+              i += 2;
+            }
+          } else if (chamferState === 2) {
+            // Let these get updated otherwise . . .
+          } else if (chamferState === 3) {
+            // Let these get updated otherwise . . .
+          } else {
+            const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
+            if (vectorFromOrigin !== undefined) {
+              this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[i1],
+                (_node: HalfEdge, properties: SectorOffsetProperties) => {
+                  properties.setXYAndZ(vectorFromOrigin);
+                });
+            }
+          }
+        }
+      }
+      return true;
+    });
+  }
+  private chamferParse(node0: HalfEdge, node1: HalfEdge, node2: HalfEdge): number {
+    if (this.isChamferB(node0) && this.isChamferC(node1) && this.isChamferA(node2))
+      return 1;
+    if (this.isChamferC(node0) && this.isChamferA(node1) && this.isChamferB(node2))
+      return 2;
+    if (this.isChamferA(node0) && this.isChamferB(node1) && this.isChamferC(node2))
+      return 3;
+    return 0;
+  }
+  // return true if this is "first" inside" a chamfer node in CCW sweep
+  private isChamferA(node0: HalfEdge): boolean { return node0.isMaskSet(this._insideOfChamferFace); }
+  // return true if this is "second" inside" a chamfer node in CCW sweep starting from insideOfChamferFace
+  private isChamferB(node0: HalfEdge): boolean { return node0.isMaskSet(this._outsideEndOfChamferFace); }
+  // return true if this is "third" node from start at  insideOfChamferFace
+  private isChamferC(node0: HalfEdge): boolean { return node0.isMaskSet(this._outsideOfChamferFace); }
+  // return true if this is "third" node from start at  insideOfChamferFace
+  private isInsideSling(node0: HalfEdge): boolean { return node0.isMaskSet(this._insideEndOfChamferFace); }
 
   /**
    * * at input:
@@ -861,7 +1044,7 @@ export class OffsetMeshContext {
 
 }
 
-function checkMask(node: HalfEdge, mask: HalfEdgeMask, trueReturn: boolean = true, falseReturn: boolean = true) {
+function _checkMask(node: HalfEdge, mask: HalfEdgeMask, trueReturn: boolean = true, falseReturn: boolean = true) {
   const value = node.isMaskSet(mask);
   if (value)
     return trueReturn;
