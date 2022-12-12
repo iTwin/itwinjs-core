@@ -28,13 +28,13 @@ export interface TypedArrayBuilderOptions {
   initialCapacity?: number;
 }
 
+/** A [TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) containing unsigned 8-, 16-, or 32-bit integers.
+ * @see [[UintArrayBuilder]] to construct such an array.
+ * @public
+ */
 export type UintArray = Uint8Array | Uint16Array | Uint32Array;
 
-export interface UintArrayBuilderOptions extends TypedArrayBuilderOptions {
-  initialType?: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array;
-}
-
-/** Incrementally builds a [TypedArray] of unsigned 8-, 16-, or 32-bit integers.
+/** Incrementally builds a [TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) of unsigned 8-, 16-, or 32-bit integers.
  * Sometimes you wish to populate a `TypedArray`, but you don't know how many elements you will need.
  * `TypedArray` requires you to specify the size upon construction, and does not permit you to change the size later.
  *
@@ -45,6 +45,7 @@ export interface UintArrayBuilderOptions extends TypedArrayBuilderOptions {
  *
  * Once you've finished adding elements, you can obtain the finished `TypedArray` via [[toTypedArray]].
  * @see [[Uint8ArrayBuilder]], [[Uint16ArrayBuilder]], and [[Uint32ArrayBuilder]] to build specific types of arrays.
+ * @see [[UintArrayBuilder]] when you don't know the maximum number of bytes required for each element in the array.
  * @public
  */
 export class TypedArrayBuilder<T extends UintArray> {
@@ -178,6 +179,43 @@ export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
   }
 }
 
+/** Options used to construct a [[UintArrayBuilder]].
+ * @public
+ */
+export interface UintArrayBuilderOptions extends TypedArrayBuilderOptions {
+  /** The type of the initial empty `TypedArray` created by the builder. For example, if you know that you will be adding values larger than
+   * 255 to the array, specify `{ initialType: Uint16Array }` to avoid replacing the otherwise default `Uint8Array` when the first such value is added.
+   * Default: `Uint8Array`.
+   */
+  initialType?: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array;
+}
+
+/** A [[TypedArrayBuilder]] that can populate a [[UintArray]] with the minimum
+ * [bytes per element](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/BYTES_PER_ELEMENT) required.
+ *
+ * By default, the underlying array is a `Uint8Array`, though this can be configured via [[UintArrayBuilderOptions.initialType]].
+ * As values are added to the array, if the bytes per element supported by the underlying array is too small to hold one of the new values, the array is
+ * reallocated to a type large enough to hold all of the new values. For example, the following produces a `Uint8Array` because all values are less than 256:
+ *
+ * ```ts
+ *  const builder = new UintArrayBuilder();
+ *  builder.append([1, 2, 254, 255]);
+ *  const array = builder.toTypedArray();
+ *  assert(array instanceof Uint8Array);
+ * ```
+ *
+ * However, the following produces a `Uint16Array` because one of the values is larger than 255 but none are larger than 65,535:
+ *
+ * ```ts
+ *  const builder = new UintArrayBuilder();
+ *  builder.append([1, 255, 257, 65535]);
+ *  const array = builder.toTypedArray();
+ *  assert(array instanceof Uint16Array);
+ * ```
+ *
+ * @see [[Uint8ArrayBuilder]], [[Uint16ArrayBuilder]], or [[Uint32ArrayBuilder]] if you know the number of bytes you want to allocate for each element in the array.
+ * @public
+ */
 export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
   public constructor(options?: UintArrayBuilderOptions) {
     super(options?.initialType ?? Uint8Array, options);
