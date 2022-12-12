@@ -228,7 +228,7 @@ export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
     return this._data.BYTES_PER_ELEMENT;
   }
 
-  /** Ensures that [[_data]] is of a type that can contain the largest value in `newValues`.
+  /** Ensures that the underlying array is of a type that can contain the largest value in `newValues`.
    * For example, if `_data` is a `Uint16Array` and `newValues` contains any value(s) larger than 65,535, it will be replaced with a `Uint32Array`.
    * This method is invoked by [[push]] and [[append]].
    */
