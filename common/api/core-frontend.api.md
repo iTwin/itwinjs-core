@@ -314,6 +314,8 @@ import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
+import { UintArray } from '@itwin/core-bentley';
+import { UintArrayBuilder } from '@itwin/core-bentley';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -8164,7 +8166,7 @@ export interface RealityMeshGraphicParams {
 export interface RealityMeshParams {
     // @alpha
     featureID?: number;
-    indices: Uint16Array;
+    indices: UintArray;
     normals?: Uint16Array;
     positions: QPoint3dBuffer;
     // @alpha
@@ -8195,7 +8197,7 @@ export class RealityMeshParamsBuilder {
     // @internal
     addVertex(position: XYAndZ, uv: XAndY, normal?: number): void;
     finish(): RealityMeshParams;
-    readonly indices: Uint16ArrayBuilder;
+    readonly indices: UintArrayBuilder;
     normals?: Uint16ArrayBuilder;
     readonly positions: QPoint3dBufferBuilder;
     readonly uvs: QPoint2dBufferBuilder;
