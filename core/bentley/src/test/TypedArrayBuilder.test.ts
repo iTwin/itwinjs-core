@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { UintArrayBuilder } from "../TypedArrayBuilder";
 
-describe.only("UintArrayBuilder", () => {
+describe("UintArrayBuilder", () => {
   class Builder extends UintArrayBuilder {
     public get data() {
       return this._data;
