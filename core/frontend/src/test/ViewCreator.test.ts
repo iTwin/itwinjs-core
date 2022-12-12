@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorDef, LightSettings, ModelProps } from "@itwin/core-common";
+import { ColorDef, LightSettings } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { BlankConnection } from "../IModelConnection";
 import { ViewCreator3d, ViewCreator3dOptions } from "../ViewCreator3d";
@@ -12,7 +12,7 @@ import { ViewState2d, ViewState3d } from "../ViewState";
 import { createBlankConnection } from "./createBlankConnection";
 import { ViewCreator2d, ViewCreator2dOptions } from "../ViewCreator2d";
 
-describe.only("ViewCreator", () => {
+describe("ViewCreator", () => {
   let iModel: BlankConnection;
 
   before(async () => {
