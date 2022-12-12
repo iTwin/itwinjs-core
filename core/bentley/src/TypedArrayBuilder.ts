@@ -30,6 +30,10 @@ export interface TypedArrayBuilderOptions {
 
 export type UintArray = Uint8Array | Uint16Array | Uint32Array;
 
+export interface UintArrayBuilderOptions extends TypedArrayBuilderOptions {
+  initialType?: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array;
+}
+
 /** Incrementally builds a [TypedArray] of unsigned 8-, 16-, or 32-bit integers.
  * Sometimes you wish to populate a `TypedArray`, but you don't know how many elements you will need.
  * `TypedArray` requires you to specify the size upon construction, and does not permit you to change the size later.
@@ -136,51 +140,6 @@ export class TypedArrayBuilder<T extends UintArray> {
   }
 }
 
-export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
-  public constructor(options?: TypedArrayBuilderOptions) {
-    super(Uint8Array, options);
-  }
-
-  /** Ensures that [[_data]] is of a type that can contain the largest value in `newValues`.
-   * For example, if `_data` is a `Uint16Array` and `newValues` contains any value(s) larger than 65,535, it will be replaced with a `Uint32Array`.
-   * This method is invoked by [[push]] and [[append]].
-   */
-  protected ensureBytesPerElement(newValues: Iterable<number>): void {
-    const curBytesPerElem = this._data.BYTES_PER_ELEMENT;
-    assert(curBytesPerElem === 1 || curBytesPerElem === 2 || curBytesPerElem === 4);
-    if (curBytesPerElem >= 4)
-      return;
-
-    let neededBytesPerElem = curBytesPerElem;
-    for (const value of newValues) {
-      if (value > 255 * 255) {
-        neededBytesPerElem = 4;
-        break;
-      } else if (value > 255) {
-        neededBytesPerElem = 2;
-      }
-    }
-
-    if (neededBytesPerElem <= curBytesPerElem)
-      return;
-
-    this._constructor = neededBytesPerElem === 1 ? Uint8Array : (neededBytesPerElem === 2 ? Uint16Array : Uint32Array);
-    this._data = new this._constructor(this._data);
-  }
-
-  /** @internal override */
-  public override push(value: number): void {
-    this.ensureBytesPerElement([value]);
-    super.push(value);
-  }
-
-  /** @internal override */
-  public override append(values: UintArray): void {
-    this.ensureBytesPerElement(values);
-    super.append(values);
-  }
-}
-
 /** A [[TypedArrayBuilder]] for producing a [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array).
  * @public
  */
@@ -216,5 +175,54 @@ export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
       return new Uint8Array(this._data.buffer);
 
     return new Uint8Array(this._data.buffer, 0, this.length * 4);
+  }
+}
+
+export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
+  public constructor(options?: UintArrayBuilderOptions) {
+    super(options?.initialType ?? Uint8Array, options);
+  }
+
+  public get bytesPerElement(): number {
+    return this._data.BYTES_PER_ELEMENT;
+  }
+
+  /** Ensures that [[_data]] is of a type that can contain the largest value in `newValues`.
+   * For example, if `_data` is a `Uint16Array` and `newValues` contains any value(s) larger than 65,535, it will be replaced with a `Uint32Array`.
+   * This method is invoked by [[push]] and [[append]].
+   */
+  protected ensureBytesPerElement(newValues: Iterable<number>): void {
+    const curBytesPerElem = this.bytesPerElement;
+    assert(curBytesPerElem === 1 || curBytesPerElem === 2 || curBytesPerElem === 4);
+    if (curBytesPerElem >= 4)
+      return;
+
+    let neededBytesPerElem = curBytesPerElem;
+    for (const value of newValues) {
+      if (value > 0xffff) {
+        neededBytesPerElem = 4;
+        break;
+      } else if (value > 0xff) {
+        neededBytesPerElem = 2;
+      }
+    }
+
+    if (neededBytesPerElem <= curBytesPerElem)
+      return;
+
+    this._constructor = neededBytesPerElem === 1 ? Uint8Array : (neededBytesPerElem === 2 ? Uint16Array : Uint32Array);
+    this._data = new this._constructor(this._data);
+  }
+
+  /** @internal override */
+  public override push(value: number): void {
+    this.ensureBytesPerElement([value]);
+    super.push(value);
+  }
+
+  /** @internal override */
+  public override append(values: UintArray): void {
+    this.ensureBytesPerElement(values);
+    super.append(values);
   }
 }
