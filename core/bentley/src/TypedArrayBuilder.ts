@@ -255,13 +255,13 @@ export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
     this._data = new this._constructor(this._data);
   }
 
-  /** @internal override */
+  /** See [[TypedArrayBuilder.push]]. */
   public override push(value: number): void {
     this.ensureBytesPerElement([value]);
     super.push(value);
   }
 
-  /** @internal override */
+  /** See [[TypedArrayBuilder.append]]. */
   public override append(values: UintArray): void {
     this.ensureBytesPerElement(values);
     super.append(values);

@@ -1633,11 +1633,9 @@ export type UintArray = Uint8Array | Uint16Array | Uint32Array;
 // @public
 export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
     constructor(options?: UintArrayBuilderOptions);
-    // @internal
     append(values: UintArray): void;
     get bytesPerElement(): number;
     protected ensureBytesPerElement(newValues: Iterable<number>): void;
-    // @internal
     push(value: number): void;
 }
 
