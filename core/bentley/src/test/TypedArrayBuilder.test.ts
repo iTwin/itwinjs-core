@@ -61,9 +61,30 @@ describe.only("UintArrayBuilder", () => {
     b.expect16([1234]);
     b.push(123456789);
     b.expect32([1234, 123456789]);
+
+    b = new Builder();
+    b.append(new Uint8Array([254, 255]));
+    b.expect8([254, 255]);
+
+    b.append(new Uint16Array([256, 0xffff]));
+    b.expect16([254, 255, 256, 0xffff]);
+
+    b.append(new Uint32Array([0x10000]));
+    b.expect32([254, 255, 256, 0xffff, 0x10000]);
+
+    b = new Builder();
+    b.append(new Uint32Array([1, 123456789]));
+    b.expect32([1, 123456789]);
   });
 
   it("retains previous array if underlying type will fit maximum value and capacity is sufficient", () => {
+    const b = new Builder({ initialCapacity: 4 });
+    const d = b.data;
+    b.append(new Uint32Array([0, 1, 254, 255]));
+    b.expect8([0, 1, 254, 255]);
+    expect(b.data).to.equal(d);
+    b.push(127);
+    expect(b.data).not.to.equal(d);
   });
 
   it("uses initialType if specified", () => {
