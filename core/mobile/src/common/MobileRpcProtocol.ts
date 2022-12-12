@@ -153,7 +153,6 @@ export class MobileRpcProtocol extends RpcProtocol {
 
   private reset() {
     this.requests.clear();
-    this._pending.length = 0;
     this._capacity = Number.MAX_SAFE_INTEGER;
 
     if (typeof (this._sendInterval) !== "undefined") {
