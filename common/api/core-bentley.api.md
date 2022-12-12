@@ -1635,7 +1635,6 @@ export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
     constructor(options?: UintArrayBuilderOptions);
     // @internal
     append(values: UintArray): void;
-    // (undocumented)
     get bytesPerElement(): number;
     protected ensureBytesPerElement(newValues: Iterable<number>): void;
     // @internal

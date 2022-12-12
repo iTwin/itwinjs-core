@@ -221,6 +221,9 @@ export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
     super(options?.initialType ?? Uint8Array, options);
   }
 
+  /** The number of bytes (1, 2, or 4) currently allocated per element by the underlying array.
+   * This may change as larger values are added to the array.
+   */
   public get bytesPerElement(): number {
     return this._data.BYTES_PER_ELEMENT;
   }
