@@ -58,6 +58,7 @@ export class AmbientOcclusionEditor {
       step: "0.025",
       max: "1.0",
       value: "0.0",
+      readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.bias = parseFloat(slider.value);
       }),
@@ -71,6 +72,7 @@ export class AmbientOcclusionEditor {
       step: "0.000025",
       max: "0.25",
       value: "0.0",
+      readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.zLengthCap = parseFloat(slider.value);
       }),
@@ -84,6 +86,7 @@ export class AmbientOcclusionEditor {
       step: "10.0",
       max: "50000.0",
       value: "0.0",
+      readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.maxDistance = parseFloat(slider.value);
       }),
@@ -97,6 +100,7 @@ export class AmbientOcclusionEditor {
       step: "0.1",
       max: "16.0",
       value: "0.0",
+      readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.intensity = parseFloat(slider.value);
       }),
@@ -110,6 +114,7 @@ export class AmbientOcclusionEditor {
       step: "0.005",
       max: "50.0",
       value: "0.0",
+      readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.texelStepSize = parseFloat(slider.value);
       }),
@@ -123,6 +128,7 @@ export class AmbientOcclusionEditor {
       step: "0.0001",
       max: "1.5",
       value: "0.0",
+      readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.blurDelta = parseFloat(slider.value);
       }),
@@ -136,6 +142,7 @@ export class AmbientOcclusionEditor {
       step: "0.0001",
       max: "5.0",
       value: "0.0",
+      readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.blurSigma = parseFloat(slider.value);
       }),
@@ -149,6 +156,7 @@ export class AmbientOcclusionEditor {
       step: "0.005",
       max: "5.0",
       value: "0.0",
+      readout: "right",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.blurTexelStepSize = parseFloat(slider.value);
       }),
@@ -193,14 +201,14 @@ export class AmbientOcclusionEditor {
 
     const aoSettings = getAOSettings(view);
 
-    this._aoBias.slider.value = aoSettings.bias.toString();
-    this._aoZLengthCap.slider.value = aoSettings.zLengthCap.toString();
-    this._aoMaxDistance.slider.value = aoSettings.maxDistance.toString();
-    this._aoIntensity.slider.value = aoSettings.intensity.toString();
-    this._aoTexelStepSize.slider.value = aoSettings.texelStepSize.toString();
-    this._aoBlurDelta.slider.value = aoSettings.blurDelta.toString();
-    this._aoBlurSigma.slider.value = aoSettings.blurSigma.toString();
-    this._aoBlurTexelStepSize.slider.value = aoSettings.blurTexelStepSize.toString();
+    this._aoBias.slider.value = this._aoBias.readout.innerText = aoSettings.bias.toString();
+    this._aoZLengthCap.slider.value = this._aoZLengthCap.readout.innerText = aoSettings.zLengthCap.toString();
+    this._aoMaxDistance.slider.value = this._aoMaxDistance.readout.innerText = aoSettings.maxDistance.toString();
+    this._aoIntensity.slider.value = this._aoIntensity.readout.innerText = aoSettings.intensity.toString();
+    this._aoTexelStepSize.slider.value = this._aoTexelStepSize.readout.innerText = aoSettings.texelStepSize.toString();
+    this._aoBlurDelta.slider.value = this._aoBlurDelta.readout.innerText = aoSettings.blurDelta.toString();
+    this._aoBlurSigma.slider.value = this._aoBlurSigma.readout.innerText = aoSettings.blurSigma.toString();
+    this._aoBlurTexelStepSize.slider.value = this._aoBlurTexelStepSize.readout.innerText = aoSettings.blurTexelStepSize.toString();
   }
 
   private updateAmbientOcclusion(updateFunction: (aoProps: any) => void) {

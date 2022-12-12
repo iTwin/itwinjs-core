@@ -4048,6 +4048,8 @@ export class GraphicBranch implements IDisposable {
     readonly ownsEntries: boolean;
     // @beta
     realityModelDisplaySettings?: RealityModelDisplaySettings;
+    // @internal (undocumented)
+    realityModelRange?: Range3d;
     setViewFlagOverrides(ovr: ViewFlagOverrides): void;
     setViewFlags(flags: ViewFlags): void;
     symbologyOverrides?: FeatureSymbology.Overrides;
