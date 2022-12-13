@@ -1590,12 +1590,12 @@ export class TupleKeyedMap<K extends readonly any[], V> {
 }
 
 // @public
-export class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
+export class TypedArrayBuilder<T extends UintArray> {
     protected constructor(constructor: Constructor<T>, options?: TypedArrayBuilderOptions);
     append(values: T): void;
     at(index: number): number;
     get capacity(): number;
-    protected readonly _constructor: Constructor<T>;
+    protected _constructor: Constructor<T>;
     protected _data: T;
     ensureCapacity(newCapacity: number): number;
     readonly growthFactor: number;
@@ -1625,6 +1625,23 @@ export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
 // @public
 export class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
     constructor(options?: TypedArrayBuilderOptions);
+}
+
+// @public
+export type UintArray = Uint8Array | Uint16Array | Uint32Array;
+
+// @public
+export class UintArrayBuilder extends TypedArrayBuilder<UintArray> {
+    constructor(options?: UintArrayBuilderOptions);
+    append(values: UintArray): void;
+    get bytesPerElement(): number;
+    protected ensureBytesPerElement(newValues: Iterable<number>): void;
+    push(value: number): void;
+}
+
+// @public
+export interface UintArrayBuilderOptions extends TypedArrayBuilderOptions {
+    initialType?: typeof Uint8Array | typeof Uint16Array | typeof Uint32Array;
 }
 
 // @public

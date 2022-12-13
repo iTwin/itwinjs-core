@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "realityModelRange",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
