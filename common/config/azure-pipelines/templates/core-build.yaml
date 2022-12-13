@@ -17,9 +17,9 @@ steps:
       echo node: $(which node)
       echo node file: $(file $(which node))
       echo rush: $(which rush)
-  - script: arch -arm64 node common/scripts/set-rush-write-cache-variables.js
+  - script: node common/scripts/set-rush-write-cache-variables.js
     displayName: 'Set Rush Write Cache Variables'
-  - script: arch -arm64 node common/scripts/install-run-rush.js check
+  - script: node common/scripts/install-run-rush.js check
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
   - task: PythonScript@0
@@ -30,14 +30,14 @@ steps:
       scriptPath: common/scripts/run_rush_change.py
       arguments: $(Build.SourceBranch) $(Build.Reason) $(System.PullRequest.TargetBranch)
       failOnStderr: true
-  - script: arch -arm64 node common/scripts/install-run-rush.js install
+  - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
-  - script: arch -arm64 node common/scripts/install-run-rush.js audit
+  - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
-  - script: arch -arm64 node common/scripts/install-run-rush.js build:ci -v -p max
+  - script: node common/scripts/install-run-rush.js build:ci -v -p max
     displayName: rush build:ci
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
@@ -45,23 +45,23 @@ steps:
       RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
 
-  - script: arch -arm64 node common/scripts/install-run-rush.js build -v -p max
+  - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
-  - script: arch -arm64 npm run build:ios
+  - script: npm run build:ios
     workingDirectory: "test-apps/display-test-app"
     displayName: "Build iOS display-test-app typescript"
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
-  # - script: arch -arm64 npm run build:ios-app
+  # - script: npm run build:ios-app
   #   workingDirectory: "test-apps/display-test-app"
   #   displayName: "Build iOS display-test-app swift"
   #   condition: and(succeeded(), eq('${{ parameters.buildIos }}',true), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
-  - script: arch -arm64 node common/scripts/install-run-rush.js lint
+  - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
     workingDirectory: ${{ parameters.workingDir }}
 
-  - script: arch -arm64 node ./common/scripts/install-run-rush webpack:test -v
+  - script: node ./common/scripts/install-run-rush webpack:test -v
     displayName: "rush webpack:test (for rush cover)"
 
   # By default linux agents do not have a real display so use the virtual framebuffer
@@ -71,11 +71,11 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
-  - script: arch -arm64 node common/scripts/install-run-rush.js cover --verbose
+  - script: node common/scripts/install-run-rush.js cover --verbose
     displayName: rush cover
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
 
-  - script: arch -arm64 node common/scripts/install-run-rush.js docs
+  - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs
     workingDirectory: ${{ parameters.workingDir }}
