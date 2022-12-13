@@ -16,7 +16,7 @@ import { CachedGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle3d } from "./AttributeBuffers";
-import { RenderOrder } from "./RenderFlags";
+import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -71,8 +71,10 @@ export class PointCloudGeometry extends CachedGeometry {
   protected _wantWoWReversal(_target: Target): boolean { return false; }
 
   public get techniqueId(): TechniqueId { return TechniqueId.PointCloud; }
-  public override getPass(target: Target) {
+  public override getPass(target: Target): Pass {
     // Point clouds don't cast shadows.
+    if (System.instance.capabilities.isWebGL2)
+      return target.isDrawingShadowMap ? "none" : "point-clouds";
     return target.isDrawingShadowMap ? "none" : "opaque";
   }
   public get renderOrder(): RenderOrder { return RenderOrder.Linear; }

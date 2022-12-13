@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Add UintArrayBuilder for constructing typed arrays of unknown number of bytes per element.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
