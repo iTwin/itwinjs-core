@@ -105,28 +105,18 @@ export class ViewClipByElementGeometryTool extends ViewClipTool {
 
   private async doClipToElements(viewport: Viewport, ids: Set<string>): Promise<boolean> {
     try {
-      let polyfaces = [];
-      for (const source of ids) {
-        const meshData = await viewport.iModel.generateElementMeshes({
-          ...settings,
-          source,
-        });
-
-        for (const polyface of readElementMeshes(meshData))
-          polyfaces.push(polyface);
-      }
-
-      if (polyfaces.length === 0)
-        return false;
-
-      if (settings.computeConvexHulls) {
-        const decomposer = await ConvexDecomposer.create();
-        polyfaces = decomposer.decompose(polyfaces);
-      }
-
       const union = UnionOfConvexClipPlaneSets.createEmpty();
-      for (const polyface of polyfaces)
-        union.addConvexSet(ConvexClipPlaneSet.createConvexPolyface(polyface).clipper);
+      const decomposer = settings.computeConvexHulls ? await ConvexDecomposer.create() : undefined;
+
+      for (const source of ids) {
+        const meshData = await viewport.iModel.generateElementMeshes({ ...settings, source });
+        let polyfaces = readElementMeshes(meshData);
+        if (decomposer)
+          polyfaces = decomposer.decompose(polyfaces);
+
+        for (const polyface of polyfaces)
+          union.addConvexSet(ConvexClipPlaneSet.createConvexPolyface(polyface).clipper);
+      }
 
       ViewClipTool.enableClipVolume(viewport);
       const primitive = ClipPrimitive.createCapture(union);
