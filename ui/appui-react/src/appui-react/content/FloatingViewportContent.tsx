@@ -15,6 +15,7 @@ import { FloatingViewportContentControl } from "./ViewportContentControl";
 import { ContentViewManager } from "./ContentViewManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ContentWrapper } from "./ContentLayout";
+import { useRefs } from "@itwin/core-react";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const FloatingViewport = viewWithUnifiedSelection(ViewportComponent);
