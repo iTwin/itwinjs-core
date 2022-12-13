@@ -11,10 +11,11 @@ import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/c
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 
 describe("IpcRequestsHandler", () => {
+  const clientId = "test-client-id";
   let handler: IpcRequestsHandler;
 
   beforeEach(() => {
-    handler = new IpcRequestsHandler("test-client-id");
+    handler = new IpcRequestsHandler(clientId);
   });
 
   describe("setRulesetVariable", () => {
@@ -24,7 +25,7 @@ describe("IpcRequestsHandler", () => {
       const variable: RulesetVariable = { id: "var-id", type: VariableValueTypes.String, value: "test-value" };
       await handler.setRulesetVariable({ rulesetId, variable });
       expect(callChannelStub).to.be.calledOnceWith(PRESENTATION_IPC_CHANNEL_NAME, "setRulesetVariable", {
-        clientId: "test-client-id",
+        clientId,
         rulesetId,
         variable,
       });
@@ -37,7 +38,7 @@ describe("IpcRequestsHandler", () => {
       const rulesetId = "test-ruleset-id";
       await handler.unsetRulesetVariable({ rulesetId, variableId: "test-id" });
       expect(callChannelStub).to.be.calledOnceWith(PRESENTATION_IPC_CHANNEL_NAME, "unsetRulesetVariable", {
-        clientId: "test-client-id",
+        clientId,
         rulesetId,
         variableId: "test-id",
       });
@@ -45,17 +46,37 @@ describe("IpcRequestsHandler", () => {
   });
 
   describe("updateHierarchyState", () => {
-    it("calls IpcApp.callIpcChannel with injected client id", async () => {
+    it("calls IpcApp.callIpcChannel with injected client id for specific node", async () => {
       const callChannelStub = sinon.stub(IpcApp, "callIpcChannel");
+      const imodelKey = "imodel-key";
       const rulesetId = "ruleset-id";
-      const nodeKeys = [createRandomECInstancesNodeKey()];
-      await handler.updateHierarchyState({ imodelKey: "imodel-key", rulesetId, changeType: "nodesExpanded", nodeKeys });
+      const nodeKey = createRandomECInstancesNodeKey();
+      await handler.updateHierarchyState({ imodelKey, rulesetId, stateChanges: [{ nodeKey, isExpanded: true, instanceFilters: ["xxx"] }] });
       expect(callChannelStub).to.be.calledOnceWith(PRESENTATION_IPC_CHANNEL_NAME, "updateHierarchyState", {
-        clientId: "test-client-id",
-        imodelKey: "imodel-key",
+        clientId,
+        imodelKey,
         rulesetId,
-        changeType: "nodesExpanded",
-        nodeKeys: nodeKeys.map(NodeKey.toJSON),
+        stateChanges: [{
+          nodeKey: NodeKey.toJSON(nodeKey),
+          isExpanded: true,
+          instanceFilters: ["xxx"],
+        }],
+      });
+    });
+
+    it("calls IpcApp.callIpcChannel with injected client id for root level", async () => {
+      const callChannelStub = sinon.stub(IpcApp, "callIpcChannel");
+      const imodelKey = "imodel-key";
+      const rulesetId = "ruleset-id";
+      await handler.updateHierarchyState({ imodelKey, rulesetId, stateChanges: [{ nodeKey: undefined, instanceFilters: ["yyy"] }] });
+      expect(callChannelStub).to.be.calledOnceWith(PRESENTATION_IPC_CHANNEL_NAME, "updateHierarchyState", {
+        clientId,
+        imodelKey,
+        rulesetId,
+        stateChanges: [{
+          nodeKey: undefined,
+          instanceFilters: ["yyy"],
+        }],
       });
     });
   });
