@@ -33,5 +33,5 @@ jobs:
         name: iModelTechMacArm
         demands:
           - Agent.OS -equals $(platform)
-          - Agent.Name -equals BuildMacM1Minion52-A
+          # - Agent.Name -equals BuildMacM1Minion52-A
 
