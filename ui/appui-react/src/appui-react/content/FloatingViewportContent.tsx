@@ -46,17 +46,10 @@ export function FloatingViewportContent(props: FloatingViewportContentProps) { /
   const contentControl = React.useRef<FloatingViewportContentControl | undefined>();
 
   const viewState = React.useMemo(() => typeof initialViewState === "function" ? initialViewState() : initialViewState, [initialViewState]);
-  const onViewportRef = React.useCallback((v: ScreenViewport) => {
+  const ref = React.useCallback((v: ScreenViewport) => {
     setViewport(v);
-    if (!viewportRef) {
-      return;
-    }
-    if (typeof viewportRef === "function") {
-      viewportRef(v);
-    } else {
-      viewportRef.current = v;
-    }
-  }, [viewportRef]);
+  }, []);
+  const onViewportRef = useRefs(ref, ...(viewportRef ? [viewportRef] : []));
 
   React.useEffect(() => {
     if (!contentControl.current) {
