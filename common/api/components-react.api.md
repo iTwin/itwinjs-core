@@ -2568,6 +2568,8 @@ export interface PropertyFilterBuilderProps {
     // (undocumented)
     disablePropertySelection?: boolean;
     // (undocumented)
+    initialFilter?: PropertyFilter;
+    // (undocumented)
     onFilterChanged: (filter?: PropertyFilter) => void;
     // (undocumented)
     onRulePropertySelected?: (property: PropertyDescription) => void;
@@ -4488,7 +4490,7 @@ export function usePropertyData(props: {
 };
 
 // @alpha (undocumented)
-export function usePropertyFilterBuilderState(): {
+export function usePropertyFilterBuilderState(initialFilter?: PropertyFilter): {
     state: PropertyFilterBuilderState;
     actions: PropertyFilterBuilderActions;
 };

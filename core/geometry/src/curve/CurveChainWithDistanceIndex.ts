@@ -230,9 +230,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   /** String name for schema properties */
   public readonly curvePrimitiveType = "curveChainWithDistanceIndex";
 
-  private _path: CurveChain;
-  private _fragments: PathFragment[];
-  private _totalLength: number; // matches final fragment distance1.
+  private readonly _path: CurveChain;
+  private readonly _fragments: PathFragment[];
+  private readonly _totalLength: number; // matches final fragment distance1.
   /** Test if other is a `CurveChainWithDistanceIndex` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof CurveChainWithDistanceIndex; }
   // final assembly of CurveChainWithDistanceIndex -- caller must create valid fragment index.
@@ -256,6 +256,11 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * * Do not modify the path.  The distance index will be wrong.
    */
   public get path(): CurveChain { return this._path; }
+
+  /** Reference to the fragments array.
+   * * Do not modify.
+   */
+  public get fragments(): PathFragment[] { return this._fragments; }
 
   /** Return a deep clone */
   public clone(): CurveChainWithDistanceIndex {
@@ -445,19 +450,10 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * @param distance
    * @param allowExtrapolation
    */
-  protected chainDistanceToFragment(distance: number, allowExtrapolation: boolean = false): PathFragment | undefined {
-    const numFragments = this._fragments.length;
-    const fragments = this._fragments;
-    if (numFragments > 0) {
-      if (distance < 0.0)
-        return allowExtrapolation ? fragments[0] : undefined;
-      if (distance >= this._totalLength)
-        return allowExtrapolation ? fragments[numFragments - 1] : undefined;
-      // humbug, linear search
-      for (const fragment of fragments) {
-        if (fragment.containsChainDistance(distance)) return fragment;
-      }
-    }
+  public chainDistanceToFragment(distance: number, allowExtrapolation: boolean = false): PathFragment | undefined {
+    const i = this.chainDistanceToFragmentIndex(distance, allowExtrapolation);
+    if (undefined !== i)
+      return this._fragments[i];
     return undefined;
   }
   /**
@@ -491,7 +487,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * @param curve
    * @param fraction
    */
-  protected curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined {
+  public curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined {
     const numFragments = this._fragments.length;
     const fragments = this._fragments;
     if (numFragments > 0) {
@@ -612,13 +608,10 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   public reverseInPlace(): void {
     this._path.reverseChildrenInPlace();
     const totalLength = this._totalLength;
-    for (const fragment of this._fragments)
+    for (const fragment of this._fragments) {
       fragment.reverseFractionsAndDistances(totalLength);
-    for (let i = 0, j = this._fragments.length - 1; i < j; i++, j--) {
-      const fragment = this._fragments[i];
-      this._fragments[i] = this._fragments[j];
-      this._fragments[j] = fragment;
     }
+    this._fragments.reverse();
   }
   /**
    * Test for equality conditions:

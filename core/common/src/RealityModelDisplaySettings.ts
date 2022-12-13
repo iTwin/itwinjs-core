@@ -22,6 +22,15 @@ export type PointCloudSizeMode = "voxel" | "pixel";
  */
 export type PointCloudShape = "square" | "round";
 
+/** Specifies the Eye-Dome Lighting mode used for a point cloud.
+ *  - "off": EDL is not calculated
+ *  - "on": EDL is calculated using a single pass.
+ *  - "full" EDL is calculated with full algorithm including optional filtering
+ * @see [[PointCloudDisplaySettings.edlMode]].
+ * @beta
+ */
+export type PointCloudEDLMode = "off" | "on" | "full";
+
 /** The JSON representation of [[PointCloudDisplaySettings]].
  * @beta
  */
@@ -38,6 +47,20 @@ export interface PointCloudDisplayProps {
   pixelSize?: number;
   /** See [[PointCloudDisplaySettings.shape]]. */
   shape?: PointCloudShape;
+  /** See [[PointCloudDisplaySettings.edlMode]]. */
+  edlMode?: PointCloudEDLMode;
+  /** See [[PointCloudDisplaySettings.edlStrength]]. */
+  edlStrength?: number;
+  /** See [[PointCloudDisplaySettings.edlRadius]]. */
+  edlRadius?: number;
+  /** See [[PointCloudDisplaySettings.edlFilter]]. */
+  edlFilter?: number;
+  /** See [[PointCloudDisplaySettings.edlMixWts1]]. */
+  edlMixWts1?: number;
+  /** See [[PointCloudDisplaySettings.edlMixWts2]]. */
+  edlMixWts2?: number;
+  /** See [[PointCloudDisplaySettings.edlMixWts4]]. */
+  edlMixWts4?: number;
 }
 
 /** The JSON representation of [[RealityModelDisplaySettings]].
@@ -53,6 +76,10 @@ export interface RealityModelDisplayProps {
 
 /** Settings that control how a point cloud reality model is displayed within a [Viewport]($frontend).
  * @note This is an immutable type - to modify its properties, use [[clone]].
+ * Eye-Dome Lighting (EDL) is a non-photorealistic, image-based shading technique that was designed to improve depth
+ * perception in scientific visualization. It is particularly useful for visualizing monochrome point cloud data, but
+ * also can be useful for point clouds with color information.
+ * @note EDL mode is ignored (off) if the view is not perspective (camera is off)
  * @see [[RealityModelDisplaySettings.pointCloud]].
  * @beta
  */
@@ -85,6 +112,45 @@ export class PointCloudDisplaySettings {
    * Default: 20.
    */
   public readonly maxPixelsPerVoxel: number;
+  /** The mode for the Eye-Dome Lighting (EDL) effect.
+   * Default: "off"
+   * @note EDL mode is ignored (off) if the view is not perspective (camera is off)
+   */
+  public readonly edlMode: PointCloudEDLMode;
+  /** A strength value for the Eye Dome Lighting (EDL) effect.
+   * The strength is expected to be a positive floating point number.
+   * Default: 5.0
+   */
+  public readonly edlStrength: number;
+  /** A radius value for the Eye Dome Lighting (EDL) effect.
+   * The radius is expected to be a positive floating point number
+   * It is used to deterimine how far away in pixels to sample for depth change
+   * Default: 2.0
+   */
+  public readonly edlRadius: number;
+  /** A flag for whether or not to apply filtering pass in the Eye Dome Lighting (EDL) effect.
+   * It only applies if edlMode is "full"
+   * Default: 1.0
+   */
+  public readonly edlFilter?: number;
+  /** A weighting value to apply to the full image when combining it with the half and quarter sized ones
+   * It only applies if edlMode is "full"
+   * The strength is expected to be a floating point number between 0 and 1 inclusive.
+   * Default: 1.0
+   */
+  public readonly edlMixWts1?: number;
+  /** A weighting value to apply to the half sized image when combining it with the full and quarter sized ones
+   * It only applies if edlMode is "full"
+   * The strength is expected to be a floating point number between 0 and 1 inclusive.
+   * Default: 0.5
+   */
+  public readonly edlMixWts2?: number;
+  /** A weighting value to apply to the quarter sized image when combining it with the full and half sized ones
+   * It only applies if edlMode is "full"
+   * The strength is expected to be a floating point number between 0 and 1 inclusive.
+   * Default: 0.25
+   */
+  public readonly edlMixWts4?: number;
 
   /** Settings with all properties initialized to their default values. */
   public static defaults = new PointCloudDisplaySettings();
@@ -98,6 +164,13 @@ export class PointCloudDisplaySettings {
     this.voxelScale = props?.voxelScale ?? 1;
     this.minPixelsPerVoxel = props?.minPixelsPerVoxel ?? 2;
     this.maxPixelsPerVoxel = props?.maxPixelsPerVoxel ?? 20;
+    this.edlMode = props?.edlMode ?? "off";
+    this.edlStrength = props?.edlStrength ?? 5;
+    this.edlRadius = props?.edlRadius ?? 2;
+    this.edlFilter = props?.edlFilter ?? 1;
+    this.edlMixWts1 = props?.edlMixWts1 ?? 1.0;
+    this.edlMixWts2 = props?.edlMixWts2 ?? 0.5;
+    this.edlMixWts4 = props?.edlMixWts4 ?? 0.25;
   }
 
   /** Create display settings from their JSON representation. If `props` is `undefined`, the default settings are returned. */
@@ -130,6 +203,27 @@ export class PointCloudDisplaySettings {
     if (this.maxPixelsPerVoxel !== defs.maxPixelsPerVoxel)
       props.maxPixelsPerVoxel = this.maxPixelsPerVoxel;
 
+    if (this.edlMode !== defs.edlMode)
+      props.edlMode = this.edlMode;
+
+    if (this.edlStrength !== defs.edlStrength)
+      props.edlStrength = this.edlStrength;
+
+    if (this.edlRadius !== defs.edlRadius)
+      props.edlRadius = this.edlRadius;
+
+    if (this.edlFilter !== defs.edlFilter)
+      props.edlFilter = this.edlFilter;
+
+    if (this.edlMixWts1 !== defs.edlMixWts1)
+      props.edlMixWts1 = this.edlMixWts1;
+
+    if (this.edlMixWts2 !== defs.edlMixWts2)
+      props.edlMixWts2 = this.edlMixWts2;
+
+    if (this.edlMixWts4 !== defs.edlMixWts4)
+      props.edlMixWts4 = this.edlMixWts4;
+
     return props;
   }
 
@@ -147,7 +241,11 @@ export class PointCloudDisplaySettings {
       return true;
 
     return this.shape === other.shape && this.sizeMode === other.sizeMode && this.pixelSize === other.pixelSize
-      && this.voxelScale === other.voxelScale && this.minPixelsPerVoxel === other.minPixelsPerVoxel && this.maxPixelsPerVoxel === other.maxPixelsPerVoxel;
+      && this.voxelScale === other.voxelScale && this.minPixelsPerVoxel === other.minPixelsPerVoxel && this.maxPixelsPerVoxel === other.maxPixelsPerVoxel
+      && this.edlMode === other.edlMode && this.edlStrength === other.edlStrength && this.edlRadius === other.edlRadius
+      && this.edlFilter === other.edlFilter
+      && this.edlMixWts1 === other.edlMixWts1 && this.edlMixWts2 === other.edlMixWts2 && this.edlMixWts4 === other.edlMixWts4
+    ;
   }
 }
 

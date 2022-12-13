@@ -530,7 +530,7 @@ public;useAsyncValue:
 alpha;useDebouncedAsyncValue
 public;usePagedTreeNodeLoader
 public;usePropertyData(props:
-alpha;usePropertyFilterBuilderState():
+alpha;usePropertyFilterBuilderState(initialFilter?: PropertyFilter):
 beta;usePropertyGridEventHandler(props:
 beta;usePropertyGridModel(props:
 beta;usePropertyGridModelSource(props:
