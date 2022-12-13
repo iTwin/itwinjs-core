@@ -30,7 +30,7 @@ export interface FloatingViewportContentProps {
   /** The initial view state used to create the viewport, or a function that returns it (will refresh when the function changes) */
   initialViewState: ViewStateProp;
   /** Function to get a reference to the ScreenViewport */
-  viewportRef?: React.ForwardedRef<ScreenViewport>;
+  viewportRef?: React.Ref<ScreenViewport>;
 }
 
 /**
