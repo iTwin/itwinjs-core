@@ -11,23 +11,28 @@ import {
 import {
   BeButtonEvent, CoordinateLockOverrides, EventHandled, IModelApp, LocateResponse, ViewClipTool, Viewport,
 } from "@itwin/core-frontend";
-import { ConvexMeshDecomposition } from "vhacd-js";
+import {
+  ConvexMeshDecomposition, Options as DecompositionOptions,
+} from "vhacd-js";
 
 interface Settings extends ElementMeshOptions {
   computeConvexHulls: boolean;
+  decomposition: DecompositionOptions;
   offset?: number;
 }
 
 class ConvexDecomposer {
   private readonly _impl: ConvexMeshDecomposition;
+  private readonly _opts: DecompositionOptions;
 
-  private constructor(impl: ConvexMeshDecomposition) {
+  private constructor(impl: ConvexMeshDecomposition, options: DecompositionOptions) {
     this._impl = impl;
+    this._opts = options;
   }
 
-  public static async create(): Promise<ConvexDecomposer> {
+  public static async create(options: DecompositionOptions): Promise<ConvexDecomposer> {
     const impl = await ConvexMeshDecomposition.create();
-    return new ConvexDecomposer(impl);
+    return new ConvexDecomposer(impl, options);
   }
 
   public decompose(polyfaces: IndexedPolyface[]): IndexedPolyface[] {
@@ -41,7 +46,7 @@ class ConvexDecomposer {
       if (indices.length === 0 || positions.length === 0)
         continue;
 
-      const meshes = this._impl.computeConvexHulls({ positions, indices });
+      const meshes = this._impl.computeConvexHulls({ positions, indices }, this._opts);
       for (const mesh of meshes) {
         const builder = PolyfaceBuilder.create();
         for (let i = 0; i < mesh.indices.length; i += 3) {
@@ -68,6 +73,10 @@ class ConvexDecomposer {
 const settings: Settings = {
   computeConvexHulls: true,
   chordTolerance: 0.1,
+  decomposition: {
+    maxHulls: 10,
+    maxVerticesPerHull: 16,
+  },
 };
 
 export class ViewClipByElementGeometryTool extends ViewClipTool {
@@ -106,7 +115,7 @@ export class ViewClipByElementGeometryTool extends ViewClipTool {
   private async doClipToElements(viewport: Viewport, ids: Set<string>): Promise<boolean> {
     try {
       const union = UnionOfConvexClipPlaneSets.createEmpty();
-      const decomposer = settings.computeConvexHulls ? await ConvexDecomposer.create() : undefined;
+      const decomposer = settings.computeConvexHulls ? await ConvexDecomposer.create(settings.decomposition) : undefined;
 
       for (const source of ids) {
         const meshData = await viewport.iModel.generateElementMeshes({ ...settings, source });
