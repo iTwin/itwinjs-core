@@ -7,6 +7,7 @@ import * as React from "react";
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
 import { Guid } from "@itwin/core-bentley";
 import { isUnaryPropertyFilterOperator, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "./Operators";
+import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule } from "./Types";
 
 /** @alpha */
 export interface PropertyFilterBuilderState {
@@ -35,7 +36,7 @@ export interface PropertyFilterBuilderRule {
 
 /** @alpha */
 export class PropertyFilterBuilderActions {
-  constructor(private setState: (setter: (prevState: PropertyFilterBuilderState) => PropertyFilterBuilderState) => void) {}
+  constructor(private setState: (setter: (prevState: PropertyFilterBuilderState) => PropertyFilterBuilderState) => void) { }
 
   private updateState(updater: (state: Draft<PropertyFilterBuilderState>) => void) {
     this.setState(produce(updater));
@@ -117,10 +118,10 @@ export function isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRule
 }
 
 /** @alpha */
-export function usePropertyFilterBuilderState() {
-  const [state, setState] = React.useState<PropertyFilterBuilderState>(() => ({
-    rootGroup: createEmptyRuleGroup(),
-  }));
+export function usePropertyFilterBuilderState(initialFilter?: PropertyFilter) {
+  const [state, setState] = React.useState<PropertyFilterBuilderState>(
+    () => initialFilter ? convertFilterToState(initialFilter) : { rootGroup: createEmptyRuleGroup() }
+  );
   const [actions] = React.useState(() => new PropertyFilterBuilderActions(setState));
 
   return { state, actions };
@@ -168,4 +169,46 @@ function findRule(rootGroup: PropertyFilterBuilderRuleGroup, path: string[]): Pr
     return findRule(currentItem, rest);
 
   return currentItem;
+}
+
+function getRuleGroupItem(filter: PropertyFilter, parentId: string): PropertyFilterBuilderRuleGroupItem {
+  const id = Guid.createValue();
+  if (isPropertyFilterRuleGroup(filter))
+    return {
+      id,
+      groupId: parentId,
+      operator: filter.operator,
+      items: filter.rules.map((rule) => getRuleGroupItem(rule, id)),
+    };
+  return getRuleItem(filter, id);
+}
+
+function getRuleItem(filter: PropertyFilterRule, parentId: string) {
+  return {
+    id: Guid.createValue(),
+    groupId: parentId,
+    property: filter.property,
+    operator: filter.operator,
+    value: filter.value,
+  };
+}
+
+function convertFilterToState(filter: PropertyFilter): PropertyFilterBuilderState {
+  const id = Guid.createValue();
+  if (isPropertyFilterRuleGroup(filter)) {
+    return {
+      rootGroup: {
+        id,
+        operator: filter.operator,
+        items: filter.rules.map((rule) => getRuleGroupItem(rule, id)),
+      },
+    };
+  }
+  return {
+    rootGroup: {
+      id,
+      operator: PropertyFilterRuleGroupOperator.And,
+      items: [getRuleItem(filter, id)],
+    },
+  };
 }
