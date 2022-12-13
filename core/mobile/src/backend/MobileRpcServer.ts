@@ -143,7 +143,7 @@ export function setupMobileRpc() {
   }
 
   let server: MobileRpcServer | null = new MobileRpcServer();
-  let retainUvLoop: NodeJS.Timer;
+  let retainUvLoop: NodeJS.Timer | undefined;
 
   MobileHost.onEnterBackground.addListener(() => {
     hasSuspended = true;
@@ -164,6 +164,21 @@ export function setupMobileRpc() {
 
     server = new MobileRpcServer();
     clearInterval(retainUvLoop);
+    retainUvLoop = undefined;
+  });
+
+  MobileHost.onWillTerminate.addListener(() => {
+    if (typeof (retainUvLoop) !== "undefined") {
+      clearInterval(retainUvLoop);
+      retainUvLoop = undefined;
+    }
+
+    if (server === null) {
+      return;
+    }
+
+    server.dispose();
+    server = null;
   });
 
   MobileRpcProtocol.obtainInterop = () => MobileRpcServer.interop;
