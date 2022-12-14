@@ -162,7 +162,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
 
   /** Array of (exactly 2) knot vectors for the u, v directions */
   public knots: KnotVector[];
-  /** flat array of coordinate daa, blocked by poleDimension and row */
+  /** flat array of coordinate data, blocked by poleDimension and row */
   public coffs: Float64Array;
   /** Number of components per pole.
    * * 3 for conventional xyz surface

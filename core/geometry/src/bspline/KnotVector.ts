@@ -451,35 +451,43 @@ export class KnotVector {
       this.knots[i] = a + (b - this.knots[i]);
     this.knots.reverse();
   }
+
+  /**
+   * return a simple array form of the knots.  optionally replicate the first and last
+   * in classic over-clamped manner
+   */
+  public static copyKnots(knots: number[] | Float64Array, degree: number, includeExtraEndKnot?: boolean, wrapMode?: BSplineWrapMode): number[] {
+    const isExtraEndKnotPeriodic = (includeExtraEndKnot && wrapMode === BSplineWrapMode.OpenByAddingControlPoints);
+    const leftIndex = degree - 1;
+    const rightIndex = knots.length - degree;
+    const a0 = knots[leftIndex];
+    const a1 = knots[rightIndex];
+    const delta = a1 - a0;
+    const values: number[] = [];
+    if (includeExtraEndKnot) {
+      if (isExtraEndKnotPeriodic)
+        values.push(knots[rightIndex - degree] - delta);
+      else
+        values.push(knots[0]);
+    }
+    for (const u of knots) {
+      values.push(u);
+    }
+    if (includeExtraEndKnot) {
+      if (isExtraEndKnotPeriodic)
+        values.push(knots[leftIndex + degree] + delta);
+      else
+        values.push(knots[knots.length - 1]);
+    }
+    return values;
+  }
+
   /**
    * return a simple array form of the knots.  optionally replicate the first and last
    * in classic over-clamped manner
    */
   public copyKnots(includeExtraEndKnot: boolean): number[] {
-    let isExtraEndKnotPeriodic = false;
-    if (includeExtraEndKnot)
-      isExtraEndKnotPeriodic = this.wrappable === BSplineWrapMode.OpenByAddingControlPoints && this.testClosable();
-    const leftIndex = this.leftKnotIndex;
-    const rightIndex = this.rightKnotIndex;
-    const a0 = this.leftKnot;
-    const a1 = this.rightKnot;
-    const delta = a1 - a0;
-    const degree = this.degree;
-    const values: number[] = [];
-    if (includeExtraEndKnot) {
-      if (isExtraEndKnotPeriodic) {
-        values.push(this.knots[rightIndex - degree] - delta);
-      } else {
-        values.push(this.knots[0]);
-      }
-    }
-    for (const u of this.knots) values.push(u);
-    if (includeExtraEndKnot) {
-      if (isExtraEndKnotPeriodic) {
-        values.push(this.knots[leftIndex + degree] + delta);
-      } else
-        values.push(values[values.length - 1]);
-    }
-    return values;
+    const wrapMode = (includeExtraEndKnot && this.testClosable()) ? this.wrappable : undefined;
+    return KnotVector.copyKnots(this.knots, this.degree, includeExtraEndKnot, wrapMode);
   }
 }

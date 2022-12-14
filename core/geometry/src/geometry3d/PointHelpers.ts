@@ -28,11 +28,11 @@ import { XAndY, XYAndZ, XYZProps } from "./XYZProps";
  */
 function selectOptionalClampedMin(numA: number, numB: number | undefined, multiplyBy: number): number {
 
-  if (numB !== undefined){
+  if (numB !== undefined) {
     const numC = numB * multiplyBy;
     if (numC >= 0 && numC <= numA)
       return numC;
-    }
+  }
   return numA;
 }
 /**
@@ -159,11 +159,98 @@ export class NumberArray {
     return result;
   }
 
-  /** copy numbers from variant sources to number[]. */
+  /** Copy numbers from variant sources to number[]. */
   public static create(source: number[] | Float64Array): number[] {
     const result: number[] = [];
     for (const q of source)
       result.push(q);
+    return result;
+  }
+
+  /** Copy number[][]. */
+  public static copy2d(source: number[][]): number[][] {
+    const result: number[][] = [];
+    for (const row of source) {
+      const newRow = [];
+      for (const entry of row)
+        newRow.push(entry);
+      result.push(newRow);
+    }
+    return result;
+  }
+
+  /** Copy number[][][]. */
+  public static copy3d(source: number[][][]): number[][][] {
+    const result: number[][][] = [];
+    for (const row of source) {
+      const newRow = [];
+      for (const block of row) {
+        const newBlock = [];
+        for (const entry of block)
+          newBlock.push(entry);
+        newRow.push(newBlock);
+      }
+      result.push(newRow);
+    }
+    return result;
+  }
+
+  /** Copy numbers from Float64Array to number[][].
+   * @param numPerBlock block size
+   */
+  public static unpack2d(source: Float64Array, numPerBlock: number): number[][] | undefined {
+    if (numPerBlock < 1)
+      return undefined;
+    return Point3dArray.unpackNumbersToNestedArrays(source, numPerBlock) as number[][];
+  }
+
+  /** Copy numbers from Float64Array to number[][][].
+   * @param numPerRow row size
+   * @param numPerBlock block size
+   */
+  public static unpack3d(source: Float64Array, numPerRow: number, numPerBlock: number): number[][][] | undefined {
+    if (numPerBlock < 1 || numPerRow < 1)
+      return undefined;
+    return Point3dArray.unpackNumbersToNestedArraysIJK(source, numPerBlock, numPerRow) as number[][][];
+  }
+
+  /** Copy numbers from 1d/2d/3d array to Float64Array. */
+  public static pack(source: number[] | number[][] | number[][][]): Float64Array {
+    const numRows = source.length;
+    let numPerRow = 0;
+    let numPerBlock = 0;
+    let numCoords = 0;
+    if (numRows > 0) {
+      numCoords = numRows;
+      if (Array.isArray(source[0])) {
+        numPerRow = source[0].length;
+        if (numPerRow > 0) {
+          numCoords *= numPerRow;
+          if (Array.isArray(source[0][0])) {
+            numPerBlock = source[0][0].length;
+            if (numPerBlock > 0)
+              numCoords *= numPerBlock;
+          }
+        }
+      }
+    }
+    const result = new Float64Array(numCoords);
+    if (numPerBlock > 0) {
+      const src3d = source as number[][][];
+      for (let i = 0, c = 0; i < numRows; ++i)
+        for (let j = 0; j < numPerRow; ++j)
+          for (let k = 0; k < numPerBlock; ++k)
+            result[c++] = src3d[i][j][k];
+    } else if (numPerRow > 0) {
+      const src2d = source as number[][];
+      for (let i = 0, c = 0; i < numRows; ++i)
+        for (let j = 0; j < numPerRow; ++j)
+          result[c++] = src2d[i][j];
+    } else if (numRows > 0) {
+      const src1d = source as number[];
+      for (let i = 0, c = 0; i < numRows; ++i)
+        result[c++] = src1d[i];
+    }
     return result;
   }
 
@@ -695,13 +782,13 @@ export class Point3dArray {
     let sum = 0.0;
 
     if (Array.isArray(data)) {
-      const n = selectOptionalClampedMin (data.length, maxPointsToUse, 1) - 1;
+      const n = selectOptionalClampedMin(data.length, maxPointsToUse, 1) - 1;
       for (let i = 0; i < n; i++) sum += data[i].distance(data[i + 1]);
       if (addClosureEdge && n > 0)
         sum += data[0].distance(data[n]);
 
     } else if (data instanceof Float64Array) {
-      const numXYZ = selectOptionalClampedMin (data.length, maxPointsToUse, 3);
+      const numXYZ = selectOptionalClampedMin(data.length, maxPointsToUse, 3);
       let i = 0;
       for (; i + 5 < numXYZ; i += 3) {  // final i points at final point x
         sum += Geometry.hypotenuseXYZ(data[i + 3] - data[i],
@@ -723,20 +810,20 @@ export class Point3dArray {
    * * return 0 if there are any duplicates within the remaining points.
    * @param points points to examine.
    */
-   public static countNonDuplicates(points: Point3d[], tolerance: number = Geometry.smallMetricDistance): number {
+  public static countNonDuplicates(points: Point3d[], tolerance: number = Geometry.smallMetricDistance): number {
     let n = points.length;
     // strip of (allow) trailing duplicates ...
-    while (n > 1){
-      if (points[0].isAlmostEqual (points[n-1], tolerance))
+    while (n > 1) {
+      if (points[0].isAlmostEqual(points[n - 1], tolerance))
         n--;
       else
-      break;
-      }
-    for (let i = 0; i+1 < n; i++)
-      if (points[i].isAlmostEqual (points[i+1], tolerance))
+        break;
+    }
+    for (let i = 0; i + 1 < n; i++)
+      if (points[i].isAlmostEqual(points[i + 1], tolerance))
         return 0;
     return n;
-    }
+  }
 
   /**
    * Return an array containing clones of the Point3d data[]

@@ -7,7 +7,6 @@
  * @module Serialization
  */
 
-import { assert } from "console";
 import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
@@ -1010,13 +1009,11 @@ export namespace IModelJson {
           myData.uParams.closed = true;
         if (data.hasOwnProperty("closedV") && true === data.closedV)
           myData.vParams.closed = true;
-        if (SerializationHelpers.Import.prepareBSplineSurfaceData(myData)) {
-          assert(!(myData.poles instanceof Float64Array));
-          const controlPoints = myData.poles as number[][][];
+        if (SerializationHelpers.Import.prepareBSplineSurfaceData(myData, {jsonPoles: true})) {
           if (dim === 3)
-            newSurface = BSplineSurface3d.createGrid(controlPoints, myData.uParams.order, myData.uParams.knots, myData.vParams.order, myData.vParams.knots);
+            newSurface = BSplineSurface3d.createGrid(myData.poles as number[][][], myData.uParams.order, myData.uParams.knots, myData.vParams.order, myData.vParams.knots);
           else
-            newSurface = BSplineSurface3dH.createGrid(controlPoints, WeightStyle.WeightsAlreadyAppliedToCoordinates, myData.uParams.order, myData.uParams.knots, myData.vParams.order, myData.vParams.knots);
+            newSurface = BSplineSurface3dH.createGrid(myData.poles as number[][][], WeightStyle.WeightsAlreadyAppliedToCoordinates, myData.uParams.order, myData.uParams.knots, myData.vParams.order, myData.vParams.knots);
           if (undefined !== newSurface) {
             if (undefined !== myData.uParams.wrapMode)
               newSurface.setWrappable(UVSelect.uDirection, myData.uParams.wrapMode);
@@ -1782,60 +1779,23 @@ export namespace IModelJson {
         contents.tags = taggedNumericData;
       return { indexedMesh: contents };
     }
-    /**
-     * Restore special legacy periodic B-spline knots of mode BSplineWrapMode.OpenByRemovingKnots.
-     * @param knots knot vector: {start knot multiplicity d} {p-k interior knots} {end knot multiplicity d}
-     * @param order curve order
-     * @param newKnots array to receive new knots
-     * @see openLegacyPeriodicKnots
-     */
-    private static closeLegacyPeriodicKnots(knots: number[], order: number, newKnots: number[]) {
-      const degree = order - 1;
-      const leftIndex = degree - 1;
-      const rightIndex = knots.length - degree;
-      const leftKnot = knots[leftIndex];
-      const rightKnot = knots[rightIndex];
-      const knotPeriod = rightKnot - leftKnot;
-      for (let i = Math.floor(order / 2); i > 0; --i)
-        newKnots.push(knots[rightIndex - i] - knotPeriod);
-      newKnots.push(leftKnot);   // extraneous start knot
-      for (const k of knots) newKnots.push(k);
-      newKnots.push(rightKnot);  // extraneous end knot
-      for (let i = 1; i <= Math.floor(degree / 2); ++i)
-        newKnots.push(knots[leftIndex + i] + knotPeriod);
-    }
+
     private handleBSplineCurve(curve: BSplineCurve3d | BSplineCurve3dH): any {
-      const myPoles = curve.copyPoints(); // dim = 3 or 4
-      let myKnots: number[];
-      let myClosed = false;
+      const data = SerializationHelpers.createBSplineCurveData(curve.polesRef, curve.poleDimension, curve.knotsRef, curve.numPoles, curve.order);
 
-      const wrapMode = curve.isClosableCurve;
-      if (wrapMode === BSplineWrapMode.OpenByAddingControlPoints) {
-        // re-close the true periodic case
-        for (let i = 0; i < curve.degree; i++)
-          myPoles.pop();  // remove last degree poles
-        myKnots = curve.copyKnots(true);  // add periodic extraneous knots
-        myClosed = true;
-      } else if (wrapMode === BSplineWrapMode.OpenByRemovingKnots) {
-        // re-close the legacy periodic case. Poles unchanged.
-        Writer.closeLegacyPeriodicKnots(curve.copyKnots(false), curve.order, myKnots = []);
-        myClosed = true;
-      } else {
-        myKnots = curve.copyKnots(true);  // add clamped extraneous knots
-      }
+      const wrapMode = curve.getWrappable();
+      if (BSplineWrapMode.None !== wrapMode)
+        data.params.wrapMode = wrapMode;
 
-      interface Bcurve {
-        bcurve: {
-          points: number[][];
-          knots: number[];
-          order: number;
-          closed?: boolean;
-        };
-      }
-      const json: Bcurve = { bcurve: {points: myPoles, knots: myKnots, order: curve.order} };
-      if (myClosed)
-        json.bcurve.closed = true;
-      return json;
+      if (!SerializationHelpers.Export.prepareBSplineCurveData(data, {jsonPoles: true, jsonKnots: true}))
+        return undefined;
+
+      return { bcurve: {
+        points: data.poles as number[][],
+        knots: data.params.knots as number[],
+        order: data.params.order,
+        closed: data.params.closed ? true : undefined,
+      }};
     }
 
     /** Convert strongly typed instance to tagged json */
@@ -1899,62 +1859,29 @@ export namespace IModelJson {
 
     /** Convert strongly typed instance to tagged json */
     private handleBSplineSurface(surface: BSplineSurface3d | BSplineSurface3dH): any {
-      const myPoles = surface.getPointGridJSON().points;
-      let myKnotsU: number[];
-      let myKnotsV: number[];
-      const myOrderU = surface.orderUV(UVSelect.uDirection);
-      const myOrderV = surface.orderUV(UVSelect.vDirection);
-      let myClosedU = false;
-      let myClosedV = false;
+      const data = SerializationHelpers.createBSplineSurfaceData(surface.coffs, surface.poleDimension,
+        surface.knots[UVSelect.uDirection].knots, surface.numPolesUV(UVSelect.uDirection), surface.orderUV(UVSelect.uDirection),
+        surface.knots[UVSelect.vDirection].knots, surface.numPolesUV(UVSelect.vDirection), surface.orderUV(UVSelect.vDirection));
 
-      const wrapModeU = surface.isClosableSurface(UVSelect.uDirection);
-      if (wrapModeU === BSplineWrapMode.OpenByAddingControlPoints) {
-        // re-close the true periodic case
-        for (let i = 0; i < surface.numPolesUV(UVSelect.vDirection); ++i)
-          for (let j = 0; j < surface.degreeUV(UVSelect.uDirection); ++j)
-            myPoles[i].pop(); // remove last degreeU poles from each row
-        myKnotsU = surface.copyKnots(UVSelect.uDirection, true);  // add periodic extraneous knots
-        myClosedU = true;
-      } else if (wrapModeU === BSplineWrapMode.OpenByRemovingKnots) {
-        // re-close the legacy periodic case. Poles unchanged.
-        Writer.closeLegacyPeriodicKnots(surface.copyKnots(UVSelect.uDirection, false), myOrderU, myKnotsU = []);
-        myClosedU = true;
-      } else {
-        myKnotsU = surface.copyKnots(UVSelect.uDirection, true);  // add clamped extraneous knots
-      }
+      const wrapModeU = surface.getWrappable(UVSelect.uDirection);
+      const wrapModeV = surface.getWrappable(UVSelect.vDirection);
+      if (BSplineWrapMode.None !== wrapModeU)
+        data.uParams.wrapMode = wrapModeU;
+      if (BSplineWrapMode.None !== wrapModeV)
+        data.vParams.wrapMode = wrapModeV;
 
-      const wrapModeV = surface.isClosableSurface(UVSelect.vDirection);
-      if (wrapModeV === BSplineWrapMode.OpenByAddingControlPoints) {
-        // re-close the true periodic case
-        for (let i = 0; i < surface.degreeUV(UVSelect.vDirection); ++i)
-          myPoles.pop();  // remove last degreeV rows
-        myKnotsV = surface.copyKnots(UVSelect.vDirection, true);  // add periodic extraneous knots
-        myClosedV = true;
-      } else if (wrapModeV === BSplineWrapMode.OpenByRemovingKnots) {
-        // re-close the legacy periodic case. Poles unchanged.
-        Writer.closeLegacyPeriodicKnots(surface.copyKnots(UVSelect.vDirection, false), myOrderV, myKnotsV = []);
-        myClosedV = true;
-      } else {
-        myKnotsV = surface.copyKnots(UVSelect.vDirection, true);  // add clamped extraneous knots
-      }
+      if (!SerializationHelpers.Export.prepareBSplineSurfaceData(data, {jsonPoles: true, jsonKnots: true}))
+        return undefined;
 
-      interface Bsurf {
-        bsurf: {
-          points: number[][][];
-          uKnots: number[];
-          vKnots: number[];
-          orderU: number;
-          orderV: number;
-          closedU?: boolean;
-          closedV?: boolean;
-        };
-      }
-      const json: Bsurf = { bsurf: {points: myPoles, uKnots: myKnotsU, vKnots: myKnotsV, orderU: myOrderU, orderV: myOrderV} };
-      if (myClosedU)
-        json.bsurf.closedU = true;
-      if (myClosedV)
-        json.bsurf.closedV = true;
-      return json;
+      return { bsurf: {
+        points: data.poles as number[][][],
+        uKnots: data.uParams.knots as number[],
+        vKnots: data.vParams.knots as number[],
+        orderU: data.uParams.order,
+        orderV: data.vParams.order,
+        closedU: data.uParams.closed ? true : undefined,
+        closedV: data.vParams.closed ? true : undefined,
+      }};
     }
 
     /** Convert strongly typed instance to tagged json */

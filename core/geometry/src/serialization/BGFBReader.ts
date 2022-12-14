@@ -2,10 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Serialization
- */
-import { assert } from "console";
 import { flatbuffers } from "flatbuffers";
 import { AkimaCurve3d, AkimaCurve3dOptions } from "../bspline/AkimaCurve3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
@@ -76,6 +72,7 @@ export class BGFBReader {
         const weightArray = bsurfHeader.weightsArray();
         const closedU = bsurfHeader.closedU();
         const closedV = bsurfHeader.closedV();
+
         if (xyzArray !== null && knotArrayU !== null && knotArrayV !== null) {
           const myData = SerializationHelpers.createBSplineSurfaceData(xyzArray, 3, knotArrayU, numPolesU, orderU, knotArrayV, numPolesV, orderV);
           if (weightArray !== null)
@@ -84,16 +81,13 @@ export class BGFBReader {
             myData.uParams.closed = true;
           if (closedV)
             myData.vParams.closed = true;
-          if (SerializationHelpers.Import.prepareBSplineSurfaceData(myData)) {
-            assert(myData.poles instanceof Float64Array);
-            const controlPoints = myData.poles as Float64Array;
-            if (undefined === myData.weights) {
-              newSurface = BSplineSurface3d.create(controlPoints, myData.uParams.numPoles, myData.uParams.order, myData.uParams.knots, myData.vParams.numPoles, myData.vParams.order, myData.vParams.knots);
-            } else {
-              assert(myData.weights instanceof Float64Array);
-              const weights = myData.weights as Float64Array;
-              newSurface = BSplineSurface3dH.create(controlPoints, weights, myData.uParams.numPoles, myData.uParams.order, myData.uParams.knots, myData.vParams.numPoles, myData.vParams.order, myData.vParams.knots);
-            }
+
+          if (SerializationHelpers.Import.prepareBSplineSurfaceData(myData, {jsonPoles: false})) {
+            if (undefined === myData.weights)
+              newSurface = BSplineSurface3d.create(myData.poles as Float64Array, myData.uParams.numPoles, myData.uParams.order, myData.uParams.knots, myData.vParams.numPoles, myData.vParams.order, myData.vParams.knots);
+            else
+              newSurface = BSplineSurface3dH.create(myData.poles as Float64Array, myData.weights as Float64Array, myData.uParams.numPoles, myData.uParams.order, myData.uParams.knots, myData.vParams.numPoles, myData.vParams.order, myData.vParams.knots);
+
             if (undefined !== newSurface) {
               if (undefined !== myData.uParams.wrapMode)
                 newSurface.setWrappable(UVSelect.uDirection, myData.uParams.wrapMode);
@@ -155,27 +149,25 @@ return undefined;
     const knots = header.knotsArray();
     const weightsArray = header.weightsArray();
     const closed = header.closed();
+
     if (xyzArray !== null && knots !== null) {
       const numPoles = Math.floor(xyzArray.length / 3);
       const myData = SerializationHelpers.createBSplineCurveData(xyzArray, 3, knots, numPoles, order);
-      if (weightsArray !== null)
-        myData.weights = weightsArray;
       if (closed)
         myData.params.closed = true;
-      if (SerializationHelpers.Import.prepareBSplineCurveData(myData)) {
-        assert(myData.poles instanceof Float64Array);
-        const xyz = myData.poles as Float64Array;
-        if (weightsArray === null) {
-          newCurve = BSplineCurve3d.create(xyz, myData.params.knots, myData.params.order);
-        } else {
-          assert(myData.weights instanceof Float64Array);
-          const weights = myData.weights as Float64Array;
-          newCurve = BSplineCurve3dH.create({ xyz, weights }, knots, order);
-        }
-        if (undefined !== newCurve) {
-          if (undefined !== myData.params.wrapMode)
-            newCurve.setWrappable(myData.params.wrapMode);
-        }
+
+      if (weightsArray === null) {
+        if (SerializationHelpers.Import.prepareBSplineCurveData(myData))
+          newCurve = BSplineCurve3d.create(myData.poles, myData.params.knots, myData.params.order);
+      } else {
+        myData.weights = weightsArray;
+        if (SerializationHelpers.Import.prepareBSplineCurveData(myData, {jsonPoles: false}))
+          newCurve = BSplineCurve3dH.create({ xyz: myData.poles as Float64Array, weights: myData.weights }, myData.params.knots, myData.params.order);
+      }
+
+      if (undefined !== newCurve) {
+        if (undefined !== myData.params.wrapMode)
+          newCurve.setWrappable(myData.params.wrapMode);
       }
     }
     return newCurve;

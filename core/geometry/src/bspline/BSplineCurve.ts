@@ -104,10 +104,19 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
   public get numSpan(): number { return this._bcurve.numSpan; }
   /** Return the number of poles */
   public get numPoles(): number { return this._bcurve.numPoles; }
+  /** Return live reference to the packed control point coordinates of the curve. */
+  public get polesRef(): Float64Array { return this._bcurve.packedData; }
+  /** Return live reference to the knots of the curve. */
+  public get knotsRef(): Float64Array { return this._bcurve.knots.knots; }
+  /** Number of components per pole.
+   * * 3 for conventional (x,y,z) curve
+   * * 4 for weighted (wx,wy,wz,w) curve
+   */
+  public get poleDimension(): number { return this._bcurve.poleLength; }
   /**
- * return a simple array form of the knots.  optionally replicate the first and last
- * in classic over-clamped manner
- */
+   * return a simple array form of the knots.  optionally replicate the first and last
+   * in classic over-clamped manner
+   */
   public copyKnots(includeExtraEndKnot: boolean): number[] { return this._bcurve.knots.copyKnots(includeExtraEndKnot); }
 
   /**
