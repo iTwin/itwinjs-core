@@ -141,7 +141,7 @@ describe("OffsetMeshContext", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("OffsetsWithConeApron", () => {
+  it.only("OffsetsWithConeApron", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const options = StrokeOptions.createForFacets();
@@ -150,8 +150,11 @@ describe("OffsetMeshContext", () => {
     const yB = 1.0; // point B (0, yB, 0) is on Y axis above, with image at (0,-yB,0).  These are start and end of ellipse apron
     const xC = -3.0; // point C (xC, 0, zC) is an extreme point of the ellipse apron.
     const zC = 0.0;
-    for (const zCone of [0.5, -0.5, 2.0, -2.0, 4.0, -4.0, 10.0]) {  // height of cone point.
-      for (const numApronEdges of [2, 4, 8]) {
+    OffsetMeshContext.stringDebugFunction =
+      (message: string) => { console.log(message); };
+
+    for (const zCone of [2.0, 0.5, -0.5, 2.0, -2.0, 4.0, -4.0, 10.0]) {  // height of cone point.
+      for (const numApronEdges of [8, 2, 4]) {
         const builder = PolyfaceBuilder.create(options);
         const arc = Arc3d.createXYZXYZXYZ(0, 0, 0, 0, yB, 0, xC, 0, zC, AngleSweep.createStartEndDegrees(0, 180));
         const strokes = LineString3d.create();
@@ -165,6 +168,7 @@ describe("OffsetMeshContext", () => {
         const polyface = builder.claimPolyface();
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokes, x0, -8.0);
         x0 = testOffsets(ck, allGeometry, polyface, [0.5], [1.0], x0, true);
+        OffsetMeshContext.stringDebugFunction = undefined;
       }
       x0 += 10.0;
     }

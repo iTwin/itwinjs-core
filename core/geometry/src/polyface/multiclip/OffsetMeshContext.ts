@@ -19,6 +19,7 @@ import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Geometry } from "../../Geometry";
 import { OffsetMeshOptions } from "../PolyfaceQuery";
 import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
+import nodeTest from "node:test";
 
 function isDefinedAndTrue(value: boolean | undefined): boolean {
   if (value === undefined)
@@ -158,6 +159,7 @@ export class OffsetMeshContext {
     this._insideEndOfChamferFace = baseGraph.grabMask();
     this._outsideEndOfChamferFace = baseGraph.grabMask();
     this._exteriorMask = HalfEdgeMask.EXTERIOR;
+    this._offsetCoordinatesAssigned = baseGraph.grabMask();
     this._smoothSingleDihedralAngleRadians = options.smoothSingleDihedralAngle.radians;
     this._chamferTurnRadians = options.chamferTurnAngle.radians;
     this._smoothAccumulatedDihedralAngleRadians = options.smoothAccumulatedDihedralAngle.radians;
@@ -167,6 +169,9 @@ export class OffsetMeshContext {
   /** "Exterior" side of a bare edge of the mesh */
   public get exteriorMask(): HalfEdgeMask { return this._exteriorMask; }
   private _exteriorMask: HalfEdgeMask;
+
+  /** Mask indicating a a sector's coordinates have been reassigned at offset distance. */
+  private _offsetCoordinatesAssigned: HalfEdgeMask;
 
   /** "First" sector of a smooth sequence. */
   public get breakMaskA(): HalfEdgeMask { return this._breakMaskA; }
@@ -406,6 +411,7 @@ export class OffsetMeshContext {
       node.isMaskSet(this.insideOfChamferFace) ? "(in chamfer)" : "",
       node.isMaskSet(this.outsideEndOfChamferFace) ? "(@sling)" : "",
       node.isMaskSet(this.outsideOfChamferFace) ? "(@chamfer)" : "",
+      "(", node.x.toString(), ",", node.y.toString(), ",", node.z.toString(), ")",
       "]"
     );
     return v;
@@ -555,8 +561,10 @@ export class OffsetMeshContext {
   private setOffsetXYAndZAroundVertex(vertexSeed: HalfEdge, xyz: XYAndZ) {
     vertexSeed.sumAroundVertex((nodeAroundVertex: HalfEdge) => {
       const props = nodeAroundVertex.edgeTag as SectorOffsetProperties;
-      if (props !== undefined)
+      if (props !== undefined) {
         props.setXYAndZ(xyz);
+        nodeAroundVertex.setMask(this._offsetCoordinatesAssigned);
+      }
       return 0.0;
     }
     );
@@ -844,6 +852,7 @@ export class OffsetMeshContext {
    */
   private computeSectorOffsetPoints(distance: number) {
     const breakEdges: HalfEdge[] = [];
+    this._baseGraph.clearMask(this._offsetCoordinatesAssigned);
     this._baseGraph.announceVertexLoops((_graph: HalfEdgeGraph, vertexSeed: HalfEdge) => {
       this.markAndCollectBreakEdgesAroundVertex(vertexSeed);
       this.setOffsetAtDistanceAroundVertex(vertexSeed, distance);
@@ -856,11 +865,13 @@ export class OffsetMeshContext {
         const vectorFromOrigin = this.compute2SectorIntersection(breakEdges[0], breakEdges[1]);
         if (vectorFromOrigin !== undefined) {
           this.setOffsetXYAndZAroundVertex(vertexSeed, vectorFromOrigin);
+          vertexSeed.setMaskAroundVertex(this._offsetCoordinatesAssigned);
         }
       } else if (breakEdges.length === 3) {
         const vectorFromOrigin = this.compute3SectorIntersectionDebug(breakEdges[0], breakEdges[1], breakEdges[2]);
         if (vectorFromOrigin !== undefined) {
           this.setOffsetXYAndZAroundVertex(vertexSeed, vectorFromOrigin);
+          vertexSeed.setMaskAroundVertex(this._offsetCoordinatesAssigned);
         }
         // simple 3-face corner . . .
       } else {
@@ -873,8 +884,9 @@ export class OffsetMeshContext {
           const vectorFromOrigin = this.compute3SectorIntersectionDebug(breakEdges[i], breakEdges[i + 1], breakEdges[i + 2]);
           if (vectorFromOrigin !== undefined) {
             this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[i],
-              (_node: HalfEdge, properties: SectorOffsetProperties) => {
+              (node: HalfEdge, properties: SectorOffsetProperties) => {
                 properties.setXYAndZ(vectorFromOrigin);
+                node.setMask(this._offsetCoordinatesAssigned);
               });
           }
         }
@@ -903,7 +915,7 @@ export class OffsetMeshContext {
       if (vertexSeed === undefined)
         vertexSeed = vertexSeedA;
       if (OffsetMeshContext.stringDebugFunction !== undefined) {
-        OffsetMeshContext.stringDebugFunction(` VERTEX LOOP${vertexSeed.getPoint3d().toJSON()}`);
+        OffsetMeshContext.stringDebugFunction(` VERTEX LOOP   ${vertexSeed.getPoint3d().toJSON()}`);
         vertexSeed.sumAroundVertex(
           (node: HalfEdge) => { OffsetMeshContext.stringDebugFunction!(this.inspectMasks(node)); return 0; });
       }
@@ -951,8 +963,9 @@ export class OffsetMeshContext {
               // Treat all 3 spots as possibly compound sequences
               for (const iOutput of [i0, i1, i2]) {
                 this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[iOutput],
-                  (_node: HalfEdge, properties: SectorOffsetProperties) => {
+                  (node: HalfEdge, properties: SectorOffsetProperties) => {
                     properties.setXYAndZ(vectorFromOrigin);
+                    node.setMask(this._offsetCoordinatesAssigned);
                   });
               }
               // Since all three were reset, skip past.  This is done on the acyclic integer that controls the loop.
@@ -963,7 +976,7 @@ export class OffsetMeshContext {
           } else if (chamferState === 3) {
             // Let these get updated otherwise . . .
           } else {
-            const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
+            const vectorFromOrigin = this.compute3SectorIntersectionDebug(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
             if (vectorFromOrigin !== undefined) {
               this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[i1],
                 (_node: HalfEdge, properties: SectorOffsetProperties) => {
@@ -972,6 +985,12 @@ export class OffsetMeshContext {
             }
           }
         }
+      }
+      if (OffsetMeshContext.stringDebugFunction !== undefined) {
+        const n0 = vertexSeed.countMaskAroundFace(this._offsetCoordinatesAssigned, false);
+        const n1 = vertexSeed.countMaskAroundFace(this._offsetCoordinatesAssigned, true);
+        const message = `   **** Vertex offset mask counts (TRUE ${n1}) (FALSE ${n0}) `;
+        OffsetMeshContext.stringDebugFunction(message);
       }
       return true;
     });
