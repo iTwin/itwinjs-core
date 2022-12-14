@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-bentley",
-      "comment": "Deprecate `next` properties on ByteStream, replacing with `read` methods.",
+      "comment": "Deprecate `next` properties on ByteStream; replace with `read` methods.",
       "type": "none"
     }
   ],
