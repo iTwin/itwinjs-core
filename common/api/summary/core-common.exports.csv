@@ -544,6 +544,7 @@ internal;PntsHeader
 public;Point2dProps = number[]
 beta;PointCloudDisplayProps
 beta;PointCloudDisplaySettings
+beta;PointCloudEDLMode = "off" | "on" | "full"
 beta;PointCloudShape = "square" | "round"
 beta;PointCloudSizeMode = "voxel" | "pixel"
 beta;PointWithStatus
