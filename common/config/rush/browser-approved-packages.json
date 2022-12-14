@@ -1095,6 +1095,10 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
+      "name": "vhacd-js",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "webpack",
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
