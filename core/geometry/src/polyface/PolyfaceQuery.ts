@@ -275,8 +275,6 @@ export class PolyfaceQuery {
   }
 
   /**
-   */
-  /**
    * Test for convex volume by dihedral angle tests on all edges.
    *
    * @param source mesh to examine
