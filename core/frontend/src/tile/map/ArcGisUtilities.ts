@@ -177,20 +177,25 @@ export class ArcGisUtilities {
     try {
       const tmpUrl = new URL(url);
       tmpUrl.searchParams.append("f", "json");
-      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
-      if (accessClient) {
-        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
+
+      let response = await fetch(tmpUrl.toString(), { method: "GET" });
+
+      // Append security token when corresponding error code is returned by ArcGIS service
+      let errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
+      if (errorCode !== undefined &&
+        (errorCode === ArcGisErrorCode.TokenRequired) ) {
+        // If token required
+        const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
+        if (accessClient) {
+          await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
+          response = await fetch(tmpUrl.toString(), { method: "GET" });
+          errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
+        }
       }
 
-      const response = await fetch(tmpUrl.toString(), { method: "GET" });
-
-      const errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
       const json = await response.json();
-      if (errorCode === undefined) {
-        ArcGisUtilities._serviceCache.set(url, json);  // Cache the response only if it doesn't contain a token error.
-      } else {
-        ArcGisUtilities._serviceCache.set(url, undefined);
-      }
+      // Cache the response only if it doesn't contain any error.
+      ArcGisUtilities._serviceCache.set(url, (errorCode === undefined ? json : undefined));
       return json;  // Always return json, even though it contains an error code.
 
     } catch (_error) {
@@ -201,18 +206,27 @@ export class ArcGisUtilities {
 
   /** Read a response from ArcGIS server and check for error code in the response.
   */
-  public static async checkForResponseErrorCode(response: Response) {
-    if (response.headers && response.headers.get("content-type")?.toLowerCase().includes("json")) {
-      try {
+  public static async checkForResponseErrorCode(response: Response, request?: URL, reqOptions?: RequestInit) {
+    let tmpResponse = response;
+    if (response.headers) {
+      if (request && response.headers.get("content-type")?.toLowerCase().includes("htm")) {
+        // We got a response in html, try get a JSON version of it.
+        const tmpRequest = new URL(request);
+        tmpRequest.searchParams.append("f","json");
+        tmpResponse = await fetch(tmpRequest.toString(), reqOptions);
+      }
+
+      if (tmpResponse.headers.get("content-type")?.toLowerCase().includes("json")) {
+        try {
         // Note:
         // Since response stream can only be read once (i.e. calls to .json() method)
         // we have to clone the response object in order to check for potential error code,
         // but still keep the response stream as unread.
-        const clonedResponse = response.clone();
-        const json = await clonedResponse.json();
-        if (json?.error?.code !== undefined)
-          return json?.error?.code as number;
-      } catch {
+          const clonedResponse = tmpResponse.clone();
+          const json = await clonedResponse.json();
+          if (json?.error?.code !== undefined)
+            return json?.error?.code as number;
+        } catch { }
       }
     }
     return undefined;
