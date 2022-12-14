@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Use React.ForwardedRef rather than just a callback.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

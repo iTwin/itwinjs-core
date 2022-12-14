@@ -11,14 +11,13 @@ parameters:
     type: boolean
     default: false
   - name: nodeVersion
-    default: ''
+    default: ""
   - name: currentBranch
     default: $(Build.SourceBranch)
   - name: targetBranch
     default: $(System.PullRequest.TargetBranch)
 
 steps:
-
   - task: NodeTool@0
     displayName: "Use Node ${{ parameters.nodeVersion }}"
     inputs:
@@ -42,7 +41,7 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
   - script: node common/scripts/set-rush-write-cache-variables.js
-    displayName: 'Set Rush Write Cache Variables'
+    displayName: "Set Rush Write Cache Variables"
   - script: node common/scripts/install-run-rush.js check
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}

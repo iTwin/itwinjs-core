@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Make the contents of a Viewport react more smoothly when the containing div is resized.\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
