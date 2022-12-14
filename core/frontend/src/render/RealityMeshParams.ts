@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
+import { assert, Uint16ArrayBuilder, UintArray, UintArrayBuilder } from "@itwin/core-bentley";
 import {
   IndexedPolyface, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
@@ -20,7 +20,6 @@ import { Mesh } from "./primitives/mesh/MeshPrimitives";
  * A reality mesh is a simple triangle mesh to which a [RenderTexture]($common) image can be mapped. Sources of reality meshes
  * include [[TerrainMeshProvider]]s to which background map imagery is applied, and [ContextRealityModel]($common)s captured using
  * [photogrammetry](https://en.wikipedia.org/wiki/Photogrammetry).
- * @note Currently, reality meshes cannot contain more than 65,535 vertices.
  * @see [[RealityMeshParamsBuilder]] to incrementally construct a `RealityMeshParams`.
  * @beta
  */
@@ -32,7 +31,7 @@ export interface RealityMeshParams {
   /** The optional normal vector for each vertex in the mesh, indexed by [[indices]], stored as [OctEncodedNormal]($common)s. */
   normals?: Uint16Array;
   /** The integer indices of each triangle in the mesh. The array's length must be a multiple of 3. */
-  indices: Uint16Array;
+  indices: UintArray;
   /** @alpha unused by terrain meshes */
   featureID?: number; // default 0
   /** @alpha unused by terrain meshes */
@@ -43,8 +42,8 @@ export interface RealityMeshParams {
 export namespace RealityMeshParams {
   /** @internal */
   export function fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined {
-    // The specialized reality mesh shaders expect a mesh with 16-bit indices, uvs, and no edges.
-    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices || !(mesh.indices instanceof Uint16Array))
+    // The specialized reality mesh shaders expect a mesh with uvs and no edges.
+    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices)
       return undefined;
 
     return {
@@ -148,7 +147,7 @@ export class RealityMeshParamsBuilder {
    * @see [[addQuad]] to add 4 indices describing two triangles sharing an edge.
    * @see [[addIndices]] to add any number of indices.
    */
-  public readonly indices: Uint16ArrayBuilder;
+  public readonly indices: UintArrayBuilder;
   /** The 3d position of each vertex in the mesh.
    * @see [[addQuantizedVertex]] and [[addUnquantizedVertex]] to add a vertex.
    */
@@ -170,7 +169,15 @@ export class RealityMeshParamsBuilder {
 
   /** Construct a builder from the specified options. */
   public constructor(options: RealityMeshParamsBuilderOptions) {
-    this.indices = new Uint16ArrayBuilder({ initialCapacity: options.initialIndexCapacity });
+    let initialType;
+    if (undefined !== options.initialVertexCapacity && options.initialVertexCapacity > 0xff)
+      initialType = options.initialVertexCapacity > 0xffff ? Uint32Array : Uint16Array;
+
+    this.indices = new UintArrayBuilder({
+      initialCapacity: options.initialIndexCapacity,
+      initialType,
+    });
+
     if (options.wantNormals)
       this.normals = new Uint16ArrayBuilder({ initialCapacity: options.initialVertexCapacity });
 

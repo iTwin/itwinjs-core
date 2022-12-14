@@ -166,6 +166,9 @@
     },
     "AttachCustomRealityData": {
       "keyin": "dta attach reality"
+    },
+    "DtaClipByElementGeometry": {
+      "keyin": "dta clip element geometry"
     }
   }
 }
