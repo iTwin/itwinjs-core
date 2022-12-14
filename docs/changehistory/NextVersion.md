@@ -11,6 +11,7 @@ Table of contents:
   - [Smooth viewport resizing](#smooth-viewport-resizing)
 - [Deprecations](#deprecations)
   - [@itwin/core-bentley](#itwincore-bentley)
+  - [@itwin/core-frontend](#itwincore-frontend)
 
 ## Electron 22 support
 
@@ -43,3 +44,7 @@ Previously, when a [Viewport]($frontend)'s canvas was resized there would be a d
 ### @itwin/core-bentley
 
 [ByteStream]($bentley)'s `next` property getters like [ByteStream.nextUint32]($bentley) and [ByteStream.nextFloat64]($bentley) have been deprecated and replaced with corresponding `read` methods like [ByteStream.readUint32]($bentley) and [ByteStream.readFloat64]($bentley). The property getters have the side effect of incrementing the stream's current read position, which can result in surprising behavior and may [trip up code optimizers](https://github.com/angular/angular-cli/issues/12128#issuecomment-472309593) that assume property access is free of side effects.
+
+### @itwin/core-frontend
+
+[Viewport.setEventController]($frontend) was only ever intended to be used by [ViewManager]($frontend). In the unlikely event that you are using it for some (probably misguided) purpose, it will continue to behave as before, but it will be removed in a future major version.
