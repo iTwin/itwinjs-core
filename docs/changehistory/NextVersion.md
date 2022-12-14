@@ -8,6 +8,7 @@ Table of contents:
 - [Electron 22 support](#electron-22-support)
 - [Display system](#display-system)
   - [Eye-dome lighting of Point Clouds](#eye-dome-lighting-of-point-clouds)
+  - [Smooth viewport resizing](#smooth-viewport-resizing)
 - [Deprecations](#deprecations)
   - [@itwin/core-bentley](#itwincore-bentley)
 
@@ -32,6 +33,10 @@ To apply eye-dome lighting to a point cloud, you must apply a [RealityModelDispl
 - [PointCloudDisplaySettings.edlMixWts1]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the full image when combining it with the half and quarter sized ones; this only applies if edlMode is "full". This defaults to 1.0.
 - [PointCloudDisplaySettings.edlMixWts2]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the half image when combining it with the full and quarter sized ones; this only applies if edlMode is "full". This defaults to 0.5.
 - [PointCloudDisplaySettings.edlMixWts4]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the full image when combining it with the full and half sized ones; this only applies if edlMode is "full". This defaults to 0.25.
+
+### Smooth viewport resizing
+
+Previously, when a [Viewport]($frontend)'s canvas was resized there would be a delay of up to one second during which the viewport's contents would appear stretched or squished, before they were redrawn to match the new canvas dimensions. This was due to the unavailability of [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) in some browsers. Now that `ResizeObserver` is supported by all major browsers, we are able to use it to make the contents of the viewport update smoothly during a resize operation.
 
 ## Deprecations
 
