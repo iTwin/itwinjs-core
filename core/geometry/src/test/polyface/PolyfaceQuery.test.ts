@@ -860,7 +860,7 @@ describe("ReOrientFacets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("isConvex", () => {
+  it("isConvex", () => {
 
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -876,14 +876,16 @@ describe("ReOrientFacets", () => {
       const meshA = builder.claimPolyface();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, x0, y0);
       const dihedralA = PolyfaceQuery.dihedralAngleSummary(meshA);
-      // Explicit test for solids with easily predicted convexity . . .
+      // We don't really know what solids are in the sampler, but ....
+      // These types are always convex ...
       if (solid instanceof Box
         || solid instanceof Cone
         || solid instanceof Sphere)
         ck.testExactNumber(1, dihedralA);
+      // These types are always mixed
       if (solid instanceof TorusPipe
         || solid instanceof RotationalSweep)
-        ck.testExactNumber(-1, dihedralA);
+        ck.testExactNumber(0, dihedralA);
       if (dihedralA !== 0)
         GeometryCoreTestIO.captureCloneGeometry(allGeometry,
           [Point3d.create(0, 0, 0), Point3d.create(0, dihedralA * strokeLength, 0)], x0, y0);

@@ -286,16 +286,15 @@ export class PolyfaceQuery {
     return this.dihedralAngleSummary(source) > 0;
   }
 
-
   /**
- * Test for consistency of dihedral angles.
- * * Return a number summarizing the angles.
- *   * Return 1 if all angles are positive or planar.  The mesh is probably convex with outward normals.
- *   * Return -1 if all angles are negative or planar.  The mesh is probably convex with inward normals.
- *   * Return 0 if
- *     * angles area mixed
- *     * any edge has other than 2 adjacent facet
- */
+  * * Return a number summarizing the dihedral angles in the mesh.
+  *   * Return 1 if all angles are positive or planar.  The mesh is probably convex with outward normals.
+  *   * Return -1 if all angles are negative or planar.  The mesh is probably convex with inward normals.
+  *   * Return 0 if
+  *     * angles area mixed
+  *     * any edge has other than 1 incident facet or more than 2 incident facets.
+  *     * (but null edges are permitted -- These occur naturally at edges of quads at north or south pole)
+  */
   public static dihedralAngleSummary(source: Polyface): number {
     {
       const edges = new IndexedEdgeMatcher();
@@ -317,7 +316,7 @@ export class PolyfaceQuery {
       const badClusters: SortableEdgeCluster[] = [];
       const manifoldClusters: SortableEdgeCluster[] = [];
 
-      edges.sortAndCollectClusters(manifoldClusters, badClusters, badClusters);
+      edges.sortAndCollectClusters(manifoldClusters, badClusters, undefined, badClusters);
       if (badClusters.length > 0)
         return 0;
       let numPositive = 0;
