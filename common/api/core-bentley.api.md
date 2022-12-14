@@ -172,16 +172,32 @@ export class ByteStream {
     get isPastTheEnd(): boolean;
     get length(): number;
     nextBytes(numBytes: number): Uint8Array;
+    // @deprecated (undocumented)
     get nextFloat32(): number;
+    // @deprecated (undocumented)
     get nextFloat64(): number;
+    // @deprecated (undocumented)
     get nextId64(): Id64String;
+    // @deprecated (undocumented)
     get nextInt32(): number;
+    // @deprecated (undocumented)
     get nextUint16(): number;
+    // @deprecated (undocumented)
     get nextUint24(): number;
+    // @deprecated (undocumented)
     get nextUint32(): number;
     nextUint32s(numUint32s: number): Uint32Array;
+    // @deprecated (undocumented)
     get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
+    readFloat32(): number;
+    readFloat64(): number;
+    readId64(): Id64String;
+    readInt32(): number;
+    readUint16(): number;
+    readUint24(): number;
+    readUint32(): number;
+    readUint8(): number;
     get remainingLength(): number;
     reset(): void;
     rewind(numBytes: number): boolean;
