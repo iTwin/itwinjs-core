@@ -47,4 +47,4 @@ Previously, when a [Viewport]($frontend)'s canvas was resized there would be a d
 
 ### @itwin/core-frontend
 
-[Viewport.setEventController]($frontend) was only ever intended to be used by [ViewManager]($frontend). In the unlikely event that you are using it for some (probably misguided) purpose, it will continue to behave as before, but it will be removed in a future major version.
+[ScreenViewport.setEventController]($frontend) was only ever intended to be used by [ViewManager]($frontend). In the unlikely event that you are using it for some (probably misguided) purpose, it will continue to behave as before, but it will be removed in a future major version.
