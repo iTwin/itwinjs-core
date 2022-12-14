@@ -880,12 +880,14 @@ describe("ReOrientFacets", () => {
       // These types are always convex ...
       if (solid instanceof Box
         || solid instanceof Cone
-        || solid instanceof Sphere)
+        || solid instanceof Sphere) {
         ck.testExactNumber(1, dihedralA);
+      }
       // These types are always mixed
       if (solid instanceof TorusPipe
         || solid instanceof RotationalSweep)
         ck.testExactNumber(0, dihedralA);
+      ck.testBoolean(dihedralA > 0, PolyfaceQuery.isConvexByDihedralAngleCount(meshA), "Dihedral angle counts match closure");
       if (dihedralA !== 0)
         GeometryCoreTestIO.captureCloneGeometry(allGeometry,
           [Point3d.create(0, 0, 0), Point3d.create(0, dihedralA * strokeLength, 0)], x0, y0);
@@ -901,6 +903,7 @@ describe("ReOrientFacets", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry,
           [Point3d.create(0, -dxB, 0), Point3d.create(strokeLength, -dxB, 0)], x0, y0);
       ck.testExactNumber(dihedralA, -dihedralB);
+      ck.testBoolean(dihedralB > 0, PolyfaceQuery.isConvexByDihedralAngleCount(meshA), "Dihedral angle counts match closure in reversed mesh");
       x0 += 20;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "isConvex");
