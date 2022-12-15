@@ -690,6 +690,7 @@ export namespace RealityModelTileTree {
       const args = super.createDrawArgs(context);
       if (args) {
         args.graphics.realityModelDisplaySettings = this._getDisplaySettings();
+        args.graphics.realityModelRange = args.tree.rootTile.contentRange;
 
         if (args.tree instanceof RealityTileTree) {
           const maxSSE = args.tree.loader.maximumScreenSpaceError;

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/appui-react",
-      "comment": "Fix a circular dependency issue.",
+      "comment": "Use React.ForwardedRef rather than just a callback.",
       "type": "none"
     }
   ],

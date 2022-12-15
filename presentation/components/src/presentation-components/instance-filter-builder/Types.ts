@@ -34,3 +34,8 @@ export interface InstanceFilterPropertyInfo {
   className: string;
   categoryLabel?: string;
 }
+
+/** @alpha */
+export function isPresentationInstanceFilterConditionGroup(filter: PresentationInstanceFilter): filter is PresentationInstanceFilterConditionGroup {
+  return (filter as any).conditions !== undefined;
+}

@@ -2865,6 +2865,7 @@ export class ScreenViewport extends Viewport {
   };
 
   private _evController?: EventController;
+  private _resizeObserver?: ResizeObserver;
   private _viewCmdTargetCenter?: Point3d;
   /** The number of entries in the view undo/redo buffer. */
   public maxUndoSteps = 20;
@@ -3050,12 +3051,36 @@ export class ScreenViewport extends Viewport {
     return { x: ev.movementX, y: ev.movementY };
   }
 
-  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
+  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined.
+   * @deprecated this was intended for internal use only.
+   */
   public setEventController(controller?: EventController) {
     if (this._evController)
       this._evController.destroy();
 
     this._evController = controller;
+  }
+
+  /** Invoked by ViewManager.addViewport.
+   * @internal
+   */
+  public onViewManagerAdd(): void {
+    this.onViewManagerDrop();
+
+    this._evController = new EventController(this);
+    this._resizeObserver = new ResizeObserver(() => {
+      this.requestRedraw();
+    });
+    this._resizeObserver.observe(this.canvas);
+  }
+
+  /** Invoked by ViewManager.dropViewport.
+   * @internal
+   */
+  public onViewManagerDrop(): void {
+    this._evController?.destroy();
+    this._resizeObserver?.disconnect();
+    this._evController = this._resizeObserver = undefined;
   }
 
   /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
