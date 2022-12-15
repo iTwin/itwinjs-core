@@ -228,7 +228,7 @@ export interface BackendHubAccess {
   queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
 
   /**
-   * Get the access props for a V2 checkpoint that is at the requested changesetId or the most recent checkpoint before it. Returns undefined if no such V2 checkpoint exists.
+   * Get the access props for a successful V2 checkpoint that is at the requested changesetId or the most recent checkpoint before it. Returns undefined if no such V2 checkpoint exists.
    * @internal
    */
   queryCurrentOrPrecedingV2Checkpoint?: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
