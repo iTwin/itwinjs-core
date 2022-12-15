@@ -59,7 +59,7 @@ export async function flushAsyncOperations() {
   return new Promise((resolve) => setTimeout(resolve, 300));
 }
 
-/** Utiltiy function to add multiple tabs to the state. */
+/** Utility function to add multiple tabs to the state. */
 export function addTabs(state: NineZoneState, ids: string[], args?: Partial<TabState> | undefined) {
   for (const id of ids) {
     state = addTab(state, id, args);

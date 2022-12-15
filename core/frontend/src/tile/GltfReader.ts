@@ -645,7 +645,7 @@ export class GltfReaderProps {
     if (source instanceof Uint8Array) {
       // It may be JSON - check for magic indicating glb.
       const buffer = ByteStream.fromUint8Array(source);
-      if (TileFormat.Gltf !== buffer.nextUint32) {
+      if (TileFormat.Gltf !== buffer.readUint32()) {
         try {
           const utf8Json = utf8ToString(source);
           if (!utf8Json)

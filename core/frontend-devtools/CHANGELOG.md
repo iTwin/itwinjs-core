@@ -1,6 +1,20 @@
 # Change Log - @itwin/frontend-devtools
 
-This log was last generated on Wed, 30 Nov 2022 14:28:19 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Dec 2022 16:38:29 GMT and should not be manually modified.
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:29 GMT
+
+### Updates
+
+- slider readout
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:37 GMT
+
+### Updates
+
+- added ability to display normal maps
 
 ## 3.4.7
 Wed, 30 Nov 2022 14:28:19 GMT
