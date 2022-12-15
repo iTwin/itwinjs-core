@@ -147,7 +147,12 @@ export interface BeJSONFunctions {
  * If value is an object, it can have either degrees or radians.
  * @public
  */
-export type AngleProps = { degrees: number } | { radians: number } | { _radians: number } | { _degrees: number } | number;
+export type AngleProps =
+  { degrees: number } |
+  { radians: number } |
+  { _radians: number } |
+  { _degrees: number } |
+  number;
 /** The Properties for a JSON representation of an AngleSweep.
  * * The json data is always start and end angles as a pair in an array.
  * If AngleProps data is an array of two numbers, it is an angle in degrees.
