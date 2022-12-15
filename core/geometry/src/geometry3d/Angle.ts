@@ -453,11 +453,13 @@ export class Angle implements BeJSONFunctions {
      * perpendicular to the ellipse.
      * * Then 0 = W(t0).x'(t0) = (U cos(t0) + V sin(t0)).(V cos(t0) - U sin(t0)) = U.V cos(2t0) + 0.5 (V.V - U.U) sin(2t0)
      * implies sin(2t0) / cos(2t0) = 2 U.V / (U.U - V.V), i.e., t0 can be computed given the three dot products on the RHS.
+     * math details can be found at docs/learning/geometry/Angle.md
      * @param dotUU dot product of vectorU with itself
      * @param dotVV dot product of vectorV with itself
      * @param dotUV dot product of vectorU with vectorV
      */
   public static dotProductsToHalfAngleTrigValues(dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true): TrigValues {
+
     const cos2t0 = dotUU - dotVV;
     const sin2t0 = 2.0 * dotUV;
     if (favorZero && Math.abs(sin2t0) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))

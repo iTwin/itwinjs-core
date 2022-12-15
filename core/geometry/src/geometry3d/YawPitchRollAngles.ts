@@ -129,7 +129,12 @@ export class YawPitchRollAngles {
     const s1 = Math.sin(this.pitch.radians);
     const c2 = Math.cos(this.roll.radians);
     const s2 = Math.sin(this.roll.radians);
-    return Matrix3d.createRowValues(c0 * c1, -(s0 * c2 + c0 * s1 * s2), (s0 * s2 - c0 * s1 * c2), s0 * c1, (c0 * c2 - s0 * s1 * s2), -(c0 * s2 + s0 * s1 * c2), s1, c1 * s2, c1 * c2, result);
+    return Matrix3d.createRowValues(
+      c0 * c1, -(s0 * c2 + c0 * s1 * s2), (s0 * s2 - c0 * s1 * c2),
+      s0 * c1, (c0 * c2 - s0 * s1 * s2), -(c0 * s2 + s0 * s1 * c2),
+      s1, c1 * s2, c1 * c2,
+      result
+    );
   }
   /** Return the largest angle in radians */
   public maxAbsRadians(): number {
