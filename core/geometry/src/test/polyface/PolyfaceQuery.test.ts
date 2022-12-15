@@ -860,7 +860,7 @@ describe("ReOrientFacets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("isConvex", () => {
+  it.only("isConvex", () => {
 
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -907,6 +907,27 @@ describe("ReOrientFacets", () => {
       x0 += 20;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "isConvex");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it.only("isConvexWithBoundary", () => {
+
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const options = StrokeOptions.createForFacets();
+    const builder = PolyfaceBuilder.create(options);
+    const point00 = Point3d.create(0, 0, 0);
+    const point10 = Point3d.create(1, 0, 0);
+    const point01 = Point3d.create(0, 1, 0);
+    const point111 = Point3d.create(1, 1, -1);
+    builder.addPolygon([point00, point10, point01]);
+    builder.addPolygon([point01, point10, point111]);
+    const polyface = builder.claimPolyface();
+    ck.testExactNumber(1, PolyfaceQuery.dihedralAngleSummary(polyface, true), "dihedral with boundary");
+    ck.testFalse(PolyfaceQuery.isConvexByDihedralAngleCount(polyface, false), "isConvexByDihedralPairing reject boundary");
+    ck.testTrue(PolyfaceQuery.isConvexByDihedralAngleCount(polyface, true), "isConvexByDihedralPairing with boundary");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "isConvexWithBoundary");
 
     expect(ck.getNumErrors()).equals(0);
   });
