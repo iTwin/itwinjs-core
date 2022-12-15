@@ -3860,7 +3860,7 @@ export class Order5Bezier extends BezierCoffs {
     sumBasisFunctions(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array;
 }
 
-// @public
+// @alpha
 export class OrderedRotationAngles {
     static createAngles(xRotation: Angle, yRotation: Angle, zRotation: Angle, order: AxisOrder, xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles;
     static createDegrees(xDegrees: number, yDegrees: number, zDegrees: number, order: AxisOrder, xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles;

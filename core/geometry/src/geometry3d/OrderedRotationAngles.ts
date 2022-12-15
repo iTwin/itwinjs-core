@@ -21,7 +21,7 @@ import { Matrix3d } from "./Matrix3d";
  * createAngles) so you can define each of the 3 rotations to be clockwise or counterclockwise. The default
  * rotation is counterclockwise.
  * * Within the imodel geometry library, the preferred rotation order is encapsulated in `YawPitchRollAngles`.
- * @public
+ * @alpha
  */
 export class OrderedRotationAngles {
   /** rotation around x */
@@ -219,7 +219,7 @@ export class OrderedRotationAngles {
            *        Matrix3d.createRowValues(
            *             0, +-sx, +-cx,
            *             0, cx, -sx,
-           *             +-1, 0, 0
+           *             -+1, 0, 0
            *        );
            * Math details can be found
            * https://en.wikipedia.org/wiki/Gimbal_lock#Loss_of_a_degree_of_freedom_with_Euler_angles
@@ -291,7 +291,17 @@ export class OrderedRotationAngles {
     const angles = OrderedRotationAngles.createRadians(xRad, yRad, zRad, order, xyzRotationIsClockwise, result);
     // sanity check
     const matrix1 = angles.toMatrix3d();
-    return matrix.maxDiff(matrix1) < Geometry.smallAngleRadians ? angles : undefined;
+    /**
+     * Below tolerance loosened to allow sanity check to pass for
+     *
+     * OrderedRotationAngles.createFromMatrix3d(
+     *       OrderedRotationAngles.createDegrees(0, 89.999, 0.001, AxisOrder.XYZ).toMatrix3d(),
+     *       AxisOrder.XYZ
+     * );
+     *
+     * with treatVectorsAsColumns = true.
+     */
+    return (matrix.maxDiff(matrix1) < 10 * Geometry.smallFraction) ? angles : undefined;
   }
   /**
    * Create a 3x3 rotational matrix from this OrderedRotationAngles.

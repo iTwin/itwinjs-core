@@ -293,8 +293,8 @@ export class YawPitchRollAngles {
      * The rotation matrix for y = +-90 degrees and x = 0 becomes
      *
      * Matrix3d.createRowValues(
-     *      0, -sz, +-cz,
-     *      0, cz, +-sz,
+     *      0, -sz, -+cz,
+     *      0, cz, -+sz,
      *      +-1, 0, 0
      * );
      *

@@ -192,7 +192,7 @@ internal;Order2Bezier
 internal;Order3Bezier 
 internal;Order4Bezier 
 internal;Order5Bezier 
-public;OrderedRotationAngles
+alpha;OrderedRotationAngles
 internal;PackedMatrix3dOps
 public;PackedPointGrid
 public;ParityRegion 
