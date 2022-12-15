@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Wed, 07 Dec 2022 19:12:36 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Dec 2022 16:38:28 GMT and should not be manually modified.
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:28 GMT
+
+### Updates
+
+- Eye-Dome-Lighting
 
 ## 3.5.0
 Wed, 07 Dec 2022 19:12:36 GMT
