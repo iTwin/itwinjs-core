@@ -10,7 +10,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.5.11
+      '@bentley/imodeljs-native': 3.5.12
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ~1.4.0
       '@itwin/core-bentley': workspace:*
@@ -56,7 +56,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.12.0
-      '@bentley/imodeljs-native': 3.5.11
+      '@bentley/imodeljs-native': 3.5.12
       '@itwin/cloud-agnostic-core': 1.4.0
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.4.0
@@ -7058,8 +7058,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.5.11:
-    resolution: {integrity: sha512-WM1B9NrGEuzUhtAHTlaPCWbYklmN0uq/y2RFZPwgeI07MU8A85OLgc+C2YyWi/04gbiEvt/TuMSYRMN7DzFHaQ==}
+  /@bentley/imodeljs-native/3.5.12:
+    resolution: {integrity: sha512-hwxP7ds7dyJ2rEeKV7y+BydlaGWiXKdn+EbsccQqcB1g7cQgA63ftr7ax+Lxrb5V0mPHlYCH8T+/IxkdlhNc8w==}
     requiresBuild: true
     dev: false
 
@@ -13643,7 +13643,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.45.1_4aa5aae29ffeaa969ab3b64e53a80516
       '@typescript-eslint/experimental-utils': 5.45.1_eslint@8.29.0+typescript@4.4.4
       eslint: 8.29.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -16458,7 +16458,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -21913,7 +21913,7 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.20.5
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-util: 27.5.1
       json5: 2.2.1
       lodash.memoize: 4.1.2
