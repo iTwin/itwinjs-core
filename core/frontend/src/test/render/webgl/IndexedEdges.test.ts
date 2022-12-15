@@ -43,7 +43,7 @@ function expectIndices(indices: VertexIndices, expected: number[]): void {
   expect(indices.data.length).to.equal(expected.length * 3);
   const stream = ByteStream.fromUint8Array(indices.data);
   for (const expectedIndex of expected)
-    expect(stream.nextUint24).to.equal(expectedIndex);
+    expect(stream.readUint24()).to.equal(expectedIndex);
 }
 
 // expectedSegments = 2 indices per segment edge.
@@ -56,21 +56,21 @@ function expectEdgeTable(edges: EdgeTable, expectedSegments: number[], expectedS
   const stream = ByteStream.fromUint8Array(edges.data);
   const actualSegments: number[] = [];
   for (let i = 0; i < expectedSegments.length; i += 2) {
-    actualSegments.push(stream.nextUint24);
-    actualSegments.push(stream.nextUint24);
+    actualSegments.push(stream.readUint24());
+    actualSegments.push(stream.readUint24());
   }
 
   expect(expectedSilhouettes.length % 4).to.equal(0);
   const actualSilhouettes: number[] = [];
 
   for (let i = 0; i < expectedPaddingBytes; i++)
-    expect(stream.nextUint8).to.equal(0);
+    expect(stream.readUint8()).to.equal(0);
 
   for (let i = 0; i < expectedSilhouettes.length; i += 4) {
-    actualSilhouettes.push(stream.nextUint24);
-    actualSilhouettes.push(stream.nextUint24);
-    actualSilhouettes.push(stream.nextUint16);
-    actualSilhouettes.push(stream.nextUint16);
+    actualSilhouettes.push(stream.readUint24());
+    actualSilhouettes.push(stream.readUint24());
+    actualSilhouettes.push(stream.readUint16());
+    actualSilhouettes.push(stream.readUint16());
   }
 
   expect(actualSegments).to.deep.equal(expectedSegments);

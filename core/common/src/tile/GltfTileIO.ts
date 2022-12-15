@@ -47,8 +47,8 @@ function consumeNextChunk(stream: ByteStream): TypedGltfChunk | undefined | fals
     return undefined;
 
   const offset = stream.curPos + 8;
-  const length = stream.nextUint32;
-  const type = stream.nextUint32;
+  const length = stream.readUint32();
+  const type = stream.readUint32();
   stream.advance(length);
   return stream.isPastTheEnd ? false : { offset, length, type };
 }
@@ -66,10 +66,10 @@ export class GlbHeader extends TileHeader {
 
   public constructor(stream: ByteStream) {
     super(stream);
-    this.gltfLength = stream.nextUint32;
+    this.gltfLength = stream.readUint32();
 
-    const jsonLength = stream.nextUint32;
-    const word5 = stream.nextUint32;
+    const jsonLength = stream.readUint32();
+    const word5 = stream.readUint32();
 
     // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
     // validating the chunk type.

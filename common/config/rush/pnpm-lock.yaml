@@ -3317,6 +3317,7 @@ importers:
       semver: ^7.3.5
       ts-node: ^10.8.2
       typescript: ~4.4.0
+      vhacd-js: ^0.0.1
       webpack: ^5.64.4
     dependencies:
       '@bentley/icons-generic': 1.0.34
@@ -3348,6 +3349,7 @@ importers:
       '@itwin/reality-data-client': 0.9.0
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.1
+      vhacd-js: 0.0.1
     devDependencies:
       '@bentley/react-scripts': 5.0.3_ts-node@10.9.1+typescript@4.4.4
       '@itwin/backend-webpack-tools': link:../../tools/backend-webpack
@@ -22254,6 +22256,10 @@ packages:
   /vary/1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
+
+  /vhacd-js/0.0.1:
+    resolution: {integrity: sha512-UfFbxWkl59mjtMX1z5AhWxGu91RdHK67JOHyfgIUA/gk+XD30djG6XJgEpVY65X4W/a04U9urWQnlLjsWwlgKA==}
+    dev: false
 
   /vscode-oniguruma/1.7.0:
     resolution: {integrity: sha512-L9WMGRfrjOhgHSdOYgCt/yRMsXzLDJSL7BPrOZt73gU0iWO4mpqzqQzOz5srxqTvMBaR0XZTSrVWo4j55Rc6cA==}
