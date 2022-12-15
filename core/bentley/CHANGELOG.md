@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Wed, 07 Dec 2022 19:12:36 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Dec 2022 16:38:28 GMT and should not be manually modified.
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:28 GMT
+
+### Updates
+
+- Add UintArrayBuilder for constructing typed arrays of unknown number of bytes per element.
+- Deprecate `next` properties on ByteStream; replace with `read` methods.
 
 ## 3.5.0
 Wed, 07 Dec 2022 19:12:36 GMT
