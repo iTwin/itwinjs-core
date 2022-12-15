@@ -860,7 +860,7 @@ describe("ReOrientFacets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("isConvex", () => {
+  it("isConvex", () => {
 
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -911,7 +911,7 @@ describe("ReOrientFacets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("isConvexWithBoundary", () => {
+  it("isConvexWithBoundary", () => {
 
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
