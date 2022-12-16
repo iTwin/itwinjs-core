@@ -4,53 +4,62 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { useEffect, useRef } from "react";
-import { Guid } from "@itwin/core-bentley";
-import { Presentation } from "@itwin/presentation-frontend";
 import { getVisibleDescendants, isTreeModelNode, TreeModelSource, TreeNodeItem } from "@itwin/components-react";
+import { Guid } from "@itwin/core-bentley";
+import { NodeState, Presentation } from "@itwin/presentation-frontend";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /** @internal */
-export interface UseExpandedNodesTrackingProps {
+export interface UseHierarchyStateTrackingProps {
   modelSource: TreeModelSource;
   dataProvider: IPresentationTreeDataProvider;
-  enableNodesTracking: boolean;
+  enableTracking: boolean;
 }
 
 /** @internal */
-export function useExpandedNodesTracking(props: UseExpandedNodesTrackingProps) {
+export function useHierarchyStateTracking(props: UseHierarchyStateTrackingProps) {
   const { modelSource, dataProvider } = props;
   const componentId = useRef(Guid.createValue());
 
   useEffect(() => {
-    if (!props.enableNodesTracking)
+    if (!props.enableTracking)
       return;
+
     const sourceId = componentId.current;
 
-    const updateExpandedNodes = () => {
+    const updateNodeStates = () => {
       if (!Presentation.presentation.stateTracker)
         return;
 
-      const expandedNodes = getExpandedNodeItems(modelSource).map((item) => ({ id: item.id, key: dataProvider.getNodeKey(item) }));
+      const nodeStates = getNodeStates(modelSource).map((itemState) => {
+        const { item, ...state } = itemState;
+        return {
+          node: item
+            ? { id: item.id, key: dataProvider.getNodeKey(item) }
+            : /* istanbul ignore next */ undefined, // TODO: enable this when we start tracking more than just `isExpanded` state flag
+          state,
+        };
+      });
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      Presentation.presentation.stateTracker.onExpandedNodesChanged(dataProvider.imodel, dataProvider.rulesetId, sourceId, expandedNodes);
+      Presentation.presentation.stateTracker.onHierarchyStateChanged(dataProvider.imodel, dataProvider.rulesetId, sourceId, nodeStates);
     };
-    const removeModelChangeListener = modelSource.onModelChanged.addListener(updateExpandedNodes);
-    updateExpandedNodes();
+    const removeModelChangeListener = modelSource.onModelChanged.addListener(updateNodeStates);
+    updateNodeStates();
 
     return () => {
       removeModelChangeListener();
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       Presentation.presentation.stateTracker?.onHierarchyClosed(dataProvider.imodel, dataProvider.rulesetId, sourceId);
     };
-  }, [modelSource, dataProvider, props.enableNodesTracking]);
+  }, [modelSource, dataProvider, props.enableTracking]);
 }
 
 /** @internal */
-export function getExpandedNodeItems(modelSource: TreeModelSource) {
-  const expandedItems = new Array<TreeNodeItem>();
+export function getNodeStates(modelSource: TreeModelSource) {
+  const states = new Array<NodeState & { item: TreeNodeItem | undefined }>();
   for (const node of getVisibleDescendants(modelSource.getModel(), modelSource.getModel().getRootNode())) {
     if (isTreeModelNode(node) && node.isExpanded)
-      expandedItems.push(node.item);
+      states.push({ item: node.item, isExpanded: true });
   }
-  return expandedItems;
+  return states;
 }
