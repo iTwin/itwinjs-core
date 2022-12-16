@@ -37,7 +37,7 @@ describe("ElectronApp tests.", () => {
     await ElectronApp.startup({
       iModelApp: {
         rpcInterfaces: [TestRpcInterface],
-        localization: new EmptyLocalization()
+        localization: new EmptyLocalization(),
       },
     });
     assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));

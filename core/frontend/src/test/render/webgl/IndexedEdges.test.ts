@@ -86,7 +86,7 @@ describe("IndexedEdgeParams", () => {
     it("are not produced if unsupported by client device", async () => {
       await IModelApp.startup({
         renderSys: { useWebGL2: false },
-        localization: new EmptyLocalization()
+        localization: new EmptyLocalization(),
       });
       expect(IModelApp.renderSystem.supportsIndexedEdges).to.be.false;
       expect(IModelApp.tileAdmin.enableIndexedEdges).to.be.false;
@@ -103,7 +103,7 @@ describe("IndexedEdgeParams", () => {
     it("are not produced if explicitly disabled by TileAdmin", async () => {
       await IModelApp.startup({
         tileAdmin: { enableIndexedEdges: false },
-        localization: new EmptyLocalization()
+        localization: new EmptyLocalization(),
       });
       expect(IModelApp.renderSystem.supportsIndexedEdges).to.be.true;
       expect(IModelApp.tileAdmin.enableIndexedEdges).to.be.false;

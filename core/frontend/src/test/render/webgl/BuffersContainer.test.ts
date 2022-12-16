@@ -25,7 +25,7 @@ describe("BuffersContainer", () => {
         useWebGL2: false,
         disabledExtensions: ["OES_vertex_array_object"],
       },
-      localization: new EmptyLocalization()
+      localization: new EmptyLocalization(),
     });
 
     const buffers = BuffersContainer.create();

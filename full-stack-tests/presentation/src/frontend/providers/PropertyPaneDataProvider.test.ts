@@ -11,7 +11,7 @@ import { KeySet, RuleTypes } from "@itwin/presentation-common";
 import { DEFAULT_PROPERTY_GRID_RULESET, PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
 import { PropertyCategory } from "@itwin/components-react";
-import { initialize, terminate, TestLocalization } from "../../IntegrationTests";
+import { initialize, terminate, testLocalization } from "../../IntegrationTests";
 
 describe("PropertyDataProvider", async () => {
 
@@ -20,7 +20,7 @@ describe("PropertyDataProvider", async () => {
   let physicalModelProps: ModelProps;
 
   before(async () => {
-    await initialize({ localization: TestLocalization });
+    await initialize({ localization: testLocalization });
 
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await SnapshotConnection.openFile(testIModelName);

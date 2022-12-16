@@ -75,7 +75,7 @@ describe("Instancing", () => {
       await IModelApp.startup({
         renderSys: renderSysOpts,
         tileAdmin: tileAdminProps,
-        localization: new EmptyLocalization()
+        localization: new EmptyLocalization(),
       });
 
       expect(IModelApp.tileAdmin.enableInstancing).to.equal(expectEnabled);
@@ -115,7 +115,7 @@ describe("ExternalTextures", () => {
       await IModelApp.startup({
         renderSys: renderSysOpts,
         tileAdmin: tileAdminProps,
-        localization: new EmptyLocalization()
+        localization: new EmptyLocalization(),
       });
 
       expect(IModelApp.tileAdmin.enableExternalTextures).to.equal(expectEnabled);
@@ -200,7 +200,7 @@ describe("System", () => {
     before(async () => {
       await IModelApp.startup({
         renderSys: TestSystem.create(),
-        localization: new EmptyLocalization()
+        localization: new EmptyLocalization(),
       });
     });
 

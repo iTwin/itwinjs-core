@@ -23,7 +23,7 @@ class TestSystem extends System {
     this._simulateBug = simulateBug;
     return IModelApp.startup({
       renderSys: this.create({ preserveShaderSourceCode: true }),
-      localization: new EmptyLocalization()
+      localization: new EmptyLocalization(),
     });
   }
 }

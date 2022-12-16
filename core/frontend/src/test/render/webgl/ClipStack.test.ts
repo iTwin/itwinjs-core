@@ -30,7 +30,7 @@ for (let i = 0; i < 2; i++) {
     before(async () => {
       await IModelApp.startup({
         renderSys,
-        localization: new EmptyLocalization()
+        localization: new EmptyLocalization(),
       });
     });
 

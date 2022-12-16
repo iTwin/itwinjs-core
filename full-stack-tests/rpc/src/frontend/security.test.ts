@@ -21,7 +21,7 @@ describe("CSRF Protection (Enabled)", () => {
 
     await IModelApp.startup({
       security: { csrfProtection: { enabled: true } },
-      localization: new EmptyLocalization()
+      localization: new EmptyLocalization(),
     });
 
     const client = TestRpcInterface.getClient();

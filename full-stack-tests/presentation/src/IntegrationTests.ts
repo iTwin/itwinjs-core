@@ -111,7 +111,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     authorizationClient: props.useClientServices
       ? TestUtility.getAuthorizationClient(TestUsers.regular)
       : undefined,
-    localization: props.localization ?? new EmptyLocalization()
+    localization: props.localization ?? new EmptyLocalization(),
   };
 
   if (props.useClientServices)
@@ -151,11 +151,11 @@ export const resetBackend = () => {
   PresentationBackend.initialize(props);
 };
 
-export const TestLocalization = new ITwinLocalization({
+export const testLocalization = new ITwinLocalization({
   urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
   initOptions: {
     preload: ["test"],
-    maxRetries: 0
+    maxRetries: 0,
   },
   backendHttpOptions: {
     request: (options, url, payload, callback) => {

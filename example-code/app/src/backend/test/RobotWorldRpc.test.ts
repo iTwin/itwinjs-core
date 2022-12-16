@@ -51,8 +51,8 @@ if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup({
         iModelApp: {
           renderSys: new NullRenderSystem(),
-          localization: new EmptyLocalization()
-        }
+          localization: new EmptyLocalization(),
+        },
       });
 
       // expose interfaces using a direct call mechanism
@@ -141,8 +141,8 @@ export async function initializeElectron(rpcInterfaces: RpcInterfaceDefinition[]
   await ElectronApp.startup({
     iModelApp: {
       rpcInterfaces,
-      localization: new EmptyLocalization()
-    }
+      localization: new EmptyLocalization(),
+    },
   });
 }
 // __PUBLISH_EXTRACT_END__

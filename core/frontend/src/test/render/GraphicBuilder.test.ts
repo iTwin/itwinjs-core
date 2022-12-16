@@ -28,8 +28,8 @@ describe("GraphicBuilder", () => {
     const opts: IModelAppOptions = {
       // One test wants to confirm number of segment and silhouette edges produced - disable indexed edges.
       tileAdmin: { enableIndexedEdges: false },
-      localization: new EmptyLocalization()
-    }
+      localization: new EmptyLocalization(),
+    };
     await IModelApp.startup(opts);
     imodel = createBlankConnection();
   });

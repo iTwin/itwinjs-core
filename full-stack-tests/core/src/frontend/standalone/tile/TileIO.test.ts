@@ -744,7 +744,7 @@ describe("TileAdmin", () => {
 
       await super.startup({
         tileAdmin: props,
-        localization: new EmptyLocalization()
+        localization: new EmptyLocalization(),
       });
 
       if (ProcessDetector.isElectronAppFrontend)

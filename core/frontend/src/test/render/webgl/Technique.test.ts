@@ -58,7 +58,7 @@ describe("Techniques", () => {
       before(async () => {
         await IModelApp.startup({
           renderSys: { useWebGL2, errorOnMissingUniform: true },
-          localization: new EmptyLocalization()
+          localization: new EmptyLocalization(),
         });
         Logger.initializeToConsole();
         Logger.setLevel("core-frontend.Render", LogLevel.Error);
@@ -110,7 +110,7 @@ describe("Techniques", () => {
               errorOnMissingUniform: true,
               disabledExtensions: [disabledExtension],
             },
-            localization: new EmptyLocalization()
+            localization: new EmptyLocalization(),
           });
           Logger.initializeToConsole();
           Logger.setLevel("core-frontend.Render", LogLevel.Error);
@@ -123,7 +123,7 @@ describe("Techniques", () => {
           await IModelApp.shutdown();
           await IModelApp.startup({
             renderSys: { useWebGL2: false, errorOnMissingUniform: true },
-            localization: new EmptyLocalization()
+            localization: new EmptyLocalization(),
           });
           Logger.initializeToConsole();
           Logger.setLevel("core-frontend.Render", LogLevel.Error);

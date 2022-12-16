@@ -43,7 +43,7 @@ describe("PopupManager", () => {
     // use mock renderer so standards tools are registered.
     const opts: IModelAppOptions = {
       uiAdmin: new FrameworkUiAdmin(),
-      localization: new EmptyLocalization()
+      localization: new EmptyLocalization(),
     };
     await MockRender.App.startup(opts);
   });

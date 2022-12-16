@@ -66,8 +66,8 @@ before(async () => {
       return ElectronApp.startup({
         iModelApp: {
           rpcInterfaces,
-          localization: new EmptyLocalization()
-        }
+          localization: new EmptyLocalization(),
+        },
       });
     case "websocket":
       let socketUrl = new URL(window.location.toString());

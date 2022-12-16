@@ -100,8 +100,8 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
     props.frontendApp = NoRenderApp;
   props.frontendAppOptions = {
     localization: new EmptyLocalization(), // Use EmptyLocalization if none is provided
-    ...props.frontendAppOptions
-  }
+    ...props.frontendAppOptions,
+  };
   await props.frontendApp.startup(props.frontendAppOptions);
   const defaultFrontendProps: PresentationFrontendProps = {
     presentation: {
