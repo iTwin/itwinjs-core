@@ -278,13 +278,13 @@ export class PolyfaceQuery {
    * Test for convex volume by dihedral angle tests on all edges.
    * * This tests if all dihedral angles are positive.
    * * In a closed solid, this is a strong test for overall convexity.
-   * * with ignoreBoundaries is true, this may be useful test when all the facets are in a single edge-connected component, such as a pyramid with no underside.
+   * * With `ignoreBoundaries` true, this may be a useful test when all the facets are in a single edge-connected component, such as a pyramid with no underside.
    * * It is not a correct test if there are multiple, disjoint components.
-   *   * Take the above mentioned pyramid with no underside.
+   *   * Take the above-mentioned pyramid with no underside.
    *   * Within the same mesh, have a second pyramid placed to the side, still facing upward.
    *   * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
    * @param source mesh to examine
-   * * @param ignoreBoundaries if true, ignore simple boundary edges, i.e. allow unclosed meshes.
+   * @param ignoreBoundaries if true, ignore simple boundary edges, i.e. allow unclosed meshes.
    * @returns true if the mesh is closed and has all dihedral angles (angle across edge) positive
    */
   public static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries: boolean = false): boolean {
@@ -292,10 +292,11 @@ export class PolyfaceQuery {
   }
 
   /**
-  * * Return a number summarizing the dihedral angles in the mesh.
-  * * See isConvexByDihedralAngleCount for comments about ignoreBoundaries===true when there are multiple connected components.
+  * Compute a number summarizing the dihedral angles in the mesh.
+  * @see [[isConvexByDihedralAngleCount]] for comments about ignoreBoundaries===true when there are multiple connected components.
   * @param source mesh to examine
   * @param ignoreBoundaries if true, ignore simple boundary edges, i.e. allow unclosed meshes.
+  * @returns a number summarizing the dihedral angles in the mesh.
   *   * Return 1 if all angles are positive or planar.  The mesh is probably convex with outward normals.
   *   * Return -1 if all angles are negative or planar.  The mesh is probably convex with inward normals.
   *   * Return 0 if
