@@ -341,6 +341,9 @@ export class PolyfaceQuery {
       return 1;
     if (numNegative > 0 && numPositive === 0)
       return -1;
+    // problem case: if all edges have zero dihedral angle, record it as convex.
+    if (numPlanar > 0 && numPositive === 0 && numNegative === 0)
+      return 1;
     return 0;
   }
 
