@@ -16,9 +16,9 @@ print ("Target branch: " + targetBranch)
 
 # Verifying with rush change requires the branch that is being merged into to be provided.  More details, https://rushjs.io/pages/commands/rush_change/.
 # With release/* being a potential target branch in addition to master, special case those branches.
-if targetBranch.find("refs/heads/release") != -1:
+if "refs/heads/release" in targetBranch:
     branchCmd = ["-b", targetBranch.replace("refs/heads/", "origin/")]
-elif targetBranch.find("release") != -1:
+elif "release" in targetBranch or targetBranch == srcBranch:
     # ADOps uses the branch name (i.e. 'release/2.8.0') for GH PR branch names instead of full refs.
     branchCmd = ["-b", "origin/" + targetBranch]
 else:
