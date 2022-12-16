@@ -4546,9 +4546,11 @@ export class PolyfaceQuery {
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
     static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
     static createIndexedEdges(polyface: Polyface | PolyfaceVisitor): IndexedEdgeMatcher;
+    static dihedralAngleSummary(source: Polyface, ignoreBoundaries?: boolean): number;
     static fillSimpleHoles(mesh: Polyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined;
     static getSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number): boolean | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
+    static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries?: boolean): boolean;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
     static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries?: boolean): boolean;
     static markAllEdgeVisibility(mesh: IndexedPolyface, value: boolean): void;
