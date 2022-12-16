@@ -19,6 +19,9 @@ import {
 import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
 import Backend from "i18next-http-backend";
+import { EmptyLocalization, Localization } from "@itwin/core-common";
+
+const DEFAULT_BACKEND_TIMEOUT: number = 0;
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -74,7 +77,7 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 }
 
-const initializeCommon = async (props: { backendTimeout?: number, useClientServices?: boolean }) => {
+const initializeCommon = async (props: { backendTimeout?: number, useClientServices?: boolean, localization?: Localization }) => {
   // init logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
@@ -108,35 +111,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     authorizationClient: props.useClientServices
       ? TestUtility.getAuthorizationClient(TestUsers.regular)
       : undefined,
-    localization: new ITwinLocalization({
-      urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
-      initOptions: {
-        preload: ["test"],
-      },
-      backendHttpOptions: {
-        request: (options, url, payload, callback) => {
-          /**
-           * A few reasons why we need to modify this request fn:
-           * - The above urlTemplate uses the file:// protocol
-           * - Node v18's fetch implementation does not support file://
-           * - i18n-http-backend uses fetch if it defined globally
-           */
-          const fileProtocol = "file://";
-          const request = new Backend().options.request?.bind(this as void);
-
-          if (url.startsWith(fileProtocol)){
-            try {
-              const data = fs.readFileSync(url.replace(fileProtocol, ""), "utf8");
-              callback(null, {status: 200, data});
-            } catch (error) {
-              callback(error, {status: 500, data: ""});
-            }
-          } else {
-            request!(options, url, payload, callback);
-          }
-        },
-      },
-    }),
+    localization: props.localization ?? new EmptyLocalization()
   };
 
   if (props.useClientServices)
@@ -157,8 +132,8 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   });
 };
 
-export const initialize = async (backendTimeout: number = 0) => {
-  await initializeCommon({ backendTimeout });
+export const initialize = async (options?: { backendTimeout?: number, localization?: Localization }) => {
+  await initializeCommon({ backendTimeout: DEFAULT_BACKEND_TIMEOUT, ...options });
 };
 
 export const initializeWithClientServices = async () => {
@@ -175,3 +150,34 @@ export const resetBackend = () => {
   PresentationBackend.terminate();
   PresentationBackend.initialize(props);
 };
+
+export const TestLocalization = new ITwinLocalization({
+  urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
+  initOptions: {
+    preload: ["test"],
+    maxRetries: 0
+  },
+  backendHttpOptions: {
+    request: (options, url, payload, callback) => {
+      /**
+       * A few reasons why we need to modify this request fn:
+       * - The above urlTemplate uses the file:// protocol
+       * - Node v18's fetch implementation does not support file://
+       * - i18n-http-backend uses fetch if it defined globally
+       */
+      const fileProtocol = "file://";
+      const request = new Backend().options.request?.bind(this as void);
+
+      if (url.startsWith(fileProtocol)) {
+        try {
+          const data = fs.readFileSync(url.replace(fileProtocol, ""), "utf8");
+          callback(null, { status: 200, data });
+        } catch (error) {
+          callback(error, { status: 500, data: "" });
+        }
+      } else {
+        request!(options, url, payload, callback);
+      }
+    },
+  },
+});

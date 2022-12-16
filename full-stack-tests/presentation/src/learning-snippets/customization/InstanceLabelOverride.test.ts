@@ -8,7 +8,7 @@ import {
   ChildNodeSpecificationTypes, InstanceLabelOverrideValueSpecificationType, RelationshipDirection, Ruleset, RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
+import { initialize, terminate, TestLocalization } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
@@ -16,7 +16,7 @@ describe("Learning Snippets", () => {
   let imodel: IModelConnection;
 
   beforeEach(async () => {
-    await initialize();
+    await initialize({ localization: TestLocalization });
     imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 

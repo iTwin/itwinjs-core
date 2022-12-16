@@ -11,14 +11,14 @@ import {
   ChildNodeSpecificationTypes, ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, ElementProperties, KeySet,
   PresentationError, PresentationStatus, Ruleset, RuleTypes,
 } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
+import { initialize, terminate, TestLocalization } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
 
 describe("PresentationManager", () => {
 
   let imodel: IModelDb;
   before(async () => {
-    await initialize();
+    await initialize({ localization: TestLocalization });
     imodel = SnapshotDb.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
