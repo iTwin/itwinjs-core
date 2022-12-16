@@ -70,7 +70,7 @@ export abstract class RealityTileLoader {
 
   private _getFormat(streamBuffer: ByteStream) {
     const position = streamBuffer.curPos;
-    const format = streamBuffer.nextUint32;
+    const format = streamBuffer.readUint32();
     streamBuffer.curPos = position;
     return format;
 
@@ -136,7 +136,7 @@ export abstract class RealityTileLoader {
         for (let i = 0; i < header.tileCount; i++) {
           const tilePosition = streamBuffer.curPos;
           streamBuffer.advance(8);    // Skip magic and version.
-          const tileBytes = streamBuffer.nextUint32;
+          const tileBytes = streamBuffer.readUint32();
           streamBuffer.curPos = tilePosition;
           const result = await this.loadGraphicsFromStream(tile, streamBuffer, system, isCanceled);
           if (result.graphic)

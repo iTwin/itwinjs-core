@@ -53,10 +53,10 @@ export class GltfHeader extends TileHeader {
 
   public constructor(stream: ByteStream) {
     super(stream);
-    this.gltfLength = stream.nextUint32;
+    this.gltfLength = stream.readUint32();
 
-    this.sceneStrLength = stream.nextUint32;
-    const value5 = stream.nextUint32;
+    this.sceneStrLength = stream.readUint32();
+    const value5 = stream.readUint32();
 
     // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
     // validating the chunk type.
@@ -76,8 +76,8 @@ export class GltfHeader extends TileHeader {
       const sceneChunkType = value5;
       this.scenePosition = stream.curPos;
       stream.curPos = stream.curPos + this.sceneStrLength;
-      const binaryLength = stream.nextUint32;
-      const binaryChunkType = stream.nextUint32;
+      const binaryLength = stream.readUint32();
+      const binaryChunkType = stream.readUint32();
       if (GltfV2ChunkTypes.JSON !== sceneChunkType || GltfV2ChunkTypes.Binary !== binaryChunkType || 0 === binaryLength) {
         this.invalidate();
         return;
@@ -726,6 +726,7 @@ export class ImdlReader {
       worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
     };
 
+    // TODO: Need to extract normal map properties from json once they're sent by the backend.
     return new TextureMapping(texture, new TextureMapping.Params(paramProps));
   }
 

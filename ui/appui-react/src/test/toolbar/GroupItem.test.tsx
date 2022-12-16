@@ -543,10 +543,10 @@ describe("GroupItem", () => {
 
       groupItemDef.execute(); // Does nothing
 
-      let reactNode = groupItemDef.toolbarReactNode(1);
+      let reactNode = groupItemDef.toolbarReactNode(1); // eslint-disable-line deprecation/deprecation
       expect(reactNode).to.not.be.undefined;
 
-      reactNode = groupItemDef.toolbarReactNode();
+      reactNode = groupItemDef.toolbarReactNode(); // eslint-disable-line deprecation/deprecation
       expect(reactNode).to.not.be.undefined;
     });
 

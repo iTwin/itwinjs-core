@@ -47,9 +47,11 @@ export class GroupItemDef extends ActionButtonItemDef {
   public static groupIdPrefix = "Group-";
 
   public groupId: string;
+  /** @deprecated Used in UI1.0 only. */
   public direction: Direction; // eslint-disable-line deprecation/deprecation
   public itemsInColumn: number;
   public items: AnyItemDef[];
+  /** @deprecated Used in UI1.0 only. */
   public directionExplicit: boolean;
   public defaultActiveItemId?: string;
 
@@ -71,7 +73,7 @@ export class GroupItemDef extends ActionButtonItemDef {
       this.groupId = GroupItemDef.groupIdPrefix + GroupItemDef._sId;
     }
 
-    this.directionExplicit = (groupItemProps.direction !== undefined);
+    this.directionExplicit = (groupItemProps.direction !== undefined); // eslint-disable-line deprecation/deprecation
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom; // eslint-disable-line deprecation/deprecation
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
     this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.panelLabelKey); // eslint-disable-line deprecation/deprecation
@@ -124,6 +126,7 @@ export class GroupItemDef extends ActionButtonItemDef {
   public override execute(): void {
   }
 
+  /** @deprecated Used in UI1.0 only. */
   public override toolbarReactNode(index?: number): React.ReactNode {
     this.resolveItems();
     const key = this.getKey(index);

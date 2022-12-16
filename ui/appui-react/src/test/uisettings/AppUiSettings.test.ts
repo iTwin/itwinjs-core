@@ -39,7 +39,7 @@ describe("AppUiSettings", () => {
     const autoCollapseUnpinnedPanels = true;
     const useToolAsToolSettingsLabel = false;
 
-    UiFramework.setUiVersion(uiVersion);
+    UiFramework.setUiVersion(uiVersion); // eslint-disable-line deprecation/deprecation
     UiFramework.setWidgetOpacity(opacity);
     UiFramework.setToolbarOpacity(toolbarOpacity);
     UiFramework.setUseDragInteraction(true);
@@ -51,7 +51,7 @@ describe("AppUiSettings", () => {
     UiFramework.setAnimateToolSettings(animateToolSettings);
     UiFramework.setUseToolAsToolSettingsLabel(useToolAsToolSettingsLabel);
     await TestUtils.flushAsyncOperations();
-    expect(UiFramework.uiVersion).to.eql(uiVersion);
+    expect(UiFramework.uiVersion).to.eql(uiVersion); // eslint-disable-line deprecation/deprecation
     expect(UiFramework.getWidgetOpacity()).to.eql(opacity);
     expect(UiFramework.getToolbarOpacity()).to.eql(toolbarOpacity);
     expect(UiFramework.getColorTheme()).to.eql(colorTheme);
@@ -78,7 +78,7 @@ describe("AppUiSettings", () => {
     const uiSetting = new AppUiSettings(defaults);
     await uiSetting.loadUserSettings(UiFramework.getUiStateStorage());
     await TestUtils.flushAsyncOperations();
-    expect(UiFramework.uiVersion).to.eql(defaults.frameworkVersion);
+    expect(UiFramework.uiVersion).to.eql(defaults.frameworkVersion); // eslint-disable-line deprecation/deprecation
     expect(UiFramework.getWidgetOpacity()).to.eql(defaults.widgetOpacity);
     expect(UiFramework.getColorTheme()).to.eql(defaults.colorTheme);
     expect(UiFramework.useDragInteraction).to.eql(defaults.dragInteraction);

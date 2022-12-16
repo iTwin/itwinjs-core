@@ -22,17 +22,17 @@ export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityPro
 export namespace Key { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Check if the supplied key is a `NodeKey` */
   export function isNodeKey(key: Key): key is NodeKey {
-    return (key as any).type;
+    return !!(key as NodeKey).type;
   }
 
   /** Check if the supplied key is an `InstanceKey` */
   export function isInstanceKey(key: Key): key is InstanceKey {
-    return (key as any).className && (key as any).id;
+    return !!(key as InstanceKey).className && !!(key as InstanceKey).id;
   }
 
   /** Check if the supplied key is an `EntityProps` */
   export function isEntityProps(key: Key): key is EntityProps {
-    return (key as any).classFullName && (key as any).id;
+    return !!(key as EntityProps).classFullName && !!(key as EntityProps).id;
   }
 }
 
@@ -47,7 +47,7 @@ export type Keys = ReadonlyArray<Key> | Readonly<KeySet>;
  * @public
  */
 export interface KeySetJSON {
-  /** An array of tuples [class_name, compressed_instance_ids] */
+  /** JSON representation of a list of instance keys */
   instanceKeys: Array<[string, string]>;
   /** An array of serialized node keys */
   nodeKeys: NodeKeyJSON[];
@@ -136,7 +136,7 @@ export class KeySet {
   }
 
   private isKeySet(set: Keys | Key): set is Readonly<KeySet> {
-    return (set as any)._nodeKeys && (set as any)._instanceKeys;
+    return !!(set as KeySet)._nodeKeys && !!(set as KeySet)._instanceKeys;
   }
 
   private isKeysArray(keys: Keys | Key): keys is ReadonlyArray<Key> {
@@ -183,7 +183,13 @@ export class KeySet {
       this._nodeKeys.add(JSON.stringify(key));
     for (const entry of keyset.instanceKeys) {
       const lcClassName = entry["0"].toLowerCase();
-      const ids = entry["1"] === Id64.invalid ? new Set([Id64.invalid]) : CompressedId64Set.decompressSet(entry["1"]);
+      const idsJson: string | Id64String[] = entry["1"];
+      const ids: Set<Id64String> =
+        typeof idsJson === "string"
+          ? idsJson === Id64.invalid
+            ? new Set([Id64.invalid])
+            : CompressedId64Set.decompressSet(idsJson)
+          : new Set(idsJson);
       this._instanceKeys.set(lcClassName, ids);
       this._lowerCaseMap.set(lcClassName, entry["0"]);
     }
