@@ -24,9 +24,43 @@ schedules:
         - releases/*
 
 jobs:
-  - template: jobs/ci-core.yaml
-    parameters:
-      name: Node_18
-      nodeVersion: 18.12.x
-      pool:
-        vmImage: $(OS)
+  - job:
+    variables:
+      - name: linuxPool
+        value: "iModeljs Linux"
+      - name: mac_pool
+        value: iModelTechCI
+      - name: win_pool
+        value: iModelTechCI
+
+    strategy:
+      matrix:
+        "Windows_Node_18":
+          OS: windows-latest
+          platform: Windows_NT
+          name: $(win_pool)
+        "Linux_Node_18":
+          OS: ubuntu-latest
+          platform: Linux
+          name: $(linux_pool)
+        "MacOS_Node_18":
+          OS: macOS-latest
+          platform: Darwin
+          name: $(mac_pool)
+
+    pool:
+      vmImage: $(OS)
+
+    timeoutInMinutes: 120
+
+    workspace:
+      clean: all
+
+    steps:
+      - checkout: self
+      - template: ../templates/core-build.yaml
+        parameters:
+          name: Node_18
+          nodeVersion: 18.12.x
+          pool:
+            vmImage: $(OS)

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Support reality meshes with 8- or 32-bit indices.",
+      "comment": "Make the contents of a Viewport react more smoothly when the containing div is resized.\"",
       "type": "none"
     }
   ],
