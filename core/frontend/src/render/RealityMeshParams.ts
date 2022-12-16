@@ -223,7 +223,6 @@ export class RealityMeshParamsBuilder {
    * @returns the index of the new vertex in [[positions]].
    */
   public addQuantizedVertex(position: XYAndZ, uv: XAndY, normal?: number): number {
-    assert(this.positions.length < 0xffff, "RealityMeshParams supports no more than 64k vertices");
     assert((undefined === normal) === (undefined === this.normals), "RealityMeshParams requires all vertices to have normals, or none.");
 
     this.positions.push(position);
@@ -256,7 +255,6 @@ export class RealityMeshParamsBuilder {
   }
 
   private addIndex(index: number): void {
-    assert(index <= 0xffff, "RealityMeshParams supports no more than 64k vertices");
     this.indices.push(index);
   }
 
