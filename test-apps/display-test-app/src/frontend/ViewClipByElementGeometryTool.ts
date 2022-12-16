@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  ClipPrimitive, ClipVector, ConvexClipPlaneSet, IndexedPolyface, Point3d, PolyfaceBuilder, UnionOfConvexClipPlaneSets,
+  ClipPrimitive, ClipVector, ConvexClipPlaneSet, IndexedPolyface, Point3d, PolyfaceBuilder, PolyfaceQuery, UnionOfConvexClipPlaneSets,
 } from "@itwin/core-geometry";
 import {
   ElementMeshOptions, readElementMeshes,
@@ -50,6 +50,12 @@ class ConvexDecomposer {
     const polygon = [new Point3d(), new Point3d(), new Point3d()];
 
     for (const polyface of polyfaces) {
+      if (PolyfaceQuery.isConvexByDihedralAngleCount(polyface)) {
+        // The polyface is already convex - don't bother performing decomposition.
+        decomposedPolyfaces.push(polyface);
+        continue;
+      }
+
       const points = polyface.data.point;
 
       // `points` is a GrowableXYZArray, which may allocate more space than it needs for the number of points it stores.
