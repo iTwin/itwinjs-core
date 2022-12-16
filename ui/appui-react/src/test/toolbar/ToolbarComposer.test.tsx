@@ -198,7 +198,7 @@ describe("<ToolbarComposer  />", async () => {
     const sandbox = sinon.createSandbox();
 
     before(async () => {
-      UiFramework.setUiVersion("2");
+      UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
     });
 
@@ -218,7 +218,7 @@ describe("<ToolbarComposer  />", async () => {
 
       expect(renderedComponent).not.to.be.undefined;
       expect(renderedComponent.container.querySelector("div.components-toolbar-overflow-sizer.components-horizontal")).to.not.be.null;
-      expect(UiFramework.uiVersion).to.eql("2");
+      expect(UiFramework.uiVersion).to.eql("2"); // eslint-disable-line deprecation/deprecation
     });
 
     it("should render with updated items", async () => {
@@ -292,13 +292,13 @@ describe("<ToolbarComposer  />", async () => {
 
   describe("<UI 1.0 />", async () => {
     before(async () => {
-      UiFramework.setUiVersion("1");
+      UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
     });
 
     after(async () => {
       // restore to default "2" setting
-      UiFramework.setUiVersion("2");
+      UiFramework.setUiVersion("2"); // eslint-disable-line deprecation/deprecation
       await TestUtils.flushAsyncOperations();
     });
 
@@ -313,7 +313,7 @@ describe("<ToolbarComposer  />", async () => {
         </Provider>);
       expect(renderedComponent).not.to.be.undefined;
       expect(renderedComponent.container.querySelector("div.nz-toolbar-toolbar.nz-direction-bottom.nz-horizontal.nz-panel-alignment-start")).to.not.be.null;
-      expect(UiFramework.uiVersion).to.eql("1");
+      expect(UiFramework.uiVersion).to.eql("1"); // eslint-disable-line deprecation/deprecation
     });
 
     it("should render", async () => {

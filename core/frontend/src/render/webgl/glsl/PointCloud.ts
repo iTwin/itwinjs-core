@@ -108,7 +108,7 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
 
   if (IsThematic.Yes === thematic) {
     addThematicDisplay(builder, true);
-    addTexture(builder, IsAnimated.No, IsThematic.Yes, true);
+    addTexture(builder, IsAnimated.No, IsThematic.Yes, true, false);
   }
 
   return builder;

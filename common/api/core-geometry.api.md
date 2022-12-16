@@ -1472,7 +1472,7 @@ export class CurveChainWireOffsetContext {
 // @public
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
     chainDistanceToChainFraction(distance: number): number;
-    protected chainDistanceToFragment(distance: number, allowExtrapolation?: boolean): PathFragment | undefined;
+    chainDistanceToFragment(distance: number, allowExtrapolation?: boolean): PathFragment | undefined;
     protected chainDistanceToFragmentIndex(distance: number, allowExtrapolation?: boolean): number | undefined;
     clone(): CurveChainWithDistanceIndex;
     clonePartialCurve(fractionA: number, fractionB: number): CurveChainWithDistanceIndex | undefined;
@@ -1483,7 +1483,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex;
-    protected curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined;
+    curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined;
     curveLength(): number;
     curveLengthBetweenFractions(fraction0: number, fraction1: number): number;
     readonly curvePrimitiveType = "curveChainWithDistanceIndex";
@@ -1496,6 +1496,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d;
+    get fragments(): PathFragment[];
     static getClosestPointTestCounts(clear?: boolean): {
         numCalls: number;
         numTested: number;
@@ -3861,10 +3862,10 @@ export class Order5Bezier extends BezierCoffs {
 
 // @alpha
 export class OrderedRotationAngles {
-    static createAngles(xRotation: Angle, yRotation: Angle, zRotation: Angle, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
-    static createDegrees(xDegrees: number, yDegrees: number, zDegrees: number, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
-    static createFromMatrix3d(matrix: Matrix3d, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
-    static createRadians(xRadians: number, yRadians: number, zRadians: number, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
+    static createAngles(xRotation: Angle, yRotation: Angle, zRotation: Angle, order: AxisOrder, xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles;
+    static createDegrees(xDegrees: number, yDegrees: number, zDegrees: number, order: AxisOrder, xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles;
+    static createFromMatrix3d(matrix: Matrix3d, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles | undefined;
+    static createRadians(xRadians: number, yRadians: number, zRadians: number, order: AxisOrder, xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles;
     get order(): AxisOrder;
     toMatrix3d(result?: Matrix3d): Matrix3d;
     static get treatVectorsAsColumns(): boolean;
@@ -6217,6 +6218,7 @@ export class YawPitchRollAngles {
     isIdentity(allowPeriodShift?: boolean): boolean;
     maxAbsDegrees(): number;
     maxAbsRadians(): number;
+    maxDiffDegrees(other: YawPitchRollAngles): number;
     maxDiffRadians(other: YawPitchRollAngles): number;
     pitch: Angle;
     roll: Angle;

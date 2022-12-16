@@ -9,7 +9,7 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
-  Feature, PackedFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+  Feature, PackedFeatureTable, PointCloudDisplaySettings, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { DepthType, RenderType } from "@itwin/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";
@@ -21,8 +21,8 @@ import { RenderMemory } from "../RenderMemory";
 import { BranchState } from "./BranchState";
 import { BatchState } from "./BatchState";
 import {
-  AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, ScreenPointsGeometry,
-  SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
+  AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry,
+  ScreenPointsGeometry, SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
 } from "./CachedGeometry";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
@@ -44,8 +44,10 @@ import { TextureHandle } from "./Texture";
 import { RenderBufferMultiSample } from "./RenderBuffer";
 import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
+import { EDLMode, EyeDomeLighting } from "./EDL";
+import { FrustumUniformType } from "./FrustumUniforms";
 
-function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
+export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
     stats.addTextureAttachment(texture.bytesUsed);
 }
@@ -372,7 +374,7 @@ class FrameBuffers implements WebGLDisposable {
   }
 }
 
-function collectGeometryStatistics(geom: CachedGeometry | undefined, stats: RenderMemory.Statistics): void {
+export function collectGeometryStatistics(geom: CachedGeometry | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== geom)
     geom.collectStatistics(stats);
 }
@@ -651,6 +653,8 @@ class PixelBuffer implements Pixel.Buffer {
 export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.Consumer {
   public readonly target: Target;
   public readonly solarShadowMap: SolarShadowMap;
+  public readonly eyeDomeLighting: EyeDomeLighting;
+
   protected _needHiddenEdges: boolean;
 
   public abstract get currentRenderTargetIndex(): number;
@@ -678,6 +682,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   protected constructor(target: Target) {
     this.target = target;
     this.solarShadowMap = new SolarShadowMap(target);
+    this.eyeDomeLighting = new EyeDomeLighting(target);
     this._needHiddenEdges = false;
   }
 
@@ -712,6 +717,7 @@ abstract class Compositor extends SceneCompositor {
   protected _hiliteRenderState = new RenderState();
   protected _noDepthMaskRenderState = new RenderState();
   protected _backgroundMapRenderState = new RenderState();
+  protected _pointCloudRenderState = new RenderState();
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
   protected _vcBranchState?: BranchState;
   protected _vcSetStencilRenderState?: RenderState;
@@ -739,6 +745,7 @@ abstract class Compositor extends SceneCompositor {
   protected abstract clearOpaque(_needComposite: boolean): void;
   protected abstract renderLayers(_commands: RenderCommands, _needComposite: boolean, pass: RenderPass): void;
   protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
+  protected abstract renderPointClouds(_commands: RenderCommands, _compositeFlags: CompositeFlags): void;
   protected abstract renderForVolumeClassification(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderIndexedClassifierForReadPixels(_commands: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, _needComposite: boolean): void;
   protected abstract clearTranslucent(): void;
@@ -797,6 +804,8 @@ abstract class Compositor extends SceneCompositor {
     this._geom = geometry;
 
     this._opaqueRenderState.flags.depthTest = true;
+
+    this._pointCloudRenderState.flags.depthTest = true;
 
     this._translucentRenderState.flags.depthMask = false;
     this._translucentRenderState.flags.blend = this._translucentRenderState.flags.depthTest = true;
@@ -1008,6 +1017,13 @@ abstract class Compositor extends SceneCompositor {
     });
     this.target.frameStatsCollector.endTime("onRenderOpaqueTime");
 
+    // Render point cloud geometry with possible EDL (WebGL2 only)
+    if (System.instance.capabilities.isWebGL2) {
+      this.target.beginPerfMetricRecord("Render PointClouds");
+      this.renderPointClouds(commands, compositeFlags);
+      this.target.endPerfMetricRecord();
+    }
+
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");
     this.renderOpaque(commands, compositeFlags, false);
@@ -1088,6 +1104,7 @@ abstract class Compositor extends SceneCompositor {
       this.renderLayers(commands, false, RenderPass.OpaqueLayers);
       this.target.endPerfMetricRecord(true);
 
+      // PointClouds are rendered in Opaque pass for readPixels
       this.target.beginPerfMetricRecord("Render Opaque", true);
       this.renderOpaque(commands, CompositeFlags.None, true);
       this.target.endPerfMetricRecord(true);
@@ -1192,12 +1209,14 @@ abstract class Compositor extends SceneCompositor {
       && this._frameBuffers.isDisposed
       && this._geom.isDisposed
       && !this._haveVolumeClassifier
-      && this.solarShadowMap.isDisposed;
+      && this.solarShadowMap.isDisposed
+      && this.eyeDomeLighting.isDisposed;
   }
 
   public dispose() {
     this.reset();
     dispose(this.solarShadowMap);
+    dispose(this.eyeDomeLighting);
   }
 
   // Resets anything that depends on the dimensions of the render target.
@@ -1211,6 +1230,7 @@ abstract class Compositor extends SceneCompositor {
     dispose(this._frameBuffers);
     dispose(this._geom);
     this._haveVolumeClassifier = false;
+    this.eyeDomeLighting.reset();
   }
 
   private init(): boolean {
@@ -1223,7 +1243,8 @@ abstract class Compositor extends SceneCompositor {
     if (this._depth !== undefined) {
       return this._textures.init(this._width, this._height, this._antialiasSamples)
         && this._frameBuffers.init(this._textures, this._depth, this._depthMS)
-        && this._geom.init(this._textures);
+        && this._geom.init(this._textures)
+        && this.eyeDomeLighting.init(this._width, this._height, this._depth);
     }
     return false;
   }
@@ -1816,6 +1837,8 @@ abstract class Compositor extends SceneCompositor {
         return this._hiliteRenderState;
       case RenderPass.BackgroundMap:
         return this._backgroundMapRenderState;
+      case RenderPass.PointClouds:
+        return this._pointCloudRenderState;
       default:
         return this._noDepthMaskRenderState;
     }
@@ -1846,6 +1869,7 @@ class MRTFrameBuffers extends FrameBuffers {
   public idsAndAltZ?: FrameBuffer;
   public idsAndZComposite?: FrameBuffer;
   public idsAndAltZComposite?: FrameBuffer;
+  public edlDrawCol?: FrameBuffer;
 
   public override init(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
     if (!super.init(textures, depth, depthMs))
@@ -1984,7 +2008,8 @@ class MRTFrameBuffers extends FrameBuffers {
       && undefined === this.idsAndZ
       && undefined === this.idsAndAltZ
       && undefined === this.idsAndZComposite
-      && undefined === this.idsAndAltZComposite;
+      && undefined === this.idsAndAltZComposite
+      && undefined === this.edlDrawCol;
   }
 
   public override dispose(): void {
@@ -2000,7 +2025,13 @@ class MRTFrameBuffers extends FrameBuffers {
     this.idsAndAltZ = dispose(this.idsAndAltZ);
     this.idsAndZComposite = dispose(this.idsAndZComposite);
     this.idsAndAltZComposite = dispose(this.idsAndAltZComposite);
+    this.edlDrawCol = dispose(this.edlDrawCol);
   }
+}
+
+interface SinglePointCloudData {
+  pcs?: PointCloudDisplaySettings;
+  cmds: DrawCommands;
 }
 
 class MRTGeometry extends Geometry {
@@ -2100,6 +2131,105 @@ class MRTCompositor extends Compositor {
     });
   }
 
+  protected renderPointClouds(commands: RenderCommands, compositeFlags: CompositeFlags) {
+    const is3d = FrustumUniformType.Perspective === this.target.uniforms.frustum.type;
+    // separate individual point clouds and get their point cloud settings
+    const pointClouds: Array<SinglePointCloudData> = [];
+    let pcs: PointCloudDisplaySettings | undefined;
+    const cmds = commands.getCommands(RenderPass.PointClouds);
+    let curPC: SinglePointCloudData | undefined;
+    let pushDepth = 0;
+    for (const cmd of cmds) {
+      if ("pushBranch" === cmd.opcode) { // should be first command
+        ++pushDepth;
+        if (pushDepth === 1) {
+          pcs = cmd.branch.branch.realityModelDisplaySettings?.pointCloud;
+          this.target.uniforms.realityModel.pointCloud.updateRange (cmd.branch.branch.realityModelRange,
+            this.target, cmd.branch.localToWorldTransform, is3d);
+          pointClouds.push(curPC = { pcs, cmds: [cmd] });
+        } else {
+          assert (undefined !== curPC);
+          curPC.cmds.push(cmd);
+        }
+      } else {
+        if ("popBranch" === cmd.opcode)
+          --pushDepth;
+        assert (undefined !== curPC);
+        curPC.cmds.push(cmd);
+      }
+    }
+
+    const needComposite = CompositeFlags.None !== compositeFlags;
+    const fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
+    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
+    const system = System.instance;
+    const fbStack = system.frameBufferStack;
+
+    this._readPickDataFromPingPong = false;
+
+    for (const pc of pointClouds) {
+      pcs = pc.pcs;
+      let edlOn = pcs?.edlMode !== "off" && is3d;
+      if (edlOn) {
+        if (undefined === this._textures.hilite)
+          edlOn = false;
+        else {
+          // create fbo on fly if not present, or has changed (from MS)
+          // ###TODO consider not drawing point clouds to MS buffers, at least if EDL, it isn't worth the overhead.
+          //         would have to blit depth before draw, use depth for draw, then run shader to copy depth back to MSAA
+          //         at end, wherever color buf changed (test alpha, else discard)
+          //         this would also simplify this code considerably
+          let drawColBufs;
+          if (undefined !== this._fbos.edlDrawCol)
+            drawColBufs = this._fbos.edlDrawCol.getColorTargets(useMsBuffers, 0);
+          if (undefined === this._fbos.edlDrawCol || this._textures.hilite !== drawColBufs?.tex || this._textures.hiliteMsBuff !== drawColBufs.msBuf) {
+            this._fbos.edlDrawCol = dispose (this._fbos.edlDrawCol);
+            const filters = [GL.MultiSampling.Filter.Linear];
+            if (useMsBuffers)
+              this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth,
+                useMsBuffers && this._textures.hiliteMsBuff ? [this._textures.hiliteMsBuff] : undefined, filters, this._depthMS);
+            else
+              this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth);
+          }
+          if (undefined === this._fbos.edlDrawCol)
+            edlOn = false;
+          else { // can draw EDL
+            // first draw pointcloud to borrowed hilite texture(MS) and regular depth(MS) buffers
+            fbStack.execute(this._fbos.edlDrawCol, true, useMsBuffers, () => {
+              system.context.clearColor(0, 0, 0, 0);
+              system.context.clear(GL.BufferBit.Color);
+              system.applyRenderState(this.getRenderState(RenderPass.PointClouds));
+              this.target.techniques.execute(this.target, pc.cmds, RenderPass.PointClouds);
+            });
+            if (useMsBuffers)
+              this._fbos.edlDrawCol.blitMsBuffersToTextures(true, 0); // need to read the non-MS depth and hilite buffers
+
+            // next process buffers to generate EDL (depth buffer is passed during init)
+            this.target.beginPerfMetricRecord("Calc EDL");  // ### todo keep? (probably)
+            const sts = this.eyeDomeLighting.draw ({
+              edlMode: pc.pcs?.edlMode === "full" ? EDLMode.Full : EDLMode.On,
+              edlFilter: !!pcs?.edlFilter,
+              useMsBuffers,
+              inputTex: this._textures.hilite,
+              curFbo: fbo,
+            });
+            this.target.endPerfMetricRecord();
+            if (!sts) {
+              edlOn = false;
+            }
+          }
+        }
+      }
+      if (!edlOn) {
+        // draw the regular way
+        fbStack.execute(fbo, true, useMsBuffers, () => {
+          system.applyRenderState(this.getRenderState(RenderPass.PointClouds));
+          this.target.techniques.execute(this.target, pc.cmds, RenderPass.PointClouds);
+        });
+      }
+    }
+  }
+
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
     if (CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion) && !renderForReadPixels) {
       this.renderOpaqueAO(commands);
@@ -2116,6 +2246,7 @@ class MRTCompositor extends Compositor {
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
       if (renderForReadPixels) {
+        this.drawPass(commands, RenderPass.PointClouds, true); // don't need EDL for this
         this.drawPass(commands, RenderPass.OpaqueGeneral, true);
         if (useMsBuffers)
           fbo.blitMsBuffersToTextures(true);
@@ -2130,6 +2261,7 @@ class MRTCompositor extends Compositor {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
+      // assume we are done with MS at this point, so update the non-MS buffers
       if (useMsBuffers)
         fbo.blitMsBuffersToTextures(needComposite);
     }
@@ -2407,6 +2539,8 @@ class MPCompositor extends Compositor {
 
   protected clearHiddenPick(): void {
   }
+
+  protected renderPointClouds(_commands: RenderCommands, _compositeFlags: CompositeFlags) { }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {
     if (CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion) && !renderForReadPixels) {

@@ -22,7 +22,7 @@ export class AppSettingsTabsProvider implements SettingsTabsProvider {
         icon: "icon-paintbrush",
         tooltip: "Accudraw Settings",
       },
-      getUiSettingsManagerEntry(30, true),
+      getUiSettingsManagerEntry(30, true), // eslint-disable-line deprecation/deprecation
       {
         itemPriority: 20, tabId: "ui-test-app:Target", label: "Drop Targets",
         page: <TargetSettingsPageComponent />,

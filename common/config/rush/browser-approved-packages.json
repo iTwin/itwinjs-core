@@ -68,7 +68,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/plant-custom-attributes-schema",
@@ -1093,6 +1093,10 @@
     {
       "name": "uuid",
       "allowedCategories": [ "frontend", "tools" ]
+    },
+    {
+      "name": "vhacd-js",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "webpack",

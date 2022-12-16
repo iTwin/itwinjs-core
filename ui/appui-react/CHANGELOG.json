@@ -2,6 +2,87 @@
   "name": "@itwin/appui-react",
   "entries": [
     {
+      "version": "3.5.1",
+      "tag": "@itwin/appui-react_v3.5.1",
+      "date": "Thu, 15 Dec 2022 16:38:28 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.0",
+      "tag": "@itwin/appui-react_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add FeatureOverridesChanged SyncUIEvent in SyncUiEventDispatcher.ts"
+          },
+          {
+            "comment": "Do not auto-hide the UI when floating widget is hovered."
+          },
+          {
+            "comment": "Fix a circular dependency issue."
+          },
+          {
+            "comment": "Updated pin icon for help widget."
+          },
+          {
+            "comment": "Deprecate pseudo components of frontstage provider in favor of configuration interfaces."
+          },
+          {
+            "comment": "Add automatic horizonal scrolling to the ListPicker's expandable blocks for small form factors or long strings."
+          },
+          {
+            "comment": "Refactored many tests to remove enzyme and snaphot testing"
+          },
+          {
+            "comment": "Unpin classnames package"
+          },
+          {
+            "comment": "Rename RestoreFrontstagesLayoutTool to RestoreAllFrontstagesTool."
+          },
+          {
+            "comment": "Add RestoreFrontstagesLayout tool."
+          },
+          {
+            "comment": "Deprecate components in preparation for next major version."
+          },
+          {
+            "comment": "Persist the toolbar-opacity to state."
+          },
+          {
+            "comment": "Add a toolbar opacity to the state and the UiFramework API to allow users or apps to configure it. Add a slider to the UiSettingsPage to control the toolbar opacity. "
+          },
+          {
+            "comment": "Update WidgetDef to pass the optional prop allowedPanelTargets to createTab wh"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.7",
+      "tag": "@itwin/appui-react_v3.4.7",
+      "date": "Wed, 30 Nov 2022 14:28:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.6",
+      "tag": "@itwin/appui-react_v3.4.6",
+      "date": "Tue, 22 Nov 2022 14:24:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Maintain widget panel location after frontstage is changed."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.5",
+      "tag": "@itwin/appui-react_v3.4.5",
+      "date": "Thu, 17 Nov 2022 21:32:49 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.4.4",
       "tag": "@itwin/appui-react_v3.4.4",
       "date": "Thu, 10 Nov 2022 19:32:17 GMT",

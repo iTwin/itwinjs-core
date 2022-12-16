@@ -15,6 +15,8 @@ import {
 } from "../presentation-components";
 import { createRandomPropertyRecord, mockPresentationManager } from "./_helpers/UiComponents";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("DataProvidersFactory", () => {
 
   let presentationManagerMock: moq.IMock<PresentationManager>;

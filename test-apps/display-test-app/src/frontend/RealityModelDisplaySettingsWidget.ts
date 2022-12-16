@@ -6,12 +6,15 @@ import {
   DisplayStyleSettings, FeatureAppearance, FeatureAppearanceProps, PointCloudDisplayProps, RealityModelDisplayProps, RealityModelDisplaySettings,
 } from "@itwin/core-common";
 import {
-  ContextRealityModelState, IModelApp, SpatialModelState, Tool, Viewport,
+  ContextRealityModelState, IModelApp, ScreenViewport, SpatialModelState, Tool, Viewport,
 } from "@itwin/core-frontend";
+import { System } from "@itwin/core-frontend/lib/cjs/render/webgl/System";
 import {
-  convertHexToRgb, createCheckBox, createColorInput, createRadioBox, createSlider,
+  ComboBoxEntry,
+  convertHexToRgb, createCheckBox, createColorInput, createComboBox, createRadioBox, createSlider,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
+import { ToolBarDropDown } from "./ToolBar";
 import { Window } from "./Window";
 
 interface RealityModel {
@@ -59,7 +62,7 @@ class PersistentModel implements RealityModel {
   }
 }
 
-function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElement) {
+function createRealityModelSettingsPanel(model: RealityModel, element: HTMLElement, isEDL: boolean) {
   const updateSettings = (props: RealityModelDisplayProps) => model.settings = model.settings.clone(props);
   const updateAppearance = (props: FeatureAppearanceProps | undefined) => {
     if (!props)
@@ -69,15 +72,6 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
     else
       model.appearance = model.appearance.clone(props);
   };
-
-  const element = document.createElement("div");
-  element.className = "debugPanel";
-  element.style.height = "96%";
-  element.style.width = "98%";
-  element.style.top = "0px";
-  element.style.left = "0px";
-  element.style.zIndex = "inherit";
-  parent.appendChild(element);
 
   // Color
   const colorDiv = document.createElement("div");
@@ -109,7 +103,7 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
     parent: colorDiv, id: "rms_ratio", name: " Ratio ",
     min: "0", max: "1", step: "0.05",
     value: model.settings.overrideColorRatio.toString(),
-    verticalAlign: false, textAlign: false,
+    readout: "right", verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const overrideColorRatio = Number.parseFloat(slider.value);
       if (!Number.isNaN(overrideColorRatio))
@@ -153,7 +147,7 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
     name: " Size ", id: "rms_scale", parent: sizeMode.div,
     min: "0.25", max: "10", step: "0.25",
     value: model.settings.pointCloud.voxelScale.toString(),
-    verticalAlign: false, textAlign: false,
+    readout: "right", verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
       if (!Number.isNaN(scale))
@@ -165,7 +159,7 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
     name: " Size ", id: "rms_size", parent: sizeMode.div,
     min: "1", max: "64", step: "1",
     value: model.settings.pointCloud.pixelSize.toString(),
-    verticalAlign: false, textAlign: false,
+    readout: "right", verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const pixelSize = Number.parseInt(slider.value, 10);
       if (!Number.isNaN(pixelSize))
@@ -174,9 +168,127 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
   }).div;
 
   setSizeMode(model.settings.pointCloud.sizeMode);
+
+  if (isEDL) {
+    //  ----------------- EDL -----------------
+    const setEDLMode = (mode: string) => {
+      const isOn = mode !== "off";
+      const isFull = mode === "full";
+      updatePointCloud({ edlMode: isOn ? (isFull ? "full" : "on") : "off" });
+      edlFilter.style.display = isFull ? "" : "none";
+      edlMixWt1Slider.style.display = isFull ? "" : "none";
+      edlMixWt2Slider.style.display = isFull ? "" : "none";
+      edlMixWt4Slider.style.display = isFull ? "" : "none";
+    };
+
+    const hr = document.createElement("hr");
+    hr.style.borderColor = "grey";
+    element.appendChild(hr);
+
+    const edlDiv = document.createElement("div");
+    element.appendChild(edlDiv);
+    edlDiv.style.display = "inline";
+
+    const label1 = document.createElement("label");
+    label1.innerText = "EDL ";
+    label1.style.display = "inline";
+    edlDiv.appendChild(label1);
+
+    const edlMode = createRadioBox({
+      id: "pcs_edlMode",
+      defaultValue: model.settings.pointCloud.edlMode,
+      entries: [
+        { value: "off", label: "Off " },
+        { value: "on", label: "On " },
+        { value: "full", label: "Full " },
+      ],
+      parent: edlDiv,
+      handler: (value) => setEDLMode(value),
+    });
+    edlMode.div.style.display = edlMode.form.style.display = "inline";
+
+    // EDL strength
+    const edlStrengthSlider = createSlider({
+      name: " Strength ", id: "pcs_strength", parent: element,
+      min: "0.0", max: "25", step: "0.25",
+      value: model.settings.pointCloud.edlStrength.toString(),
+      readout: "right", verticalAlign: false, textAlign: false,
+      handler: (slider) => {
+        const scale = Number.parseFloat(slider.value);
+        if (!Number.isNaN(scale))
+          updatePointCloud({ edlStrength: scale });
+      },
+    }).div;
+    edlStrengthSlider.style.display = "";
+
+    // EDL radius
+    const edlRadiusSlider = createSlider({
+      name: " Radius ", id: "pcs_radius", parent: element,
+      min: "0.0", max: "25", step: "0.25",
+      value: model.settings.pointCloud.edlRadius.toString(),
+      readout: "right", verticalAlign: false, textAlign: false,
+      handler: (slider) => {
+        const scale = Number.parseFloat(slider.value);
+        if (!Number.isNaN(scale))
+          updatePointCloud({ edlRadius: scale });
+      },
+    }).div;
+    edlRadiusSlider.style.display = "";
+
+    const edlFilter = createCheckBox({
+      name: " Filter", id: "pcs_filter",
+      parent: element,
+      isChecked: model.settings.pointCloud.edlFilter === 1,
+      handler: (cb) => updatePointCloud({ edlFilter: cb.checked ? 1 : 0 }),
+    }).div;
+
+    const edlMixWt1Slider = createSlider({
+      name: " Mix Wt 1 ", id: "pcs_mixwt1", parent: element,
+      min: "0.0", max: "1", step: "0.01",
+      value: model.settings.pointCloud.edlMixWts1?.toString() ?? "1",
+      readout: "right", verticalAlign: false, textAlign: false,
+      handler: (slider) => {
+        const scale = Number.parseFloat(slider.value);
+        if (!Number.isNaN(scale))
+          updatePointCloud({ edlMixWts1: scale });
+      },
+    }).div;
+    edlMixWt1Slider.style.display = "";
+
+    const edlMixWt2Slider = createSlider({
+      name: " Mix Wt 2 ", id: "pcs_mixwt2", parent: element,
+      min: "0.0", max: "1", step: "0.01",
+      value: model.settings.pointCloud.edlMixWts2?.toString() ?? "0.5",
+      readout: "right", verticalAlign: false, textAlign: false,
+      handler: (slider) => {
+        const scale = Number.parseFloat(slider.value);
+        if (!Number.isNaN(scale))
+          updatePointCloud({ edlMixWts2: scale });
+      },
+    }).div;
+    edlMixWt2Slider.style.display = "";
+
+    const edlMixWt4Slider = createSlider({
+      name: " Mix Wt 4 ", id: "pcs_mixwt4", parent: element,
+      min: "0.0", max: "1", step: "0.01",
+      value: model.settings.pointCloud.edlMixWts4?.toString() ?? "0.25",
+      readout: "right", verticalAlign: false, textAlign: false,
+      handler: (slider) => {
+        const scale = Number.parseFloat(slider.value);
+        if (!Number.isNaN(scale))
+          updatePointCloud({ edlMixWts4: scale });
+      },
+    }).div;
+    edlMixWt4Slider.style.display = "";
+
+    setEDLMode(model.settings.pointCloud.edlMode);
+  }
 }
 
 const viewportIdsWithOpenWidgets = new Set<number>();
+
+// size of widget or panel
+const winSize = { top: 0, left: 0, width: 408, height: 300 };
 
 class RealityModelSettingsWidget extends Window {
   private readonly _windowId: string;
@@ -184,14 +296,25 @@ class RealityModelSettingsWidget extends Window {
   private readonly _dispose: () => void;
 
   public constructor(viewport: Viewport, model: RealityModel) {
-    super(Surface.instance, { top: 0, left: 0, width: 408, height: 204 });
+    super(Surface.instance, winSize);
     this._viewport = viewport;
 
     this._windowId = `realityModelSettings-${viewport.viewportId}-${model.name}`;
     this.isPinned = true;
     this.title = model.name;
 
-    createRealityModelSettingsPanel(model, this.contentDiv);
+    const element = document.createElement("div");
+    element.className = "debugPanel";
+    element.style.height = "96%";
+    element.style.width = "98%";
+    element.style.top = "0px";
+    element.style.left = "0px";
+    element.style.zIndex = "inherit";
+    this.contentDiv.appendChild(element);
+
+    const sys = this._viewport.target.renderSystem as System;
+    const isEDL = sys.capabilities.isWebGL2;
+    createRealityModelSettingsPanel(model, element, isEDL);
     this.container.style.display = "flex";
 
     const removals = [
@@ -258,4 +381,103 @@ export class OpenRealityModelSettingsTool extends Tool {
 
     return realityModel ? this.run(vp, realityModel) : false;
   }
+}
+
+function clearElement(element: HTMLElement): void {
+  while (element.hasChildNodes())
+    element.removeChild(element.firstChild!);
+}
+
+export class RealityModelSettingsPanel extends ToolBarDropDown {
+  private readonly _vp: ScreenViewport;
+  private readonly _parent: HTMLElement;
+  private readonly _element: HTMLElement;
+  private _realityModelListDiv: HTMLDivElement;
+  private _selectedRealityModelIndex: number = 0;
+  private _realityModels: Array<{ realityModel: RealityModel, modelName: string }> = [];
+
+  public constructor(vp: ScreenViewport, parent: HTMLElement) {
+    super();
+    this._vp = vp;
+    this._parent = parent;
+
+    this._realityModelListDiv = document.createElement("div");
+    this._realityModelListDiv.style.display = "block";
+
+    this._element = document.createElement("div");
+    this._element.className = "toolMenu";
+    this._element.style.display = "block";
+    this._element.style.overflowX = "none";
+    this._element.style.overflowY = "none";
+    const width = winSize.width * 0.98;
+    this._element.style.width = `${width}px`;
+    parent.appendChild(this._element);
+    this._element.appendChild(this._realityModelListDiv);
+  }
+
+  public override get onViewChanged(): Promise<void> | undefined {
+    return this.remakePanelWithSelection(0);
+  }
+
+  private async remakePanelWithSelection(ndx: number) {
+    while (this._element.hasChildNodes())
+      this._element.removeChild(this._element.firstChild!);
+    this._selectedRealityModelIndex = ndx;
+    this._realityModelListDiv = document.createElement("div");
+    this._realityModelListDiv.style.display = "block";
+    this._element.appendChild(this._realityModelListDiv);
+    return this.populate();
+  }
+
+  private populateRealityModelList(): void {
+    this._realityModels = [];
+    this._vp.view.displayStyle.forEachRealityModel((x) => {
+      const realityModel = new ContextModel(x);
+      this._realityModels.push({ realityModel, modelName: realityModel.name });
+    });
+    if (this._vp.view.isSpatialView()) {
+      for (const modelId of this._vp.view.modelSelector.models) {
+        const model = this._vp.iModel.models.getLoaded(modelId);
+        if (model instanceof SpatialModelState && model.isRealityModel) {
+          const realityModel = new PersistentModel(model, this._vp.view.displayStyle.settings);
+          this._realityModels.push({ realityModel, modelName: realityModel.name });
+        }
+      }
+    }
+    // create list of entries
+    const entries = this._realityModels.map((realityModel, i) => {
+      return ({ name: realityModel.modelName, value: i } as ComboBoxEntry);
+    });
+
+    clearElement(this._realityModelListDiv);
+    const activeIndex = this._selectedRealityModelIndex;
+    createComboBox({
+      parent: this._realityModelListDiv,
+      id: "Point Cloud Selection Box",
+      name: "Reality Models: ",
+      value: activeIndex,
+      handler: (select) => {
+        const valueIndex = Number.parseInt(select.value, 10);
+        void this.remakePanelWithSelection(valueIndex);
+      },
+      entries,
+    });
+  }
+
+  public async populate(): Promise<void> {
+    if (!this._vp || !this._vp.view.isSpatialView())
+      return;
+    this.populateRealityModelList();
+    const realityModel = this._realityModels.at(this._selectedRealityModelIndex)?.realityModel;
+    if (undefined === realityModel)
+      return;
+
+    const sys = this._vp.target.renderSystem as System;
+    const isEDL = sys.capabilities.isWebGL2;
+    createRealityModelSettingsPanel(realityModel, this._element, isEDL);
+  }
+
+  public get isOpen(): boolean { return "none" !== this._element.style.display; }
+  protected _open(): void { this._element.style.display = "block"; }
+  protected _close(): void { this._element.style.display = "none"; }
 }

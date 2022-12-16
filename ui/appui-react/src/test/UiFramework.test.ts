@@ -37,22 +37,22 @@ describe("UiFramework localStorage Wrapper", () => {
   describe("UiFramework basic Initialization", () => {
     it("should initialize redux to UI 2", async () => {
       await UiFramework.initialize(undefined);
-      expect(UiFramework.uiVersion).to.eql("2");
+      expect(UiFramework.uiVersion).to.eql("2"); // eslint-disable-line deprecation/deprecation
       UiFramework.terminate();
     });
 
     it("should allow initialize to UI 1", async () => {
-      await UiFramework.initialize(undefined, undefined, true);
-      expect(UiFramework.uiVersion).to.eql("1");
+      await UiFramework.initialize(undefined, undefined, true); // eslint-disable-line deprecation/deprecation
+      expect(UiFramework.uiVersion).to.eql("1"); // eslint-disable-line deprecation/deprecation
       UiFramework.terminate();
     });
 
     it("should initialize default StateManager to 2 and change to 1", async () => {
       await UiFramework.initialize(undefined);
-      expect(UiFramework.uiVersion).to.eql("2");
+      expect(UiFramework.uiVersion).to.eql("2"); // eslint-disable-line deprecation/deprecation
       const uiVersion = "1";
-      UiFramework.setUiVersion(uiVersion);
-      expect(UiFramework.uiVersion).to.eql(uiVersion);
+      UiFramework.setUiVersion(uiVersion); // eslint-disable-line deprecation/deprecation
+      expect(UiFramework.uiVersion).to.eql(uiVersion); // eslint-disable-line deprecation/deprecation
       UiFramework.terminate();
     });
 
@@ -226,12 +226,12 @@ describe("UiFramework localStorage Wrapper", () => {
       await UiFramework.initializeStateFromUserSettingsProviders();
 
       const uiVersion1 = "1";
-      UiFramework.setUiVersion(uiVersion1);
-      expect(UiFramework.uiVersion).to.eql(uiVersion1);
+      UiFramework.setUiVersion(uiVersion1); // eslint-disable-line deprecation/deprecation
+      expect(UiFramework.uiVersion).to.eql(uiVersion1); // eslint-disable-line deprecation/deprecation
 
       const uiVersion = "2";
-      UiFramework.setUiVersion(uiVersion);
-      expect(UiFramework.uiVersion).to.eql(uiVersion);
+      UiFramework.setUiVersion(uiVersion); // eslint-disable-line deprecation/deprecation
+      expect(UiFramework.uiVersion).to.eql(uiVersion); // eslint-disable-line deprecation/deprecation
 
       const useDragInteraction = true;
       UiFramework.setUseDragInteraction(useDragInteraction);

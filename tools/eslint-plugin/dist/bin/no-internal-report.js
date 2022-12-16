@@ -32,8 +32,8 @@ if (!fs.existsSync(distDir))
 let args = [
   "--no-eslintrc",
   "-f", path.join(distDir, "formatters/no-internal-summary.js"),
-  "--plugin", "@bentley",
-  "--rule", "@bentley/no-internal:'error'",
+  "--plugin", "@itwin",
+  "--rule", "@itwin/no-internal:'error'",
   "--parser", "@typescript-eslint/parser",
   "--parser-options", "{project:'tsconfig.json',sourceType:'module'}",
   ...process.argv.slice(2)

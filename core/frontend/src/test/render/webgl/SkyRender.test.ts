@@ -51,7 +51,10 @@ describe("Sky rendering", () => {
         return;
 
       await this.sky.promise;
-      return BeDuration.wait(1);
+      return BeDuration.wait(1).then(() => {
+        expect(this.sky.promise).to.be.undefined;
+        expect(this.sky.params).not.to.be.undefined;
+      });
     }
   }
 
@@ -66,17 +69,32 @@ describe("Sky rendering", () => {
       format: ImageSourceFormat.Png,
     };
 
-    const createTexture = () => {
+    const createdTexturesById = new Map<string, RenderTexture>();
+    const makeTexture = (id: string | undefined) => {
       const img = textureImage.image;
-      return { texture: Texture2DHandle.createForImage(img, RenderTexture.Type.SkyBox) } as unknown as RenderTexture;
+      const tex = { texture: Texture2DHandle.createForImage(img, RenderTexture.Type.SkyBox) } as unknown as RenderTexture;
+      if (id)
+        createdTexturesById.set(id, tex);
+
+      return tex;
     };
-    const createTextureCube = () => {
+
+    IModelApp.renderSystem.createTexture = (args) => {
+      const id = args.ownership && "external" !== args.ownership && typeof args.ownership.key === "string" ? args.ownership.key : undefined;
+      return makeTexture(id);
+    };
+
+    IModelApp.renderSystem.createTextureFromCubeImages = (_a, _b, _c, _d, _e, _f, _g, params) => {
       const img = textureImage.image;
-      return { texture: TextureCubeHandle.createForCubeImages(img, img, img, img, img, img) } as unknown as RenderTexture;
+      const tex = { texture: TextureCubeHandle.createForCubeImages(img, img, img, img, img, img) } as unknown as RenderTexture;
+      if (typeof params.key === "string")
+        createdTexturesById.set(params.key, tex);
+
+      return tex;
     };
-    IModelApp.renderSystem.createTextureFromCubeImages = createTextureCube;
-    IModelApp.renderSystem.createTexture = createTexture;
+
     IModelApp.renderSystem.loadTextureImage = async () => Promise.resolve(textureImage);
+    IModelApp.renderSystem.findTexture = (key) => typeof key === "string" ? createdTexturesById.get(key) : undefined;
 
     iModel = createBlankConnection();
   });

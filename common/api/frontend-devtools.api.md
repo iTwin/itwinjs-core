@@ -2051,6 +2051,8 @@ export interface Slider {
     // (undocumented)
     label: HTMLLabelElement;
     // (undocumented)
+    readout: HTMLLabelElement;
+    // (undocumented)
     slider: HTMLInputElement;
 }
 
@@ -2071,6 +2073,8 @@ export interface SliderProps {
     name: string;
     // (undocumented)
     parent?: HTMLElement;
+    // (undocumented)
+    readout?: "right" | false;
     // (undocumented)
     step: string;
     // (undocumented)
@@ -2256,6 +2260,14 @@ export class ToggleFrustumSnapshotTool extends Tool {
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
     run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersections?: boolean): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleNormalMaps extends RenderTargetDebugControlToggleTool {
+    // (undocumented)
+    get aspect(): DebugControlBoolean;
     // (undocumented)
     static toolId: string;
 }
