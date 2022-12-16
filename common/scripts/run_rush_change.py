@@ -18,7 +18,7 @@ print ("Target branch: " + targetBranch)
 # With release/* being a potential target branch in addition to master, special case those branches.
 if targetBranch.find("refs/heads/release") != -1:
     branchCmd = ["-b", targetBranch.replace("refs/heads/", "origin/")]
-elif targetBranch.find("release") != -1:
+elif targetBranch.find("release") != -1 or targetBranch == srcBranch:
     # ADOps uses the branch name (i.e. 'release/2.8.0') for GH PR branch names instead of full refs.
     branchCmd = ["-b", "origin/" + targetBranch]
 else:
