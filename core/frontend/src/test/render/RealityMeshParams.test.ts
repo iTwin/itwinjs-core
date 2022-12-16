@@ -37,9 +37,9 @@ describe("RealityMeshParamsBuilder", () => {
 
       expect(params.indices[lastIndex]).to.equal(lastIndex);
       QPoint3dBuffer.unquantizePoint(params.positions, lastIndex, pt);
-        expect(pt.x).to.equal(1);
-        expect(pt.y).to.equal(2);
-        expect(pt.z).to.equal(3);
+      expect(pt.x).to.equal(1);
+      expect(pt.y).to.equal(2);
+      expect(pt.z).to.equal(3);
     }
 
     test(3, Uint8Array);
