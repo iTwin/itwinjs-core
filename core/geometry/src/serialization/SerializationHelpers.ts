@@ -506,6 +506,7 @@ export namespace SerializationHelpers {
             for (let i = 0; i < data.params.order - 1; ++i)
               weightsTrimmed.pop(); // remove last degree weights
           }
+          data.params.numPoles -= data.params.order - 1;
           data.params.closed = true;
           break;
         }
@@ -561,6 +562,7 @@ export namespace SerializationHelpers {
               for (let j = 0; j < data.uParams.order - 1; ++j)
                 weightsTrimmed[i].pop(); // remove last degreeU weights from each row
           }
+          data.uParams.numPoles -= data.uParams.order - 1;
           data.uParams.closed = true;
           break;
         }
@@ -591,6 +593,7 @@ export namespace SerializationHelpers {
             for (let i = 0; i < data.vParams.order - 1; ++i)
               weightsTrimmed.pop(); // remove last degreeV rows of weights
           }
+          data.vParams.numPoles -= data.vParams.order - 1;
           data.vParams.closed = true;
           break;
         }

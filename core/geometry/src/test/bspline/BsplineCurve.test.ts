@@ -694,23 +694,32 @@ describe("BsplineCurve", () => {
   it("LegacyClosureRoundTrip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const json = fs.readFileSync("./src/test/testInputs/curve/openAndClosedCurves.imjs", "utf8");
-    const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
-    const options = StrokeOptions.createForCurves();
-    options.angleTol = Angle.createDegrees(0.5);
-    for (const input of inputs) {
-      if (input instanceof CurveChain) {
-        if (input.children.length === 1) {
-          const curve = input.children[0];
-          const strokes = LineString3d.create();
-          curve.emitStrokes(strokes, options);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [input, strokes]);
-          if (curve instanceof BSplineCurve3dBase) {
-            ck.testExactNumber(curve.isClosableCurve, curve.getWrappable(), "WrapMode is as expected");
+    for (const filename of ["./src/test/testInputs/curve/openAndClosedCurves.imjs",
+                            "./src/test/testInputs/curve/openAndClosedCurves2.imjs"]) {
+      const json = fs.readFileSync(filename, "utf8");
+      const inputs = IModelJson.Reader.parse(JSON.parse(json));
+      if (ck.testDefined(inputs)) {
+        if (ck.testTrue(Array.isArray(inputs)) && Array.isArray(inputs) && inputs.length > 0) {
+          if (ck.testTrue(inputs[0] instanceof GeometryQuery)) {
+            const options = StrokeOptions.createForCurves();
+            options.angleTol = Angle.createDegrees(0.5);
+            for (const input of inputs) {
+              if (input instanceof CurveChain) {
+                if (input.children.length === 1) {
+                  const curve = input.children[0];
+                  const strokes = LineString3d.create();
+                  curve.emitStrokes(strokes, options);
+                  GeometryCoreTestIO.captureCloneGeometry(allGeometry, [input, strokes]);
+                  if (curve instanceof BSplineCurve3dBase) {
+                    ck.testExactNumber(curve.isClosableCurve, curve.getWrappable(), "WrapMode is as expected");
+                  }
+                }
+              }
+              testGeometryQueryRoundTrip(ck, input);
+            }
           }
         }
       }
-      testGeometryQueryRoundTrip(ck, input);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "LegacyClosureRoundTrip");
     expect(ck.getNumErrors()).equals(0);

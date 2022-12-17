@@ -252,26 +252,30 @@ describe("BSplineSurface", () => {
 
   it("LegacyClosureRoundTrip", () => {
     const ck = new Checker();
+    const options = StrokeOptions.createForFacets();
+    options.needNormals = options.needParams = options.shouldTriangulate = true;
     const allGeometry: GeometryQuery[] = [];
-    for (const filename of ["./src/test/testInputs/BSplineSurface/torus3_legacy.imjs",
-                            "./src/test/testInputs/BSplineSurface/torus6_legacy.imjs"]) {
+    for (const filename of ["./src/test/testInputs/BSplineSurface/torus3_open_closed.imjs",
+                            "./src/test/testInputs/BSplineSurface/torus6_open_closed.imjs"]) {
       const json = fs.readFileSync(filename, "utf8");
-      const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
-      const options = StrokeOptions.createForFacets();
-      options.needNormals = options.needParams = options.shouldTriangulate = true;
-      for (const input of inputs) {
-        if (input instanceof BSplineSurface3d || input instanceof BSplineSurface3dH) {
-          const builder = PolyfaceBuilder.create(options);
-          builder.addUVGridBody(input, 20, 20);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [input, builder.claimPolyface()]);
-
-          for (const uvDir of [UVSelect.uDirection, UVSelect.vDirection]) {
-            const mode = input.isClosableSurface(uvDir);
-            ck.testExactNumber(mode, input.getWrappable(uvDir), "WrapMode is as expected");
-            ck.testExactNumber(mode, BSplineWrapMode.OpenByRemovingKnots, "WrapMode is OpenByRemovingKnots");
+      const inputs = IModelJson.Reader.parse(JSON.parse(json));
+      if (ck.testDefined(inputs)) {
+        if (ck.testTrue(Array.isArray(inputs)) && Array.isArray(inputs) && inputs.length > 0) {
+          if (ck.testTrue(inputs[0] instanceof GeometryQuery)) {
+            for (const input of inputs) {
+              if (input instanceof BSplineSurface3d || input instanceof BSplineSurface3dH) {
+                const builder = PolyfaceBuilder.create(options);
+                builder.addUVGridBody(input, 20, 20);
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, [input, builder.claimPolyface()]);
+                for (const uvDir of [UVSelect.uDirection, UVSelect.vDirection]) {
+                  const mode = input.isClosableSurface(uvDir);
+                  ck.testExactNumber(mode, input.getWrappable(uvDir), "WrapMode is as expected");
+                }
+              }
+              testGeometryQueryRoundTrip(ck, input);
+            }
           }
         }
-        testGeometryQueryRoundTrip(ck, input);
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "LegacyClosureRoundTrip");
