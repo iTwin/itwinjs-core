@@ -19,7 +19,8 @@ import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Geometry } from "../../Geometry";
 import { OffsetMeshOptions } from "../PolyfaceQuery";
 import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
-import nodeTest from "node:test";
+import { BuildAverageNormalsContext } from "./BuildAverageNormalsContext";
+import { Angle } from "../../geometry3d/Angle";
 
 function isDefinedAndTrue(value: boolean | undefined): boolean {
   if (value === undefined)
@@ -32,6 +33,51 @@ function isDefinedAndTrue(value: boolean | undefined): boolean {
 type FacetOffsetGraphDebugFunction = (message: string, Graph: HalfEdgeGraph, breakMaskA: HalfEdgeMask, breakMaskB: HalfEdgeMask) => void;
 
 type FacetOffsetDebugString = (message: string) => void;
+
+class AverageNormalData {
+  constructor() {
+    this.numActiveSectors = 0;
+    this.numInactiveSectorsSectors = 0; // exterior and sling.
+    this.averageNormal = Vector3d.create();
+    this.maxDeviationRadiansFromAverage = 0.0;
+  }
+  public clear() {
+    this.numActiveSectors = 0;
+    this.numInactiveSectorsSectors = 0; // exterior and sling.
+    this.averageNormal.setZero();
+    this.maxDeviationRadiansFromAverage = 0.0;
+  }
+  public numActiveSectors: number;
+  public numInactiveSectorsSectors: number;
+  public averageNormal: Vector3d;
+  public maxDeviationRadiansFromAverage: number;
+  /** Add a normal to the evolving sum */
+  public accumulateNormal(normal: Vector3d, isActive: boolean) {
+    if (isActive) {
+      this.averageNormal.addInPlace(normal);
+      this.numActiveSectors++;
+    } else {
+      this.numInactiveSectorsSectors++;
+    }
+  }
+  /** normalize the accumulated normals. */
+  public finishNormalAveraging(): boolean {
+    if (this.numActiveSectors > 0 && this.averageNormal.normalizeInPlace()) {
+      return true;
+    }
+    return false;
+  }
+  /** Compute the deviation from average.   update max deviation member */
+  public recordDeviation(normal: Vector3d, isActive: boolean) {
+    if (isActive) {
+      const radians = this.averageNormal.radiansTo(normal);
+      this.maxDeviationRadiansFromAverage = Math.max(Math.abs(this.maxDeviationRadiansFromAverage), radians);
+    } else {
+    }
+  }
+  /** Return the max deviation as computed on prior calls to recordDeviation */
+  public get maxDeviationRadians(): number { return this.maxDeviationRadiansFromAverage; }
+}
 // facet properties used during offset.
 //
 export class FacetOffsetProperties {
@@ -81,7 +127,7 @@ export class SectorOffsetProperties {
     if (propsA !== undefined && propsB !== undefined) {
       edgeNodeA.vectorToFaceSuccessor(edgeVector);
       const radians = propsA.normal.signedRadiansTo(propsB.normal, edgeVector);
-      if (offsetDistance * radians >= radiansTolerance) {
+      if (Geometry.split3WaySign(offsetDistance, -1, 1, 1) * radians >= radiansTolerance) {
         Vector3d.createAdd2Scaled(propsA.normal, 1.0, propsB.normal, 1.0, averageNormal);
         if (averageNormal.normalizeInPlace())
           return true;
@@ -112,12 +158,16 @@ export class SectorOffsetProperties {
   public setXYAndZ(xyz: XYAndZ) {
     this.xyz.set(xyz.x, xyz.y, xyz.z);
   }
-  // Look through the half edge to its properties.  Set the normal there.
-  public static setNormalAtHalfEdge(halfEdge: HalfEdge, uvw: Vector3d) {
+  // Look through the half edge to its properties.  Set the normal there.  Optionally set xyz from node xyz and offset distance
+  public static setNormalAtHalfEdge(halfEdge: HalfEdge, uvw: Vector3d, distance?: number) {
     const props = halfEdge.edgeTag as SectorOffsetProperties;
-    if (props !== undefined)
+    if (props !== undefined) {
       props.normal.set(uvw.x, uvw.y, uvw.z);
+      if (distance !== undefined)
+        props.setOffsetPointAtDistanceAtHalfEdge(halfEdge, distance);
+    }
   }
+
   // Look through the half edge to its properties.  return (if possible) the coordinates
   public static getSectorPointAtHalfEdge(halfEdge: HalfEdge, xyz: Point3d | undefined, xyzArray: GrowableXYZArray | undefined): boolean {
     const props = halfEdge.edgeTag as SectorOffsetProperties;
@@ -400,7 +450,24 @@ export class OffsetMeshContext {
       });
   }
 
-  private inspectMasks(node: HalfEdge): string {
+  private getCoordinateString(node: HalfEdge, showXYZ: boolean = true, showFaceSuccessorXYZ: boolean = false): string {
+    const s = "";
+    if (showXYZ) {
+      if (showFaceSuccessorXYZ) {
+        return `${HalfEdge.nodeToIdXYZString(node)} ==> ${HalfEdge.nodeToIdXYZString(node.faceSuccessor)}`;
+      } else {
+        return `${HalfEdge.nodeToIdXYZString(node)}`;
+      }
+    } else {
+      if (showFaceSuccessorXYZ) {
+        return `==> ${HalfEdge.nodeToIdXYZString(node.faceSuccessor)}`;
+      } else {
+        return "";
+      }
+    }
+
+  }
+  private inspectMasks(node: HalfEdge, showXYZ: boolean = true, showFaceSuccessorXYZ: boolean = false): string {
     const s = "[";
     const v = s.concat(
       node.id.toString(),
@@ -411,7 +478,7 @@ export class OffsetMeshContext {
       node.isMaskSet(this.insideOfChamferFace) ? "(in chamfer)" : "",
       node.isMaskSet(this.outsideEndOfChamferFace) ? "(@sling)" : "",
       node.isMaskSet(this.outsideOfChamferFace) ? "(@chamfer)" : "",
-      "(", node.x.toString(), ",", node.y.toString(), ",", node.z.toString(), ")",
+      this.getCoordinateString(node, showXYZ, showFaceSuccessorXYZ),
       "]"
     );
     return v;
@@ -596,10 +663,48 @@ export class OffsetMeshContext {
         return n;
     }
   }
+
+  private computeAverageNormalAndMaxDeviationAroundVertex(vertexSeed: HalfEdge, data: AverageNormalData): number | undefined {
+    data.clear();
+    const inactiveNodeMask = this._exteriorMask | this._insideEndOfChamferFace;
+    vertexSeed.sumAroundVertex((node: HalfEdge) => {
+      const sectorData = node.edgeTag as SectorOffsetProperties;
+      if (sectorData)
+        data.accumulateNormal(sectorData.normal, !node.isMaskSet(inactiveNodeMask));
+      return 0.0;
+    }
+    );
+    if (!data.finishNormalAveraging()) {
+      return undefined;
+    }
+    vertexSeed.sumAroundVertex((node: HalfEdge) => {
+      const sectorData = node.edgeTag as SectorOffsetProperties;
+      if (sectorData)
+        data.recordDeviation(sectorData.normal, !node.isMaskSet(inactiveNodeMask));
+      return 0.0;
+    }
+    );
+    return data.maxDeviationRadians;
+  }
+
+  private assignOffsetByAverageNormalAroundVertex(vertexSeed: HalfEdge,
+    maxAllowedDeviationRadians: number,
+    data: AverageNormalData,
+    distance: number): boolean {
+    const maxDeviationRadians = this.computeAverageNormalAndMaxDeviationAroundVertex(vertexSeed, data);
+    if (maxDeviationRadians === undefined || maxDeviationRadians > maxAllowedDeviationRadians)
+      return false;
+    vertexSeed.sumAroundVertex((node: HalfEdge) => {
+      SectorOffsetProperties.setNormalAtHalfEdge(node, data.averageNormal, distance);
+      return 0;
+    });
+    return true;
+  }
+
   /** Search around a vertex for a sector which has a different normal from its vertexPredecessor.
  * * The seed will be the first candidate considered
 */
-  private markAndCollectBreakEdgesAroundVertex(vertexSeed: HalfEdge) {
+  private markBreakEdgesAndSaveAverageNormalsAroundVertex(vertexSeed: HalfEdge) {
     vertexSeed.clearMaskAroundVertex(this._breakMaskA);
     vertexSeed.clearMaskAroundVertex(this._breakMaskB);
 
@@ -647,7 +752,7 @@ export class OffsetMeshContext {
       nodeA = nodeA.vertexSuccessor;
     } while (nodeA !== vertexSeed);
     if (OffsetMeshContext.stringDebugFunction !== undefined)
-      OffsetMeshContext.stringDebugFunction(`   numSkip   ${_numSmooth}`);
+      OffsetMeshContext.stringDebugFunction(`   numSkip   ${_numSmooth} `);
     if (numBreaks === 0) {
       // make the first vertex a break so subsequent searches have a place to start
       vertexSeed.setMask(this._breakMaskA);
@@ -732,14 +837,14 @@ export class OffsetMeshContext {
   /** Compute the point of intersection of the planes in the sectors of 3 half edges */
   private compute3SectorIntersectionDebug(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge, result?: Vector3d): Vector3d | undefined {
     if (OffsetMeshContext.stringDebugFunction !== undefined)
-      OffsetMeshContext.stringDebugFunction(`compute3${this.inspectMasks(nodeA)}${this.inspectMasks(nodeB)}${this.inspectMasks(nodeC)}`);
+      OffsetMeshContext.stringDebugFunction(`compute3${this.inspectMasks(nodeA)}${this.inspectMasks(nodeB)}${this.inspectMasks(nodeC)} `);
     const vector = this.compute3SectorIntersection(nodeA, nodeB, nodeC, result);
 
     if (OffsetMeshContext.stringDebugFunction !== undefined) {
       if (vector === undefined)
         OffsetMeshContext.stringDebugFunction(" NO INTERSECTION");
       else
-        OffsetMeshContext.stringDebugFunction(` ComputedVector ${vector}`);
+        OffsetMeshContext.stringDebugFunction(` ComputedVector ${vector} `);
     }
     return vector;
   }
@@ -854,7 +959,7 @@ export class OffsetMeshContext {
     const breakEdges: HalfEdge[] = [];
     this._baseGraph.clearMask(this._offsetCoordinatesAssigned);
     this._baseGraph.announceVertexLoops((_graph: HalfEdgeGraph, vertexSeed: HalfEdge) => {
-      this.markAndCollectBreakEdgesAroundVertex(vertexSeed);
+      this.markBreakEdgesAndSaveAverageNormalsAroundVertex(vertexSeed);
       this.setOffsetAtDistanceAroundVertex(vertexSeed, distance);
       vertexSeed.collectMaskedEdgesAroundVertex(this._breakMaskA, true, breakEdges);
       if (breakEdges.length <= 1) {
@@ -906,6 +1011,10 @@ export class OffsetMeshContext {
     if (OffsetMeshContext.stringDebugFunction !== undefined)
       OffsetMeshContext.stringDebugFunction("*****                                 recompute intersections");
     const breakEdges: HalfEdge[] = [];
+    const vertexXYZ = Point3d.create();
+    const maxVertexMove = 2.0 * distance;
+    const averageNormalData = new AverageNormalData();
+    const maxAllowedNormalDeviationRadians = Angle.degreesToRadians(25.0);
     this._baseGraph.announceVertexLoops((_graph: HalfEdgeGraph, vertexSeedA: HalfEdge) => {
       // reposition to an important vertex.
       // first choice: a chamfer face.
@@ -915,16 +1024,20 @@ export class OffsetMeshContext {
       if (vertexSeed === undefined)
         vertexSeed = vertexSeedA;
       if (OffsetMeshContext.stringDebugFunction !== undefined) {
-        OffsetMeshContext.stringDebugFunction(` VERTEX LOOP   ${vertexSeed.getPoint3d().toJSON()}`);
+        OffsetMeshContext.stringDebugFunction(` VERTEX LOOP   ${vertexSeed.getPoint3d().toJSON()} `);
         vertexSeed.sumAroundVertex(
-          (node: HalfEdge) => { OffsetMeshContext.stringDebugFunction!(this.inspectMasks(node)); return 0; });
+          (node: HalfEdge) => { OffsetMeshContext.stringDebugFunction!(this.inspectMasks(node, false, true)); return 0; });
       }
-      this.markAndCollectBreakEdgesAroundVertex(vertexSeed);
+      // Take care of the easiest vertices directly . . .
+      if (this.assignOffsetByAverageNormalAroundVertex(vertexSeed, maxAllowedNormalDeviationRadians, averageNormalData, distance))
+        return true;
+
+      this.markBreakEdgesAndSaveAverageNormalsAroundVertex(vertexSeed);
       this.setOffsetAtDistanceAroundVertex(vertexSeed, distance);
       vertexSeed.collectMaskedEdgesAroundVertex(this._breakMaskA, true, breakEdges);
       if (OffsetMeshContext.stringDebugFunction !== undefined) {
-        OffsetMeshContext.stringDebugFunction(" BREAK EDGES");
-        for (const node of breakEdges) { OffsetMeshContext.stringDebugFunction(this.inspectMasks(node)); }
+        OffsetMeshContext.stringDebugFunction(` BREAK EDGES from ${this.inspectMasks(vertexSeed, true, false)}`);
+        for (const node of breakEdges) { OffsetMeshContext.stringDebugFunction(this.inspectMasks(node, false, true)); }
       }
       if (breakEdges.length <= 1) {
         // just one smooth sequence.
@@ -937,7 +1050,7 @@ export class OffsetMeshContext {
         }
       } else if (breakEdges.length === 3) {
         if (OffsetMeshContext.stringDebugFunction !== undefined)
-          OffsetMeshContext.stringDebugFunction(` Vertex Update just ${breakEdges.length}`);
+          OffsetMeshContext.stringDebugFunction(` Vertex Update just ${breakEdges.length} `);
         const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[0], breakEdges[1], breakEdges[2]);
         if (vectorFromOrigin !== undefined) {
           this.setOffsetXYAndZAroundVertex(vertexSeed, vectorFromOrigin);
@@ -947,7 +1060,8 @@ export class OffsetMeshContext {
         // Lots and Lots of edges
         // each set of 3 sectors independently generates an offset for its central sector.
         if (OffsetMeshContext.stringDebugFunction !== undefined)
-          OffsetMeshContext.stringDebugFunction(` Vertex Update breakEdges ${breakEdges.length}`);
+          OffsetMeshContext.stringDebugFunction(` Vertex Update breakEdges ${breakEdges.length} `);
+        vertexSeed.getPoint3d(vertexXYZ);
         for (let i = 0; i + 2 < breakEdges.length; i++) {
           const i0 = i;
           const i1 = (i0 + 1) % breakEdges.length;
@@ -978,10 +1092,12 @@ export class OffsetMeshContext {
           } else {
             const vectorFromOrigin = this.compute3SectorIntersectionDebug(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
             if (vectorFromOrigin !== undefined) {
-              this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[i1],
-                (_node: HalfEdge, properties: SectorOffsetProperties) => {
-                  properties.setXYAndZ(vectorFromOrigin);
-                });
+              if (vertexXYZ.distance(vectorFromOrigin) < maxVertexMove) {
+                this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[i1],
+                  (_node: HalfEdge, properties: SectorOffsetProperties) => {
+                    properties.setXYAndZ(vectorFromOrigin);
+                  });
+              }
             }
           }
         }
@@ -989,7 +1105,7 @@ export class OffsetMeshContext {
       if (OffsetMeshContext.stringDebugFunction !== undefined) {
         const n0 = vertexSeed.countMaskAroundFace(this._offsetCoordinatesAssigned, false);
         const n1 = vertexSeed.countMaskAroundFace(this._offsetCoordinatesAssigned, true);
-        const message = `   **** Vertex offset mask counts (TRUE ${n1}) (FALSE ${n0}) `;
+        const message = `   **** Vertex offset mask counts(TRUE ${n1})(FALSE ${n0})`;
         OffsetMeshContext.stringDebugFunction(message);
       }
       return true;
@@ -1023,7 +1139,7 @@ export class OffsetMeshContext {
   private computeSectorOffsetPointAfterFaceAndChamferOffsets(distance: number) {
     const breakEdges: HalfEdge[] = [];
     this._baseGraph.announceVertexLoops((_graph: HalfEdgeGraph, vertexSeed: HalfEdge) => {
-      this.markAndCollectBreakEdgesAroundVertex(vertexSeed);
+      this.markBreakEdgesAndSaveAverageNormalsAroundVertex(vertexSeed);
       this.setOffsetAtDistanceAroundVertex(vertexSeed, distance);
       vertexSeed.collectMaskedEdgesAroundVertex(this._breakMaskA, true, breakEdges);
       if (breakEdges.length <= 1) {

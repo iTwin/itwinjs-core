@@ -705,6 +705,11 @@ export class HalfEdge implements HalfEdgeUserData {
     return s;
   }
 
+  /** Return the [id, [x,y]] of a node.  Useful for collector methods. */
+  public static nodeToIdXYZString(node: HalfEdge): string {
+    return `[${node.id.toString()}: ${node.x},${node.y},${node.z}]`;
+  }
+
   /** Create a string representation of the mask
    * * Null mask is empty string.
    * * Appended characters B,P,X for Boundary, Primary, Exterior mask bits.
