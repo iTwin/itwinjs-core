@@ -363,8 +363,6 @@ export interface BackendHubAccess {
     queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
     queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
     queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
-    // @internal
-    queryCurrentOrPrecedingV2Checkpoint?: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
     // @internal
     queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
@@ -697,6 +695,7 @@ export class CheckpointManager {
 
 // @public
 export interface CheckpointProps extends TokenArg {
+    readonly allowPreceding?: boolean;
     readonly changeset: ChangesetIdWithIndex;
     // (undocumented)
     readonly expectV2?: boolean;
