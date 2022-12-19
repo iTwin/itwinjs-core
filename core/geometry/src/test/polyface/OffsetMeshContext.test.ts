@@ -14,7 +14,6 @@ import { Arc3d } from "../../curve/Arc3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Checker } from "../Checker";
-import { OffsetMeshContext } from "../../polyface/multiclip/OffsetMeshContext";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { RFunctions } from "./DrapeLinestring.test";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -24,6 +23,7 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { GraphChecker } from "../topology/Graph.test";
 import { OffsetMeshOptions, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { OffsetMeshContext } from "../../polyface/multiclip/OffsetMeshContext";
 
 const globalSeparateFaceEdgeAndVertexOutputs = false;
 function cleanupZero(a: number, tol: number = 1.0e-12): number {

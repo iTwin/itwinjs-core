@@ -1,6 +1,19 @@
 # Change Log - @itwin/map-layers
 
-This log was last generated on Wed, 30 Nov 2022 14:28:19 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Dec 2022 16:38:29 GMT and should not be manually modified.
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:29 GMT
+
+_Version update only_
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:37 GMT
+
+### Updates
+
+- MapLayers widget's preferences UI now support edit,delete buttons without having an iModel ID. Also fix an issue with edit. 
+- Unpin classnames package
 
 ## 3.4.7
 Wed, 30 Nov 2022 14:28:19 GMT

@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// import { Sample } from "../serialization/GeometrySamples";
 import { assert, expect } from "chai";
+
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
+import { YawPitchRollAngles, YawPitchRollProps } from "../../geometry3d/YawPitchRollAngles";
 import * as bsiChecker from "../Checker";
 
 /* eslint-disable no-console */
@@ -19,7 +19,10 @@ describe("YPR", () => {
     const ypr000 = YawPitchRollAngles.createRadians(0, 0, 0);
     ck.testTrue(ypr000.isIdentity(), "isIdentity");
     ck.testTrue(YawPitchRollAngles.createDegrees(360, -720, 3 * 360).isIdentity(), "isIdentity with wrap");
-
+    ck.testFalse(
+      YawPitchRollAngles.createDegrees(360, -720, 3 * 360).isIdentity(false),
+      "is not Identity if we don't allow period shift"
+    );
     for (const degrees of [
       Vector3d.create(10, 0, 0),
       Vector3d.create(0, 10, 0),
@@ -36,12 +39,11 @@ describe("YPR", () => {
       Vector3d.create(90, 0, 0),
       Vector3d.create(0, 90, 0),
       Vector3d.create(0, 0, 90)]) {
-      const yprA = YawPitchRollAngles.createDegrees(degrees.x, degrees.y, degrees.z);
-      const yawMatrix = Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees.x));
+      const yprA = YawPitchRollAngles.createDegrees(degrees.z, degrees.y, degrees.x);
+      const yawMatrix = Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees.z));
       const pitchMatrix = Matrix3d.createRotationAroundAxisIndex(1, Angle.createDegrees(-degrees.y));
-      const rollMatrix = Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(degrees.z));
+      const rollMatrix = Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(degrees.x));
       const product = yawMatrix.multiplyMatrixMatrix(pitchMatrix.multiplyMatrixMatrix(rollMatrix));
-      // const product = zMatrix.multiplyMatrixMatrix(yMatrix.multiplyMatrixMatrix(xMatrix));
 
       const yprB = yprA.clone();
       ck.testTrue(yprA.isAlmostEqual(yprB), "clone match");
@@ -54,24 +56,23 @@ describe("YPR", () => {
       ck.testCoordinate(yprA.maxAbsRadians(), Angle.degreesToRadians(maxDegrees), "maxAbsRadians");
 
       const matrixA = yprA.toMatrix3d();
-
       ck.testMatrix3d(matrixA, product, "degrees ", degrees.toJSON());
 
-      const yprAI = YawPitchRollAngles.createFromMatrix3d(matrixA);
-      if (ck.testPointer(yprAI, "matrix to YPR") && yprAI) {
-        ck.testTrue(yprA.isAlmostEqual(yprAI), "YPR-matrix-YPR round trip.");
+      const yprC = YawPitchRollAngles.createFromMatrix3d(matrixA);
+      if (ck.testPointer(yprC, "matrix to YPR")) {
+        ck.testTrue(yprA.isAlmostEqual(yprC), "YPR-matrix-YPR round trip.");
       }
       const origin = Point3d.create(4, 3, 2);
       const transformA = Transform.createOriginAndMatrix(origin, matrixA);
       const data = YawPitchRollAngles.tryFromTransform(transformA);
-      if (ck.testPointer(data, "YPR data from transform") && data) {
+      if (ck.testPointer(data, "YPR data from transform")) {
         ck.testPoint3d(origin, data.origin);
         ck.testTrue(yprA.isAlmostEqual(data.angles!), "YPR Transform R/T");
       }
-
     }
     expect(ck.getNumErrors()).equals(0);
   });
+
   it("freeze", () => {
     const ypr = YawPitchRollAngles.createDegrees(1, 2, 3);
     ypr.freeze();
@@ -96,17 +97,54 @@ describe("YPR", () => {
     ck.testTrue(ypr0.isAlmostEqual(ypr2));
     expect(ck.getNumErrors()).equals(0);
   });
-  it("mirror2d", () => {
+
+  it("createFromMatrix3d", () => {
     const ck = new bsiChecker.Checker();
-    const mirror45 = Matrix3d.createRowValues(0, 1, 0, 1, 0, 0, 0, 0, -1);
-    ck.testExactNumber(1.0, mirror45.determinant(), "confirm correct z direction for rotate around 45 degrees");
-    const ypr = YawPitchRollAngles.createFromMatrix3d(mirror45);
-    if (ck.testPointer(ypr, "confirm ypr created from mirror xy") && ypr) {
-      ck.testAngleNoShift(Angle.createDegrees(180), ypr.roll);
+    const matrix = Matrix3d.createRowValues(0, 1, 0, 1, 0, 0, 0, 0, -1);
+    const ypr = YawPitchRollAngles.createFromMatrix3d(matrix);
+    if (ck.testPointer(ypr, "confirm ypr created from mirror xy")) {
       ck.testAngleNoShift(Angle.createDegrees(90), ypr.yaw);
       ck.testAngleNoShift(Angle.createDegrees(0), ypr.pitch);
+      ck.testAngleNoShift(Angle.createDegrees(180), ypr.roll);
     }
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
+describe("YawPitchRollAngles", () => {
+  it("createFromMatrix3d", () => {
+    const ck = new bsiChecker.Checker();
+    const ypr0 = YawPitchRollAngles.createDegrees(10, 20, 30);
+    const matrix0: Matrix3d = ypr0.toMatrix3d();
+    const ypr1 = YawPitchRollAngles.createFromMatrix3d(matrix0);
+    if (ypr1)
+      expect(ypr0.maxDiffRadians(ypr1)).lessThan(Geometry.smallAngleRadians);
+    ck.checkpoint("YawPitchRollAngles.createFromMatrix3d");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("YawPitchRollAngles", () => {
+  it("ZeroYPR", () => {
+    const ypr = YawPitchRollAngles.createDegrees(0, 0, 0);
+    const expectedJson: any = {};
+    const outputJson: YawPitchRollProps = ypr.toJSON();
+    expect(outputJson).to.deep.equal(expectedJson);
+  }),
+    it("NonZeroYPR", () => {
+      const ypr = YawPitchRollAngles.createDegrees(10, 20, 30);
+      const expectedJson: any = { pitch: 20, roll: 30, yaw: 10 };
+      const outputJson: YawPitchRollProps = ypr.toJSON();
+      expect(outputJson).to.deep.equal(expectedJson);
+    });
+});
+
+describe("YawPitchRollAngles", () => {
+  it("maxDiffDegrees", () => {
+    const ypr1 = YawPitchRollAngles.createDegrees(10, 20, 30);
+    const ypr2 = YawPitchRollAngles.createDegrees(20, 50, 100);
+    const expectedMax: number = 70; // which is 100 - 30
+    const outputMax: number = ypr2.maxDiffDegrees(ypr1);
+    expect(expectedMax).equal(outputMax);
+  });
 });

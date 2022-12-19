@@ -7,14 +7,13 @@
  */
 
 import * as React from "react";
-import { v4 } from "uuid";
+import { assert, Guid } from "@itwin/core-bentley";
 import { Rectangle, useRefs, useResizeObserver } from "@itwin/core-react";
 import { CursorType } from "../widget-panels/CursorOverlay";
 import { PanelSide } from "../widget-panels/Panel";
 import { WidgetContentManager } from "../widget/ContentManager";
 import { FloatingWidget, FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdContext, DragProvider } from "./DragManager";
-import { assert } from "@itwin/core-bentley";
 import { WidgetTab } from "../widget/Tab";
 import { NineZoneAction } from "../state/NineZoneAction";
 import { NineZoneState } from "../state/NineZoneState";
@@ -298,7 +297,7 @@ export function handleToCursorType(handle: FloatingWidgetResizeHandle): CursorTy
 
 /** @internal */
 export function getUniqueId() {
-  return v4();
+  return Guid.createValue();
 }
 
 /** @internal */

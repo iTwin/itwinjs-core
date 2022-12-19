@@ -640,7 +640,6 @@ describe("float and dock widget", () => {
     sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
     expect(frontstageDef.setFloatingWidgetContainerBounds("fw1", { top: 55, left: 105, bottom: 155, right: 255 })).to.be.true;
     expect(frontstageDef.setFloatingWidgetContainerBounds("bad", { top: 55, left: 105, bottom: 155, right: 255 })).to.be.false;
-    frontstageDef.setFloatingWidgetBoundsInternal("fw1", { top: 55, left: 105, bottom: 155, right: 255 }, true); // should not trigger setter
     nineZoneStateSetter.calledOnce.should.true;
   });
 

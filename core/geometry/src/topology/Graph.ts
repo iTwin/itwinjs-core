@@ -101,6 +101,9 @@ export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolea
 /** Non-topological data members in a half edge.
  * These are not part of adjacency and masking logic.
 */
+/** member fields for a half edge (which is also commonly called a node)
+ * @internal
+ */
 export interface HalfEdgeUserData {
   /** Vertex x coordinate */
   x: number;

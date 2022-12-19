@@ -2,6 +2,42 @@
   "name": "@itwin/core-geometry",
   "entries": [
     {
+      "version": "3.5.1",
+      "tag": "@itwin/core-geometry_v3.5.1",
+      "date": "Thu, 15 Dec 2022 16:38:28 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.0",
+      "tag": "@itwin/core-geometry_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "extended clonePartial for LineString3d, CurveChainWithDistanceIndex"
+          },
+          {
+            "comment": "fix arc and fitCurve projection-to-ray bugs"
+          },
+          {
+            "comment": "non-coplanar line-arc intersection bug fix"
+          },
+          {
+            "comment": "refactor cloneWithMaximalPlanarFacets to leave input mesh unchanged"
+          },
+          {
+            "comment": "regionBooleanXY bridge edge and tolerance fixes"
+          },
+          {
+            "comment": "report TorusPipe radii in world coords"
+          },
+          {
+            "comment": "Point3dVector3D: clean up src and add more test coverage"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.7",
       "tag": "@itwin/core-geometry_v3.4.7",
       "date": "Wed, 30 Nov 2022 14:28:19 GMT",

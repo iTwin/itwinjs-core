@@ -58,6 +58,7 @@ import { Path } from '@itwin/core-geometry';
 import { PickAsyncMethods } from '@itwin/core-bentley';
 import { Placement } from '@itwin/core-common';
 import { PlacementProps } from '@itwin/core-common';
+import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { Range1d } from '@itwin/core-geometry';
@@ -1709,6 +1710,8 @@ export abstract class ModifyCurveTool extends ModifyElementWithDynamicsTool {
     // (undocumented)
     protected getGeometryProps(ev: BeButtonEvent, isAccept: boolean): JsonGeometryStream | FlatBufferGeometryStream | undefined;
     // (undocumented)
+    static isInPlane(curve: CurveCollection | CurvePrimitive, plane: Plane3dByOriginAndUnitNormal): boolean;
+    // (undocumented)
     static isSingleCurve(info: ElementGeometryInfo): {
         curve: CurveCollection | CurvePrimitive;
         params: GeometryParams;
@@ -1746,15 +1749,23 @@ export abstract class ModifyElementTool extends ElementSetTool {
     // (undocumented)
     protected doUpdateElement(_props: GeometricElementProps): Promise<boolean>;
     // (undocumented)
+    protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
+    // (undocumented)
     protected abstract getElementProps(ev: BeButtonEvent): GeometricElementProps | undefined;
     // (undocumented)
     protected abstract getGeometryProps(ev: BeButtonEvent, isAccept: boolean): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    // (undocumented)
+    protected getGroupIds(id: Id64String): Promise<Id64Arg>;
+    // (undocumented)
+    protected getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg>;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
     protected isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean>;
     // (undocumented)
     protected onGeometryFilterChanged(): void;
+    // (undocumented)
+    protected postFilterIds(arg: Id64Arg): Promise<Id64Arg>;
     // (undocumented)
     processAgenda(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -2264,6 +2275,65 @@ export class RedoTool extends Tool {
     run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
+}
+
+// @alpha (undocumented)
+export enum RegionBooleanMode {
+    Intersect = 2,
+    Subtract = 1,
+    Unite = 0
+}
+
+// @alpha
+export class RegionBooleanTool extends ModifyCurveTool {
+    // (undocumented)
+    protected acceptCurve(curve: CurveCollection | CurvePrimitive): boolean;
+    // (undocumented)
+    protected get allowDragSelect(): boolean;
+    // (undocumented)
+    protected get allowSelectionSet(): boolean;
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    protected get clearSelectionSet(): boolean;
+    // (undocumented)
+    protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    protected doRegionBoolean(_ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    get makeCopy(): boolean;
+    set makeCopy(value: boolean);
+    // (undocumented)
+    get makeCopyProperty(): DialogProperty<boolean>;
+    // (undocumented)
+    get mode(): RegionBooleanMode;
+    set mode(mode: RegionBooleanMode);
+    // (undocumented)
+    get modeProperty(): DialogProperty<number>;
+    // (undocumented)
+    protected modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): GeometryQuery | undefined;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
+    // (undocumented)
+    protected get wantModifyOriginal(): boolean;
 }
 
 // @alpha

@@ -1,6 +1,20 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Wed, 30 Nov 2022 14:28:19 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Dec 2022 16:38:29 GMT and should not be manually modified.
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:29 GMT
+
+_Version update only_
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:37 GMT
+
+### Updates
+
+- Deprecated PresentationManagerProps.mode property
+- Deprecate unused `PresentationAssetsRootConfig.common`.
+- Fix `PresentationRpcImpl` cancelling requests when it's configured to not use a request timeout at all
 
 ## 3.4.7
 Wed, 30 Nov 2022 14:28:19 GMT

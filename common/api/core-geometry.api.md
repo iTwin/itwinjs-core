@@ -1472,7 +1472,7 @@ export class CurveChainWireOffsetContext {
 // @public
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
     chainDistanceToChainFraction(distance: number): number;
-    protected chainDistanceToFragment(distance: number, allowExtrapolation?: boolean): PathFragment | undefined;
+    chainDistanceToFragment(distance: number, allowExtrapolation?: boolean): PathFragment | undefined;
     protected chainDistanceToFragmentIndex(distance: number, allowExtrapolation?: boolean): number | undefined;
     clone(): CurveChainWithDistanceIndex;
     clonePartialCurve(fractionA: number, fractionB: number): CurveChainWithDistanceIndex | undefined;
@@ -1483,7 +1483,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex;
-    protected curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined;
+    curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined;
     curveLength(): number;
     curveLengthBetweenFractions(fraction0: number, fraction1: number): number;
     readonly curvePrimitiveType = "curveChainWithDistanceIndex";
@@ -1496,6 +1496,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d;
+    get fragments(): PathFragment[];
     static getClosestPointTestCounts(clear?: boolean): {
         numCalls: number;
         numTested: number;
@@ -2406,7 +2407,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 }
 
 // @internal
-export class HalfEdge {
+export class HalfEdge implements HalfEdgeUserData {
     constructor(x?: number, y?: number, z?: number, i?: number);
     belowYX(other: HalfEdge): boolean;
     clearMask(mask: HalfEdgeMask): void;
@@ -2416,6 +2417,7 @@ export class HalfEdge {
     collectAroundFace(f?: NodeFunction): any[];
     collectAroundVertex(f?: NodeFunction): any[];
     collectMaskedEdgesAroundVertex(mask: HalfEdgeMask, value?: boolean, result?: HalfEdge[]): HalfEdge[];
+    copyDataFrom(source: HalfEdge, copyXYZ: boolean, copyVertexData: boolean, copyEdgeData: boolean, copyFaceData: boolean): void;
     countEdgesAroundFace(): number;
     countEdgesAroundVertex(): number;
     countMaskAroundFace(mask: HalfEdgeMask, value?: boolean): number;
@@ -2439,6 +2441,7 @@ export class HalfEdge {
     static filterIsMaskOn(node: HalfEdge, mask: HalfEdgeMask): boolean;
     findAroundFace(other: HalfEdge): boolean;
     findAroundVertex(other: HalfEdge): boolean;
+    findMaskAroundEdge(mask: HalfEdgeMask, value?: boolean): HalfEdge | undefined;
     findMaskAroundFace(mask: HalfEdgeMask, value?: boolean): HalfEdge | undefined;
     findMaskAroundVertex(mask: HalfEdgeMask, value?: boolean): HalfEdge | undefined;
     fractionAlongAndPerpendicularToPoint2d(fractionAlong: number, fractionPerpendicular: number, result?: Point2d): Point2d;
@@ -2474,6 +2477,7 @@ export class HalfEdge {
     };
     static nodeToIdString(node: HalfEdge): any;
     static nodeToIdXYString(node: HalfEdge): string;
+    static nodeToIdXYZString(node: HalfEdge): string;
     static nodeToMaskString(node: HalfEdge): string;
     static nodeToSelf(node: HalfEdge): any;
     static nodeToXY(node: HalfEdge): number[];
@@ -2490,6 +2494,7 @@ export class HalfEdge {
     sortAngle?: number;
     sortData?: number;
     static splitEdge(baseA: undefined | HalfEdge, xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
+    static splitEdgeCreateSliverFace(baseA: HalfEdge, heArray: HalfEdge[] | undefined): HalfEdge;
     sumAroundFace(f: NodeToNumberFunction): number;
     sumAroundVertex(f: NodeToNumberFunction): number;
     testAndSetMask(mask: HalfEdgeMask): number;
@@ -2543,6 +2548,7 @@ export class HalfEdgeGraph {
     setMask(mask: HalfEdgeMask): void;
     splitEdge(base: undefined | HalfEdge, xA?: number, yA?: number, zA?: number, iA?: number): HalfEdge;
     splitEdgeAtFraction(base: HalfEdge, fraction: number): HalfEdge;
+    splitEdgeCreateSliverFace(base: HalfEdge): HalfEdge;
     transformInPlace(transform: Transform): void;
     yankAndDeleteEdges(deleteThisNode: NodeFunction): number;
 }
@@ -2562,6 +2568,17 @@ export enum HalfEdgeMask {
 
 // @internal
 export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
+
+// @internal
+export interface HalfEdgeUserData {
+    edgeTag?: any;
+    faceTag?: any;
+    sortAngle?: number;
+    sortData?: number;
+    x: number;
+    y: number;
+    z: number;
+}
 
 // @public
 export type HasZ = Readonly<WriteableHasZ>;
@@ -3792,9 +3809,25 @@ export class NumberArray {
 
 // @public
 export class OffsetMeshOptions {
-    static create(smoothSingleDihedralAngle?: Angle, smoothAccumulatedDihedralAngle?: Angle): OffsetMeshOptions;
+    chamferTurnAngle: Angle;
+    static create(smoothSingleDihedralAngle?: Angle, smoothAccumulatedDihedralAngle?: Angle, chamferTurnAngle?: Angle): OffsetMeshOptions;
+    // (undocumented)
+    method?: number;
+    outputSelector?: OffsetMeshSelectiveOutputOptions;
     smoothAccumulatedDihedralAngle: Angle;
     smoothSingleDihedralAngle: Angle;
+}
+
+// @public
+export interface OffsetMeshSelectiveOutputOptions {
+    // (undocumented)
+    outputOffsetsFromEdges?: boolean;
+    // (undocumented)
+    outputOffsetsFromFaces?: boolean;
+    // (undocumented)
+    outputOffsetsFromFacesBeforeChamfers?: boolean;
+    // (undocumented)
+    outputOffsetsFromVertices?: boolean;
 }
 
 // @public
@@ -3876,10 +3909,10 @@ export class Order5Bezier extends BezierCoffs {
 
 // @alpha
 export class OrderedRotationAngles {
-    static createAngles(xRotation: Angle, yRotation: Angle, zRotation: Angle, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
-    static createDegrees(xDegrees: number, yDegrees: number, zDegrees: number, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
-    static createFromMatrix3d(matrix: Matrix3d, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
-    static createRadians(xRadians: number, yRadians: number, zRadians: number, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
+    static createAngles(xRotation: Angle, yRotation: Angle, zRotation: Angle, order: AxisOrder, xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles;
+    static createDegrees(xDegrees: number, yDegrees: number, zDegrees: number, order: AxisOrder, xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles;
+    static createFromMatrix3d(matrix: Matrix3d, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles | undefined;
+    static createRadians(xRadians: number, yRadians: number, zRadians: number, order: AxisOrder, xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles;
     get order(): AxisOrder;
     toMatrix3d(result?: Matrix3d): Matrix3d;
     static get treatVectorsAsColumns(): boolean;
@@ -4564,9 +4597,11 @@ export class PolyfaceQuery {
     // @internal
     static convertToHalfEdgeGraph(mesh: IndexedPolyface): HalfEdgeGraph;
     static createIndexedEdges(polyface: Polyface | PolyfaceVisitor): IndexedEdgeMatcher;
+    static dihedralAngleSummary(source: Polyface, ignoreBoundaries?: boolean): number;
     static fillSimpleHoles(mesh: Polyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined;
     static getSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number): boolean | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
+    static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries?: boolean): boolean;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
     static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries?: boolean): boolean;
     static markAllEdgeVisibility(mesh: IndexedPolyface, value: boolean): void;
@@ -6237,6 +6272,7 @@ export class YawPitchRollAngles {
     isIdentity(allowPeriodShift?: boolean): boolean;
     maxAbsDegrees(): number;
     maxAbsRadians(): number;
+    maxDiffDegrees(other: YawPitchRollAngles): number;
     maxDiffRadians(other: YawPitchRollAngles): number;
     pitch: Angle;
     roll: Angle;

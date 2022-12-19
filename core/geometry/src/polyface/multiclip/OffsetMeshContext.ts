@@ -19,7 +19,6 @@ import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Geometry } from "../../Geometry";
 import { OffsetMeshOptions } from "../PolyfaceQuery";
 import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
-import { BuildAverageNormalsContext } from "./BuildAverageNormalsContext";
 import { Angle } from "../../geometry3d/Angle";
 
 function isDefinedAndTrue(value: boolean | undefined): boolean {
@@ -451,7 +450,6 @@ export class OffsetMeshContext {
   }
 
   private getCoordinateString(node: HalfEdge, showXYZ: boolean = true, showFaceSuccessorXYZ: boolean = false): string {
-    const s = "";
     if (showXYZ) {
       if (showFaceSuccessorXYZ) {
         return `${HalfEdge.nodeToIdXYZString(node)} ==> ${HalfEdge.nodeToIdXYZString(node.faceSuccessor)}`;

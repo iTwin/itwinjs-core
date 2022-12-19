@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper } from "@itwin/appui-abstract";
-import { Id64String } from "@itwin/core-bentley";
+import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper } from "@itwin/appui-abstract";
+import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
   BentleyError, Code, ElementGeometry, ElementGeometryInfo, ElementGeometryOpcode, FlatBufferGeometryStream, GeometricElementProps,
   GeometryParams, JsonGeometryStream,
@@ -14,8 +14,8 @@ import {
   LengthDescription, NotifyMessageDetails, OutputMessagePriority, ToolAssistanceInstruction,
 } from "@itwin/core-frontend";
 import {
-  AngleSweep, Arc3d, AxisOrder, CurveChainWithDistanceIndex, CurveCollection, CurveLocationDetail, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, JointOptions, LineSegment3d, LineString3d, Loop, Matrix3d,
-  Path, Point3d, RegionOps, Vector3d,
+  AngleSweep, AnyRegion, Arc3d, AxisOrder, CurveChainWithDistanceIndex, CurveCollection, CurveLocationDetail, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, JointOptions, LineSegment3d, LineString3d, Loop, Matrix3d,
+  Path, Plane3dByOriginAndUnitNormal, Point3d, RegionBinaryOpType, RegionOps, SignedLoops, UnionRegion, Vector3d,
 } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "./EditTool";
@@ -65,6 +65,26 @@ export abstract class ModifyCurveTool extends ModifyElementWithDynamicsTool {
     }
 
     return;
+  }
+
+  public static isInPlane(curve: CurveCollection | CurvePrimitive, plane: Plane3dByOriginAndUnitNormal): boolean {
+    if ("curvePrimitive" === curve.geometryCategory)
+      return curve.isInPlane(plane);
+
+    if (!curve.children)
+      return false;
+
+    for (const child of curve.children) {
+      if (child instanceof CurvePrimitive) {
+        if (!child.isInPlane(plane))
+          return false;
+      } else if (child instanceof CurveCollection) {
+        if (!this.isInPlane(child, plane))
+          return false;
+      }
+    }
+
+    return true;
   }
 
   protected acceptCurve(_curve: CurveCollection | CurvePrimitive): boolean { return true; }
@@ -244,14 +264,7 @@ export class OffsetCurveTool extends ModifyCurveTool {
     if ("curvePrimitive" === curve.geometryCategory)
       return true;
 
-    switch (curve.curveCollectionType) {
-      case "path":
-      case "loop":
-        return true;
-
-      default:
-        return false;
-    }
+    return (curve.isOpenPath || curve.isClosedPath);
   }
 
   protected override modifyCurve(ev: BeButtonEvent, isAccept: boolean): GeometryQuery | undefined {
@@ -405,14 +418,7 @@ export class BreakCurveTool extends ModifyCurveTool {
     if ("curvePrimitive" === curve.geometryCategory)
       return true;
 
-    switch (curve.curveCollectionType) {
-      case "path":
-      case "loop":
-        return true;
-
-      default:
-        return false;
-    }
+    return (curve.isOpenPath || curve.isClosedPath);
   }
 
   protected doBreakCurve(ev: BeButtonEvent): void {
@@ -556,7 +562,7 @@ export class ExtendCurveTool extends ModifyCurveTool {
     if ("curvePrimitive" === curve.geometryCategory)
       return curve.isExtensibleFractionSpace;
 
-    return ("path" === curve.curveCollectionType);
+    return curve.isOpenPath;
   }
 
   protected extendCurve(geom: CurvePrimitive, pickPoint: Point3d, spacePoint: Point3d): CurvePrimitive | undefined {
@@ -735,5 +741,229 @@ export class ExtendCurveTool extends ModifyCurveTool {
     const tool = new ExtendCurveTool();
     if (!await tool.run())
       return this.exitTool();
+  }
+}
+
+/** @alpha */
+export enum RegionBooleanMode {
+  /** Create region from union of all input regions */
+  Unite = 0,
+  /** Create region from subtraction from the first input region */
+  Subtract = 1,
+  /** Create region from intersection of all input regions */
+  Intersect = 2,
+}
+
+/** @alpha Tool to unite, subtract, or intersect planar regions. */
+export class RegionBooleanTool extends ModifyCurveTool {
+  public static override toolId = "RegionBoolean";
+  public static override iconSpec = "icon-scale"; // Need better icon...
+
+  private _makeCopyProperty: DialogProperty<boolean> | undefined;
+  public get makeCopyProperty() {
+    if (!this._makeCopyProperty)
+      this._makeCopyProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("regionBooleanKeep", EditTools.translate("RegionBoolean.Label.KeepOriginal")), false);
+    return this._makeCopyProperty;
+  }
+
+  public get makeCopy(): boolean { return this.makeCopyProperty.value; }
+  public set makeCopy(value: boolean) { this.makeCopyProperty.value = value; }
+
+  private static modeMessage(str: string) { return EditTools.translate(`RegionBoolean.Mode.${str}`); }
+  private static getModeChoices = (): EnumerationChoice[] => {
+    return [
+      { label: RegionBooleanTool.modeMessage("Unite"), value: RegionBooleanMode.Unite },
+      { label: RegionBooleanTool.modeMessage("Subtract"), value: RegionBooleanMode.Subtract },
+      { label: RegionBooleanTool.modeMessage("Intersect"), value: RegionBooleanMode.Intersect },
+    ];
+  };
+
+  private _modeProperty: DialogProperty<number> | undefined;
+  public get modeProperty() {
+    if (!this._modeProperty)
+      this._modeProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildEnumPicklistEditorDescription(
+        "regionBooleanMode", EditTools.translate("RegionBoolean.Label.Mode"), RegionBooleanTool.getModeChoices()), RegionBooleanMode.Unite as number);
+    return this._modeProperty;
+  }
+
+  public get mode(): RegionBooleanMode { return this.modeProperty.value as RegionBooleanMode; }
+  public set mode(mode: RegionBooleanMode) { this.modeProperty.value = mode; }
+
+  protected override get clearSelectionSet(): boolean { return false; } // Don't clear for subtract so that mode can be changed...
+  protected override get allowSelectionSet(): boolean { return RegionBooleanMode.Subtract !== this.mode; }
+  protected override get allowDragSelect(): boolean { return RegionBooleanMode.Subtract !== this.mode; }
+  protected override get controlKeyContinuesSelection(): boolean { return true; }
+  protected override get requiredElementCount(): number { return 2; }
+
+  protected override get wantAccuSnap(): boolean { return false; }
+  protected override get wantDynamics(): boolean { return false; }
+  protected override get wantModifyOriginal(): boolean { return !this.makeCopy; }
+
+  protected override async onAgendaModified(): Promise<void> { } // No intermediate result preview, defer to processAgenda...
+
+  protected override acceptCurve(curve: CurveCollection | CurvePrimitive): boolean {
+    if ("curvePrimitive" === curve.geometryCategory)
+      return false;
+
+    return curve.isAnyRegionType;
+  }
+
+  private regionBinaryOp(): RegionBinaryOpType {
+    switch (this.mode) {
+      case RegionBooleanMode.Subtract:
+        return RegionBinaryOpType.AMinusB;
+      case RegionBooleanMode.Intersect:
+        return RegionBinaryOpType.Intersection;
+      default:
+        return RegionBinaryOpType.Union;
+    }
+  }
+
+  private regionFromSignedLoops(loops: SignedLoops): AnyRegion | undefined {
+    switch (loops.negativeAreaLoops.length) {
+      case 0:
+        return undefined;
+      case 1:
+        return loops.negativeAreaLoops[0];
+      default:
+        return RegionOps.sortOuterAndHoleLoopsXY(loops.negativeAreaLoops);
+    }
+  }
+
+  private regionBooleanXY(tools: AnyRegion[], op: RegionBinaryOpType): AnyRegion | undefined {
+    if (tools.length < 2)
+      return undefined;
+
+    const loopsA = (RegionBinaryOpType.Union !== op ? tools[0] : tools);
+    const loopsB = (RegionBinaryOpType.Union !== op ? tools.slice(1) : undefined);
+
+    // TODO: Need to be able to specify group operation for loopsB to correctly support intersect w/o doing 2 at time...
+    const areas = RegionOps.regionBooleanXY(loopsA, loopsB, op);
+    if (undefined === areas)
+      return undefined;
+
+    // TODO: Holes are expected to be returned as negative area loops but currently are not...
+    const loops = RegionOps.constructAllXYRegionLoops(areas);
+
+    if (1 === loops.length)
+      return this.regionFromSignedLoops(loops[0]);
+
+    if (loops.length > 1) {
+      const unionRegion = UnionRegion.create();
+
+      for (const loop of loops) {
+        const child = this.regionFromSignedLoops(loop);
+        if (undefined === child)
+          continue;
+
+        unionRegion.tryAddChild(child);
+      }
+
+      if (unionRegion.children.length > 1)
+        return unionRegion;
+    }
+
+    return undefined;
+  }
+
+  protected async doRegionBoolean(_ev: BeButtonEvent): Promise<void> {
+    this.curveData = undefined;
+
+    if (this.agenda.length < this.requiredElementCount)
+      return;
+
+    const targetData = await this.getCurveData(this.agenda.elements[0]);
+    if (undefined === targetData?.geom)
+      return;
+
+    const targetLocalToWorld = FrameBuilder.createRightHandedFrame(undefined, targetData.geom);
+    if (undefined === targetLocalToWorld)
+      return;
+
+    const targetWorldToLocal = targetLocalToWorld.inverse();
+    if (undefined === targetWorldToLocal)
+      return;
+
+    const targetPlane = Plane3dByOriginAndUnitNormal.create(targetLocalToWorld.getOrigin(), targetLocalToWorld.matrix.getColumn(2));
+    if (undefined === targetPlane)
+      return;
+
+    if (!targetData.geom.tryTransformInPlace(targetWorldToLocal))
+      return;
+
+    const tools: AnyRegion[] = [targetData.geom as AnyRegion];
+
+    for (const id of this.agenda.elements) {
+      if (id === targetData.props.id)
+        continue;
+
+      const curveData = await this.getCurveData(id);
+      if (undefined === curveData?.geom)
+        return;
+
+      if (!ModifyCurveTool.isInPlane(curveData.geom, targetPlane)) {
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, EditTools.translate("RegionBoolean.Error.NonCoplanar")));
+        return;
+      }
+
+      if (!curveData.geom.tryTransformInPlace(targetWorldToLocal))
+        return;
+
+      tools.push(curveData.geom as AnyRegion);
+    }
+
+    const result = this.regionBooleanXY(tools, this.regionBinaryOp());
+    if (undefined === result || !result.tryTransformInPlace(targetLocalToWorld))
+      return;
+
+    this.curveData = targetData;
+    this.curveData.geom = result;
+  }
+
+  protected override modifyCurve(_ev: BeButtonEvent, _isAccept: boolean): GeometryQuery | undefined {
+    return this.curveData?.geom;
+  }
+
+  protected override async applyAgendaOperation(ev: BeButtonEvent): Promise<boolean> {
+    if (!await super.applyAgendaOperation(ev))
+      return false;
+
+    if (this.wantModifyOriginal && this.agenda.length > 1)
+      await basicManipulationIpc.deleteElements(CompressedId64Set.sortAndCompress(this.agenda.elements.slice(1)));
+
+    return true;
+  }
+
+  public override async processAgenda(ev: BeButtonEvent): Promise<void> {
+    await this.doRegionBoolean(ev);
+    return super.processAgenda(ev);
+  }
+
+  public async onRestartTool(): Promise<void> {
+    const tool = new RegionBooleanTool();
+    if (!await tool.run())
+      return this.exitTool();
+  }
+
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
+
+    if (this.modeProperty.name === updatedValue.propertyName)
+      await this.onReinitialize();
+
+    return true;
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.makeCopyProperty, this.modeProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+
+    toolSettings.push(this.modeProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
+    toolSettings.push(this.makeCopyProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+
+    return toolSettings;
   }
 }

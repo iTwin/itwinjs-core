@@ -44,6 +44,7 @@ import { RangeLengthData } from "./RangeLengthData";
 import { SpacePolygonTriangulation } from "../topology/SpaceTriangulation";
 import { HalfEdgeGraphFromIndexedLoopsContext } from "../topology/HalfEdgeGraphFromIndexedLoopsContext";
 import { OffsetMeshContext } from "./multiclip/OffsetMeshContext";
+import { Ray3d } from "../geometry3d/Ray3d";
 /**
  * Options carrier for cloneWithHolesFilled
  * @public
@@ -63,6 +64,7 @@ export interface HoleFillOptions {
 /**  Selective output options for PolyfaceQuery.cloneOffset:
 *  * undefined means the usual facets in the expected offset mesh.
 *  * if present as a json object, the various booleans select respective outputs.
+*  * @public
 */
 export interface OffsetMeshSelectiveOutputOptions {
   outputOffsetsFromFacesBeforeChamfers?: boolean;
@@ -332,6 +334,87 @@ export class PolyfaceQuery {
     if (!origin) return undefined;
     const inertiaProducts = PolyfaceQuery.sumFacetSecondVolumeMomentProducts(source, origin);
     return MomentData.inertiaProductsToPrincipalAxes(origin, inertiaProducts);
+  }
+
+  /**
+   * Test for convex volume by dihedral angle tests on all edges.
+   * * This tests if all dihedral angles are positive.
+   * * In a closed solid, this is a strong test for overall convexity.
+   * * With `ignoreBoundaries` true, this may be a useful test when all the facets are in a single edge-connected component, such as a pyramid with no underside.
+   * * It is not a correct test if there are multiple, disjoint components.
+   *   * Take the above-mentioned pyramid with no underside.
+   *   * Within the same mesh, have a second pyramid placed to the side, still facing upward.
+   *   * The angles will pass the dihedral convexity test, but the composite thing surely is not convex.
+   * @param source mesh to examine
+   * @param ignoreBoundaries if true, ignore simple boundary edges, i.e. allow unclosed meshes.
+   * @returns true if the mesh is closed and has all dihedral angles (angle across edge) positive
+   */
+  public static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries: boolean = false): boolean {
+    return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
+  }
+
+  /**
+  * Compute a number summarizing the dihedral angles in the mesh.
+  * @see [[isConvexByDihedralAngleCount]] for comments about ignoreBoundaries===true when there are multiple connected components.
+  * @param source mesh to examine
+  * @param ignoreBoundaries if true, ignore simple boundary edges, i.e. allow unclosed meshes.
+  * @returns a number summarizing the dihedral angles in the mesh.
+  *   * Return 1 if all angles are positive or planar.  The mesh is probably convex with outward normals.
+  *   * Return -1 if all angles are negative or planar.  The mesh is probably convex with inward normals.
+  *   * Return 0 if
+  *     * angles area mixed
+  *     * any edge has other than 1 incident facet or more than 2 incident facets.
+  *     * (but null edges are permitted -- These occur naturally at edges of quads at north or south pole)
+  */
+  public static dihedralAngleSummary(source: Polyface, ignoreBoundaries: boolean = false): number {
+    const edges = new IndexedEdgeMatcher();
+    const visitor = source.createVisitor(1);
+    visitor.reset();
+    const centroidNormal: Ray3d[] = [];
+    let normalCounter = 0;
+    while (visitor.moveToNextFacet()) {
+      const numEdges = visitor.pointCount - 1;
+      const normal = PolygonOps.centroidAreaNormal(visitor.point);
+      if (normal === undefined)
+        return 0;
+      centroidNormal.push(normal);
+      for (let i = 0; i < numEdges; i++) {
+        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), normalCounter);
+      }
+      normalCounter++;
+    }
+    const badClusters: SortableEdgeCluster[] = [];
+    const manifoldClusters: SortableEdgeCluster[] = [];
+
+    edges.sortAndCollectClusters(manifoldClusters,
+      ignoreBoundaries ? undefined : badClusters, undefined, badClusters);
+    if (badClusters.length > 0)
+      return 0;
+    let numPositive = 0;
+    let numPlanar = 0;
+    let numNegative = 0;
+    const edgeVector = Vector3d.create();
+    for (const cluster of manifoldClusters) {
+      const sideA = cluster.at(0);
+      const sideB = cluster.at(1);
+      if (sideA instanceof SortableEdge
+        && sideB instanceof SortableEdge
+        && source.data.point.vectorIndexIndex(sideA.vertexIndexA, sideA.vertexIndexB, edgeVector)) {
+        const dihedralAngle = centroidNormal[sideA.facetIndex].direction.signedAngleTo(
+          centroidNormal[sideB.facetIndex].direction, edgeVector);
+        if (dihedralAngle.isAlmostZero) numPlanar++;
+        else if (dihedralAngle.radians > 0.0) numPositive++;
+        else numNegative++;
+      }
+    }
+    if (numPositive > 0 && numNegative === 0)
+      return 1;
+    if (numNegative > 0 && numPositive === 0)
+      return -1;
+    // problem case: if all edges have zero dihedral angle, record it as convex.
+    if (numPlanar > 0 && numPositive === 0 && numNegative === 0)
+      return 1;
+    return 0;
   }
 
   /**

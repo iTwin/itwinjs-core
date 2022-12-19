@@ -126,6 +126,9 @@ public;TypedArrayBuilderOptions
 public;Uint16ArrayBuilder 
 public;Uint32ArrayBuilder 
 public;Uint8ArrayBuilder 
+public;UintArray = Uint8Array | Uint16Array | Uint32Array
+public;UintArrayBuilder 
+public;UintArrayBuilderOptions 
 public;UnexpectedErrors
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined

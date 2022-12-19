@@ -155,6 +155,7 @@ export class EnvironmentEditor {
       min: "0.0",
       step: "0.25",
       max: "20.0",
+      readout: "right",
       value: !curGrad ? "#FFFFFF" : curGrad.skyExponent.toString(),
       handler: (slider) => this.updateEnvironment({ skyExponent: parseFloat(slider.value) }),
     });
@@ -166,6 +167,7 @@ export class EnvironmentEditor {
       min: "0.0",
       step: "0.25",
       max: "20.0",
+      readout: "right",
       value: !curGrad ? "#FFFFFF" : curGrad.groundExponent.toString(),
       handler: (slider) => this.updateEnvironment({ groundExponent: parseFloat(slider.value) }),
     });
@@ -277,8 +279,8 @@ export class EnvironmentEditor {
     this._eeSkyColor.input.value = gradient.skyColor.toHexString();
     this._eeGroundColor.input.value = gradient.groundColor.toHexString();
     this._eeNadirColor.input.value = gradient.nadirColor.toHexString();
-    this._eeSkyExponent.slider.value = gradient.skyExponent.toString();
-    this._eeGroundExponent.slider.value = gradient.groundExponent.toString();
+    this._eeSkyExponent.slider.value = this._eeSkyExponent.readout.innerText = gradient.skyExponent.toString();
+    this._eeGroundExponent.slider.value = this._eeGroundExponent.readout.innerText = gradient.groundExponent.toString();
 
     this._updatingEnvironment = false;
   }

@@ -936,16 +936,17 @@ export class Vector3d extends XYZ {
     return undefined;
   }
   /**
-   * Return fractional projection of target vector onto this
-   * * It's returning the signed projection magnitude divided by the target magnitude. In other words,
-   * it's returning the length of the projection as a fraction of the target magnitude.
+   * Return fractional projection of this vector on the target vector.
+   * * It's returning the signed projection magnitude divided by the target magnitude.
+   * * To find the projection vector, scale the target vector by the value that this function is returning.
+   * * math details can be found at docs/learning/geometry/PointVector.md
    * @param target the target vector
    * @param defaultFraction the returned value in case magnitude square of target vector is very small
    * */
   public fractionOfProjectionToVector(target: Vector3d, defaultFraction: number = 0): number {
     /*
-     * projection length is (this.target)/||target||
-     * but here we return (this.target)/||target||^2
+     * Projection vector is ((this.target)/||target||)(target/||target||) = ((this.target)/||target||^2)target
+     * This function returns (this.target)/||target||^2
      */
     const numerator = this.dotProduct(target);
     const denominator = target.magnitudeSquared();
