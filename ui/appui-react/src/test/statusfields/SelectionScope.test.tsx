@@ -15,7 +15,6 @@ import {
   StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework, WidgetDef,
 } from "../../appui-react";
 import TestUtils, { handleError, selectChangeValueByIndex, stubScrollIntoView } from "../TestUtils";
-import { EmptyLocalization } from "@itwin/core-common";
 
 [true, false].map((withDeprecated) => {
   const testType = withDeprecated ? " (with deprecated isInFooterMode props)" : "";
@@ -38,7 +37,7 @@ import { EmptyLocalization } from "@itwin/core-common";
     let widgetControl: StatusBarWidgetControl | undefined;
     describe("Bare tests", () => {
       before(async () => {
-        await MockRender.App.startup({ localization: new EmptyLocalization() });
+        await MockRender.App.startup();
         await TestUtils.initializeUiFramework();
 
         const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation

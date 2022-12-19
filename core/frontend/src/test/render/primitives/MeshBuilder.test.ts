@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, GraphicParams } from "@itwin/core-common";
+import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
 import { MockRender } from "../../../render/MockRender";
@@ -32,7 +32,7 @@ describe("Mesh Builder Tests", () => {
   let viewport: ScreenViewport;
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
     viewport = openBlankViewport();
   });
 

@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EmptyLocalization } from "@itwin/core-common";
 import { MockRender } from "@itwin/core-frontend";
 import { render } from "@testing-library/react";
 import { expect } from "chai";
@@ -55,7 +54,7 @@ describe("ModalFrontstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
   });
 
   after(async () => {

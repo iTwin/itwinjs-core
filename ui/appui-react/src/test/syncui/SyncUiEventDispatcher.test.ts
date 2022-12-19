@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { EmptyLocalization, IModelRpcProps } from "@itwin/core-common";
+import { IModelRpcProps } from "@itwin/core-common";
 import { IModelApp, IModelConnection, MockRender, ScreenViewport, SelectionSet } from "@itwin/core-frontend";
 import { InstanceKey, RpcRequestsHandler } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@itwin/presentation-common/lib/cjs/test";
@@ -314,7 +314,7 @@ describe("SyncUiEventDispatcher", () => {
   describe("SelectedViewportChanged", () => {
     before(async () => {
       await TestUtils.initializeUiFramework();
-      await MockRender.App.startup({ localization: new EmptyLocalization() });
+      await MockRender.App.startup();
       SyncUiEventDispatcher.initialize();
     });
 

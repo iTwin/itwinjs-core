@@ -10,7 +10,6 @@ import { FormatProps } from "@itwin/core-quantity";
 import { TestUtils } from "../TestUtils";
 import { handleError, selectChangeValueByText, stubScrollIntoView } from "../test-helpers/misc";
 import { FormatUnits } from "../../imodel-components-react/quantityformat/FormatUnits";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FormatUnits", () => {
   const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;
@@ -22,7 +21,7 @@ describe("FormatUnits", () => {
       get: () => requestNextAnimation,
     });
     await TestUtils.initializeUiIModelComponents();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
   });
 
   after(async () => {

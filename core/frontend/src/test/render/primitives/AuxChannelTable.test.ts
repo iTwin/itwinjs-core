@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, Geometry, Vector3d } from "@itwin/core-geometry";
-import { EmptyLocalization, OctEncodedNormal } from "@itwin/core-common";
+import { OctEncodedNormal } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
 import { AuxChannelTable } from "../../../render/primitives/AuxChannelTable";
 
@@ -19,7 +19,7 @@ describe("AuxChannelTable", () => {
 
   before(async () => {
     MockRender.App.systemFactory = () => new System();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
   });
 
   after(async () => {

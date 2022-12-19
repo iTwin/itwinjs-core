@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, EmptyLocalization, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
+  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
   QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
@@ -413,7 +413,7 @@ describe("VertexTableSplitter", () => {
 
   before(async () => {
     MockRender.App.systemFactory = () => new MockSystem();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
   });
 
   beforeEach(() => setMaxTextureSize(2048));

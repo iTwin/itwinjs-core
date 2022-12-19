@@ -13,7 +13,6 @@ import {
   WidgetDef,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("SnapModeField", () => {
 
@@ -36,7 +35,7 @@ describe("SnapModeField", () => {
 
   before(async () => {
     // use mock renderer so standards tools are registered.
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
     await TestUtils.initializeUiFramework();
 
     const statusBarWidgetDef = new WidgetDef({ // eslint-disable-line deprecation/deprecation

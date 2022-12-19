@@ -12,7 +12,6 @@ import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw"
 import { AccuDrawWidget, AccuDrawWidgetControl } from "../../appui-react/accudraw/AccuDrawWidget";
 import { TestUtils } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("AccuDrawWidget", () => {
   before(async () => {
@@ -20,7 +19,6 @@ describe("AccuDrawWidget", () => {
 
     const opts: IModelAppOptions = {};
     opts.accuDraw = new FrameworkAccuDraw();
-    opts.localization = new EmptyLocalization();
     await MockRender.App.startup(opts);
   });
 

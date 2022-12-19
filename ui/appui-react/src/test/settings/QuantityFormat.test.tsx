@@ -15,7 +15,6 @@ import { getQuantityFormatsSettingsManagerEntry } from "../../appui-react/settin
 import { ModalDialogRenderer } from "../../appui-react/dialog/ModalDialogManager";
 import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import { UiFramework } from "../../appui-react/UiFramework";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("QuantityFormatSettingsPage", () => {
 
@@ -24,7 +23,7 @@ describe("QuantityFormatSettingsPage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
   });
 
   after(async () => {

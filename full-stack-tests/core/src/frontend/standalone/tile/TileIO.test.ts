@@ -591,7 +591,7 @@ describe("mirukuru TileTree", () => {
 
   before(async () => {
     MockRender.App.systemFactory = () => new TestSystem();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
     if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() }});
 

@@ -20,7 +20,6 @@ import TestUtils, { childStructure, userEvent } from "../TestUtils";
 import { TestFrontstage } from "./FrontstageTestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
-import { EmptyLocalization } from "@itwin/core-common";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";
@@ -44,7 +43,7 @@ describe("FrontstageComposer", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     UiFramework.setUiVersion("1");
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
   });
 
   after(async () => {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, GraphicParams } from "@itwin/core-common";
+import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
@@ -33,7 +33,7 @@ describe("MeshBuilderMap Tests", () => {
   document.body.appendChild(viewDiv);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
     imodel = createBlankConnection();
     spatialView = SpatialViewState.createBlank(imodel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     spatialView.setStandardRotation(StandardViewId.RightIso);

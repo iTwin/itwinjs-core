@@ -11,7 +11,6 @@ import { BackstageItemState, CommandLaunchBackstageItem, FrontstageManager, Sync
 import TestUtils, { userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
@@ -22,7 +21,7 @@ describe("Backstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
 
     await FrontstageManager.setActiveFrontstageDef(undefined);
   });

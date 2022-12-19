@@ -10,7 +10,6 @@ import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw"
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";
 import { FrameworkUiAdmin } from "../../appui-react/uiadmin/FrameworkUiAdmin";
 import { UiFramework } from "../../appui-react/UiFramework";
-import { EmptyLocalization } from "@itwin/core-common";
 
 // cspell:ignore dont uiadmin
 
@@ -36,7 +35,6 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
       const opts: IModelAppOptions = {};
       opts.accuDraw = new FrameworkAccuDraw();
       opts.uiAdmin = new FrameworkUiAdmin();
-      opts.localization = new EmptyLocalization();
       await MockRender.App.startup(opts);
     });
 

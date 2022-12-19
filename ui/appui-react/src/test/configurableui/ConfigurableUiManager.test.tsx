@@ -13,7 +13,6 @@ import {
   TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
-import { EmptyLocalization } from "@itwin/core-common";
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -26,7 +25,7 @@ describe("ConfigurableUiManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
 
     ConfigurableUiManager.initialize();
     ConfigurableUiManager.registerControl("TableExampleContent", TableExampleContentControl);

@@ -20,7 +20,6 @@ import TestUtils, { storageMock } from "../TestUtils";
 import { FrameworkUiAdmin, KeyinEntry } from "../../appui-react/uiadmin/FrameworkUiAdmin";
 import { fireEvent, render } from "@testing-library/react";
 import { Button } from "@itwin/itwinui-react";
-import { EmptyLocalization } from "@itwin/core-common";
 const myLocalStorage = storageMock();
 function requestNextAnimation() { }
 
@@ -43,7 +42,6 @@ describe("PopupManager", () => {
     // use mock renderer so standards tools are registered.
     const opts: IModelAppOptions = {
       uiAdmin: new FrameworkUiAdmin(),
-      localization: new EmptyLocalization(),
     };
     await MockRender.App.startup(opts);
   });

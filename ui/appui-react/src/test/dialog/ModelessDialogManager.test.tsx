@@ -10,7 +10,6 @@ import { ConfigurableUiManager, DialogChangedEventArgs, ModelessDialog, Modeless
 import TestUtils, { userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ModelessDialogManager", () => {
   let theUserTo: ReturnType<typeof userEvent.setup>;
@@ -28,7 +27,7 @@ describe("ModelessDialogManager", () => {
   before(async () => {
     await TestUtils.initializeUiFramework(true);
     ConfigurableUiManager.initialize();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
 
     ModelessDialogManager.onModelessDialogChangedEvent.addListener(handleModelessDialogChanged);
   });

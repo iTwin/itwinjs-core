@@ -10,7 +10,6 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { QuantityNumberInput } from "../../imodel-components-react/inputs/QuantityNumberInput";
 import TestUtils from "../TestUtils";
-import { EmptyLocalization } from "@itwin/core-common";
 
 // cSpell:ignore decrementor QuantityNumberInput
 
@@ -36,7 +35,7 @@ describe("<QuantityNumberInput />", () => {
       get: () => requestNextAnimation,
     });
     await TestUtils.initializeUiIModelComponents();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
   });
 
   after(async () => {

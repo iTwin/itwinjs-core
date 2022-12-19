@@ -13,7 +13,6 @@ import { TestUtils } from "../TestUtils";
 import { FormatPanel } from "../../imodel-components-react/quantityformat/FormatPanel";
 import { FormatSample } from "../../imodel-components-react/quantityformat/FormatSample";
 import { FormatPrecision } from "../../imodel-components-react/quantityformat/FormatPrecision";
-import { EmptyLocalization } from "@itwin/core-common";
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
   const traitStr = getTraitString(trait);
@@ -97,7 +96,7 @@ describe("FormatPanel", () => {
       get: () => requestNextAnimation,
     });
     await TestUtils.initializeUiIModelComponents();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
   });
 
   after(async () => {

@@ -10,7 +10,6 @@ import {
 import TestUtils from "../TestUtils";
 import { MockRender } from "@itwin/core-frontend";
 import { DefaultContentTools, DefaultContentToolsAppData, StandardContentToolsUiItemsProvider } from "../../appui-react";
-import { EmptyLocalization } from "@itwin/core-common";
 
 const testAppDataPropsArray: DefaultContentToolsAppData[] = [
   {
@@ -161,7 +160,7 @@ describe("StandardContentToolsUiItemsProvider", () => {
   // avoid problems due to no real localization resources by return dummy values for englishKeyin and keyin properties.
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
   });
 
   after(async () => {

@@ -14,7 +14,6 @@ import { SpecialKey } from "@itwin/appui-abstract";
 import { TestUtils } from "../TestUtils";
 import { handleError, selectChangeValueByIndex, selectChangeValueByText, stubScrollIntoView } from "../test-helpers/misc";
 import { QuantityFormatPanel } from "../../imodel-components-react/quantityformat/QuantityFormatPanel";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("QuantityInput", () => {
   const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;
@@ -26,7 +25,7 @@ describe("QuantityInput", () => {
       get: () => requestNextAnimation,
     });
     await TestUtils.initializeUiIModelComponents();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
   });
 
   after(async () => {

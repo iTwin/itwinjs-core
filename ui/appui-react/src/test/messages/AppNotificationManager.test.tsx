@@ -13,14 +13,13 @@ import {
 import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogManager, ModalDialogRenderer } from "../../appui-react";
 import TestUtils, { userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("AppNotificationManager", () => {
   let theUserTo: ReturnType<typeof userEvent.setup>;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
   });
 
   after(async () => {

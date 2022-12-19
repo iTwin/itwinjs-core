@@ -19,7 +19,6 @@ import {
 } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { TestFrontstage, TestFrontstage2, TestFrontstage3 } from "./FrontstageTestUtils";
-import { EmptyLocalization } from "@itwin/core-common";
 
 const mySessionStorage = storageMock();
 
@@ -33,7 +32,7 @@ describe("FrontstageManager", () => {
 
     await TestUtils.initializeUiFramework();
     UiFramework.setUiVersion("1"); // eslint-disable-line deprecation/deprecation
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
 
     FrontstageManager.initialize();
     FrontstageManager.clearFrontstageProviders();

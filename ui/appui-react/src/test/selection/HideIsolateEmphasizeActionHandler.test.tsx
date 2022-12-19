@@ -8,7 +8,6 @@ import * as moq from "typemoq";
 import { HideIsolateEmphasizeActionHandler } from "../../appui-react/selection/HideIsolateEmphasizeManager";
 import TestUtils from "../TestUtils";
 import { UiFramework } from "../../appui-react/UiFramework";
-import { EmptyLocalization } from "@itwin/core-common";
 
 class TestHideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
   public featureOverridesActive = false;
@@ -82,7 +81,7 @@ describe("Use Custom HideIsolateEmphasizeActionHandler", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
     UiFramework.setHideIsolateEmphasizeActionHandler(new TestHideIsolateEmphasizeManager());
   });
 

@@ -13,7 +13,6 @@ import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from
 import { TimelineComponent, TimelineMenuItemProps } from "../../imodel-components-react/timeline/TimelineComponent";
 import { TestUtils } from "../TestUtils";
 import { MockRender } from "@itwin/core-frontend";
-import { EmptyLocalization } from "@itwin/core-common";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public playing = false;
@@ -107,7 +106,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
     sinon.restore();
     // need to initialize to get localized strings
     await TestUtils.initializeUiIModelComponents();
-    await MockRender.App.startup({ localization: new EmptyLocalization() });
+    await MockRender.App.startup();
 
     // JSDom used in testing does not provide implementations for requestAnimationFrame/cancelAnimationFrame so add dummy ones here.
     window.requestAnimationFrame = rafSpy;
