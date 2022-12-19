@@ -11,14 +11,13 @@ import TestUtils, { handleError, selectChangeValueByText, storageMock, stubScrol
 import { UiFramework } from "../../appui-react/UiFramework";
 import { ColorTheme } from "../../appui-react/theme/ThemeManager";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("UiSettingsPage", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
   let localStorageMock = storageMock();
 
   before(async () => {
-    await NoRenderApp.startup({ localization: new EmptyLocalization() });
+    await NoRenderApp.startup();
   });
 
   after(async () => {

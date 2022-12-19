@@ -13,7 +13,6 @@ import {
 } from "../../appui-react";
 import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
-import { EmptyLocalization } from "@itwin/core-common";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -28,7 +27,7 @@ describe("Backstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await NoRenderApp.startup({ localization: new EmptyLocalization() });
+    await NoRenderApp.startup();
 
     class Frontstage1 extends FrontstageProvider {
       public static stageId = "Test1";

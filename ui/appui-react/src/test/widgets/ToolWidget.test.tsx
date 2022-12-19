@@ -15,7 +15,6 @@ import {
   ToolButton, ToolWidget, ToolWidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
-import { EmptyLocalization } from "@itwin/core-common";
 
 const testCallback = sinon.stub();
 
@@ -34,7 +33,7 @@ describe("ToolWidget", () => {
 
     before(async () => {
       await TestUtils.initializeUiFramework();
-      await NoRenderApp.startup({ localization: new EmptyLocalization() });
+      await NoRenderApp.startup();
 
       // Set in the before() after UiFramework.i18n is initialized
       horizontalToolbar =
@@ -177,7 +176,7 @@ describe("ToolWidget", () => {
 
     before(async () => {
       await TestUtils.initializeUiFramework();
-      await NoRenderApp.startup({ localization: new EmptyLocalization() });
+      await NoRenderApp.startup();
     });
 
     after(async () => {

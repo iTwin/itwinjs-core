@@ -9,7 +9,6 @@ import { ActivityMessageDetails, ActivityMessageEndReason, NoRenderApp, NotifyMe
 import { AppNotificationManager, MessageManager, StatusMessageRenderer } from "../../appui-react";
 import { TestUtils } from "../TestUtils";
 import { act, fireEvent, render, screen, waitForElementToBeRemoved } from "@testing-library/react";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("StatusMessageRenderer", () => {
 
@@ -19,7 +18,7 @@ describe("StatusMessageRenderer", () => {
     await TestUtils.initializeUiFramework();
 
     notifications = new AppNotificationManager();
-    await NoRenderApp.startup({ localization: new EmptyLocalization() });
+    await NoRenderApp.startup();
     MessageManager.clearMessages();
   });
 

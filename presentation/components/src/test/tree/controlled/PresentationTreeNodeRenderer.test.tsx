@@ -10,7 +10,6 @@ import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   ITreeNodeLoader, TreeActions, TreeModelNode, TreeNodeItem, TreeRendererProps, UiComponents, VisibleTreeNodes,
 } from "@itwin/components-react";
-import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render } from "@testing-library/react";
@@ -57,9 +56,7 @@ describe("PresentationTreeRenderer", () => {
   };
 
   before(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await UiComponents.initialize(IModelApp.localization);
     await Presentation.initialize();
     HTMLElement.prototype.scrollIntoView = () => { };
@@ -115,9 +112,7 @@ describe("TreeNodeRenderer", () => {
   const treeActionsMock = moq.Mock.ofType<TreeActions>();
 
   before(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await UiComponents.initialize(IModelApp.localization);
     await Presentation.initialize();
     HTMLElement.prototype.scrollIntoView = () => { };

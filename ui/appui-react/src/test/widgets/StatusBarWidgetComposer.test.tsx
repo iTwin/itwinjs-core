@@ -14,12 +14,11 @@ import {
   ConfigurableUiControlType, FrontstageManager, StatusBarWidgetComposerControl, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("StatusBarComposerControl", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await NoRenderApp.startup({ localization: new EmptyLocalization() });
+    await NoRenderApp.startup();
   });
 
   after(async () => {
