@@ -42,7 +42,7 @@ describe("Pickable decorations", () => {
     }
   }
 
-  let decorator = new Decorator();
+  const decorator = new Decorator();
   before(async () => {
     await IModelApp.startup();
     IModelApp.viewManager.addDecorator(decorator);
