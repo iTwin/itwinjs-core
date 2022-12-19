@@ -11,14 +11,14 @@ import { Viewport } from "../../../Viewport";
 import { GraphicType } from "../../../render/GraphicBuilder";
 import { readUniquePixelData, testBlankViewport } from "../../openBlankViewport";
 
-describe.only("Pickable decorations", () => {
+describe("Pickable decorations", () => {
   class Decorator {
     private _type = GraphicType.Scene;
     private _curId = "SetMeBeforeTesting";
     private _x = 1;
     private _y = 1;
 
-    public test(vp: Viewport, type: GraphicType): void {
+    public test(vp: Viewport, type: GraphicType, expectPickable = true): void {
       this._type = type;
       this._curId = vp.iModel.transientIds.next;
       this._x++;
@@ -27,7 +27,7 @@ describe.only("Pickable decorations", () => {
       vp.invalidateDecorations();
       vp.renderFrame();
       const pixels = readUniquePixelData(vp);
-      expect(pixels.containsElement(this._curId)).to.be.true;
+      expect(pixels.containsElement(this._curId)).to.equal(expectPickable);
     }
 
     public decorate(context: DecorateContext): void {
@@ -53,13 +53,20 @@ describe.only("Pickable decorations", () => {
     await IModelApp.shutdown();
   });
 
-  it("are pickable", () => {
+  it("world and overlay decorations are pickable", () => {
     testBlankViewport((vp) => {
       decorator.test(vp, GraphicType.Scene);
       decorator.test(vp, GraphicType.WorldDecoration);
       decorator.test(vp, GraphicType.WorldOverlay);
       decorator.test(vp, GraphicType.ViewOverlay);
-      decorator.test(vp, GraphicType.ViewBackground);
+    });
+  });
+
+  // There can be only one background graphic, which draws behind everything elese.
+  // Until we have some use case for making it pickable, we won't complicate our display code to support that.
+  it("view background is not pickable", () => {
+    testBlankViewport((vp) => {
+      decorator.test(vp, GraphicType.ViewBackground, false);
     });
   });
 });
