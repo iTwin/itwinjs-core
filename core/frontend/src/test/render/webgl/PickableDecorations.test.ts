@@ -62,7 +62,7 @@ describe("Pickable decorations", () => {
     });
   });
 
-  // There can be only one background graphic, which draws behind everything elese.
+  // There can be only one background graphic, which draws behind everything else.
   // Until we have some use case for making it pickable, we won't complicate our display code to support that.
   it("view background is not pickable", () => {
     testBlankViewport((vp) => {
