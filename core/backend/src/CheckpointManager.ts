@@ -40,6 +40,9 @@ export interface CheckpointProps extends TokenArg {
   /** changeset for the checkpoint */
   readonly changeset: ChangesetIdWithIndex;
 
+  /** If true, then the latest successful v2 checkpoint at or before the provided changeset will be returned when calling queryV2Checkpoint.  */
+  readonly allowPreceding?: boolean;
+
   /** The number of seconds before the current token expires to attempt to reacquire a new token. Default is 1 hour. */
   readonly reattachSafetySeconds?: number;
 }
@@ -225,12 +228,7 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     const request = job.request;
-    let v2props: V2CheckpointAccessProps | undefined;
-    if (IModelHost.hubAccess.queryCurrentOrPrecedingV2Checkpoint) {
-      v2props = await IModelHost.hubAccess.queryCurrentOrPrecedingV2Checkpoint(request.checkpoint);
-    } else {
-      v2props = await IModelHost.hubAccess.queryV2Checkpoint(request.checkpoint);
-    }
+    const v2props: V2CheckpointAccessProps | undefined = await IModelHost.hubAccess.queryV2Checkpoint({...request.checkpoint, allowPreceding: true});
     if (!v2props)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
