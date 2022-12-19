@@ -484,13 +484,11 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this._layers.clear();
   }
 
-  private initForPickOverlayDecorations(overlays: GraphicList | undefined): void {
-    if (overlays) {
-      for (const overlay of overlays) {
-        const gf = overlay as Graphic;
-        if (gf.isPickable)
-          gf.addCommands(this);
-      }
+  private initForPickOverlayDecorations(overlays: GraphicList): void {
+    for (const overlay of overlays) {
+      const gf = overlay as Graphic;
+      if (gf.isPickable)
+        gf.addCommands(this);
     }
   }
 
@@ -502,9 +500,14 @@ export class RenderCommands implements Iterable<DrawCommands> {
     for (const sceneGf of sceneOverlays)
       (sceneGf as Graphic).addCommands(this);
 
-    if (worldOverlayDecorations || viewOverlayDecorations) {
+    if (worldOverlayDecorations?.length) {
       this.pushAndPopState(this.target.decorationsState, () => {
         this.initForPickOverlayDecorations(worldOverlayDecorations);
+      });
+    }
+
+    if (viewOverlayDecorations?.length) {
+      this.pushAndPopState(this.target.decorationsState.withViewCoords(), () => {
         this.initForPickOverlayDecorations(viewOverlayDecorations);
       });
     }
