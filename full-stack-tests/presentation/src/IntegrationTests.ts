@@ -6,6 +6,7 @@ import * as chai from "chai";
 import chaiSubset from "chai-subset";
 import * as cpx from "cpx2";
 import * as fs from "fs";
+import Backend from "i18next-http-backend";
 import * as path from "path";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
@@ -18,7 +19,6 @@ import {
 } from "@itwin/presentation-backend";
 import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
-import Backend from "i18next-http-backend";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -79,6 +79,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("i18n", LogLevel.Error);
+  Logger.setLevel("SQLite", LogLevel.Error);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
   const libDir = path.resolve("lib");
@@ -124,12 +125,12 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
           const fileProtocol = "file://";
           const request = new Backend().options.request?.bind(this as void);
 
-          if (url.startsWith(fileProtocol)){
+          if (url.startsWith(fileProtocol)) {
             try {
               const data = fs.readFileSync(url.replace(fileProtocol, ""), "utf8");
-              callback(null, {status: 200, data});
+              callback(null, { status: 200, data });
             } catch (error) {
-              callback(error, {status: 500, data: ""});
+              callback(error, { status: 500, data: "" });
             }
           } else {
             request!(options, url, payload, callback);

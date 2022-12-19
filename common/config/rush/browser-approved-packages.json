@@ -1091,10 +1091,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "uuid",
-      "allowedCategories": [ "frontend", "tools" ]
-    },
-    {
       "name": "vhacd-js",
       "allowedCategories": [ "internal" ]
     },
@@ -1117,10 +1113,6 @@
     {
       "name": "wtfnode",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "xml-js",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "xmlhttprequest",
