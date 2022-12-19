@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@itwin/core-bentley";
+import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64Set, Id64String, SortedArray } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import {
   EditingScopeNotifications, ElementGeometryChange, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
@@ -178,6 +178,8 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
   public notifyGeometryChanged(props: ModelGeometryChangesProps[]) {
     const changes = ModelGeometryChanges.iterable(props);
     const modelIds: Id64String[] = [];
+    let deletedIds: Id64Set | undefined;
+
     for (const modelChanges of changes) {
       // ###TODO do we care about the model range?
       let list = this._geometryChanges.get(modelChanges.id);
@@ -192,10 +194,16 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
 
         list.insert(elementChange);
         if (DbOpcode.Delete === elementChange.type) {
-          this.iModel.selectionSet.remove(elementChange.id);
-          this.iModel.hilited.setHilite(elementChange.id, false);
+          if (undefined === deletedIds)
+            deletedIds = new Set<Id64String>();
+          deletedIds.add(elementChange.id);
         }
       }
+    }
+
+    if (deletedIds) {
+      this.iModel.selectionSet.remove(deletedIds);
+      this.iModel.hilited.setHilite(deletedIds, false);
     }
 
     this.onGeometryChanges.raiseEvent(changes, this);

@@ -92,6 +92,13 @@ export interface FloatingWidgetClearUserSizedAction {
 }
 
 /** @internal */
+export interface FloatingWidgetSetUserSizedAction {
+  readonly type: "FLOATING_WIDGET_SET_USER_SIZED";
+  readonly id: FloatingWidgetState["id"];
+  readonly userSized: boolean;
+}
+
+/** @internal */
 export interface FloatingWidgetSendBackAction {
   readonly type: "FLOATING_WIDGET_SEND_BACK";
   readonly id: FloatingWidgetState["id"];
@@ -200,6 +207,7 @@ export type NineZoneAction =
   FloatingWidgetBringToFrontAction |
   FloatingWidgetSendBackAction |
   FloatingWidgetClearUserSizedAction |
+  FloatingWidgetSetUserSizedAction |
   PopoutWidgetSendBackAction |
   PanelWidgetDragStartAction |
   WidgetDragAction |

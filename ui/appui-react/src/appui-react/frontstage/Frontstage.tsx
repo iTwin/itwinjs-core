@@ -122,7 +122,7 @@ interface FrontstageState {
 
 /** Frontstage React component.
  * A Frontstage is a full-screen configuration designed to enable the user to accomplish a task.
- * @deprecated Use [FrontstageConfig] instead.
+ * @deprecated Use [[FrontstageConfig]] instead.
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {

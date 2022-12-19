@@ -8,7 +8,7 @@ import * as React from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { getPropertyFilterOperatorLabel, PropertyFilterRuleOperator, UiComponents } from "@itwin/components-react";
+import { getPropertyFilterOperatorLabel, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator, UiComponents } from "@itwin/components-react";
 import { BeEvent } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
@@ -21,7 +21,8 @@ import { fireEvent, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { ECClassInfo, getIModelMetadataProvider } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
 import {
-  PresentationInstanceFilterBuilder, useFilterBuilderNavigationPropertyEditorContext, usePresentationInstanceFilteringProps,
+  PresentationInstanceFilterBuilder, PresentationInstanceFilterInfo, useFilterBuilderNavigationPropertyEditorContext,
+  usePresentationInstanceFilteringProps,
 } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 import { INSTANCE_FILTER_FIELD_SEPARATOR } from "../../presentation-components/instance-filter-builder/Utils";
 import { stubRaf } from "./Common";
@@ -33,14 +34,45 @@ describe("PresentationInstanceFilter", () => {
   const propertiesField = createTestPropertiesContentField({
     properties: [{ property: { classInfo, name: "prop1", type: "string" } }],
     name: "prop1Field",
+    label: "propertiesField",
+    category,
+  });
+  const propertiesField2 = createTestPropertiesContentField({
+    properties: [{ property: { classInfo, name: "prop2", type: "string" } }],
+    name: "prop2Field",
+    label: "propertiesField2",
+    category,
+  });
+  const propertiesField3 = createTestPropertiesContentField({
+    properties: [{ property: { classInfo, name: "prop3", type: "string" } }],
+    name: "prop3Field",
+    label: "propertiesField3",
     category,
   });
   const descriptor = createTestContentDescriptor({
     selectClasses: [{ selectClassInfo: classInfo, isSelectPolymorphic: false }],
     categories: [category],
-    fields: [propertiesField],
+    fields: [propertiesField, propertiesField2, propertiesField3],
   });
+  const initialFilter: PresentationInstanceFilterInfo = {
+    filter: {
+      operator: PropertyFilterRuleGroupOperator.And,
+      conditions: [{
+        field: propertiesField,
+        operator: PropertyFilterRuleOperator.IsNull,
+        value: undefined,
+      },
+      {
+        field: propertiesField2,
+        operator: PropertyFilterRuleOperator.IsNull,
+        value: undefined,
+      }],
+    },
+    usedClasses: [classInfo],
+  };
+
   const imodelMock = moq.Mock.ofType<IModelConnection>();
+  const onCloseEvent = new BeEvent<() => void>();
 
   before(async () => {
     await NoRenderApp.startup({
@@ -63,6 +95,17 @@ describe("PresentationInstanceFilter", () => {
       return;
     }
     imodelMock.setup((x) => x.query(moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny())).returns(() => generator());
+    imodelMock.setup((x) => x.key).returns(() => "test_imodel");
+    imodelMock.setup((x) => x.onClose).returns(() => onCloseEvent);
+    const metadataProvider = getIModelMetadataProvider(imodelMock.object);
+    sinon.stub(metadataProvider, "getECClassInfo").callsFake(async () => {
+      return new ECClassInfo(classInfo.id, classInfo.name, classInfo.label, new Set(), new Set());
+    });
+  });
+
+  afterEach(() => {
+    onCloseEvent.raiseEvent();
+    imodelMock.reset();
   });
 
   it("invokes 'onInstanceFilterChanged' with filter", async () => {
@@ -72,8 +115,6 @@ describe("PresentationInstanceFilter", () => {
       descriptor={descriptor}
       onInstanceFilterChanged={spy}
     />);
-    expect(spy).to.be.calledOnceWith(undefined);
-    spy.resetHistory();
 
     // select property
     const propertySelector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
@@ -94,11 +135,31 @@ describe("PresentationInstanceFilter", () => {
     // wait until operator is selected
     await waitFor(() => getByText(getPropertyFilterOperatorLabel(PropertyFilterRuleOperator.IsNotNull)));
 
-    expect(spy).to.be.calledOnceWith({
-      field: propertiesField,
-      operator: PropertyFilterRuleOperator.IsNotNull,
-      value: undefined,
-    });
+    expect(spy).to.be.calledWith({
+      filter: {
+        field: propertiesField,
+        operator: PropertyFilterRuleOperator.IsNotNull,
+        value: undefined,
+      },
+      usedClasses: [classInfo],
+    }
+    );
+  });
+
+  it("renders with initial filter", async () => {
+    const spy = sinon.spy();
+    const { container, queryByDisplayValue } = render(<PresentationInstanceFilterBuilder
+      imodel={imodelMock.object}
+      descriptor={descriptor}
+      onInstanceFilterChanged={spy}
+      initialFilter={initialFilter}
+    />);
+    const rules = container.querySelectorAll(".rule-property");
+    expect(rules.length).to.be.eq(2);
+    const rule1 = queryByDisplayValue(propertiesField.label);
+    expect(rule1).to.not.be.null;
+    const rule2 = queryByDisplayValue(propertiesField2.label);
+    expect(rule2).to.not.be.null;
   });
 });
 
@@ -218,6 +279,27 @@ describe("usePresentationInstanceFilteringProps", () => {
       concreteClass1,
     ]);
     result.current.onClearClasses();
+    expect(result.current.selectedClasses).to.be.empty;
+  });
+
+  it("clears selected classes when new descriptor is provided", () => {
+    const { result, rerender } = renderHook(
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
+      { initialProps });
+    result.current.onClassSelected(concreteClass1);
+    expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
+      concreteClass1,
+    ]);
+    const newDescriptor = createTestContentDescriptor({
+      selectClasses: [
+        { selectClassInfo: concreteClass1, isSelectPolymorphic: false },
+      ],
+      categories: [category],
+      fields: [basePropertiesField],
+    });
+    // rerender with new descriptor
+    rerender({ descriptor: newDescriptor, imodel: initialProps.imodel });
+
     expect(result.current.selectedClasses).to.be.empty;
   });
 

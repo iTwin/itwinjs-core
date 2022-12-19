@@ -9,7 +9,7 @@
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
 import { editorChannel } from "@itwin/editor-common";
 import { DeleteElementsTool } from "./DeleteElementsTool";
-import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
+import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool, RegionBooleanTool } from "./ModifyCurveTools";
 import {
   ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool,
 } from "./ProjectLocation/ProjectExtentsDecoration";
@@ -140,6 +140,7 @@ export class EditTools {
         CreateTorusTool,
         ExtrudeCurveTool,
         RevolveCurveTool,
+        RegionBooleanTool,
         UniteSolidElementsTool,
         SubtractSolidElementsTool,
         IntersectSolidElementsTool,

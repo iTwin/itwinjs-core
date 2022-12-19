@@ -59,6 +59,7 @@ export interface WidgetEventArgs {
 export enum WidgetType {
   Tool,
   Navigation,
+  /** @deprecated */
   FreeFrom,
   Rectangular,
   ToolSettings,
@@ -167,7 +168,7 @@ export class WidgetDef {
   private _popoutBounds?: Rectangle;
 
   public get state(): WidgetState {
-    if ("1" === UiFramework.uiVersion)
+    if ("1" === UiFramework.uiVersion) // eslint-disable-line deprecation/deprecation
       return this._state;
 
     const frontstageDef = FrontstageManager.activeFrontstageDef;
@@ -183,14 +184,18 @@ export class WidgetDef {
   public get id(): string { return this._id; }
   public get classId(): string | ConfigurableUiControlConstructor | undefined { return this._classId; }
   public get priority(): number { return this._priority; }
+  /** @deprecated */
   public get isFreeform(): boolean { return this._isFreeform; }
   public get isFloatingStateSupported(): boolean { return this._isFloatingStateSupported; }
   public get isFloatingStateWindowResizable(): boolean { return this._isFloatingStateWindowResizable; }
   public get isToolSettings(): boolean { return this._isToolSettings; }
   public get isStatusBar(): boolean { return this._isStatusBar; }
   public get stateChanged(): boolean { return this._stateChanged; }
+  /** @deprecated UI1.0 is deprecated. */
   public get fillZone(): boolean { return this._fillZone; }
+  /** @deprecated */
   public get syncEventIds(): string[] { return this._syncEventIds; }
+  /** @deprecated */
   public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; } // eslint-disable-line deprecation/deprecation
   public get applicationData(): any | undefined { return this._applicationData; }
   public get isFloating(): boolean { return this.state === WidgetState.Floating; }
@@ -274,13 +279,13 @@ export class WidgetDef {
     if (widgetProps.defaultState !== undefined) {
       me._defaultState = widgetProps.defaultState;
       // istanbul ignore next
-      if ("1" === UiFramework.uiVersion)
+      if ("1" === UiFramework.uiVersion) // eslint-disable-line deprecation/deprecation
         me._state = widgetProps.defaultState === WidgetState.Floating ? WidgetState.Open : widgetProps.defaultState;
     }
 
     if (widgetProps.isFreeform !== undefined) {
       me._isFreeform = widgetProps.isFreeform;
-      me._widgetType = me.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
+      me._widgetType = me.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular; // eslint-disable-line deprecation/deprecation
     }
 
     if (widgetProps.isFloatingStateSupported !== undefined)
@@ -337,11 +342,11 @@ export class WidgetDef {
   }
 
   private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
-    if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
+    if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) { // eslint-disable-line deprecation/deprecation
       // istanbul ignore else
-      if (this.stateFunc) {
+      if (this.stateFunc) { // eslint-disable-line deprecation/deprecation
         let newState = this.state;
-        newState = this.stateFunc(newState);
+        newState = this.stateFunc(newState); // eslint-disable-line deprecation/deprecation
         this.setWidgetState(newState);
       }
     }
@@ -439,7 +444,7 @@ export class WidgetDef {
   public setWidgetState(newState: WidgetState): void {
     if (this.state === newState)
       return;
-    if ("1" === UiFramework.uiVersion)
+    if ("1" === UiFramework.uiVersion) // eslint-disable-line deprecation/deprecation
       this._state = newState;
     this._stateChanged = true;
     FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: newState });

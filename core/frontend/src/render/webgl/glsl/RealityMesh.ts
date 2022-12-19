@@ -36,6 +36,10 @@ const computeNormal = `
   return normalize(u_worldToViewN * normal);
 `;
 
+export const finalizeNormal = `
+  return normalize(v_n) * (2.0 * float(gl_FrontFacing) - 1.0);
+`;
+
 const testInside = `
 bool testInside(float x0, float y0, float x1, float y1, float x, float y) {
   vec2 perp = vec2(y0 - y1, x1 - x0), test = vec2(x - x0, y - y0);
@@ -216,6 +220,8 @@ function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: 
   builder.vert.addFunction(octDecodeNormal);
   builder.vert.addGlobal("g_hillshadeIndex", VariableType.Float);
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);
+  builder.frag.addGlobal("g_normal", VariableType.Vec3);
+  builder.frag.set(FragmentShaderComponent.FinalizeNormal, finalizeNormal);
   addThematicDisplay(builder, false, true);
   builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, false, false));
   builder.vert.addUniform("u_worldToViewN", VariableType.Mat3, (prog) => {

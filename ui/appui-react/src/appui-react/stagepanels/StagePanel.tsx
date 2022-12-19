@@ -138,7 +138,7 @@ interface StagePanelComponentState {
 }
 
 /** Frontstage Panel React component.
- * @deprecated Use [StagePanelConfig] instead.
+ * @deprecated Use [[StagePanelConfig]] instead.
  * @public
  */
 export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {

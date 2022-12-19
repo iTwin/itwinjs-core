@@ -61,7 +61,7 @@ describe("CoreToolDefinitions", () => {
       <ToolbarWithOverflow
         expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={ToolbarHelper.createToolbarItemsFromItemDefs([
-          CoreTools.keyinBrowserButtonItemDef,
+          CoreTools.keyinBrowserButtonItemDef, // eslint-disable-line deprecation/deprecation
           CoreTools.selectElementCommand,
           CoreTools.fitViewCommand,
           CoreTools.windowAreaCommand,

@@ -584,21 +584,18 @@ export class Matrix3d implements BeJSONFunctions {
 
   /** return a rotation of specified angle around an axis */
   public static createRotationAroundVector(axis: Vector3d, angle: Angle, result?: Matrix3d): Matrix3d | undefined {
+    // Rodriguez formula (matrix form), https://mathworld.wolfram.com/RodriguesRotationFormula.html
     const c = angle.cos();
     const s = angle.sin();
     const v = 1.0 - c;
     const unit = axis.normalize();
     if (unit) {
       const retVal = Matrix3d.createRowValues(
-        unit.x * unit.x * v + c,
-        unit.x * unit.y * v - s * unit.z,
-        unit.x * unit.z * v + s * unit.y,
-        unit.y * unit.x * v + s * unit.z,
-        unit.y * unit.y * v + c,
-        unit.y * unit.z * v - s * unit.x,
-        unit.z * unit.x * v - s * unit.y,
-        unit.z * unit.y * v + s * unit.x,
-        unit.z * unit.z * v + c, result);
+        unit.x * unit.x * v + c, unit.x * unit.y * v - s * unit.z, unit.x * unit.z * v + s * unit.y,
+        unit.y * unit.x * v + s * unit.z, unit.y * unit.y * v + c, unit.y * unit.z * v - s * unit.x,
+        unit.z * unit.x * v - s * unit.y, unit.z * unit.y * v + s * unit.x, unit.z * unit.z * v + c,
+        result
+      );
       retVal.setupInverseTranspose();
       return retVal;
     }
@@ -1147,7 +1144,7 @@ export class Matrix3d implements BeJSONFunctions {
 
     const det = matrixVD.determinant();
     if (det < 0)
-        scale.z = - scale.z;
+      scale.z = - scale.z;
 
     const almostZero = 1.0e-15;
     const scaleXIsZero = Math.abs(scale.x) < almostZero;
