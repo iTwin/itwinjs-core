@@ -39,11 +39,7 @@ describe("Common table expression support in ECSQL", () => {
                         JOIN meta.ClassHasBaseClasses cbc ON cbc.SourceECInstanceId = c.ECInstanceId
                         JOIN base_classes  ON aId = cbc.TargetECInstanceId
                 ORDER BY 1
-            )["CodeScope", "CodeSpec", "CodeValue", "FederationGuid", "JsonProperties", "LastMod", "Model", "Parent", "UserLabel", "BBoxHigh", "BBoxLow", "Category", "GeometryStream", "Origin", "Rotation", "TypeDefinition", "IsPrivate", "Description", "Rank", "Recipe", "Data", "Type", "Angle", "Pitch", "Roll", "Yaw", "CategorySelector", "DisplayStyle", "BaseModel", "Extents", "RotationAngle", "Properties", "Name", "InSpatialIndex", "Enabled", "EyePoint", "FocusDistance", "IsCameraOn", "LensAngle", "ModelSelector", "Url", "RepositoryGuid", "PaletteName", "Height", "Scale", "SheetTemplate", "Width", "Border", "BorderTemplate", "Flags", "Format", "View", "DrawingModel", "ViewAttachment"];
-    const actual = (rows[0].prop as string).split(",");
-    assert.sameOrderedMembers(actual, expected);
-  });
-
+            )
         SELECT group_concat( DISTINCT p.Name) prop from base_classes join meta.ECPropertyDef p on p.Class.id = aId`;
     const rows = await executeQuery(imodel1, query, ["Element"]);
     const expected = ["CodeScope", "CodeSpec", "CodeValue", "FederationGuid", "JsonProperties", "LastMod", "Model", "Parent", "UserLabel", "BBoxHigh", "BBoxLow", "Category", "GeometryStream", "Origin", "Rotation", "TypeDefinition", "IsPrivate", "Description", "Rank", "Recipe", "Data", "Type", "Angle", "Pitch", "Roll", "Yaw", "CategorySelector", "DisplayStyle", "BaseModel", "Extents", "RotationAngle", "Properties", "Name", "InSpatialIndex", "Enabled", "EyePoint", "FocusDistance", "IsCameraOn", "LensAngle", "ModelSelector", "Url", "RepositoryGuid", "PaletteName", "Height", "Scale", "SheetTemplate", "Width", "Border", "BorderTemplate", "Flags", "Format", "View", "DrawingModel", "ViewAttachment"];
