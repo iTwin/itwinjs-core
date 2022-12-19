@@ -9,17 +9,22 @@
 import { AngleProps, BeJSONFunctions, Geometry, TrigValues } from "../Geometry";
 
 /**
- * An `Angle` carries the numeric value of an angle, with methods to allow (require!) callers to be clear about whether their angle is degrees or radians.
- * * The numeric value is private, and callers should not know or care whether it is in degrees or radians.
- * * The various access method are named so that callers can specify whether untyped numbers passed in or out are degrees or radians.
+ * An `Angle` carries the numeric value of an angle, with methods to allow (require!) callers to
+ * be clear about whether their angle is degrees or radians.
+ * * After the Angle object is created, the callers should not know or care whether it is stored in
+ * `degrees` or `radians` because both are available if requested by caller.
+ * * The various access method are named so that callers can specify whether untyped numbers passed in or
+ * out are degrees or radians.
  * @public
  */
 export class Angle implements BeJSONFunctions {
-  /** maximal accuracy value of pi/4 ( 45 degrees), in radians */
+  /** maximal accuracy value of pi/12 (15 degrees), in radians */
+  public static readonly piOver12Radians = 0.26179938779914943653855361527329;
+  /** maximal accuracy value of pi/4 (45 degrees), in radians */
   public static readonly piOver4Radians = 7.85398163397448280000e-001;
-  /** maximal accuracy value of pi/2 ( 90 degrees), in radians */
+  /** maximal accuracy value of pi/2 (90 degrees), in radians */
   public static readonly piOver2Radians = 1.57079632679489660000e+000;
-  /** maximal accuracy value of pi ( 180 degrees), in radians */
+  /** maximal accuracy value of pi (180 degrees), in radians */
   public static readonly piRadians = 3.14159265358979310000e+000;
   /** maximal accuracy value of 2*pi (360 degrees), in radians */
   public static readonly pi2Radians = 6.28318530717958620000e+000;
@@ -27,77 +32,90 @@ export class Angle implements BeJSONFunctions {
   public static readonly degreesPerRadian = (45.0 / Angle.piOver4Radians);
   /** scale factor for converting degrees to radians */
   public static readonly radiansPerDegree = (Angle.piOver4Radians / 45.0);
-  /** maximal accuracy value of pi/12 ( 15 degrees), in radians */
-  public static readonly piOver12Radians = 0.26179938779914943653855361527329;
   private _radians: number;
   private _degrees?: number;
-  private constructor(radians = 0, degrees?: number) { this._radians = radians; this._degrees = degrees; }
+  private constructor(radians = 0, degrees?: number) {
+    this._radians = radians;
+    this._degrees = degrees;
+  }
   /** Return a new angle with the same content. */
-  public clone(): Angle { return new Angle(this._radians, this._degrees); }
+  public clone(): Angle {
+    return new Angle(this._radians, this._degrees);
+  }
   /** Freeze this instance so it is read-only */
-  public freeze(): Readonly<this> { return Object.freeze(this); }
-
+  public freeze(): Readonly<this> {
+    return Object.freeze(this);
+  }
   /**
    * Return a new Angle object for angle given in degrees.
    * @param degrees angle in degrees
    */
-  public static createDegrees(degrees: number) { return new Angle(Angle.degreesToRadians(degrees), degrees); }
+  public static createDegrees(degrees: number): Angle {
+    return new Angle(Angle.degreesToRadians(degrees), degrees);
+  }
   /**
    * Return a (new) Angle object for a value given in radians.
    * @param radians angle in radians
    */
-  public static createRadians(radians: number) { return new Angle(radians); }
+  public static createRadians(radians: number): Angle {
+    return new Angle(radians);
+  }
   /**
-   * Return a (new) Angle object that is interpolated between two inputs
-   * @param radians angle in radians
+   * Return a (new) Angle object that is interpolated between two inputs (based on a fraction)
+   * @param angle0 first angle in radians
+   * @param fraction the interpolation fraction
+   * @param angle1 second angle in radians
    */
-  public static createInterpolate(angle0: Angle, fraction: number, angle1: Angle) {
+  public static createInterpolate(angle0: Angle, fraction: number, angle1: Angle): Angle {
     return new Angle(Geometry.interpolate(angle0.radians, fraction, angle1.radians));
   }
   /**
    * Return a (new) Angle object, with angle scaled from existing angle.
    * @param scale scale factor to apply to angle.
    */
-  public cloneScaled(scale: number) { return new Angle(this.radians * scale); }
-
+  public cloneScaled(scale: number): Angle {
+    return new Angle(this.radians * scale);
+  }
   /**
    * Set this angle to a value given in radians.
    * @param radians angle given in radians
    */
-  public setRadians(radians: number) { this._radians = radians; this._degrees = undefined; }
+  public setRadians(radians: number) {
+    this._radians = radians;
+    this._degrees = undefined;
+  }
   /**
    * Set this angle to a value given in degrees.
    * @param degrees angle given in degrees.
    */
-  public setDegrees(degrees: number) { this._radians = Angle.degreesToRadians(degrees); this._degrees = degrees; }
+  public setDegrees(degrees: number) {
+    this._radians = Angle.degreesToRadians(degrees);
+    this._degrees = degrees;
+  }
   /** Create an angle for a full circle. */
-  public static create360() { return new Angle(Math.PI * 2.0, 360.0); }
+  public static create360(): Angle {
+    return new Angle(Math.PI * 2.0, 360.0);
+  }
   /**
-   * @return a (strongly typed) Angle whose tangent is `numerator/denominator`, using the signs of both in determining the (otherwise ambiguous)
-   * quadrant.
+   * Create a (strongly typed) Angle whose tangent is `numerator/denominator`, using the signs of both in
+   * determining the (otherwise ambiguous) quadrant.
    * @param numerator numerator for tangent
    * @param denominator denominator for tangent
    */
-  public static createAtan2(numerator: number, denominator: number): Angle { return new Angle(Math.atan2(numerator, denominator)); }
+  public static createAtan2(numerator: number, denominator: number): Angle {
+    return new Angle(Math.atan2(numerator, denominator));
+  }
   /**
    * Copy all contents of `other` to this Angle.
    * @param other source data
    */
-  public setFrom(other: Angle) { this._radians = other._radians; this._degrees = other._degrees; }
-  /**
-   * Create an Angle from a JSON object
-   * @param json object from JSON.parse. If a number, value is in *DEGREES*
-   * @param defaultValRadians if json is undefined, default value in radians.
-   * @return a new Angle
-   */
-  public static fromJSON(json?: AngleProps, defaultValRadians?: number): Angle {
-    const val = new Angle();
-    val.setFromJSON(json, defaultValRadians);
-    return val;
+  public setFrom(other: Angle) {
+    this._radians = other._radians;
+    this._degrees = other._degrees;
   }
   /**
-   * set an Angle from a JSON object
-   * * A simple number is degrees.
+   * Set an Angle from a JSON object
+   * * A simple number is considered as degrees.
    * * specified `json.degrees` or `json._degrees` is degree value.
    * * specified `son.radians` or `json._radians` is radians value.
    * @param json object from JSON.parse. If a number, value is in *DEGREES*
@@ -119,19 +137,40 @@ export class Angle implements BeJSONFunctions {
       this.setRadians((json as any)._radians);
     }
   }
+  /**
+ * Create an Angle from a JSON object
+ * @param json object from JSON.parse. If a number, value is in *DEGREES*
+ * @param defaultValRadians if json is undefined, default value in radians.
+ * @return a new Angle
+ */
+  public static fromJSON(json?: AngleProps, defaultValRadians?: number): Angle {
+    const val = new Angle();
+    val.setFromJSON(json, defaultValRadians);
+    return val;
+  }
   /** Convert an Angle to a JSON object as a number in degrees */
-  public toJSON(): AngleProps { return this.degrees; }
+  public toJSON(): AngleProps {
+    return this.degrees;
+  }
   /** Return a json object with radians keyword, e.g. `{ radians: 0.10}` */
-  public toJSONRadians(): AngleProps { return { radians: this.radians }; }
-  /**  Return the angle measured in radians. */
-  public get radians(): number { return this._radians; }
-  /**  Return the angle measured in degrees. */
-  public get degrees(): number { return this._degrees !== undefined ? this._degrees : Angle.radiansToDegrees(this._radians); }
+  public toJSONRadians(): AngleProps {
+    return { radians: this.radians };
+  }
+  /** Return the angle measured in radians. */
+  public get radians(): number {
+    return this._radians;
+  }
+  /** Return the angle measured in degrees. */
+  public get degrees(): number {
+    return this._degrees !== undefined ? this._degrees : Angle.radiansToDegrees(this._radians);
+  }
   /**
    * Convert an angle in degrees to radians.
    * @param degrees angle in degrees
    */
-  public static degreesToRadians(degrees: number) { return degrees * Math.PI / 180; }
+  public static degreesToRadians(degrees: number): number {
+    return degrees * Math.PI / 180;
+  }
   /**
    * Convert an angle in radians to degrees.
    * @param degrees angle in radians
@@ -142,6 +181,11 @@ export class Angle implements BeJSONFunctions {
     // Now radians is positive ...
     const pi = Math.PI;
     const factor = 180.0 / pi;
+    /* the following if statements are for round-off reasons. The problem is that no IEEE number is
+      * an exact hit for any primary multiple of pi (90, 180, etc). The following is supposed to have
+      * a better chance that if the input was computed by direct assignment from 90, 180, etc degrees
+      * it will return exactly 90,180 etc.
+      */
     if (radians <= 0.25 * pi)
       return factor * radians;
     if (radians < 0.75 * pi)
@@ -156,28 +200,37 @@ export class Angle implements BeJSONFunctions {
   /**
    * Return the cosine of this Angle object's angle.
    */
-  public cos(): number { return Math.cos(this._radians); }
+  public cos(): number {
+    return Math.cos(this._radians);
+  }
   /**
    * Return the sine of this Angle object's angle.
    */
-  public sin(): number { return Math.sin(this._radians); }
+  public sin(): number {
+    return Math.sin(this._radians);
+  }
   /**
    * Return the tangent of this Angle object's angle.
    */
-  public tan(): number { return Math.tan(this._radians); }
-  /** Test if a radians (absolute) value is nearly 2PI or larger (!) */
+  public tan(): number {
+    return Math.tan(this._radians);
+  }
+  /** Test if a radians (absolute) value is nearly 2PI or larger! */
   public static isFullCircleRadians(radians: number): boolean {
     return Math.abs(radians) >= Geometry.fullCircleRadiansMinusSmallAngle;
   }
-  /** Test if the radians value  is a complete circle */
+  /** Test if the radians value is a half circle */
   public static isHalfCircleRadians(radians: number): boolean {
     return Math.abs(Math.abs(radians) - Math.PI) <= Geometry.smallAngleRadians;
   }
-  /** test if the angle is aa full circle */
-  public get isFullCircle(): boolean { return Angle.isFullCircleRadians(this._radians); }
-
+  /** test if the angle is a full circle */
+  public get isFullCircle(): boolean {
+    return Angle.isFullCircleRadians(this._radians);
+  }
   /** test if the angle is a half circle (in either direction) */
-  public get isHalfCircle(): boolean { return Angle.isHalfCircleRadians(this._radians); }
+  public get isHalfCircle(): boolean {
+    return Angle.isHalfCircleRadians(this._radians);
+  }
   /** Adjust a radians value so it is positive in 0..360 */
   public static adjustDegrees0To360(degrees: number): number {
     if (degrees >= 0) {
@@ -188,8 +241,8 @@ export class Angle implements BeJSONFunctions {
       return degrees - numPeriods * period;
     } else if (degrees < 0) {
       // negative angle ...
-      const radians1 = Angle.adjustDegrees0To360(-degrees);
-      return 360.0 - radians1;
+      const radians = Angle.adjustDegrees0To360(-degrees);
+      return 360.0 - radians;
     }
     // fall through for Nan (disaster) !!!
     return 0;
@@ -219,8 +272,7 @@ export class Angle implements BeJSONFunctions {
       return radians - numPeriods * period;
     } else if (radians < 0) {
       // negative angle ...
-      const radians1 = Angle.adjustRadians0To2Pi(-radians);
-      return Math.PI * 2.0 - radians1;
+      return Math.PI * 2.0 - Angle.adjustRadians0To2Pi(-radians);
     }
     // fall through for NaN disaster.
     return 0;
@@ -241,18 +293,29 @@ export class Angle implements BeJSONFunctions {
     return 0;
   }
   /** return a (newly allocated) Angle object with value 0 radians */
-  public static zero() { return new Angle(0); }
+  public static zero(): Angle {
+    return new Angle(0);
+  }
   /** Test if the angle is exactly zero. */
-  public get isExactZero() { return this.radians === 0; }
+  public get isExactZero(): boolean {
+    return this.radians === 0;
+  }
   /** Test if the angle is almost zero (within tolerance `Geometry.smallAngleRadians`) */
-  public get isAlmostZero() { return Math.abs(this.radians) < Geometry.smallAngleRadians; }
+  public get isAlmostZero(): boolean {
+    return Math.abs(this.radians) < Geometry.smallAngleRadians;
+  }
   /** Test if the angle is almost a north or south pole (within tolerance `Geometry.smallAngleRadians`) */
-  public get isAlmostNorthOrSouthPole() { return Angle.isHalfCircleRadians(this.radians * 2.0); }
-
+  public get isAlmostNorthOrSouthPole(): boolean {
+    return Angle.isHalfCircleRadians(this.radians * 2.0);
+  }
   /** Create an angle object with degrees adjusted into 0..360. */
-  public static createDegreesAdjustPositive(degrees: number): Angle { return Angle.createDegrees(Angle.adjustDegrees0To360(degrees)); }
+  public static createDegreesAdjustPositive(degrees: number): Angle {
+    return Angle.createDegrees(Angle.adjustDegrees0To360(degrees));
+  }
   /** Create an angle object with degrees adjusted into -180..180. */
-  public static createDegreesAdjustSigned180(degrees: number): Angle { return Angle.createDegrees(Angle.adjustDegreesSigned180(degrees)); }
+  public static createDegreesAdjustSigned180(degrees: number): Angle {
+    return Angle.createDegrees(Angle.adjustDegreesSigned180(degrees));
+  }
   /**
    * Test if two radians values are equivalent, allowing shift by full circle (i.e. by a multiple of `2*PI`)
    * @param radiansA first radians value
@@ -318,37 +381,52 @@ export class Angle implements BeJSONFunctions {
       && dotUV * dotUV <= Geometry.smallAngleRadiansSquared * dotUU * dotVV;
   }
   /**
-   * Return cosine, sine, and radians for the half angle of a cosine,sine pair.
+   * Return cosine, sine, and radians for the half angle of a "cosine,sine" pair.
+   * * This function assumes the input arguments are related to an angle between -PI and PI
+   * * This function returns an angle between -PI and PI
    * @param rCos2A cosine value (scaled by radius) for initial angle.
    * @param rSin2A sine value (scaled by radius) for final angle.
    */
   public static trigValuesToHalfAngleTrigValues(rCos2A: number, rSin2A: number): TrigValues {
     const r = Geometry.hypotenuseXY(rCos2A, rSin2A);
     if (r < Geometry.smallMetricDistance) {
-      return { c: 1.0, s: 0.0, radians: 0.0 };
+      return { c: 1.0, s: 0.0, radians: 0.0 }; // angle = 0
     } else {
-      /* If the caller really gave you sine and cosine values, r should be 1.  However,*/
-      /* to allow scaled values -- e.g. the x and y components of any vector -- we normalize*/
-      /* right here.  This adds an extra sqrt and 2 divides to the whole process, but improves*/
-      /* both the usefulness and robustness of the computation.*/
+      /* If the caller really gave you sine and cosine values, r should be 1.  However,
+       * to allow scaled values -- e.g. the x and y components of any vector -- we normalize
+       * right here. This adds an extra sqrt and 2 divides to the whole process, but improves
+       * both the usefulness and robustness of the computation.
+       */
       let cosA;
       let sinA = 0.0;
       const cos2A = rCos2A / r;
       const sin2A = rSin2A / r;
+      // Original angle in NE and SE quadrants. Half angle in same quadrant
       if (cos2A >= 0.0) {
-        /* Original angle in NE and SE quadrants.  Half angle in same quadrant */
+        /*
+         * We know cos2A = (cosA)^2 - (sinA)^2 and 1 = (cosA)^2 + (sinA)^2
+         * so 1 + cos2A = 2(cosA)^2 and therefore, cosA = sqrt((1+cos2A)/2)
+         * cosine is positive in NE and SE quadrants so we use +sqrt
+         */
         cosA = Math.sqrt(0.5 * (1.0 + cos2A));
-        sinA = sin2A / (2.0 * (cosA));
+        // We know sin2A = 2 sinA cosA so sinA = sin2A/(2*cosA)
+        sinA = sin2A / (2.0 * cosA);
       } else {
+        // Original angle in NW quadrant. Half angle in NE quadrant
         if (sin2A > 0.0) {
-          /* Original angle in NW quadrant. Half angle in NE quadrant */
+          /*
+           * We know cos2A = (cosA)^2 - (sinA)^2 and 1 = (cosA)^2 + (sinA)^2
+           * so 1 - cos2A = 2(sinA)^2 and therefore, sinA = sqrt((1-cos2A)/2)
+           * sine is positive in NE quadrant so we use +sqrt
+           */
           sinA = Math.sqrt(0.5 * (1.0 - cos2A));
+          // Original angle in SW quadrant. Half angle in SE quadrant
         } else {
-          /* Original angle in SW quadrant. Half angle in SE quadrant*/
-          /* cosA comes out positive because both sines are negative. */
+          // sine is negative in SE quadrant so we use -sqrt
           sinA = -Math.sqrt(0.5 * (1.0 - cos2A));
         }
-        cosA = sin2A / (2.0 * (sinA));
+        // We know sin2A = 2 sinA cosA so cosA = sin2A/(2*sinA)
+        cosA = sin2A / (2.0 * sinA); // always positive
       }
       return { c: cosA, s: sinA, radians: Math.atan2(sinA, cosA) };
     }
@@ -367,17 +445,26 @@ export class Angle implements BeJSONFunctions {
     return value;
   }
   /**
-   * Return the half angle cosine, sine, and radians for given dot products between vectors.
-   * @param dotUU dot product of vectorU with itself
-   * @param dotVV dot product of vectorV with itself
-   * @param dotUV dot product of vectorU with vectorV
-   */
+     * Return the half angle cosine, sine, and radians for given dot products between vectors. The vectors define
+     * an ellipse using x(t) = c + U cos(t) + V sin(t) so U and V are at angle t=0 degree and t=90 degree. The
+     * half angle t0 is an angle such that x(t0) is one of the ellipse semi-axis.
+     * * This construction arises e.g. in `Arc3d.toScaledMatrix3d`.
+     * * Given ellipse x(t) = c + U cos(t) + V sin(t), find t0 such that radial vector W(t0) = x(t0) - c is
+     * perpendicular to the ellipse.
+     * * Then 0 = W(t0).x'(t0) = (U cos(t0) + V sin(t0)).(V cos(t0) - U sin(t0)) = U.V cos(2t0) + 0.5 (V.V - U.U) sin(2t0)
+     * implies sin(2t0) / cos(2t0) = 2 U.V / (U.U - V.V), i.e., t0 can be computed given the three dot products on the RHS.
+     * math details can be found at docs/learning/geometry/Angle.md
+     * @param dotUU dot product of vectorU with itself
+     * @param dotVV dot product of vectorV with itself
+     * @param dotUV dot product of vectorU with vectorV
+     */
   public static dotProductsToHalfAngleTrigValues(dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true): TrigValues {
-    const rCos = dotUU - dotVV;
-    const rSin = 2.0 * dotUV;
-    if (favorZero && Math.abs(rSin) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
+
+    const cos2t0 = dotUU - dotVV;
+    const sin2t0 = 2.0 * dotUV;
+    if (favorZero && Math.abs(sin2t0) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
       return { c: 1.0, s: 0.0, radians: 0.0 };
-    return Angle.trigValuesToHalfAngleTrigValues(rCos, rSin);
+    return Angle.trigValuesToHalfAngleTrigValues(cos2t0, sin2t0);
   }
   /**
    * * Returns the angle between two vectors, with the vectors given as xyz components
@@ -391,9 +478,7 @@ export class Angle implements BeJSONFunctions {
    * @param vz z component of vector v
    */
   public static radiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
-    //  const uu = ux * ux + uy * uy + uz * uz;
-    const uDotV = ux * vx + uy * vy + uz * vz; // magU magV cos(theta)
-    //    const vv = vx * vx + vy * vy + vz * vz;
+    const uDotV = ux * vx + uy * vy + uz * vz;
     return Math.atan2(Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz), uDotV);
   }
   /**

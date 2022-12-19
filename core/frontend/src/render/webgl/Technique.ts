@@ -14,6 +14,7 @@ import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
+import { createEDLCalcBasicProgram, createEDLCalcFullProgram, createEDLFilterProgram, createEDLMixProgram } from "./glsl/EDL";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
 import { createCombine3TexturesProgram } from "./glsl/Combine3Textures";
@@ -792,6 +793,10 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.VolClassBlend },
   { techniqueId: TechniqueId.Combine3Textures },
   { techniqueId: TechniqueId.PlanarGrid },
+  { techniqueId: TechniqueId.EDLCalcBasic },
+  { techniqueId: TechniqueId.EDLCalcFull },
+  { techniqueId: TechniqueId.EDLFilter },
+  { techniqueId: TechniqueId.EDLMix },
 ];
 const numTechniquesByPriority = techniquesByPriority.length;
 
@@ -876,10 +881,16 @@ export class Techniques implements WebGLDisposable {
   public compileShaders(): boolean {
     let allCompiled = true;
 
+    let techNdx = 0;
     for (const tech of this._list) {
+      if (!System.instance.isWebGL2 && (TechniqueId.EDLCalcBasic === techNdx || TechniqueId.EDLCalcFull === techNdx || TechniqueId.EDLFilter === techNdx || TechniqueId.EDLMix === techNdx)) {
+        techNdx++;
+        continue;
+      }
       if (!tech.compileShaders()) {
         allCompiled = false;
       }
+      techNdx++;
     }
 
     return allCompiled;
@@ -960,6 +971,10 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
     this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
     this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
+    this._list[TechniqueId.EDLCalcBasic] = new SingularTechnique(createEDLCalcBasicProgram(gl));
+    this._list[TechniqueId.EDLCalcFull] = new SingularTechnique(createEDLCalcFullProgram(gl));
+    this._list[TechniqueId.EDLFilter] = new SingularTechnique(createEDLFilterProgram(gl));
+    this._list[TechniqueId.EDLMix] = new SingularTechnique(createEDLMixProgram(gl));
 
     if (System.instance.supportsIndexedEdges)
       this._list[TechniqueId.IndexedEdge] = new EdgeTechnique(gl, "IndexedEdge");

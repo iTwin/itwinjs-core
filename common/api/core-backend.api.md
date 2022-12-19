@@ -695,6 +695,7 @@ export class CheckpointManager {
 
 // @public
 export interface CheckpointProps extends TokenArg {
+    readonly allowPreceding?: boolean;
     readonly changeset: ChangesetIdWithIndex;
     // (undocumented)
     readonly expectV2?: boolean;

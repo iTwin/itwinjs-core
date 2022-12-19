@@ -17,14 +17,14 @@ import { BackstageManager } from "./BackstageManager";
 
 /** [[BackstageEvent]] arguments.
  * @public
- * @deprecated use [BackstageComposer]($appui-react) instead.
+ * @deprecated Use [[BackstageComposer]] instead.
  */
 export interface BackstageEventArgs {
   isVisible: boolean;
 }
 
 /** Backstage Event class.
- * @deprecated Use [BackstageManager.onToggled]($appui-react) instead.
+ * @deprecated Use [[BackstageManager.onToggled]] instead.
  * @public
  */
 export class BackstageEvent extends UiEvent<BackstageEventArgs> { } // eslint-disable-line deprecation/deprecation
@@ -48,7 +48,7 @@ interface BackstageState {
 }
 
 /** Backstage React component.
- * @deprecated Use [BackstageComposer]($appui-react) instead.
+ * @deprecated Use [[BackstageComposer]] instead.
  * @public
  */
 export class Backstage extends React.Component<BackstageProps, BackstageState> { // eslint-disable-line deprecation/deprecation

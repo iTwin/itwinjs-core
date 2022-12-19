@@ -85,6 +85,7 @@ import { MessageSeverity } from '@itwin/appui-abstract';
 import { MessageType } from '@itwin/core-react';
 import { NestedStagePanelKey } from '@itwin/appui-layout-react';
 import { NestedStagePanelsManagerProps } from '@itwin/appui-layout-react';
+import { NineZoneAction } from '@itwin/appui-layout-react';
 import { NineZoneDispatch } from '@itwin/appui-layout-react';
 import { NineZoneLabels } from '@itwin/appui-layout-react';
 import { NineZoneManager } from '@itwin/appui-layout-react';
@@ -580,7 +581,7 @@ export class AppUiSettings implements UserSettingsProvider {
     colorTheme: UiStateEntry<string>;
     // (undocumented)
     dragInteraction: UiStateEntry<boolean>;
-    // (undocumented)
+    // @deprecated (undocumented)
     frameworkVersion: UiStateEntry<FrameworkVersionId>;
     // (undocumented)
     loadUserSettings(storage: UiStateStorage): Promise<void>;
@@ -1188,7 +1189,7 @@ export enum ConfigurableUiActionId {
     AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
     // (undocumented)
     SetDragInteraction = "configurableui:set-drag-interaction",
-    // (undocumented)
+    // @deprecated (undocumented)
     SetFrameworkVersion = "configurableui:set-framework-version",
     // (undocumented)
     SetShowWidgetIcon = "configurableui:set-show-widget-icon",
@@ -1317,7 +1318,7 @@ export interface ConfigurableUiState {
     animateToolSettings: boolean;
     // (undocumented)
     autoCollapseUnpinnedPanels: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
     showWidgetIcon: boolean;
@@ -1584,6 +1585,7 @@ export class CoreTools {
     static get fitViewCommand(): ToolItemDef;
     // (undocumented)
     static get flyViewCommand(): ToolItemDef;
+    // @deprecated
     static get keyinBrowserButtonItemDef(): CustomItemDef;
     // (undocumented)
     static get keyinPaletteButtonItemDef(): ToolItemDef;
@@ -2190,8 +2192,9 @@ export class FloatingViewportContentControl extends ViewportContentControl {
 // @beta (undocumented)
 export interface FloatingViewportContentProps {
     contentId: string;
-    initialViewState: ViewState;
+    initialViewState: ViewStateProp;
     onContextMenu?: (e: React_2.MouseEvent) => boolean;
+    viewportRef?: React_2.Ref<ScreenViewport>;
 }
 
 // @alpha
@@ -2330,6 +2333,9 @@ export interface FrameworkState {
     // (undocumented)
     sessionState: SessionState;
 }
+
+// @internal (undocumented)
+export function FrameworkStateReducer(state: NineZoneState, action: NineZoneAction, frontstageDef: FrontstageDef): NineZoneState;
 
 // @alpha
 export class FrameworkToolAdmin extends ToolAdmin {
@@ -2568,21 +2574,21 @@ export interface FrontstageDeactivatedEventArgs {
 export class FrontstageDef {
     // (undocumented)
     addFloatingContentControl(contentControl?: ContentControl): void;
-    // (undocumented)
+    // @deprecated (undocumented)
     get applicationData(): any | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get bottomCenter(): ZoneDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get bottomLeft(): ZoneDef | undefined;
     // @beta @deprecated (undocumented)
     get bottomMostPanel(): StagePanelDef | undefined;
     // @beta (undocumented)
     get bottomPanel(): StagePanelDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get bottomRight(): ZoneDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get centerLeft(): ZoneDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get centerRight(): ZoneDef | undefined;
     get contentControls(): ContentControl[];
     // (undocumented)
@@ -2594,9 +2600,9 @@ export class FrontstageDef {
     // @beta (undocumented)
     get contentManipulation(): WidgetDef | undefined;
     static create(provider: FrontstageProvider): Promise<FrontstageDef>;
-    // (undocumented)
+    // @deprecated (undocumented)
     get defaultContentId(): string;
-    // (undocumented)
+    // @deprecated (undocumented)
     get defaultTool(): ToolItemDef | undefined;
     // @internal
     dockPopoutWidgetContainer(widgetContainerId: string): void;
@@ -2623,6 +2629,7 @@ export class FrontstageDef {
     getStagePanelDef(location: StagePanelLocation): StagePanelDef | undefined;
     // @internal
     getWidgetCurrentState(widgetDef: WidgetDef): WidgetState | undefined;
+    // @deprecated
     getZoneDef(zoneId: number): ZoneDef | undefined;
     // (undocumented)
     get id(): string;
@@ -2674,12 +2681,11 @@ export class FrontstageDef {
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
     setActiveViewFromViewport(viewport: ScreenViewport): boolean;
     setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
-    // @internal (undocumented)
-    setFloatingWidgetBoundsInternal(floatingWidgetId: string, bounds: RectangleProps, inhibitNineZoneStateChangedEvent?: boolean): void;
     // (undocumented)
     setFloatingWidgetContainerBounds(floatingWidgetId: string, bounds: RectangleProps): boolean;
     // @internal (undocumented)
     setIsApplicationClosing(value: boolean): void;
+    // @deprecated
     startDefaultTool(): void;
     // @beta (undocumented)
     get statusBar(): WidgetDef | undefined;
@@ -2687,15 +2693,15 @@ export class FrontstageDef {
     get timeTracker(): TimeTracker;
     // @beta (undocumented)
     get toolSettings(): WidgetDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get topCenter(): ZoneDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get topLeft(): ZoneDef | undefined;
     // @beta @deprecated (undocumented)
     get topMostPanel(): StagePanelDef | undefined;
     // @beta (undocumented)
     get topPanel(): StagePanelDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get topRight(): ZoneDef | undefined;
     // @internal (undocumented)
     updateWidgetDefs(): void;
@@ -2710,6 +2716,7 @@ export class FrontstageDef {
     get widgetDefs(): {
         [Symbol.iterator](): Iterator<WidgetDef, any, undefined>;
     };
+    // @deprecated
     get zoneDefs(): ZoneDef[];
 }
 
@@ -2774,6 +2781,7 @@ export class FrontstageManager {
     static get isLoading(): boolean;
     static get modalFrontstageCount(): number;
     static get nestedFrontstageCount(): number;
+    // @deprecated
     static get NineZoneManager(): NineZoneManager;
     // @internal (undocumented)
     static get nineZoneSize(): Size | undefined;
@@ -2978,6 +2986,9 @@ export function getStableWidgetProps<T extends {
 export const getStagePanelType: (location: StagePanelLocation) => StagePanelType;
 
 // @beta
+export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntry;
+
+// @beta @deprecated (undocumented)
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry;
 
 // @internal (undocumented)
@@ -3020,9 +3031,9 @@ export class GroupItemDef extends ActionButtonItemDef {
     constructor(groupItemProps: GroupItemProps, onItemExecuted?: OnItemExecutedFunc);
     // (undocumented)
     defaultActiveItemId?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     direction: Direction;
-    // (undocumented)
+    // @deprecated (undocumented)
     directionExplicit: boolean;
     // (undocumented)
     execute(): void;
@@ -3048,7 +3059,7 @@ export class GroupItemDef extends ActionButtonItemDef {
     // (undocumented)
     resolveItems(force?: boolean): void;
     setPanelLabel(v: string | StringGetter | ConditionalStringValue): void;
-    // (undocumented)
+    // @deprecated (undocumented)
     toolbarReactNode(index?: number): React_2.ReactNode;
 }
 
@@ -3056,7 +3067,7 @@ export class GroupItemDef extends ActionButtonItemDef {
 export interface GroupItemProps extends ItemProps {
     // (undocumented)
     defaultActiveItemId?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     direction?: Direction;
     // (undocumented)
     groupId?: string;
@@ -3236,7 +3247,7 @@ export interface InitialAppUiSettings {
     colorTheme: string;
     // (undocumented)
     dragInteraction: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
     showWidgetIcon?: boolean;
@@ -6373,6 +6384,8 @@ export class UiFramework {
     static getWidgetOpacity(): number;
     // @alpha (undocumented)
     static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
+    static initialize(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
+    // @deprecated (undocumented)
     static initialize(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void>;
     static get initialized(): boolean;
     // @internal
@@ -6428,7 +6441,7 @@ export class UiFramework {
     static setToolbarOpacity(opacity: number): void;
     // (undocumented)
     static setUiStateStorage(storage: UiStateStorage, immediateSync?: boolean): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     static setUiVersion(version: FrameworkVersionId): void;
     // (undocumented)
     static setUseDragInteraction(useDragInteraction: boolean): void;
@@ -6443,6 +6456,7 @@ export class UiFramework {
     static terminate(): void;
     // @internal
     static translate(key: string | string[]): string;
+    // @deprecated
     static get uiVersion(): FrameworkVersionId;
     // (undocumented)
     static useDefaultPopoutUrl: boolean;
@@ -6465,6 +6479,9 @@ export interface UiIntervalEventArgs {
 }
 
 // @beta
+export function UiSettingsPage(): JSX.Element;
+
+// @beta @deprecated (undocumented)
 export function UiSettingsPage({ allowSettingUiFrameworkVersion }: {
     allowSettingUiFrameworkVersion: boolean;
 }): JSX.Element;
@@ -6993,7 +7010,7 @@ export class WidgetDef {
     get defaultTabLocation(): TabLocation;
     // @alpha
     expand(): void;
-    // (undocumented)
+    // @deprecated (undocumented)
     get fillZone(): boolean;
     // (undocumented)
     get floatingContainerId(): string | undefined;
@@ -7019,7 +7036,7 @@ export class WidgetDef {
     get isFloatingStateSupported(): boolean;
     // (undocumented)
     get isFloatingStateWindowResizable(): boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     get isFreeform(): boolean;
     // (undocumented)
     get isStatusBar(): boolean;
@@ -7058,9 +7075,9 @@ export class WidgetDef {
     get state(): WidgetState;
     // (undocumented)
     get stateChanged(): boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     get stateFunc(): WidgetStateFunc | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get syncEventIds(): string[];
     // @internal (undocumented)
     get tabLocation(): TabLocation | undefined;
@@ -7357,7 +7374,7 @@ export type WidgetTabs = {
 
 // @public
 export enum WidgetType {
-    // (undocumented)
+    // @deprecated (undocumented)
     FreeFrom = 2,
     // (undocumented)
     Navigation = 1,

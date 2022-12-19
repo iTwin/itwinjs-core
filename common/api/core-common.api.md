@@ -5762,6 +5762,13 @@ export class NonUniformColor {
     readonly isOpaque: boolean;
 }
 
+// @beta
+export interface NormalMapParams {
+    greenDown?: boolean;
+    normalMap?: RenderTexture;
+    scale?: number;
+}
+
 // @public
 export enum Npc {
     _000 = 0,
@@ -6310,6 +6317,13 @@ export type Point2dProps = number[];
 
 // @beta
 export interface PointCloudDisplayProps {
+    edlFilter?: number;
+    edlMixWts1?: number;
+    edlMixWts2?: number;
+    edlMixWts4?: number;
+    edlMode?: PointCloudEDLMode;
+    edlRadius?: number;
+    edlStrength?: number;
     maxPixelsPerVoxel?: number;
     minPixelsPerVoxel?: number;
     pixelSize?: number;
@@ -6322,6 +6336,13 @@ export interface PointCloudDisplayProps {
 export class PointCloudDisplaySettings {
     clone(changedProps: PointCloudDisplayProps): PointCloudDisplaySettings;
     static defaults: PointCloudDisplaySettings;
+    readonly edlFilter?: number;
+    readonly edlMixWts1?: number;
+    readonly edlMixWts2?: number;
+    readonly edlMixWts4?: number;
+    readonly edlMode: PointCloudEDLMode;
+    readonly edlRadius: number;
+    readonly edlStrength: number;
     equals(other: PointCloudDisplaySettings): boolean;
     static fromJSON(props?: PointCloudDisplayProps): PointCloudDisplaySettings;
     readonly maxPixelsPerVoxel: number;
@@ -6332,6 +6353,9 @@ export class PointCloudDisplaySettings {
     toJSON(): PointCloudDisplayProps | undefined;
     readonly voxelScale: number;
 }
+
+// @beta
+export type PointCloudEDLMode = "off" | "on" | "full";
 
 // @beta
 export type PointCloudShape = "square" | "round";
@@ -9074,6 +9098,8 @@ export class TextureMapping {
     constructor(tx: RenderTexture, params: TextureMapping.Params);
     // @internal (undocumented)
     computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
+    // @beta
+    normalMapParams?: NormalMapParams;
     readonly params: TextureMapping.Params;
     readonly texture: RenderTexture;
 }

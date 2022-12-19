@@ -175,18 +175,6 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
 }
 
 /** @internal */
-export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps) {
-  // TODO: review
-  if (floatingWidgetId in state.floatingWidgets.byId) {
-    return produce(state, (draft) => {
-      draft.floatingWidgets.byId[floatingWidgetId].bounds = bounds;
-      draft.floatingWidgets.byId[floatingWidgetId].userSized = true;
-    });
-  }
-  return state;
-}
-
-/** @internal */
 // istanbul ignore next
 export function popoutWidgetToChildWindow(state: NineZoneState, tabId: string, preferredBounds: RectangleProps): NineZoneState {
   // TODO: review
