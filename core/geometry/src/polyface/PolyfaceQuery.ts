@@ -83,7 +83,7 @@ export class OffsetMeshOptions {
   public smoothAccumulatedDihedralAngle: Angle;
   /** When crossing an edge, this turn angle (typically 90 degrees) triggers a chamfer */
   public chamferTurnAngle: Angle;
-  // selector for beta method:
+  // selector for beta method.   THIS IS NOT USED AS OF DEC 19, 2022
   public method?: number;
   /** optional control structure for selective output.
    * * If undefined, output all expected offset facets.
@@ -1446,10 +1446,7 @@ export class PolyfaceQuery {
     offsetOptions: OffsetMeshOptions = OffsetMeshOptions.create()): Polyface {
     const strokeOptions = StrokeOptions.createForFacets();
     const offsetBuilder = PolyfaceBuilder.create(strokeOptions);
-    if (offsetOptions.method !== undefined && offsetOptions.method === 1)
-      OffsetMeshContext.buildOffsetMeshWithEdgeChamfers(source, offsetBuilder, signedOffsetDistance, offsetOptions);
-    else
-      OffsetMeshContext.buildOffsetMesh(source, offsetBuilder, signedOffsetDistance, offsetOptions);
+    OffsetMeshContext.buildOffsetMeshWithEdgeChamfers(source, offsetBuilder, signedOffsetDistance, offsetOptions);
     return offsetBuilder.claimPolyface();
   }
 

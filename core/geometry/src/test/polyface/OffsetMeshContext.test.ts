@@ -30,7 +30,7 @@ function cleanupZero(a: number, tol: number = 1.0e-12): number {
   return Math.abs(a) > tol ? a : 0.0;
 }
 
-function offsetDebugFunction(message: string, graph: HalfEdgeGraph,
+function _offsetDebugFunction(message: string, graph: HalfEdgeGraph,
   breakMaskA: HalfEdgeMask,
   breakMaskB: HalfEdgeMask) {
   if (Checker.noisy.offsetMesh) {
@@ -54,7 +54,7 @@ function offsetDebugFunction(message: string, graph: HalfEdgeGraph,
   }
 }
 // import { GraphChecker } from "../topology/Graph.test";
-describe.only("OffsetMeshContext", () => {
+describe("OffsetMeshContext", () => {
 
   it("OffsetPyramids", () => {
     const ck = new Checker();
@@ -65,7 +65,7 @@ describe.only("OffsetMeshContext", () => {
     const radius = 2.0;
     let x0 = 0;
     const signs: number[] = [1.0, -1.0];
-    OffsetMeshContext.graphDebugFunction = offsetDebugFunction;
+    // OffsetMeshContext.graphDebugFunction = _offsetDebugFunction;
     for (const xScale of [2.0]) {
       for (const height of [2.0, 0.05, 3.0, 0.02, 2.0]) {
         for (const numEdge of [3, 4, 6]) {
@@ -151,8 +151,7 @@ describe.only("OffsetMeshContext", () => {
     const yB = 1.0; // point B (0, yB, 0) is on Y axis above, with image at (0,-yB,0).  These are start and end of ellipse apron
     const xC = -3.0; // point C (xC, 0, zC) is an extreme point of the ellipse apron.
     const zC = 0.0;
-    OffsetMeshContext.stringDebugFunction =
-      (message: string) => { console.log(message); };
+    // OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
 
     for (const zCone of [2.0, 0.5, -0.5, 2.0, -2.0, 4.0, -4.0, 10.0]) {  // height of cone point.
       for (const numApronEdges of [8, 2, 4]) {

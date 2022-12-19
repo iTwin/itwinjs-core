@@ -251,43 +251,6 @@ export class OffsetMeshContext {
   private _chamferTurnRadians: number;
   public static graphDebugFunction?: FacetOffsetGraphDebugFunction;
   public static stringDebugFunction?: FacetOffsetDebugString;
-  /**
-   * * build a mesh offset by given distance.
-   * * output the mesh to the given builder.
-   * @param basePolyface original mesh
-   * @param builder polyface builder to receive the new mesh.
-   * @param distance signed offset distance.
-   */
-  public static buildOffsetMesh(
-    basePolyface: IndexedPolyface,
-    builder: PolyfaceBuilder,
-    distance: number,
-    options: OffsetMeshOptions) {
-    const baseGraph = this.buildBaseGraph(basePolyface);
-    if (baseGraph !== undefined) {
-      const offsetBuilder = new OffsetMeshContext(basePolyface, baseGraph, options);
-      if (OffsetMeshContext.graphDebugFunction !== undefined)
-        OffsetMeshContext.graphDebugFunction("BaseGraph", baseGraph, offsetBuilder._breakMaskA, offsetBuilder._breakMaskB);
-
-      offsetBuilder.computeSectorOffsetPoints(distance);
-
-      if (OffsetMeshContext.graphDebugFunction !== undefined)
-        OffsetMeshContext.graphDebugFunction("after computeSectorOffsetPoints", baseGraph, offsetBuilder._breakMaskA, offsetBuilder._breakMaskB);
-
-      const outputSelector = options.outputSelector ? options.outputSelector : {
-        outputOffsetsFromFaces: true,
-        outputOffsetsFromEdges: true,
-        outputOffsetsFromVertices: true,
-      };
-
-      if (isDefinedAndTrue(outputSelector.outputOffsetsFromFaces))
-        offsetBuilder.announceOffsetLoopsByFace(builder);
-      if (isDefinedAndTrue(outputSelector.outputOffsetsFromEdges))
-        offsetBuilder.announceOffsetLoopsByEdge(builder);
-      if (isDefinedAndTrue(outputSelector.outputOffsetsFromVertices))
-        offsetBuilder.announceOffsetLoopsByVertex(builder);
-    }
-  }
 
   // At each node . .
   // * Find the sector data
@@ -500,74 +463,6 @@ export class OffsetMeshContext {
           });
           PolylineCompressionContext.compressInPlaceByShortEdgeLength(xyzLoop, primaryCompressionTolerance);
           if (xyzLoop.length > 2) {
-            polyfaceBuilder.addPolygonGrowableXYZArray(xyzLoop);
-          }
-        }
-        return true;
-      });
-  }
-  /**
-   * For each face of the graph, announce facets using xyz recorded in the sectors associated with the 4 nodes
-   * @param polyfaceBuilder
-   */
-  public announceOffsetLoopsByEdge(polyfaceBuilder: PolyfaceBuilder) {
-    const xyzLoop = new GrowableXYZArray();
-    const announceNode = (node: HalfEdge): number => {
-      const sector = node.edgeTag as SectorOffsetProperties;
-      xyzLoop.push(sector.xyz);
-      return 0;
-    };
-    this._baseGraph.announceEdges(
-      (_graph: HalfEdgeGraph, nodeA0: HalfEdge): boolean => {
-        const nodeB0 = nodeA0.edgeMate;
-        if (!nodeA0.isMaskSet(HalfEdgeMask.EXTERIOR)
-          && !nodeB0.isMaskSet(HalfEdgeMask.EXTERIOR)) {
-          const nodeA1 = nodeA0.faceSuccessor;
-          const nodeB1 = nodeB0.faceSuccessor;
-          xyzLoop.length = 0;
-          announceNode(nodeA1);
-          announceNode(nodeA0);
-          announceNode(nodeB1);
-          announceNode(nodeB0);
-          polyfaceBuilder.addPolygonGrowableXYZArray(xyzLoop);
-        }
-        return true;
-      });
-  }
-
-  /**
-   * @param polyfaceBuilder
-   */
-  public announceOffsetLoopsByFace(polyfaceBuilder: PolyfaceBuilder) {
-    const xyzLoop = new GrowableXYZArray();
-    const announceNode = (node: HalfEdge): number => {
-      SectorOffsetProperties.pushXYZ(xyzLoop, node);
-      return 0;
-    };
-    this._baseGraph.announceFaceLoops(
-      (_graph: HalfEdgeGraph, seed: HalfEdge): boolean => {
-        if (!seed.isMaskSet(HalfEdgeMask.EXTERIOR)) {
-          xyzLoop.length = 0;
-          seed.sumAroundFace(announceNode);
-          polyfaceBuilder.addPolygonGrowableXYZArray(xyzLoop);
-        }
-        return true;
-      });
-  }
-  /**
-   * @param polyfaceBuilder
-   */
-  public announceOffsetLoopsByVertex(polyfaceBuilder: PolyfaceBuilder) {
-    const xyzLoop = new GrowableXYZArray();
-    const breakEdges: HalfEdge[] = [];
-    this._baseGraph.announceVertexLoops(
-      (_graph: HalfEdgeGraph, seed: HalfEdge): boolean => {
-        if (seed.countMaskAroundVertex(this._exteriorMask) === 0) {
-          seed.collectMaskedEdgesAroundVertex(this._breakMaskA, true, breakEdges);
-          if (breakEdges.length > 3) {
-            xyzLoop.clear();
-            for (const node of breakEdges)
-              SectorOffsetProperties.pushXYZ(xyzLoop, node);
             polyfaceBuilder.addPolygonGrowableXYZArray(xyzLoop);
           }
         }
