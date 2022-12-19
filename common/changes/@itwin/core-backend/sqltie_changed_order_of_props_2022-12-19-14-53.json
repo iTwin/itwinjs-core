@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Update test as order of row traverse by sqlite 3.40 has changed and doing it correct now on 3.40.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
