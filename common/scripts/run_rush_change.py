@@ -20,7 +20,7 @@ if "refs/heads/release" in targetBranch:
     branchCmd = ["-b", targetBranch.replace("refs/heads/", "origin/")]
 elif "release" in targetBranch or targetBranch == "imodel02":
     # ADOps uses the branch name (i.e. 'release/2.8.0') for GH PR branch names instead of full refs.
-    # or for addon validation when there is a change in native side, but not in itwinjs-core
+    # or for addon validation when there is a change in native side, but not in itwinjs-core. In this case keep target branch as imodel02
     branchCmd = ["-b", "origin/" + targetBranch]
 else:
     # Uses default head ("origin/master"), if not defined
