@@ -11,7 +11,6 @@ import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import { TestBrowserAuthorizationClient, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
@@ -19,6 +18,7 @@ import {
 import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
 import Backend from "i18next-http-backend";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { EmptyLocalization, Localization } from "@itwin/core-common";
 
 const DEFAULT_BACKEND_TIMEOUT: number = 0;
@@ -82,6 +82,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("i18n", LogLevel.Error);
+  Logger.setLevel("SQLite", LogLevel.Error);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
   const libDir = path.resolve("lib");
@@ -155,7 +156,6 @@ export const testLocalization = new ITwinLocalization({
   urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
   initOptions: {
     preload: ["test"],
-    maxRetries: 0,
   },
   backendHttpOptions: {
     request: (options, url, payload, callback) => {

@@ -9,6 +9,7 @@ Table of contents:
 - [Display system](#display-system)
   - [Eye-dome lighting of Point Clouds](#eye-dome-lighting-of-point-clouds)
   - [Smooth viewport resizing](#smooth-viewport-resizing)
+  - [Pickable view overlays](#pickable-view-overlays)
 - [Deprecations](#deprecations)
   - [@itwin/core-bentley](#itwincore-bentley)
   - [@itwin/core-frontend](#itwincore-frontend)
@@ -38,6 +39,10 @@ To apply eye-dome lighting to a point cloud, you must apply a [RealityModelDispl
 ### Smooth viewport resizing
 
 Previously, when a [Viewport]($frontend)'s canvas was resized there would be a delay of up to one second during which the viewport's contents would appear stretched or squished, before they were redrawn to match the new canvas dimensions. This was due to the unavailability of [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) in some browsers. Now that `ResizeObserver` is supported by all major browsers, we are able to use it to make the contents of the viewport update smoothly during a resize operation.
+
+### Pickable view overlays
+
+A bug preventing users from interacting with [pickable decorations](../learning/frontend/ViewDecorations.md#pickable-view-graphic-decorations) defined as [GraphicType.ViewOverlay]($frontend) has been fixed.
 
 ## Deprecations
 
