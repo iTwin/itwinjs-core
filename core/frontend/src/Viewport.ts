@@ -1912,21 +1912,24 @@ export abstract class Viewport implements IDisposable, TileUser {
       return ViewStatus.InvalidViewport;
 
     if (view.is3d() && view.isCameraOn) {
-      const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
-      const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, Matrix3d.createScale(factor, factor, 1.0));
+      const eyePoint = view.getEyePoint().clone();
+      const targetPoint = view.getTargetPoint();
 
-      const offset = centerNpc.minus(NpcCenter); // offset by difference of old/new center
-      offset.z = 0.0;     // z center stays the same.
+      if (newCenter) {
+        const dir = eyePoint.vectorTo(targetPoint);
+        newCenter.plusScaled(dir, -0.5, eyePoint);
+        newCenter.plusScaled(dir, 0.5, targetPoint);
+      }
 
-      const offsetTransform = Transform.createTranslationXYZ(offset.x, offset.y, offset.z);
-      const product = offsetTransform.multiplyTransformTransform(scaleTransform);
+      const transform = Transform.createFixedPointAndMatrix(targetPoint, Matrix3d.createScale(factor, factor, factor));
+      const zDir = view.getZVector();
 
-      const frust = new Frustum();
-      product.multiplyPoint3dArrayInPlace(frust.points);
+      transform.multiplyPoint3d(eyePoint, eyePoint);
+      targetPoint.setFrom(eyePoint.plusScaled(zDir, zDir.dotProduct(eyePoint.vectorTo(targetPoint))));
 
-      this.npcToWorldArray(frust.points);
-      view.setupFromFrustum(frust);
-      view.centerEyePoint();
+      const status = view.lookAt({eyePoint, targetPoint, upVector: view.getYVector(), lensAngle: view.camera.lens });
+      if (ViewStatus.Success !== status)
+        return status;
     } else {
       // for non-camera views, do the zooming by adjusting the origin and delta directly so there can be no
       // chance of the rotation changing due to numerical precision errors calculating it from the frustum corners.
@@ -2822,6 +2825,7 @@ export class ScreenViewport extends Viewport {
   };
 
   private _evController?: EventController;
+  private _resizeObserver?: ResizeObserver;
   private _viewCmdTargetCenter?: Point3d;
   /** The number of entries in the view undo/redo buffer. */
   public maxUndoSteps = 20;
@@ -3007,12 +3011,36 @@ export class ScreenViewport extends Viewport {
     return { x: ev.movementX, y: ev.movementY };
   }
 
-  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
+  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined.
+   * @deprecated this was intended for internal use only.
+   */
   public setEventController(controller?: EventController) {
     if (this._evController)
       this._evController.destroy();
 
     this._evController = controller;
+  }
+
+  /** Invoked by ViewManager.addViewport.
+   * @internal
+   */
+  public onViewManagerAdd(): void {
+    this.onViewManagerDrop();
+
+    this._evController = new EventController(this);
+    this._resizeObserver = new ResizeObserver(() => {
+      this.requestRedraw();
+    });
+    this._resizeObserver.observe(this.canvas);
+  }
+
+  /** Invoked by ViewManager.dropViewport.
+   * @internal
+   */
+  public onViewManagerDrop(): void {
+    this._evController?.destroy();
+    this._resizeObserver?.disconnect();
+    this._evController = this._resizeObserver = undefined;
   }
 
   /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.

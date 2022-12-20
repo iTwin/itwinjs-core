@@ -12,6 +12,7 @@ import {
 import { Field, FieldDescriptorType } from "../../presentation-common/content/Fields";
 import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
 import { CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON } from "../../presentation-common/EC";
+import { InstanceFilterDefinition } from "../../presentation-common/InstanceFilterDefinition";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
   createTestSelectClassInfo, createTestSimpleContentField,
@@ -29,7 +30,6 @@ describe("Descriptor", () => {
         displayType: faker.random.word(),
         categories: [category],
         fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
-        filterExpression: faker.random.words(),
         selectClasses: [],
       };
       const descriptor = new Descriptor(source);
@@ -46,7 +46,6 @@ describe("Descriptor", () => {
         displayType: faker.random.word(),
         categories: [category],
         fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
-        filterExpression: faker.random.words(),
         selectClasses: [],
       };
       const descriptor = new Descriptor(source);
@@ -231,10 +230,25 @@ describe("Descriptor", () => {
         })],
         categories: [category],
         fields,
-        filterExpression: "testFilterExpression",
+        fieldsFilterExpression: "testFilterExpression",
         selectionInfo: { providerName: "testProviderName", level: 1 },
         sortingField: fields[0],
         sortDirection: SortDirection.Ascending,
+        instanceFilter: {
+          selectClassName: "testClass",
+          expression: "testExpression",
+          relatedInstances: [{
+            alias: "testAlias",
+            relationshipAlias: "testRelAlias",
+            isRequired: true,
+            pathFromSelectToPropertyClass: [{
+              sourceClassName: "sourceClass",
+              targetClassName: "targetClass",
+              relationshipName: "relClass",
+              isForwardRelationship: true,
+            }],
+          }],
+        },
       });
       expect(descriptor.toJSON()).to.matchSnapshot();
     });
@@ -313,8 +327,19 @@ describe("Descriptor", () => {
         fields: [],
         filterExpression: "test filter",
       });
+      descriptor.fieldsFilterExpression = undefined;
       expect(descriptor.createDescriptorOverrides()).to.deep.eq({
-        filterExpression: "test filter",
+        fieldsFilterExpression: "test filter",
+      });
+    });
+
+    it("creates a valid object with fields filter expression", () => {
+      const descriptor = createTestContentDescriptor({
+        fields: [],
+        fieldsFilterExpression: "test filter",
+      });
+      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
+        fieldsFilterExpression: "test filter",
       });
     });
 
@@ -344,6 +369,20 @@ describe("Descriptor", () => {
           field: { type: FieldDescriptorType.Name, fieldName: field.name },
           direction: SortDirection.Descending,
         },
+      });
+    });
+
+    it("creates a valid object with instance filter", () => {
+      const instanceFilter: InstanceFilterDefinition = {
+        selectClassName: "SelectClass",
+        expression: "testExpression",
+      };
+      const descriptor = createTestContentDescriptor({
+        fields: [],
+        instanceFilter,
+      });
+      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
+        instanceFilter,
       });
     });
 

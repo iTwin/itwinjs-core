@@ -22,48 +22,50 @@ describe("ToolButton", () => {
   });
 
   it("should render", () => {
-    mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />);
+    mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />); // eslint-disable-line deprecation/deprecation
   });
 
   it("should render active & pressed", () => {
-    mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" isActive={true} isPressed={true} />);
+    mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" isActive={true} isPressed={true} />); // eslint-disable-line deprecation/deprecation
   });
 
   it("renders active correctly", () => {
     FrontstageManager.setActiveToolId("tool1");
-    shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot();
+    shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
   });
 
   it("hidden renders correctly", () => {
-    shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" isVisible={false} />).should.matchSnapshot();
+    shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" isVisible={false} />).should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
   });
 
   it("disabled renders correctly", () => {
-    shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" isEnabled={false} />).should.matchSnapshot();
+    shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" isEnabled={false} />).should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
   });
 
   it("renders correctly with beta badge", () => {
+    // eslint-disable-next-line deprecation/deprecation
     shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" badgeType={BadgeType.TechnicalPreview} />).should.matchSnapshot();
   });
 
   it("renders correctly with new badge", () => {
+    // eslint-disable-next-line deprecation/deprecation
     shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" badgeType={BadgeType.New} />).should.matchSnapshot();
   });
 
   it("should execute a function", () => {
     const spyMethod = sinon.spy();
-    const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" execute={spyMethod} />);
+    const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" execute={spyMethod} />); // eslint-disable-line deprecation/deprecation
     wrapper.find(".nz-toolbar-item-item").simulate("click");
     spyMethod.should.have.been.called;
   });
 
   it("should execute a tool", () => {
-    const wrapper = mount(<ToolButton toolId={SelectionTool.toolId} />);
+    const wrapper = mount(<ToolButton toolId={SelectionTool.toolId} />); // eslint-disable-line deprecation/deprecation
     wrapper.find(".nz-toolbar-item-item").simulate("click");
   });
 
   it("should set focus to home on Esc", () => {
-    const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />);
+    const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />); // eslint-disable-line deprecation/deprecation
     const element = wrapper.find(".nz-toolbar-item-item");
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape" });
@@ -71,7 +73,7 @@ describe("ToolButton", () => {
   });
 
   it("should use a label function", () => {
-    mount(<ToolButton toolId="tool1" label={() => "test"} />);
+    mount(<ToolButton toolId="tool1" label={() => "test"} />); // eslint-disable-line deprecation/deprecation
   });
 
   it("sync event should trigger stateFunc", () => {
@@ -82,6 +84,7 @@ describe("ToolButton", () => {
       return { ...state, isActive: true };
     };
 
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" stateSyncIds={[testEventId]} stateFunc={testStateFunc} />);
     const element = wrapper.find(".nz-toolbar-item-item");
     element.simulate("focus");
@@ -101,6 +104,7 @@ describe("ToolButton", () => {
       return { ...state, isVisible: true, isActive: true, isEnabled: true };
     };
 
+    // eslint-disable-next-line deprecation/deprecation
     mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" stateSyncIds={[testEventId]} stateFunc={testStateFunc} />);
 
     expect(stateFunctionCalled).to.eq(false);

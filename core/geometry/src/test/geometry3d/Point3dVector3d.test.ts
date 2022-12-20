@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Geometry, PerpParallelOptions } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
+
 import { Ray3d } from "../../core-geometry";
-import { Sample } from "../../serialization/GeometrySamples";
+import { AxisIndex, AxisOrder, Geometry, PerpParallelOptions } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
 import { XYZProps } from "../../geometry3d/XYZProps";
+import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
 /* eslint-disable no-console */
@@ -186,6 +188,20 @@ describe("Point3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("Point3dArrayCarrier", () => {
+    const ck = new bsiChecker.Checker();
+    const pointArray1 = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(1, 1, 1)];
+    const pointArray2 = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(1, 1, 1)];
+    const carrier = new Point3dArrayCarrier(pointArray1);
+    const carrierReverse = new Point3dArrayCarrier(pointArray2);
+    carrierReverse.reverseInPlace();
+    ck.testPoint3d(carrier.data[0], carrierReverse.data[3]);
+    ck.testPoint3d(carrier.data[1], carrierReverse.data[2]);
+    ck.testPoint3d(carrier.data[2], carrierReverse.data[1]);
+    ck.testPoint3d(carrier.data[3], carrierReverse.data[0]);
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 describe("Point3d.setFrom", () => {
@@ -196,6 +212,90 @@ describe("Point3d.setFrom", () => {
     thisPoint.setFrom(other);
     expect(thisPoint).to.deep.equal(pointZero);
   });
+});
+
+describe("Vector3d", () => {
+  it("hello", () => {
+    const ck = new bsiChecker.Checker();
+    const pointA = Point3d.create(1, 2, 5);
+    const pointB = Point3d.create(4, 2, 9);
+    const q = 3.902;
+    const vectorABq = pointA.scaledVectorTo(pointB, q);
+    const vectorAB = pointA.vectorTo(pointB);
+    ck.testParallel(vectorAB, vectorABq, "parallel vectors");
+    ck.testCoordinate(q * vectorAB.magnitude(), vectorABq.magnitude(), "enforced magnitude");
+
+    const vectorABxyz = Vector3d.createStartEndXYZXYZ(pointA.x, pointA.y, pointA.z, pointB.x, pointB.y, pointB.z);
+    ck.testVector3d(vectorAB, vectorABxyz);
+
+    ck.checkpoint("Vector3d.hello");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("CrossProducts", () => {
+    const ck = new bsiChecker.Checker();
+    const vectorA = Vector3d.create(-4, 4, 2);
+    const unitZ = Vector3d.unitZ();
+    const vectorB = Vector3d.create(0.3, 9.1, -2);
+    const pointB0 = Point3d.create(3, 2, 8);
+    const pointB1 = pointB0.plus(vectorB);
+    ck.testCoordinate(vectorA.crossProductXY(vectorB), vectorA.tripleProduct(vectorB, unitZ), "crossProductXY");
+    ck.testCoordinate(vectorA.crossProductStartEndXY(pointB0, pointB1), vectorA.tripleProduct(vectorB, unitZ), "crossProductXY");
+
+    ck.checkpoint("Vector3d.DotProducts");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("XYAngle", () => {
+    const ck = new bsiChecker.Checker();
+    const unitX = Vector3d.unitX();
+    const unitZ = Vector3d.unitZ();
+    for (const z of [-0.2, 0, 1.8]) {
+      for (const r of [0.5, 1.0, 2.9]) {
+        for (const degrees of [-40, -179, 0, 10, 90, 170]) {
+          const theta = Angle.createDegrees(degrees);
+          const vector = Vector3d.createPolar(r, theta, z);
+          ck.testCoordinate(vector.magnitudeXY(), r);
+          ck.testAngleNoShift(theta, unitX.planarAngleTo(vector, unitZ));
+        }
+      }
+    }
+
+    ck.checkpoint("Point3d.zeros");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+it("NormalizeWithDefault", () => {
+  const ck = new bsiChecker.Checker();
+  const vectorA = Vector3d.create(1, 2, 3);
+  const vectorB = vectorA.normalizeWithDefault(1, 0, 0);
+  ck.testParallel(vectorA, vectorB);
+  ck.testCoordinate(1.0, vectorB.magnitude(), "unit vector magnitude");
+  const vectorC = Vector3d.createZero();
+  const vectorD = vectorC.normalizeWithDefault(0, 0, 1);
+  ck.testVector3d(vectorD, Vector3d.unitZ());
+  ck.checkpoint("Point3dArray.HelloWorld");
+  expect(ck.getNumErrors()).equals(0);
+});
+it("RotateVectorAroundVector", () => {
+  const ck = new bsiChecker.Checker();
+  const vectorA = Vector3d.create(1, 2, 3);
+  const axis = Vector3d.create(-1, 3, 6);
+  const theta = Angle.createDegrees(20);
+  const vectorA1 = Vector3d.createRotateVectorAroundVector(vectorA, axis, theta);
+  if (ck.testPointer(vectorA1)) {
+    const theta1 = vectorA.planarAngleTo(vectorA1, axis);
+    ck.testAngleNoShift(theta, theta1);
+  }
+
+  const vectorA2 = Vector3d.createRotateVectorAroundVector(vectorA, axis);
+  if (ck.testPointer(vectorA2)) {
+    const theta1 = vectorA.planarAngleTo(vectorA2, axis);
+    ck.testAngleNoShift(theta1, Angle.createDegrees(90));
+  }
+  ck.testUndefined(Vector3d.createRotateVectorAroundVector(vectorA, Vector3d.create(0, 0, 0)));
+  expect(ck.getNumErrors()).equals(0);
 });
 
 describe("Point3d.setFromPoint3d", () => {
@@ -405,13 +505,39 @@ describe("Vector3d.scaleToLength", () => {
   });
 });
 
-describe("Vector3d.normalizeWithDefault", () => {
+describe("Vector3d.normalize", () => {
   it("Vector3d.normalizeWithDefault", () => {
     const thisVector: Vector3d = Vector3d.create(0, 0, 0);
     const expectedVector: Vector3d = Vector3d.create(1, 0, 0);
     const output: Vector3d = thisVector.normalizeWithDefault(0, 0, 0);
     expect(output).to.deep.equal(expectedVector);
   });
+
+  it("Vector3d.createNormalized", () => {
+    const ck = new bsiChecker.Checker();
+    const unitVec = Vector3d.create(Math.SQRT1_2, Math.SQRT1_2);
+    const vec = Vector3d.createNormalized(3, 3)!;
+    ck.testVector3d(unitVec, vec, "expect normalized vector");
+    vec.setZero();
+    ck.testVector3d(unitVec, Vector3d.createNormalized(1, 1, 0, vec)!, "expect normalized vector with initialized result");
+    ck.testUndefined(Vector3d.createNormalized(), "expect undefined when input is zero vector");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("Vector3d.rotate90", () => {
+  it("Vector3d.rotate90CCWXY", () => {
+    const thisVector: Vector3d = Vector3d.create(1, 2, 0);
+    const rotatedVector: Vector3d = Vector3d.create(-2, 1, 0);
+    const outputVector: Vector3d = thisVector.rotate90CCWXY();
+    expect(outputVector).to.deep.equal(rotatedVector);
+  }),
+    it("Vector3d.rotate90CWXY", () => {
+      const thisVector: Vector3d = Vector3d.create(1, 2, 0);
+      const rotatedVector: Vector3d = Vector3d.create(2, -1, 0);
+      const outputVector: Vector3d = thisVector.rotate90CWXY();
+      expect(outputVector).to.deep.equal(rotatedVector);
+    });
 });
 
 describe("Vector3d.dotProductStartEndXYZW", () => {
@@ -494,5 +620,57 @@ describe("Vector3d.isPerpendicularTo", () => {
       const options: PerpParallelOptions = { radianSquaredTol: 1e-10, distanceSquaredTol: 1e-10 };
       const output: boolean = thisVector.isPerpendicularTo(other, undefined, options);
       expect(output).equal(false);
+    });
+});
+
+describe("Geometry", () => {
+  it("AxisIndex", () => {
+    const ck = new bsiChecker.Checker();
+    const axisX: AxisIndex = AxisIndex.X;
+    const axisY: AxisIndex = AxisIndex.Y;
+    const axisZ: AxisIndex = AxisIndex.Z;
+    ck.testExactNumber(AxisOrder.XYZ,
+      Geometry.axisIndexToRightHandedAxisOrder(axisX), "X==>XYZ"
+    );
+    ck.testExactNumber(AxisOrder.YZX,
+      Geometry.axisIndexToRightHandedAxisOrder(axisY), "Y==>YZX"
+    );
+    ck.testExactNumber(AxisOrder.ZXY,
+      Geometry.axisIndexToRightHandedAxisOrder(axisZ), "X==>ZXY"
+    );
+
+    for (const phase of [0, 1, 2, 500, -10, -8, -2, -1]) {
+      ck.testExactNumber(AxisOrder.XYZ,
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase), "X==>XYZ"
+      );
+      ck.testExactNumber(AxisOrder.YZX,
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 1), "Y==>YZX"
+      );
+      ck.testExactNumber(AxisOrder.ZXY,
+        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 2), "X==>ZXY"
+      );
+      for (const baseAxis of [0, 1, 2]) {
+        const axis = phase * 3 + baseAxis;
+        ck.testExactNumber(baseAxis, Geometry.cyclic3dAxis(axis), "Cyclic axis reduction");
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  }),
+    it("lexical", () => {
+      const ck = new bsiChecker.Checker();
+      const pointI = Point3d.create();
+      const pointJ = Point3d.create();
+      const lattice = Sample.createPoint3dLattice(-1, 2, 1);
+      for (let i = 0; i < lattice.length; i++) {
+        ck.testExactNumber(0, Geometry.lexicalXYZLessThan(lattice[i], lattice[i]));
+
+        for (let j = i + 1; j < lattice.length; j++) {
+          pointI.set(lattice[i].z, lattice[i].y, lattice[i].x);
+          pointJ.set(lattice[j].z, lattice[j].y, lattice[j].x);
+          ck.testExactNumber(-1, Geometry.lexicalXYZLessThan(pointI, pointJ));
+          ck.testExactNumber(1, Geometry.lexicalXYZLessThan(pointJ, pointI));
+        }
+      }
+      expect(ck.getNumErrors()).equals(0);
     });
 });

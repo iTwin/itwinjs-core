@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add queryCurrentOrPrecedingV2Checkpoint as an optional function to backendhubaccess interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

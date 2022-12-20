@@ -27,6 +27,7 @@ import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
+import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -338,6 +339,7 @@ export class DisplayTestApp {
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
+      ViewClipByElementGeometryTool,
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 

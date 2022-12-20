@@ -233,7 +233,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
 
   const handleYesConfirmation = React.useCallback(async (source: MapLayerSource) => {
     const layerName = source.name;
-    if (!!iTwinId && !!iModelId) {
+    if (!!iTwinId) {
       try {
         await MapLayerPreferences.deleteByName(source, iTwinId, iModelId);
         const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefSuccess", { layerName });
@@ -331,7 +331,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
 
                 { // Display the delete icon only when the mouse over a specific item
                   // otherwise list feels cluttered.
-                  (!!iTwinId && !!iModelId && layerNameUnderCursor && layerNameUnderCursor === source.name) &&
+                  (!!iTwinId && layerNameUnderCursor && layerNameUnderCursor === source.name) &&
                   <>
                     <Button
                       size="small"

@@ -28,11 +28,13 @@ export interface InstanceFilterBuilderProps {
   onPropertySelected?: (property: PropertyDescription) => void;
   ruleGroupDepthLimit?: number;
   propertyRenderer?: (name: string) => React.ReactNode;
+  isDisabled?: boolean;
+  initialFilter?: PropertyFilter;
 }
 
 /** @alpha */
 export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
-  const { selectedClasses, classes, properties, ruleGroupDepthLimit, onFilterChanged, onPropertySelected, onClassSelected, onClassDeselected, onClearClasses } = props;
+  const { selectedClasses, classes, properties, ruleGroupDepthLimit, onFilterChanged, onPropertySelected, onClassSelected, onClassDeselected, onClearClasses, isDisabled, initialFilter } = props;
 
   const onSelectChange = React.useCallback((_, action: ActionMeta<ClassInfo>) => {
     switch (action.action) {
@@ -66,6 +68,7 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
         hideSelectedOptions={false}
         closeMenuOnSelect={false}
         isClearable={true}
+        isDisabled={isDisabled}
       />
     </div>
     <PropertyFilterBuilder
@@ -74,6 +77,8 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
       onRulePropertySelected={onPropertySelected}
       ruleGroupDepthLimit={ruleGroupDepthLimit}
       propertyRenderer={props.propertyRenderer}
+      disablePropertySelection={isDisabled}
+      initialFilter={initialFilter}
     />
   </div>;
 }

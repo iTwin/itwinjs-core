@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Send single change event for deletion of selected/hilited elements.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

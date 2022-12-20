@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<MessageCenter /> renders correctly 1`] = `
-<FooterIndicator
+<ForwardRef(FooterIndicator)
   className="nz-footer-messageCenter-indicator"
 >
   <div
@@ -27,11 +27,11 @@ exports[`<MessageCenter /> renders correctly 1`] = `
       />
     </div>
   </div>
-</FooterIndicator>
+</ForwardRef(FooterIndicator)>
 `;
 
 exports[`<MessageCenter /> renders correctly with label 1`] = `
-<FooterIndicator
+<ForwardRef(FooterIndicator)
   className="nz-footer-messageCenter-indicator"
 >
   <div
@@ -62,5 +62,5 @@ exports[`<MessageCenter /> renders correctly with label 1`] = `
       />
     </div>
   </div>
-</FooterIndicator>
+</ForwardRef(FooterIndicator)>
 `;

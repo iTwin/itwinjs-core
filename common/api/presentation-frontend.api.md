@@ -237,6 +237,14 @@ export interface NodeIdentifier {
 }
 
 // @internal (undocumented)
+export interface NodeState {
+    // (undocumented)
+    instanceFilter?: string;
+    // (undocumented)
+    isExpanded?: boolean;
+}
+
+// @internal (undocumented)
 export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
     // (undocumented)
     loadProperties(_iTwinId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
@@ -542,13 +550,16 @@ export interface SelectionScopesManagerProps {
     rpcRequestsHandler: RpcRequestsHandler;
 }
 
-// @internal (undocumented)
+// @internal
 export class StateTracker {
     constructor(ipcRequestsHandler: IpcRequestsHandler);
     // (undocumented)
-    onExpandedNodesChanged(imodel: IModelConnection, rulesetId: string, sourceId: string, expandedNodes: NodeIdentifier[]): Promise<void>;
-    // (undocumented)
     onHierarchyClosed(imodel: IModelConnection, rulesetId: string, sourceId: string): Promise<void>;
+    // (undocumented)
+    onHierarchyStateChanged(imodel: IModelConnection, rulesetId: string, sourceId: string, newHierarchyState: Array<{
+        node: NodeIdentifier | undefined;
+        state: NodeState;
+    }>): Promise<void>;
 }
 
 // @internal (undocumented)
