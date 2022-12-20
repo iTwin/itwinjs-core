@@ -296,7 +296,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
       }
 
       const oauth2Url = `https://www.arcgis.com/sharing/rest/oauth2/${endpointStr}`;
-      return new ArcGisOAuth2Endpoint(url, this.constructLoginUrl(oauth2Url, true), true);
+      return new ArcGisOAuth2Endpoint(oauth2Url, this.constructLoginUrl(oauth2Url, true), true);
     } else {
 
       // First attempt: derive the Oauth2 token URL from the 'tokenServicesUrl', exposed by the 'info request'
