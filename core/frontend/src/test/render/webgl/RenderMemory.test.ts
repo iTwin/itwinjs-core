@@ -72,7 +72,7 @@ function createGraphic(geom: RenderGeometry, instances?: InstancedGraphicParams)
 
 function createTexture(iModel: IModelConnection, persistent: boolean): RenderTexture {
   const source = ImageBuffer.create(new Uint8Array([255, 255, 255, 255]), ImageBufferFormat.Rgba, 1);
-  const key = persistent ? iModel.transientIds.next : undefined;
+  const key = persistent ? iModel.transientIds.getNext() : undefined;
   const tex = IModelApp.renderSystem.createTexture({
     ownership: key ? { iModel, key } : undefined,
     image: { source, transparency: TextureTransparency.Translucent },

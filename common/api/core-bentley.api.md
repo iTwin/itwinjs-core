@@ -1583,6 +1583,8 @@ export class Tracing {
 
 // @public
 export class TransientIdSequence {
+    getNext(): Id64String;
+    // @deprecated
     get next(): Id64String;
 }
 
