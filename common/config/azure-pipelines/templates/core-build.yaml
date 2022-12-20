@@ -24,6 +24,11 @@ steps:
       versionSpec: ${{ parameters.nodeVersion }}
       checkLatest: true
 
+  - task: UsePythonVersion@0
+    displayName: Use Python 3
+    inputs:
+      versionSpec: 3.x
+
   - script: |
       git config --local user.email imodeljs-admin@users.noreply.github.com
       git config --local user.name imodeljs-admin
