@@ -19,7 +19,7 @@ branchCmd = []
 # Verifying with rush change requires the branch that is being merged into to be provided.  More details, https://rushjs.io/pages/commands/rush_change/.
 # With release/* being a potential target branch in addition to master, special case those branches.
 if targetBranch == "refs/heads/master":
-    # For builds when target and current branch == refs/heads
+    # For builds when target and current branch == refs/heads/master
     branchCmd = []
 elif "refs/heads/release" in targetBranch:
     branchCmd = ["-b", targetBranch.replace("refs/heads/", "origin/")]
