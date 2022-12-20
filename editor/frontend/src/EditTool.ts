@@ -9,7 +9,7 @@
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
 import { editorChannel } from "@itwin/editor-common";
 import { DeleteElementsTool } from "./DeleteElementsTool";
-import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
+import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool, RegionBooleanTool } from "./ModifyCurveTools";
 import {
   ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool,
 } from "./ProjectLocation/ProjectExtentsDecoration";
@@ -20,7 +20,7 @@ import {
   IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, RoundEdgesTool, SewSheetElementsTool, SpinFacesTool, SubtractSolidElementsTool,
   SweepAlongPathTool, SweepFacesTool, ThickenSheetElementsTool, UniteSolidElementsTool,
 } from "./SolidModelingTools";
-import { CreateBoxTool, CreateConeTool, CreateCylinderTool, CreateSphereTool, CreateTorusTool } from "./SolidPrimitiveTools";
+import { CreateBoxTool, CreateConeTool, CreateCylinderTool, CreateSphereTool, CreateTorusTool, ExtrudeCurveTool, RevolveCurveTool } from "./SolidPrimitiveTools";
 import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
@@ -138,6 +138,9 @@ export class EditTools {
         CreateConeTool,
         CreateBoxTool,
         CreateTorusTool,
+        ExtrudeCurveTool,
+        RevolveCurveTool,
+        RegionBooleanTool,
         UniteSolidElementsTool,
         SubtractSolidElementsTool,
         IntersectSolidElementsTool,

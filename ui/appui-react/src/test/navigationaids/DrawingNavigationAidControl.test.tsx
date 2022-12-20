@@ -20,7 +20,7 @@ describe("DrawingNavigationAidControl", () => {
     TestUtils.terminateUiFramework();
   });
 
-  const widgetProps: AnyWidgetProps = {
+  const widgetProps: AnyWidgetProps = { // eslint-disable-line deprecation/deprecation
     classId: "NavigationWidget",
     isFreeform: true,
     navigationAidId: "DrawingNavigationAid",

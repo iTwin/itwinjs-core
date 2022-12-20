@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "3.5.0-dev.29",
+  "version": "3.6.0-dev.21",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -41,13 +41,13 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.5.0-dev.29",
-    "@itwin/core-bentley": "workspace:^3.5.0-dev.29",
-    "@itwin/core-common": "workspace:^3.5.0-dev.29",
-    "@itwin/core-geometry": "workspace:^3.5.0-dev.29",
-    "@itwin/core-orbitgt": "workspace:^3.5.0-dev.29",
-    "@itwin/core-quantity": "workspace:^3.5.0-dev.29",
-    "@itwin/webgl-compatibility": "workspace:^3.5.0-dev.29"
+    "@itwin/appui-abstract": "workspace:^3.6.0-dev.21",
+    "@itwin/core-bentley": "workspace:^3.6.0-dev.21",
+    "@itwin/core-common": "workspace:^3.6.0-dev.21",
+    "@itwin/core-geometry": "workspace:^3.6.0-dev.21",
+    "@itwin/core-orbitgt": "workspace:^3.6.0-dev.21",
+    "@itwin/core-quantity": "workspace:^3.6.0-dev.21",
+    "@itwin/webgl-compatibility": "workspace:^3.6.0-dev.21"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -69,11 +69,13 @@
     "@types/deep-assign": "^0.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.59",
+    "@types/node": "18.11.5",
     "@types/qs": "^6.5.0",
     "@types/semver": "7.3.10",
     "@types/superagent": "^4.1.14",
     "@types/sinon": "^9.0.0",
+    "babel-loader": "~8.2.5",
+    "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
@@ -102,11 +104,10 @@
     "deep-assign": "^2.0.0",
     "fuse.js": "^3.3.0",
     "lodash": "^4.17.10",
-    "qs": "^6.5.1",
+    "qs": "^6.5.3",
     "semver": "^7.3.5",
-    "superagent": "7.1.3",
+    "superagent": "^7.1.5",
     "wms-capabilities": "0.4.0",
-    "xml-js": "~1.6.11",
     "reflect-metadata": "0.1.13"
   },
   "nyc": {

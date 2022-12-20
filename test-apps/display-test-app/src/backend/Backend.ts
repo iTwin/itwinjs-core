@@ -234,11 +234,9 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   const authClient = await initializeAuthorizationClient();
   if (ProcessDetector.isElectronAppBackend) {
-    if (authClient) {
-      await authClient.signInSilent();
-      opts.iModelHost.authorizationClient = authClient;
-    }
+    opts.iModelHost.authorizationClient = authClient;
     await ElectronHost.startup(opts);
+    await authClient?.signInSilent();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
   } else if (ProcessDetector.isMobileAppBackend) {
     await MobileHost.startup(opts);

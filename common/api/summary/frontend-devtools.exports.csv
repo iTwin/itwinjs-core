@@ -6,6 +6,7 @@ alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
 beta;ApplyRenderingStyleTool 
 beta;ApplyViewByIdTool 
 beta;ApplyViewTool 
+beta;AttachArcGISFeatureMapLayerByUrlTool 
 beta;AttachArcGISMapLayerByUrlTool 
 beta;AttachCesiumAssetTool 
 beta;AttachMapLayerTool 
@@ -197,6 +198,7 @@ beta;ToggleDPIForLODTool
 beta;ToggleDrapeFrustumTool 
 beta;ToggleDrawingGraphicsTool 
 beta;ToggleFrustumSnapshotTool 
+beta;ToggleNormalMaps 
 beta;ToggleOSMBuildingDisplay 
 beta;TogglePrimitiveVisibilityTool 
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean

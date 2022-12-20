@@ -6,6 +6,7 @@ import * as chai from "chai";
 import chaiSubset from "chai-subset";
 import * as cpx from "cpx2";
 import * as fs from "fs";
+import Backend from "i18next-http-backend";
 import * as path from "path";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
@@ -78,6 +79,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("i18n", LogLevel.Error);
+  Logger.setLevel("SQLite", LogLevel.Error);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
   const libDir = path.resolve("lib");
@@ -111,6 +113,29 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
       urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
       initOptions: {
         preload: ["test"],
+      },
+      backendHttpOptions: {
+        request: (options, url, payload, callback) => {
+          /**
+           * A few reasons why we need to modify this request fn:
+           * - The above urlTemplate uses the file:// protocol
+           * - Node v18's fetch implementation does not support file://
+           * - i18n-http-backend uses fetch if it defined globally
+           */
+          const fileProtocol = "file://";
+          const request = new Backend().options.request?.bind(this as void);
+
+          if (url.startsWith(fileProtocol)) {
+            try {
+              const data = fs.readFileSync(url.replace(fileProtocol, ""), "utf8");
+              callback(null, { status: 200, data });
+            } catch (error) {
+              callback(error, { status: 500, data: "" });
+            }
+          } else {
+            request!(options, url, payload, callback);
+          }
+        },
       },
     }),
   };

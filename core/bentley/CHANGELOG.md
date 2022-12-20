@@ -1,6 +1,54 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Mon, 17 Oct 2022 20:06:51 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Dec 2022 16:38:28 GMT and should not be manually modified.
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:28 GMT
+
+### Updates
+
+- Add UintArrayBuilder for constructing typed arrays of unknown number of bytes per element.
+- Deprecate `next` properties on ByteStream; replace with `read` methods.
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:36 GMT
+
+### Updates
+
+- Add EntityReferences
+- add PickAsyncMethods utility type
+- Add new ChangeSetStatus.DownloadCancelled error code.
+- Add ByteStream.remainingLength.
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:50 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:57 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
 
 ## 3.4.1
 Mon, 17 Oct 2022 20:06:51 GMT

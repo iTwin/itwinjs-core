@@ -24,6 +24,7 @@ export enum ZoneState {
 
 /**
  * A ZoneDef represents each zone within a Frontstage.
+ * @deprecated Use [[StagePanelDef]] or [[WidgetDef]] instead.
  * @public
  */
 export class ZoneDef extends WidgetHost {
@@ -92,8 +93,7 @@ export class ZoneDef extends WidgetHost {
       this._zoneState = props.defaultState;
     if (props.allowsMerging !== undefined)
       this._allowsMerging = props.allowsMerging;
-    if (props.applicationData !== undefined)
-      this._applicationData = props.applicationData;
+    this._applicationData = props.applicationData;
     if (props.mergeWithZone !== undefined)
       this._mergeWithZone = props.mergeWithZone;
     this.setInitialWidth(props.initialWidth);

@@ -12,6 +12,9 @@ on:
       - "**.md"
       - docs/**
       - .github/CODEOWNERS
+      - common/changes/**/*.json
+      - "**/CHANGELOG.json"
+      - "**/CHANGELOG.md"
 
 jobs:
   extract-api:
@@ -28,7 +31,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2
         with:
-          node-version: "14"
+          node-version: "18"
 
       - name: Rush install
         run: node common/scripts/install-run-rush.js install

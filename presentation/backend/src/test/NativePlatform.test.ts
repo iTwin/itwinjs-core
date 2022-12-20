@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
+import { join } from "path";
+import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
+import { BeEvent } from "@itwin/core-bentley";
 import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
-import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
-import { BeEvent } from "@itwin/core-bentley";
-import sinon from "sinon";
-import { join } from "path";
 
 describe("default NativePlatform", () => {
 
@@ -35,7 +34,6 @@ describe("default NativePlatform", () => {
     const TNativePlatform = createDefaultNativePlatform({
       id: faker.random.uuid(),
       taskAllocationsMap: {},
-      mode: PresentationManagerMode.ReadOnly,
       isChangeTrackingEnabled: false,
     });
     nativePlatform = new TNativePlatform();
@@ -226,10 +224,10 @@ describe("default NativePlatform", () => {
   });
 
   it("calls addon's updateHierarchyState", async () => {
-    addonMock.setup((x) => x.updateHierarchyState(moq.It.isAny(), "test-ruleset-id", "nodesExpanded", "[]"))
+    addonMock.setup((x) => x.updateHierarchyState(moq.It.isAny(), "test-ruleset-id", []))
       .returns(() => ({ result: undefined }))
       .verifiable();
-    nativePlatform.updateHierarchyState({}, "test-ruleset-id", "nodesExpanded", "[]");
+    nativePlatform.updateHierarchyState({}, "test-ruleset-id", []);
     addonMock.verifyAll();
   });
 

@@ -12,7 +12,7 @@ import * as React from "react";
 import {
   calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateToolbarOpacity, CommonProps,
   getToolbarBackdropFilter, getToolbarBackgroundColor, getToolbarBoxShadow,
-  TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
+  TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT,
   useWidgetOpacityContext,
 } from "@itwin/core-react";
 import { ToolbarOpacitySetting, useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
@@ -36,7 +36,8 @@ export function ToolbarItems(props: ToolbarItemsProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const { toolbarOpacitySetting, openPopupCount, overflowDisplayActive } = useToolbarWithOverflowDirectionContext();
   const useTransparentBackground = toolbarOpacitySetting === ToolbarOpacitySetting.Transparent;
-  let toolbarOpacity = useTransparentBackground ? 0 : TOOLBAR_OPACITY_DEFAULT;
+
+  let toolbarOpacity = useTransparentBackground ? 0 : Number(document.documentElement.style.getPropertyValue("--buic-toolbar-opacity"));
   let boxShadowOpacity = useTransparentBackground ? 0 : TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT;
   let filterBlur = useTransparentBackground ? 0 : TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT;
   let showSeparators = toolbarOpacitySetting === ToolbarOpacitySetting.Transparent ? false : true;

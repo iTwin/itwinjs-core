@@ -18,6 +18,7 @@ export const enum RenderPass {
   OpaqueLayers,       // XY planar models render without depth-testing in order based on priority
   OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
   OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
+  PointClouds,
   OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
   Classification,     // Stencil volumes for normal processing of reality data classification.
   TranslucentLayers,  // like Layers but drawn without depth write, blending with opaque
@@ -51,6 +52,7 @@ export type Pass =
   "opaque-linear" | // OpaqueLinear
   "opaque-planar" | // OpaquePlanar
   "translucent" | // Translucent
+  "point-clouds" | // PointClouds
   "view-overlay" | // ViewOverlay
   "classification" | // Classification
   "none" | // None
@@ -88,6 +90,7 @@ export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
       case "opaque-linear": return RenderPass.OpaqueLinear;
       case "opaque-planar": return RenderPass.OpaquePlanar;
       case "translucent": return RenderPass.Translucent;
+      case "point-clouds": return RenderPass.PointClouds;
       case "view-overlay": return RenderPass.ViewOverlay;
       case "classification": return RenderPass.Classification;
       case "none": return RenderPass.None;
@@ -118,6 +121,7 @@ export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
       case "opaque":
       case "opaque-planar":
       case "opaque-linear":
+      case "point-clouds":
         return true;
       default:
         return false;
@@ -183,6 +187,9 @@ export enum TextureUnit {
 
   // Lookup table for indexed edges - used only if WebGL 2 is available.
   EdgeLUT = WebGLRenderingContext.TEXTURE12,
+
+  // Normal map texture - used only if WebGL 2 is available.
+  NormalMap = WebGLRenderingContext.TEXTURE13,
 }
 
 /**

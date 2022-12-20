@@ -1,6 +1,70 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Mon, 17 Oct 2022 20:06:51 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Dec 2022 16:38:28 GMT and should not be manually modified.
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:28 GMT
+
+### Updates
+
+- realityModelRange
+- Support reality meshes with 8- or 32-bit indices.
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:37 GMT
+
+### Updates
+
+- Added a tolerance parameter to ArcgisUtilities.getZoomLevelsScales
+- Added support for ImageryTileTree with an incomplete tile tree definition (minLOD)
+- Support for reporting progress and cancelling 'BriefcaseConnection.pullChanges'.
+- Added ability to display normal maps
+- Fix for tools that supply hints to override the default AccuDraw origin.
+- Add preliminary alpha support for custom reality data providers.
+- Add IModelConnection.generateElementMeshes.
+- Fix an exception when adding an invalid map layer to a viewport.
+- Fix emphasis and hilite effects applied to point clouds.
+- Add support for customized reality model display.
+- Promote ViewPose-related APIs to public.
+- requestElementGraphics uses relative positions by default to address precision issues with coordinates far from the origin.
+- Add MarginOptions.paddingPercent for a more straightforward way to pad out a viewed volume.
+- Replace inline type definitions in CreateRenderMaterialArgs with named and documented interfaces.
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:50 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:58 GMT
+
+### Updates
+
+- ArcGIS tilemap requests were missing oauth2 token if available.
+- Reproject reality tiles to the surface of the Earth.
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+### Updates
+
+- Add functions to obtain the extents of geometric models asynchronously on the backend.
+- Fall back to requesting a tile from the backend when a request to cloud storage throws a 404 error.
 
 ## 3.4.1
 Mon, 17 Oct 2022 20:06:51 GMT

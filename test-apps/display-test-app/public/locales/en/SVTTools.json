@@ -163,6 +163,12 @@
     },
     "OpenRealityModelSettings": {
       "keyin": "dta reality model settings"
+    },
+    "AttachCustomRealityData": {
+      "keyin": "dta attach reality"
+    },
+    "DtaClipByElementGeometry": {
+      "keyin": "dta clip element geometry"
     }
   }
 }

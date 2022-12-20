@@ -21,9 +21,9 @@ test.describe("widget auto size", () => {
     const titleBarHandle = titleBarHandleLocator(widget);
 
     const boundingBox = await titleBarHandle.boundingBox();
-    const frontstageBoundingBox = await frontstage.boundingBox();
+    const frontstageBounds = await frontstage.boundingBox();
     assert(!!boundingBox);
-    assert(!!frontstageBoundingBox);
+    assert(!!frontstageBounds);
     await titleBarHandle.dragTo(frontstage, {
       // Drag top right corner of a handle.
       sourcePosition: {
@@ -32,7 +32,7 @@ test.describe("widget auto size", () => {
       },
       // Drag to top right corner of a frontstage.
       targetPosition: {
-        x: frontstageBoundingBox.width - 5,
+        x: frontstageBounds.width - 5,
         y: 5,
       },
     });
@@ -41,7 +41,7 @@ test.describe("widget auto size", () => {
     assert(!!updatedBoundingBox);
 
     // Top right corner of a floating widget should render close to the top right of a frontstage.
-    expect(updatedBoundingBox.x + updatedBoundingBox.width).toBeGreaterThan(frontstageBoundingBox.width - 5);
+    expect(updatedBoundingBox.x + updatedBoundingBox.width).toBeGreaterThan(frontstageBounds.width - 5);
     expect(updatedBoundingBox.y).toBeLessThan(5);
   });
 });

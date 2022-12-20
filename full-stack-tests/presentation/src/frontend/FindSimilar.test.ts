@@ -30,12 +30,12 @@ describe("Find Similar", () => {
   });
 
   let propertiesDataProvider: PresentationPropertyDataProvider;
-  let factory: DataProvidersFactory;
+  let factory: DataProvidersFactory; // eslint-disable-line deprecation/deprecation
 
   beforeEach(async () => {
     propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
     propertiesDataProvider.isNestedPropertyCategoryGroupingEnabled = false;
-    factory = new DataProvidersFactory();
+    factory = new DataProvidersFactory(); // eslint-disable-line deprecation/deprecation
   });
 
   const getPropertyRecordByLabel = (props: PropertyData, label: string): PropertyRecord | undefined => {
@@ -47,7 +47,9 @@ describe("Find Similar", () => {
     return undefined;
   };
 
+  // eslint-disable-next-line deprecation/deprecation
   const getAllRows = async (provider: IPresentationTableDataProvider): Promise<RowItem[]> => {
+    // eslint-disable-next-line deprecation/deprecation
     const rows: RowItem[] = [];
     const count = await provider.getRowsCount();
     for (let i = 0; i < count; ++i) {
@@ -56,11 +58,11 @@ describe("Find Similar", () => {
     return rows;
   };
 
-  const getAllRowsInstanceKeys = async (provider: IPresentationTableDataProvider): Promise<InstanceKey[]> => {
+  const getAllRowsInstanceKeys = async (provider: IPresentationTableDataProvider): Promise<InstanceKey[]> => { // eslint-disable-line deprecation/deprecation
     return (await getAllRows(provider)).map((r) => InstanceKey.fromJSON(JSON.parse(r.key)));
   };
 
-  const getAllRowsInstanceIds = async (provider: IPresentationTableDataProvider): Promise<Id64String[]> => {
+  const getAllRowsInstanceIds = async (provider: IPresentationTableDataProvider): Promise<Id64String[]> => { // eslint-disable-line deprecation/deprecation
     return (await getAllRowsInstanceKeys(provider)).map((k) => k.id);
   };
 

@@ -23,6 +23,8 @@ export interface PropertyFilterBuilderProps {
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
   ruleGroupDepthLimit?: number;
   propertyRenderer?: (name: string) => React.ReactNode;
+  disablePropertySelection?: boolean;
+  initialFilter?: PropertyFilter;
 }
 
 /** @alpha */
@@ -41,6 +43,7 @@ export interface PropertyFilterBuilderRuleRenderingContextProps {
   ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
   propertyRenderer?: (name: string) => React.ReactNode;
+  disablePropertySelection?: boolean;
 }
 
 /** @alpha */
@@ -50,13 +53,16 @@ const ROOT_GROUP_PATH: string[] = [];
 
 /** @alpha */
 export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
-  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer } = props;
-  const { state, actions } = usePropertyFilterBuilderState();
+  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer, disablePropertySelection, initialFilter } = props;
+  const { state, actions } = usePropertyFilterBuilderState(initialFilter);
   const rootRef = React.useRef<HTMLDivElement>(null);
 
+  const firstRender = React.useRef(true);
   const filter = React.useMemo(() => buildPropertyFilter(state.rootGroup), [state]);
   React.useEffect(() => {
-    onFilterChanged(filter);
+    if (!firstRender.current)
+      onFilterChanged(filter);
+    firstRender.current = false;
   }, [filter, onFilterChanged]);
 
   const contextValue = React.useMemo<PropertyFilterBuilderContextProps>(
@@ -64,8 +70,8 @@ export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
     [actions, properties, onRulePropertySelected, ruleGroupDepthLimit]
   );
   const renderingContextValue = React.useMemo<PropertyFilterBuilderRuleRenderingContextProps>(
-    () => ({ ruleOperatorRenderer, ruleValueRenderer, propertyRenderer }),
-    [ruleOperatorRenderer, ruleValueRenderer, propertyRenderer]
+    () => ({ ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, disablePropertySelection }),
+    [ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, disablePropertySelection]
   );
   return (
     <PropertyFilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>

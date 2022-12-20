@@ -695,6 +695,7 @@ export class CheckpointManager {
 
 // @public
 export interface CheckpointProps extends TokenArg {
+    readonly allowPreceding?: boolean;
     readonly changeset: ChangesetIdWithIndex;
     // (undocumented)
     readonly expectV2?: boolean;
@@ -707,6 +708,8 @@ export interface CheckpointProps extends TokenArg {
 export class ClassRegistry {
     static findRegisteredClass(classFullName: string): typeof Entity | undefined;
     static getClass(classFullName: string, iModel: IModelDb): typeof Entity;
+    // @internal
+    static getRootEntity(iModel: IModelDb, ecTypeQualifier: string): string;
     // @internal (undocumented)
     static isNotFoundError(err: any): boolean;
     // @internal (undocumented)
@@ -2194,6 +2197,11 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     static get className(): string;
     // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    static findAllBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): Array<{
+        elementId: Id64String;
+        aspectId: Id64String;
+    }>;
+    // @deprecated (undocumented)
     static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): {
         elementId?: Id64String;
         aspectId?: Id64String;
@@ -3247,7 +3255,7 @@ export abstract class InformationReferenceElement extends InformationContentElem
 }
 
 // @internal (undocumented)
-export function initializeRpcBackend(enableOpenTelemetry?: boolean): void;
+export function initializeTracing(enableOpenTelemetry?: boolean): void;
 
 // @beta
 export interface InstanceChange {
