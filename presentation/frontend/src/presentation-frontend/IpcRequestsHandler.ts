@@ -43,7 +43,10 @@ export class IpcRequestsHandler {
     const jsonParams: UpdateHierarchyStateParams<NodeKeyJSON> = {
       ...params,
       clientId: this.clientId,
-      nodeKeys: params.nodeKeys.map(NodeKey.toJSON),
+      stateChanges: params.stateChanges.map((sc) => ({
+        ...sc,
+        ...(sc.nodeKey ? { nodeKey: NodeKey.toJSON(sc.nodeKey) } : undefined),
+      })),
     };
     return this.call("updateHierarchyState", jsonParams);
   }

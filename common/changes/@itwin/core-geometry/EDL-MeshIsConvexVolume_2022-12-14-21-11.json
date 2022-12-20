@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "PolyfaceQuery method to test for convexity",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
