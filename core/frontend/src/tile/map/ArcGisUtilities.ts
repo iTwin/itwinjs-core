@@ -20,6 +20,13 @@ export enum ArcGisErrorCode {
   NoTokenService = 1001,
 }
 
+/** Class representing an ArcGIS service metadata.
+ * @internal */
+export interface ArcGISServiceMetadata {
+  content: any;                   // JSON content from the service
+  accessTokenRequired: boolean;   // Indicates if an access token is required to access the service
+}
+
 /** @internal */
 export class ArcGisUtilities {
 
@@ -117,7 +124,8 @@ export class ArcGisUtilities {
    * @return Validation Status. If successful, a list of available sub-layers will also be returned.
   */
   public static async validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    const json = await this.getServiceJson(url, formatId, userName, password, ignoreCache);
+    const metadata = await this.getServiceJson(url, formatId, userName, password, ignoreCache);
+    const json = metadata?.content;
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
     } else if (json.error !== undefined) {
@@ -159,7 +167,7 @@ export class ArcGisUtilities {
     return { status: MapLayerSourceStatus.Valid, subLayers };
   }
 
-  private static _serviceCache = new Map<string, any>();
+  private static _serviceCache = new Map<string, ArcGISServiceMetadata|undefined>();
 
   /**
    * Fetch an ArcGIS service metadata, and returns its JSON representation.
@@ -167,26 +175,39 @@ export class ArcGisUtilities {
    * it will be used to apply required security token.
    * By default, response for each URL are cached.
   */
-  public static async getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<any> {
+  public static async getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata|undefined> {
     if (!ignoreCache) {
       const cached = ArcGisUtilities._serviceCache.get(url);
       if (cached !== undefined)
         return cached;
     }
 
+    let accessTokenRequired = false;
     try {
-      const tmpUrl = new URL(url);
+      let tmpUrl = new URL(url);
       tmpUrl.searchParams.append("f", "json");
 
+      // In some cases, caller might already know token is required, so append it immediately
+      if (requireToken) {
+        const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
+        if (accessClient) {
+          accessTokenRequired = true;
+          await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
+        }
+      }
       let response = await fetch(tmpUrl.toString(), { method: "GET" });
 
       // Append security token when corresponding error code is returned by ArcGIS service
       let errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
-      if (errorCode !== undefined &&
-        (errorCode === ArcGisErrorCode.TokenRequired) ) {
+      if (!accessTokenRequired
+        && errorCode !== undefined
+        && errorCode === ArcGisErrorCode.TokenRequired ) {
+        accessTokenRequired = true;
         // If token required
         const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
         if (accessClient) {
+          tmpUrl = new URL(url);
+          tmpUrl.searchParams.append("f", "json");
           await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
           response = await fetch(tmpUrl.toString(), { method: "GET" });
           errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
@@ -194,9 +215,10 @@ export class ArcGisUtilities {
       }
 
       const json = await response.json();
+      const info = {content: json, accessTokenRequired};
       // Cache the response only if it doesn't contain any error.
-      ArcGisUtilities._serviceCache.set(url, (errorCode === undefined ? json : undefined));
-      return json;  // Always return json, even though it contains an error code.
+      ArcGisUtilities._serviceCache.set(url, (errorCode === undefined ? info : undefined));
+      return info;  // Always return json, even though it contains an error code.
 
     } catch (_error) {
       ArcGisUtilities._serviceCache.set(url, undefined);
@@ -210,8 +232,12 @@ export class ArcGisUtilities {
     let tmpResponse = response;
     if (response.headers) {
       if (request && response.headers.get("content-type")?.toLowerCase().includes("htm")) {
-        // We got a response in html, try get a JSON version of it.
+        // We got a response in html we don't really want to parse, try get a JSON version of it.
+
+        // Clear the existing search params and add only f=json,
+        //  from there lets check if get an error.
         const tmpRequest = new URL(request);
+        tmpRequest.search = "";
         tmpRequest.searchParams.append("f","json");
         tmpResponse = await fetch(tmpRequest.toString(), reqOptions);
       }

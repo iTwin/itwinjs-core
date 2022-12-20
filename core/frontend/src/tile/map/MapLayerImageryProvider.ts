@@ -134,12 +134,22 @@ export abstract class MapLayerImageryProvider {
     return undefined;
   }
 
-  /** @internal */
+  /** Change the status of this provider.
+   * Sub-classes should override 'onStatusUpdated' instead of this method.
+   *  @internal */
   public setStatus(status: MapLayerImageryProviderStatus) {
     if (this.status !== status) {
+      this.onStatusUpdated (status);
       this.status = status;
       this.onStatusChanged.raiseEvent(this);
     }
+  }
+
+  /** Method called whenever the status changes, giving the opportunity to sub-classes
+   * to make custom behavior
+   *  @protected */
+  protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus){
+
   }
 
   /** @internal */

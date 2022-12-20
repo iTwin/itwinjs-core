@@ -1152,9 +1152,17 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean);
     // (undocumented)
     protected _accessClient: MapLayerAccessClient | undefined;
+    // (undocumented)
+    protected _accessTokenRequired: boolean;
     protected fetch(url: URL, options?: RequestInit): Promise<Response>;
     // (undocumented)
+    protected getServiceJson(): Promise<ArcGISServiceMetadata | undefined>;
+    // (undocumented)
+    protected _invalidOAuthEndpoint: boolean;
+    // (undocumented)
     protected _lastAccessToken: MapLayerAccessToken | undefined;
+    // (undocumented)
+    protected onStatusUpdated(status: MapLayerImageryProviderStatus): void;
 }
 
 // @internal (undocumented)
@@ -1191,6 +1199,14 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     };
 }
 
+// @internal
+export interface ArcGISServiceMetadata {
+    // (undocumented)
+    accessTokenRequired: boolean;
+    // (undocumented)
+    content: any;
+}
+
 // @internal (undocumented)
 export class ArcGISTileMap {
     constructor(restBaseUrl: string, settings: ImageMapLayerSettings, nbLods?: number, accessClient?: MapLayerAccessClient);
@@ -1217,7 +1233,7 @@ export class ArcGISTileMap {
 export class ArcGisUtilities {
     // (undocumented)
     static appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
-    static checkForResponseErrorCode(response: Response): Promise<number | undefined>;
+    static checkForResponseErrorCode(response: Response, request?: URL, reqOptions?: RequestInit): Promise<number | undefined>;
     static computeZoomLevelsScales(startZoom?: number, endZoom?: number, latitude?: number, tileSize?: number, screenDpi?: number): {
         zoom: number;
         resolution: number;
@@ -1227,7 +1243,7 @@ export class ArcGisUtilities {
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
-    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<any>;
+    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
     // (undocumented)
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
@@ -5843,9 +5859,9 @@ export abstract class MapLayerImageryProvider {
     get mutualExclusiveSubLayer(): boolean;
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
+    protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
-    // (undocumented)
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;

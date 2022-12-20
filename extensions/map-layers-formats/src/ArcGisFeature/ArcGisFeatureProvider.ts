@@ -6,7 +6,7 @@
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { assert, base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
-import { ArcGisErrorCode, ArcGISImageryProvider, ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
+import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
@@ -51,14 +51,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   }
 
   public override async initialize(): Promise<void> {
-
-    let json;
-    try {
-      json = await ArcGisUtilities.getServiceJson(this._settings.url, this._settings.formatId, this._settings.userName, this._settings.password);
-
-    } catch (_e) {
-
-    }
+    const metadata = await this.getServiceJson();
+    const json = metadata?.content;
 
     if (json === undefined) {
       Logger.logError(loggerCategory, "Could not get service JSON");
@@ -201,15 +195,15 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   }
 
   protected async getLayerMetadata(layerId: number) {
-    let json;
+    let metadata: ArcGISServiceMetadata|undefined;
     try {
       const url = new URL(this._settings.url);
       url.pathname = `${url.pathname}/${layerId}`;
-      json = await ArcGisUtilities.getServiceJson(url.toString(), this._settings.formatId, this._settings.userName, this._settings.password);
+      metadata = await ArcGisUtilities.getServiceJson(url.toString(), this._settings.formatId, this._settings.userName, this._settings.password, this._accessTokenRequired);
     } catch {
 
     }
-    return json;
+    return metadata?.content;
   }
 
   public override get tileSize(): number { return 512; }
