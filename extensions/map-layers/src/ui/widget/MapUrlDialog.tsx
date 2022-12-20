@@ -219,13 +219,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }, layerRequiringCredentialsIdx, isOverlay);
     vp.displayStyle.changeMapLayerCredentials(layerRequiringCredentialsIdx, isOverlay, source.userName, source.password);
 
+    // Either initial attach/initialize failed or the layer failed to load at least one tile
+    // because of an invalid token; in both cases tile tree needs to be fully reset
     const provider = vp.getMapLayerImageryProvider(layerRequiringCredentialsIdx, isOverlay);
-    if (provider?.hasSuccessfullyFetchedTile) {
-      provider.resetStatus();
-    } else {
-    // I'm assuming the initial attach/initialize failed, and layer is in zombie state.  Tiletree needs to be re-created
-      vp.resetMapLayer(layerRequiringCredentialsIdx, isOverlay);
-    }
+    provider?.resetStatus();
+    vp.resetMapLayer(layerRequiringCredentialsIdx, isOverlay);
     vp.invalidateRenderPlan();
 
     // This handler will close the layer source handler, and therefore the MapUrl dialog.
