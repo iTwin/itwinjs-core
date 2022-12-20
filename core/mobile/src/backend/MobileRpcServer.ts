@@ -144,6 +144,13 @@ export function setupMobileRpc() {
 
   let server: MobileRpcServer | null = new MobileRpcServer();
 
+  /* The UV event loop (internal to node) is retained by handles,
+     such as those created for setInterval/setTimeout and client/server connections.
+     In a simple app, the RPC server may be the only handle retaining the UV loop.
+     Thus, we install a temporary timer on suspend to prevent the loop from exiting prematurely.
+  */
+  let retainUvLoop: NodeJS.Timer | undefined;
+
   MobileHost.onEnterBackground.addListener(() => {
     hasSuspended = true;
 
@@ -151,6 +158,7 @@ export function setupMobileRpc() {
       return;
     }
 
+    retainUvLoop = setInterval(() => { }, 1000);
     server.dispose();
     server = null;
   });
@@ -161,6 +169,22 @@ export function setupMobileRpc() {
     }
 
     server = new MobileRpcServer();
+    clearInterval(retainUvLoop);
+    retainUvLoop = undefined;
+  });
+
+  MobileHost.onWillTerminate.addListener(() => {
+    if (typeof (retainUvLoop) !== "undefined") {
+      clearInterval(retainUvLoop);
+      retainUvLoop = undefined;
+    }
+
+    if (server === null) {
+      return;
+    }
+
+    server.dispose();
+    server = null;
   });
 
   MobileRpcProtocol.obtainInterop = () => MobileRpcServer.interop;

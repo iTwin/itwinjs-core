@@ -36,6 +36,7 @@ import { LabelDefinition } from '@itwin/presentation-common';
 import { MultiElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { Node as Node_2 } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
+import { NodeKeyJSON } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
 import { Paged } from '@itwin/presentation-common';
 import { PagedResponse } from '@itwin/presentation-common';

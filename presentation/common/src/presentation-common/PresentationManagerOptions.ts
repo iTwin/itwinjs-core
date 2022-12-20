@@ -61,6 +61,15 @@ export interface RequestOptionsWithRuleset<TIModel, TRulesetVariable = RulesetVa
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** Key of the parent node to get children for */
   parentKey?: TNodeKey;
+
+  /**
+   * An instance filter that should be applied for this hierarchy level. This is an
+   * [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#instance-filter) that provides the `this`
+   * symbol for accessing filtered instances' properties.
+   *
+   * @alpha
+   */
+  instanceFilter?: string;
 }
 
 /**
