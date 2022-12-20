@@ -66,7 +66,9 @@ export class DrawParams {
   public get target() { return this.programParams.target; }
   public get renderPass() { return this.programParams.renderPass; }
   public get projectionMatrix() { return this.programParams.projectionMatrix; }
-  public get isViewCoords() { return this.programParams.isViewCoords; }
+  public get isViewCoords() {
+    return this.programParams.isViewCoords || this.target.currentBranch.forceViewCoords;
+  }
   public get isOverlayPass() { return this.programParams.isOverlayPass; }
   public get context() { return this.programParams.context; }
 

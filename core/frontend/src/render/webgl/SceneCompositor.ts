@@ -663,7 +663,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract dispose(): void;
   public abstract preDraw(): void;
   public abstract draw(_commands: RenderCommands): void;
-  public abstract drawForReadPixels(_commands: RenderCommands, sceneOverlays: GraphicList, overlayDecorations: GraphicList | undefined): void;
+  public abstract drawForReadPixels(_commands: RenderCommands, sceneOverlays: GraphicList, worldOverlayDecorations: GraphicList | undefined, viewOverlayDecorations: GraphicList | undefined): void;
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
@@ -1069,7 +1069,7 @@ abstract class Compositor extends SceneCompositor {
 
   public get fullHeight(): number { return this.target.viewRect.height; }
 
-  public drawForReadPixels(commands: RenderCommands, sceneOverlays: GraphicList, overlayDecorations: GraphicList | undefined): void {
+  public drawForReadPixels(commands: RenderCommands, sceneOverlays: GraphicList, worldOverlayDecorations: GraphicList | undefined, viewOverlayDecorations: GraphicList | undefined): void {
     this.target.beginPerfMetricRecord("Render Background", true);
     if (!this.preDraw()) {
       this.target.endPerfMetricRecord(true); // End Render Background record if returning
@@ -1120,12 +1120,12 @@ abstract class Compositor extends SceneCompositor {
       this.target.popViewClip();
     }
 
-    if (0 === sceneOverlays.length && (undefined === overlayDecorations || 0 === overlayDecorations.length))
+    if (!sceneOverlays.length && !worldOverlayDecorations?.length && !viewOverlayDecorations?.length)
       return;
 
     // Now populate the opaque passes with any pickable world overlays
     this.target.beginPerfMetricRecord("Overlay Draws", true);
-    commands.initForPickOverlays(sceneOverlays, overlayDecorations);
+    commands.initForPickOverlays(sceneOverlays, worldOverlayDecorations, viewOverlayDecorations);
     if (commands.isEmpty) {
       this.target.endPerfMetricRecord(true); // End Overlay Draws record if returning
       return;

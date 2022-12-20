@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "",
+      "comment": "Add support for pickable view overlay decorations.",
       "type": "none"
     }
   ],
