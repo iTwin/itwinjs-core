@@ -184,16 +184,11 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
    */
   public resetTileTreeOwner(id: any, supplier: TileTreeSupplier) {
     const trees = this._treesBySupplier.get(supplier);
-    if (undefined === trees) {
-      return;  // nothing found, cant be reset.
-    }
-
-    const tree = trees.get(id);
-    if (undefined !== tree) {
+    const tree = trees?.get(id);
+    if (tree) {
       tree.dispose();
-    }
-
-    trees.delete(id);
+      trees.delete(id);
+    } 
   }
 
   /** Disposes of all [[TileTree]]s belonging to `supplier` and removes `supplier` from the set of known tile tree suppliers. */
