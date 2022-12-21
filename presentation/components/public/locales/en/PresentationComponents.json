@@ -15,10 +15,13 @@
     "select-instance": "Select element"
   },
   "instance-filter-builder": {
-    "classes": "Classes",
+    "select-classes": "Select class...",
     "category": "Category:",
     "class": "Class:",
-    "schema": "Schema:"
+    "schema": "Schema:",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "filter": "Filter"
   },
   "tree": {
     "presentation-components-muted-node": "Too many child nodes."

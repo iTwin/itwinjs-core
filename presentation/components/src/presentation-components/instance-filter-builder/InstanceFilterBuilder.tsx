@@ -10,7 +10,6 @@ import * as React from "react";
 import { ActionMeta } from "react-select";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { PropertyFilter, PropertyFilterBuilder } from "@itwin/components-react";
-import { Label } from "@itwin/itwinui-react";
 import { ClassInfo } from "@itwin/presentation-common";
 import { translate } from "../common/Utils";
 import { MultiTagSelect } from "./MultiTagSelect";
@@ -55,11 +54,9 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
 
   return <div className="presentation-instance-filter">
     <div className="presentation-instance-filter-class-selector">
-      <Label htmlFor="class-combo-input">
-        {translate("instance-filter-builder.classes")}
-      </Label>
       <MultiTagSelect
         id="class-combo-input"
+        placeholder={translate("instance-filter-builder.select-classes")}
         options={classes}
         value={selectedClasses}
         onChange={onSelectChange}
@@ -71,14 +68,16 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
         isDisabled={isDisabled}
       />
     </div>
-    <PropertyFilterBuilder
-      properties={properties}
-      onFilterChanged={onFilterChanged}
-      onRulePropertySelected={onPropertySelected}
-      ruleGroupDepthLimit={ruleGroupDepthLimit}
-      propertyRenderer={props.propertyRenderer}
-      disablePropertySelection={isDisabled}
-      initialFilter={initialFilter}
-    />
+    <div className="presentation-property-filter-builder">
+      <PropertyFilterBuilder
+        properties={properties}
+        onFilterChanged={onFilterChanged}
+        onRulePropertySelected={onPropertySelected}
+        ruleGroupDepthLimit={ruleGroupDepthLimit}
+        propertyRenderer={props.propertyRenderer}
+        disablePropertySelection={isDisabled}
+        initialFilter={initialFilter}
+      />
+    </div>
   </div>;
 }

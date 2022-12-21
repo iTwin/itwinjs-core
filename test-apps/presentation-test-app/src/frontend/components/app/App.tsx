@@ -22,7 +22,7 @@ import { GridWidget } from "../grid-widget/GridWidget";
 import { IModelSelector } from "../imodel-selector/IModelSelector";
 import { PropertiesWidget } from "../properties-widget/PropertiesWidget";
 import { RulesetSelector } from "../ruleset-selector/RulesetSelector";
-import { TreeWidget } from "../tree-widget/TreeWidget";
+import { FilterBuilderWidget } from "../tree-widget/TreeWidget";
 import { UnitSystemSelector } from "../unit-system-selector/UnitSystemSelector";
 import ViewportContentControl from "../viewport/ViewportContentControl";
 
@@ -34,7 +34,7 @@ export interface State {
   rightPaneHeight?: number;
   contentRatio: number;
   contentWidth?: number;
-  similarInstancesProvider?: IPresentationTableDataProvider; // eslint-disable-line deprecation/deprecation
+  similarInstancesProvider?: IPresentationTableDataProvider;
   activeUnitSystem?: UnitSystemKey;
   persistSettings: boolean;
 }
@@ -125,7 +125,7 @@ export default class App extends React.Component<{}, State> {
     return { ratio };
   };
 
-  private _selectAllInstances = async (provider: IPresentationTableDataProvider) => { // eslint-disable-line deprecation/deprecation
+  private _selectAllInstances = async (provider: IPresentationTableDataProvider) => {
     const size = await provider.getRowsCount();
     const rowPromises = [];
     for (let i = 0; i < size; ++i)
@@ -137,7 +137,7 @@ export default class App extends React.Component<{}, State> {
 
   private _onFindSimilar = async (provider: IPresentationPropertyDataProvider, record: PropertyRecord) => {
     try {
-      const factory = new DataProvidersFactory(); // eslint-disable-line deprecation/deprecation
+      const factory = new DataProvidersFactory();
       const similarInstancesProvider = await factory.createSimilarInstancesTableDataProvider(provider,
         record, { displayType: DefaultContentDisplayTypes.List });
       await this._selectAllInstances(similarInstancesProvider);
@@ -210,7 +210,7 @@ export default class App extends React.Component<{}, State> {
             style={{
               gridTemplateRows: `${this.state.rightPaneRatio * 100}% 30px calc(${(1 - this.state.rightPaneRatio) * 100}% - 30px)`,
             }}>
-            <TreeWidget imodel={imodel} rulesetId={rulesetId} />
+            <FilterBuilderWidget imodel={imodel} />
             <div className="app-content-right-separator">
               <hr />
               <ElementSeparator

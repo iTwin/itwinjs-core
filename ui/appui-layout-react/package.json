@@ -97,7 +97,7 @@
   ],
   "dependencies": {
     "@itwin/itwinui-css": "0.x",
-    "@itwin/itwinui-react": "~1.42.0",
+    "@itwin/itwinui-react": "~1.46.0",
     "classnames": "^2.3.1",
     "immer": "9.0.6",
     "lodash": "^4.17.10",

@@ -7,5 +7,12 @@
 
   .presentation-instance-filter-class-selector {
     padding-bottom: 10px;
+    .iui-select-button {
+      padding: 0;
+
+      .iui-tag-container {
+        padding-left: 12px;
+      }
+    }
   }
 }
