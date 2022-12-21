@@ -293,7 +293,7 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
       return undefined;
 
     await imageryProvider.initialize();
-    const modelId = iModel.transientIds.next;
+    const modelId = iModel.transientIds.getNext();
     const tilingScheme = imageryProvider.tilingScheme;
     const rootLevel =  (1 === tilingScheme.numberOfLevelZeroTilesX && 1 === tilingScheme.numberOfLevelZeroTilesY) ? 0 : -1;
     const rootTileId = new QuadId(rootLevel, 0, 0).contentId;
