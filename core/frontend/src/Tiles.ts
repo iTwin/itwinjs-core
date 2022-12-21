@@ -179,6 +179,9 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
     return tree;
   }
 
+  /** Remove tile tree matching the provided tile tree supplier/id
+   * @internal
+   */
   public resetTileTreeOwner(id: any, supplier: TileTreeSupplier) {
     const trees = this._treesBySupplier.get(supplier);
     if (undefined === trees) {
