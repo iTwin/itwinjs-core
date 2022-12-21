@@ -29,8 +29,6 @@ export function PresentationInstanceFilterDialog(props: PresentationInstanceFilt
   }, []);
 
   const applyButtonHandle = () => {
-    // eslint-disable-next-line no-console
-    console.log(JSON.stringify(filter));
     onInstanceFilterApplied(filter);
   };
 

@@ -164,7 +164,7 @@ describe("PresentationInstanceFilterDialog", () => {
 
   });
 
-  it("renders custom title", async () => {
+  it("renders filterResultCountRenderer", async () => {
     const spy = sinon.spy();
     const count = "custom count";
 
