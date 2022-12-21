@@ -92,8 +92,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       if (hasTokenError
         &&  this.status === MapLayerImageryProviderStatus.Valid ) {
         // Only report if status is currently valid (avoid reporting twice the same error)
-        this.status = MapLayerImageryProviderStatus.RequireAuth;
-        this.onStatusChanged.raiseEvent(this);
+        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
         const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
       }
