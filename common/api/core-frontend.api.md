@@ -11657,7 +11657,7 @@ export abstract class TileTreeReference {
     protected get _isLoadingComplete(): boolean;
     // @alpha
     get planarclipMaskPriority(): number;
-    // (undocumented)
+    // @internal
     resetTreeOwner(): void;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
