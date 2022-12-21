@@ -49,7 +49,7 @@ jobs:
       # demands:
       #   - Agent.OS -equals $(platform)
 
-    timeoutInMinutes: 60
+    timeoutInMinutes: 120
 
     workspace:
       clean: all
