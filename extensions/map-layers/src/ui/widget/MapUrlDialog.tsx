@@ -8,7 +8,7 @@ import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { Button, Input, LabeledInput, ProgressLinear, Radio } from "@itwin/itwinui-react";
 import { ImageMapLayerProps } from "@itwin/core-common";
-import { IModelApp, MapLayerAccessClient, MapLayerImageryProviderStatus, MapLayerSource,
+import { IModelApp, MapLayerAccessClient, MapLayerSource,
   MapLayerSourceStatus, MapLayerSourceValidation, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
 import { Dialog, Icon, useCrossOriginPopup } from "@itwin/core-react";
