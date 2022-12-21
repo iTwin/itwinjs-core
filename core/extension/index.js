@@ -169,6 +169,8 @@ export const {
 	ViewManager,
 	ViewManip,
 	ViewPose,
+	ViewPose2d,
+	ViewPose3d,
 	ViewRect,
 	ViewState,
 	ViewState2d,

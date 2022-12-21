@@ -8,7 +8,7 @@ import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { Button, Input, LabeledInput, ProgressLinear, Radio } from "@itwin/itwinui-react";
 import { ImageMapLayerProps } from "@itwin/core-common";
-import { IModelApp, MapLayerAccessClient, MapLayerImageryProviderStatus, MapLayerSource,
+import { IModelApp, MapLayerAccessClient, MapLayerSource,
   MapLayerSourceStatus, MapLayerSourceValidation, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
 import { Dialog, Icon, useCrossOriginPopup } from "@itwin/core-react";
@@ -219,12 +219,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }, layerRequiringCredentialsIdx, isOverlay);
     vp.displayStyle.changeMapLayerCredentials(layerRequiringCredentialsIdx, isOverlay, source.userName, source.password);
 
-    // Reset the provider's status
+    // Either initial attach/initialize failed or the layer failed to load at least one tile
+    // because of an invalid token; in both cases tile tree needs to be fully reset
     const provider = vp.getMapLayerImageryProvider(layerRequiringCredentialsIdx, isOverlay);
-    if (provider && provider.status !== MapLayerImageryProviderStatus.Valid) {
-      provider.status = MapLayerImageryProviderStatus.Valid;
-    }
-
+    provider?.resetStatus();
+    vp.resetMapLayer(layerRequiringCredentialsIdx, isOverlay);
     vp.invalidateRenderPlan();
 
     // This handler will close the layer source handler, and therefore the MapUrl dialog.

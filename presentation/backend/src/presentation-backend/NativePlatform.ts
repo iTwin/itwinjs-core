@@ -83,7 +83,7 @@ export interface NativePlatformDefinition extends IDisposable {
   unsetRulesetVariableValue(rulesetId: string, variableId: string): NativePlatformResponse<void>;
 
   getUpdateInfo(): NativePlatformResponse<UpdateInfoJSON | undefined>;
-  updateHierarchyState(db: any, rulesetId: string, changeType: "nodesExpanded" | "nodesCollapsed", serializedKeys: string): NativePlatformResponse<void>;
+  updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKeyJSON, isExpanded?: boolean, instanceFilters?: string[] }>): NativePlatformResponse<void>;
 }
 
 /** @internal */
@@ -196,8 +196,8 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public getUpdateInfo() {
       return this.handleResult(this._nativeAddon.getUpdateInfo());
     }
-    public updateHierarchyState(db: any, rulesetId: string, changeType: "nodesExpanded" | "nodesCollapsed", serializedKeys: string) {
-      return this.handleResult(this._nativeAddon.updateHierarchyState(db, rulesetId, changeType, serializedKeys));
+    public updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKeyJSON, isExpanded?: boolean, instanceFilter?: string }>) {
+      return this.handleResult(this._nativeAddon.updateHierarchyState(db, rulesetId, stateChanges));
     }
   };
 };

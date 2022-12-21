@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-layout-react",
-  "version": "3.6.0-dev.8",
+  "version": "3.6.0-dev.22",
   "description": "iTwin.js Nine-zone React UI components",
   "main": "lib/cjs/appui-layout-react.js",
   "module": "lib/esm/appui-layout-react.js",
@@ -36,9 +36,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.6.0-dev.8",
-    "@itwin/core-bentley": "workspace:^3.6.0-dev.8",
-    "@itwin/core-react": "workspace:^3.6.0-dev.8",
+    "@itwin/appui-abstract": "workspace:^3.6.0-dev.22",
+    "@itwin/core-bentley": "workspace:^3.6.0-dev.22",
+    "@itwin/core-react": "workspace:^3.6.0-dev.22",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -66,7 +66,6 @@
     "@types/react-dom": "^17.0.0",
     "@types/react-transition-group": "^4.4.4",
     "@types/sinon": "^9.0.0",
-    "@types/uuid": "^7.0.2",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
@@ -102,8 +101,7 @@
     "classnames": "^2.3.1",
     "immer": "9.0.6",
     "lodash": "^4.17.10",
-    "react-transition-group": "^4.4.2",
-    "uuid": "^7.0.3"
+    "react-transition-group": "^4.4.2"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

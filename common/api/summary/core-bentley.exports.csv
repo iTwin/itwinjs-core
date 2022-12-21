@@ -18,9 +18,9 @@ public;BentleyLoggerCategory
 public;BentleyStatus
 public;BeTimePoint
 public;BeUiEvent
-beta;BriefcaseStatus
+public;BriefcaseStatus
 public;ByteStream
-beta;ChangeSetStatus
+public;ChangeSetStatus
 public;CloneFunction
 public;compareBooleans(a: boolean, b: boolean): number
 public;compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number
@@ -58,7 +58,7 @@ public;Id64Array = Id64String[]
 public;Id64Set = Set
 public;Id64String = string
 public;IDisposable
-beta;IModelHubStatus
+public;IModelHubStatus
 public;IModelStatus
 public;IndexedValue
 public;IndexMap
@@ -108,14 +108,14 @@ public;PromiseReturnType
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 alpha;RealityDataStatus
-beta;RepositoryStatus
+internal;RepositoryStatus
 beta;RpcInterfaceStatus
 public;shallowClone
 public;SortedArray
 alpha;SpanKind
 alpha;class StatusCategory
 alpha;StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined
-beta;StatusCodeWithMessage
+internal;StatusCodeWithMessage
 public;StopWatch
 alpha;class SuccessCategory 
 alpha;Tracing
@@ -126,6 +126,9 @@ public;TypedArrayBuilderOptions
 public;Uint16ArrayBuilder 
 public;Uint32ArrayBuilder 
 public;Uint8ArrayBuilder 
+public;UintArray = Uint8Array | Uint16Array | Uint32Array
+public;UintArrayBuilder 
+public;UintArrayBuilderOptions 
 public;UnexpectedErrors
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined

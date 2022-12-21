@@ -6,6 +6,7 @@ public;CacheInvalidationProps
 public;ContentDataProvider 
 public;ContentDataProviderProps 
 public;ControlledPresentationTreeFilteringProps
+alpha;convertPresentationFilterToPropertyFilter(descriptor: Descriptor, filter: PresentationInstanceFilter): PropertyFilter | undefined
 alpha;convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise
 alpha;createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined
 internal;createFieldInfo(field: Field, namePrefix?: string):
@@ -45,6 +46,7 @@ public;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider
 deprecated;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider &
 public;IPresentationTreeDataProvider 
 internal;IPropertiesAppender
+alpha;isPresentationInstanceFilterConditionGroup(filter: PresentationInstanceFilter): filter is PresentationInstanceFilterConditionGroup
 public;IUnifiedSelectionComponent
 alpha;NavigationPropertyEditor 
 alpha;NavigationPropertyEditorContext
@@ -57,6 +59,7 @@ alpha;PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilder
 alpha;PresentationInstanceFilterBuilderProps
 alpha;PresentationInstanceFilterCondition
 alpha;PresentationInstanceFilterConditionGroup
+alpha;PresentationInstanceFilterInfo
 alpha;PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps): JSX.Element
 alpha;PresentationInstanceFilterPropertyProps
 public;PresentationLabelsProvider 
@@ -98,7 +101,7 @@ internal;useFilterBuilderNavigationPropertyEditorContext(imodel: IModelConnectio
 internal;useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider
 alpha;useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext
 internal;useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider
-alpha;usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection):
+alpha;usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection, initialClasses?: ClassInfo[]):
 public;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult
 public;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): UsePropertyDataProviderWithUnifiedSelectionResult
 public;UsePropertyDataProviderWithUnifiedSelectionResult

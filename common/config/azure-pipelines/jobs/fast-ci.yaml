@@ -27,12 +27,43 @@ pr:
       - "**/CHANGELOG.md"
 
 jobs:
-  - template: ci-core.yaml
-    parameters:
-      name: Node_18
-      nodeVersion: 18.12.x
-      buildIos: true
-      pool:
-        name: $(name)
-        demands:
-          - Agent.OS -equals $(platform)
+  - job:
+
+    strategy:
+      matrix:
+        "Windows_Node_18":
+          OS: windows-latest
+          platform: Windows_NT
+          name: $(win_pool)
+        "Linux_Node_18":
+          OS: ubuntu-latest
+          platform: Linux
+          name: $(linux_pool)
+        "MacOS_Node_18":
+          OS: macOS-latest
+          platform: Darwin
+          name: $(mac_pool)
+
+    pool:
+      name: $(name)
+      demands:
+        - Agent.OS -equals $(platform)
+
+    timeoutInMinutes: 60
+
+    workspace:
+      clean: all
+
+    steps:
+      - checkout: self
+        clean: true
+      - template: ../templates/core-build.yaml
+        parameters:
+          nodeVersion: 18.12.x
+          buildIos: ${{ eq(variables['Agent.OS'], 'Darwin') }}
+      # Will run if even there is a failure somewhere else in the pipeline.
+      - template: ../templates/publish-test-results.yaml
+        parameters:
+          NodeVersion: 18.12.x
+      # The publish script identifies any new packages not previously published and tags the build
+      - template: ../templates/publish.yaml
