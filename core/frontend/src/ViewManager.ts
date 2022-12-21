@@ -11,7 +11,6 @@ import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { DisclosedTileTreeSet, TileTree } from "./tile/internal";
-import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { ScreenViewport, ViewportDecorator } from "./Viewport";
 import { System } from "./render/webgl/System";
@@ -272,7 +271,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
     if (this.hasViewport(newVp)) // make sure its not already added
       return BentleyStatus.ERROR;
 
-    newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
+    newVp.onViewManagerAdd();
+
     this._viewports.push(newVp);
     this.updateRenderToScreen();
     this.setSelectedView(newVp);// eslint-disable-line @typescript-eslint/no-floating-promises
@@ -308,7 +308,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
     // make sure tools don't think the cursor is still in this viewport
     IModelApp.toolAdmin.forgetViewport(vp);
 
-    vp.setEventController(undefined);
+    vp.onViewManagerDrop();
+
     this._viewports.splice(index, 1);
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.

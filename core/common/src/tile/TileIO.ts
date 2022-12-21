@@ -100,8 +100,8 @@ export abstract class TileHeader {
 
   /** Construct a Header from the binary data at the supplied stream's current read position */
   public constructor(stream: ByteStream) {
-    this._format = tileFormatFromNumber(stream.nextUint32);
-    this.version = stream.nextUint32;
+    this._format = tileFormatFromNumber(stream.readUint32());
+    this.version = stream.readUint32();
   }
 
   public get format(): TileFormat { return this._format; }
@@ -119,9 +119,9 @@ export abstract class TileHeader {
  * @internal
  */
 export function nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d {
-  const x = stream.nextFloat64,
-    y = stream.nextFloat64,
-    z = stream.nextFloat64;
+  const x = stream.readFloat64(),
+    y = stream.readFloat64(),
+    z = stream.readFloat64();
 
   if (undefined === result)
     return new Point3d(x, y, z);

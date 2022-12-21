@@ -417,6 +417,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
   /**
    * Return a vector that bisects the angle between two normals and extends to the intersection of two offset lines
    * * returns `undefined` if `unitPerpA = -unitPerpB` (i.e., are opposite)
+   * * math details can be found at docs/learning/geometry/PointVector.md
    * @param unitPerpA unit perpendicular to incoming direction
    * @param unitPerpB  unit perpendicular to outgoing direction
    * @param offset offset distance

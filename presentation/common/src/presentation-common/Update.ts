@@ -94,6 +94,7 @@ export interface HierarchyUpdateRecordJSON {
   parent?: NodeKeyJSON;
   nodesCount: number;
   expandedNodes?: ExpandedNodeUpdateRecordJSON[];
+  instanceFilter?: string;
 }
 
 /** @alpha */
@@ -107,6 +108,7 @@ export interface HierarchyUpdateRecord {
   parent?: NodeKey;
   nodesCount: number;
   expandedNodes?: ExpandedNodeUpdateRecord[];
+  instanceFilter?: string;
 }
 
 /** @alpha */

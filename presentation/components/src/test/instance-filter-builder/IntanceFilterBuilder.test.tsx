@@ -22,9 +22,7 @@ describe("InstanceFilter", () => {
   ];
 
   before(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await UiComponents.initialize(new EmptyLocalization());
     await Presentation.initialize();
   });

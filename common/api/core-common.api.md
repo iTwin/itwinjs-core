@@ -63,8 +63,6 @@ import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
-import { RepositoryStatus } from '@itwin/core-bentley';
-import { RpcInterfaceStatus } from '@itwin/core-bentley';
 import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
@@ -4689,8 +4687,11 @@ export interface IModelEncryptionProps {
 
 // @public
 export class IModelError extends BentleyError {
-    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus, message: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: GetMetaDataFunction);
 }
+
+// @public
+export type IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus;
 
 // @public
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
@@ -6317,6 +6318,13 @@ export type Point2dProps = number[];
 
 // @beta
 export interface PointCloudDisplayProps {
+    edlFilter?: number;
+    edlMixWts1?: number;
+    edlMixWts2?: number;
+    edlMixWts4?: number;
+    edlMode?: PointCloudEDLMode;
+    edlRadius?: number;
+    edlStrength?: number;
     maxPixelsPerVoxel?: number;
     minPixelsPerVoxel?: number;
     pixelSize?: number;
@@ -6329,6 +6337,13 @@ export interface PointCloudDisplayProps {
 export class PointCloudDisplaySettings {
     clone(changedProps: PointCloudDisplayProps): PointCloudDisplaySettings;
     static defaults: PointCloudDisplaySettings;
+    readonly edlFilter?: number;
+    readonly edlMixWts1?: number;
+    readonly edlMixWts2?: number;
+    readonly edlMixWts4?: number;
+    readonly edlMode: PointCloudEDLMode;
+    readonly edlRadius: number;
+    readonly edlStrength: number;
     equals(other: PointCloudDisplaySettings): boolean;
     static fromJSON(props?: PointCloudDisplayProps): PointCloudDisplaySettings;
     readonly maxPixelsPerVoxel: number;
@@ -6339,6 +6354,9 @@ export class PointCloudDisplaySettings {
     toJSON(): PointCloudDisplayProps | undefined;
     readonly voxelScale: number;
 }
+
+// @beta
+export type PointCloudEDLMode = "off" | "on" | "full";
 
 // @beta
 export type PointCloudShape = "square" | "round";
@@ -7551,8 +7569,6 @@ export interface RepositoryLinkProps extends UrlLinkProps {
     repositoryGuid?: GuidString;
 }
 
-export { RepositoryStatus }
-
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
@@ -7799,8 +7815,6 @@ export interface RpcInterfaceEndpoints {
 
 // @internal (undocumented)
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
-
-export { RpcInterfaceStatus }
 
 // @internal
 export class RpcInvocation {

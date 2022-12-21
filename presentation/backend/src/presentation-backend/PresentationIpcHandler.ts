@@ -6,8 +6,8 @@
  * @module RPC
  */
 
-import { Logger } from "@itwin/core-bentley";
 import { IModelDb, IpcHandler } from "@itwin/core-backend";
+import { Logger } from "@itwin/core-bentley";
 import {
   NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams,
   UnsetRulesetVariableParams, UpdateHierarchyStateParams,
@@ -31,13 +31,12 @@ export class PresentationIpcHandler extends IpcHandler implements PresentationIp
   }
 
   public async updateHierarchyState(params: UpdateHierarchyStateParams<NodeKeyJSON>): Promise<void> {
-    const { clientId, imodelKey, rulesetId, changeType, nodeKeys } = params;
+    const { clientId, imodelKey, rulesetId, stateChanges } = params;
     const imodelDb = IModelDb.tryFindByKey(imodelKey);
     if (!imodelDb) {
       Logger.logError(PresentationBackendLoggerCategory.Ipc, "Could not find IModelDb to perform hierarchy state update");
-
       return;
     }
-    Presentation.getManager(clientId).getNativePlatform().updateHierarchyState(imodelDb.nativeDb, rulesetId, changeType, JSON.stringify(nodeKeys));
+    Presentation.getManager(clientId).getNativePlatform().updateHierarchyState(imodelDb.nativeDb, rulesetId, stateChanges);
   }
 }

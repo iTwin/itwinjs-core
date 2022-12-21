@@ -30,7 +30,6 @@ export enum MapLayerImageryProviderStatus {
  */
 export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;
-  public status: MapLayerImageryProviderStatus = MapLayerImageryProviderStatus.Valid;
   public readonly onStatusChanged = new BeEvent<(provider: MapLayerImageryProvider) => void>();
 
   /** @internal */
@@ -38,7 +37,14 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   private readonly _geographicTilingScheme = new GeographicTilingScheme();
 
+  /** @internal */
+  private _status =  MapLayerImageryProviderStatus.Valid;
+
+  public get status() { return this._status;}
+  public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid);}
+
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
+
   public get maximumScreenSize() { return 2 * this.tileSize; }
   public get minimumZoomLevel(): number { return this.defaultMinimumZoomLevel; }
   public get maximumZoomLevel(): number { return this.defaultMaximumZoomLevel; }
@@ -46,6 +52,7 @@ export abstract class MapLayerImageryProvider {
   public get mutualExclusiveSubLayer(): boolean { return false; }
   public get useGeographicTilingScheme() { return false;}
   public cartoRange?: MapCartoRectangle;
+  public get hasSuccessfullyFetchedTile() { return this._hasSuccessfullyFetchedTile; }
 
   // Those values are used internally for various computation, this should not get overriden.
   /** @internal */
@@ -138,9 +145,9 @@ export abstract class MapLayerImageryProvider {
    * Sub-classes should override 'onStatusUpdated' instead of this method.
    *  @internal */
   public setStatus(status: MapLayerImageryProviderStatus) {
-    if (this.status !== status) {
+    if (this._status !== status) {
       this.onStatusUpdated (status);
-      this.status = status;
+      this._status = status;
       this.onStatusChanged.raiseEvent(this);
     }
   }

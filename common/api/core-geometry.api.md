@@ -3862,10 +3862,10 @@ export class Order5Bezier extends BezierCoffs {
 
 // @alpha
 export class OrderedRotationAngles {
-    static createAngles(xRotation: Angle, yRotation: Angle, zRotation: Angle, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
-    static createDegrees(xDegrees: number, yDegrees: number, zDegrees: number, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
-    static createFromMatrix3d(matrix: Matrix3d, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
-    static createRadians(xRadians: number, yRadians: number, zRadians: number, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles;
+    static createAngles(xRotation: Angle, yRotation: Angle, zRotation: Angle, order: AxisOrder, xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles;
+    static createDegrees(xDegrees: number, yDegrees: number, zDegrees: number, order: AxisOrder, xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles;
+    static createFromMatrix3d(matrix: Matrix3d, order: AxisOrder, result?: OrderedRotationAngles): OrderedRotationAngles | undefined;
+    static createRadians(xRadians: number, yRadians: number, zRadians: number, order: AxisOrder, xyzRotationIsClockwise?: [boolean, boolean, boolean], result?: OrderedRotationAngles): OrderedRotationAngles;
     get order(): AxisOrder;
     toMatrix3d(result?: Matrix3d): Matrix3d;
     static get treatVectorsAsColumns(): boolean;
@@ -4547,9 +4547,11 @@ export class PolyfaceQuery {
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
     static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
     static createIndexedEdges(polyface: Polyface | PolyfaceVisitor): IndexedEdgeMatcher;
+    static dihedralAngleSummary(source: Polyface, ignoreBoundaries?: boolean): number;
     static fillSimpleHoles(mesh: Polyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined;
     static getSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number): boolean | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
+    static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries?: boolean): boolean;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
     static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries?: boolean): boolean;
     static markAllEdgeVisibility(mesh: IndexedPolyface, value: boolean): void;
@@ -6218,6 +6220,7 @@ export class YawPitchRollAngles {
     isIdentity(allowPeriodShift?: boolean): boolean;
     maxAbsDegrees(): number;
     maxAbsRadians(): number;
+    maxDiffDegrees(other: YawPitchRollAngles): number;
     maxDiffRadians(other: YawPitchRollAngles): number;
     pitch: Angle;
     roll: Angle;

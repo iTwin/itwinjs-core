@@ -314,6 +314,8 @@ import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
+import { UintArray } from '@itwin/core-bentley';
+import { UintArrayBuilder } from '@itwin/core-bentley';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -4062,6 +4064,8 @@ export class GraphicBranch implements IDisposable {
     readonly ownsEntries: boolean;
     // @beta
     realityModelDisplaySettings?: RealityModelDisplaySettings;
+    // @internal (undocumented)
+    realityModelRange?: Range3d;
     setViewFlagOverrides(ovr: ViewFlagOverrides): void;
     setViewFlags(flags: ViewFlags): void;
     symbologyOverrides?: FeatureSymbology.Overrides;
@@ -4556,6 +4560,8 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
     get castsShadows(): boolean;
     // (undocumented)
     get imageryProvider(): MapLayerImageryProvider | undefined;
+    // (undocumented)
+    resetTreeOwner(): void;
     get treeOwner(): TileTreeOwner;
 }
 
@@ -5838,6 +5844,8 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
+    get hasSuccessfullyFetchedTile(): boolean;
+    // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
     // (undocumented)
     initialize(): Promise<void>;
@@ -5861,12 +5869,14 @@ export abstract class MapLayerImageryProvider {
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
     protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus): void;
     // (undocumented)
+    resetStatus(): void;
+    // (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
     // (undocumented)
-    status: MapLayerImageryProviderStatus;
+    get status(): MapLayerImageryProviderStatus;
     // (undocumented)
     get tileSize(): number;
     // (undocumented)
@@ -6132,6 +6142,8 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
     readonly overlayMap: MapTileTreeReference;
+    // (undocumented)
+    resetMapLayer(index: number, isOverlay: boolean): void;
     // (undocumented)
     setView(newView: ViewState): void;
 }
@@ -8180,7 +8192,7 @@ export interface RealityMeshGraphicParams {
 export interface RealityMeshParams {
     // @alpha
     featureID?: number;
-    indices: Uint16Array;
+    indices: UintArray;
     normals?: Uint16Array;
     positions: QPoint3dBuffer;
     // @alpha
@@ -8211,7 +8223,7 @@ export class RealityMeshParamsBuilder {
     // @internal
     addVertex(position: XYAndZ, uv: XAndY, normal?: number): void;
     finish(): RealityMeshParams;
-    readonly indices: Uint16ArrayBuilder;
+    readonly indices: UintArrayBuilder;
     normals?: Uint16ArrayBuilder;
     readonly positions: QPoint3dBufferBuilder;
     readonly uvs: QPoint2dBufferBuilder;
@@ -9538,6 +9550,10 @@ export class ScreenViewport extends Viewport {
     mouseMovementFromEvent(ev: MouseEvent): XAndY;
     // @internal (undocumented)
     mousePosFromEvent(ev: MouseEvent): XAndY;
+    // @internal
+    onViewManagerAdd(): void;
+    // @internal
+    onViewManagerDrop(): void;
     openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     readonly parentDiv: HTMLDivElement;
     // @internal (undocumented)
@@ -9560,6 +9576,7 @@ export class ScreenViewport extends Viewport {
     resetUndo(): void;
     saveViewUndo(): void;
     setCursor(cursor?: string): void;
+    // @deprecated
     setEventController(controller?: EventController): void;
     // @internal
     static setToParentSize(div: HTMLElement): void;
@@ -11519,6 +11536,8 @@ export class Tiles implements Iterable<{
     purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
     // @internal
     reset(): void;
+    // @internal
+    resetTileTreeOwner(id: any, supplier: TileTreeSupplier): void;
     updateForScheduleScript(scriptSourceElementId: Id64String): Promise<void>;
 }
 
@@ -11654,6 +11673,8 @@ export abstract class TileTreeReference {
     protected get _isLoadingComplete(): boolean;
     // @alpha
     get planarclipMaskPriority(): number;
+    // @internal
+    resetTreeOwner(): void;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }
@@ -13470,6 +13491,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     protected _renderPlanValid: boolean;
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     requestRedraw(): void;
+    // @beta
+    resetMapLayer(index: number, isOverlay: boolean): void;
     get rotation(): Matrix3d;
     // @internal (undocumented)
     get sceneValid(): boolean;

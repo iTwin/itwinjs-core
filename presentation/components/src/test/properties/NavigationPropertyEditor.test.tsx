@@ -8,7 +8,6 @@ import * as React from "react";
 import sinon from "sinon";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { EditorContainer, PropertyValueRendererManager } from "@itwin/components-react";
-import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Content, KeySet, LabelDefinition, NavigationPropertyInfo } from "@itwin/presentation-common";
 import {
@@ -53,9 +52,7 @@ describe("<NavigationPropertyEditor />", () => {
   }
 
   beforeEach(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await Presentation.initialize();
   });
 
@@ -114,9 +111,7 @@ describe("<NavigationPropertyTargetEditor />", () => {
   const testRecord = createRandomPropertyRecord();
 
   beforeEach(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await Presentation.initialize();
   });
 
