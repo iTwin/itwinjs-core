@@ -33,7 +33,7 @@ interface VisibilityTreeComponentProps {
   config?: {
     modelsTree: {
       selectionMode?: SelectionMode;
-      selectionPredicate?: ModelsTreeSelectionPredicate;
+      selectionPredicate?: ModelsTreeSelectionPredicate; // eslint-disable-line deprecation/deprecation
     };
     categoriesTree: {
       allViewports?: boolean;
@@ -106,7 +106,7 @@ function useModelsTreeTransientState() {
 interface ModelsTreeComponentProps {
   iModel: IModelConnection;
   selectionMode?: SelectionMode;
-  selectionPredicate?: ModelsTreeSelectionPredicate;
+  selectionPredicate?: ModelsTreeSelectionPredicate; // eslint-disable-line deprecation/deprecation
   activeView?: Viewport;
   filteredElementIds?: Id64Array;
 }
@@ -138,9 +138,9 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
         ]}
       </Toolbar>
       <div ref={ref} className="ui-test-app-visibility-tree-content">
-        {width !== undefined && height !== undefined ? <ModelsTree
+        {width !== undefined && height !== undefined ? <ModelsTree // eslint-disable-line deprecation/deprecation
           {...props}
-          enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
+          enableElementsClassGrouping={ClassGroupingOption.YesWithCounts} // eslint-disable-line deprecation/deprecation
           filterInfo={{
             filter: filterString,
             activeMatchIndex,
@@ -195,7 +195,7 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
         ]}
       </Toolbar>
       <div ref={ref} style={{ width: "100%", height: "100%", overflow: "hidden" }}>
-        {width && height ? <CategoryTree
+        {width && height ? <CategoryTree // eslint-disable-line deprecation/deprecation
           {...props}
           filterInfo={{
             filter: filterString,

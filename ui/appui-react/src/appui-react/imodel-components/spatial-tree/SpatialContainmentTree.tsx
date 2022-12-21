@@ -25,6 +25,7 @@ export const RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset = require("./Sp
 /**
  * Properties for the [[SpatialContainmentTree]] component
  * @public
+ * @deprecated Use 'SpatialContainmentTree' from `@itwin/breakdown-trees-react` package.
  */
 export interface SpatialContainmentTreeProps {
   iModel: IModelConnection;
@@ -36,18 +37,19 @@ export interface SpatialContainmentTreeProps {
    * Should the tree group displayed element nodes by class.
    * @beta
    */
-  enableElementsClassGrouping?: ClassGroupingOption;
+  enableElementsClassGrouping?: ClassGroupingOption; // eslint-disable-line deprecation/deprecation
 }
 
 /**
  * Tree which displays and manages models or categories contained in an iModel.
  * @public
+ * @deprecated Use 'SpatialContainmentTree' from `@itwin/breakdown-trees-react` package.
  */
-export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
+export function SpatialContainmentTree(props: SpatialContainmentTreeProps) { // eslint-disable-line deprecation/deprecation
   const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     ruleset: (!props.enableElementsClassGrouping) ? RULESET_SPATIAL_BREAKDOWN : /* istanbul ignore next */ RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS,
-    appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
+    appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts), // eslint-disable-line deprecation/deprecation
     pagingSize: PAGING_SIZE,
   });
 

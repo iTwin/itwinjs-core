@@ -20,6 +20,7 @@ import { CachingElementIdsContainer } from "./Utils";
 /**
  * Visibility tree node types.
  * @beta
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export enum ModelsTreeNodeType {
   Unknown,
@@ -33,8 +34,9 @@ export enum ModelsTreeNodeType {
 /**
  * Type definition of predicate used to decide if node can be selected
  * @beta
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
-export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
+export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean; // eslint-disable-line deprecation/deprecation
 
 /**
  * Props for [[ModelsVisibilityHandler]]
@@ -86,18 +88,18 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
 
   public static getNodeType(item: TreeNodeItem, dataProvider: IPresentationTreeDataProvider) {
     if (NodeKey.isClassGroupingNodeKey(dataProvider.getNodeKey(item)))
-      return ModelsTreeNodeType.Grouping;
+      return ModelsTreeNodeType.Grouping; // eslint-disable-line deprecation/deprecation
 
     if (!item.extendedData)
-      return ModelsTreeNodeType.Unknown;
+      return ModelsTreeNodeType.Unknown; // eslint-disable-line deprecation/deprecation
 
     if (this.isSubjectNode(item))
-      return ModelsTreeNodeType.Subject;
+      return ModelsTreeNodeType.Subject; // eslint-disable-line deprecation/deprecation
     if (this.isModelNode(item))
-      return ModelsTreeNodeType.Model;
+      return ModelsTreeNodeType.Model; // eslint-disable-line deprecation/deprecation
     if (this.isCategoryNode(item))
-      return ModelsTreeNodeType.Category;
-    return ModelsTreeNodeType.Element;
+      return ModelsTreeNodeType.Category; // eslint-disable-line deprecation/deprecation
+    return ModelsTreeNodeType.Element; // eslint-disable-line deprecation/deprecation
   }
 
   public static isSubjectNode(node: TreeNodeItem) {

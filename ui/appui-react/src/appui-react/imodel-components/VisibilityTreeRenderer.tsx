@@ -67,7 +67,7 @@ export const visibilityTreeNodeCheckboxRenderer = (props: NodeCheckboxRenderProp
  */
 export const useVisibilityTreeFiltering = (
   nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>,
-  filterInfo?: VisibilityTreeFilterInfo,
+  filterInfo?: VisibilityTreeFilterInfo, // eslint-disable-line deprecation/deprecation
   onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void,
 ) => {
   const { filter, activeMatchIndex } = filterInfo ?? { filter: undefined, activeMatchIndex: undefined };

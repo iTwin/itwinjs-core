@@ -31,6 +31,7 @@ export const RULESET_CATEGORIES: Ruleset = require("./Categories.json"); // esli
 /**
  * Properties for the [[CategoryTree]] component
  * @public
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export interface CategoryTreeProps {
   /** Flag for accommodating all viewports */
@@ -46,10 +47,10 @@ export interface CategoryTreeProps {
   /** Height of the component */
   height: number;
   /**
-   * Information for tree filtering.
+   * Information for tree filtering.s
    * @alpha
    */
-  filterInfo?: VisibilityTreeFilterInfo;
+  filterInfo?: VisibilityTreeFilterInfo; // eslint-disable-line deprecation/deprecation
   /**
    * Callback invoked when tree is filtered.
    */
@@ -69,8 +70,9 @@ export interface CategoryTreeProps {
 /**
  * Tree which displays and manages categories contained in an iModel.
  * @public
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
-export function CategoryTree(props: CategoryTreeProps) {
+export function CategoryTree(props: CategoryTreeProps) { // eslint-disable-line deprecation/deprecation
   const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     ruleset: RULESET_CATEGORIES,

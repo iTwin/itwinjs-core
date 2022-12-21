@@ -47,7 +47,7 @@ export interface VisibilityTreeComponentProps {
   config?: {
     modelsTree: {
       selectionMode?: SelectionMode;
-      selectionPredicate?: ModelsTreeSelectionPredicate;
+      selectionPredicate?: ModelsTreeSelectionPredicate; // eslint-disable-line deprecation/deprecation
     };
     categoriesTree: {
       allViewports?: boolean;
@@ -62,7 +62,7 @@ export function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
 
   const modelsTreeProps = React.useMemo(() => props.config?.modelsTree ?? {
     selectionMode: SelectionMode.Extended,
-    selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element,
+    selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element, // eslint-disable-line deprecation/deprecation
   }, [props.config]);
   const categoriesTreeProps = props.config?.categoriesTree;
   const selectLabel = IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.options");
@@ -96,7 +96,7 @@ export function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
 interface ModelsTreeComponentProps {
   iModel: IModelConnection;
   selectionMode?: SelectionMode;
-  selectionPredicate?: ModelsTreeSelectionPredicate;
+  selectionPredicate?: ModelsTreeSelectionPredicate; // eslint-disable-line deprecation/deprecation
   activeView?: Viewport;
   filteredElementIds?: Id64Array;
 }
@@ -131,9 +131,9 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
         ]}
       </Toolbar>
       <div ref={divRef} className="ui-test-app-visibility-tree-content">
-        {width && height ? <ModelsTree
+        {width && height ? <ModelsTree // eslint-disable-line deprecation/deprecation
           {...props}
-          enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
+          enableElementsClassGrouping={ClassGroupingOption.YesWithCounts} // eslint-disable-line deprecation/deprecation
           filterInfo={{
             filter: filterString,
             activeMatchIndex,
@@ -189,7 +189,7 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
         ]}
       </Toolbar>
       <div ref={divRef} style={{ width: "100%", height: "100%", overflow: "hidden" }}>
-        {width && height ? <CategoryTree
+        {width && height ? <CategoryTree // eslint-disable-line deprecation/deprecation
           {...props}
           filterInfo={{
             filter: filterString,
