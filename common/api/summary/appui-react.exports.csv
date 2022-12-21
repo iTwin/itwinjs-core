@@ -115,12 +115,15 @@ alpha;CardSelectedEvent
 alpha;CardSelectedEventArgs
 alpha;Category
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
+deprecated;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
+deprecated;CategoryTreeProps
 alpha;CategoryVisibilityHandler 
 alpha;CategoryVisibilityHandlerParams
 public;ChildWindowLocationProps
 public;ChildWindowManager
 beta;ClassGroupingOption
+deprecated;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 deprecated;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 internal;clearKeyinPaletteHistory(): void
@@ -427,9 +430,13 @@ public;ModelessDialogManager
 public;ModelessDialogProps 
 public;ModelessDialogRenderer 
 public;ModelsTree(props: ModelsTreeProps): JSX.Element
+deprecated;ModelsTree(props: ModelsTreeProps): JSX.Element
 beta;ModelsTreeNodeType
+deprecated;ModelsTreeNodeType
 public;ModelsTreeProps
+deprecated;ModelsTreeProps
 beta;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
+deprecated;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
 alpha;ModelsVisibilityHandler 
 alpha;ModelsVisibilityHandlerProps
 public;MouseDownChangedEvent 
@@ -547,7 +554,9 @@ internal;showWidget(state: NineZoneState, id: TabState["id"]): NineZoneState
 public;SnapModeField: ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
+deprecated;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
 public;SpatialContainmentTreeProps
+deprecated;SpatialContainmentTreeProps
 public;SplitPane(props: SplitPaneProps): JSX.Element
 public;SplitPaneProps
 internal;SplitterPaneTarget 
@@ -808,6 +817,7 @@ alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
 alpha;VisibilityTreeFilterInfo
+deprecated;VisibilityTreeFilterInfo
 alpha;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element
 alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element
 alpha;VisibilityTreeNoFilteredDataProps

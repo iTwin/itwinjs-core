@@ -983,10 +983,10 @@ export interface Category {
     key: string;
 }
 
-// @public
+// @public @deprecated
 export function CategoryTree(props: CategoryTreeProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface CategoryTreeProps {
     activeView?: Viewport;
     allViewports?: boolean;
@@ -1066,7 +1066,7 @@ export class ChildWindowManager {
     get openChildWindows(): OpenChildWindowInfo[];
 }
 
-// @beta
+// @beta @deprecated
 export enum ClassGroupingOption {
     No = 0,
     Yes = 1,
@@ -3995,10 +3995,10 @@ export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
     render(): React_2.ReactNode;
 }
 
-// @public
+// @public @deprecated
 export function ModelsTree(props: ModelsTreeProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export enum ModelsTreeNodeType {
     // (undocumented)
     Category = 3,
@@ -4014,7 +4014,7 @@ export enum ModelsTreeNodeType {
     Unknown = 0
 }
 
-// @public
+// @public @deprecated
 export interface ModelsTreeProps {
     activeView?: Viewport;
     // @beta
@@ -4037,7 +4037,7 @@ export interface ModelsTreeProps {
     width: number;
 }
 
-// @beta
+// @beta @deprecated
 export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 
 // @alpha
@@ -5080,10 +5080,10 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     protected _viewState: ViewState;
 }
 
-// @public
+// @public @deprecated
 export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface SpatialContainmentTreeProps {
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
@@ -6897,7 +6897,7 @@ export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEv
     visibilityHandler: IVisibilityHandler | undefined;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface VisibilityTreeFilterInfo {
     // (undocumented)
     activeMatchIndex?: number;
