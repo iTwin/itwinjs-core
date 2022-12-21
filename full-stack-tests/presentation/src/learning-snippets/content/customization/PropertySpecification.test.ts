@@ -3,17 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as React from "react";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import {
-  IPropertyDataProvider, PrimitivePropertyValueRenderer, PropertyDataChangeEvent, PropertyValueRendererContext, PropertyValueRendererManager,
-  VirtualizedPropertyGridWithDataProvider,
-} from "@itwin/components-react";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { render } from "@testing-library/react";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
 
@@ -260,41 +252,6 @@ describe("Learning Snippets", () => {
           },
         }]);
         // __PUBLISH_EXTRACT_END__
-
-        try {
-          // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.Renderer.Register
-          // The custom renderer renders the property value in red
-          PropertyValueRendererManager.defaultManager.registerRenderer("my-renderer", {
-            canRender: () => true,
-            render: function myRenderer(record: PropertyRecord, ctx?: PropertyValueRendererContext) {
-              const defaultRenderer = new PrimitivePropertyValueRenderer();
-              return defaultRenderer.render(record, { ...ctx, style: { ...ctx?.style, color: "red" } });
-            },
-          });
-          // __PUBLISH_EXTRACT_END__
-
-          const dataProvider = new PresentationPropertyDataProvider({ imodel, ruleset });
-          dataProvider.keys = new KeySet([{ className: "BisCore:Subject", id: "0x1" }]);
-          const expandedDataProvider: IPropertyDataProvider = {
-            onDataChanged: new PropertyDataChangeEvent(),
-            getData: async () => {
-              const data = await dataProvider.getData();
-              data.categories.forEach((c) => c.expand = true);
-              return data;
-            },
-          };
-          const { findAllByText } = render(
-            <VirtualizedPropertyGridWithDataProvider
-              dataProvider={expandedDataProvider}
-              width={500}
-              height={1200}
-            />,
-          );
-          const renderedElements = await findAllByText("DgnV8Bridge");
-          expect(renderedElements[0].style.color).to.eq("red");
-        } finally {
-          PropertyValueRendererManager.defaultManager.unregisterRenderer("my-renderer");
-        }
       });
 
       it("uses `editor` attribute", async () => {

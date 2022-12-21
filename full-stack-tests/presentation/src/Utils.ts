@@ -3,6 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import path from "path";
+import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
+import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementAspectProps, ElementProps, LocalFileName, ModelProps } from "@itwin/core-common";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Field } from "@itwin/presentation-common";
 
 /**
@@ -60,4 +65,51 @@ export function getFieldsByLabel(rootFields: Field[], label: string): Field[] {
   };
   handleFields(rootFields);
   return foundFields;
+}
+
+export async function buildTestIModel(name: string, cb: (builder: IModelBuilder) => void): Promise<IModelConnection> {
+  const outputFile = setupOutputFileLocation(name);
+  const db = SnapshotDb.createEmpty(outputFile, { rootSubject: { name } });
+  const builder = new IModelBuilder(db);
+  try {
+    cb(builder);
+  } finally {
+    db.saveChanges("Created test IModel");
+    db.close();
+  }
+  return SnapshotConnection.openFile(outputFile);
+}
+
+function setupOutputFileLocation(fileName: string): LocalFileName {
+  const testOutputDir = path.join(__dirname, ".imodels");
+  !IModelJsFs.existsSync(testOutputDir) && IModelJsFs.mkdirSync(testOutputDir);
+
+  const outputFile = path.join(testOutputDir, `${fileName}.bim`);
+  IModelJsFs.existsSync(outputFile) && IModelJsFs.unlinkSync(outputFile);
+  return outputFile;
+}
+
+export class IModelBuilder {
+  private _iModel: IModelDb;
+
+  constructor(iModel: IModelDb) {
+    this._iModel = iModel;
+  }
+
+  public insertModel<TProps extends ModelProps>(props: TProps): Id64String {
+    return this._iModel.models.insertModel(props);
+  }
+
+  public insertElement<TProps extends ElementProps>(props: TProps): Id64String {
+    return this._iModel.elements.insertElement(props);
+  }
+
+  public insertAspect<TProps extends ElementAspectProps>(props: TProps): void {
+    this._iModel.elements.insertAspect(props);
+  }
+
+  public createCode(scopeModelId: CodeScopeProps, codeSpecName: BisCodeSpec, codeValue: string): Code {
+    const codeSpec: CodeSpec = this._iModel.codeSpecs.getByName(codeSpecName);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
