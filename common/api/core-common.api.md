@@ -63,8 +63,6 @@ import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
-import { RepositoryStatus } from '@itwin/core-bentley';
-import { RpcInterfaceStatus } from '@itwin/core-bentley';
 import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
@@ -4689,8 +4687,11 @@ export interface IModelEncryptionProps {
 
 // @public
 export class IModelError extends BentleyError {
-    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus, message: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: GetMetaDataFunction);
 }
+
+// @public
+export type IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus;
 
 // @public
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
@@ -7568,8 +7569,6 @@ export interface RepositoryLinkProps extends UrlLinkProps {
     repositoryGuid?: GuidString;
 }
 
-export { RepositoryStatus }
-
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
@@ -7816,8 +7815,6 @@ export interface RpcInterfaceEndpoints {
 
 // @internal (undocumented)
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
-
-export { RpcInterfaceStatus }
 
 // @internal
 export class RpcInvocation {

@@ -390,6 +390,7 @@ beta;IModelCoordinatesResponseProps
 public;IModelEncryptionProps
 deprecated;IModelEncryptionProps
 public;IModelError 
+public;IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus
 public;IModelNotFoundResponse 
 public;IModelProps
 internal;class IModelReadRpcInterface 
