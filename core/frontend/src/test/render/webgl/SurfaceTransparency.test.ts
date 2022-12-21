@@ -74,14 +74,14 @@ describe("Surface transparency", () => {
 
     const opaqueImage = ImageBuffer.create(new Uint8Array([255, 255, 255]), ImageBufferFormat.Rgb, 1);
     opaqueTexture = IModelApp.renderSystem.createTexture({
-      ownership: { iModel: imodel, key: imodel.transientIds.next },
+      ownership: { iModel: imodel, key: imodel.transientIds.getNext() },
       image: { source: opaqueImage, transparency: TextureTransparency.Opaque },
     })!;
     expect(opaqueTexture).not.to.be.undefined;
 
     const translucentImage = ImageBuffer.create(new Uint8Array([255, 255, 255, 127]), ImageBufferFormat.Rgba, 1);
     translucentTexture = IModelApp.renderSystem.createTexture({
-      ownership: { iModel: imodel, key: imodel.transientIds.next },
+      ownership: { iModel: imodel, key: imodel.transientIds.getNext() },
       image: { source: translucentImage, transparency: TextureTransparency.Translucent },
     })!;
     expect(translucentTexture).not.to.be.undefined;
@@ -266,7 +266,7 @@ describe("Surface transparency", () => {
     const img = ImageBuffer.create(new Uint8Array([255, 255, 255, 127]), ImageBufferFormat.Rgba, 1);
     const tx = IModelApp.renderSystem.createTexture({
       type: RenderTexture.Type.Glyph,
-      ownership: { iModel: imodel, key: imodel.transientIds.next },
+      ownership: { iModel: imodel, key: imodel.transientIds.getNext() },
       image: { source: img, transparency: TextureTransparency.Translucent },
     });
     expect(tx).not.to.be.undefined;

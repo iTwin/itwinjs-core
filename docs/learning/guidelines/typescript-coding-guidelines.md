@@ -310,6 +310,8 @@ If a public method takes no parameters and its name begins with a keyword such a
 
 If the value being returned is expensive to compute, consider using a different name to reflect this. Possible prefixes are "compute" or "calculate", etc.
 
+A getter should have no side effects, with the possible exception of a getter that computes and caches its value the first time it is called. In particular, avoid getters that return a different value each time they are called, as some code optimizers [may assume](https://github.com/angular/angular-cli/issues/12128#issuecomment-472309593) a property access always returns the same value.
+
 ## Don't export const enums
 
 Exported `const enum`s require a .d.ts file to be present when a file that consumes one is transpiled. This prevents the [--isolatedModules](https://www.typescriptlang.org/docs/handbook/compiler-options.html) option required by [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html) and are therefore forbidden. An ESLint rule enforces this.
