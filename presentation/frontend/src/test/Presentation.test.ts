@@ -13,7 +13,6 @@ import { IFavoritePropertiesStorage, NoopFavoritePropertiesStorage } from "../pr
 import { PresentationManager } from "../presentation-frontend/PresentationManager";
 import * as selection from "../presentation-frontend/selection/SelectionManager";
 import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Presentation", () => {
 
@@ -29,7 +28,7 @@ describe("Presentation", () => {
 
   beforeEach(async () => {
     await shutdownIModelApp();
-    await NoRenderApp.startup({ localization: new EmptyLocalization() });
+    await NoRenderApp.startup();
     Presentation.terminate();
   });
 
