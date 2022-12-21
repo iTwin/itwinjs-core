@@ -128,7 +128,7 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
 
-// @beta
+// @public
 export enum BriefcaseStatus {
     // (undocumented)
     BRIEFCASE_STATUS_BASE = 131072,
@@ -203,7 +203,7 @@ export class ByteStream {
     rewind(numBytes: number): boolean;
 }
 
-// @beta
+// @public
 export enum ChangeSetStatus {
     ApplyError = 90113,
     CannotMergeIntoMaster = 90136,
@@ -668,7 +668,7 @@ export interface IDisposable {
     dispose(): void;
 }
 
-// @beta
+// @public
 export enum IModelHubStatus {
     // (undocumented)
     AnotherUserPushing = 102409,
@@ -1473,7 +1473,7 @@ export enum RealityDataStatus {
     Success = 0
 }
 
-// @beta
+// @internal
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
     ChangeSetRequired = 86025,
@@ -1546,7 +1546,7 @@ export abstract class StatusCategory {
 // @alpha (undocumented)
 export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
 
-// @beta
+// @internal
 export interface StatusCodeWithMessage<ErrorCodeType> {
     // (undocumented)
     message: string;
