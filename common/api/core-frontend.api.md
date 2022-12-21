@@ -4544,6 +4544,8 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
     get castsShadows(): boolean;
     // (undocumented)
     get imageryProvider(): MapLayerImageryProvider | undefined;
+    // (undocumented)
+    resetTreeOwner(): void;
     get treeOwner(): TileTreeOwner;
 }
 
@@ -5826,6 +5828,8 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
+    get hasSuccessfullyFetchedTile(): boolean;
+    // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
     // (undocumented)
     initialize(): Promise<void>;
@@ -5848,13 +5852,15 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
     // (undocumented)
+    resetStatus(): void;
+    // (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
     // (undocumented)
-    setStatus(status: MapLayerImageryProviderStatus): void;
+    protected setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
     // (undocumented)
-    status: MapLayerImageryProviderStatus;
+    get status(): MapLayerImageryProviderStatus;
     // (undocumented)
     get tileSize(): number;
     // (undocumented)
@@ -6120,6 +6126,8 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
     readonly overlayMap: MapTileTreeReference;
+    // (undocumented)
+    resetMapLayer(index: number, isOverlay: boolean): void;
     // (undocumented)
     setView(newView: ViewState): void;
 }
@@ -11507,6 +11515,8 @@ export class Tiles implements Iterable<{
     purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
     // @internal
     reset(): void;
+    // @internal
+    resetTileTreeOwner(id: any, supplier: TileTreeSupplier): void;
     updateForScheduleScript(scriptSourceElementId: Id64String): Promise<void>;
 }
 
@@ -11642,6 +11652,8 @@ export abstract class TileTreeReference {
     protected get _isLoadingComplete(): boolean;
     // @alpha
     get planarclipMaskPriority(): number;
+    // @internal
+    resetTreeOwner(): void;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }
@@ -13458,6 +13470,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     protected _renderPlanValid: boolean;
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     requestRedraw(): void;
+    // @beta
+    resetMapLayer(index: number, isOverlay: boolean): void;
     get rotation(): Matrix3d;
     // @internal (undocumented)
     get sceneValid(): boolean;

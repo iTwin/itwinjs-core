@@ -321,6 +321,11 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
   public get treeOwner(): TileTreeOwner {
     return this.iModel.tiles.getTileTreeOwner({ settings: this._layerSettings }, imageryTreeSupplier);
   }
+
+  public override resetTreeOwner() {
+    return this.iModel.tiles.resetTileTreeOwner({ settings: this._layerSettings }, imageryTreeSupplier);
+  }
+
   public override get imageryProvider(): MapLayerImageryProvider | undefined {
     const tree = this.treeOwner.load();
     if (!tree || !(tree instanceof ImageryMapTileTree))
