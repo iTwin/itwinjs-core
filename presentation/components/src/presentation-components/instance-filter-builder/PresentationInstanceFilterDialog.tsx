@@ -21,7 +21,7 @@ interface PresentationInstanceFilterDialogProps extends Omit<PresentationInstanc
 
 /** @alpha */
 export function PresentationInstanceFilterDialog(props: PresentationInstanceFilterDialogProps) {
-  const { isOpen, onInstanceFilterApplied, onInstanceFilterClosed, filterResultCountRenderer, title, ...restProps } = props;
+  const { isOpen, onApply, onClose, filterResultCountRenderer, title, ...restProps } = props;
   const [filter, setFilter] = React.useState<PresentationInstanceFilterInfo | undefined>(() => restProps.initialFilter);
 
   const onInstanceFilterChanged = React.useCallback((filterInfo?: PresentationInstanceFilterInfo) => {
@@ -29,31 +29,42 @@ export function PresentationInstanceFilterDialog(props: PresentationInstanceFilt
   }, []);
 
   const applyButtonHandle = () => {
-    onInstanceFilterApplied(filter);
+    onApply(filter);
   };
 
-  return <Dialog isOpen={isOpen}
-    onClose={onInstanceFilterClosed}
+  return <Dialog
+    isOpen={isOpen}
+    onClose={onClose}
     closeOnEsc={false}
     preventDocumentScroll={true}
     trapFocus={true}>
-    <Dialog.Backdrop />
+    <Dialog.Backdrop
+    />
     <Dialog.Main className="presentation-instance-filter-dialog">
-      <Dialog.TitleBar className="presentation-instance-filter-title"
-        titleText={title ? title : translate("instance-filter-builder.filter")} />
+      <Dialog.TitleBar
+        className="presentation-instance-filter-title"
+        titleText={title ? title : translate("instance-filter-builder.filter")}
+      />
       <Dialog.Content className="presentation-instance-filter-content">
-        <PresentationInstanceFilterBuilder 
+        <PresentationInstanceFilterBuilder
           {...restProps}
           onInstanceFilterChanged={onInstanceFilterChanged}
         />
       </Dialog.Content>
       <div className="presentation-instance-filter-dialog-bottom-container">
-        {filterResultCountRenderer ? filterResultCountRenderer(filter) : <div />}
+        <div>{filterResultCountRenderer && filterResultCountRenderer(filter)}</div>
         <Dialog.ButtonBar className="presentation-instance-filter-button-bar">
-          <Button className="presentation-instance-filter-dialog-apply-button" styleType='high-visibility' onClick={applyButtonHandle} disabled={!filter} >
+          <Button
+            className="presentation-instance-filter-dialog-apply-button"
+            styleType='high-visibility' onClick={applyButtonHandle}
+            disabled={!filter}
+          >
             {translate("instance-filter-builder.apply")}
           </Button>
-          <Button className="presentation-instance-filter-dialog-close-button" onClick={onInstanceFilterClosed}>
+          <Button
+            className="presentation-instance-filter-dialog-close-button"
+            onClick={onClose}
+          >
             {translate("instance-filter-builder.cancel")}
           </Button>
         </Dialog.ButtonBar>

@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-.presentation-instance-filter {
-  padding: 5px;
 
-  .presentation-instance-filter-class-selector {
-    padding-bottom: 10px;
+.iui-select-button {
+  padding: 0;
+
+  .iui-tag-container {
+    padding-left: 12px;
   }
 }

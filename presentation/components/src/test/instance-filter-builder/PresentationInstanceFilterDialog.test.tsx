@@ -5,7 +5,7 @@
 import * as React from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { getPropertyFilterOperatorLabel, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator, UiComponents } from "@itwin/components-react";
+import { getPropertyFilterOperatorLabel, PropertyFilterRuleOperator, UiComponents } from "@itwin/components-react";
 import { BeEvent } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
@@ -88,8 +88,8 @@ describe("PresentationInstanceFilterDialog", () => {
     const { container, getByText, getByDisplayValue } = render(<PresentationInstanceFilterDialog
       imodel={imodelMock.object}
       descriptor={descriptor}
-      onInstanceFilterClosed={() => { }}
-      onInstanceFilterApplied={spy}
+      onClose={() => { }}
+      onApply={spy}
       isOpen={true} />);
 
     const applyButton = container.querySelector<HTMLInputElement>(".presentation-instance-filter-button-bar .iui-high-visibility:disabled");
@@ -112,8 +112,7 @@ describe("PresentationInstanceFilterDialog", () => {
     await waitFor(() => getByText(getPropertyFilterOperatorLabel(PropertyFilterRuleOperator.IsNotNull)));
 
     expect(applyButton?.disabled).to.be.false;
-    if (applyButton)
-      fireEvent.click(applyButton);
+    fireEvent.click(applyButton!);
     expect(spy).to.be.calledOnceWith({
       filter: {
         field: propertiesField,
@@ -129,8 +128,8 @@ describe("PresentationInstanceFilterDialog", () => {
     const { container } = render(<PresentationInstanceFilterDialog
       imodel={imodelMock.object}
       descriptor={descriptor}
-      onInstanceFilterClosed={() => { }}
-      onInstanceFilterApplied={spy}
+      onClose={() => { }}
+      onApply={spy}
       isOpen={true}
       initialFilter={initialFilter} />);
 
@@ -138,8 +137,7 @@ describe("PresentationInstanceFilterDialog", () => {
     expect(applyButton).to.not.be.null;
     expect(applyButton?.disabled).to.be.false;
 
-    if (applyButton)
-      fireEvent.click(applyButton);
+    fireEvent.click(applyButton!);
     expect(spy).to.be.calledOnceWith(initialFilter);
   });
 
@@ -147,12 +145,12 @@ describe("PresentationInstanceFilterDialog", () => {
     const spy = sinon.spy();
     const title = "custom title";
 
-    const { getByText } = render(<PresentationInstanceFilterDialog
+    const { queryByText } = render(<PresentationInstanceFilterDialog
       imodel={imodelMock.object}
       descriptor={descriptor}
-      onInstanceFilterClosed={() => { }}
+      onClose={() => { }}
       title={<div>{title}</div>}
-      onInstanceFilterApplied={spy}
+      onApply={spy}
       isOpen={true}
       initialFilter={initialFilter} />);
 
@@ -164,12 +162,12 @@ describe("PresentationInstanceFilterDialog", () => {
     const spy = sinon.spy();
     const count = "custom count";
 
-    const { getByText } = render(<PresentationInstanceFilterDialog
+    const { queryByText } = render(<PresentationInstanceFilterDialog
       imodel={imodelMock.object}
       descriptor={descriptor}
-      onInstanceFilterClosed={() => { }}
+      onClose={() => { }}
       filterResultCountRenderer={() => { return <div>{count}</div>; }}
-      onInstanceFilterApplied={spy}
+      onApply={spy}
       isOpen={true}
       initialFilter={initialFilter} />);
 

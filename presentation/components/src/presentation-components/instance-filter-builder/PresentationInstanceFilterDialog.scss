@@ -15,10 +15,10 @@
    max-height: 80vh;
    overflow: hidden;
 
-   .presentation-property-filter-builder {
-    overflow: scroll;
-    max-height: 70vh;
-  }
+    .presentation-property-filter-builder {
+      overflow: scroll;
+      max-height: 70vh;
+    }
   }
 
   .presentation-instance-filter-dialog-bottom-container{
@@ -26,10 +26,10 @@
     grid-template-columns: 50% 50%;
     align-items: center;
     border-style: solid none none none;
+    padding-top: 6px;
     @include themed {
       border-color: t(iui-color-background-border);
     }
-    padding-top: 6px;
 
     .presentation-instance-filter-button-bar {
       margin-top: 0;
