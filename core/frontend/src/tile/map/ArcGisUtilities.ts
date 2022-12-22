@@ -21,7 +21,8 @@ export enum ArcGisErrorCode {
 }
 
 /** Class representing an ArcGIS service metadata.
- * @internal */
+ * @internal
+ * */
 export interface ArcGISServiceMetadata {
   content: any;                   // JSON content from the service
   accessTokenRequired: boolean;   // Indicates if an access token is required to access the service
@@ -228,32 +229,21 @@ export class ArcGisUtilities {
 
   /** Read a response from ArcGIS server and check for error code in the response.
   */
-  public static async checkForResponseErrorCode(response: Response, request?: URL, reqOptions?: RequestInit) {
-    let tmpResponse = response;
-    if (response.headers) {
-      if (request && response.headers.get("content-type")?.toLowerCase().includes("htm")) {
-        // We got a response in html we don't really want to parse, try get a JSON version of it.
+  public static async checkForResponseErrorCode(response: Response) {
+    const tmpResponse = response;
+    if (response.headers && tmpResponse.headers.get("content-type")?.toLowerCase().includes("json")) {
 
-        // Clear the existing search params and add only f=json,
-        //  from there lets check if get an error.
-        const tmpRequest = new URL(request);
-        tmpRequest.search = "";
-        tmpRequest.searchParams.append("f","json");
-        tmpResponse = await fetch(tmpRequest.toString(), reqOptions);
-      }
-
-      if (tmpResponse.headers.get("content-type")?.toLowerCase().includes("json")) {
-        try {
+      try {
         // Note:
         // Since response stream can only be read once (i.e. calls to .json() method)
         // we have to clone the response object in order to check for potential error code,
         // but still keep the response stream as unread.
-          const clonedResponse = tmpResponse.clone();
-          const json = await clonedResponse.json();
-          if (json?.error?.code !== undefined)
-            return json?.error?.code as number;
-        } catch { }
-      }
+        const clonedResponse = tmpResponse.clone();
+        const json = await clonedResponse.json();
+        if (json?.error?.code !== undefined)
+          return json?.error?.code as number;
+      } catch { }
+
     }
     return undefined;
   }

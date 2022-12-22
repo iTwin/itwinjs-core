@@ -15,6 +15,9 @@ import {
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Range2d } from "@itwin/core-geometry";
 import { isArray } from "lodash";
+import { Logger } from "@itwin/core-bentley";
+
+const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
 
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
@@ -63,6 +66,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       }
       return await this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
+      Logger.logError(loggerCategory, `Error occurred when loading tile(${row},${column},${zoomLevel}) : ${error}`);
       return undefined;
     }
   }

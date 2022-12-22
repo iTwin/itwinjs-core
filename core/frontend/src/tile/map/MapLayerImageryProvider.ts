@@ -18,6 +18,7 @@ import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRec
 const tileImageSize = 256, untiledImageSize = 256;
 const earthRadius = 6378137;
 const doDebugToolTips = false;
+const loggerCategory =  "MapLayerImageryProvider.MapLayerImageryProvider";
 
 /** @beta */
 export enum MapLayerImageryProviderStatus {
@@ -152,9 +153,9 @@ export abstract class MapLayerImageryProvider {
     }
   }
 
-  /** Method called whenever the status changes, giving the opportunity to sub-classes
-   * to make custom behavior
-   *  @protected */
+  /** Method called whenever the status changes, giving the opportunity to sub-classes to have a custom behavior.
+   *  @internal
+   * */
   protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus){
 
   }

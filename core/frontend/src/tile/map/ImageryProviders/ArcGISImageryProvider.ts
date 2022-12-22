@@ -22,15 +22,19 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
   protected _accessClient: MapLayerAccessClient|undefined;
   protected _lastAccessToken: MapLayerAccessToken|undefined;
+
+  // Flag indicating if access token should be added to request.
+  // We assume a service to require access token for the entire viewing session.
   protected _accessTokenRequired = false;
-  protected _invalidOAuthEndpoint = false;
 
   constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean) {
     super(settings, usesCachedTiles);
     this._accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(settings.formatId);
   }
 
-  /** @internal */
+  /** Updates the accessClient token state whenever the status of the provider change.
+   *  @internal
+   * */
   protected override onStatusUpdated(status: MapLayerImageryProviderStatus) {
     if (status === MapLayerImageryProviderStatus.RequireAuth) {
 
@@ -44,7 +48,10 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     }
   }
 
-  /** @internal */
+  /**
+   * Fetch an ArcGIS service metadata, and returns its JSON representation.
+   * This wrapper maintains token state and should be used instead of the the ArcGisUtilities version.
+  */
   protected async getServiceJson() {
     let metadata: ArcGISServiceMetadata|undefined;
     try {
@@ -88,16 +95,20 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
     let response = await  fetch(urlObj.toString(), options);
 
-    if (response.status === 400 && this._lastAccessToken) {
+    if ((this._lastAccessToken && response.status === 400)
+       || response.headers.get("content-type")?.toLowerCase().includes("htm")) {
       // For some reasons when we make a request with the fetch() api and there is a token error
       // we receive a status 400 instead of proper json response. (i.e doing the same request in the browser gives a different response)
-      // In that case, we fall back to the general service request so we get a proper JSON response with error code.
+      // For some other request, we also seen error message  in html.
+      // When it occurs, we fall back to root service request so we get a proper JSON response with error code.
       const tmpUrl = new URL(this._settings.url);
-      tmpUrl.searchParams.append("token", this._lastAccessToken.token);
-      response = await  fetch(urlObj.toString(), options);
+      if (this._lastAccessToken && this._accessTokenRequired)
+        tmpUrl.searchParams.append("token", this._lastAccessToken.token);
+      tmpUrl.searchParams.append("f","json");
+      response = await  fetch(tmpUrl.toString(), options);
     }
 
-    errorCode = await ArcGisUtilities.checkForResponseErrorCode(response.clone(), new URL(urlObj), options);
+    errorCode = await ArcGisUtilities.checkForResponseErrorCode(response.clone());
 
     if (errorCode !== undefined &&
        (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.InvalidToken) ) {
