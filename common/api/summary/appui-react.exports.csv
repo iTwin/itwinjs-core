@@ -114,12 +114,15 @@ alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
 alpha;Category
+deprecated;Category
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
 deprecated;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
 deprecated;CategoryTreeProps
 alpha;CategoryVisibilityHandler 
+deprecated;CategoryVisibilityHandler 
 alpha;CategoryVisibilityHandlerParams
+deprecated;CategoryVisibilityHandlerParams
 public;ChildWindowLocationProps
 public;ChildWindowManager
 beta;ClassGroupingOption
@@ -185,6 +188,7 @@ public;createAction
 internal;createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef
 deprecated;createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef
 alpha;createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element
+deprecated;createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element
 public;CubeNavigationAidControl 
 public;CursorDirection
 public;CursorDirectionParts
@@ -301,6 +305,7 @@ public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageI
 deprecated;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
 internal;getBadgeClassName(badgeType: BadgeType | undefined): "uifw-badge-new" | "uifw-badge-tp" | undefined
 alpha;getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise
+deprecated;getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise
 internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps
 beta;getFeatureOverrideSyncEventIds(): string[]
 internal;getFirstItem: (groupItemDef: GroupItemDef) => AnyItemDef | undefined
@@ -368,6 +373,7 @@ public;ItemList
 public;ItemMap 
 public;ItemProps 
 alpha;IVisibilityHandler 
+deprecated;IVisibilityHandler 
 public;KeyboardShortcut 
 public;KeyboardShortcutContainer
 public;KeyboardShortcutManager
@@ -438,6 +444,7 @@ deprecated;ModelsTreeProps
 beta;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
 deprecated;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
 alpha;ModelsVisibilityHandler 
+deprecated;ModelsVisibilityHandler 
 alpha;ModelsVisibilityHandlerProps
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
@@ -677,6 +684,7 @@ deprecated;ToastMessage(props: ToastMessageProps): JSX.Element
 public;ToastMessageProps
 deprecated;ToastMessageProps
 alpha;toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise
+deprecated;toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise
 public;ToolActivatedEvent 
 public;ToolActivatedEventArgs
 public;ToolAssistanceChangedEvent 
@@ -793,7 +801,9 @@ public;useUiStateStorageHandler(): UiStateStorage
 internal;useUiVisibility(): boolean
 internal;useUpdateNineZoneSize(frontstageDef: FrontstageDef): void
 alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider
+deprecated;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider
 alpha;useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element
+deprecated;useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element
 internal;useWidgetDef(): WidgetDef | undefined
 alpha;useWidgetDirection(): "horizontal" | "vertical"
 alpha;ValidationTextbox 
@@ -813,15 +823,23 @@ public;ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element
 public;ViewToolWidgetComposerProps
 public;ViewUtilities
 alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
+deprecated;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
 alpha;VisibilityStatus
+deprecated;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
+deprecated;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
+deprecated;VisibilityTreeEventHandlerParams 
 alpha;VisibilityTreeFilterInfo
 deprecated;VisibilityTreeFilterInfo
 alpha;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element
+deprecated;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element
 alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element
+deprecated;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element
 alpha;VisibilityTreeNoFilteredDataProps
+deprecated;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
+deprecated;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
 public;Widget 
 deprecated;Widget 
 public;WIDGET_OPACITY_DEFAULT = 0.9
