@@ -550,6 +550,9 @@ export interface PresentationInstanceFilterConditionGroup {
 }
 
 // @alpha (undocumented)
+export function PresentationInstanceFilterDialog(props: PresentationInstanceFilterDialogProps): JSX.Element;
+
+// @alpha (undocumented)
 export interface PresentationInstanceFilterInfo {
     // (undocumented)
     filter: PresentationInstanceFilter;
