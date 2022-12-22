@@ -83,6 +83,11 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     return imageryTreeRef?.imageryProvider;
   }
 
+  public resetMapLayer(index: number, isOverlay: boolean) {
+    const imageryTreeRef = isOverlay ? this.overlayMap.getLayerImageryTreeRef(index) : this.backgroundMap.getLayerImageryTreeRef(index);
+    imageryTreeRef?.resetTreeOwner();
+  }
+
   /** @internal */
   public mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined {
     let mapLayer;
