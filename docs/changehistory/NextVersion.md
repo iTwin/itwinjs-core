@@ -13,6 +13,7 @@ Table of contents:
 - [Deprecations](#deprecations)
   - [@itwin/core-bentley](#itwincore-bentley)
   - [@itwin/core-frontend](#itwincore-frontend)
+  - [@itwin/appui-react](#itwinappui-react)
 
 ## Electron 22 support
 
@@ -55,3 +56,9 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 ### @itwin/core-frontend
 
 [ScreenViewport.setEventController]($frontend) was only ever intended to be used by [ViewManager]($frontend). In the unlikely event that you are using it for some (probably misguided) purpose, it will continue to behave as before, but it will be removed in a future major version.
+
+### @itwin/appui-react
+
+[ModelsTree]($appui-react) and [CategoryTree]($appui-react) were moved to [@itwin/tree-widget-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/tree-widget) package and deprecated in `@itwin/appui-react` packages. They will be removed from `@itwin/appui-react` in future major version.
+
+[SpatialContainmentTree]($appui-react) were deprecated in favor of `SpatialContainmentTree` from [@itwin/breakdown-trees-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/breakdown-trees) package. [SpatialContainmentTree]($appui-react) will be removed in future major version.
