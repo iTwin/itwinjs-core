@@ -575,7 +575,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
-      '@bentley/imodeljs-native': 2.19.45
+      '@bentley/imodeljs-native': 2.19.46
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
@@ -626,7 +626,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/imodeljs-native': 2.19.45
+      '@bentley/imodeljs-native': 2.19.46
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       deep-assign: 2.0.0
       form-data: 2.5.1
@@ -9711,8 +9711,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/2.19.45:
-    resolution: {integrity: sha512-U/8GzZK7Nscu6dBgwrEbPQd1zb4UK/8Z7sJklAkSJ0B/poACM8tZsBtWN/fMfqjZ1QivDYEQPJJrtky16yPBaQ==}
+  /@bentley/imodeljs-native/2.19.46:
+    resolution: {integrity: sha512-2KB0c+/Fo0N/KJv/+gWAqffMJya6nD/C2GJ2yoxLxpDKo/hQH+C+XtD6rOPQ9olVBC+ohyVO1u0sJxbPr0u4jA==}
     requiresBuild: true
     dev: false
 
@@ -22075,7 +22075,7 @@ packages:
   /puppeteer/5.3.1:
     resolution: {integrity: sha512-YTM1RaBeYrj6n7IlRXRYLqJHF+GM7tasbvrNFx6w1S16G76NrPq7oYFKLDO+BQsXNtS8kW2GxWCXjIMPvfDyaQ==}
     engines: {node: '>=10.18.1'}
-    deprecated: Version no longer supported. Upgrade to @latest
+    deprecated: < 18.1.0 is no longer supported
     requiresBuild: true
     dependencies:
       debug: 4.3.4
