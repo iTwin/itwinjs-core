@@ -20,9 +20,7 @@ describe("PresentationInstanceFilterProperty", () => {
   const schemaName = "TestSchema";
 
   before(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await UiComponents.initialize(new EmptyLocalization());
     await Presentation.initialize();
     Element.prototype.scrollIntoView = sinon.stub();

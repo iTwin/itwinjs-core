@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { RequestBasicCredentials } from "../../../request/Request";
-import { ImageMapLayerSettings, MapLayerProps, ServerError } from "@itwin/core-common";
+import { EmptyLocalization, ImageMapLayerSettings, MapLayerProps, ServerError } from "@itwin/core-common";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
@@ -275,7 +275,7 @@ describe("WmsMapLayerImageryProvider", () => {
 describe("MapLayerImageryProvider with IModelApp", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
   });
 
   afterEach(async () => {

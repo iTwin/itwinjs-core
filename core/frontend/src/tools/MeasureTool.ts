@@ -390,7 +390,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       return;
 
     if (undefined === this._snapGeomId)
-      this._snapGeomId = this.iModel.transientIds.next;
+      this._snapGeomId = this.iModel.transientIds.getNext();
 
     const builderSnapPts = context.createGraphicBuilder(GraphicType.WorldOverlay, undefined, this._snapGeomId);
     const colorAccPts = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
