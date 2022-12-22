@@ -42,12 +42,10 @@ export function PresentationInstanceFilterDialog(props: PresentationInstanceFilt
       <Dialog.TitleBar className="presentation-instance-filter-title"
         titleText={title ? title : translate("instance-filter-builder.filter")} />
       <Dialog.Content className="presentation-instance-filter-content">
-        <PresentationInstanceFilterBuilder imodel={restProps.imodel}
-          descriptor={restProps.descriptor}
+        <PresentationInstanceFilterBuilder 
+          {...restProps}
           onInstanceFilterChanged={onInstanceFilterChanged}
-          initialFilter={restProps.initialFilter}
-          enableClassFilteringByProperties={restProps.enableClassFilteringByProperties}
-          ruleGroupDepthLimit={restProps.ruleGroupDepthLimit} />
+        />
       </Dialog.Content>
       <div className="presentation-instance-filter-dialog-bottom-container">
         {filterResultCountRenderer ? filterResultCountRenderer(filter) : <div />}
