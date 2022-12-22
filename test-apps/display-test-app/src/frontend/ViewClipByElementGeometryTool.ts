@@ -165,7 +165,7 @@ export class ViewClipByElementGeometryTool extends ViewClipTool {
         // ###TODO cloneOffset should return IndexedPolyface, not Polyface?
         const offset = settings.offset;
         if (offset)
-          polyfaces = polyfaces.map((pf) => PolyfaceQuery.cloneOffset(pf, offset) as IndexedPolyface);
+          polyfaces = polyfaces.map((pf) => PolyfaceQuery.cloneOffset(pf, offset));
 
         // Convert to convex hulls unless otherwise specified.
         if (decomposer)
