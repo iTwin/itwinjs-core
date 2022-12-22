@@ -9,6 +9,7 @@
 
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
@@ -708,7 +709,7 @@ export class HalfEdge implements HalfEdgeUserData {
     return s;
   }
 
-  /** Return the [id, [x,y]] of a node.  Useful for collector methods. */
+  /** Return the [id, [x,y],z] of a node.  Useful for collector methods. */
   public static nodeToIdXYZString(node: HalfEdge): string {
     return `[${node.id.toString()}: ${node.x},${node.y},${node.z}]`;
   }
@@ -890,6 +891,18 @@ export class HalfEdge implements HalfEdgeUserData {
 
   /** Returns Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
   public static testMateMaskExterior(node: HalfEdge) { return node.edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR); }
+
+  /** Returns radians between this edge and its face predecessor edge, using all three coordinates x,y,z and given normal to resolve sweep direction.
+   *   * The returned angle is positive, i.e. may be larger than PI radians.
+  */
+  public static sectorSweepRadiansXYZ(node: HalfEdge, normal: Vector3d): number {
+    const nodeB = node.faceSuccessor;
+    const nodeC = node.facePredecessor;
+    return Angle.orientedRadiansBetweenVectorsXYZ(
+      nodeB.x - node.x, nodeB.y - node.y, nodeB.z - node.z,
+      nodeC.x - node.x, nodeC.y - node.y, nodeC.z - node.z,
+      normal.x, normal.y, normal.z, true);
+  }
 
   /** Returns Returns true if the face has positive area in xy parts. */
   public static testFacePositiveAreaXY(node: HalfEdge) {

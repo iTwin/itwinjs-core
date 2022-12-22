@@ -482,6 +482,41 @@ export class Angle implements BeJSONFunctions {
     return Math.atan2(Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz), uDotV);
   }
   /**
+   * * Returns the angle between two vectors, with the vectors given as xyz components, and an up vector to resolve angle to a full 2PI range.
+   * * The returned angle is (-PI < radians <= PI) or (0 <= radians < 2 * PI)
+   * * The angle is in the plane of the U and V vectors.
+   * * The upVector determines a positive side of the plane but need not be strictly perpendicular to the plane.
+   *
+   * @param ux x component of vector u
+   * @param uy y component of vector u
+   * @param uz z component of vector u
+   * @param vx x component of vector v
+   * @param vy y component of vector v
+   * @param vz z component of vector v
+   * @param upVectorX x component of vector to positive side of plane.
+   * @param upVectorY y component of vector to positive side of plane.
+   * @param upVectorZ z component of vector to positive side of plane.
+   * @param adjustToAllPositive if true, return strictly non-negative sweep (0 <= radians < 2*PI).  If negative, return signed (-PI < radians <= PI)
+   */
+  public static orientedRadiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
+    upVectorX: number, upVectorY: number, upVectorZ: number,
+    adjustToPositive: boolean = false): number {
+    const uDotV = ux * vx + uy * vy + uz * vz;
+    const wx = uy * vz - uz * vy;
+    const wy = uz * vx - ux * vz;
+    const wz = ux * vy - uy * vx;
+    const upDotW = upVectorX * wx + upVectorY * wy + upVectorZ * wz;
+    const crossMagnitude = Geometry.hypotenuseXYZ(wx, wy, wz);
+    if (adjustToPositive && upDotW < 0.0) {
+      // The turn is greater than 180 degrees.  Take a peculiarly oriented atan2 to get the excess-180 part as addition to PI.
+      // This gives the smoothest numerical transition passing PI.
+      return Math.PI + Math.atan2(crossMagnitude, -uDotV);
+    } else {
+      return Math.atan2(crossMagnitude, uDotV);
+    }
+  }
+
+  /**
    * Add a multiple of a full circle angle (360 degrees, 2PI) in place.
    * @param multiple multiplier factor
    */

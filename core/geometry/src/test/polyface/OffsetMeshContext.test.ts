@@ -81,7 +81,7 @@ describe("OffsetMeshContext", () => {
           // upward cone
           builder.addTriangleFan(apex, strokes, false);
           const polyface = builder.claimPolyface();
-          console.log({ height, numEdge });
+          // console.log({ height, numEdge });
           x0 = testOffsets(ck, allGeometry, polyface, [0.10, -0.10], signs, x0, globalSeparateFaceEdgeAndVertexOutputs);
         }
       }
@@ -206,7 +206,10 @@ describe("OffsetMeshContext", () => {
           (x: number, y: number, _z: number) => {
             return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, 0.0, 8.0);
           });
+      if (densityMultiplier < 1)
+        OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
       x0 = testOffsets(ck, allGeometry, mesh, [0.10], [1.0], x0, globalSeparateFaceEdgeAndVertexOutputs);
+      OffsetMeshContext.stringDebugFunction = undefined;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetDTM");
     expect(ck.getNumErrors()).equals(0);

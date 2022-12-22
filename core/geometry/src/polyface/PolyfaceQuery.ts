@@ -1443,7 +1443,7 @@ export class PolyfaceQuery {
    */
   public static cloneOffset(source: IndexedPolyface,
     signedOffsetDistance: number,
-    offsetOptions: OffsetMeshOptions = OffsetMeshOptions.create()): Polyface {
+    offsetOptions: OffsetMeshOptions = OffsetMeshOptions.create()): IndexedPolyface {
     const strokeOptions = StrokeOptions.createForFacets();
     const offsetBuilder = PolyfaceBuilder.create(strokeOptions);
     OffsetMeshContext.buildOffsetMeshWithEdgeChamfers(source, offsetBuilder, signedOffsetDistance, offsetOptions);

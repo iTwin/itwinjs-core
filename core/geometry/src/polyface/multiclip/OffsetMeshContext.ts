@@ -38,25 +38,30 @@ class AverageNormalData {
     this.numActiveSectors = 0;
     this.numInactiveSectorsSectors = 0; // exterior and sling.
     this.averageNormal = Vector3d.create();
+    this.radiansSum = 0.0;
     this.maxDeviationRadiansFromAverage = 0.0;
   }
   public clear() {
     this.numActiveSectors = 0;
     this.numInactiveSectorsSectors = 0; // exterior and sling.
     this.averageNormal.setZero();
+    this.radiansSum = 0.0;
     this.maxDeviationRadiansFromAverage = 0.0;
   }
   public numActiveSectors: number;
   public numInactiveSectorsSectors: number;
   public averageNormal: Vector3d;
   public maxDeviationRadiansFromAverage: number;
-  /** Add a normal to the evolving sum */
-  public accumulateNormal(normal: Vector3d, isActive: boolean) {
-    if (isActive) {
-      this.averageNormal.addInPlace(normal);
-      this.numActiveSectors++;
-    } else {
+  public radiansSum;
+  /** Add a normal to the evolving sum, scaled by radians in the corner */
+  public accumulateNormal(node: HalfEdge, normal: Vector3d, inactiveMask: HalfEdgeMask) {
+    if (node.isMaskSet(inactiveMask)) {
       this.numInactiveSectorsSectors++;
+    } else {
+      const sectorSweepRadians = HalfEdge.sectorSweepRadiansXYZ(node, normal);
+      this.averageNormal.addScaledInPlace(normal, sectorSweepRadians);
+      this.radiansSum += sectorSweepRadians;
+      this.numActiveSectors++;
     }
   }
   /** normalize the accumulated normals. */
@@ -165,6 +170,15 @@ export class SectorOffsetProperties {
       if (distance !== undefined)
         props.setOffsetPointAtDistanceAtHalfEdge(halfEdge, distance);
     }
+  }
+  // Look through the half edge and its vertex successor to properties.  Get the two normals. Return the angle sweeping from one to the next
+  public static sweepRadiansAroundNormal(nodeA: HalfEdge, upVector: Vector3d): number | undefined {
+    const propsA = nodeA.edgeTag as SectorOffsetProperties;
+    const propsB = nodeA.vertexSuccessor.edgeTag as SectorOffsetProperties;
+    if (propsA !== undefined && propsB !== undefined) {
+      return propsA.normal.planarRadiansTo(propsB.normal, upVector);
+    }
+    return undefined;
   }
 
   // Look through the half edge to its properties.  return (if possible) the coordinates
@@ -563,7 +577,7 @@ export class OffsetMeshContext {
     vertexSeed.sumAroundVertex((node: HalfEdge) => {
       const sectorData = node.edgeTag as SectorOffsetProperties;
       if (sectorData)
-        data.accumulateNormal(sectorData.normal, !node.isMaskSet(inactiveNodeMask));
+        data.accumulateNormal(node, sectorData.normal, inactiveNodeMask);
       return 0.0;
     }
     );
@@ -585,18 +599,23 @@ export class OffsetMeshContext {
     data: AverageNormalData,
     distance: number): boolean {
     const maxDeviationRadians = this.computeAverageNormalAndMaxDeviationAroundVertex(vertexSeed, data);
-    if (maxDeviationRadians === undefined || maxDeviationRadians > maxAllowedDeviationRadians)
-      return false;
-    vertexSeed.sumAroundVertex((node: HalfEdge) => {
-      SectorOffsetProperties.setNormalAtHalfEdge(node, data.averageNormal, distance);
-      return 0;
-    });
-    return true;
+    if (OffsetMeshContext.stringDebugFunction) {
+      OffsetMeshContext.stringDebugFunction(`XYZ ${HalfEdge.nodeToIdXYZString(vertexSeed)} Average Normal ${data.averageNormal.toJSON()}`);
+      OffsetMeshContext.stringDebugFunction(`           angle ratio ${data.radiansSum / (2 * Math.PI)}   maxDeviation ${data.maxDeviationRadiansFromAverage}`);
+    }
+    if (maxDeviationRadians !== undefined && maxDeviationRadians <= maxAllowedDeviationRadians) {
+      vertexSeed.sumAroundVertex((node: HalfEdge) => {
+        SectorOffsetProperties.setNormalAtHalfEdge(node, data.averageNormal, distance);
+        return 0;
+      });
+      return true;
+    }
+    return false;
   }
 
   /** Search around a vertex for a sector which has a different normal from its vertexPredecessor.
- * * The seed will be the first candidate considered
-*/
+   * * The seed will be the first candidate considered
+  */
   private markBreakEdgesAndSaveAverageNormalsAroundVertex(vertexSeed: HalfEdge) {
     vertexSeed.clearMaskAroundVertex(this._breakMaskA);
     vertexSeed.clearMaskAroundVertex(this._breakMaskB);
@@ -921,7 +940,7 @@ export class OffsetMeshContext {
         vertexSeed.sumAroundVertex(
           (node: HalfEdge) => { OffsetMeshContext.stringDebugFunction!(this.inspectMasks(node, false, true)); return 0; });
       }
-      // Take care of the easiest vertices directly . . .
+      // Take care of the easiest vertices directly . . . note that this returns from the lambda, not computeOffsetFacetIntersections
       if (this.assignOffsetByAverageNormalAroundVertex(vertexSeed, maxAllowedNormalDeviationRadians, averageNormalData, distance))
         return true;
 
