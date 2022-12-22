@@ -11,7 +11,6 @@ import { BackstageItemState, CommandLaunchBackstageItem, FrontstageManager, Sync
 import TestUtils, { userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
@@ -22,7 +21,7 @@ describe("Backstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup();
 
     await FrontstageManager.setActiveFrontstageDef(undefined);
   });
@@ -83,7 +82,7 @@ describe("Backstage", () => {
       const commandHandler = () => { };
       render(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />);
 
-      expect(screen.getByRole("menuitem", {name: "UiFramework:tests.label"})).to.exist;
+      expect(screen.getByRole("menuitem", {name: "tests.label"})).to.exist;
     });
   });
 });

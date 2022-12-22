@@ -33,8 +33,11 @@ export interface UnsetRulesetVariableParams extends CommonIpcParams {
 export interface UpdateHierarchyStateParams<TNodeKey> extends CommonIpcParams {
   rulesetId: string;
   imodelKey: string;
-  changeType: "nodesExpanded" | "nodesCollapsed";
-  nodeKeys: Array<TNodeKey>;
+  stateChanges: Array<{
+    nodeKey: TNodeKey | undefined;
+    isExpanded?: boolean;
+    instanceFilters?: string[];
+  }>;
 }
 
 /** @internal */

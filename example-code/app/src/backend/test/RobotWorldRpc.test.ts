@@ -8,7 +8,7 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { Angle, Point3d } from "@itwin/core-geometry";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, GeometricElement3dProps, IModel, IModelReadRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, EmptyLocalization, GeometricElement3dProps, IModel, IModelReadRpcInterface,
   RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager,
 } from "@itwin/core-common";
 import { BriefcaseConnection, NullRenderSystem } from "@itwin/core-frontend";
@@ -48,7 +48,12 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       await setUpTest();  // tricky: do this after simulateBackendDeployment, as that function has the side effect of initializing IModelHost
 
-      await ElectronApp.startup({ iModelApp: { renderSys: new NullRenderSystem() } });
+      await ElectronApp.startup({
+        iModelApp: {
+          renderSys: new NullRenderSystem(),
+          localization: new EmptyLocalization(),
+        },
+      });
 
       // expose interfaces using a direct call mechanism
       TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);// eslint-disable-line deprecation/deprecation
@@ -133,6 +138,11 @@ export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefiniti
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeFrontendForElectron
 
 export async function initializeElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
-  await ElectronApp.startup({ iModelApp: { rpcInterfaces } });
+  await ElectronApp.startup({
+    iModelApp: {
+      rpcInterfaces,
+      localization: new EmptyLocalization(),
+    },
+  });
 }
 // __PUBLISH_EXTRACT_END__

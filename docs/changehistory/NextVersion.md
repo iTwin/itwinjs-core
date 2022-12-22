@@ -9,6 +9,7 @@ Table of contents:
 - [Display system](#display-system)
   - [Eye-dome lighting of Point Clouds](#eye-dome-lighting-of-point-clouds)
   - [Smooth viewport resizing](#smooth-viewport-resizing)
+  - [Pickable view overlays](#pickable-view-overlays)
 - [Deprecations](#deprecations)
   - [@itwin/core-bentley](#itwincore-bentley)
   - [@itwin/core-frontend](#itwincore-frontend)
@@ -39,11 +40,17 @@ To apply eye-dome lighting to a point cloud, you must apply a [RealityModelDispl
 
 Previously, when a [Viewport]($frontend)'s canvas was resized there would be a delay of up to one second during which the viewport's contents would appear stretched or squished, before they were redrawn to match the new canvas dimensions. This was due to the unavailability of [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) in some browsers. Now that `ResizeObserver` is supported by all major browsers, we are able to use it to make the contents of the viewport update smoothly during a resize operation.
 
+### Pickable view overlays
+
+A bug preventing users from interacting with [pickable decorations](../learning/frontend/ViewDecorations.md#pickable-view-graphic-decorations) defined as [GraphicType.ViewOverlay]($frontend) has been fixed.
+
 ## Deprecations
 
 ### @itwin/core-bentley
 
 [ByteStream]($bentley)'s `next` property getters like [ByteStream.nextUint32]($bentley) and [ByteStream.nextFloat64]($bentley) have been deprecated and replaced with corresponding `read` methods like [ByteStream.readUint32]($bentley) and [ByteStream.readFloat64]($bentley). The property getters have the side effect of incrementing the stream's current read position, which can result in surprising behavior and may [trip up code optimizers](https://github.com/angular/angular-cli/issues/12128#issuecomment-472309593) that assume property access is free of side effects.
+
+Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is called. Code optimizers like [Angular](https://github.com/angular/angular-cli/issues/12128#issuecomment-472309593)'s may elide repeated calls to `next` assuming it will return the same value each time. Prefer to use the new [TransientIdSequence.getNext]($bentley) method instead.
 
 ### @itwin/core-frontend
 
