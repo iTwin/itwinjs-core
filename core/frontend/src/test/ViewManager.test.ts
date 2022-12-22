@@ -9,13 +9,13 @@ import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
 import { openBlankViewport } from "./openBlankViewport";
 import { expectColors } from "./ExpectColors";
-import { ColorDef } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization } from "@itwin/core-common";
 
 describe("ViewManager", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection("view-manager-test");
   });
 
