@@ -1087,6 +1087,8 @@ export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = R
 
 // @public
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+    // @alpha
+    instanceFilter?: string;
     parentKey?: TNodeKey;
 }
 
@@ -1110,6 +1112,8 @@ export interface HierarchyUpdateRecord {
     // (undocumented)
     expandedNodes?: ExpandedNodeUpdateRecord[];
     // (undocumented)
+    instanceFilter?: string;
+    // (undocumented)
     nodesCount: number;
     // (undocumented)
     parent?: NodeKey;
@@ -1125,6 +1129,8 @@ export namespace HierarchyUpdateRecord {
 export interface HierarchyUpdateRecordJSON {
     // (undocumented)
     expandedNodes?: ExpandedNodeUpdateRecordJSON[];
+    // (undocumented)
+    instanceFilter?: string;
     // (undocumented)
     nodesCount: number;
     // (undocumented)
@@ -3043,13 +3049,15 @@ export const UPDATE_FULL = "FULL";
 // @internal (undocumented)
 export interface UpdateHierarchyStateParams<TNodeKey> extends CommonIpcParams {
     // (undocumented)
-    changeType: "nodesExpanded" | "nodesCollapsed";
-    // (undocumented)
     imodelKey: string;
     // (undocumented)
-    nodeKeys: Array<TNodeKey>;
-    // (undocumented)
     rulesetId: string;
+    // (undocumented)
+    stateChanges: Array<{
+        nodeKey: TNodeKey | undefined;
+        isExpanded?: boolean;
+        instanceFilters?: string[];
+    }>;
 }
 
 // @alpha (undocumented)
