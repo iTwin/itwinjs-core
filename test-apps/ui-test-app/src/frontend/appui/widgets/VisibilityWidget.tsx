@@ -171,11 +171,11 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
   } = useTreeFilteringState();
 
   const showAll = React.useCallback(async () => {
-    return toggleAllCategories(IModelApp.viewManager, props.iModel, true, undefined, true, filteredProvider);
+    return toggleAllCategories(IModelApp.viewManager, props.iModel, true, undefined, true, filteredProvider); // eslint-disable-line deprecation/deprecation
   }, [props.iModel, filteredProvider]);
 
   const hideAll = React.useCallback(async () => {
-    return toggleAllCategories(IModelApp.viewManager, props.iModel, false, undefined, true, filteredProvider);
+    return toggleAllCategories(IModelApp.viewManager, props.iModel, false, undefined, true, filteredProvider); // eslint-disable-line deprecation/deprecation
   }, [props.iModel, filteredProvider]);
 
   const { width, height, ref } = useResizeDetector();

@@ -6,6 +6,8 @@
  * @module IModelComponents
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { from } from "rxjs/internal/observable/from";
 import { map } from "rxjs/internal/operators/map";
@@ -22,6 +24,7 @@ import { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParam
 /**
  * Data structure that describes instance visibility status.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export interface VisibilityStatus {
   state: "visible" | "partial" | "hidden";
@@ -32,12 +35,14 @@ export interface VisibilityStatus {
 /**
  * Type definition of visibility change event listener.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
 /**
  * Visibility handler used to change or get visibility of instances represented by the tree node.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export interface IVisibilityHandler extends IDisposable {
   getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
@@ -48,12 +53,14 @@ export interface IVisibilityHandler extends IDisposable {
 /**
  * Type definition of predicate used to decide if node can be selected.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
 /**
  * Parameters for [[VisibilityTreeEventHandler]]
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEventHandlerParams {
   visibilityHandler: IVisibilityHandler | undefined;
@@ -63,6 +70,7 @@ export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEv
 /**
  * Base event handler for visibility tree.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler {
   private _visibilityHandler: IVisibilityHandler | undefined;

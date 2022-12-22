@@ -6,6 +6,8 @@
  * @module IModelComponents
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import { TreeNodeItem } from "@itwin/components-react";
 import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
@@ -36,7 +38,7 @@ export enum ModelsTreeNodeType {
  * @beta
  * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
-export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean; // eslint-disable-line deprecation/deprecation
+export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 
 /**
  * Props for [[ModelsVisibilityHandler]]
@@ -53,6 +55,7 @@ export interface ModelsVisibilityHandlerProps {
 /**
  * Visibility handler used by [[ModelsTree]] to control visibility of the tree items.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export class ModelsVisibilityHandler implements IVisibilityHandler {
   private _props: ModelsVisibilityHandlerProps;
@@ -88,18 +91,18 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
 
   public static getNodeType(item: TreeNodeItem, dataProvider: IPresentationTreeDataProvider) {
     if (NodeKey.isClassGroupingNodeKey(dataProvider.getNodeKey(item)))
-      return ModelsTreeNodeType.Grouping; // eslint-disable-line deprecation/deprecation
+      return ModelsTreeNodeType.Grouping;
 
     if (!item.extendedData)
-      return ModelsTreeNodeType.Unknown; // eslint-disable-line deprecation/deprecation
+      return ModelsTreeNodeType.Unknown;
 
     if (this.isSubjectNode(item))
-      return ModelsTreeNodeType.Subject; // eslint-disable-line deprecation/deprecation
+      return ModelsTreeNodeType.Subject;
     if (this.isModelNode(item))
-      return ModelsTreeNodeType.Model; // eslint-disable-line deprecation/deprecation
+      return ModelsTreeNodeType.Model;
     if (this.isCategoryNode(item))
-      return ModelsTreeNodeType.Category; // eslint-disable-line deprecation/deprecation
-    return ModelsTreeNodeType.Element; // eslint-disable-line deprecation/deprecation
+      return ModelsTreeNodeType.Category;
+    return ModelsTreeNodeType.Element;
   }
 
   public static isSubjectNode(node: TreeNodeItem) {

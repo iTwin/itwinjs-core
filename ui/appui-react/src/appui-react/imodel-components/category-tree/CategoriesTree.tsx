@@ -6,6 +6,8 @@
  * @module IModelComponents
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import "./CategoriesTree.scss";
 import * as React from "react";
 import { IModelApp, IModelConnection, SpatialViewState, ViewManager, Viewport } from "@itwin/core-frontend";
@@ -50,7 +52,7 @@ export interface CategoryTreeProps {
    * Information for tree filtering.s
    * @alpha
    */
-  filterInfo?: VisibilityTreeFilterInfo; // eslint-disable-line deprecation/deprecation
+  filterInfo?: VisibilityTreeFilterInfo;
   /**
    * Callback invoked when tree is filtered.
    */
@@ -72,7 +74,7 @@ export interface CategoryTreeProps {
  * @public
  * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
-export function CategoryTree(props: CategoryTreeProps) { // eslint-disable-line deprecation/deprecation
+export function CategoryTree(props: CategoryTreeProps) {
   const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     ruleset: RULESET_CATEGORIES,
@@ -149,6 +151,7 @@ async function setViewType(activeView?: Viewport) {
 /**
  * Toggles visibility of categories to show or hide.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export async function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider) {
   // istanbul ignore next
@@ -164,6 +167,7 @@ export async function toggleAllCategories(viewManager: ViewManager, imodel: IMod
 /**
  * Gets ids of all categories or categories from filtered data provider.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export async function getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider) {
   if (filteredProvider) {

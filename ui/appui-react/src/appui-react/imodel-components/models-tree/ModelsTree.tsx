@@ -6,6 +6,8 @@
  * @module IModelComponents
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import "./ModelsTree.scss";
 import * as React from "react";
 import { ControlledTree, SelectionMode, TreeNodeItem, useTreeModel } from "@itwin/components-react";
@@ -51,7 +53,7 @@ export interface ModelsTreeProps {
    * Predicate which indicates whether node can be selected or no
    * @alpha
    */
-  selectionPredicate?: ModelsTreeSelectionPredicate; // eslint-disable-line deprecation/deprecation
+  selectionPredicate?: ModelsTreeSelectionPredicate;
   /**
    * Active view used to determine and control visibility
    */
@@ -64,7 +66,7 @@ export interface ModelsTreeProps {
    * Information for tree filtering.
    * @alpha
    */
-  filterInfo?: VisibilityTreeFilterInfo; // eslint-disable-line deprecation/deprecation
+  filterInfo?: VisibilityTreeFilterInfo;
   /**
    * Filter the hierarchy by given element IDs.
    * @alpha
@@ -78,7 +80,7 @@ export interface ModelsTreeProps {
    * Should the tree group displayed element nodes by class.
    * @beta
    */
-  enableElementsClassGrouping?: ClassGroupingOption; // eslint-disable-line deprecation/deprecation
+  enableElementsClassGrouping?: ClassGroupingOption;
   /**
    * Auto-update the hierarchy when data in the iModel changes.
    * @alpha
@@ -98,7 +100,7 @@ export interface ModelsTreeProps {
  * @public
  * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
-export function ModelsTree(props: ModelsTreeProps) { // eslint-disable-line deprecation/deprecation
+export function ModelsTree(props: ModelsTreeProps) {
   const { nodeLoader, onItemsRendered } = useModelsTreeNodeLoader(props);
   const { filteredNodeLoader, isFiltering, nodeHighlightingProps } = useVisibilityTreeFiltering(nodeLoader, props.filterInfo, props.onFilterApplied);
   const filterApplied = filteredNodeLoader !== nodeLoader;
@@ -154,7 +156,7 @@ export function ModelsTree(props: ModelsTreeProps) { // eslint-disable-line depr
   );
 }
 
-function useModelsTreeNodeLoader(props: ModelsTreeProps) { // eslint-disable-line deprecation/deprecation
+function useModelsTreeNodeLoader(props: ModelsTreeProps) {
   // note: this is a temporary workaround for auto-update not working on ruleset variable changes - instead
   // of auto-updating we just re-create the node loader by re-creating the ruleset
   const rulesets = React.useMemo(() => {
@@ -171,7 +173,7 @@ function useModelsTreeNodeLoader(props: ModelsTreeProps) { // eslint-disable-lin
   const { nodeLoader, onItemsRendered } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     ruleset: rulesets.general,
-    appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts), // eslint-disable-line deprecation/deprecation
+    appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
     pagingSize: PAGING_SIZE,
     enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,
   });
