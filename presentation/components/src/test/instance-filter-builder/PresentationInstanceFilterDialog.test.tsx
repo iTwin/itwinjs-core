@@ -156,8 +156,7 @@ describe("PresentationInstanceFilterDialog", () => {
       isOpen={true}
       initialFilter={initialFilter} />);
 
-    const actualTitle = getByText(title);
-    expect(actualTitle).to.not.be.null;
+    expect(queryByText(title)).to.not.be.null;
 
   });
 
