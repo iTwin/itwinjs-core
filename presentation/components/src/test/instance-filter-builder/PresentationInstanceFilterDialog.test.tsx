@@ -93,7 +93,6 @@ describe("PresentationInstanceFilterDialog", () => {
       isOpen={true} />);
 
     const applyButton = container.querySelector<HTMLInputElement>(".presentation-instance-filter-button-bar .iui-high-visibility:disabled");
-    expect(applyButton).to.not.be.null;
     expect(applyButton?.disabled).to.be.true;
 
     // select property
@@ -134,7 +133,6 @@ describe("PresentationInstanceFilterDialog", () => {
       initialFilter={initialFilter} />);
 
     const applyButton = container.querySelector<HTMLInputElement>(".presentation-instance-filter-button-bar .iui-high-visibility");
-    expect(applyButton).to.not.be.null;
     expect(applyButton?.disabled).to.be.false;
 
     fireEvent.click(applyButton!);
