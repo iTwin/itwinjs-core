@@ -104,6 +104,7 @@ export class Angle implements BeJSONFunctions {
     get isHalfCircle(): boolean;
     static isHalfCircleRadians(radians: number): boolean;
     static isPerpendicularDotSet(dotUU: number, dotVV: number, dotUV: number): boolean;
+    static orientedRadiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, upVectorX: number, upVectorY: number, upVectorZ: number, adjustToPositive?: boolean): number;
     static readonly pi2Radians = 6.283185307179586;
     static readonly piOver12Radians = 0.26179938779914946;
     static readonly piOver2Radians = 1.5707963267948966;
@@ -2482,6 +2483,7 @@ export class HalfEdge implements HalfEdgeUserData {
     static nodeToSelf(node: HalfEdge): any;
     static nodeToXY(node: HalfEdge): number[];
     static pinch(nodeA: HalfEdge, nodeB: HalfEdge): void;
+    static sectorSweepRadiansXYZ(node: HalfEdge, normal: Vector3d): number;
     setMask(mask: HalfEdgeMask): void;
     setMaskAndEdgeTagAroundFace(mask: HalfEdgeMask, tag: any, applyToMate?: boolean): void;
     setMaskAroundEdge(mask: HalfEdgeMask): void;
@@ -4583,7 +4585,7 @@ export class PolyfaceQuery {
     static buildPerFaceNormals(polyface: IndexedPolyface): void;
     static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface;
     static cloneFiltered(source: Polyface | PolyfaceVisitor, filter: (visitor: PolyfaceVisitor) => boolean): Polyface;
-    static cloneOffset(source: IndexedPolyface, signedOffsetDistance: number, offsetOptions?: OffsetMeshOptions): Polyface;
+    static cloneOffset(source: IndexedPolyface, signedOffsetDistance: number, offsetOptions?: OffsetMeshOptions): IndexedPolyface;
     static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[];
     static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface;
     static cloneWithMaximalPlanarFacets(mesh: Polyface | PolyfaceVisitor): IndexedPolyface | undefined;
