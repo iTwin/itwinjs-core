@@ -605,7 +605,7 @@ export namespace RealityModelTileTree {
     public constructor(props: RealityModelTileTree.ReferenceBaseProps) {
       super();
       this._name = undefined !== props.name ? props.name : "";
-      this._modelId = props.modelId ? props.modelId : props.iModel.transientIds.next;
+      this._modelId = props.modelId ? props.modelId : props.iModel.transientIds.getNext();
       let transform;
       if (undefined !== props.tilesetToDbTransform) {
         const tf = Transform.fromJSON(props.tilesetToDbTransform);

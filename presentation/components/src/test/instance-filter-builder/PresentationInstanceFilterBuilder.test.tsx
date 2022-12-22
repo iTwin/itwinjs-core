@@ -75,9 +75,7 @@ describe("PresentationInstanceFilter", () => {
   const onCloseEvent = new BeEvent<() => void>();
 
   before(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await UiComponents.initialize(new EmptyLocalization());
     await Presentation.initialize();
     Element.prototype.scrollIntoView = sinon.stub();

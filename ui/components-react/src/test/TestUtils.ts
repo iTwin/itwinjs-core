@@ -7,7 +7,7 @@ import {
   MessagePresenter, MessageSeverity, ParseResults, Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes,
   PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames, StructValue, UiAdmin,
 } from "@itwin/appui-abstract";
-import { ITwinLocalization } from "@itwin/core-i18n";
+import { EmptyLocalization } from "@itwin/core-common";
 import {
   AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents,
 } from "../components-react";
@@ -17,17 +17,17 @@ import { TableFilterDescriptorCollection } from "../components-react/table/colum
 
 /** @internal */
 export class TestUtils {
-  private static _i18n?: ITwinLocalization;
+  private static _i18n?: EmptyLocalization;
   private static _uiComponentsInitialized = false;
 
-  public static get i18n(): ITwinLocalization {
+  public static get i18n(): EmptyLocalization {
     return TestUtils._i18n!;
   }
 
   public static async initializeUiComponents() {
     if (!TestUtils._uiComponentsInitialized) {
-      TestUtils._i18n = new ITwinLocalization();
-      await TestUtils.i18n.initialize(["IModelJs"]);
+      TestUtils._i18n = new EmptyLocalization();
+      await TestUtils.i18n.initialize();
 
       await UiComponents.initialize(TestUtils.i18n);
       TestUtils._uiComponentsInitialized = true;

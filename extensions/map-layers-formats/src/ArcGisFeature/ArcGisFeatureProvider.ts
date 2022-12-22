@@ -68,8 +68,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
       // Check again layer status, it might have change during await.
       if (this.status === MapLayerImageryProviderStatus.Valid) {
-        this.status = MapLayerImageryProviderStatus.RequireAuth;
-        this.onStatusChanged.raiseEvent(this);
+        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
         return;
       }
     }

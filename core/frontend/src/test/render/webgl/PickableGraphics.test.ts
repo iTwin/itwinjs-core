@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
-import { ColorDef, Feature, GeometryClass, RenderMode } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, GeometryClass, RenderMode } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { ScreenViewport } from "../../../Viewport";
 import { DecorateContext } from "../../../ViewContext";
@@ -24,7 +24,7 @@ describe("Pickable graphic", () => {
   document.body.appendChild(div);
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection();
   });
 

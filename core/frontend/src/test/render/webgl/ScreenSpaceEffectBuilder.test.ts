@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { EmptyLocalization } from "@itwin/core-common";
 import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import {
@@ -12,7 +13,7 @@ import { System } from "../../../render/webgl/System";
 
 describe("ScreenSpaceEffectBuilder", () => {
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
   });
 
   after(async () => {
