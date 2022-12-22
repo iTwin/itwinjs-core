@@ -39,12 +39,9 @@ describe("PresentationInstanceFilterDialog", () => {
   });
   const initialFilter: PresentationInstanceFilterInfo = {
     filter: {
-      operator: PropertyFilterRuleGroupOperator.And,
-      conditions: [{
-        field: propertiesField,
-        operator: PropertyFilterRuleOperator.IsNull,
-        value: undefined,
-      }],
+      field: propertiesField,
+      operator: PropertyFilterRuleOperator.IsNull,
+      value: undefined,
     },
     usedClasses: [classInfo],
   };
