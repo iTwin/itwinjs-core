@@ -60,6 +60,7 @@ alpha;PresentationInstanceFilterBuilderProps
 alpha;PresentationInstanceFilterCondition
 alpha;PresentationInstanceFilterConditionGroup
 alpha;PresentationInstanceFilterDialog(props: PresentationInstanceFilterDialogProps): JSX.Element
+alpha;PresentationInstanceFilterDialogProps 
 alpha;PresentationInstanceFilterInfo
 alpha;PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps): JSX.Element
 alpha;PresentationInstanceFilterPropertyProps

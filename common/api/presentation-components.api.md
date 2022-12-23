@@ -553,6 +553,20 @@ export interface PresentationInstanceFilterConditionGroup {
 export function PresentationInstanceFilterDialog(props: PresentationInstanceFilterDialogProps): JSX.Element;
 
 // @alpha (undocumented)
+export interface PresentationInstanceFilterDialogProps extends Omit<PresentationInstanceFilterBuilderProps, "onInstanceFilterChanged"> {
+    // (undocumented)
+    filterResultCountRenderer?: (filter?: PresentationInstanceFilterInfo) => React_2.ReactNode;
+    // (undocumented)
+    isOpen: boolean;
+    // (undocumented)
+    onApply: (filter?: PresentationInstanceFilterInfo) => void;
+    // (undocumented)
+    onClose: () => void;
+    // (undocumented)
+    title?: React_2.ReactNode;
+}
+
+// @alpha (undocumented)
 export interface PresentationInstanceFilterInfo {
     // (undocumented)
     filter: PresentationInstanceFilter;
