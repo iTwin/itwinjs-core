@@ -56,7 +56,7 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
     <div className="presentation-instance-filter-class-selector">
       <MultiTagSelect
         id="class-combo-input"
-        placeholder={translate("instance-filter-builder.select-classes")}
+        placeholder={translate("instance-filter-builder.select-class")}
         options={classes}
         value={selectedClasses}
         onChange={onSelectChange}

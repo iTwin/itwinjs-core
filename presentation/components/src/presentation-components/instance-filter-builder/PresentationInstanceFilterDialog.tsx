@@ -11,7 +11,8 @@ import { PresentationInstanceFilterBuilder, PresentationInstanceFilterBuilderPro
 import "./PresentationInstanceFilterDialog.scss";
 import { translate } from "../common/Utils";
 
-interface PresentationInstanceFilterDialogProps extends Omit<PresentationInstanceFilterBuilderProps, "onInstanceFilterChanged"> {
+/** @alpha */
+export interface PresentationInstanceFilterDialogProps extends Omit<PresentationInstanceFilterBuilderProps, "onInstanceFilterChanged"> {
   onApply: (filter?: PresentationInstanceFilterInfo) => void;
   onClose: () => void;
   filterResultCountRenderer?: (filter?: PresentationInstanceFilterInfo) => React.ReactNode;
