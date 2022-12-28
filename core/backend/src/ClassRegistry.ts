@@ -71,7 +71,7 @@ export class ClassRegistry {
     const [classSchema, className] = ecTypeQualifier.split(".");
     const schemaItemJson = iModel.nativeDb.getSchemaItem(classSchema, className);
     if (schemaItemJson.error)
-      throw new IModelError(schemaItemJson.error, `failed to get schema item '${ecTypeQualifier}'`);
+      throw new IModelError(schemaItemJson.error.status, `failed to get schema item '${ecTypeQualifier}'`);
     const schemaItem = JSON.parse(schemaItemJson.result as string);
     if (!("appliesTo" in schemaItem) && schemaItem.baseClass === undefined) {
       return ecTypeQualifier;
