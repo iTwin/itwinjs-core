@@ -1310,7 +1310,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     super(_clipView.iModel);
     if (!this.getClipData())
       return;
-    this._clipId = this.iModel.transientIds.next;
+    this._clipId = this.iModel.transientIds.getNext();
     this.updateDecorationListener(true);
     this._removeViewCloseListener = IModelApp.viewManager.onViewClose.addListener(this.onViewClose, this); // eslint-disable-line @typescript-eslint/unbound-method
     if (undefined !== this._clipEventHandler && this._clipEventHandler.selectOnCreate())
@@ -1401,7 +1401,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     if (numCurrent < numReqControls) {
       const transientIds = this.iModel.transientIds;
       for (let i: number = numCurrent; i < numReqControls; i++)
-        this._controlIds[i] = transientIds.next;
+        this._controlIds[i] = transientIds.getNext();
     } else if (numCurrent > numReqControls) {
       this._controlIds.length = numReqControls;
     }

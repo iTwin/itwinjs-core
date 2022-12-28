@@ -188,6 +188,7 @@ export function NineZoneStateReducer(state: NineZoneState, action: NineZoneActio
     }
     case "FLOATING_WIDGET_RESIZE": {
       const { resizeBy } = action;
+      const widget = state.widgets[action.id];
       return produce(state, (draft) => {
         const floatingWidget = draft.floatingWidgets.byId[action.id];
         // if this is not a tool settings widget then set the userSized flag
@@ -196,12 +197,30 @@ export function NineZoneStateReducer(state: NineZoneState, action: NineZoneActio
           floatingWidget.userSized = true;
         }
 
-        assert(!!floatingWidget);
-        const bounds = Rectangle.create(floatingWidget.bounds);
-        const newBounds = bounds.inset(-resizeBy.left, -resizeBy.top, -resizeBy.right, -resizeBy.bottom);
+        const minWidth = 200;
+        const minHeight = 120;
+        let newBounds = Rectangle.create(floatingWidget.bounds);
+
+        // Resize top-left corner.
+        const maxLeft = newBounds.right - minWidth;
+        const maxTop = newBounds.bottom - minHeight;
+
+        newBounds = newBounds.inset(-resizeBy.left, -resizeBy.top, 0, 0);
+        const left = Math.min(maxLeft, newBounds.left);
+        const top = Math.min(maxTop, newBounds.top);
+        newBounds = new Rectangle(left, top, newBounds.right, newBounds.bottom);
+
+        // Resize bottom-right corner.
+        const minRight = newBounds.left + minWidth;
+        const minBottom = newBounds.top + minHeight;
+
+        newBounds = newBounds.inset(0, 0, -resizeBy.right, -resizeBy.bottom);
+        const right = Math.max(minRight, newBounds.right);
+        const bottom = Math.max(minBottom, newBounds.bottom);
+        newBounds = new Rectangle(left, top, right, bottom);
+
         setRectangleProps(floatingWidget.bounds, newBounds);
 
-        const widget = draft.widgets[action.id];
         const size = newBounds.getSize();
         const tab = draft.tabs[widget.activeTabId];
         initSizeProps(tab, "preferredFloatingWidgetSize", size);
