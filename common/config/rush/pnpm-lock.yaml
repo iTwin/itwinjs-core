@@ -2753,6 +2753,7 @@ importers:
 
   ../../test-apps/appui-test-app/appui-test-providers:
     specifiers:
+      '@bentley/icons-generic': ^1.0.15
       '@itwin/appui-abstract': workspace:*
       '@itwin/appui-layout-react': workspace:*
       '@itwin/appui-react': workspace:*
@@ -2765,6 +2766,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
+      '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
       '@itwin/itwinui-react': ~1.42.0
@@ -2785,6 +2787,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
+      '@bentley/icons-generic': 1.0.34
       '@itwin/appui-abstract': link:../../../ui/appui-abstract
       '@itwin/appui-layout-react': link:../../../ui/appui-layout-react
       '@itwin/appui-react': link:../../../ui/appui-react
@@ -2795,6 +2798,7 @@ importers:
       '@itwin/core-geometry': link:../../../core/geometry
       '@itwin/core-quantity': link:../../../core/quantity
       '@itwin/core-react': link:../../../ui/core-react
+      '@itwin/imodel-components-react': link:../../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.16.0_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
