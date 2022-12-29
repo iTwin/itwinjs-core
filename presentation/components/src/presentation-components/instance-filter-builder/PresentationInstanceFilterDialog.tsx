@@ -38,9 +38,9 @@ export function PresentationInstanceFilterDialog(props: PresentationInstanceFilt
     onClose={onClose}
     closeOnEsc={false}
     preventDocumentScroll={true}
-    trapFocus={true}>
-    <Dialog.Backdrop
-    />
+    trapFocus={true}
+  >
+    <Dialog.Backdrop />
     <Dialog.Main className="presentation-instance-filter-dialog">
       <Dialog.TitleBar
         className="presentation-instance-filter-title"
@@ -71,5 +71,5 @@ export function PresentationInstanceFilterDialog(props: PresentationInstanceFilt
         </Dialog.ButtonBar>
       </div>
     </Dialog.Main>
-  </Dialog >;
+  </Dialog>;
 }

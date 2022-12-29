@@ -153,7 +153,6 @@ describe("PresentationInstanceFilterDialog", () => {
       initialFilter={initialFilter} />);
 
     expect(queryByText(title)).to.not.be.null;
-
   });
 
   it("renders filterResultCountRenderer", async () => {
@@ -170,7 +169,5 @@ describe("PresentationInstanceFilterDialog", () => {
       initialFilter={initialFilter} />);
 
     expect(queryByText(count)).to.not.be.null;
-
   });
-
 });
