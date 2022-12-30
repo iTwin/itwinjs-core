@@ -6,9 +6,10 @@ import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import { GL } from "../../../render/webgl/GL";
 import { BufferHandle } from "../../../render/webgl/AttributeBuffers";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("BufferHandle", () => {
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   it("disposes", () => {

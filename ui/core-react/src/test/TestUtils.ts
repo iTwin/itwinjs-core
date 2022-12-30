@@ -4,23 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import { UiCore } from "../core-react/UiCore";
+import { EmptyLocalization } from "@itwin/core-common";
 
 /** @internal */
 export class TestUtils {
-  private static _i18n?: ITwinLocalization;
+  private static _i18n?: EmptyLocalization;
   private static _uiCoreInitialized = false;
 
-  public static get i18n(): ITwinLocalization {
+  public static get i18n(): EmptyLocalization {
     return TestUtils._i18n!;
   }
 
   public static async initializeUiCore() {
     if (!TestUtils._uiCoreInitialized) {
-      TestUtils._i18n = new ITwinLocalization();
+      TestUtils._i18n = new EmptyLocalization();
 
-      await TestUtils._i18n.initialize(["IModelJs"]);
+      await TestUtils._i18n.initialize();
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiCoreInitialized = true;
     }
