@@ -3056,15 +3056,6 @@ export interface FeatureAppearanceSource {
     getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
-// @internal
-export class FeatureGates {
-    addMonitor(feature: string, monitor: (val: GateValue) => void): () => void;
-    check(feature: string, defaultVal?: GateValue): GateValue;
-    readonly gates: Map<string, GateValue>;
-    onChanged: BeEvent<(feature: string, val: GateValue) => void>;
-    setGate(feature: string, val: GateValue): void;
-}
-
 // @internal (undocumented)
 export class FeatureIndex {
     // (undocumented)
@@ -3394,9 +3385,6 @@ export interface FunctionalElementProps extends ElementProps {
     // (undocumented)
     typeDefinition?: RelatedElementProps;
 }
-
-// @internal (undocumented)
-export type GateValue = number | boolean | string | undefined;
 
 // @public
 export class GeocentricTransform implements GeocentricTransformProps {
