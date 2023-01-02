@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable deprecation/deprecation */
+
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";

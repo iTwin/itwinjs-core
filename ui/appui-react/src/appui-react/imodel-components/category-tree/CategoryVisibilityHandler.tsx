@@ -6,6 +6,8 @@
  * @module IModelComponents
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import * as React from "react";
 import { BeEvent } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
@@ -55,13 +57,17 @@ export async function loadCategoriesFromViewport(iModel?: IModelConnection, vp?:
 /**
  * Data structure that describes category.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export interface Category {
   key: string;
   children?: string[];
 }
 
-/** @alpha */
+/**
+ * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
+ */
 export interface CategoryVisibilityHandlerParams {
   viewManager: ViewManager;
   imodel: IModelConnection;
@@ -70,7 +76,10 @@ export interface CategoryVisibilityHandlerParams {
   allViewports?: boolean;
 }
 
-/** @alpha */
+/**
+ * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
+ */
 export class CategoryVisibilityHandler implements IVisibilityHandler {
   private _viewManager: ViewManager;
   private _imodel: IModelConnection;
