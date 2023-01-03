@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "Fix script paths for situation when repository path has spaces",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}
