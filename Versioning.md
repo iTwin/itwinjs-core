@@ -1,6 +1,6 @@
 # iTwin.js versioning policies
 
-iTwin.js employs versioning policies to faciliate the following objectives:
+iTwin.js employs versioning policies to facilitate the following objectives:
 
 - Provide a broad set of stable, well-supported APIs.
 - Continuously deliver new features, bug fixes, and security updates.
@@ -25,7 +25,7 @@ In practice, `@beta` and `@public` APIs are typically designed in a way that pro
 
 ## Package versioning policy
 
-The individual packages that constitute the iTwin.js libraries use [semantic versioning](./docs/learning/guidelines/semantic-versioning-guidelines.md) to convey information about how their public APIs change over time.
+The individual packages that constitute the iTwin.js libraries use [semantic versioning](https://semver.org/) to convey information about how their public APIs change over time.
 
 - Patch releases occur frequently to fix bugs or security issues and have no impact on the public API.
 - Minor releases occur less frequently than patch releases. They may introduce new APIs, but never break any existing `@public` APIs.
