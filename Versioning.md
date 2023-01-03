@@ -28,7 +28,7 @@ In practice, `@beta` and `@public` APIs are typically designed in a way that pro
 The individual packages that constitute the iTwin.js libraries use [semantic versioning](./docs/learning/guidelines/semantic-versioning-guidelines.md) to convey information about how their public APIs change over time.
 
 - Patch releases occur frequently to fix bugs or security issues and have no impact on the public API.
-- Minor releases occur on roughly six- to eight-week intervals. They may introduce new APIs, but never break any existing `@public` APIs.
+- Minor releases occur less frequently than patch releases. They may introduce new APIs, but never break any existing `@public` APIs.
 - Major releases occur only as frequently as necessary. They can include breaking changes to `@public` APIs, but only according to the [deprecation policy](#api-deprecation-policy).
 
 ## API deprecation policy
