@@ -12,7 +12,7 @@ If you have questions, or wish to contribute to iTwin.js, see our [Contributing 
 
 This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that holds the source code to multiple iTwin.js npm packages. It is built using [Rush](http://rushjs.io/).
 
-See [rush.json](./rush.json) for the complete list of packages.
+See [rush.json](./rush.json) for the complete list of packages and [Versioning.md](./Versioning.md) for package and API versioning policies.
 
 Each package has its own **node_modules** directory that contains symbolic links to *common* dependencies managed by Rush.
 
