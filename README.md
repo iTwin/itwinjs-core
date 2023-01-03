@@ -31,7 +31,7 @@ Each package has its own **node_modules** directory that contains symbolic links
 1. Clone repository (first time) with `git clone` or pull updates to the repository (subsequent times) with `git pull`
 2. Install dependencies: `rush install`
 3. Clean: `rush clean`
-4. Rebuild source: `rush rebuild`
+4. Build source: `rush build:ci` (or `rush build` if you don't intend to run the tests).
 5. Run tests: `rush cover`
 
 The `-v` option for `rush` is short for `--verbose` which results in a more verbose command.
