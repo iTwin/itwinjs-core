@@ -77,7 +77,14 @@ describe("Hierarchies", () => {
 
       // validate nodes with partially matching filter
       await validateHierarchy({
-        requestParams: { imodel, rulesetOrId: ruleset, instanceFilter: `this.CodeValue = "b"` },
+        requestParams: {
+          imodel,
+          rulesetOrId: ruleset,
+          instanceFilter: {
+            selectClassName: imodelElementKeys[0].className,
+            expression: `this.CodeValue = "b"`,
+          },
+        },
         expectedHierarchy: [
           NodeValidators.createForInstanceNode({ instanceKeys: [imodelElementKeys[1]], label: "b" }),
         ],
@@ -85,7 +92,14 @@ describe("Hierarchies", () => {
 
       // validate nodes with fully matching filter
       await validateHierarchy({
-        requestParams: { imodel, rulesetOrId: ruleset, instanceFilter: `this.Model.Id = ${IModel.repositoryModelId}` },
+        requestParams: {
+          imodel,
+          rulesetOrId: ruleset,
+          instanceFilter: {
+            selectClassName: imodelElementKeys[0].className,
+            expression: `this.Model.Id = ${IModel.repositoryModelId}`,
+          },
+        },
         expectedHierarchy: [
           NodeValidators.createForInstanceNode({ instanceKeys: [imodelElementKeys[0]], label: "a" }),
           NodeValidators.createForInstanceNode({ instanceKeys: [imodelElementKeys[1]], label: "b" }),
@@ -94,7 +108,14 @@ describe("Hierarchies", () => {
 
       // validate nodes with non-matching filter
       await validateHierarchy({
-        requestParams: { imodel, rulesetOrId: ruleset, instanceFilter: `this.CodeValue = "x"` },
+        requestParams: {
+          imodel,
+          rulesetOrId: ruleset,
+          instanceFilter: {
+            selectClassName: imodelElementKeys[0].className,
+            expression: `this.CodeValue = "x"`,
+          },
+        },
         expectedHierarchy: [],
       });
     });
@@ -156,8 +177,12 @@ describe("Hierarchies", () => {
       await validateHierarchy({
         requestParams: { imodel, rulesetOrId: ruleset },
         configureParams: (params) => {
-          if (params.parentKey && NodeKey.isInstancesNodeKey(params.parentKey) && params.parentKey.instanceKeys.some((k) => k.className === "BisCore:Subject"))
-            params.instanceFilter = `this.CodeValue = "b"`;
+          if (params.parentKey && NodeKey.isInstancesNodeKey(params.parentKey) && params.parentKey.instanceKeys.some((k) => k.className === "BisCore:Subject")) {
+            params.instanceFilter = {
+              selectClassName: imodelElementKeys[0].className,
+              expression: `this.CodeValue = "b"`,
+            };
+          }
         },
         expectedHierarchy: [
           NodeValidators.createForInstanceNode({
@@ -173,8 +198,12 @@ describe("Hierarchies", () => {
       await validateHierarchy({
         requestParams: { imodel, rulesetOrId: ruleset },
         configureParams: (params) => {
-          if (params.parentKey && NodeKey.isInstancesNodeKey(params.parentKey) && params.parentKey.instanceKeys.some((k) => k.className === "BisCore:Subject"))
-            params.instanceFilter = `this.Model.Id = ${IModel.repositoryModelId}`;
+          if (params.parentKey && NodeKey.isInstancesNodeKey(params.parentKey) && params.parentKey.instanceKeys.some((k) => k.className === "BisCore:Subject")) {
+            params.instanceFilter = {
+              selectClassName: imodelElementKeys[0].className,
+              expression: `this.Model.Id = ${IModel.repositoryModelId}`,
+            };
+          }
         },
         expectedHierarchy: [
           NodeValidators.createForInstanceNode({
@@ -191,8 +220,12 @@ describe("Hierarchies", () => {
       await validateHierarchy({
         requestParams: { imodel, rulesetOrId: ruleset },
         configureParams: (params) => {
-          if (params.parentKey && NodeKey.isInstancesNodeKey(params.parentKey) && params.parentKey.instanceKeys.some((k) => k.className === "BisCore:Subject"))
-            params.instanceFilter = `this.CodeValue = "x"`;
+          if (params.parentKey && NodeKey.isInstancesNodeKey(params.parentKey) && params.parentKey.instanceKeys.some((k) => k.className === "BisCore:Subject")) {
+            params.instanceFilter = {
+              selectClassName: imodelElementKeys[0].className,
+              expression: `this.CodeValue = "x"`,
+            };
+          }
         },
         expectedHierarchy: [
           NodeValidators.createForInstanceNode({
@@ -275,7 +308,14 @@ describe("Hierarchies", () => {
 
       // validate nodes with partially matching filter
       await validateHierarchy({
-        requestParams: { imodel, rulesetOrId: ruleset, instanceFilter: `this.UserLabel = "a"` },
+        requestParams: {
+          imodel,
+          rulesetOrId: ruleset,
+          instanceFilter: {
+            selectClassName: imodelElementKeys[0].className,
+            expression: `this.UserLabel = "a"`,
+          },
+        },
         expectedHierarchy: [
           NodeValidators.createForClassGroupingNode({
             className: "BisCore:DocumentPartition",
@@ -295,7 +335,14 @@ describe("Hierarchies", () => {
 
       // validate nodes with fully matching filter
       await validateHierarchy({
-        requestParams: { imodel, rulesetOrId: ruleset, instanceFilter: `this.Model.Id = ${IModel.repositoryModelId}` },
+        requestParams: {
+          imodel,
+          rulesetOrId: ruleset,
+          instanceFilter: {
+            selectClassName: imodelElementKeys[0].className,
+            expression: `this.Model.Id = ${IModel.repositoryModelId}`,
+          },
+        },
         expectedHierarchy: [
           NodeValidators.createForClassGroupingNode({
             className: "BisCore:DocumentPartition",
@@ -321,7 +368,14 @@ describe("Hierarchies", () => {
 
       // validate nodes with non-matching filter
       await validateHierarchy({
-        requestParams: { imodel, rulesetOrId: ruleset, instanceFilter: `this.CodeValue = "x"` },
+        requestParams: {
+          imodel,
+          rulesetOrId: ruleset,
+          instanceFilter: {
+            selectClassName: imodelElementKeys[0].className,
+            expression: `this.CodeValue = "x"`,
+          },
+        },
         expectedHierarchy: [],
       });
     });
