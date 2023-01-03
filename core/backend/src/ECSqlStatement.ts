@@ -689,6 +689,13 @@ export interface ECSqlColumnInfo {
    */
   getPropertyName(): string;
 
+  /** Gets the name of the original property that the column data is from.
+   * > Other than getPropertyName(), this ignores aliases and allows getting the name
+   * > of the property which is being used for the column. A column may not be backed
+   * > by a property, in which case this returns undefined.
+   */
+  getOriginPropertyName(): string | undefined;
+
   /** Gets the full access string to the corresponding ECSqlValue starting from the root class.
    * > If this column is backed by a generated property, i.e. it represents ECSQL expression,
    * > the access string consists of the ECSQL expression.
