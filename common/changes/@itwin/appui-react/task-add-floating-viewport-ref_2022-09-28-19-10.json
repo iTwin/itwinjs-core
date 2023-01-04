@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Add viewportRef as a props for the FloatingWidgetComponent. Caller might be needing to grab a reference to the viewport. Also, change the initialViewState to allow passing a function that returns a ViewState",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

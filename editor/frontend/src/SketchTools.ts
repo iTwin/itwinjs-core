@@ -486,7 +486,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
       return;
 
     if (undefined === this._snapGeomId)
-      this._snapGeomId = this.iModel.transientIds.next;
+      this._snapGeomId = this.iModel.transientIds.getNext();
 
     const builder = context.createGraphic({ type: GraphicType.WorldDecoration, pickable: { id: this._snapGeomId, locateOnly: true } });
     builder.setSymbology(ColorDef.white, ColorDef.white, 1);

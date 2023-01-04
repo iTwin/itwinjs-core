@@ -166,6 +166,9 @@ export interface ControlledPresentationTreeFilteringProps {
 }
 
 // @alpha (undocumented)
+export function convertPresentationFilterToPropertyFilter(descriptor: Descriptor, filter: PresentationInstanceFilter): PropertyFilter | undefined;
+
+// @alpha (undocumented)
 export function convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise<InstanceFilterDefinition>;
 
 // @alpha
@@ -373,6 +376,8 @@ export interface InstanceFilterBuilderProps {
     // (undocumented)
     classes: ClassInfo[];
     // (undocumented)
+    initialFilter?: PropertyFilter;
+    // (undocumented)
     isDisabled?: boolean;
     // (undocumented)
     onClassDeselected: (selectedClass: ClassInfo) => void;
@@ -451,6 +456,9 @@ export interface IPropertiesAppender {
     item?: Item;
 }
 
+// @alpha (undocumented)
+export function isPresentationInstanceFilterConditionGroup(filter: PresentationInstanceFilter): filter is PresentationInstanceFilterConditionGroup;
+
 // @public
 export interface IUnifiedSelectionComponent {
     readonly imodel: IModelConnection;
@@ -516,7 +524,9 @@ export interface PresentationInstanceFilterBuilderProps {
     // (undocumented)
     imodel: IModelConnection;
     // (undocumented)
-    onInstanceFilterChanged: (filter?: PresentationInstanceFilter) => void;
+    initialFilter?: PresentationInstanceFilterInfo;
+    // (undocumented)
+    onInstanceFilterChanged: (filter?: PresentationInstanceFilterInfo) => void;
     // (undocumented)
     ruleGroupDepthLimit?: number;
 }
@@ -537,6 +547,14 @@ export interface PresentationInstanceFilterConditionGroup {
     conditions: PresentationInstanceFilter[];
     // (undocumented)
     operator: PropertyFilterRuleGroupOperator;
+}
+
+// @alpha (undocumented)
+export interface PresentationInstanceFilterInfo {
+    // (undocumented)
+    filter: PresentationInstanceFilter;
+    // (undocumented)
+    usedClasses: ClassInfo[];
 }
 
 // @alpha (undocumented)
@@ -855,7 +873,7 @@ export function useNavigationPropertyEditingContext(imodel: IModelConnection, da
 export function useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>, activeMatchIndex?: number): HighlightableTreeProps | undefined;
 
 // @alpha (undocumented)
-export function usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection): {
+export function usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection, initialClasses?: ClassInfo[]): {
     onPropertySelected: (property: PropertyDescription) => void;
     onClearClasses: () => void;
     onClassDeselected: (classInfo: ClassInfo) => void;

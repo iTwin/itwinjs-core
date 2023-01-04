@@ -34,7 +34,7 @@ export class BatchedTileIdMap {
     const key = JSON.stringify(properties);
     let entry = this._featureMap.get(key);
     if (undefined === entry) {
-      const id = this._iModel.transientIds.next;
+      const id = this._iModel.transientIds.getNext();
       entry = { id, properties };
       this._featureMap.set(key, entry);
       this._idMap.set(id, properties);

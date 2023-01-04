@@ -9,6 +9,7 @@ import { IModelApp } from "../../../IModelApp";
 import { GL } from "../../../render/webgl/GL";
 import { RenderState } from "../../../render/webgl/RenderState";
 import { System } from "../../../render/webgl/System";
+import { EmptyLocalization } from "@itwin/core-common";
 
 function withinTolerance(x: number, y: number): boolean {
   const tol: number = 0.1e-6;
@@ -17,7 +18,7 @@ function withinTolerance(x: number, y: number): boolean {
 }
 
 describe("RenderState", () => {
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   it("should compare as expected", () => {

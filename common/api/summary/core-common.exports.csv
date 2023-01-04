@@ -259,7 +259,6 @@ public;FeatureAppearanceProps
 public;FeatureAppearanceProvider
 public;FeatureAppearanceProvider
 public;FeatureAppearanceSource
-internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
 public;FeatureOverrides 
@@ -282,7 +281,6 @@ public;Frustum
 internal;FrustumPlanes
 internal;FrustumPlanes
 public;FunctionalElementProps 
-internal;GateValue = number | boolean | string | undefined
 public;GeocentricTransform 
 public;GeocentricTransformProps
 beta;GeoCoordinatesRequestProps
@@ -390,6 +388,7 @@ beta;IModelCoordinatesResponseProps
 public;IModelEncryptionProps
 deprecated;IModelEncryptionProps
 public;IModelError 
+public;IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus
 public;IModelNotFoundResponse 
 public;IModelProps
 internal;class IModelReadRpcInterface 
@@ -544,6 +543,7 @@ internal;PntsHeader
 public;Point2dProps = number[]
 beta;PointCloudDisplayProps
 beta;PointCloudDisplaySettings
+beta;PointCloudEDLMode = "off" | "on" | "full"
 beta;PointCloudShape = "square" | "round"
 beta;PointCloudSizeMode = "voxel" | "pixel"
 beta;PointWithStatus

@@ -6,6 +6,8 @@
  * @module IModelComponents
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import * as React from "react";
 import { IPresentationTreeDataProvider, useControlledPresentationTreeFiltering } from "@itwin/presentation-components";
 import {
@@ -17,6 +19,7 @@ import { VisibilityTreeFilterInfo } from "./Common";
 /**
  * Creates Visibility tree renderer which renders nodes with eye checkbox.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export const useVisibilityTreeRenderer = (iconsEnabled: boolean, descriptionsEnabled: boolean) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -33,6 +36,7 @@ const imageLoader = new TreeImageLoader();
 /**
  * Creates node renderer which renders node with eye checkbox.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export const createVisibilityTreeNodeRenderer = (iconsEnabled: boolean, descriptionEnabled: boolean) => {
   return (props: TreeNodeRendererProps) => ( // eslint-disable-line react/display-name
@@ -49,6 +53,7 @@ export const createVisibilityTreeNodeRenderer = (iconsEnabled: boolean, descript
 /**
  * Checkbox renderer that renders an eye.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export const visibilityTreeNodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => (
   <ImageCheckBox
@@ -64,6 +69,7 @@ export const visibilityTreeNodeCheckboxRenderer = (props: NodeCheckboxRenderProp
 /**
  * Filters data provider used in supplied node loader and invokes onFilterApplied when filtering is completed.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export const useVisibilityTreeFiltering = (
   nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>,
@@ -92,6 +98,7 @@ export const useVisibilityTreeFiltering = (
 /**
  * Properties for [[VisibilityTreeNoFilteredData]] component.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export interface VisibilityTreeNoFilteredDataProps {
   title: string;
@@ -101,6 +108,7 @@ export interface VisibilityTreeNoFilteredDataProps {
 /**
  * Renders message that no nodes was found for filter.
  * @alpha
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export function VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps) {
   return (

@@ -695,6 +695,7 @@ export class CheckpointManager {
 
 // @public
 export interface CheckpointProps extends TokenArg {
+    readonly allowPreceding?: boolean;
     readonly changeset: ChangesetIdWithIndex;
     // (undocumented)
     readonly expectV2?: boolean;
@@ -1552,6 +1553,7 @@ export class ECSqlBinder {
 // @public
 export interface ECSqlColumnInfo {
     getAccessString(): string;
+    getOriginPropertyName(): string | undefined;
     getPropertyName(): string;
     getRootClassAlias(): string;
     getRootClassName(): string;
