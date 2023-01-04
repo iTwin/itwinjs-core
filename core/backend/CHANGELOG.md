@@ -1,6 +1,48 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 28 Oct 2022 13:34:57 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Dec 2022 16:38:28 GMT and should not be manually modified.
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:28 GMT
+
+_Version update only_
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:36 GMT
+
+### Updates
+
+- Add EntityReferences and associated utilities
+- Added node-dependent RPC function implementations (that previously contaminated common).
+- add exportGraphics test for fixed-block mesh
+- return empty change summary array on empty changeset range in ChangeSummaryManager
+- WorkspaceContainer.Props.syncOnConnect now defaults to true
+- Expose Progress API for changeset(s) download in higher levels (BriefcaseManager, IpcAppHandler, etc.)
+- add "maybe" binding methods to SqliteStatement
+- Add IModelHostOptions.maxTileCacheDbSize for limiting the amount of disk space consumed by local tile cache databases.
+- deprecate ExternalSourceAspects.findBySource, add findAllBySource
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:50 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+### Updates
+
+- fix ClassRegistry.getRootMetaData mixin handling, handle null ExternalSourceAspect.scope
 
 ## 3.4.3
 Fri, 28 Oct 2022 13:34:57 GMT

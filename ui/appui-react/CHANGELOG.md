@@ -1,6 +1,53 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Fri, 28 Oct 2022 13:34:57 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Dec 2022 16:38:28 GMT and should not be manually modified.
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:28 GMT
+
+_Version update only_
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:36 GMT
+
+### Updates
+
+- Add FeatureOverridesChanged SyncUIEvent in SyncUiEventDispatcher.ts
+- Do not auto-hide the UI when floating widget is hovered.
+- Fix a circular dependency issue.
+- Updated pin icon for help widget.
+- Deprecate pseudo components of frontstage provider in favor of configuration interfaces.
+- Add automatic horizonal scrolling to the ListPicker's expandable blocks for small form factors or long strings.
+- Refactored many tests to remove enzyme and snaphot testing
+- Unpin classnames package
+- Rename RestoreFrontstagesLayoutTool to RestoreAllFrontstagesTool.
+- Add RestoreFrontstagesLayout tool.
+- Deprecate components in preparation for next major version.
+- Persist the toolbar-opacity to state.
+- Add a toolbar opacity to the state and the UiFramework API to allow users or apps to configure it. Add a slider to the UiSettingsPage to control the toolbar opacity. 
+- Update WidgetDef to pass the optional prop allowedPanelTargets to createTab wh
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+### Updates
+
+- Maintain widget panel location after frontstage is changed.
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:49 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
 
 ## 3.4.3
 Fri, 28 Oct 2022 13:34:57 GMT

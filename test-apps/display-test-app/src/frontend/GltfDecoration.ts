@@ -78,7 +78,7 @@ export class GltfDecorationTool extends Tool {
         return false;
 
       // Convert the glTF into a RenderGraphic.
-      const id = iModel.transientIds.next;
+      const id = iModel.transientIds.getNext();
       let graphic = await readGltfGraphics({
         gltf: new Uint8Array(buffer),
         iModel,
@@ -86,7 +86,7 @@ export class GltfDecorationTool extends Tool {
         pickableOptions: {
           id,
           // The modelId must be different from the pickable Id for the decoration to be selectable and hilite-able.
-          modelId: iModel.transientIds.next,
+          modelId: iModel.transientIds.getNext(),
         },
       });
 

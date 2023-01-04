@@ -2,6 +2,72 @@
   "name": "@itwin/appui-layout-react",
   "entries": [
     {
+      "version": "3.5.1",
+      "tag": "@itwin/appui-layout-react_v3.5.1",
+      "date": "Thu, 15 Dec 2022 16:38:28 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.0",
+      "tag": "@itwin/appui-layout-react_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Expose onMouseEnter and onMouseLeave events for a FloatingWidget."
+          },
+          {
+            "comment": "upgrade to node 18"
+          },
+          {
+            "comment": "Number sort"
+          },
+          {
+            "comment": "Close widget overflow popup when panel is collapsed."
+          },
+          {
+            "comment": "Bring panel handle on top of panel splitter"
+          },
+          {
+            "comment": "Unpin classnames package, enable allowSynteticDefaultImports to use latest."
+          },
+          {
+            "comment": "Deprecate all components."
+          },
+          {
+            "comment": "Use --buic-toolbar-opacity to set the opacity of toolbar items."
+          },
+          {
+            "comment": "Update TabState to honor allowedPanelTargets when creating new widgets."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.7",
+      "tag": "@itwin/appui-layout-react_v3.4.7",
+      "date": "Wed, 30 Nov 2022 14:28:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.6",
+      "tag": "@itwin/appui-layout-react_v3.4.6",
+      "date": "Tue, 22 Nov 2022 14:24:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.5",
+      "tag": "@itwin/appui-layout-react_v3.4.5",
+      "date": "Thu, 17 Nov 2022 21:32:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.4",
+      "tag": "@itwin/appui-layout-react_v3.4.4",
+      "date": "Thu, 10 Nov 2022 19:32:17 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.4.3",
       "tag": "@itwin/appui-layout-react_v3.4.3",
       "date": "Fri, 28 Oct 2022 13:34:57 GMT",

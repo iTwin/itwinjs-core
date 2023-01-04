@@ -7,13 +7,14 @@ import { Range3d } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("IModelConnection", () => {
   describe("displayed extents", () => {
     const defaultExtents = new Range3d(0, 0, 0, 1, 1, 1);
     let imodel: IModelConnection;
 
-    before(async () => IModelApp.startup());
+    before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
     beforeEach(() => imodel = createBlankConnection(undefined, undefined, defaultExtents));
     afterEach(async () => imodel.close());
     after(async () => IModelApp.shutdown());
@@ -27,6 +28,16 @@ describe("IModelConnection", () => {
       expect(imodel.displayedExtents.isAlmostEqual(new Range3d(0, -1, 0, 2, 1, 1))).to.be.true;
       imodel.expandDisplayedExtents(new Range3d(-100, 0, 0, 0, 0, 100));
       expect(imodel.displayedExtents.isAlmostEqual(new Range3d(-100, -1, 0, 2, 1, 100))).to.be.true;
+    });
+
+    it("onDisplayedExtentsExpansion event triggers upon expansion", () => {
+      let listenerCalled = false;
+      const removeMe = imodel.onDisplayedExtentsExpansion.addListener(() => {
+        listenerCalled = true;
+      });
+      imodel.expandDisplayedExtents(new Range3d(0, -4, 4, 8, 0, 4));
+      removeMe();
+      expect(listenerCalled).to.be.true;
     });
 
     it("doesn't contract", () => {

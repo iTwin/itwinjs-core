@@ -19,7 +19,8 @@ import {
 import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
 import { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
 
-// eslint-disable-next-line deprecation/deprecation
+/* eslint-disable deprecation/deprecation */
+
 const PresentationTable = tableWithUnifiedSelection(Table);
 
 describe("Table withUnifiedSelection", () => {

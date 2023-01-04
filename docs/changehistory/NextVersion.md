@@ -5,164 +5,60 @@ publish: false
 
 Table of contents:
 
+- [Electron 22 support](#electron-22-support)
 - [Display system](#display-system)
-  - [Reality model display customization](#reality-model-display-customization)
-  - [View padding](#view-padding)
-- [Presentation](#presentation)
-  - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
-  - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
-- [Element aspect ids](#element-aspect-ids)
-- [AppUi](#appui)
-- [New packages](#new-packages)
-  - [@itwin/map-layers-formats](#itwinmap-layers-formats)
-- [Geometry](#geometry)
-  - [Polyface](#polyface)
+  - [Eye-dome lighting of Point Clouds](#eye-dome-lighting-of-point-clouds)
+  - [Smooth viewport resizing](#smooth-viewport-resizing)
+  - [Pickable view overlays](#pickable-view-overlays)
 - [Deprecations](#deprecations)
-  - [@itwin/components-react](#itwincomponents-react)
-  - [@itwin/core-backend](#itwincore-backend)
-  - [@itwin/core-geometry](#itwincore-geometry)
-  - [@itwin/core-transformer](#itwincore-transformer)
+  - [@itwin/core-bentley](#itwincore-bentley)
+  - [@itwin/core-frontend](#itwincore-frontend)
+  - [@itwin/appui-react](#itwinappui-react)
+
+## Electron 22 support
+
+In addition to already supported Electron versions, iTwin.js now supports [Electron 22](https://www.electronjs.org/blog/electron-22-0).
 
 ## Display system
 
-### Reality model display customization
+### Eye-Dome Lighting of Point Clouds
 
-You can now customize various aspects of how a reality model is displayed within a [Viewport]($frontend) by applying your own [RealityModelDisplaySettings]($common) to the model. For contextual reality models, use [ContextRealityModel.displaySettings]($common); for persistent reality [Model]($backend)s, use [DisplayStyleSettings.setRealityModelDisplaySettings]($common).
+You can now apply eye-dome lighting (EDL) to point cloud reality models. This effect helps accentuate the depth, shape, and surface of a point cloud model. This is particularly helpful when a point cloud model lacks color data and would otherwise appear fully monochrome. The EDL settings are specified independently for each point cloud.
 
-For all types of reality models, you can customize how the model's color is mixed with a color override applied by a [FeatureAppearance]($common) or a [SpatialClassifier]($common). [RealityModelDisplaySettings.overrideColorRatio]($common) defaults to 0.5, mixing the two colors equally, but you can adjust it to any value between 0.0 (use only the model's color) and 1.0 (use only the override color).
+Note: EDL only applies when camera is enabled in the view.
 
-Point clouds provide the following additional customizations:
+To apply eye-dome lighting to a point cloud, you must apply a [RealityModelDisplaySettings]($common) to the model, customizing its point cloud display settings to utilize the eye-dome lighting properties, described below:
 
-- [PointCloudDisplaySettings.sizeMode]($common) controls how the size of each point in the cloud is computed - either as a specific radius in pixels via [PointCloudDisplaySettings.pixelSize]($common), or based on the [Tile]($frontend)'s voxel size in meters.
-- When using voxel size mode, points can be scaled using [PointCloudDisplaySettings.voxelScale]($common) and clamped to a range of pixel sizes using [PointCloudDisplaySettings.minPixelsPerVoxel]($common) and [PointCloudDisplaySettings.maxPixelsPerVoxel]($common).
-- [PointCloudDisplaySettings.shape]($common) specifies whether to draw rounded points or square points.
+- [PointCloudDisplaySettings.edlMode]($common) specifies the mode to use for EDL. This defaults to "off". See [PointCloudEDLMode]($common) for more details.
+- [PointCloudDisplaySettings.edlStrength]($common) specifies the strength value for the EDL effect, a positive floating point number. This defaults to 5.0.
+- [PointCloudDisplaySettings.edlRadius]($common) specifies a radius value for the EDL effect, a positive floating point number which determines how far away in pixels to sample for depth change. This defaults to 2.0.
+- [PointCloudDisplaySettings.edlFilter]($common) specifies a flag for whether or not to apply a filtering pass in the EDL effect; this only applies if edlMode is "full". This defaults to 1.0.
+- [PointCloudDisplaySettings.edlMixWts1]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the full image when combining it with the half and quarter sized ones; this only applies if edlMode is "full". This defaults to 1.0.
+- [PointCloudDisplaySettings.edlMixWts2]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the half image when combining it with the full and quarter sized ones; this only applies if edlMode is "full". This defaults to 0.5.
+- [PointCloudDisplaySettings.edlMixWts4]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the full image when combining it with the full and half sized ones; this only applies if edlMode is "full". This defaults to 0.25.
 
-### View padding
+### Smooth viewport resizing
 
-Functions like [ViewState.lookAtVolume]($frontend) and [Viewport.zoomToElements]($frontend) fit a view to a specified volume. They accept a [MarginOptions]($frontend) that allows the caller to customize how tightly the view fits to the volume, via [MarginPercent]($frontend). However, the amount by which the volume is enlarged to add extra space can yield surprising results. For example, a [MarginPercent]($frontend) that specifies a margin of 25% on each side - `{left: .25, right: .25, top: .25, bottom: .25}` - actually *doubles* the width and height of the volume, adding 50% of the original volume's size to each side. Moreover, [MarginPercent]($frontend)'s constructor clamps the margin values to a minimum of zero and maximum of 0.25.
+Previously, when a [Viewport]($frontend)'s canvas was resized there would be a delay of up to one second during which the viewport's contents would appear stretched or squished, before they were redrawn to match the new canvas dimensions. This was due to the unavailability of [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) in some browsers. Now that `ResizeObserver` is supported by all major browsers, we are able to use it to make the contents of the viewport update smoothly during a resize operation.
 
-Now, [MarginOptions]($frontend) has an alternative way to specify how to adjust the size of the viewed volume, using [MarginOptions.paddingPercent]($frontend). Like [MarginPercent]($frontend), a [PaddingPercent]($frontend) specifies the extra space as a percentage of the original volume's space on each side - though it may also specify a single padding to be applied to all four sides, or omit any side that should have no padding applied. For example,
+### Pickable view overlays
 
-```
-{paddingPercent: {{left: .2, right: .2, top: .2, bottom: .2}}
-// is equivalent to
-{paddingPercent: .2}
-```
-
-and
-
-```
-{paddingPercent: {left: 0, top: 0, right: .5, bottom: .5}}
-// is equivalent to
-{paddingPercent: {right: .5, bottom: .5}
-```
-
-Moreover, [PaddingPercent]($frontend) imposes no constraints on the padding values. They can even be negative, which causes the volume to shrink instead of expand by **subtracting** a percentage of the original volume's size from one or more sides.
-
-The padding computations are more straightforward than those used for margins. For example, `{paddingPercent: 0.25}` adds 25% of the original volume's size to each side, whereas the equivalent `marginPercent` adds 50% to each side.
-
-Note that both margins and padding apply only to 2d views, or to 3d views with the camera turned off; and that additional extra space will be allocated on either the top and bottom or left and right to preserve the viewport's aspect ratio.
-
-## Presentation
-
-### Controlling in-memory cache sizes
-
-The presentation library uses a number of SQLite connections, each of which have an associated in-memory page cache. Ability to control the size of these caches on the backend has been added to allow consumers fine-tune their configuration based on their memory restrictions and use cases.
-
-The configuration is done when initializing [Presentation]($presentation-backend) or creating a [PresentationManager]($presentation-backend):
-
-```ts
-Presentation.initialize({
-  caching: {
-    // use 8 megabytes page cache for worker connections to iModels
-    workerConnectionCacheSize: 8 * 1024 * 1024,
-    // use a disk-based hierarchy cache with a 4 megabytes in-memory page cache
-    hierarchies: {
-      mode: HierarchyCacheMode.Disk,
-      memoryCacheSize: 4 * 1024 * 1024,
-    },
-  },
-});
-```
-
-See the [Caching documentation page](../presentation/advanced/Caching.md) for more details on various caches used by presentation system.
-
-### Changes to infinite hierarchy prevention
-
-The idea of infinite hierarchy prevention is to stop producing hierarchy when we notice duplicate ancestor nodes. See more details about that in the [Infinite hierarchy prevention page](../presentation/hierarchies/InfiniteHierarchiesPrevention.md).
-
-Previously, when a duplicate node was detected, our approach to handle the situation was to just hide the duplicate node altogether. However, in some situations that turned out to be causing mismatches between what we get through a nodes count request and what we get through a nodes request (e.g. the count request returns `2`, but the nodes request returns only 1 node). There was no way to keep the count request efficient with this approach of handling infinite hierarchies.
-
-The new approach, instead of hiding the duplicate node, shows it, but without any children. This still "breaks" the hierarchy when we want that, but keeps the count and nodes in sync.
-
-#### Example
-
-Say, we have two instances A and B and they point to each other through a relationship:
-
-```
-A -> refers to -> B
-B -> refers to -> A
-```
-
-With presentation rules we can set up a hierarchy where root node is A, its child is B, whose child is again A, and so on.
-
-With previous approach the produced hierarchy "breaks" at the B node and looks like this:
-
-```
-+ A
-+--+ B
-```
-
-With the new approach we "break" at the duplicate A node:
-
-```
-+ A
-+--+ B
-   +--+ A
-```
-
-## Element aspect ids
-
-[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
-the ids returned are not unique from all element ids and may collide.
-
-## AppUi
-
-### Setting allowed panel zones for widgets
-
-When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
-
-## New packages
-
-### @itwin/map-layers-formats
-
-A new `@itwin/map-layers-formats` package has been introduced to provide additional [MapLayerFormat]($frontend)s not delivered as part of `@itwin/core-frontend`. The initial release contains the new `ArgGISFeature` format which allows vector data published by [ArcGIS Feature services](https://enterprise.arcgis.com/en/server/latest/publish-services/windows/what-is-a-feature-service-.htm) to be displayed in a [Viewport]($frontend).
-
-To use this package, you must initialize it by calling [MapLayersFormats.initialize]($map-layers-formats) to register the additional formats. This should be done only **after** [IModelApp.startup]($frontend) has been called.
-
-## Geometry
-
-### Polyface
-
-The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
+A bug preventing users from interacting with [pickable decorations](../learning/frontend/ViewDecorations.md#pickable-view-graphic-decorations) defined as [GraphicType.ViewOverlay]($frontend) has been fixed.
 
 ## Deprecations
 
-### @itwin/components-react
+### @itwin/core-bentley
 
-All the components that were only used by or with the deprecated [Table]($components-react) are now marked as deprecated as well and will be removed in an upcoming version. The Table was deprecated a year ago in favor of the Table component provided in the `@itwin/itwinui-react` package, which do not use any of these parts.
+[ByteStream]($bentley)'s `next` property getters like [ByteStream.nextUint32]($bentley) and [ByteStream.nextFloat64]($bentley) have been deprecated and replaced with corresponding `read` methods like [ByteStream.readUint32]($bentley) and [ByteStream.readFloat64]($bentley). The property getters have the side effect of incrementing the stream's current read position, which can result in surprising behavior and may [trip up code optimizers](https://github.com/angular/angular-cli/issues/12128#issuecomment-472309593) that assume property access is free of side effects.
 
-### @itwin/core-backend
+Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is called. Code optimizers like [Angular](https://github.com/angular/angular-cli/issues/12128#issuecomment-472309593)'s may elide repeated calls to `next` assuming it will return the same value each time. Prefer to use the new [TransientIdSequence.getNext]($bentley) method instead.
 
-The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated in favor of [IModelDb.Views.getViewStateProps]($backend), which accepts the same inputs and returns the same output, but performs some potentially-expensive work on a background thread to avoid blocking the JavaScript event loop.
+### @itwin/core-frontend
 
-The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
- The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
+[ScreenViewport.setEventController]($frontend) was only ever intended to be used by [ViewManager]($frontend). In the unlikely event that you are using it for some (probably misguided) purpose, it will continue to behave as before, but it will be removed in a future major version.
 
-### @itwin/core-geometry
+### @itwin/appui-react
 
-The method [PathFragment.childFractionTChainDistance]($core-geometry) has been deprecated in favor of the correctly spelled method [PathFragment.childFractionToChainDistance]($core-geometry).
+[ModelsTree]($appui-react) and [CategoryTree]($appui-react) were moved to [@itwin/tree-widget-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/tree-widget) package and deprecated in `@itwin/appui-react` packages. They will be removed from `@itwin/appui-react` in future major version.
 
-### @itwin/core-transformer
-
-[IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).
+[SpatialContainmentTree]($appui-react) were deprecated in favor of `SpatialContainmentTree` from [@itwin/breakdown-trees-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/breakdown-trees) package. [SpatialContainmentTree]($appui-react) will be removed in future major version.

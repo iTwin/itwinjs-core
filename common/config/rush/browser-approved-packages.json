@@ -68,7 +68,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/plant-custom-attributes-schema",
@@ -492,7 +492,7 @@
     },
     {
       "name": "buffer",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "cache-require-paths",
@@ -740,7 +740,7 @@
     },
     {
       "name": "i18next-http-backend",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "ignore-styles",
@@ -765,10 +765,6 @@
     {
       "name": "inversify",
       "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "istanbul-instrumenter-loader",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "js-base64",
@@ -1043,10 +1039,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "string_decoder",
-      "allowedCategories": [ "common" ]
-    },
-    {
       "name": "superagent",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -1099,8 +1091,8 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "uuid",
-      "allowedCategories": [ "frontend", "tools" ]
+      "name": "vhacd-js",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "webpack",
@@ -1121,10 +1113,6 @@
     {
       "name": "wtfnode",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "xml-js",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "xmlhttprequest",

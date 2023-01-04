@@ -9,7 +9,6 @@
 import * as React from "react";
 import { CommandHandler, OnItemExecutedFunc } from "@itwin/appui-abstract";
 import { Orientation, SizeProps } from "@itwin/core-react";
-import { ActionItemButton } from "../toolbar/ActionItemButton";
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemProps } from "./ItemProps";
 
@@ -82,7 +81,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     const key = this.getKey(index);
 
     return (
-      <ActionItemButton
+      <ActionItemButton // eslint-disable-line deprecation/deprecation
         key={key}
         actionItem={this}
         onSizeKnown={this.handleSizeKnown}
@@ -90,3 +89,5 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     );
   }
 }
+
+import { ActionItemButton } from "../toolbar/ActionItemButton";

@@ -39,8 +39,8 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   // every entry should look like:
   // "GHSA-xxxx-xxxx-xxxx", // https://github.com/advisories/GHSA-xxxx-xxxx-xxxx pkgName>subDepA>subDepB
   const excludedAdvisories = [
-    "GHSA-f8q6-p94x-37v3", //https://github.com/advisories/GHSA-f8q6-p94x-37v3 minimatch ReDoS
-    "GHSA-76p3-8jx3-jpfq", // https://github.com/advisories/GHSA-76p3-8jx3-jpfq appui>@bentley/react-scripts>loader-utils
+    "GHSA-9c47-m6qq-7p4h", // https://github.com/advisories/GHSA-9c47-m6qq-7p4h appui-test-app>@bentley/react-scripts>eslint-config-react-app>eslint-plugin-import>tsconfig-paths>json5
+    "GHSA-27h2-hvpr-p74q", // https://github.com/advisories/GHSA-27h2-hvpr-p74q backend-integration-tests>azurite>jsonwebtoken
   ];
 
   let shouldFailBuild = false;

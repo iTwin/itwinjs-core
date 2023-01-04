@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Code, DisplayStyle3dProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { Code, DisplayStyle3dProps, EmptyLocalization, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -15,7 +15,7 @@ describe("DisplayStyleState", () => {
     let iModel: IModelConnection;
 
     before(async () => {
-      await IModelApp.startup();
+      await IModelApp.startup({ localization: new EmptyLocalization() });
       iModel = createBlankConnection();
     });
 

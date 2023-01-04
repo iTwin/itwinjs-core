@@ -17,27 +17,109 @@ schedules:
         - release/*
 
 jobs:
-  - template: ci-core.yaml
-    parameters:
-      name: Node_16
-      nodeVersion: 16.x
-      pool:
-        demands: Agent.OS -equals $(platform)
-  - template: ci-core.yaml
-    parameters:
-      name: Node_14_x
-      nodeVersion: 14.x
-      pool:
-        demands: Agent.OS -equals $(platform)
-  - template: ci-core.yaml
-    parameters:
-      name: Node_12
-      nodeVersion: 12.x
-      pool:
-        demands: Agent.OS -equals $(platform)
-  - template: ci-core.yaml
-    parameters:
-      name: Node_12_22
-      nodeVersion: 12.22.0
-      pool:
-        demands: Agent.OS -equals $(platform)
+  - job:
+    variables:
+      - name: linuxPool
+        value: "iModeljs Linux"
+      - name: mac_pool
+        value: iModelTechCI
+      - name: win_pool
+        value: iModelTechCI
+
+    strategy:
+      matrix:
+        "Windows_Node_18":
+          OS: windows-latest
+          platform: Windows_NT
+          name: $(win_pool)
+          node_version: 18.x
+        "Linux_Node_18":
+          OS: ubuntu-latest
+          platform: Linux
+          name: $(linux_pool)
+          node_version: 18.x
+        "MacOS_Node_18":
+          OS: macOS-latest
+          platform: Darwin
+          name: $(mac_pool)
+          node_version: 18.x
+
+        "Windows_Node_16":
+          OS: windows-latest
+          platform: Windows_NT
+          name: $(win_pool)
+          node_version: 16.x
+        "Linux_Node_16":
+          OS: ubuntu-latest
+          platform: Linux
+          name: $(linux_pool)
+          node_version: 16.x
+        "MacOS_Node_16":
+          OS: macOS-latest
+          platform: Darwin
+          name: $(mac_pool)
+          node_version: 16.x
+
+        "Windows_Node_14_x":
+          OS: windows-latest
+          platform: Windows_NT
+          name: $(win_pool)
+          node_version: 14.x
+        "Linux_Node_14_x":
+          OS: ubuntu-latest
+          platform: Linux
+          name: $(linux_pool)
+          node_version: 14.x
+        "MacOS_Node_14_x":
+          OS: macOS-latest
+          platform: Darwin
+          name: $(mac_pool)
+          node_version: 14.x
+
+        "Windows_Node_12":
+          OS: windows-latest
+          platform: Windows_NT
+          name: $(win_pool)
+          node_version: 12.x
+        "Linux_Node_12":
+          OS: ubuntu-latest
+          platform: Linux
+          name: $(linux_pool)
+          node_version: 12.x
+        "MacOS_Node_12":
+          OS: macOS-latest
+          platform: Darwin
+          name: $(mac_pool)
+          node_version: 12.x
+
+        "Windows_Node_12_22":
+          OS: windows-latest
+          platform: Windows_NT
+          name: $(win_pool)
+          node_version: 12.22.0
+        "Linux_Node_12_22":
+          OS: ubuntu-latest
+          platform: Linux
+          name: $(linux_pool)
+          node_version: 12.22.0
+        "MacOS_Node_12_22":
+          OS: macOS-latest
+          platform: Darwin
+          name: $(mac_pool)
+          node_version: 12.22.0
+      maxParallel: 3
+
+    pool:
+      demands:
+        - Agent.OS -equals $(platform)
+
+    timeoutInMinutes: 120
+
+    workspace:
+      clean: all
+
+    steps:
+      - checkout: self
+      - template: ../templates/core-build.yaml
+        parameters:
+          nodeVersion: $(node_version)

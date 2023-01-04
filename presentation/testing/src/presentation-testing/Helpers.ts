@@ -11,6 +11,7 @@ import * as rimraf from "rimraf";
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { Guid } from "@itwin/core-bentley";
 import {
+  EmptyLocalization,
   IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
@@ -49,6 +50,7 @@ export const getTestOutputDir = (): string => {
   return testOutputDir ?? defaultTestOutputDir;
 };
 
+// eslint-disable-next-line deprecation/deprecation
 export { HierarchyCacheMode, PresentationManagerMode, PresentationBackendProps };
 
 /** @public */
@@ -96,6 +98,10 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   // init frontend
   if (!props.frontendApp)
     props.frontendApp = NoRenderApp;
+  props.frontendAppOptions = {
+    localization: new EmptyLocalization(), // Use EmptyLocalization if none is provided
+    ...props.frontendAppOptions,
+  };
   await props.frontendApp.startup(props.frontendAppOptions);
   const defaultFrontendProps: PresentationFrontendProps = {
     presentation: {

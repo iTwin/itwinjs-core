@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
 import { FeatureAppearance, FlatBufferGeometryStream, GeometricElementProps, JsonGeometryStream } from "@itwin/core-common";
-import { BeButtonEvent, DynamicsContext, ElementSetTool, FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp, LocateResponse, Viewport } from "@itwin/core-frontend";
+import { BeButtonEvent, DynamicsContext, ElementSetTool, FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp, LocateResponse, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
 import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool";
 
 /** @alpha Edit tool base class for updating existing elements. */
@@ -40,6 +41,29 @@ export abstract class ModifyElementTool extends ElementSetTool {
       return false;
 
     return this.acceptElementForOperation(hit.sourceId);
+  }
+
+  protected async postFilterIds(arg: Id64Arg): Promise<Id64Arg> {
+    const ids: Id64Array = [];
+
+    for (const id of Id64.iterable(arg)) {
+      if (await this.acceptElementForOperation(id))
+        ids.push(id);
+    }
+
+    return ids;
+  }
+
+  protected override async getGroupIds(id: Id64String): Promise<Id64Arg> {
+    return this.postFilterIds(await super.getGroupIds(id));
+  }
+
+  protected override async getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg> {
+    return this.postFilterIds(await super.getSelectionSetCandidates(ss));
+  }
+
+  protected override async getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg> {
+    return this.postFilterIds(await super.getDragSelectCandidates(vp, origin, corner, method, overlap));
   }
 
   protected setupAccuDraw(): void { }
@@ -138,12 +162,16 @@ export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool im
       return; // Don't need to create graphic if dynamics aren't yet active...
 
     const geometry = this.getGeometryProps(ev, false);
-    if (undefined === geometry)
+    if (undefined === geometry) {
+      this.clearGraphics();
       return;
+    }
 
     const elemProps = this.getElementProps(ev);
-    if (undefined === elemProps?.placement)
+    if (undefined === elemProps?.placement) {
+      this.clearGraphics();
       return;
+    }
 
     if (undefined === this._graphicsProvider) {
       if (this._firstResult) {

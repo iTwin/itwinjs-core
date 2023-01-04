@@ -8,7 +8,7 @@
   },
   "version": "0.0.0",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 < 19.0"
   },
   "private": true,
   "scripts": {
@@ -64,14 +64,14 @@
     "@bentley/react-scripts": "^5.0.0",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
-    "@types/node": "16.11.59",
+    "@types/node": "18.11.5",
     "child_process": "^1.0.2",
     "chrome-launcher": "^0.15.0",
     "cross-env": "^5.1.4",
     "cpx2": "^3.0.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "electron": "^17.0.0",
+    "electron": "^22.0.0",
     "eslint": "^7.11.0",
     "express": "^4.16.3",
     "internal-tools": "workspace:*",
@@ -83,7 +83,6 @@
   },
   "homepage": "http://localhost:3000/",
   "browserslist": [
-    "electron 6.0.0",
     "last 4 chrome version",
     "last 4 firefox version",
     "last 4 safari version",

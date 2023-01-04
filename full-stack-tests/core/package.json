@@ -50,7 +50,7 @@
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
     "fs-extra": "^8.1.0",
-    "electron": "^17.0.0"
+    "electron": "^22.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -62,7 +62,7 @@
     "@types/chai-as-promised": "^7",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.59",
+    "@types/node": "18.11.5",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "assert": "^2.0.0",

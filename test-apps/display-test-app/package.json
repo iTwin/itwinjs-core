@@ -8,7 +8,7 @@
   },
   "version": "1.8.0",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 < 19.0"
   },
   "private": true,
   "scripts": {
@@ -31,17 +31,13 @@
     "test": "",
     "cover": "",
     "copy:config": "internal-tools copy-config",
-    "build:ios-backend": "npm run -s build:backend && webpack --config ./mobile_backend.config --env outdir=./lib/ios --env entry=./lib/backend/MobileMain.js --env bundlename=main",
-    "copy:ios-frontend": "mkdir -p ./lib/ios && rm -rf ./lib/ios/www && cp -R ./build ./lib/ios/www",
-    "build:ios": "npm run -s build:frontend-webpack && npm run -s build:ios-backend && npm run -s copy:ios-frontend && npm run build:ios-env-json",
-    "build:ios-env-json": "ts-node --skip-project ./buildEnvJson.ts",
+    "build:mobile": "npm run -s build:mobile-frontend && npm run -s build:mobile-backend && npm run -s build:mobile-env-json",
+    "build:mobile-frontend": "cross-env PUBLIC_URL=./ npm run -s build:frontend-webpack",
+    "build:mobile-backend": "npm run -s build:backend && webpack --config ./mobile_backend.config --env outdir=./lib/mobile --env entry=./lib/backend/MobileMain.js --env bundlename=main",
+    "build:mobile-env-json": "ts-node --skip-project ./buildEnvJson.ts",
     "build:ios-app": "cd ios/imodeljs-test-app && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme imodeljs-test-app -arch x86_64 -sdk iphonesimulator -configuration Debug",
     "ios": "ts-node --skip-project ./runIosSimulator.ts",
-    "ios:all": "npm run build:ios && npm run build:ios-app && npm run ios",
-    "build:android-backend": "npm run -s build:backend && webpack --config ./mobile_backend.config --env outdir=./lib/android --env entry=./lib/backend/MobileMain.js --env bundlename=main",
-    "install-android-lib": "node ./android/scripts/installAndroidNativeLib.js",
-    "copy:android-assets": "node ./android/scripts/copyAndroidAssets.js",
-    "build:android": "PUBLIC_URL=./ npm run -s build:frontend-webpack && npm run -s build:android-backend && npm run -s copy:android-assets",
+    "ios:all": "npm run build:mobile && npm run build:ios-app && npm run ios",
     "build:android-app": "cd android/imodeljs-test-app && ./gradlew --no-daemon build"
   },
   "repository": {},
@@ -74,7 +70,8 @@
     "@itwin/map-layers-formats": "workspace:*",
     "@itwin/reality-data-client": "0.9.0",
     "@itwin/webgl-compatibility": "workspace:*",
-    "body-parser": "^1.18.2"
+    "body-parser": "^1.18.2",
+    "vhacd-js": "^0.0.1"
   },
   "devDependencies": {
     "@bentley/react-scripts": "^5.0.0",
@@ -91,7 +88,7 @@
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "electron": "^17.0.0",
+    "electron": "^22.0.0",
     "eslint": "^7.11.0",
     "eslint-plugin-deprecation": "1.2.1",
     "eslint-plugin-import": "2.23.4",

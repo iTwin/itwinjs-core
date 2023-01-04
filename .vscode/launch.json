@@ -1546,7 +1546,7 @@
       ]
     },
     {
-      "name": "eslint rule test @bentley/no-internal-barrel-imports",
+      "name": "eslint rule test @itwin/no-internal-barrel-imports",
       "presentation": {
         "group": "6_Misc"
       },

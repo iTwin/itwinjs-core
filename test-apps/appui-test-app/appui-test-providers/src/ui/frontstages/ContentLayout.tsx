@@ -58,7 +58,7 @@ export class ContentLayoutStageContentGroupProvider extends ContentGroupProvider
     return { ...contentGroupProps, contents: newContentsArray };
   }
 
-  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     const savedViewLayoutProps = await getSavedViewLayoutProps(props.id, UiFramework.getIModelConnection());
     if (savedViewLayoutProps) {
       const viewState = savedViewLayoutProps.contentGroupProps.contents[0].applicationData?.viewState;
@@ -158,4 +158,3 @@ export class ContentLayoutStage {
     ContentLayoutStageUiItemsProvider.register(localizationNamespace);
   }
 }
-

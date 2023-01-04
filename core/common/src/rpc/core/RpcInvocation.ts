@@ -14,7 +14,7 @@ import { RpcInterface } from "../../RpcInterface";
 import { SessionProps } from "../../SessionProps";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
-import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
+import { RpcControlChannel, RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
@@ -131,6 +131,7 @@ export class RpcInvocation {
   }
 
   private handleUnknownOperation(error: any): boolean {
+    RpcControlChannel.ensureInitialized();
     return this.protocol.configuration.controlChannel.handleUnknownOperation(this, error);
   }
 

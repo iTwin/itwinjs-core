@@ -1,6 +1,46 @@
 # Change Log - @itwin/appui-layout-react
 
-This log was last generated on Fri, 28 Oct 2022 13:34:57 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Dec 2022 16:38:28 GMT and should not be manually modified.
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:28 GMT
+
+_Version update only_
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:36 GMT
+
+### Updates
+
+- Expose onMouseEnter and onMouseLeave events for a FloatingWidget.
+- upgrade to node 18
+- Number sort
+- Close widget overflow popup when panel is collapsed.
+- Bring panel handle on top of panel splitter
+- Unpin classnames package, enable allowSynteticDefaultImports to use latest.
+- Deprecate all components.
+- Use --buic-toolbar-opacity to set the opacity of toolbar items.
+- Update TabState to honor allowedPanelTargets when creating new widgets.
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:49 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
 
 ## 3.4.3
 Fri, 28 Oct 2022 13:34:57 GMT
