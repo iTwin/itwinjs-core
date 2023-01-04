@@ -496,7 +496,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
       this._graphics = graphics;
-      const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, FrustumPlanes.fromFrustum(this._frustum), projection.worldToViewMap!);
+      const frustumPlanes = this._frustum ? FrustumPlanes.fromFrustum(this._frustum) : FrustumPlanes.createEmpty();
+      const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, frustumPlanes, projection.worldToViewMap!);
       if (undefined !== drawArgs)
         treeRef.draw(drawArgs);
 
