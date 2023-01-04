@@ -95,6 +95,21 @@ yargs.strict(true)
       })
     },
     (argv) => { pseudolocalizeCommand(argv) })
+  .command("copy-assets", "copy assets from @itwin or @bentley dependencies into a destination directory",
+    function (yargs) {
+      return yargs.options({
+        "packageJsonDir": {
+          describe: "The path at which the package.json listing deps that need their assets copied can be found. defaults to '.'"
+        },
+        "nodeModulesDir": {
+          describe: "The path to the node_modules directory where the deps that need their assets copied can be found. defaults to '.'"
+        },
+        "destinationDir": {
+          describe: "the location to copy the assets to. defaults to './lib/assets'"
+        },
+      })
+    },
+    (argv) => { copyAssetsCommand(argv) })
   .help()
   .argv;
 
@@ -141,6 +156,13 @@ function pseudolocalizeCommand(options) {
   const englishDir = options.englishDir ? ["--englishDir", options.englishDir] : [];
   const outOpt = options.out ? ["--out", options.out] : [];
   exec(["node", getScriptPath("pseudolocalize"), ...englishDir, ...outOpt]);
+}
+
+function copyAssetsCommand(options) {
+  const packageJsonDir = options.packageJsonDir ? ["--packageJsonDir", options.packageJsonDir] : [];
+  const nodeModulesDir = options.nodeModulesDir ? ["--nodeModulesDir", options.nodeModulesDir] : [];
+  const destinationDir = options.destinationDir ? ["--destinationDir", options.destinationDir] : [];
+  exec(["node", path.resolve(__dirname, "../scripts/copy-assets.js"), ...packageJsonDir, ...nodeModulesDir, ...destinationDir]);
 }
 
 function exec(cmd) {
