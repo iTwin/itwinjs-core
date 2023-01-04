@@ -4,7 +4,7 @@
   "dockerFile": "./Dockerfile",
   "context": ".",
   "workspaceMount": "",
-  "workspaceFolder": "/workspace/itwinjs-core",
+  "workspaceFolder": "/workspaces/itwinjs-core",
   "extensions": [
     "streetsidesoftware.code-spell-checker",
     "dbaeumer.vscode-eslint",

@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------------------------------
-# Copyright (c) 2022 Bentley Systems, Incorporated. All rights reserved.
+# Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 # Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 #----------------------------------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ RUN \
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" \
   && git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf \
   && ~/.fzf/install --all \
-  && mkdir -p /workspace/itwinjs-core
+  && mkdir -p /workspaces/itwinjs-core
 
-WORKDIR /workspace/itwinjs-core
+WORKDIR /workspaces/itwinjs-core
 CMD ["/usr/bin/zsh"]
