@@ -1088,7 +1088,7 @@ export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = R
 // @public
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
     // @alpha
-    instanceFilter?: string;
+    instanceFilter?: InstanceFilterDefinition;
     parentKey?: TNodeKey;
 }
 

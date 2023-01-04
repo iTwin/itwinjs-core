@@ -11,6 +11,7 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 import { SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
 import { InstanceKey } from "./EC";
+import { InstanceFilterDefinition } from "./InstanceFilterDefinition";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
 import { SelectionScopeProps } from "./selection/SelectionScope";
@@ -63,13 +64,10 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
   parentKey?: TNodeKey;
 
   /**
-   * An instance filter that should be applied for this hierarchy level. This is an
-   * [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#instance-filter) that provides the `this`
-   * symbol for accessing filtered instances' properties.
-   *
+   * An instance filter that should be applied for this hierarchy level.
    * @alpha
    */
-  instanceFilter?: string;
+  instanceFilter?: InstanceFilterDefinition;
 }
 
 /**
