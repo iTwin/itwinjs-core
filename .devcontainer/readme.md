@@ -23,13 +23,13 @@ Install/update VS Code extension "Remote - Containers".
 
 ## How to use the container
 
-Open your iTwin.js repo in VS Code, click the green area in the status bar, and select VS Code command 'Remote-Containers: Reopen Folder in Container'. Once connected, the green section of the status bar should say something like "Dev Container: itwinjs-core-linux".
+Open your iTwin.js repo in VS Code, click the green area in the status bar, and select VS Code command 'Dev Containers: Open Folder in Container'. Once connected, the green section of the status bar should say something like "Dev Container: itwinjs-core-linux".
 
-The _first time_ you "open" the container, you must clone the source code into the working directory, e.g. in VS Code's Terminal, `git clone URL /workspace/itwinjs-core`. If you use a custom NPM package source, you must also configure that (e.g. `npm config set ...`).
+The _first time_ you "open" the container, you must clone the source code into the working directory, e.g. in VS Code's Terminal, `git clone URL /workspaces/itwinjs-core`. If you use a custom NPM package source, you must also configure that (e.g. `npm config set ...`).
 
 As with any copy of the code, you must build iTwin.js inside the container. Use VS Code's Terminal to perform normal build commands such as `rush install`, `rush rebuild`, and `rush test`. You should also have access to the same launch profiles in VS Code for debugging.
 
-When you are done, click the green area in the status bar, and select 'Remote-Containers: Reopen Folder Locally' to switch back to a local view on your host.
+When you are done, click the green area in the status bar, and select 'Dev Containers: Reopen Folder Locally' to switch back to a local view on your host.
 
 ### Notes
 
@@ -37,7 +37,7 @@ For performance reasons (e.g. 10x), we do **not** mount / share source code with
 
 VS Code injects Git authorization tokens into the container, so you can fetch/pull/push as you would otherwise do on the host. VS Code also mounts your .gitconfig file from the host in the container, so your configured name/email/aliases etc. are available in the container.
 
-The first time you "open" a container for a project, it will be built and persisted on your host computer. When first built, there is no source code in the container. However, after you've cloned the first time, the container should retain the source until you either tell VS Code to rebuild the container, or you tell docker to delete it. Source is expected to be cloned to /workspace/itwinjs-core; once you use VS Code's Terminal to clone, VS Code should automatically see the workspace.
+The first time you "open" a container for a project, it will be built and persisted on your host computer. When first built, there is no source code in the container. However, after you've cloned the first time, the container should retain the source until you either tell VS Code to rebuild the container, or you tell docker to delete it. Source is expected to be cloned to /workspaces/itwinjs-core; once you use VS Code's Terminal to clone, VS Code should automatically see the workspace.
 
 ### Terminal
 
