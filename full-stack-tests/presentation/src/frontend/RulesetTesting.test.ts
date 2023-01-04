@@ -9,7 +9,7 @@ import path from "path";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, ContentSpecificationTypes, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { ContentBuilder, HierarchyBuilder } from "@itwin/presentation-testing";
-import { initialize, terminate } from "../IntegrationTests";
+import { initialize, terminate, testLocalization } from "../IntegrationTests";
 
 const iModelPath = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
 
@@ -130,7 +130,7 @@ describe("RulesetTesting", () => {
   before(async () => {
     // __PUBLISH_EXTRACT_START__ Presentation.Testing.Rulesets.Setup
     // initialize presentation-testing
-    await initialize();
+    await initialize({ localization: testLocalization });
 
     // set up for testing iModel presentation data
     iModel = await SnapshotConnection.openFile(iModelPath);

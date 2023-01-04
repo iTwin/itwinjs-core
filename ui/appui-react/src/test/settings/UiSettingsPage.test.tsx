@@ -99,13 +99,13 @@ describe("UiSettingsPage", () => {
     fireEvent.keyDown(thumb!, { key: SpecialKey.ArrowRight });
     await TestUtils.flushAsyncOperations();
     let widgetOpacity = UiFramework.getWidgetOpacity();
-    expect (widgetOpacity).greaterThan(.9);
+    expect(widgetOpacity).greaterThan(.9);
     await TestUtils.flushAsyncOperations();
     // trigger sync event processing
     UiFramework.setWidgetOpacity(.5);
     await TestUtils.flushAsyncOperations();
     widgetOpacity = UiFramework.getWidgetOpacity();
-    expect (widgetOpacity).equals(.5);
+    expect(widgetOpacity).equals(.5);
     wrapper.unmount();
   });
 
@@ -120,13 +120,13 @@ describe("UiSettingsPage", () => {
     fireEvent.keyDown(thumb[0]!, { key: SpecialKey.ArrowRight });
     await TestUtils.flushAsyncOperations();
     let toolbarOpacity = UiFramework.getToolbarOpacity();
-    expect (toolbarOpacity).greaterThan(.5);
+    expect(toolbarOpacity).greaterThan(.5);
     await TestUtils.flushAsyncOperations();
     // trigger sync event processing
     UiFramework.setToolbarOpacity(.9);
     await TestUtils.flushAsyncOperations();
     toolbarOpacity = UiFramework.getToolbarOpacity();
-    expect (toolbarOpacity).equals(.9);
+    expect(toolbarOpacity).equals(.9);
     wrapper.unmount();
   });
 

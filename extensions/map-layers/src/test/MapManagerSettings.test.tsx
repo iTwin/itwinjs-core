@@ -10,7 +10,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import {
-  BackgroundMapSettings, DisplayStyle3dSettings, EmptyLocalization, PlanarClipMaskMode,
+  BackgroundMapSettings, DisplayStyle3dSettings, PlanarClipMaskMode,
   PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings,
 } from "@itwin/core-common";
 import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
@@ -66,7 +66,7 @@ describe("MapManagerSettings", () => {
   };
 
   before(async () => {
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup();
     await TestUtils.initialize();
   });
 

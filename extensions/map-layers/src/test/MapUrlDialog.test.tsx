@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EmptyLocalization, ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
+import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerSource, MapLayerSourceStatus, MapLayerTokenEndpoint, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { Select } from "@itwin/itwinui-react";
 import { assert, expect } from "chai";
@@ -115,7 +115,7 @@ describe("MapUrlDialog", () => {
   };
 
   before(async () => {
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup();
     await TestUtils.initialize();
 
   });
