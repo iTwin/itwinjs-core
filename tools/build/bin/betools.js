@@ -100,6 +100,10 @@ function testCommand(options) {
   process.exit(1);
 }
 
+function getScriptPath(name) {
+  return `"${path.resolve(__dirname, path.join("..", "scripts", name))}"`;
+}
+
 function docsCommand(options) {
   const sourceOpt = options.source ? ["--source", options.source] : [];
   const outOpt = options.out ? ["--out", options.out] : [];
@@ -110,7 +114,7 @@ function docsCommand(options) {
   const excludesGlobOpt = options.excludeGlob ? ["--excludeGlob", options.excludeGlob] : [];
   const indexFileOpt = options.tsIndexFile ? ["--tsIndexFile", options.tsIndexFile] : [];
   const onlyJsonOpt = options.onlyJson ? ["--onlyJson"] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/docs.js"),
+  exec(["node", getScriptPath("docs.js"),
     ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt, ...includesOpt,
     ...excludesOpt, ...excludesGlobOpt, ...indexFileOpt, ...onlyJsonOpt]);
 }
@@ -120,19 +124,19 @@ function extractCommand(options) {
   const outOpt = options.out ? ["--out", options.out] : [];
   const fileExt = options.fileExt ? ["--fileExt", options.fileExt] : [];
   const recursive = options.recursive ? ["--recursive"] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/extract.js"), ...extractOpt, ...outOpt, ...fileExt, ...recursive]);
+  exec(["node", getScriptPath("extract.js"), ...extractOpt, ...outOpt, ...fileExt, ...recursive]);
 }
 
 function extractApiCommand(options) {
   const entryOpt = options.entry ? ["--entry", options.entry] : [];
   const ignoreTagsOpt = options.ignoreMissingTags ? ["--ignoreMissingTags"] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/extract-api.js"), ...entryOpt, ...ignoreTagsOpt]);
+  exec(["node", getScriptPath("extract-api.js"), ...entryOpt, ...ignoreTagsOpt]);
 }
 
 function pseudolocalizeCommand(options) {
   const englishDir = options.englishDir ? ["--englishDir", options.englishDir] : [];
   const outOpt = options.out ? ["--out", options.out] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/pseudolocalize"), ...englishDir, ...outOpt]);
+  exec(["node", getScriptPath("pseudolocalize"), ...englishDir, ...outOpt]);
 }
 
 function exec(cmd) {
