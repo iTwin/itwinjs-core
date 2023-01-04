@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { ColorDef, RenderMode } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, RenderMode } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { ScreenViewport } from "../../../Viewport";
 import { IModelApp } from "../../../IModelApp";
@@ -36,7 +36,7 @@ describe("Decorations", () => {
   document.body.appendChild(div);
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection();
   });
 

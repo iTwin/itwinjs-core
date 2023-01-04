@@ -10,13 +10,14 @@ import { QueryVisibleFeaturesOptions } from "../../render/VisibleFeature";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport } from "../../Viewport";
 import { createBlankConnection } from "../createBlankConnection";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Visible feature query", () => {
   let imodel: IModelConnection;
   let viewport: ScreenViewport | undefined;
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection("visible-features");
   });
 

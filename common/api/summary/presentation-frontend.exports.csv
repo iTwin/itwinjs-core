@@ -29,6 +29,7 @@ alpha;IModelHierarchyChangeEventArgs
 internal;IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation"
 public;ISelectionProvider
 internal;NodeIdentifier
+internal;NodeState
 internal;NoopFavoritePropertiesStorage 
 internal;OfflineCachingFavoritePropertiesStorage 
 internal;OfflineCachingFavoritePropertiesStorageProps

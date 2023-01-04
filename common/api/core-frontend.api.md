@@ -314,6 +314,8 @@ import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
+import { UintArray } from '@itwin/core-bentley';
+import { UintArrayBuilder } from '@itwin/core-bentley';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -4046,6 +4048,8 @@ export class GraphicBranch implements IDisposable {
     readonly ownsEntries: boolean;
     // @beta
     realityModelDisplaySettings?: RealityModelDisplaySettings;
+    // @internal (undocumented)
+    realityModelRange?: Range3d;
     setViewFlagOverrides(ovr: ViewFlagOverrides): void;
     setViewFlags(flags: ViewFlags): void;
     symbologyOverrides?: FeatureSymbology.Overrides;
@@ -4540,6 +4544,8 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
     get castsShadows(): boolean;
     // (undocumented)
     get imageryProvider(): MapLayerImageryProvider | undefined;
+    // (undocumented)
+    resetTreeOwner(): void;
     get treeOwner(): TileTreeOwner;
 }
 
@@ -5822,6 +5828,8 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
+    get hasSuccessfullyFetchedTile(): boolean;
+    // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
     // (undocumented)
     initialize(): Promise<void>;
@@ -5844,13 +5852,15 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
     // (undocumented)
+    resetStatus(): void;
+    // (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
     // (undocumented)
-    setStatus(status: MapLayerImageryProviderStatus): void;
+    protected setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
     // (undocumented)
-    status: MapLayerImageryProviderStatus;
+    get status(): MapLayerImageryProviderStatus;
     // (undocumented)
     get tileSize(): number;
     // (undocumented)
@@ -6116,6 +6126,8 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
     readonly overlayMap: MapTileTreeReference;
+    // (undocumented)
+    resetMapLayer(index: number, isOverlay: boolean): void;
     // (undocumented)
     setView(newView: ViewState): void;
 }
@@ -8164,7 +8176,7 @@ export interface RealityMeshGraphicParams {
 export interface RealityMeshParams {
     // @alpha
     featureID?: number;
-    indices: Uint16Array;
+    indices: UintArray;
     normals?: Uint16Array;
     positions: QPoint3dBuffer;
     // @alpha
@@ -8195,7 +8207,7 @@ export class RealityMeshParamsBuilder {
     // @internal
     addVertex(position: XYAndZ, uv: XAndY, normal?: number): void;
     finish(): RealityMeshParams;
-    readonly indices: Uint16ArrayBuilder;
+    readonly indices: UintArrayBuilder;
     normals?: Uint16ArrayBuilder;
     readonly positions: QPoint3dBufferBuilder;
     readonly uvs: QPoint2dBufferBuilder;
@@ -9522,6 +9534,10 @@ export class ScreenViewport extends Viewport {
     mouseMovementFromEvent(ev: MouseEvent): XAndY;
     // @internal (undocumented)
     mousePosFromEvent(ev: MouseEvent): XAndY;
+    // @internal
+    onViewManagerAdd(): void;
+    // @internal
+    onViewManagerDrop(): void;
     openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     readonly parentDiv: HTMLDivElement;
     // @internal (undocumented)
@@ -9544,6 +9560,7 @@ export class ScreenViewport extends Viewport {
     resetUndo(): void;
     saveViewUndo(): void;
     setCursor(cursor?: string): void;
+    // @deprecated
     setEventController(controller?: EventController): void;
     // @internal
     static setToParentSize(div: HTMLElement): void;
@@ -11503,6 +11520,8 @@ export class Tiles implements Iterable<{
     purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
     // @internal
     reset(): void;
+    // @internal
+    resetTileTreeOwner(id: any, supplier: TileTreeSupplier): void;
     updateForScheduleScript(scriptSourceElementId: Id64String): Promise<void>;
 }
 
@@ -11638,6 +11657,8 @@ export abstract class TileTreeReference {
     protected get _isLoadingComplete(): boolean;
     // @alpha
     get planarclipMaskPriority(): number;
+    // @internal
+    resetTreeOwner(): void;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }
@@ -13454,6 +13475,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     protected _renderPlanValid: boolean;
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     requestRedraw(): void;
+    // @beta
+    resetMapLayer(index: number, isOverlay: boolean): void;
     get rotation(): Matrix3d;
     // @internal (undocumented)
     get sceneValid(): boolean;
@@ -14299,15 +14322,13 @@ export class WmsUtilities {
 
 // @internal (undocumented)
 export class WmtsCapabilities {
-    constructor(_json: any);
+    constructor(xmlDoc: Document);
     // (undocumented)
     readonly contents?: WmtsCapability.Contents;
     // (undocumented)
     static create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmtsCapabilities | undefined>;
     // (undocumented)
     static createFromXml(xmlCapabilities: string): WmtsCapabilities | undefined;
-    // (undocumented)
-    get json(): any;
     // (undocumented)
     readonly operationsMetadata?: WmtsCapability.OperationMetadata;
     // (undocumented)
@@ -14320,34 +14341,27 @@ export class WmtsCapabilities {
 export namespace WmtsCapability {
     // (undocumented)
     export class BoundingBox {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly crs?: string;
         // (undocumented)
         readonly range?: Range2d;
     }
     // (undocumented)
-    export abstract class Constants {
-        // (undocumented)
-        static readonly GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible";
-        // (undocumented)
-        static readonly GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178;
-    }
-    // (undocumented)
     export class Contents {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
-        getEpsg4326CompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[];
+        getEpsg4326CompatibleTileMatrixSet(): TileMatrixSet[];
         // (undocumented)
-        getGoogleMapsCompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[];
+        getGoogleMapsCompatibleTileMatrixSet(): TileMatrixSet[];
         // (undocumented)
-        readonly layers: WmtsCapability.Layer[];
+        readonly layers: Layer[];
         // (undocumented)
-        readonly tileMatrixSets: WmtsCapability.TileMatrixSet[];
+        readonly tileMatrixSets: TileMatrixSet[];
     }
     // (undocumented)
     export class HttpDcp {
-        constructor(json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly constraintName?: string;
         // (undocumented)
@@ -14357,7 +14371,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class Layer {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly abstract?: string;
         // (undocumented)
@@ -14377,7 +14391,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class Operation {
-        constructor(json: any);
+        constructor(elem: Element);
         // (undocumented)
         get getDcpHttp(): HttpDcp[] | undefined;
         // (undocumented)
@@ -14387,7 +14401,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class OperationMetadata {
-        constructor(json: any);
+        constructor(elem: Element);
         // (undocumented)
         get getCapabilities(): Operation | undefined;
         // (undocumented)
@@ -14396,59 +14410,8 @@ export namespace WmtsCapability {
         get getTile(): Operation | undefined;
     }
     // (undocumented)
-    export abstract class OwsConstants {
-        // (undocumented)
-        static readonly ABSTRACT_XMLTAG = "ows:Abstract";
-        // (undocumented)
-        static readonly ACCESSCONSTRAINTS_XMLTAG = "ows:AccessConstraints";
-        // (undocumented)
-        static readonly ALLOWEDVALUES_XMLTAG = "ows:AllowedValues";
-        // (undocumented)
-        static readonly BOUNDINGBOX_XMLTAG = "ows:BoundingBox";
-        // (undocumented)
-        static readonly CONSTRAINT_XMLTAG = "ows:Constraint";
-        // (undocumented)
-        static readonly DCP_XMLTAG = "ows:DCP";
-        // (undocumented)
-        static readonly FEES_XMLTAG = "ows:Fees";
-        // (undocumented)
-        static readonly GET_XMLTAG = "ows:Get";
-        // (undocumented)
-        static readonly HTTP_XMLTAG = "ows:HTTP";
-        // (undocumented)
-        static readonly IDENTIFIER_XMLTAG = "ows:Identifier";
-        // (undocumented)
-        static readonly KEYWORD_XMLTAG = "ows:Keyword";
-        // (undocumented)
-        static readonly KEYWORDS_XMLTAG = "ows:Keywords";
-        // (undocumented)
-        static readonly LOWERCORNER_XMLTAG = "ows:LowerCorner";
-        // (undocumented)
-        static readonly OPERATION_XMLTAG = "ows:Operation";
-        // (undocumented)
-        static readonly OPERATIONSMETADATA_XMLTAG = "ows:OperationsMetadata";
-        // (undocumented)
-        static readonly POST_XMLTAG = "ows:Post";
-        // (undocumented)
-        static readonly SERVICEIDENTIFICATION_XMLTAG = "ows:ServiceIdentification";
-        // (undocumented)
-        static readonly SERVICETYPE_XMLTAG = "ows:ServiceType";
-        // (undocumented)
-        static readonly SERVICETYPEVERSION_XMLTAG = "ows:ServiceTypeVersion";
-        // (undocumented)
-        static readonly SUPPORTEDCRS_XMLTAG = "ows:SupportedCRS";
-        // (undocumented)
-        static readonly TITLE_XMLTAG = "ows:Title";
-        // (undocumented)
-        static readonly UPPERCORNER_XMLTAG = "ows:UpperCorner";
-        // (undocumented)
-        static readonly VALUE_XMLTAG = "ows:Value";
-        // (undocumented)
-        static readonly WGS84BOUNDINGBOX_XMLTAG = "ows:WGS84BoundingBox";
-    }
-    // (undocumented)
     export class ServiceIdentification {
-        constructor(json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly abstract?: string;
         // (undocumented)
@@ -14466,7 +14429,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class Style {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly identifier?: string;
         // (undocumented)
@@ -14476,7 +14439,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class TileMatrix {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly abstract?: string;
         // (undocumented)
@@ -14498,7 +14461,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class TileMatrixSet {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly abstract?: string;
         // (undocumented)
@@ -14514,7 +14477,7 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class TileMatrixSetLimits {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         limits?: Range2d;
         // (undocumented)
@@ -14522,45 +14485,20 @@ export namespace WmtsCapability {
     }
     // (undocumented)
     export class TileMatrixSetLink {
-        constructor(_json: any);
+        constructor(elem: Element);
         // (undocumented)
         readonly tileMatrixSet: string;
         // (undocumented)
         readonly tileMatrixSetLimits: TileMatrixSetLimits[];
     }
+}
+
+// @internal (undocumented)
+export enum WmtsConstants {
     // (undocumented)
-    export abstract class XmlConstants {
-        // (undocumented)
-        static readonly CONSTRAINT_NAME_FILTER = "Encoding";
-        // (undocumented)
-        static readonly GETCAPABILITIES = "GetCapabilities";
-        // (undocumented)
-        static readonly GETFEATUREINFO = "GetFeatureInfo";
-        // (undocumented)
-        static readonly GETTILE = "GetTile";
-        // (undocumented)
-        static readonly MATRIXHEIGHT_XMLTAG = "MatrixHeight";
-        // (undocumented)
-        static readonly MATRIXWIDTH_XMLTAG = "MatrixWidth";
-        // (undocumented)
-        static readonly SCALEDENOMINATOR_XMLTAG = "ScaleDenominator";
-        // (undocumented)
-        static readonly STYLE_ISDEFAULT = "IsDefault";
-        // (undocumented)
-        static readonly TILEHEIGHT_XMLTAG = "TileHeight";
-        // (undocumented)
-        static readonly TILEMATRIX_XMLTAG = "TileMatrix";
-        // (undocumented)
-        static readonly TILEMATRIXSETLINK_XMLTAG = "TileMatrixSetLink";
-        // (undocumented)
-        static readonly TILEWIDTH_XMLTAG = "TileWidth";
-        // (undocumented)
-        static readonly TOPLEFTCORNER_XMLTAG = "TopLeftCorner";
-        // (undocumented)
-        static readonly WELLKNOWNSCALESET_XMLTAG = "WellKnownScaleSet";
-        // (undocumented)
-        static readonly XLINK_HREF = "xlink:href";
-    }
+    GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible",
+    // (undocumented)
+    GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178
 }
 
 // @internal (undocumented)

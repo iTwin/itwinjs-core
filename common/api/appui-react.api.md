@@ -975,7 +975,7 @@ export interface CardSelectedEventArgs {
     index: number;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface Category {
     // (undocumented)
     children?: string[];
@@ -983,10 +983,10 @@ export interface Category {
     key: string;
 }
 
-// @public
+// @public @deprecated
 export function CategoryTree(props: CategoryTreeProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface CategoryTreeProps {
     activeView?: Viewport;
     allViewports?: boolean;
@@ -1002,7 +1002,7 @@ export interface CategoryTreeProps {
     width: number;
 }
 
-// @alpha (undocumented)
+// @alpha @deprecated (undocumented)
 export class CategoryVisibilityHandler implements IVisibilityHandler {
     constructor(params: CategoryVisibilityHandlerParams);
     // (undocumented)
@@ -1025,7 +1025,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     onVisibilityChange: BeEvent<VisibilityChangeListener>;
 }
 
-// @alpha (undocumented)
+// @alpha @deprecated (undocumented)
 export interface CategoryVisibilityHandlerParams {
     // (undocumented)
     activeView?: Viewport;
@@ -1066,7 +1066,7 @@ export class ChildWindowManager {
     get openChildWindows(): OpenChildWindowInfo[];
 }
 
-// @beta
+// @beta @deprecated
 export enum ClassGroupingOption {
     No = 0,
     Yes = 1,
@@ -1640,7 +1640,7 @@ export function createAction<T extends string, P>(type: T, payload: P): ActionWi
 // @internal @deprecated
 export function createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef;
 
-// @alpha
+// @alpha @deprecated
 export const createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element;
 
 // @public
@@ -2192,8 +2192,9 @@ export class FloatingViewportContentControl extends ViewportContentControl {
 // @beta (undocumented)
 export interface FloatingViewportContentProps {
     contentId: string;
-    initialViewState: ViewState;
+    initialViewState: ViewStateProp;
     onContextMenu?: (e: React_2.MouseEvent) => boolean;
+    viewportRef?: React_2.Ref<ScreenViewport>;
 }
 
 // @alpha
@@ -2928,7 +2929,7 @@ export const getBackstageItemStateFromProps: (props: BackstageItemProps) => Back
 // @internal (undocumented)
 export function getBadgeClassName(badgeType: BadgeType | undefined): "uifw-badge-new" | "uifw-badge-tp" | undefined;
 
-// @alpha
+// @alpha @deprecated
 export function getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise<string[]>;
 
 // @internal (undocumented)
@@ -3444,7 +3445,7 @@ export interface ItemProps extends IconProps {
     tooltipKey?: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface IVisibilityHandler extends IDisposable {
     // (undocumented)
     changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
@@ -3994,10 +3995,10 @@ export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
     render(): React_2.ReactNode;
 }
 
-// @public
+// @public @deprecated
 export function ModelsTree(props: ModelsTreeProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export enum ModelsTreeNodeType {
     // (undocumented)
     Category = 3,
@@ -4013,7 +4014,7 @@ export enum ModelsTreeNodeType {
     Unknown = 0
 }
 
-// @public
+// @public @deprecated
 export interface ModelsTreeProps {
     activeView?: Viewport;
     // @beta
@@ -4036,10 +4037,10 @@ export interface ModelsTreeProps {
     width: number;
 }
 
-// @beta
+// @beta @deprecated
 export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 
-// @alpha
+// @alpha @deprecated
 export class ModelsVisibilityHandler implements IVisibilityHandler {
     constructor(props: ModelsVisibilityHandlerProps);
     // (undocumented)
@@ -5079,10 +5080,10 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     protected _viewState: ViewState;
 }
 
-// @public
+// @public @deprecated
 export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface SpatialContainmentTreeProps {
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
@@ -5903,7 +5904,7 @@ export interface ToastMessageProps {
     toastTarget: HTMLElement | null;
 }
 
-// @alpha
+// @alpha @deprecated
 export function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
 
 // @public
@@ -6697,14 +6698,14 @@ export function useUiVisibility(): boolean;
 // @internal
 export function useUpdateNineZoneSize(frontstageDef: FrontstageDef): void;
 
-// @alpha
+// @alpha @deprecated
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
     filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
     isFiltering: boolean;
     nodeHighlightingProps: HighlightableTreeProps | undefined;
 };
 
-// @alpha
+// @alpha @deprecated
 export const useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element;
 
 // @internal (undocumented)
@@ -6862,10 +6863,10 @@ export class ViewUtilities {
     static viewSupportsCamera(viewport: ScreenViewport): boolean;
 }
 
-// @alpha
+// @alpha @deprecated
 export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
-// @alpha
+// @alpha @deprecated
 export interface VisibilityStatus {
     // (undocumented)
     isDisabled?: boolean;
@@ -6875,7 +6876,7 @@ export interface VisibilityStatus {
     tooltip?: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler {
     constructor(params: VisibilityTreeEventHandlerParams);
     // (undocumented)
@@ -6888,7 +6889,7 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
     onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs): Subscription | undefined;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEventHandlerParams {
     // (undocumented)
     selectionPredicate?: VisibilityTreeSelectionPredicate;
@@ -6896,7 +6897,7 @@ export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEv
     visibilityHandler: IVisibilityHandler | undefined;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface VisibilityTreeFilterInfo {
     // (undocumented)
     activeMatchIndex?: number;
@@ -6904,13 +6905,13 @@ export interface VisibilityTreeFilterInfo {
     filter: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export const visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element;
 
-// @alpha
+// @alpha @deprecated
 export function VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element;
 
-// @alpha
+// @alpha @deprecated
 export interface VisibilityTreeNoFilteredDataProps {
     // (undocumented)
     message: string;
@@ -6918,7 +6919,7 @@ export interface VisibilityTreeNoFilteredDataProps {
     title: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
 // @public @deprecated

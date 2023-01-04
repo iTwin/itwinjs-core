@@ -284,6 +284,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `elementId=Id` The element for which to obtain graphics
   * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
 * `dta reality model settings` - Open a dialog in which settings controlling the display of reality models within the currently-selected viewport can be edited. Currently, it always edits the settings for the first reality model it can find. It produces an error if no reality models are found.
+* `dta clip element geometry` - Starts a tool that clips the view based on the geometry of the selected element(s).
 
 ## Editing
 
