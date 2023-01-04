@@ -135,20 +135,6 @@ class MainActivity : AppCompatActivity() {
         host = IModelJsHost(this, alwaysExtractAssets, true)
         host.startup()
 
-        var args = "&standalone=true"
-        loadEnvJson()
-        env.optStringNotEmpty("IMJS_STANDALONE_FILENAME")?.let { fileName ->
-            // ensure fileName already exists in the external files
-            getExternalFilesDir(BIM_CACHE_DIR)?.let { filesDir ->
-                val fullPath = File(filesDir, fileName)
-                if (fullPath.exists())
-                    args += "&iModelName=${Uri.encode(fullPath.toString())}"
-            }
-        }
-
-        if (env.has("IMJS_IGNORE_CACHE"))
-            args += "&ignoreCache=true"
-
         val webView = WebView(this)
         // using a WebViewAssetLoader so that the localization json files load properly
         // the version of i18next-http-backend we're using tries to use the fetch API with file URL's (apparently fixed in version 2.0.1)
@@ -187,6 +173,21 @@ class MainActivity : AppCompatActivity() {
 
         host.webView = webView
         setContentView(webView)
+
+        var args = "&standalone=true"
+        loadEnvJson()
+        env.optStringNotEmpty("IMJS_STANDALONE_FILENAME")?.let { fileName ->
+            // ensure fileName already exists in the external files
+            getExternalFilesDir(BIM_CACHE_DIR)?.let { filesDir ->
+                val fullPath = File(filesDir, fileName)
+                if (fullPath.exists())
+                    args += "&iModelName=${Uri.encode(fullPath.toString())}"
+            }
+        }
+
+        if (env.has("IMJS_IGNORE_CACHE"))
+            args += "&ignoreCache=true"
+
         host.loadEntryPoint(env.optStringNotEmpty("IMJS_DEBUG_URL") ?: "https://${WebViewAssetLoader.DEFAULT_DOMAIN}/assets/frontend/index.html", args)
     }
 
