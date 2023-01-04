@@ -44,7 +44,7 @@ export class RenderContext {
     this._viewport = vp;
     this.viewFlags = vp.viewFlags;
     this.frustum = frustum ? frustum : vp.getFrustum();
-    this.frustumPlanes = new FrustumPlanes(this.frustum);
+    this.frustumPlanes = FrustumPlanes.fromFrustum(this.frustum);
   }
 
   /** Given a point in world coordinates, determine approximately how many pixels it occupies on screen based on this context's frustum. */
