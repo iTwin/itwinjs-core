@@ -14,7 +14,7 @@ parameters:
   - name: outputDir
     type: string
     default: $(Pipeline.Workspace)/tempDocsBuild
-  - name: downloadCurrentBuildArtifacts
+  - name: useCurrentBisDocsArtifact
     type: boolean
     default: false
   - name: shouldPublish
@@ -66,7 +66,7 @@ jobs:
         parameters:
           workingDir: ${{ parameters.workingDir }}
           stagingDir: ${{ parameters.stagingDir }}
-          downloadCurrentBuildArtifacts: ${{ parameters.downloadCurrentBuildArtifacts }}
+          useCurrentBisDocsArtifact: ${{ parameters.useCurrentBisDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
       - script: npm install @bentley/bemetalsmith@4.3.x
@@ -81,7 +81,7 @@ jobs:
       - publish: ${{ parameters.stagingDir }}/config/.updated.json
         artifact: .updated.json
         displayName: Publish Pipeline Artifact - .updated.json
-        condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
       - publish: ${{ parameters.outputDir }}
         artifact: DocsBuild
