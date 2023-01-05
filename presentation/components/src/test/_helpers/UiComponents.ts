@@ -5,26 +5,27 @@
 
 import * as faker from "faker";
 import * as moq from "typemoq";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
 import { BeEvent } from "@itwin/core-bentley";
 import { NodeKey, RegisteredRuleset, Ruleset, VariableValue } from "@itwin/presentation-common";
 import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
-import { IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
-import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { DelayLoadedTreeNodeItem } from "@itwin/components-react";
-import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
+import {
+  IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager, RulesetManager, RulesetVariablesManager,
+} from "@itwin/presentation-frontend";
+import { PresentationTreeNodeItem } from "../../presentation-components/tree/DataProvider";
 
 /**
  * @internal Used for testing only.
  */
-export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {
+export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): PresentationTreeNodeItem => {
   const node = {
     id: faker.random.uuid(),
     parentId,
     label: PropertyRecord.fromString(faker.random.word()),
     description: faker.random.words(),
     hasChildren: faker.random.boolean(),
+    key: key ? key : createRandomECInstancesNodeKey(),
   };
-  (node as any)[PRESENTATION_TREE_NODE_KEY] = key ? key : createRandomECInstancesNodeKey();
   return node;
 };
 

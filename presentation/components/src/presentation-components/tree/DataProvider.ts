@@ -17,8 +17,9 @@ import { Presentation } from "@itwin/presentation-frontend";
 import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
+import { PresentationInstanceFilterInfo } from "../instance-filter-builder/PresentationInstanceFilterBuilder";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
-import { CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY } from "./Utils";
+import { CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
 
 /**
  * Properties for creating a `PresentationTreeDataProvider` instance.
@@ -149,7 +150,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
    * **Warning:** the `node` must be created by this data provider.
    */
   public getNodeKey(node: TreeNodeItem): NodeKey {
-    return (node as any)[PRESENTATION_TREE_NODE_KEY];
+    return (node as PresentationTreeNodeItem).key;
   }
 
   /**
@@ -195,6 +196,18 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
       filterText: filter,
     });
   }
+}
+
+/** @alpha */
+export interface PresentationTreeNodeItem extends DelayLoadedTreeNodeItem {
+  key: NodeKey;
+  filterInfo?: PresentationInstanceFilterInfo;
+  tooManyChildren?: boolean;
+}
+
+/** @alpha */
+export function isPresentationTreeNodeItem(item: TreeNodeItem): item is PresentationTreeNodeItem {
+  return (item as PresentationTreeNodeItem).key !== undefined;
 }
 
 class MemoizationHelpers {

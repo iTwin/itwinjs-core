@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { PageOptions } from "@itwin/components-react";
+import { PageOptions, TreeNodeItem } from "@itwin/components-react";
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CheckBoxState } from "@itwin/core-react";
@@ -16,9 +16,10 @@ import {
   PromiseContainer, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
-import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
+import { isPresentationTreeNodeItem, PresentationTreeDataProvider, PresentationTreeNodeItem } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
+import { PropertyRecord } from "@itwin/appui-abstract";
 
 describe("TreeDataProvider", () => {
 
@@ -440,4 +441,20 @@ describe("TreeDataProvider", () => {
 
   });
 
+});
+
+describe("isPresentationTreeNodeItem", () => {
+  it("returns correct values", () => {
+    const presentationItem: PresentationTreeNodeItem = {
+      id: "presentation_item_id",
+      key: createRandomECInstancesNodeKey(),
+      label: PropertyRecord.fromString("Presentation Item"),
+    };
+    const simpleItem: TreeNodeItem = {
+      id: "simple_item_id",
+      label: PropertyRecord.fromString("Simple Item"),
+    };
+    expect(isPresentationTreeNodeItem(presentationItem)).to.be.true;
+    expect(isPresentationTreeNodeItem(simpleItem)).to.be.false;
+  });
 });
