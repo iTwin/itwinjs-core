@@ -111,7 +111,7 @@
     "react-compound-slider": "^2.5.0",
     "react-select": "3.1.0",
     "resize-observer-polyfill": "1.5.1",
-    "svg-sprite-loader": "4.2.1"
+    "svg-sprite-loader": "^6.0.10"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",

@@ -43,7 +43,7 @@
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "svg-sprite-loader": "4.2.1"
+    "svg-sprite-loader": "^6.0.10"
   },
   "eslintConfig": {
     "plugins": [
