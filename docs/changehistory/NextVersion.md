@@ -45,7 +45,7 @@ A bug preventing users from interacting with [pickable decorations](../learning/
 
 ## API promotions
 
-The following APIs have been promoted to `@public` indicating they are now part of their respective packages' stability contract.
+The following APIs have been promoted to `@public`, indicating they are now part of their respective packages' stability contract.
 
 ### @itwin/core-bentley
 
