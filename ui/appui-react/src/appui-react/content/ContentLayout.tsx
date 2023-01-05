@@ -55,6 +55,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
 
   const handleMouseDown = React.useCallback(() => {
     ContentViewManager.setActiveContent(content);
+    setIsActive(true);
   }, [content]);
 
   React.useEffect(() => {

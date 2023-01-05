@@ -5,7 +5,7 @@
 import { IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { ContentDialog, ContentDialogManager, FrontstageManager } from "@itwin/appui-react";
 import { IModelApp, Tool } from "@itwin/core-frontend";
-import React from "react";
+import * as React from "react";
 import { ISVPIPView } from "../ui/dialogs/ISVPIPView";
 import panoramaconSvg from "@bentley/icons-generic/icons/panorama.svg";
 
@@ -33,7 +33,7 @@ export class ISVPIPViewDialogTool extends Tool {
     if (stage && stage.nineZoneState) {
       const floatingContentCount = stage.floatingContentControls?.length ?? 0;
       // we should not really every support more than 8 floating views
-      if (floatingContentCount < 8 && stage.nineZoneState.size.width > 800 && stage.nineZoneState.size.height > 600) {
+      if (floatingContentCount < 1 && stage.nineZoneState.size.width > 800 && stage.nineZoneState.size.height > 600) {
         x = (.3 * stage.nineZoneState.size.width) + (40 * (floatingContentCount - 1));
         y = (.3 * stage.nineZoneState.size.height) + (40 * (floatingContentCount - 1));
       }
@@ -82,7 +82,7 @@ export function IModelViewDialog({ x, y, id, title }: { x?: number, y?: number, 
       x={x}
       y={y}
     >
-      <ISVPIPView contentId={id} showViewPicker= {true}/>
+      <ISVPIPView contentId={id} showViewPicker= {false}/>
     </ContentDialog>
   );
 }

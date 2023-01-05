@@ -72,7 +72,6 @@ export function ISVPIPView({ contentId, showViewPicker }: { contentId: string, s
 
     const isChangeForCurrentFloatingViewport = viewContentControl instanceof FloatingViewportContentControl;
     if (isChangeForCurrentFloatingViewport) {
-      setInitialViewState(args.viewport.view);
       const noChangeRequired = ((args.viewport.view.is2d() && mainViewportOnFrontstage?.view.is3d()) ||
       (args.viewport.view.is3d() && mainViewportOnFrontstage?.view.is2d()));
       if (!noChangeRequired) {
@@ -143,6 +142,7 @@ export function ISVPIPView({ contentId, showViewPicker }: { contentId: string, s
       }
 
       if (initialViewIdToLoad) {
+        // This block is twisted beyond recognition. We need a better way to fit view from core team here.
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         activeIModelConnection.views.load(initialViewIdToLoad).then((viewState: ViewState) => {
           setInitialViewState(viewState);
