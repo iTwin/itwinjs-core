@@ -5,13 +5,13 @@
 import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";
+import path from "path";
+import { IModelDb, StandaloneDb } from "@itwin/core-backend";
 import { Id64 } from "@itwin/core-bentley";
-import { SnapshotDb } from "@itwin/core-backend";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { initialize, terminate } from "../IntegrationTests";
-import path from "path";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
@@ -26,7 +26,7 @@ const RULESET_1: Ruleset = {
 };
 
 describe("RulesEmbedding", () => {
-  let imodel: SnapshotDb;
+  let imodel: IModelDb;
   let embedder: RulesetEmbedder;
   let ruleset: Ruleset;
 
@@ -41,7 +41,7 @@ describe("RulesEmbedding", () => {
   beforeEach(async () => {
     const iModelPath = path.resolve(__dirname, "RulesetEmbedding.test.bim");
     fs.existsSync(iModelPath) && fs.unlinkSync(iModelPath);
-    imodel = SnapshotDb.createEmpty(iModelPath, {
+    imodel = StandaloneDb.createEmpty(iModelPath, {
       rootSubject: {
         name: "presentation-full-stack-tests/RulesetEmbedding",
       },
