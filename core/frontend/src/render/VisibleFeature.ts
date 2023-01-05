@@ -15,7 +15,6 @@ import { Pixel } from "./Pixel";
 
 /** Represents a [Feature]($common) determined to be visible within a [[Viewport]].
  * @see [[Viewport.queryVisibleFeatures]].
- * @beta
  */
 export interface VisibleFeature {
   /** The Id of the [Element]($backend) associated with the feature. May be invalid or transient. */
@@ -34,7 +33,6 @@ export interface VisibleFeature {
  * This method of determining visibility considers a feature "visible" if it lit up at least one pixel.
  * @note A pixel that is behind another, transparent pixel is not considered visible.
  * @see [[QueryVisibleFeaturesOptions]].
- * @beta
  */
 export interface QueryScreenFeaturesOptions {
   /** Union discriminator for [[QueryVisibleFeaturesOptions]]. */
@@ -52,7 +50,6 @@ export interface QueryScreenFeaturesOptions {
  * @note If a clip volume is applied to the view, features contained in tiles that *intersect* the clip volume are considered visible regardless of whether
  * their geometry would actually be entirely clipped out by the clip volume.
  * @see [[QueryVisibleFeaturesOptions]].
- * @beta
  */
 export interface QueryTileFeaturesOptions {
   /** Union discriminator for [[QueryVisibleFeaturesOptions]]. */
@@ -63,14 +60,12 @@ export interface QueryTileFeaturesOptions {
 
 /** Options specifying how to query for visible [Feature]($common)s.
  * @see [[Viewport.queryVisibleFeatures]].
- * @beta
  */
 export type QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions;
 
 /** A function supplied to [[Viewport.queryVisibleFeatures]] to process the results. The iterable supplied to the callback consists of all of the
  * [Feature]($common)s determined to be visible. The same feature may recur multiple times.
  * @note The iterable supplied to the callback is usable only within the callback. Once the callback exits, the iterable becomes empty.
- * @beta
  */
 export type QueryVisibleFeaturesCallback = (features: Iterable<VisibleFeature>) => void;
 
