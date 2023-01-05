@@ -10,10 +10,8 @@ Table of contents:
   - [Eye-dome lighting of Point Clouds](#eye-dome-lighting-of-point-clouds)
   - [Smooth viewport resizing](#smooth-viewport-resizing)
   - [Pickable view overlays](#pickable-view-overlays)
-- [Deprecations](#deprecations)
-  - [@itwin/core-bentley](#itwincore-bentley)
-  - [@itwin/core-frontend](#itwincore-frontend)
-  - [@itwin/appui-react](#itwinappui-react)
+- [API promotions](#api-promotions)
+- [API deprecations](#api-deprecations)
 
 ## Electron 22 support
 
@@ -45,7 +43,25 @@ Previously, when a [Viewport]($frontend)'s canvas was resized there would be a d
 
 A bug preventing users from interacting with [pickable decorations](../learning/frontend/ViewDecorations.md#pickable-view-graphic-decorations) defined as [GraphicType.ViewOverlay]($frontend) has been fixed.
 
-## Deprecations
+## API promotions
+
+The following APIs have been promoted to `@public` indicating they are now part of their respective packages' stability contract.
+
+### @itwin/core-bentley
+
+- [AccessToken]($bentley)
+
+### @itwin/core-common
+
+- [AuthorizationClient]($common)
+- [FrustumPlanes]($common)
+
+### @itwin/core-frontend
+
+- [Viewport.queryVisibleFeatures]($frontend)
+- [Viewport.lookAt]($frontend) and [ViewState3d.lookAt]($frontend)
+
+## API deprecations
 
 ### @itwin/core-bentley
 
