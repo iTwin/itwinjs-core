@@ -59,7 +59,7 @@ The following APIs have been promoted to `@public` indicating they are now part 
 ### @itwin/core-frontend
 
 - [Viewport.queryVisibleFeatures]($frontend)
-- [Viewport.lookAt]($frontend) and [ViewState3d.lookAt]($frontend)
+- [ViewState3d.lookAt]($frontend)
 
 ## API deprecations
 
