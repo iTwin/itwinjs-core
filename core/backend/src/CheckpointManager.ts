@@ -302,9 +302,11 @@ export class CheckpointManager {
         Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
       return changesetId;
     } catch (error: any) {
-      if (error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
-        return V1CheckpointManager.downloadCheckpoint(request);
-
+      if (error.errorNumber === IModelStatus.NotFound) { // No V2 checkpoint available, try a v1 checkpoint
+        const changeset = await V1CheckpointManager.downloadCheckpoint(request);
+        Logger.logError(loggerCategory, `Got an error downloading v2 checkpoint, but downloaded v1 checkpoint successfully!`, { error, iModelId: request.checkpoint.iModelId, iTwinId: request.checkpoint.iTwinId, requestedChangesetId: request.checkpoint.changeset.id, downloadedChangesetId: changeset});
+        return changeset;
+      }
       throw error; // most likely, was aborted
     }
   }
