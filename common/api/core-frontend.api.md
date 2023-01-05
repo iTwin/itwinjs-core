@@ -1157,13 +1157,9 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     protected _accessTokenRequired: boolean;
     protected fetch(url: URL, options?: RequestInit): Promise<Response>;
-    // (undocumented)
     protected getServiceJson(): Promise<ArcGISServiceMetadata | undefined>;
     // (undocumented)
-    protected _invalidOAuthEndpoint: boolean;
-    // (undocumented)
     protected _lastAccessToken: MapLayerAccessToken | undefined;
-    // (undocumented)
     protected onStatusUpdated(status: MapLayerImageryProviderStatus): void;
 }
 
@@ -1235,7 +1231,7 @@ export class ArcGISTileMap {
 export class ArcGisUtilities {
     // (undocumented)
     static appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
-    static checkForResponseErrorCode(response: Response, request?: URL, reqOptions?: RequestInit): Promise<number | undefined>;
+    static checkForResponseErrorCode(response: Response): Promise<number | undefined>;
     static computeZoomLevelsScales(startZoom?: number, endZoom?: number, latitude?: number, tileSize?: number, screenDpi?: number): {
         zoom: number;
         resolution: number;

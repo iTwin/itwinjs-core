@@ -18,7 +18,6 @@ import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRec
 const tileImageSize = 256, untiledImageSize = 256;
 const earthRadius = 6378137;
 const doDebugToolTips = false;
-const loggerCategory =  "MapLayerImageryProvider.MapLayerImageryProvider";
 
 /** @beta */
 export enum MapLayerImageryProviderStatus {
