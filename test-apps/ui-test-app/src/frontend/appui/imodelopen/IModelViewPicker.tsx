@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "./Common.scss";
 import "./IModelViewPicker.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";

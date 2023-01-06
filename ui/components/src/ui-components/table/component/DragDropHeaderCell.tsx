@@ -6,7 +6,7 @@
  * @module Table
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import * as RDG from "react-data-grid";
 import { CommonProps } from "@bentley/ui-core";

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./Navigation.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { Link } from "react-router-dom";
 

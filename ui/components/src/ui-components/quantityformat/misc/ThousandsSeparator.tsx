@@ -6,7 +6,7 @@
  * @module QuantityFormat
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { Checkbox, CommonProps } from "@bentley/ui-core";
 import { Format, FormatProps, FormatTraits } from "@bentley/imodeljs-quantity";

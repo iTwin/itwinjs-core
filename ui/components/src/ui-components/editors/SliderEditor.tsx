@@ -7,7 +7,7 @@
  */
 
 import "./SliderEditor.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import {
   PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, SliderEditorParams, StandardEditorNames, StandardTypeNames,

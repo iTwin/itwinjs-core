@@ -6,7 +6,7 @@
  * @module Breadcrumb
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
 import { CommonProps } from "@bentley/ui-core";

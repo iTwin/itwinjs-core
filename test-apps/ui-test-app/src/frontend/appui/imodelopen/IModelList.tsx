@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./IModelList.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { SearchBox, Toggle } from "@bentley/ui-core";
 import { IModelInfo } from "@bentley/ui-framework";

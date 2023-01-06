@@ -7,7 +7,7 @@
  */
 
 import "./HueSlider.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { HSVColor } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";

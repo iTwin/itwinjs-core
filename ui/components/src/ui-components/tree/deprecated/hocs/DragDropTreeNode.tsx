@@ -7,7 +7,7 @@
  */
 
 import "./DragDropTreeNode.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { withDragSource, WithDragSourceProps } from "../../../dragdrop/withDragSource";
 import { withDropTarget } from "../../../dragdrop/withDropTarget";

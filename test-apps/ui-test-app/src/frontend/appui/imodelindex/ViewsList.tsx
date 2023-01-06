@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./ViewsList.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";

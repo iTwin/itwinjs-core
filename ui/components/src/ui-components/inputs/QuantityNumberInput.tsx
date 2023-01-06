@@ -7,7 +7,7 @@
  */
 
 import "./QuantityNumberInput.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { Input, InputProps, WebFontIcon } from "@bentley/ui-core";
 import { SpecialKey } from "@bentley/ui-abstract";

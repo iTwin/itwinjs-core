@@ -7,7 +7,7 @@
  */
 
 import "./NumericInputEditor.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import {
   InputEditorSizeParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, RangeEditorParams,

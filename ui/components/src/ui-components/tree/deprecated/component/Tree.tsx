@@ -8,7 +8,7 @@
 
 // css
 import "./Tree.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 // third-party imports
 import _ from "lodash";
 import * as React from "react";

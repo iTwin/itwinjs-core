@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import "./Zones.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import rafSchedule, { ScheduleFn } from "raf-schd";
 import * as React from "react";
 import * as ReactDOM from "react-dom";

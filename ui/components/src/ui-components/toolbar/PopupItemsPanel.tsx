@@ -6,7 +6,7 @@
  * @module Toolbar
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { BadgeUtilities, IconHelper } from "@bentley/ui-core";

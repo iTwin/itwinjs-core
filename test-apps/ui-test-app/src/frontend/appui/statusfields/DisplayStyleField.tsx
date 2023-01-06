@@ -7,7 +7,7 @@
  */
 
 import "./DisplayStyleField.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";

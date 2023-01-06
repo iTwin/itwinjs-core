@@ -7,7 +7,7 @@
  */
 
 import "./SpeedTimeline.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { GetHandleProps, GetRailProps, Handles, Rail, Slider, SliderItem } from "react-compound-slider";
 import { CommonProps } from "@bentley/ui-core";

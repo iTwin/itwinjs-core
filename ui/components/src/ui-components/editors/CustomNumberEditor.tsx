@@ -9,7 +9,7 @@
 // cSpell:ignore customnumber testid
 
 import "./CustomNumberEditor.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";

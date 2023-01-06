@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./SheetsTab.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";

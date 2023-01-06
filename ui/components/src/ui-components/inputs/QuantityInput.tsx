@@ -6,7 +6,7 @@
  * @module Inputs
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@bentley/imodeljs-frontend";
 import { Parser } from "@bentley/imodeljs-quantity";

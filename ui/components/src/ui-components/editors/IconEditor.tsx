@@ -7,7 +7,7 @@
  */
 
 import "./IconEditor.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import {
   IconListEditorParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,

@@ -7,7 +7,7 @@
  */
 
 import "./FilteringInput.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { Key } from "ts-key-enum";
 import { CommonProps, UiCore } from "@bentley/ui-core";

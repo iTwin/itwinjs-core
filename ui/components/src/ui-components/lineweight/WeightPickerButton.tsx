@@ -7,7 +7,7 @@
  */
 
 import "./WeightPickerButton.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";

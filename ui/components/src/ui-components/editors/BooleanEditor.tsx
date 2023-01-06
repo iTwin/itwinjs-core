@@ -7,7 +7,7 @@
  */
 
 import "./BooleanEditor.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { PropertyValue, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
 import { Checkbox } from "@bentley/ui-core";

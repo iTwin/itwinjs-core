@@ -7,7 +7,7 @@
  */
 
 import "./PopupButton.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { Button, ButtonType, CommonDivProps, CommonProps, Div, Icon, Popup, UiCore } from "@bentley/ui-core";

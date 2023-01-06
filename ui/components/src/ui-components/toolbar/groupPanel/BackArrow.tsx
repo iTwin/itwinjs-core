@@ -7,7 +7,7 @@
  */
 
 import "./BackArrow.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps, useTargeted } from "@bentley/ui-core";
 

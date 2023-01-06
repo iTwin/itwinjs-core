@@ -10,7 +10,7 @@
 /* istanbul ignore file */
 
 import "./SolarTimeline.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { GetHandleProps, Handles, Rail, Slider, SliderItem, Ticks } from "react-compound-slider";
 import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";

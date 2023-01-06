@@ -7,7 +7,7 @@
  */
 
 import "./TableCell.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Icon, Omit } from "@bentley/ui-core";
 import { EditorContainer, EditorContainerProps } from "../../editors/EditorContainer";

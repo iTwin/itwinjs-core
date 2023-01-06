@@ -7,7 +7,7 @@
  */
 
 import "./ControlledTree.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { areEqual, ListChildComponentProps, ListOnItemsRenderedProps, VariableSizeList } from "react-window";
 import { concat } from "rxjs/internal/observable/concat";

@@ -7,7 +7,7 @@
  */
 
 import "./DrawingNavigationAid.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Constant, Geometry, Matrix3d, Point2d, Point3d, Point4d, Vector3d } from "@bentley/geometry-core";

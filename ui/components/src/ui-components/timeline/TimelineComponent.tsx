@@ -7,7 +7,7 @@
  */
 
 import "./TimelineComponent.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { GenericUiEventArgs, UiAdmin } from "@bentley/ui-abstract";
 import { UiComponents } from "../UiComponents";

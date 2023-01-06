@@ -7,7 +7,7 @@
  */
 
 import "./PopupItem.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, RelativePosition, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { BadgeUtilities, IconHelper, useRefState } from "@bentley/ui-core";

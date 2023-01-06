@@ -7,7 +7,7 @@
  */
 
 import "./EnumEditor.scss";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { EnumerationChoice, PropertyValue, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
 import { Select } from "@bentley/ui-core";

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { AlternateDateFormats, DateFormatter, TimeDisplay } from "@bentley/ui-abstract";
 import { CommonProps, Input } from "@bentley/ui-core";
 import "./DateField.scss";
