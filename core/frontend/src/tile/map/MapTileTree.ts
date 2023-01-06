@@ -676,7 +676,7 @@ class MapTreeSupplier implements TileTreeSupplier {
   public async createTileTree(id: MapTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     let bimElevationBias = 0, terrainProvider, geodeticOffset = 0;
     let applyTerrain = id.applyTerrain;
-    const modelId = iModel.transientIds.next;
+    const modelId = iModel.transientIds.getNext();
     const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
 
     const terrainOpts: TerrainMeshProviderOptions = {

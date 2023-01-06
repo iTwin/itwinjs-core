@@ -40,7 +40,9 @@ describe("PopupManager", () => {
 
     await TestUtils.initializeUiFramework();
     // use mock renderer so standards tools are registered.
-    const opts: IModelAppOptions = { uiAdmin: new FrameworkUiAdmin() };
+    const opts: IModelAppOptions = {
+      uiAdmin: new FrameworkUiAdmin(),
+    };
     await MockRender.App.startup(opts);
   });
 

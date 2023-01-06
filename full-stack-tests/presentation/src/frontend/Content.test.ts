@@ -1105,7 +1105,7 @@ describe("Content", () => {
       // re-initialize to set backend response timeout to 500 ms
       await closeIModel();
       await terminate();
-      await initialize(500);
+      await initialize({ backendTimeout: 500 });
       await openIModel();
 
       // mock `Promise.race` to always reject

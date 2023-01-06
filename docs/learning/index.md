@@ -72,4 +72,3 @@ Tutorials:
 See also:
 
 - [Glossary of terms used in iTwin.js](./Glossary)
-- [Frequently asked Questions](./faq)

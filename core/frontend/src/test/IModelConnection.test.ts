@@ -7,13 +7,14 @@ import { Range3d } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("IModelConnection", () => {
   describe("displayed extents", () => {
     const defaultExtents = new Range3d(0, 0, 0, 1, 1, 1);
     let imodel: IModelConnection;
 
-    before(async () => IModelApp.startup());
+    before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
     beforeEach(() => imodel = createBlankConnection(undefined, undefined, defaultExtents));
     afterEach(async () => imodel.close());
     after(async () => IModelApp.shutdown());
