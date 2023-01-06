@@ -208,7 +208,8 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   // istanbul ignore next
   private _handleViewIdChanged = (args: ViewIdChangedEventArgs) => {
     if (this._viewport === args.viewport)
-      this._handleViewportChanged(args.viewport);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- false positive
+      this._handleViewportChanged(args.viewport as ScreenViewport);
   };
 
   /** Handles a Viewport change & synchs the index */

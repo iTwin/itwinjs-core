@@ -140,10 +140,12 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _getDefaultModelGroup = () => {
     return {
       id: Groups.Models,
-      ruleset: this._modelRuleset,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- false positive
+      ruleset: this._modelRuleset!,
       dataProvider: new ModelSelectorDataProvider(
         this.props.iModelConnection,
-        this._modelRuleset.id,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- false positive
+        this._modelRuleset!.id,
       ),
       label: UiFramework.translate("categoriesModels.models"),
       items: [],
@@ -211,10 +213,12 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _getDefaultCategoryGroup = () => {
     return {
       id: Groups.Categories,
-      ruleset: this._categoryRuleset,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- false positive
+      ruleset: this._categoryRuleset!,
       dataProvider: new ModelSelectorDataProvider(
         this.props.iModelConnection,
-        this._categoryRuleset.id,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- false positive
+        this._categoryRuleset!.id,
       ),
       label: UiFramework.translate("categoriesModels.categories"),
       items: [],

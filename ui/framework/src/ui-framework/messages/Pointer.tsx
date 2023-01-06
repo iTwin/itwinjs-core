@@ -132,7 +132,8 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     const className = classnames(
       "uifw-pointer-message",
       this.props.className);
-    const severity = MessageManager.getSeverity(this.state.messageDetails);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- false positive
+    const severity = MessageManager.getSeverity(this.state.messageDetails!);
 
     return (
       <Tooltip
