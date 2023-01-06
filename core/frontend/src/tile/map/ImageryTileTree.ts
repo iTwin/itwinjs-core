@@ -171,6 +171,13 @@ export class MapTileTreeState {
     this._scaleRangeVis = MapTileTreeScaleRangeVisibility.Unknown;
   }
 
+  /** Sets the scale range visibility of the current imagery tile tree.
+   * The state will be derived based on the previous visibility values:
+   * Initial state: 'Unknown'
+   * The first call will set the state to either: 'Visible' or 'Hidden'.
+   * If subsequent visibility values are not consistent with the first visibility state, the state become 'Partial',
+   * meaning the imagery tree currently contains a mixed of tiles being in range and out of range.
+   */
   public setScaleRangeVisibility(visible: boolean) {
     if (this._scaleRangeVis === MapTileTreeScaleRangeVisibility.Unknown) {
       this._scaleRangeVis = (visible ? MapTileTreeScaleRangeVisibility.Visible : MapTileTreeScaleRangeVisibility.Hidden);
