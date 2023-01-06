@@ -42,6 +42,10 @@ jobs:
       - name: Rush extract-api
         run: node common/scripts/install-run-rush.js extract-api
 
+      - name: Assert no uncommitted changes (for extension api)
+        run: |
+          git diff-index --quiet HEAD --
+
       - name: Publish extracted api
         uses: actions/upload-artifact@v2
         with:
