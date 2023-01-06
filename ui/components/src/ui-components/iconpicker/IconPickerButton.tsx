@@ -7,7 +7,7 @@
  */
 
 import "./IconPickerButton.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, Popup, SvgSprite } from "@bentley/ui-core";

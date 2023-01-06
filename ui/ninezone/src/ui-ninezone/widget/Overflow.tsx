@@ -7,7 +7,7 @@
  */
 
 import "./Overflow.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { useRefs, useRefState, useResizeObserver } from "@bentley/ui-core";
 import { WidgetMenu } from "./Menu";

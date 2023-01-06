@@ -7,7 +7,7 @@
  */
 
 import "./ImageCheckBox.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { Icon } from "../icons/IconComponent";
 import { CommonProps } from "../utils/Props";

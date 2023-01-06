@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./Navigation.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 
 /** Highlight style of the Navigation List. */

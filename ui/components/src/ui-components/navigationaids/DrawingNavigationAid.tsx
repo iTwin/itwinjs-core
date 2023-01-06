@@ -7,7 +7,7 @@
  */
 
 import "./DrawingNavigationAid.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Constant, Geometry, Matrix3d, Point2d, Point3d, Point4d, Vector3d } from "@bentley/geometry-core";
@@ -481,7 +481,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     if (this.state.isMoving) {
       // add scaled mouse movement
       this._processWindowDrag(movement);
-    } else  {
+    } else {
       // istanbul ignore else
       if (this.state.isPanning && this.state.mode === MapMode.Opened) {
         const vect = Vector3d.create(movement.x / this.state.drawingZoom, -movement.y / this.state.drawingZoom, 0);

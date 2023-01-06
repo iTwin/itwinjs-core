@@ -7,7 +7,7 @@
  */
 
 import "./PanelWidget.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { useRefs } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";

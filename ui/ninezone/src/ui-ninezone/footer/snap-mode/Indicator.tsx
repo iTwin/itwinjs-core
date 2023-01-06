@@ -7,7 +7,7 @@
  */
 
 import "./Indicator.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { FooterIndicator, FooterIndicatorProps } from "../Indicator";
 

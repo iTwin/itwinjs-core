@@ -7,7 +7,7 @@
  */
 
 import "./themed-select.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import Component, { components } from "react-select";
 import { formatGroupLabel, getOptionLabel, getOptionValue } from "react-select/src/builtins";

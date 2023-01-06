@@ -7,7 +7,7 @@
  */
 
 import "./ShadowField.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
@@ -25,7 +25,7 @@ interface ShadowFieldState {
 /**
  * Shadow Field React component. This component is designed to be specified in a status bar definition.
  * It is used to enable/disable display of shadows.
- */
+ */
 export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldState> {
 
   constructor(props: StatusFieldProps) {

@@ -7,7 +7,7 @@
  */
 
 import "./AccuDrawDialog.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Orientation } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";

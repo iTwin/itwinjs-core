@@ -8,7 +8,7 @@
 
 import "./StatusMessagesContainer.scss";
 import * as React from "react";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { StatusMessage } from "./StatusMessageManager";
 import { ActivityMessageEventArgs } from "./MessageManager";
 import { OutputMessageType } from "@bentley/imodeljs-frontend";

@@ -7,7 +7,7 @@
  */
 
 import "./ThemedEnumEditor.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { EnumerationChoice, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
 import { OptionType, ThemedSelect } from "@bentley/ui-core";

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { CommonProps, Input } from "@bentley/ui-core";
 import { ParseResults, SpecialKey } from "@bentley/ui-abstract";
 import "./ParsedInput.scss";

@@ -7,7 +7,7 @@
  */
 
 import "./AccuDrawInputField.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Icon, IconSpec, Input, useRefs } from "@bentley/ui-core";
 import {

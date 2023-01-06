@@ -7,7 +7,7 @@
  */
 
 import "./Toolbar.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import {
   ActionButton, CommonToolbarItem, ConditionalBooleanValue, ConditionalStringValue, CustomButtonDefinition,

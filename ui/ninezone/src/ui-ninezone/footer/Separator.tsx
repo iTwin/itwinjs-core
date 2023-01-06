@@ -7,7 +7,7 @@
  */
 
 import "./Separator.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
 

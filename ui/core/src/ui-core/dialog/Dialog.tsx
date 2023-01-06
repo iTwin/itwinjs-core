@@ -7,7 +7,7 @@
  */
 
 import "./Dialog.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
@@ -302,7 +302,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         data-testid="core-dialog-root"
         {...props}
       >
-        { opened &&
+        {opened &&
           <DivWithOutsideClick onOutsideClick={onOutsideClick}>
             <FocusTrap active={trapFocus && modal} returnFocusOnDeactivate={true}>
               <div

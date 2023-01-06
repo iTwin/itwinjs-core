@@ -7,7 +7,7 @@
  */
 
 import "./Badge.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { SvgSprite } from "../icons/SvgSprite";
 import { CommonProps } from "../utils/Props";

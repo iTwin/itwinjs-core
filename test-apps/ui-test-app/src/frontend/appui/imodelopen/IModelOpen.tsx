@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelOpen.scss";
 import "./Common.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { ActivityMessagePopup, IModelInfo, ProjectInfo, ProjectScope, UiFramework } from "@bentley/ui-framework";
 import { AppTools } from "../../tools/ToolSpecifications";

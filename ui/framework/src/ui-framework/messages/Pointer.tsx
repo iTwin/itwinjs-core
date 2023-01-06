@@ -7,7 +7,7 @@
  */
 
 import "./Pointer.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
@@ -30,7 +30,7 @@ export interface PointerMessageProps extends CommonProps {
 
 /** [[PointerMessage]] state.
  * @internal
- */
+ */
 interface PointerMessageState {
   isVisible: boolean;
   message: NotifyMessageType;
@@ -41,7 +41,7 @@ interface PointerMessageState {
 
 /** [[PointerMessageChangedEvent]] arguments.
  * @public
- */
+ */
 export interface PointerMessageChangedEventArgs {
   isVisible: boolean;
   priority: OutputMessagePriority;
@@ -60,7 +60,7 @@ export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEve
 
 /** [[PointerMessagePositionChangedEvent]] arguments.
  * @internal
- */
+ */
 interface PointerMessagePositionChangedEventArgs {
   pt: XAndY;
   relativePosition: RelativePosition;
@@ -132,7 +132,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     const className = classnames(
       "uifw-pointer-message",
       this.props.className);
-    const severity = MessageManager.getSeverity(this.state.messageDetails!);
+    const severity = MessageManager.getSeverity(this.state.messageDetails);
 
     return (
       <Tooltip

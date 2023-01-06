@@ -7,7 +7,7 @@
  */
 
 import "./FloatingTab.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { isTabTarget, useDragTab, UseDragTabArgs } from "../base/DragManager";
 import { DraggedTabStateContext, getUniqueId, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";

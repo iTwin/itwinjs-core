@@ -6,7 +6,7 @@
  * @module Checkbox
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { InputStatus } from "../inputs/InputStatus";
 import { CommonProps } from "../utils/Props";

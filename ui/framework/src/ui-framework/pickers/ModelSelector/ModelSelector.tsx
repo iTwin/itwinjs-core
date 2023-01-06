@@ -7,7 +7,7 @@
  */
 
 import "./ModelSelector.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as _ from "lodash";
 import * as React from "react";
 import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
@@ -140,10 +140,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _getDefaultModelGroup = () => {
     return {
       id: Groups.Models,
-      ruleset: this._modelRuleset!,
+      ruleset: this._modelRuleset,
       dataProvider: new ModelSelectorDataProvider(
         this.props.iModelConnection,
-        this._modelRuleset!.id,
+        this._modelRuleset.id,
       ),
       label: UiFramework.translate("categoriesModels.models"),
       items: [],
@@ -211,10 +211,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _getDefaultCategoryGroup = () => {
     return {
       id: Groups.Categories,
-      ruleset: this._categoryRuleset!,
+      ruleset: this._categoryRuleset,
       dataProvider: new ModelSelectorDataProvider(
         this.props.iModelConnection,
-        this._categoryRuleset!.id,
+        this._categoryRuleset.id,
       ),
       label: UiFramework.translate("categoriesModels.categories"),
       items: [],

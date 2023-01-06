@@ -7,7 +7,7 @@
  */
 
 import "./Overflow.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { Ellipsis } from "../base/Ellipsis";

@@ -6,7 +6,7 @@
  * @module Select
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { LabeledComponentProps, MessagedComponentProps } from "../inputs/LabeledComponentProps";
 import { Select, SelectProps } from "./Select";

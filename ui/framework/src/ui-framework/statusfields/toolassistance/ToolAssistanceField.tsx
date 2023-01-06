@@ -7,7 +7,7 @@
  */
 
 import "./ToolAssistanceField.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import {

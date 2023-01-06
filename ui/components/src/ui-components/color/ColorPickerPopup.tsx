@@ -9,7 +9,7 @@
 // cSpell:ignore colorpicker
 
 import * as React from "react";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, Popup, useRefs, WebFontIcon } from "@bentley/ui-core";

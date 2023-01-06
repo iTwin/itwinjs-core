@@ -8,7 +8,7 @@
 
 import "./IconComponent.scss";
 import * as React from "react";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { ConditionalStringValue, IconSpecUtilities } from "@bentley/ui-abstract";
 import { SvgSprite } from "./SvgSprite";
 import { CommonProps } from "../utils/Props";

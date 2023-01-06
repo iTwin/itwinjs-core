@@ -7,7 +7,7 @@
  */
 
 import "./StagePanel.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { StagePanelType, StagePanelTypeHelpers } from "../../stage-panels/StagePanel";
 import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../../utilities/SafeAreaInsets";

@@ -7,7 +7,7 @@
  */
 
 import "./Node.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { Checkbox, CheckboxProps } from "../checkbox/Checkbox";
 import { CheckBoxState } from "../enums/CheckBoxState";

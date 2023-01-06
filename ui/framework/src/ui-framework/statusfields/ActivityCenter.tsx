@@ -6,7 +6,7 @@
  * @module Notification
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { Centered } from "@bentley/ui-core";
 import { MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
@@ -26,7 +26,7 @@ interface ActivityCenterState {
 
 /** Activity Center Field React component.
  * @public
- */
+ */
 export class ActivityCenterField extends React.Component<StatusFieldProps, ActivityCenterState> {
   constructor(p: StatusFieldProps) {
     super(p);

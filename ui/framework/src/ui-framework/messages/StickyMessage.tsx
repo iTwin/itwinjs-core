@@ -8,7 +8,7 @@
 
 import "./StickyMessage.scss";
 import * as React from "react";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { Icon, MessageContainer, MessageSeverity } from "@bentley/ui-core";
 import { Message, MessageButton, MessageLayout } from "@bentley/ui-ninezone";
 import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";

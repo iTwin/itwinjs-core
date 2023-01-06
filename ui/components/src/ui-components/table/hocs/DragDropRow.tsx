@@ -7,7 +7,7 @@
  */
 
 import "./DragDropRow.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { BreadcrumbDetailsDragDropType } from "../../breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../dragdrop/DragDropDef";

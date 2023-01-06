@@ -7,7 +7,7 @@
  */
 
 import "./Tool.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { ActionButton, GroupButton } from "@bentley/ui-abstract";
 import { CommonProps, useTargeted } from "@bentley/ui-core";

@@ -7,7 +7,7 @@
  */
 
 import "./ToggleEditor.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
 import { Toggle } from "@bentley/ui-core";

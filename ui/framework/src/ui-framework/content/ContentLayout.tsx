@@ -9,7 +9,7 @@
 // cSpell:ignore contentlayout
 
 import "./ContentLayout.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import SplitPane from "react-split-pane";
 import { CommonProps, Orientation, UiEvent } from "@bentley/ui-core";

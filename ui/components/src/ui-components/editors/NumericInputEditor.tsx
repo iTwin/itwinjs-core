@@ -7,7 +7,7 @@
  */
 
 import "./NumericInputEditor.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import {
   InputEditorSizeParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, RangeEditorParams,
@@ -83,8 +83,8 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     if (this._isMounted)
       this.setState({
         value: newValue,
-      }, async ()=>{
-        await this._handleCommit ();
+      }, async () => {
+        await this._handleCommit();
       });
   };
 

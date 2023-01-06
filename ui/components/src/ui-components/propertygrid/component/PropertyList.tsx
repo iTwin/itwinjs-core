@@ -6,7 +6,7 @@
  * @module PropertyGrid
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { CommonProps, Orientation, RatioChangeResult } from "@bentley/ui-core";

@@ -7,7 +7,7 @@
  */
 
 import "./DefaultDialogGridContainer.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import {
   BaseDialogItem, DialogItem, DialogItemValue, DialogPropertySyncItem, DialogRow, PropertyValueFormat, SyncPropertiesChangeEventArgs,
@@ -54,9 +54,9 @@ function PropertyEditor({ uiDataProvider, initialItem, isLock, setFocus }: { uiD
     let newRecord = UiLayoutDataProvider.getPropertyRecord(initialItem);
 
     // istanbul ignore next
-    const foundItem = isLock ? uiDataProvider.items.find((item)=>item.lockProperty?.property.name === initialItem.property.name) : uiDataProvider.items.find((item)=>item.property.name === initialItem.property.name);
+    const foundItem = isLock ? uiDataProvider.items.find((item) => item.lockProperty?.property.name === initialItem.property.name) : uiDataProvider.items.find((item) => item.property.name === initialItem.property.name);
     // istanbul ignore else
-    if (foundItem){
+    if (foundItem) {
       if (isLock) {
         newRecord = newRecord.copyWithNewValue({
           value: foundItem.lockProperty!.value.value,
@@ -122,7 +122,7 @@ function PropertyEditor({ uiDataProvider, initialItem, isLock, setFocus }: { uiD
     uiDataProvider.reloadDialogItems(true);
   }, [initialItem.property.name, propertyRecord, uiDataProvider]);
   // istanbul ignore next
-  const handleCancel = () => {};
+  const handleCancel = () => { };
 
   return (
     <div key={initialItem.property.name} className={className} >

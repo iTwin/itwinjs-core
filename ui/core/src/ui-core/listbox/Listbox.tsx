@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import classnames from "classnames";
+import * as classnames from "classnames";
 
 import "./Listbox.scss";
 import { Guid } from "@bentley/bentleyjs-core";
@@ -115,7 +115,7 @@ function processKeyboardNavigation(optionValues: ListboxItemProps[], itemIndex: 
 export function Listbox(props: ListboxProps) {
   const { ariaLabel, ariaLabelledBy, id, children, selectedValue, className, onListboxValueChange, onKeyPress, ...otherProps } = props;
   const listRef = React.useRef<HTMLUListElement>(null);
-  const [listId] = React.useState(()=>{return id ?? Guid.createValue();});
+  const [listId] = React.useState(() => { return id ?? Guid.createValue(); });
   const optionValues = React.useMemo(() => getOptionValueArray(children), [children]);
   const classes = React.useMemo(() => classnames("core-listbox", className), [className]);
   const [currentValue, setCurrentValue] = React.useState<ListboxValue | undefined>(selectedValue);
@@ -174,7 +174,7 @@ export function Listbox(props: ListboxProps) {
       event.preventDefault();
       // istanbul ignore else
       if (focusValue)
-        handleValueChange(focusValue, event.getModifierState("Control")||event.getModifierState("Meta"));  // Control or Command
+        handleValueChange(focusValue, event.getModifierState("Control") || event.getModifierState("Meta"));  // Control or Command
       return;
     } else {
       const [newItemIndex, keyProcessed] = processKeyboardNavigation(optionValues, itemIndex, event.key);

@@ -7,7 +7,7 @@
  */
 
 import "./ImageCheckBoxEditor.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import {
   ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames,

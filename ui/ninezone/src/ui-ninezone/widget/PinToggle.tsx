@@ -7,7 +7,7 @@
  */
 
 import "./PinToggle.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { PanelSide, PanelStateContext } from "../widget-panels/Panel";

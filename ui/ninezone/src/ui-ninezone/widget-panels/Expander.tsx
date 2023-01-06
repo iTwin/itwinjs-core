@@ -7,7 +7,7 @@
  */
 
 import "./Expander.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { PanelSide, panelSides } from "./Panel";
 import { NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone";

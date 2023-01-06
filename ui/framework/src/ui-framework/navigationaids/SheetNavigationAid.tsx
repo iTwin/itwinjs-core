@@ -7,7 +7,7 @@
  */
 
 import "./SheetNavigationAid.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { IModelApp, IModelConnection, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { UiComponents, ViewIdChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
@@ -208,7 +208,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   // istanbul ignore next
   private _handleViewIdChanged = (args: ViewIdChangedEventArgs) => {
     if (this._viewport === args.viewport)
-      this._handleViewportChanged(args.viewport as ScreenViewport);
+      this._handleViewportChanged(args.viewport);
   };
 
   /** Handles a Viewport change & synchs the index */

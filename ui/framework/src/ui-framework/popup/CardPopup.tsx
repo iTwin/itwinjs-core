@@ -8,7 +8,7 @@
 
 import "./CardPopup.scss";
 import * as React from "react";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, PropertyRecord, RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, FocusTrap, LeadingText, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";

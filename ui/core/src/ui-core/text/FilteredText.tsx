@@ -9,7 +9,7 @@
 // cSpell:ignore focusvalue
 
 import * as React from "react";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { IMatch } from "@bentley/ui-abstract";
 import { CommonProps } from "../utils/Props";
 import "./FilteredText.scss";
@@ -39,7 +39,7 @@ export function FilteredText(props: FilteredTextProps) {
 
     let startPos = 0;
     for (const span of matches) {
-    // istanbul ignore else
+      // istanbul ignore else
       if (span.start !== startPos)
         spans.push(<span key={startPos} className="uicore-partial-filtered-text">{value.substr(startPos, span.start - startPos)}</span >);
       spans.push(<span key={span.start} style={matchStyle} className={classnames("uicore-filtered-text-match", matchClassName)}>{value.substr(span.start, span.end - span.start)}</span>);

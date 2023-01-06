@@ -7,7 +7,7 @@
  */
 
 import "./NodeContent.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, TreeNodePlaceholder } from "@bentley/ui-core";
 import { ItemStyle, ItemStyleProvider } from "../../../properties/ItemStyle";

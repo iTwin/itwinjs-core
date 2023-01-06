@@ -7,7 +7,7 @@
  */
 
 import "./WeightEditor.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
 import { WeightPickerButton } from "../lineweight/WeightPickerButton";

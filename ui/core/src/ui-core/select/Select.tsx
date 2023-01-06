@@ -6,7 +6,7 @@
  * @module Select
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "../utils/Props";
 import { useRefs } from "../utils/hooks/useRefs";
@@ -99,7 +99,7 @@ const ForwardRefSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
         value={value}
         defaultValue={value === undefined ? currentDefaultValue : undefined}>
         {showPlaceholder &&
-        <option className="placeholder" disabled key="" value={placeholderValue.current}>{props.placeholder}</option>
+          <option className="placeholder" disabled key="" value={placeholderValue.current}>{props.placeholder}</option>
         }
         {options instanceof Array ?
           options.map((option, index) => (

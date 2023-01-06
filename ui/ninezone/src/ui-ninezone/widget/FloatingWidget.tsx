@@ -7,7 +7,7 @@
  */
 
 import "./FloatingWidget.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, PointProps, Rectangle, useRefs } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";

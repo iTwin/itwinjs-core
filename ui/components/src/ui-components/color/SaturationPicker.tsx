@@ -7,7 +7,7 @@
  */
 
 import "./SaturationPicker.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";

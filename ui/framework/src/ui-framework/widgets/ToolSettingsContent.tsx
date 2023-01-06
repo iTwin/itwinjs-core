@@ -7,7 +7,7 @@
  */
 
 import "./ToolSettingsContent.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { ResizableContainerObserver } from "@bentley/ui-core";
 import { HorizontalAnchor, ToolSettingsWidgetMode, WidgetContent } from "@bentley/ui-ninezone";

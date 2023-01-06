@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "@bentley/ui-abstract";
 import { CoreTools } from "../tools/CoreToolDefinitions";

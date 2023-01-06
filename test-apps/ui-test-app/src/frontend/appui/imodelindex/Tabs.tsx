@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./Tabs.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 
 /**

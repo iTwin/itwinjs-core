@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { Icon } from "../icons/IconComponent";
 import { CommonDivProps } from "../utils/Props";

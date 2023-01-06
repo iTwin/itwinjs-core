@@ -7,7 +7,7 @@
  * @module PropertyGrid
  */
 import "./PropertyGrid.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { produce } from "immer";
 import * as React from "react";
 import { DisposeFunc } from "@bentley/bentleyjs-core";

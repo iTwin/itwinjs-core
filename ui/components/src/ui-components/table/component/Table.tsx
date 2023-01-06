@@ -9,7 +9,7 @@
 import "./Table.scss";
 import "../columnfiltering/ColumnFiltering.scss";
 import classnamesDedupe from "classnames/dedupe";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { memoize } from "lodash";
 import * as React from "react";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";

@@ -7,7 +7,7 @@
  */
 
 import "./FrameworkStagePanel.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import {

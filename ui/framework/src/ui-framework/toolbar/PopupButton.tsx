@@ -8,7 +8,7 @@
 
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
 import "./PopupButton.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { ConditionalBooleanValue, ConditionalStringValue, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
@@ -32,7 +32,7 @@ const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDiv
 /** Arguments of [[PopupButtonChildrenRenderProp]].
  * @public
  * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
- */
+ */
 export interface PopupButtonChildrenRenderPropArgs {
   closePanel: () => void;
 }
@@ -40,13 +40,13 @@ export interface PopupButtonChildrenRenderPropArgs {
 /** Type of [[PopupButtonProps.children]] when used as render prop.
  * @public
  * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
- */
+ */
 export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode;
 
 /** Properties for the [[PopupButton]] React component
  * @public
  * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
- */
+ */
 export interface PopupButtonProps extends ItemProps, CommonProps {
   children?: React.ReactNode | PopupButtonChildrenRenderProp;
   onExpanded?: (expand: boolean) => void;

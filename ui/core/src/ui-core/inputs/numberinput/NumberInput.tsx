@@ -7,7 +7,7 @@
  */
 
 import "./NumberInput.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { Input, InputProps } from "../Input";
 import { WebFontIcon } from "../../icons/WebFontIcon";
@@ -155,7 +155,7 @@ const ForwardRefNumberInput = React.forwardRef<HTMLInputElement, NumberInputProp
     }, [formattedValue, getIncrementValue, max, min, parseInternal, snap, updateValue]);
 
     const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
-    // istanbul ignore else
+      // istanbul ignore else
       if (event.key === SpecialKey.Enter) {
         updateValueFromString(event.currentTarget.value);
         event.preventDefault();

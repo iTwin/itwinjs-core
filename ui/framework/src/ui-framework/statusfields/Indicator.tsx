@@ -7,7 +7,7 @@
  */
 
 import "./Indicator.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
 import { CommonProps, Icon } from "@bentley/ui-core";

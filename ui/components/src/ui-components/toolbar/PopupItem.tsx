@@ -7,7 +7,7 @@
  */
 
 import "./PopupItem.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { ActionButton, RelativePosition } from "@bentley/ui-abstract";
 import { Popup, useRefState } from "@bentley/ui-core";

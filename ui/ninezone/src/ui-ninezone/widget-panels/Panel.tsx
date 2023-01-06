@@ -7,7 +7,7 @@
  */
 
 import "./Panel.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import produce from "immer";
 import { DraggedPanelSideContext } from "../base/DragManager";

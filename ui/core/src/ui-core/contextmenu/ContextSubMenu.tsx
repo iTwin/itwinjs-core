@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { ContextMenuItemProps } from "./ContextMenuItem";
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";

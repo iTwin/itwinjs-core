@@ -7,7 +7,7 @@
  */
 
 import "./StagePanelHeader.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
@@ -18,7 +18,7 @@ import { StagePanelState } from "./StagePanelDef";
 
 /** Properties of a [[StagePanelHeader]] component
  * @alpha
- */
+ */
 export interface StagePanelHeaderProps extends CommonProps {
   /** Describes if the collapse button is visible. */
   collapseButton?: boolean;
