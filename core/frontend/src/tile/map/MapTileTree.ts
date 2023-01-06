@@ -468,9 +468,6 @@ export class MapTileTree extends RealityTileTree {
       }
     }
 
-    const out: string[] = [];
-    const vis: string[] = [];
-
     let allTilesRead = true;
     for (const selectedTile of selected) {
       if (selectedTile instanceof MapTile) {
@@ -485,11 +482,9 @@ export class MapTileTree extends RealityTileTree {
             const treeState = this.getImageryTreeState(selectedImageryTile.tree.id);
             if (treeState) {
               if (selectedImageryTile.isOutOfLodRange) {
-                out.push(selectedImageryTile.contentId);
                 treeState.setScaleRangeVisibility(false);
               } else {
                 treeState.setScaleRangeVisibility(true);
-                vis.push(selectedImageryTile.contentId);
               }
             }
 
