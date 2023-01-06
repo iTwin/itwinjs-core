@@ -255,6 +255,8 @@ import {
   // @public real(s) from @itwin/core-common
   ColorByName,
   ColorDef,
+  FrustumPlanes,
+  FrustumPlanes,
   QParams2d,
   QParams3d,
   QPoint2d,
@@ -334,6 +336,8 @@ const extensionExports = {
   FontType,
   FrontendLoggerCategory,
   FrustumAnimator,
+  FrustumPlanes,
+  FrustumPlanes,
   GeoCoordStatus,
   GeometricModel2dState,
   GeometricModel3dState,

@@ -66,15 +66,19 @@ function generateDeclarationCode(exportList) {
     const exportTrailer = `\n} from "${packageName}";\n\n`;
 
     let reals = [
-      ...exportList[packageName].enum,
-      ...exportList[packageName].real,
+      ...new Set([
+        ...exportList[packageName].enum,
+        ...exportList[packageName].real,
+      ]),
     ]
       .sort()
       .join(",\n\t");
 
     let types = [
-      ...exportList[packageName].interface,
-      ...exportList[packageName].type,
+      ...new Set([
+        ...exportList[packageName].interface,
+        ...exportList[packageName].type,
+      ]),
     ]
       .sort()
       .join(",\n\t");
@@ -97,8 +101,10 @@ function generateJsCode(exportList) {
   for (const packageName in exportList) {
     exportCode += `\n// ${packageName}:`;
     const _exports = [
-      ...exportList[packageName].enum,
-      ...exportList[packageName].real,
+      ...new Set([
+        ...exportList[packageName].enum,
+        ...exportList[packageName].real,
+      ]),
     ]
       .sort()
       .join(",\n\t");
