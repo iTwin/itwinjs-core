@@ -1,11 +1,4 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
-  //"types": ["@itwin/core-backend/lib/internal-types"],
-  "baseUrl": ".",
-  "typeRoots": ["./node_modules/@types", "./node_modules/@itwin/core-backend/lib/internal-types"],
-  // "paths": {
-    // "@itwin/core-backend": ["node_modules/@itwin/core-backend/lib/internal-types/core-backend.d.ts"]
-    // "@itwin/core-backend/*": ["node_modules/@itwin/core-backend/lib/internal-types/*"]
-  // },
   "include": ["./src/**/*.ts"]
 }
