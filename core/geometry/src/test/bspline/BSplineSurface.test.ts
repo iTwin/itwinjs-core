@@ -19,6 +19,7 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Point4dArray } from "../../geometry3d/PointHelpers";
 
 /* eslint-disable no-console */
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
@@ -250,13 +251,44 @@ describe("BSplineSurface", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  function roundTripBSplineSurface(ck: Checker, surface: BSplineSurface3d | BSplineSurface3dH) {
+    for (const uvDir of [UVSelect.uDirection, UVSelect.vDirection]) {
+      const mode = surface.isClosableSurface(uvDir);
+      ck.testExactNumber(mode, surface.getWrappable(uvDir), "WrapMode is as expected");
+    }
+    testGeometryQueryRoundTrip(ck, surface);
+    // test a surface with the opposite rationality
+    let surface2: BSplineSurface3d | BSplineSurface3dH | undefined;
+    if (4 === surface.poleDimension) {
+      const poles: Point3d[] = [];
+      const weights: number[] = [];
+      Point4dArray.unpackFloat64ArrayToPointsAndWeights(surface.coffs, poles, weights);
+      if (ck.testExactNumber(poles.length, weights.length)) {
+        for (let i = 0; i < poles.length; ++i) {
+          const scale = Geometry.conditionalDivideFraction(1.0, weights[i]);
+          if (ck.testDefined(scale) && scale !== undefined)
+            poles[i].scaleInPlace(scale); // unweight the pole
+        }
+      }
+      surface2 = BSplineSurface3d.create(poles, surface.numPolesUV(UVSelect.uDirection), surface.orderUV(UVSelect.uDirection), surface.knots[UVSelect.uDirection].knots,
+                                                surface.numPolesUV(UVSelect.vDirection), surface.orderUV(UVSelect.vDirection), surface.knots[UVSelect.vDirection].knots);
+    } else if (3 === surface.poleDimension) {
+      surface2 = BSplineSurface3dH.create(surface.coffs, undefined, surface.numPolesUV(UVSelect.uDirection), surface.orderUV(UVSelect.uDirection), surface.knots[UVSelect.uDirection].knots,
+                                                                    surface.numPolesUV(UVSelect.vDirection), surface.orderUV(UVSelect.vDirection), surface.knots[UVSelect.vDirection].knots); // unit weights
+    }
+    if (ck.testDefined(surface2, "surface has valid pole dimension"))
+      testGeometryQueryRoundTrip(ck, surface2);
+  }
+
   it("LegacyClosureRoundTrip", () => {
     const ck = new Checker();
     const options = StrokeOptions.createForFacets();
     options.needNormals = options.needParams = options.shouldTriangulate = true;
     const allGeometry: GeometryQuery[] = [];
     for (const filename of ["./src/test/testInputs/BSplineSurface/torus3_open_closed.imjs",
-                            "./src/test/testInputs/BSplineSurface/torus6_open_closed.imjs"]) {
+                            "./src/test/testInputs/BSplineSurface/torus6_open_closed.imjs",
+                            "./src/test/testInputs/BSplineSurface/nonrational_toroid_open.imjs",
+                            "./src/test/testInputs/BSplineSurface/nonrational_toroid_legacy_closed.imjs"]) {
       const json = fs.readFileSync(filename, "utf8");
       const inputs = IModelJson.Reader.parse(JSON.parse(json));
       if (ck.testDefined(inputs)) {
@@ -267,12 +299,8 @@ describe("BSplineSurface", () => {
                 const builder = PolyfaceBuilder.create(options);
                 builder.addUVGridBody(input, 20, 20);
                 GeometryCoreTestIO.captureCloneGeometry(allGeometry, [input, builder.claimPolyface()]);
-                for (const uvDir of [UVSelect.uDirection, UVSelect.vDirection]) {
-                  const mode = input.isClosableSurface(uvDir);
-                  ck.testExactNumber(mode, input.getWrappable(uvDir), "WrapMode is as expected");
-                }
+                roundTripBSplineSurface(ck, input);
               }
-              testGeometryQueryRoundTrip(ck, input);
             }
           }
         }

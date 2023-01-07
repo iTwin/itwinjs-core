@@ -879,7 +879,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
    *    * If poleArray.length + order == knotArray.length + 2, the knots are in modern form that does not have
    *      the classic unused first and last knot.
    * @param controlPointArray Array of [wx,wy,wz] points, ordered along the U direction.
-   * @param weightArray array of weights, ordered along the U direction.
+   * @param weightArray array of weights, ordered along the U direction. If undefined, unit weights are installed.
    * @param numPolesU number of poles in each row in the U direction.
    * @param orderU order for the U direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
    * @param knotArrayU optional knots for the V direction.  See note above about knot counts.
@@ -889,7 +889,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
    */
   public static create(
     controlPointArray: Point3d[] | Float64Array,
-    weightArray: number[] | Float64Array,
+    weightArray: number[] | Float64Array | undefined,
     numPolesU: number,
     orderU: number,
     knotArrayU: number[] | Float64Array | undefined,
@@ -911,6 +911,8 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     const knotsV = knotArrayV ?
       KnotVector.create(knotArrayV, orderV - 1, skipFirstAndLastV) :
       KnotVector.createUniformClamped(numPolesV, orderV - 1, 0.0, 1.0);
+    if (undefined === weightArray)
+      weightArray = Array(numPoles).fill(1.0);  // unit weights
     const coffs = Point4dArray.packPointsAndWeightsToFloat64Array(controlPointArray, weightArray);
     if (coffs === undefined || coffs.length !== 4 * numPolesU * numPolesV)
       return undefined;

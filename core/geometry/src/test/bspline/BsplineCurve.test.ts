@@ -9,6 +9,7 @@ import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
+import { Point3dArray, Point4dArray } from "../../core-geometry";
 import { CurveChain } from "../../curve/CurveCollection";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
@@ -691,6 +692,31 @@ describe("BsplineCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  function roundTripBSplineCurve(ck: Checker, curve: BSplineCurve3dBase) {
+    ck.testExactNumber(curve.isClosableCurve, curve.getWrappable(), "WrapMode is as expected");
+    testGeometryQueryRoundTrip(ck, curve);
+    // test a curve with the opposite rationality
+    let curve2: BSplineCurve3dBase | undefined;
+    let poles: Point3d[] = [];
+    if (4 === curve.poleDimension) {
+      const weights: number[] = [];
+      Point4dArray.unpackFloat64ArrayToPointsAndWeights(curve.polesRef, poles, weights);
+      if (ck.testExactNumber(poles.length, weights.length)) {
+        for (let i = 0; i < poles.length; ++i) {
+          const scale = Geometry.conditionalDivideFraction(1.0, weights[i]);
+          if (ck.testDefined(scale) && scale !== undefined)
+            poles[i].scaleInPlace(scale); // unweight the pole
+        }
+      }
+      curve2 = BSplineCurve3d.create(poles, curve.knotsRef, curve.order);
+    } else if (3 === curve.poleDimension) {
+      poles = Point3dArray.unpackNumbersToNestedArrays(curve.polesRef, 3);
+      curve2 = BSplineCurve3dH.create(poles, curve.knotsRef, curve.order); // unit weights
+    }
+    if (ck.testDefined(curve2, "curve has valid pole dimension"))
+      testGeometryQueryRoundTrip(ck, curve2);
+  }
+
   it("LegacyClosureRoundTrip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -704,18 +730,15 @@ describe("BsplineCurve", () => {
             const options = StrokeOptions.createForCurves();
             options.angleTol = Angle.createDegrees(0.5);
             for (const input of inputs) {
-              if (input instanceof CurveChain) {
-                if (input.children.length === 1) {
-                  const curve = input.children[0];
-                  const strokes = LineString3d.create();
-                  curve.emitStrokes(strokes, options);
-                  GeometryCoreTestIO.captureCloneGeometry(allGeometry, [input, strokes]);
-                  if (curve instanceof BSplineCurve3dBase) {
-                    ck.testExactNumber(curve.isClosableCurve, curve.getWrappable(), "WrapMode is as expected");
-                  }
-                }
+              let curve = input;
+              if (input instanceof CurveChain && input.children.length === 1)
+                curve = input.children[0];  // assume input chains have only one child
+              if (curve instanceof BSplineCurve3dBase) {
+                const strokes = LineString3d.create();
+                curve.emitStrokes(strokes, options);
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, [curve, strokes]);
+                roundTripBSplineCurve(ck, curve);
               }
-              testGeometryQueryRoundTrip(ck, input);
             }
           }
         }

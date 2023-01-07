@@ -945,7 +945,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     copyPointsAndWeights(points: Point3d[], weights: number[], formatter?: (x: number, y: number, z: number) => any): void;
     copyWeightsToFloat64Array(): Float64Array;
     copyXYZToFloat64Array(unweight: boolean): Float64Array;
-    static create(controlPointArray: Point3d[] | Float64Array, weightArray: number[] | Float64Array, numPolesU: number, orderU: number, knotArrayU: number[] | Float64Array | undefined, numPolesV: number, orderV: number, knotArrayV: number[] | Float64Array | undefined): BSplineSurface3dH | undefined;
+    static create(controlPointArray: Point3d[] | Float64Array, weightArray: number[] | Float64Array | undefined, numPolesU: number, orderU: number, knotArrayU: number[] | Float64Array | undefined, numPolesV: number, orderV: number, knotArrayV: number[] | Float64Array | undefined): BSplineSurface3dH | undefined;
     static createGrid(xyzwGrid: number[][][], weightStyle: WeightStyle, orderU: number, knotArrayU: number[] | Float64Array | undefined, orderV: number, knotArrayV: number[] | Float64Array | undefined): BSplineSurface3dH | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;

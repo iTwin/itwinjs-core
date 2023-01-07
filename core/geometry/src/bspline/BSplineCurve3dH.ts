@@ -142,11 +142,10 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       return controlPoints.slice();
 
     let packedPoints: Float64Array | undefined;
-    if (Array.isArray(controlPoints)) {
-      const cpArray = controlPoints as any[];   // This should not be necessary -- but the predicate controlPoints[0] is not recognized even though Array.isArray(controlPoints) was just passed.
-      const numPoints = cpArray.length;
+    if (Array.isArray(controlPoints) && controlPoints.length > 0) {
+      const numPoints = controlPoints.length;
       let i = 0;
-      if (cpArray[0] instanceof Point4d) {
+      if (controlPoints[0] instanceof Point4d) {
         packedPoints = new Float64Array(4 * numPoints);
         for (const p of (controlPoints as Point4d[])) {
           packedPoints[i++] = p.x;
@@ -154,7 +153,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
           packedPoints[i++] = p.z;
           packedPoints[i++] = p.w;
         }
-      } else if (cpArray[0] instanceof Point3d) {
+      } else if (controlPoints[0] instanceof Point3d) {
         packedPoints = new Float64Array(4 * numPoints);
         for (const p of (controlPoints as Point3d[])) {
           packedPoints[i++] = p.x;
@@ -162,11 +161,20 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
           packedPoints[i++] = p.z;
           packedPoints[i++] = 1.0;
         }
-      } else if (Array.isArray(cpArray[0]) && cpArray[0].length === 4) {
-        packedPoints = new Float64Array(4 * numPoints);
-        for (const point of cpArray as number[][])
-          for (const coord of point)
-            packedPoints[i++] = coord;
+      } else if (Array.isArray(controlPoints[0])) {
+        if (controlPoints[0].length === 4) {
+          packedPoints = new Float64Array(4 * numPoints);
+          for (const point of controlPoints as number[][])
+            for (const coord of point)
+              packedPoints[i++] = coord;
+        } else if (controlPoints[0].length === 3) {
+          packedPoints = new Float64Array(4 * numPoints);
+          for (const point of controlPoints as number[][]) {
+            for (const coord of point)
+              packedPoints[i++] = coord;
+            packedPoints[i++] = 1.0;
+          }
+        }
       }
     } else { // controlPoints is NOT an array
       const obj = controlPoints as any;
