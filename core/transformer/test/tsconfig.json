@@ -1,22 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "typeRoots": [
-      "../node_modules/@itwin/core-backend/lib/internal-types",
-      "../node_modules/@types"
-    ],
-    "skipLibCheck": true,
-    "types": [
-      "../node_modules/@itwin/core-backend/lib/internal-types/itwin__core-backend"
-    ]
+    "skipLibCheck": true
   },
-  "files": ["./test.ts"],
-  "exclude": [
-    "../node_modules/@itwin/core-backend/lib/cjs/**/*.d.ts",
-    "../node_modules/@itwin/core-backend/lib/cjs/**/*",
-    "../node_modules/@itwin/core-backend/lib/cjs/core-backend.d.ts"
-  ],
-  "include": [
-    "../node_modules/@itwin/core-backend/lib/internal-types/itwin__core-backend/lib/cjs/core-backend.d.ts"
-  ]
+  "files": ["./test.ts"]
 }
