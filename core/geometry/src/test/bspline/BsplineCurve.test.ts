@@ -697,20 +697,11 @@ describe("BsplineCurve", () => {
     testGeometryQueryRoundTrip(ck, curve);
     // test a curve with the opposite rationality
     let curve2: BSplineCurve3dBase | undefined;
-    let poles: Point3d[] = [];
-    if (4 === curve.poleDimension) {
-      const weights: number[] = [];
-      Point4dArray.unpackFloat64ArrayToPointsAndWeights(curve.polesRef, poles, weights);
-      if (ck.testExactNumber(poles.length, weights.length)) {
-        for (let i = 0; i < poles.length; ++i) {
-          const scale = Geometry.conditionalDivideFraction(1.0, weights[i]);
-          if (ck.testDefined(scale) && scale !== undefined)
-            poles[i].scaleInPlace(scale); // unweight the pole
-        }
-      }
+    if (curve instanceof BSplineCurve3dH) {
+      const poles = curve.copyXYZFloat64Array(true);
       curve2 = BSplineCurve3d.create(poles, curve.knotsRef, curve.order);
-    } else if (3 === curve.poleDimension) {
-      poles = Point3dArray.unpackNumbersToNestedArrays(curve.polesRef, 3);
+    } else {
+      const poles = Point3dArray.unpackNumbersToNestedArrays(curve.polesRef, 3);
       curve2 = BSplineCurve3dH.create(poles, curve.knotsRef, curve.order); // unit weights
     }
     if (ck.testDefined(curve2, "curve has valid pole dimension"))

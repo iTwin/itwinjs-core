@@ -259,20 +259,11 @@ describe("BSplineSurface", () => {
     testGeometryQueryRoundTrip(ck, surface);
     // test a surface with the opposite rationality
     let surface2: BSplineSurface3d | BSplineSurface3dH | undefined;
-    if (4 === surface.poleDimension) {
-      const poles: Point3d[] = [];
-      const weights: number[] = [];
-      Point4dArray.unpackFloat64ArrayToPointsAndWeights(surface.coffs, poles, weights);
-      if (ck.testExactNumber(poles.length, weights.length)) {
-        for (let i = 0; i < poles.length; ++i) {
-          const scale = Geometry.conditionalDivideFraction(1.0, weights[i]);
-          if (ck.testDefined(scale) && scale !== undefined)
-            poles[i].scaleInPlace(scale); // unweight the pole
-        }
-      }
+    if (surface instanceof BSplineSurface3dH) {
+      const poles = surface.copyXYZToFloat64Array(true);
       surface2 = BSplineSurface3d.create(poles, surface.numPolesUV(UVSelect.uDirection), surface.orderUV(UVSelect.uDirection), surface.knots[UVSelect.uDirection].knots,
                                                 surface.numPolesUV(UVSelect.vDirection), surface.orderUV(UVSelect.vDirection), surface.knots[UVSelect.vDirection].knots);
-    } else if (3 === surface.poleDimension) {
+    } else {
       surface2 = BSplineSurface3dH.create(surface.coffs, undefined, surface.numPolesUV(UVSelect.uDirection), surface.orderUV(UVSelect.uDirection), surface.knots[UVSelect.uDirection].knots,
                                                                     surface.numPolesUV(UVSelect.vDirection), surface.orderUV(UVSelect.vDirection), surface.knots[UVSelect.vDirection].knots); // unit weights
     }
