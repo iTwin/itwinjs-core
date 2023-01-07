@@ -9,9 +9,10 @@
     "node": ">=12.22.0 < 14.0 || >=14.17.0 < 19.0"
   },
   "scripts": {
-    "build": "npm run -s build:cjs && npm run -s copy:assets && npm run -s copy:test-assets",
+    "build": "npm run -s build:cjs && npm run -s copy:assets && npm run -s copy:test-assets && npm run build:internal-types",
     "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:internal-types": "tsc -p ./tsconfig.internal.json 1>&2 --outDir lib/internal-types/itwin__core-backend/lib/cjs && cpx package.json lib/internal-types/itwin__core-backend",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-backend/file.json --tsIndexFile=./core-backend.ts --onlyJson",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/cjs/assets",

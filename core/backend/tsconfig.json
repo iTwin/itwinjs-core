@@ -1,5 +1,8 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "stripInternal": true,
+  },
   "include": [
     "./src/**/*.ts"
   ]
