@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-testing",
+      "comment": "Added reference docs generation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-testing"
+}
