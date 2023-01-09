@@ -7,6 +7,7 @@
  */
 
 /** Specifies type of badge, if any, that should be overlaid on UI component.
+ * @deprecated Use [BadgeType]($core-react) instead.
  * @public
  */
 export enum BadgeType {
