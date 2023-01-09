@@ -53,7 +53,7 @@ The "public API" of a package comprises the set of all APIs it contains that are
 
 ## Package versioning policy
 
-The individual packages that constitute the iTwin.js libraries use [semantic versioning](https://semver.org/) to convey information about how their public APIs change over time.
+The individual packages that constitute the iTwin.js libraries use [semantic versioning](https://semver.org/) ("semver") to convey information about how their public APIs change over time.
 
 - Patch releases occur frequently to fix bugs or security issues and have no impact on the public API.
 - Minor releases occur less frequently than patch releases. They may introduce new APIs, but never break any existing public APIs.
