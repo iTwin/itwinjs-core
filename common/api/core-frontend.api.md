@@ -4622,6 +4622,18 @@ export interface ImageryTileContent extends TileContent {
 }
 
 // @internal
+export class ImageryTileTreeState {
+    constructor();
+    // (undocumented)
+    clone(): ImageryTileTreeState;
+    // (undocumented)
+    getScaleRangeVisibility(): MapTileTreeScaleRangeVisibility;
+    // (undocumented)
+    reset(): void;
+    setScaleRangeVisibility(visible: boolean): void;
+}
+
+// @internal
 export interface Imdl {
     // (undocumented)
     animationNodes?: ImdlAnimationNodes;
@@ -6230,7 +6242,7 @@ export class MapTileTree extends RealityTileTree {
     // @internal (undocumented)
     clearLayers(): void;
     // @internal (undocumented)
-    cloneImageryTreeState(): Map<string, MapTileTreeState>;
+    cloneImageryTreeState(): Map<string, ImageryTileTreeState>;
     // @internal (undocumented)
     protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]): void;
     // @internal (undocumented)
@@ -6258,7 +6270,7 @@ export class MapTileTree extends RealityTileTree {
     // @internal (undocumented)
     getFractionalTileCorners(quadId: QuadId): Point3d[];
     // @internal (undocumented)
-    getImageryTreeState(imageryTreeId: string): MapTileTreeState | undefined;
+    getImageryTreeState(imageryTreeId: string): ImageryTileTreeState | undefined;
     // @internal (undocumented)
     getLayerIndex(imageryTreeId: Id64String): number;
     // @internal (undocumented)
@@ -6383,19 +6395,6 @@ export enum MapTileTreeScaleRangeVisibility {
     Unknown = 0,
     // (undocumented)
     Visible = 1
-}
-
-// @internal
-export class MapTileTreeState {
-    constructor();
-    // (undocumented)
-    clone(): MapTileTreeState;
-    // (undocumented)
-    getScaleRangeVisibility(): MapTileTreeScaleRangeVisibility;
-    // (undocumented)
-    reset(): void;
-    // (undocumented)
-    setScaleRangeVisibility(visible: boolean): void;
 }
 
 // @beta

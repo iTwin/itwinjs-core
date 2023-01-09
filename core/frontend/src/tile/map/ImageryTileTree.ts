@@ -58,8 +58,6 @@ export class ImageryMapTile extends RealityTile {
       || isSmallerThanDrape
       || this._anyChildNotFound) {
       if (this.isOutOfLodRange) {
-      }
-      if (this.isOutOfLodRange) {
         drapeTiles.push(this);
         this.setIsReady();
       } else {
@@ -151,9 +149,9 @@ export class ImageryMapTile extends RealityTile {
   }
 }
 
-/** Object that holds various state values for a MapTileTree
+/** Object that holds various state values for an ImageryTileTree
  * @internal */
-export class MapTileTreeState {
+export class ImageryTileTreeState {
   private _scaleRangeVis: MapTileTreeScaleRangeVisibility;
   public getScaleRangeVisibility() {return this._scaleRangeVis;}
 
@@ -162,7 +160,7 @@ export class MapTileTreeState {
   }
 
   public clone() {
-    const clone = new MapTileTreeState();
+    const clone = new ImageryTileTreeState();
     clone._scaleRangeVis = this._scaleRangeVis;
     return clone;
   }

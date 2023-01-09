@@ -287,6 +287,7 @@ internal;ImageryMapLayerTreeReference
 internal;ImageryMapTile 
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
+internal;ImageryTileTreeState
 internal;Imdl
 internal;ImdlReader
 internal;ImdlReaderCreateArgs
@@ -378,7 +379,6 @@ beta;class MapTileProjection
 beta;MapTileTree 
 internal;MapTileTreeReference 
 beta;MapTileTreeScaleRangeVisibility
-internal;MapTileTreeState
 beta;class MapTilingScheme
 public;MarginOptions
 public;MarginPercent

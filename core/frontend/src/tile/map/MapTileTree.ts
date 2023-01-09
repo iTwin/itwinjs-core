@@ -25,8 +25,8 @@ import { SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
-  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerTileTreeReference, MapTile,
-  MapTileLoader, MapTileTreeState, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
+  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapCartoRectangle, MapLayerFeatureInfo, MapLayerTileTreeReference, MapTile,
+  MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
 } from "../internal";
@@ -103,7 +103,7 @@ export class MapTileTree extends RealityTileTree {
   /** @internal */
   public layerImageryTrees: MapLayerTreeSetting[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
-  private _imageryTreeState = new Map<Id64String, MapTileTreeState>();
+  private _imageryTreeState = new Map<Id64String, ImageryTileTreeState>();
   private _modelIdToIndex = new Map<Id64String, number>();
   /** @internal */
   public layerClassifiers = new Map<number, RenderPlanarClassifier>();
@@ -171,7 +171,7 @@ export class MapTileTree extends RealityTileTree {
 
   /** @internal */
   public cloneImageryTreeState() {
-    const clone = new Map<Id64String, MapTileTreeState>();
+    const clone = new Map<Id64String, ImageryTileTreeState>();
     for (const [treeId, state] of this._imageryTreeState) {
       clone.set(treeId, state.clone());
     }
@@ -188,7 +188,7 @@ export class MapTileTree extends RealityTileTree {
     this.layerImageryTrees.push({tree, settings});
     this._layerSettings.set(tree.modelId, settings);
     if (!this._imageryTreeState.has(tree.modelId))
-      this._imageryTreeState.set(tree.modelId, new MapTileTreeState());
+      this._imageryTreeState.set(tree.modelId, new ImageryTileTreeState());
     this._modelIdToIndex.set(tree.modelId, index);
   }
 
