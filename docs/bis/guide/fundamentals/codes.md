@@ -1,10 +1,12 @@
 # Element Codes
 
-A *Code* is a human-readable string identifier of the real-world entity that an Element represents.
+A *Code* is a human-readable textual identifier of the entity that an Element represents.
 
 A Code conveys information to people and programs that understand the structure of the string and are therefore able to *decode* it.
 
 Different domains and organizations have different ways of *encoding* business information into the *Code*, which they can express as [Code Specifications](#codespec).
+
+In BIS, Codes are modeled using three properties of *bis:Element*: CodeValue, CodeSpec and CodeScope.
 
 ## CodeValue Property
 
@@ -28,8 +30,10 @@ When present, a `CodeValue` should be a human-understandable string.
 - Etc.
 
 When the identified entity is physical in nature, it will often have its *code* physically affixed to it (as in the VIN Number on a car or the Manufacturer’s Serial Number on an instrument).
-When the identified entity is non-physical, it may have its *code* semi-permanently attached to a related physical entity.
-For example, a physical valve will have its serial number permanently affixed to it. The "Tag Number" of the "function" that the valve is performing in the process is stamped onto a "Tag" attached to the valve with a wire. If the valve is replaced with a new one (with a new serial number) the Tag holding function's "Tag Number" will be moved to the new valve.
+
+When the identified entity is a role assumed by a physical entity, it may have its *code* semi-permanently attached to a related physical entity. For example, a physical valve will have its serial number permanently affixed to it. The "Tag Number" of the "function" that the valve is performing in the process is stamped onto a "Tag" attached to the valve with a wire. If the valve is replaced with a new one (with a new serial number) the Tag holding function's "Tag Number" will be moved to the new valve.
+
+When the identified entity is pure information in nature, it will often have its *code* assigned to it in the form of a *name* or similar concept, assigned by a domain, organization or software system. Examples include the "name" assigned to a document by an organization, the "model" identifying a specific type of valve from its manufacturer's catalog or the "name" of a particular *line style* used in drawings of an organization.
 
 ### Example misuses of Code
 
