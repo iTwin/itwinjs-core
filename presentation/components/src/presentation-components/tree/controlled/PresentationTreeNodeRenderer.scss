@@ -4,15 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/itwinui-css/scss/style/theme";
 
-.presentation-components-muted-node{
+.presentation-components-too-many-children-node {
   @include themed {
     color: t(iui-text-color-muted);
   }
 }
 
 .presentation-components-node {
-
-  .presentation-components-filter-action-button {
+  .presentation-components-filter-action-buttons {
     visibility: hidden;
     position: sticky;
     background-color: inherit;
@@ -25,7 +24,11 @@
       }
     }
 
-  &:hover > .presentation-components-filter-action-button {
+  &:hover > .presentation-components-filter-action-buttons {
+    visibility: visible;
+  }
+
+  .presentation-components-filter-action-buttons.filtered {
     visibility: visible;
   }
 }
