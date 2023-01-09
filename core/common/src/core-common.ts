@@ -44,6 +44,7 @@ export * from "./geometry/BoundingSphere";
 export * from "./geometry/Cartographic";
 export * from "./geometry/CoordinateReferenceSystem";
 export * from "./geometry/ElementGeometry";
+export * from "./geometry/geometryDataEntryCompare";
 export * from "./geometry/FrustumPlanes";
 export * from "./geometry/GeodeticDatum";
 export * from "./geometry/GeodeticEllipsoid";

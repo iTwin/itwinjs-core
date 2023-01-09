@@ -2,18 +2,31 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CurveCollection, GeometryQuery, Path } from "@itwin/core-geometry";
+import { CurveCollection, GeometryQuery, LineSegment3d, LineString3d, Path } from "@itwin/core-geometry";
 import { ElementGeometry } from "./ElementGeometry";
 import { TextStringProps } from "./TextString";
 
+/** Options for deep comparison */
 export interface DeepEqualOptions {
-  keysToIgnore: Set<string>;
+  /** Keys to ignore on the top-level objects. */
+  topLevelKeysToIgnore: Set<string>;
+  /** Ignore object properties with names that are symbols? */
   ignoreSymbols: boolean;
+  /** Should a missing property *not* be considered equivalent to a property with an undefined value?
+   * The default is the treat missing properties as equivalent to undefined.
+   */
+  missingNotEquivalentToUndefined?: boolean;
 }
+
+const emptySet = new Set<string>();
 
 function filteredKeys(obj: object, opts: DeepEqualOptions): string[] {
   return Object.keys(obj).filter((k) => {
-    return !opts.keysToIgnore.has(k) && (!opts.ignoreSymbols || (typeof ((obj as any)[k]) !== "symbol"));
+    return !opts.topLevelKeysToIgnore.has(k)
+      // optionally ignore props identified by symbols
+      && (!opts.ignoreSymbols || (typeof ((obj as any)[k]) !== "symbol"))
+      // ignore props with undefined values ... unless we need to distinguish between missing props and undefined props
+      && (opts.missingNotEquivalentToUndefined || (obj as any)[k] !== undefined);
   });
 }
 
@@ -21,7 +34,7 @@ function filteredKeys(obj: object, opts: DeepEqualOptions): string[] {
  * Compare two objects for equality with optional filters applied.
  * @param obj1 First object
  * @param obj2 Second object
- * @param keysToIgnore The keys to exclude from the comparison
+ * @param opts The keys to exclude from the comparison, etc.
  * @returns true if the objects are equal, ignoring the excluded keys and symbols
  * @alpha
  */
@@ -58,7 +71,7 @@ export function areObjectsDeepEqual(obj1: unknown, obj2: unknown, opts: DeepEqua
       const p1 = (obj1 as any)[key];
       const p2 = (obj2 as any)[key];
 
-      if (!areObjectsDeepEqual(p1, p2, opts))
+      if (!areObjectsDeepEqual(p1, p2, { ...opts, topLevelKeysToIgnore: emptySet }))
         return false;
     }
     return true;
@@ -76,6 +89,9 @@ export function areObjectsDeepEqual(obj1: unknown, obj2: unknown, opts: DeepEqua
 }
 
 function simplifyGeometryQuery(g: GeometryQuery): GeometryQuery {
+  if (g instanceof LineSegment3d)
+    return LineString3d.create([g.point0Ref, g.point1Ref]);
+
   if ((g instanceof Path) && (g.children.length === 1)) {
     return g.children[0];
   }
@@ -119,7 +135,7 @@ function equalEntries(u1: ElementGeometry.AnyGeometricEntityPropsWithParams | un
   if (u1.entity instanceof GeometryQuery)
     return (u2.entity instanceof GeometryQuery) && equalGeometryQueries(u1.entity, u2.entity);
   // TODO BRep
-  return areObjectsDeepEqual(u1.entity, u2.entity, { keysToIgnore: new Set<string>(), ignoreSymbols: true });
+  return areObjectsDeepEqual(u1.entity, u2.entity, { topLevelKeysToIgnore: new Set<string>(), ignoreSymbols: true });
 }
 
 /**

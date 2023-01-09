@@ -8,8 +8,10 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams,
-  ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
+  areEqualElementGeometryEntities,
+  AxisAlignedBox3d,
+  BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, areObjectsDeepEqual as deepEqualPropsAndGeometry, DefinitionElementProps, ElementAlignedBox3d, ElementGeometry, ElementGeometryBuilderParams,
+  ElementGeometryBuilderParamsForPart, ElementGeometryInfo, ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
   ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
   RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps,
@@ -1657,4 +1659,48 @@ export class RenderTimeline extends InformationRecordElement {
 
     return scriptProps;
   }
+}
+
+function getElementGeometryInfo(db: IModelDb, elementId: Id64String): ElementGeometryInfo {
+  let info: ElementGeometryInfo | undefined;
+  db.elementGeometryRequest({
+    elementId, onGeometry: (info1: ElementGeometryInfo) => {
+      if (info !== undefined) {
+        info = undefined;
+        return;
+      }
+      info = info1;
+    },
+  });
+  return info ?? { entryArray: [] };
+}
+
+/** Test if an element's persistent state is equivalent to the specified props so that, for example,
+ * there would be no need to update the element with these props.
+ * @param elementProps Non-persisent (not-yet-written) props
+ * @param existing Persistent element
+ * @returns true if props are equivalent to the element's persistent state
+ * @alpha
+ */
+export function areElementPropsEqualToPersistentElement(elementProps: ElementProps | GeometricElementProps, existing: Element): boolean {
+  // We ignore placement, because it is usually not specified in in-coming props
+  // (it is computed by native code geometry builder if/when the props are written to the file).
+  const opts = { topLevelKeysToIgnore: new Set(["placement", "elementGeometryBuilderParams"]), ignoreSymbols: true };
+
+  if (!deepEqualPropsAndGeometry(elementProps, existing.toJSON(), opts))
+    return false;
+
+  if (!("elementGeometryBuilderParams" in elementProps) || (elementProps.elementGeometryBuilderParams === undefined))
+    return true;
+
+  const info = { ...elementProps.elementGeometryBuilderParams, categoryId: elementProps.category };
+  const info2 = getElementGeometryInfo(existing.iModel, existing.id);
+
+  if (info.viewIndependent !== info2.viewIndependent)
+    return false;
+
+  const stream = new ElementGeometry.EntityPropsIterator(new ElementGeometry.Iterator(info));
+  const stream2 = new ElementGeometry.EntityPropsIterator(new ElementGeometry.Iterator(info2));
+
+  return areEqualElementGeometryEntities(stream, stream2);
 }

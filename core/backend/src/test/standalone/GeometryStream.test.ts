@@ -20,7 +20,7 @@ import {
   MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
-import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
+import { areElementPropsEqualToPersistentElement, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
 import { createBRepDataProps } from "../GeometryTestUtil";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Timer } from "../TestUtils";
@@ -1308,6 +1308,10 @@ describe("ElementGeometry", () => {
     imodel.saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+
+    const persistent = imodel.elements.getElement(newId);
+    const propsWithGuid = {...elementProps, federationGuid: persistent.federationGuid};
+    assert.isTrue(areElementPropsEqualToPersistentElement(propsWithGuid, persistent));
   });
 
   it("create GeometricElement3d with local coordinate indexed polyface flatbuffer data", async () => {
