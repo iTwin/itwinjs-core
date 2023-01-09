@@ -3,14 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Item
+ * @module UiProvider
  */
 
-/** Properties for an item provided by UiItemsProvider
- * @deprecated Use [ProviderItem]($appui-react) instead.
+import { ProvidedItem } from "@itwin/appui-abstract";
+
+/** Properties for an item provided by UiItemsProvider.
  * @public
  */
-export interface ProvidedItem {
-  /** id of UiItemsProvider */
-  readonly providerId?: string;
-}
+export type ProviderItem = ProvidedItem;
