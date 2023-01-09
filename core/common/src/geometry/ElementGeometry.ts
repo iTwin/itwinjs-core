@@ -599,6 +599,61 @@ export namespace ElementGeometry {
     }
   }
 
+  /** The types of geometric entities that can be captured by an [[ElementGeometryDataEntry]].
+   * TODO: BRep
+   * @alpha
+   */
+  export type AnyGeometricEntity = GeometryQuery | TextStringProps | ImageGraphicProps | Id64String;
+
+  /** An entry in a geometric entity props iteration, including both the props and its range and appearance.
+   * @alpha
+   */
+  // TODO: "| undefined" because entity iterator does yet support BRep entries
+  export interface AnyGeometricEntityPropsWithParams { entity: AnyGeometricEntity | undefined, localRange?: Range3d, geomParams: GeometryParams }
+
+  /** [[ElementGeometry.EntityPropsIterator]] wraps [[ElementGeometry.Iterator], deserializing each entry.
+   * @alpha
+   */
+  export class EntityPropsIterator {
+    private _it: Iterator;
+    private _nxt?: IteratorResult<IteratorEntry>;
+
+    /** Wrap the specified Iterator.
+     * @param it an iterator
+     */
+    public constructor(it: Iterator) {
+      this._it = it;
+    }
+
+    /** Advance the underlying iterator and deserialize the entry. */
+    public next(): IteratorResult<AnyGeometricEntityPropsWithParams> {
+      this._nxt = this._it.next();
+      if (this._nxt.done)
+        return { value: undefined, done: true };
+      const entry = this._nxt.value;
+      const value = entry.value;
+      if (ElementGeometry.isGeometryQueryEntry(value)) {
+        return { value: { entity: ElementGeometry.toGeometryQuery(value), localRange: entry.localRange, geomParams: entry.geomParams }, done: false };
+      }
+
+      switch (value.opcode) {
+        case ElementGeometryOpcode.TextString:
+          return { value: { entity: ElementGeometry.toTextString(value), localRange: entry.localRange, geomParams: entry.geomParams }, done: false };
+        case ElementGeometryOpcode.Image:
+          return { value: { entity: ElementGeometry.toImageGraphic(value), localRange: entry.localRange, geomParams: entry.geomParams }, done: false };
+        case ElementGeometryOpcode.PartReference:
+          return { value: { entity: ElementGeometry.toGeometryPart(value), localRange: entry.localRange, geomParams: entry.geomParams }, done: false };
+        // TODO: ElementGeometryOpcode.BRep
+      }
+
+      return { value: { entity: undefined, localRange: entry.localRange, geomParams: entry.geomParams }, done: false };
+    }
+
+    public [Symbol.iterator](): IterableIterator<AnyGeometricEntityPropsWithParams> {
+      return this;
+    }
+  }
+
   /** Return whether the supplied entry can be represented as a [[GeometryQuery]] */
   export function isGeometryQueryEntry(entry: ElementGeometryDataEntry): boolean {
     switch (entry.opcode) {
