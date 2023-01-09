@@ -7,16 +7,11 @@ import { useSelector } from "react-redux";
 
 import {
   BackstageAppButton, BackstageManager, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps,
-  FrontstageManager, FrontstageProps,
-  IModelViewportControl, StagePanelState, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
-  StandardNavigationToolsUiItemsProvider,
-  StandardStatusbarUiItemsProvider,
-  StateManager,
-  UiFramework,
+  FrontstageManager, FrontstageProps, IModelViewportControl, StagePanelState, StandardContentToolsUiItemsProvider, StandardFrontstageProps,
+  StandardFrontstageProvider, StandardNavigationToolsUiItemsProvider, StandardStatusbarUiItemsProvider, StateManager, UiFramework, WidgetState,
 } from "@itwin/appui-react";
 import {
-  ConditionalStringValue,
-  StageUsage, StandardContentLayouts, UiItemsManager, WidgetState,
+  StageUsage, StandardContentLayouts, UiItemsManager,
 } from "@itwin/appui-abstract";
 import { getSavedViewLayoutProps } from "../../tools/ContentLayoutTools";
 import { WidgetApiStageUiItemsProvider } from "../providers/WidgetApiStageUiItemsProvider";
@@ -24,6 +19,7 @@ import { getTestProviderState, setShowCustomViewOverlay, TestProviderState } fro
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { SvgSmileyHappyVery } from "@itwin/itwinui-icons-react";
+import { ConditionalStringValue } from "@itwin/core-react";
 
 /**
  * The WidgetApiStageContentGroupProvider class method `provideContentGroup` returns a ContentGroup that displays

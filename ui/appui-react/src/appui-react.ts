@@ -285,6 +285,7 @@ export * from "./appui-react/widgets/WidgetHost";
 export * from "./appui-react/widgets/WidgetManager";
 export * from "./appui-react/widgets/WidgetProps";
 export * from "./appui-react/widgets/WidgetStack";
+export * from "./appui-react/widgets/WidgetState";
 
 export * from "./appui-react/workflow/Task";
 export * from "./appui-react/workflow/Workflow";
