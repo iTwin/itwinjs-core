@@ -139,7 +139,7 @@ describe("iModel", () => {
     assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
   });
 
-  it.only("should load a known element by Id from an existing iModel", () => {
+  it("should load a known element by Id from an existing iModel", () => {
     assert.exists(imodel1.elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = imodel1.elements.getElement(code1);
