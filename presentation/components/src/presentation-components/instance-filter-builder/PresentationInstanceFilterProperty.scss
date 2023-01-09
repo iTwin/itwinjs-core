@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 .property-item-line{
   display: grid;
-  grid-template-columns: minmax(calc(50%), auto) minmax(auto, calc(50%));
+  grid-template-columns: minmax(50%, auto) minmax(auto, 50%);
   align-items: center;
 
   .property-badge-container {
-    max-width: calc(100%);
+    max-width: 100%;
     justify-self: end;
 
     .badge {
-      max-width: calc(100%);
+      max-width: 100%;
       display: inline-block;
 
       .iui-badge, .property-category-badge {
-        max-width: calc(100%);
+        max-width: 100%;
         vertical-align: middle;
         box-sizing: border-box;
         padding: 1px 6px;
