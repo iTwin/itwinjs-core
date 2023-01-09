@@ -8,6 +8,7 @@
 
 /** Class used to return a boolean value. The boolean value is refreshed by using the specified function. The syncEventIds define one or more
  * eventIds that would require the testFunc to be rerun.
+ * @deprecated Use [ConditionalBooleanValue]($core-react) instead.
  * @public
  */
 export class ConditionalBooleanValue {
@@ -43,8 +44,8 @@ export class ConditionalBooleanValue {
   }
 
   /** helper function to process properties defined as type ConditionalBooleanValue | boolean | undefined */
-  public static refreshValue(conditionalValue: ConditionalBooleanValue | boolean | undefined, eventIds: Set<string>): boolean {
-    if (undefined === conditionalValue || !(conditionalValue instanceof ConditionalBooleanValue))
+  public static refreshValue(conditionalValue: ConditionalBooleanValue | boolean | undefined, eventIds: Set<string>): boolean { // eslint-disable-line deprecation/deprecation
+    if (undefined === conditionalValue || !(conditionalValue instanceof ConditionalBooleanValue)) // eslint-disable-line deprecation/deprecation
       return false;
 
     if (conditionalValue.syncEventIds.some((value: string): boolean => eventIds.has(value.toLowerCase())))
@@ -54,11 +55,11 @@ export class ConditionalBooleanValue {
   }
 
   /** helper function to get boolean from a ConditionalBooleanValue | boolean | undefined */
-  public static getValue(conditionalValue: ConditionalBooleanValue | boolean | undefined): boolean {
+  public static getValue(conditionalValue: ConditionalBooleanValue | boolean | undefined): boolean { // eslint-disable-line deprecation/deprecation
     if (undefined === conditionalValue)
       return false;
 
-    if (conditionalValue instanceof ConditionalBooleanValue)
+    if (conditionalValue instanceof ConditionalBooleanValue) // eslint-disable-line deprecation/deprecation
       return conditionalValue.value;
 
     return conditionalValue;

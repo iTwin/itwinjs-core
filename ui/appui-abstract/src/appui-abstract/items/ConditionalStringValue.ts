@@ -8,6 +8,7 @@
 
 /** Class used to return a string value. The string value is refreshed by using the specified function. The syncEventIds define one or more
  * eventIds that would require the stringGetter function to be rerun.
+ * @deprecated Use [ConditionalStringValue]($core-react) instead.
  * @public
  */
 export class ConditionalStringValue {

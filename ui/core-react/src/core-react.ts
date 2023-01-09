@@ -116,6 +116,9 @@ export * from "./core-react/slider/Slider";
 
 export * from "./core-react/splitbutton/SplitButton";
 
+export * from "./core-react/syncevent/ConditionalBooleanValue";
+export * from "./core-react/syncevent/ConditionalStringValue";
+
 export * from "./core-react/tabs/HorizontalTabs";
 export * from "./core-react/tabs/VerticalTabs";
 export * from "./core-react/tabs/Tabs";
