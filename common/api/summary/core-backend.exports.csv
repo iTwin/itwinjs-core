@@ -6,6 +6,7 @@ deprecated;AliCloudStorageService
 beta;AliCloudStorageServiceCredentials
 deprecated;AliCloudStorageServiceCredentials
 public;AnnotationElement2d 
+alpha;areElementPropsEqualToPersistentElement(elementProps: ElementProps | GeometricElementProps, existing: Element_2): boolean
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 

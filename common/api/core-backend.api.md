@@ -268,6 +268,9 @@ export class AnnotationElement2d extends GraphicalElement2d {
     static get className(): string;
 }
 
+// @alpha
+export function areElementPropsEqualToPersistentElement(elementProps: ElementProps | GeometricElementProps, existing: Element_2): boolean;
+
 // @public
 export abstract class AuxCoordSystem extends DefinitionElement {
     constructor(props: AuxCoordSystemProps, iModel: IModelDb);

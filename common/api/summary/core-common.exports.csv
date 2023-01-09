@@ -17,6 +17,8 @@ public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
+alpha;areEqualElementGeometryEntities(a1: ElementGeometry.EntityPropsIterator, a2: ElementGeometry.EntityPropsIterator): boolean
+alpha;areObjectsDeepEqual(obj1: unknown, obj2: unknown, opts: DeepEqualOptions): boolean
 beta;AuthorizationClient
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
@@ -176,6 +178,7 @@ internal;DbResponseStatus
 beta;DbRuntimeStats
 internal;DbValueFormat
 internal;DecorationGeometryProps
+alpha;DeepEqualOptions
 beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 

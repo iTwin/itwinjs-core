@@ -6,7 +6,9 @@ import { CurveCollection, GeometryQuery, LineSegment3d, LineString3d, Path } fro
 import { ElementGeometry } from "./ElementGeometry";
 import { TextStringProps } from "./TextString";
 
-/** Options for deep comparison */
+/** Options for deep comparison
+ * @alpha
+ */
 export interface DeepEqualOptions {
   /** Keys to ignore on the top-level objects. */
   topLevelKeysToIgnore: Set<string>;

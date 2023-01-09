@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "new areElementPropsEqualToPersistentElement function compares element props with persistent element state, including geometry",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

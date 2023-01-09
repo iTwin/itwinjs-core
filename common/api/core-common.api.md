@@ -329,6 +329,12 @@ export namespace AreaPattern {
     }
 }
 
+// @alpha
+export function areEqualElementGeometryEntities(a1: ElementGeometry.EntityPropsIterator, a2: ElementGeometry.EntityPropsIterator): boolean;
+
+// @alpha
+export function areObjectsDeepEqual(obj1: unknown, obj2: unknown, opts: DeepEqualOptions): boolean;
+
 // @beta
 export interface AuthorizationClient {
     getAccessToken(): Promise<AccessToken>;
@@ -1957,6 +1963,13 @@ export interface DecorationGeometryProps {
     readonly id: Id64String;
 }
 
+// @alpha
+export interface DeepEqualOptions {
+    ignoreSymbols: boolean;
+    missingNotEquivalentToUndefined?: boolean;
+    topLevelKeysToIgnore: Set<string>;
+}
+
 // @beta
 export enum DefaultSupportedTypes {
     // (undocumented)
@@ -2556,6 +2569,15 @@ export interface ElementAspectProps extends EntityProps {
 
 // @alpha
 export namespace ElementGeometry {
+    export type AnyGeometricEntity = GeometryQuery | TextStringProps | ImageGraphicProps | Id64String;
+    export interface AnyGeometricEntityPropsWithParams {
+        // (undocumented)
+        entity: AnyGeometricEntity | undefined;
+        // (undocumented)
+        geomParams: GeometryParams;
+        // (undocumented)
+        localRange?: Range3d;
+    }
     export function appendGeometryParams(geomParams: GeometryParams, entries: ElementGeometryDataEntry[], worldToLocal?: Transform): boolean;
     export class Builder {
         appendBRepData(brep: BRepEntity.DataProps): boolean;
@@ -2576,6 +2598,12 @@ export namespace ElementGeometry {
         setLocalToWorld3d(origin: Point3d, angles?: YawPitchRollAngles): void;
         setLocalToWorldFromPlacement(props: PlacementProps): void;
         get worldToLocal(): Transform | undefined;
+    }
+    export class EntityPropsIterator {
+        // (undocumented)
+        [Symbol.iterator](): IterableIterator<AnyGeometricEntityPropsWithParams>;
+        constructor(it: Iterator);
+        next(): IteratorResult<AnyGeometricEntityPropsWithParams>;
     }
     export function fromBRep(brep: BRepEntity.DataProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
     export function fromGeometryPart(partId: Id64String, partTransform?: Transform, worldToLocal?: Transform): ElementGeometryDataEntry | undefined;
