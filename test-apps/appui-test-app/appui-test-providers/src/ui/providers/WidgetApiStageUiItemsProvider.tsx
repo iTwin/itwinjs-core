@@ -6,10 +6,10 @@
 
 import * as React from "react";
 import {
-  AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonToolbarItem, StagePanelLocation, StagePanelSection,
+  AbstractWidgetProps, CommonToolbarItem, StagePanelLocation, StagePanelSection,
   ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
-import { ToolbarHelper } from "@itwin/appui-react";
+import { BackstageItem, BackstageItemUtilities, ToolbarHelper } from "@itwin/appui-react";
 import { getShowHideFloatingWidgetCommandItemDef, getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
