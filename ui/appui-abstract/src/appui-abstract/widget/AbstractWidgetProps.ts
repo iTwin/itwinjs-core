@@ -12,13 +12,14 @@ import { ProvidedItem } from "../items/ProvidedItem";
 import { WidgetState } from "./WidgetState";
 
 /** Properties for a Widget.
+ * @deprecated Use [CommonWidgetProps]($appui-react) instead.
  * @public
  */
-export interface AbstractWidgetProps extends ProvidedItem {
-  /** Gets the widget content */
+export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-line deprecation/deprecation
+  /** Gets the widget content. */
   readonly getWidgetContent: () => any;
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
-  readonly icon?: string | ConditionalStringValue;
+  readonly icon?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
   /** Id used to uniquely identify the widget.
    * @note It is recommended to provide unique widget id to correctly save/restore App layout.
    */
@@ -26,9 +27,9 @@ export interface AbstractWidgetProps extends ProvidedItem {
   /** Default Widget state. Controls how the Widget is initially displayed. Defaults to WidgetState.Unloaded. */
   readonly defaultState?: WidgetState;
   /** if set, component will be considered selected but will NOT display an "active stripe" - defaults to false. Typically used by buttons that toggle between two states. */
-  readonly label?: string | ConditionalStringValue;
+  readonly label?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
   /** used to explicitly set the tooltip shown by a component. */
-  readonly tooltip?: string | ConditionalStringValue;
+  readonly tooltip?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
   /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false. @deprecated */
   readonly isFreeform?: boolean;
   /** Application data attached to the Widget. */
@@ -62,7 +63,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
   */
   readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
   /** Badge to be overlaid on the widget tab. */
-  readonly badgeType?: BadgeType;
+  readonly badgeType?: BadgeType; // eslint-disable-line deprecation/deprecation
   /** Handler for widget state changed event */
   readonly onWidgetStateChanged?: () => void;
   /** Save transient DOM state (i.e. scroll offset). */

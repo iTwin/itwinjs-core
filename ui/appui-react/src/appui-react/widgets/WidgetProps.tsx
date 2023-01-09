@@ -29,3 +29,11 @@ export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent
   /** @alpha */
   preferredPanelSize?: "fit-content";
 }
+
+/** Properties of a Widget.
+ * @public
+ */
+export interface CommonWidgetProps extends Readonly<AbstractWidgetProps> {
+  /** Id used to uniquely identify the widget. */
+  readonly id: string;
+}

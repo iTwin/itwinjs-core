@@ -6,10 +6,10 @@
 
 import * as React from "react";
 import {
-  AbstractWidgetProps, CommonToolbarItem, StagePanelLocation, StagePanelSection,
+  CommonToolbarItem, StagePanelLocation, StagePanelSection,
   ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
-import { BackstageItem, BackstageItemUtilities, ToolbarHelper } from "@itwin/appui-react";
+import { BackstageItem, BackstageItemUtilities, CommonWidgetProps, ToolbarHelper } from "@itwin/appui-react";
 import { getShowHideFloatingWidgetCommandItemDef, getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
@@ -37,7 +37,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
   }
 
   private getLeftPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: CommonWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push({
@@ -79,7 +79,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
   }
 
   private getRightPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: CommonWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push({
@@ -136,7 +136,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
   }
 
   private getTopPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: CommonWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push({
@@ -175,7 +175,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
   }
 
   private getBottomPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: CommonWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push({
@@ -204,7 +204,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     return widgets;
   }
 
-  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
+  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection | undefined): ReadonlyArray<CommonWidgetProps> {
     const allowedStages = [WidgetApiStage.stageId];
     if (allowedStages.includes(stageId)) {
       switch (location) {
