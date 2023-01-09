@@ -5,8 +5,9 @@
 
 import {
   AbstractStatusBarItemUtilities,
-  CommonStatusBarItem, CommonToolbarItem, IconSpecUtilities, StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
+  CommonToolbarItem, IconSpecUtilities, StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
 } from "@itwin/appui-abstract";
+import { AnyStatusBarItem, StatusBarSection } from "@itwin/appui-react";
 import { SampleTool } from "../../tools/SampleTool";
 import { UnitsPopupUiDataProvider } from "../dialogs/UnitsPopup";
 import { IModelApp } from "@itwin/core-frontend";
@@ -48,9 +49,9 @@ export class AbstractUiItemsProvider implements UiItemsProvider {
     return [];
   }
 
-  public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
+  public provideStatusBarItems(_stageId: string, stageUsage: string): AnyStatusBarItem[] {
     const unitsIcon = IconSpecUtilities.createWebComponentIconSpec(statusFieldSvg);
-    const statusBarItems: CommonStatusBarItem[] = [];
+    const statusBarItems: AnyStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
 
       statusBarItems.push(

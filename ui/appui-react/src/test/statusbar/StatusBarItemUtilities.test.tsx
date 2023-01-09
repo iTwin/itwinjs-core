@@ -13,15 +13,15 @@ describe("StatusBarItemUtilities", () => {
 
     it("should support itemProps", () => {
       const newId = "new-id";
-      const item = StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />, { id: newId });
+      const item = StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />, { id: newId }); // eslint-disable-line deprecation/deprecation
       expect(item.id).to.eq(newId);
     });
 
     it("should support isVisible", () => {
-      const item1 = StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />);
-      expect(ConditionalBooleanValue.getValue(item1.isHidden)).to.be.false;
-      const item2 = StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />, { isHidden: true });
-      expect(ConditionalBooleanValue.getValue(item2.isHidden)).to.be.true;
+      const item1 = StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />); // eslint-disable-line deprecation/deprecation
+      expect(ConditionalBooleanValue.getValue(item1.isHidden)).to.be.false; // eslint-disable-line deprecation/deprecation
+      const item2 = StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />, { isHidden: true }); // eslint-disable-line deprecation/deprecation
+      expect(ConditionalBooleanValue.getValue(item2.isHidden)).to.be.true; // eslint-disable-line deprecation/deprecation
     });
 
   });
