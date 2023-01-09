@@ -118,6 +118,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /docs/getting-started @iTwin/itwinjs-core-admins @williamkbentley
 /docs/config          @iTwin/itwinjs-core-admins @williamkbentley
 /docs/presentation    @iTwin/itwinjs-core-presentation
+/docs/bis             @diegoalexdiaz @ColinKerr
 
 # These domains should be split up a bit more
 /domains                      @iTwin/itwinjs-core-admins
