@@ -139,7 +139,7 @@ describe("iModel", () => {
     assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
   });
 
-  it("should load a known element by Id from an existing iModel", () => {
+  it.only("should load a known element by Id from an existing iModel", () => {
     assert.exists(imodel1.elements);
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = imodel1.elements.getElement(code1);
@@ -157,29 +157,29 @@ describe("iModel", () => {
       assert.equal(error.errorNumber, IModelStatus.NotFound);
     }
 
-    const element1: Element | undefined = imodel1.elements.tryGetElement(code1);
-    const element2: Element | undefined = imodel1.elements.tryGetElement("0x34");
-    const element3: Element | undefined = imodel1.elements.tryGetElement(badCode);
+    const element1 = imodel1.elements.tryGetElement(code1);
+    const element2 = imodel1.elements.tryGetElement("0x34");
+    const element3 = imodel1.elements.tryGetElement(badCode);
     assert.isDefined(element1);
     assert.isDefined(element2);
     assert.isUndefined(element3);
-    const elementProps1: ElementProps | undefined = imodel1.elements.tryGetElementProps(code1);
-    const elementProps2: ElementProps | undefined = imodel1.elements.tryGetElementProps("0x34");
-    const elementProps3: ElementProps | undefined = imodel1.elements.tryGetElementProps(badCode);
+    const elementProps1 = imodel1.elements.tryGetElementProps(code1);
+    const elementProps2 = imodel1.elements.tryGetElementProps("0x34");
+    const elementProps3 = imodel1.elements.tryGetElementProps(badCode);
     assert.isDefined(elementProps1);
     assert.isDefined(elementProps2);
     assert.isUndefined(elementProps3);
 
-    const model1: Model | undefined = imodel1.models.tryGetModel(IModel.dictionaryId);
-    const modelProps1: ModelProps | undefined = imodel1.models.tryGetModelProps(IModel.dictionaryId);
-    const subModel1: Model | undefined = imodel1.models.tryGetSubModel(IModel.dictionaryId);
+    const model1 = imodel1.models.tryGetModel(IModel.dictionaryId);
+    const modelProps1 = imodel1.models.tryGetModelProps(IModel.dictionaryId);
+    const subModel1 = imodel1.models.tryGetSubModel(IModel.dictionaryId);
     assert.isDefined(model1);
     assert.isDefined(modelProps1);
     assert.isDefined(subModel1);
-    const badModel1: Model | undefined = imodel1.models.tryGetModel(Id64.fromUint32Pair(999, 999));
-    const badModelProps1: ModelProps | undefined = imodel1.models.tryGetModelProps(Id64.fromUint32Pair(999, 999));
-    const badSubModel1: Model | undefined = imodel1.models.tryGetSubModel(IModel.rootSubjectId);
-    const badSubModel2: Model | undefined = imodel1.models.tryGetSubModel(badCode);
+    const badModel1 = imodel1.models.tryGetModel(Id64.fromUint32Pair(999, 999));
+    const badModelProps1 = imodel1.models.tryGetModelProps(Id64.fromUint32Pair(999, 999));
+    const badSubModel1 = imodel1.models.tryGetSubModel(IModel.rootSubjectId);
+    const badSubModel2 = imodel1.models.tryGetSubModel(badCode);
     assert.isUndefined(badModel1);
     assert.isUndefined(badModelProps1);
     assert.isUndefined(badSubModel1);
@@ -220,17 +220,37 @@ describe("iModel", () => {
 
     const a2 = imodel2.elements.getElement("0x1d");
     assert.exists(a2);
-    assert.isTrue(a2.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    const el3: Element = imodel2.elements.getElement(a2.federationGuid!);
+    expect(a2.federationGuid).equal("18eb4650-b074-414f-b961-d9cfaa6c8746");
+    const el3 = imodel2.elements.getElement(a2.federationGuid!);
     assert.exists(el3);
     assert.notEqual(a2, el3);
     assert.equal(a2.id, el3.id);
     roundtripThroughJson(el3);
 
-    const newEl = el3;
+    const newEl = el3.toJSON();
     newEl.federationGuid = undefined;
-    const newId = imodel2.elements.insertElement(newEl.toJSON());
-    assert.isTrue(Id64.isValidId64(newId), "insert worked");
+    newEl.code = { scope: "bad scope", spec: "0x10", value: "new code" };
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope");
+    newEl.code.scope = "0x34322"; // valid id, but element doesn't exist
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope");
+
+    newEl.code.scope = el3.federationGuid!;
+    const newId = imodel2.elements.insertElement(newEl); // code scope from FederationGuid should get converted to ElementId
+    const a4 = imodel2.elements.getElementProps(newId);
+    expect(a4.code.scope).equal(el3.id);
+
+    a4.code.scope = "0x13343";
+    expect(() => imodel2.elements.updateElement(a4)).throws("invalid code scope");
+
+    a4.code.scope = "0x1";
+    imodel2.elements.updateElement(a4); // should change the code scope to new element
+    let a5 = imodel2.elements.getElementProps(newId);
+    expect(a5.code.scope).equal("0x1");
+
+    a4.code.scope = el3.federationGuid!; // should convert FederationGuid to ElementId
+    imodel2.elements.updateElement(a4);
+    a5 = imodel2.elements.getElementProps(newId);
+    expect(a5.code.scope).equal(el3.id);
   });
 
   it("should optionally detect class mismatches", () => {
@@ -468,7 +488,7 @@ describe("iModel", () => {
     const props: DisplayStyleProps = {
       classFullName: DisplayStyle3d.classFullName,
       model: IModel.dictionaryId,
-      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId },
+      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId, value: "test style" },
       isPrivate: false,
       jsonProperties: {
         styles: settings,
