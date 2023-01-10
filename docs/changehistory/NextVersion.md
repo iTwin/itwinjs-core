@@ -15,10 +15,8 @@ Table of contents:
   - [Support larger terrain meshes](#support-larger-terrain-meshes)
 - [Geometry](#geometry)
   - [Query mesh convexity](#query-mesh-convexity)
-- [Deprecations](#deprecations)
-  - [@itwin/core-bentley](#itwincore-bentley)
-  - [@itwin/core-frontend](#itwincore-frontend)
-  - [@itwin/appui-react](#itwinappui-react)
+- [API promotions](#api-promotions)
+- [API deprecations](#api-deprecations)
 
 ## API support policies
 
@@ -70,7 +68,25 @@ Previously, [RealityMeshParams]($frontend) only supported 16-bit vertex indices,
 
 A new method [PolyfaceQuery.isConvexByDihedralAngleCount]($core-geometry) permits testing the convexity of a mesh by inspecting the dihedral angles of all of its edges. For an example of its usage, see the [element clipping example](#element-clipping-example).
 
-## Deprecations
+## API promotions
+
+The following APIs have been promoted to `@public`, indicating they are now part of their respective packages' stability contract.
+
+### @itwin/core-bentley
+
+- [AccessToken]($bentley)
+
+### @itwin/core-common
+
+- [AuthorizationClient]($common)
+- [FrustumPlanes]($common)
+
+### @itwin/core-frontend
+
+- [Viewport.queryVisibleFeatures]($frontend)
+- [ViewState3d.lookAt]($frontend)
+
+## API deprecations
 
 ### @itwin/core-bentley
 
