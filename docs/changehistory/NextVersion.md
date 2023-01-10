@@ -70,7 +70,7 @@ A new method [PolyfaceQuery.isConvexByDihedralAngleCount]($core-geometry) permit
 
 ## API promotions
 
-The following APIs have been promoted to `@public`, indicating they are now part of their respective packages' stability contract.
+The following APIs have been promoted to `@public`, indicating they are now part of their respective packages' [stability contract](../learning/api-support-policies.md).
 
 ### @itwin/core-bentley
 
