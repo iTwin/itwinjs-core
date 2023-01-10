@@ -329,7 +329,7 @@ export namespace AreaPattern {
     }
 }
 
-// @beta
+// @public
 export interface AuthorizationClient {
     getAccessToken(): Promise<AccessToken>;
 }
@@ -664,14 +664,11 @@ export type BlobRange = QueryLimit;
 // @public
 export class BoundingSphere {
     constructor(center?: Point3d, radius?: number);
-    // (undocumented)
     center: Point3d;
-    // (undocumented)
     init(center: Point3d, radius: number): void;
-    // (undocumented)
     radius: number;
-    // (undocumented)
-    transformBy(transform: Transform, result: BoundingSphere): BoundingSphere;
+    transformBy(transform: Transform, result?: BoundingSphere): BoundingSphere;
+    transformInPlace(transform: Transform): void;
 }
 
 // @alpha
@@ -3344,38 +3341,25 @@ export class Frustum {
     translate(offset: XYAndZ): void;
 }
 
-// @internal
+// @public
 export class FrustumPlanes {
-    constructor(frustum?: Frustum);
-    // (undocumented)
     computeContainment(points: Point3d[], sphere?: BoundingSphere, tolerance?: number): FrustumPlanes.Containment;
-    // (undocumented)
     computeFrustumContainment(box: Frustum, sphere?: BoundingSphere): FrustumPlanes.Containment;
-    // (undocumented)
     containsPoint(point: Point3d, tolerance?: number): boolean;
-    // (undocumented)
-    init(frustum: Frustum): void;
-    // (undocumented)
+    static createEmpty(): FrustumPlanes;
+    static fromFrustum(frustum: Frustum): FrustumPlanes;
+    init(frustum: Frustum): boolean;
     intersectsFrustum(box: Frustum, sphere?: BoundingSphere): boolean;
-    // (undocumented)
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
-    // (undocumented)
     get isValid(): boolean;
-    // (undocumented)
-    get planes(): ClipPlane[] | undefined;
+    get planes(): ClipPlane[];
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace FrustumPlanes {
-    // (undocumented)
-    export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance?: number): void;
-    // (undocumented)
     export enum Containment {
-        // (undocumented)
         Inside = 2,
-        // (undocumented)
         Outside = 0,
-        // (undocumented)
         Partial = 1
     }
 }
@@ -9866,7 +9850,6 @@ export interface ViewFlagProps {
     shadows?: boolean;
     thematicDisplay?: boolean;
     visEdges?: boolean;
-    // @beta
     wiremesh?: boolean;
 }
 
@@ -9910,7 +9893,6 @@ export class ViewFlags {
     readonly visibleEdges: boolean;
     readonly weights: boolean;
     readonly whiteOnWhiteReversal: boolean;
-    // @beta
     readonly wiremesh: boolean;
     with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags;
     withRenderMode(renderMode: RenderMode): ViewFlags;
