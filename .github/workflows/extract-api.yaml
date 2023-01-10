@@ -43,8 +43,13 @@ jobs:
         run: node common/scripts/install-run-rush.js extract-api
 
       - name: Assert no uncommitted changes (for extension api)
+        shell: bash
         run: |
-          git diff-index --quiet HEAD --
+          if [ $(git status --porcelain | wc -l) -ne "0" ]; then
+            echo "There are uncommitted changes"
+            git status --porcelain
+            exit 1
+          fi
 
       - name: Publish extracted api
         uses: actions/upload-artifact@v2
