@@ -8,11 +8,13 @@
 
 import { AccessToken } from "@itwin/core-bentley";
 
-/** Provides [authorization](https://developer.bentley.com/apis/overview/authorization/#authorizesinglepageapplicationsspaanddesktopmobileapplicationsnative).
- * @see [IModelHostOptions.authorizationClient]($backend) and [IModelAppOptions.authorizationClient]($frontend) to configure the client.
- * @see [IModelHost.authorizationClient]($backend) and [IModelApp.authorizationClient]($frontend) to access the configured client.
+/** Provides authorization to access APIs.
+ * Bentley's iTwin platform APIs [use OAuth 2.0](https://developer.bentley.com/apis/overview/authorization/) for authorization.
  * Implementations are provided for [Electron](https://www.npmjs.com/package/@itwin/electron-authorization), [browsers](https://www.npmjs.com/package/@itwin/browser-authorization),
  * [services](https://www.npmjs.com/package/@itwin/service-authorization), and [command-line applications](https://www.npmjs.com/package/@itwin/node-cli-authorization).
+ * [authorization](https://developer.bentley.com/apis/overview/authorization/#authorizesinglepageapplicationsspaanddesktopmobileapplicationsnative).
+ * @see [IModelHostOptions.authorizationClient]($backend) and [IModelAppOptions.authorizationClient]($frontend) to configure the client.
+ * @see [IModelHost.authorizationClient]($backend) and [IModelApp.authorizationClient]($frontend) to access the configured client.
  * @note Access tokens expire periodically and are automatically refreshed when possible; therefore, tokens should always be requested via the client, not cached for later reuse.
  @public
  */
