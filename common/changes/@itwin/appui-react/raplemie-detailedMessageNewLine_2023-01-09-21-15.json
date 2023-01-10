@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix detailed output message on a new line in toasts.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
