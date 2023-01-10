@@ -110,7 +110,6 @@ export class TraversalSelectionContext {
 }
 
 const scratchFrustum = new Frustum();
-const scratchFrustumPlanes = new FrustumPlanes();
 const scratchCarto = Cartographic.createZero();
 const scratchPoint = Point3d.createZero(), scratchOrigin = Point3d.createZero();
 const scratchRange = Range3d.createNull();
@@ -466,12 +465,11 @@ export class RealityTileTree extends TileTree {
   /** @internal */
   public preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform) {
     const preloadFrustum = args.viewingSpace.getPreloadFrustum(frustumTransform, scratchFrustum);
-    const preloadFrustumPlanes = new FrustumPlanes(preloadFrustum);
+    const preloadFrustumPlanes = FrustumPlanes.fromFrustum(preloadFrustum);
     const worldToNpc = preloadFrustum.toMap4d();
     const preloadWorldToViewMap = args.viewingSpace.calcNpcToView().multiplyMapMap(worldToNpc!);
     const preloadArgs = new RealityTileDrawArgs(args, preloadWorldToViewMap, preloadFrustumPlanes);
 
-    scratchFrustumPlanes.init(preloadFrustum);
     if (context.preloadDebugBuilder) {
       context.preloadDebugBuilder.setSymbology(ColorDef.blue, ColorDef.blue, 2, 0);
       context.preloadDebugBuilder.addFrustum(preloadFrustum);

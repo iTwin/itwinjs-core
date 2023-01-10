@@ -5526,7 +5526,7 @@ export class LookAndMoveTool extends ViewManip {
     static toolId: string;
 }
 
-// @beta
+// @public
 export interface LookAtArgs {
     readonly backDistance?: number;
     readonly eyePoint: XYAndZ;
@@ -5536,7 +5536,7 @@ export interface LookAtArgs {
     readonly upVector: Vector3d;
 }
 
-// @beta
+// @public
 export interface LookAtOrthoArgs extends LookAtArgs {
     // (undocumented)
     readonly lensAngle?: never;
@@ -5545,7 +5545,7 @@ export interface LookAtOrthoArgs extends LookAtArgs {
     readonly viewDirection: XYAndZ;
 }
 
-// @beta
+// @public
 export interface LookAtPerspectiveArgs extends LookAtArgs {
     // (undocumented)
     readonly lensAngle?: never;
@@ -5554,7 +5554,7 @@ export interface LookAtPerspectiveArgs extends LookAtArgs {
     readonly viewDirection?: never;
 }
 
-// @beta
+// @public
 export interface LookAtUsingLensAngle extends LookAtArgs {
     readonly lensAngle: Angle;
     readonly targetPoint: XYAndZ;
@@ -8062,7 +8062,7 @@ export interface QuantityTypeDefinition {
 // @public
 export type QuantityTypeKey = string;
 
-// @beta
+// @public
 export interface QueryScreenFeaturesOptions {
     includeNonLocatable?: boolean;
     rect?: ViewRect;
@@ -8072,7 +8072,7 @@ export interface QueryScreenFeaturesOptions {
 // @public
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
 
-// @beta
+// @public
 export interface QueryTileFeaturesOptions {
     includeNonLocatable?: boolean;
     source: "tiles";
@@ -8081,10 +8081,10 @@ export interface QueryTileFeaturesOptions {
 // @internal
 export function queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
 
-// @beta
+// @public
 export type QueryVisibleFeaturesCallback = (features: Iterable<VisibleFeature>) => void;
 
-// @beta
+// @public
 export type QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions;
 
 // @internal
@@ -13515,7 +13515,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     get pixelsPerInch(): number;
     // @internal (undocumented)
     pointToGrid(point: Point3d): void;
-    // @beta
     queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
     // @deprecated
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
@@ -14045,7 +14044,6 @@ export abstract class ViewState3d extends ViewState {
     isEyePointGlobalView(eyePoint: XYAndZ): boolean;
     // (undocumented)
     get isGlobalView(): boolean;
-    // @beta
     lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus;
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
     lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
@@ -14185,7 +14183,7 @@ export class ViewUndoTool extends ViewTool {
     static toolId: string;
 }
 
-// @beta
+// @public
 export interface VisibleFeature {
     readonly elementId: Id64String;
     readonly geometryClass: GeometryClass;
