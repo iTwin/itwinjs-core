@@ -5,13 +5,22 @@ publish: false
 
 Table of contents:
 
+- [API support policies](#api-support-policies)
 - [Electron 22 support](#electron-22-support)
 - [Display system](#display-system)
-  - [Eye-dome lighting of Point Clouds](#eye-dome-lighting-of-point-clouds)
+  - [Point cloud shading](#point-cloud-shading)
   - [Smooth viewport resizing](#smooth-viewport-resizing)
   - [Pickable view overlays](#pickable-view-overlays)
+  - [Element clipping example](#element-clipping-example)
+  - [Support larger terrain meshes](#support-larger-terrain-meshes)
+- [Geometry](#geometry)
+  - [Query mesh convexity](#query-mesh-convexity)
 - [API promotions](#api-promotions)
 - [API deprecations](#api-deprecations)
+
+## API support policies
+
+iTwin.js now documents the [official policies](../learning/api-support-policies.md) defining the level of stability and support afforded to its public APIs and each major release.
 
 ## Electron 22 support
 
@@ -19,21 +28,26 @@ In addition to already supported Electron versions, iTwin.js now supports [Elect
 
 ## Display system
 
-### Eye-Dome Lighting of Point Clouds
+### Point cloud shading
 
-You can now apply eye-dome lighting (EDL) to point cloud reality models. This effect helps accentuate the depth, shape, and surface of a point cloud model. This is particularly helpful when a point cloud model lacks color data and would otherwise appear fully monochrome. The EDL settings are specified independently for each point cloud.
+Point clouds can provide valuable real-world context when visualizing an iTwin, but it can often be difficult to discern individual features within the cloud of points - especially when the point cloud lacks color data. You can now accentuate the depth, shape, and surface of a point cloud using a technique called "eye-dome lighting" that uses the relative depths of the points to compute a lighting effect.
 
-Note: EDL only applies when camera is enabled in the view.
+Point cloud shading is specified by several properties of [RealityModelDisplaySettings.pointCloud]($common), all with names prefixed with `edl` (short for "eye-dome lighting"):
 
-To apply eye-dome lighting to a point cloud, you must apply a [RealityModelDisplaySettings]($common) to the model, customizing its point cloud display settings to utilize the eye-dome lighting properties, described below:
+- [PointCloudDisplaySettings.edlMode]($common) enables the effect if set to "on" or "full".
+- [PointCloudDisplaySettings.edlStrength]($common) specifies the intensity of the effect.
+- [PointCloudDisplaySettings.edlRadius]($common) specifies the radius in pixels around each point that should be sampled to detect differences in depth.
+- [PointCloudDisplaySettings.edlFilter]($common) specifies whether to apply a filtering pass to smooth out the effect, when `edlMode` is set to "full".
 
-- [PointCloudDisplaySettings.edlMode]($common) specifies the mode to use for EDL. This defaults to "off". See [PointCloudEDLMode]($common) for more details.
-- [PointCloudDisplaySettings.edlStrength]($common) specifies the strength value for the EDL effect, a positive floating point number. This defaults to 5.0.
-- [PointCloudDisplaySettings.edlRadius]($common) specifies a radius value for the EDL effect, a positive floating point number which determines how far away in pixels to sample for depth change. This defaults to 2.0.
-- [PointCloudDisplaySettings.edlFilter]($common) specifies a flag for whether or not to apply a filtering pass in the EDL effect; this only applies if edlMode is "full". This defaults to 1.0.
-- [PointCloudDisplaySettings.edlMixWts1]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the full image when combining it with the half and quarter sized ones; this only applies if edlMode is "full". This defaults to 1.0.
-- [PointCloudDisplaySettings.edlMixWts2]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the half image when combining it with the full and quarter sized ones; this only applies if edlMode is "full". This defaults to 0.5.
-- [PointCloudDisplaySettings.edlMixWts4]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the full image when combining it with the full and half sized ones; this only applies if edlMode is "full". This defaults to 0.25.
+Each point cloud in a view can have its own independent EDL settings. You can configure those settings via [ContextRealityModel.displaySettings]($common) for context reality models, and [DisplayStyleSettings.setRealityModelDisplaySettings]($common) for persistent reality models. Adjusting related settings like [PointCloudDisplaySettings.sizeMode]($common) and [PointCloudDisplaySettings.shape]($common) can influence the shading effect.
+
+A monochrome point cloud with (bottom) and without (top) shading:
+
+![Monochrome point cloud shading](./assets/edl-mono.jpg)
+
+A colorized point cloud with (bottom) and without (top) shading:
+
+![Colorized point cloud shading](./assets/edl-color.jpg)
 
 ### Smooth viewport resizing
 
@@ -43,9 +57,25 @@ Previously, when a [Viewport]($frontend)'s canvas was resized there would be a d
 
 A bug preventing users from interacting with [pickable decorations](../learning/frontend/ViewDecorations.md#pickable-view-graphic-decorations) defined as [GraphicType.ViewOverlay]($frontend) has been fixed.
 
+### Element clipping example
+
+In some cases it is useful to apply a [clipping volume](https://www.itwinjs.org/reference/core-common/views/viewdetails/clipvector/) to a view that mimics the shape of one or more elements. For example, you may have a view displaying a reality mesh captured from a real-world asset like a factory, and a design model representing the same asset, and wish to isolate the portions of the reality mesh corresponding to a series of pipe elements in the design model.
+
+display-test-app now provides an [example tool](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/ViewClipByElementGeometryTool.ts) demonstrating how this can be achieved. It uses [IModelConnection.generateElementMeshes]($frontend) to produce [Polyface]($core-geometry)s from one or more elements; decomposes them into a set of convex hulls using [VHACD.js](https://www.npmjs.com/package/vhacd-js); and creates a clipping volume from the hulls via [ConvexClipPlaneSet.createConvexPolyface]($core-geometry). The example tool can be accessed in display-test-app using the keyin `dta clip element geometry`.
+
+### Support larger terrain meshes
+
+Previously, [RealityMeshParams]($frontend) only supported 16-bit vertex indices, which limited the number of vertices that could be produced by a [TerrainMeshProvider]($frontend). That limit has been extended to 32 bits (the maximum supported by WebGL). The code has also been optimized to allocate only as many bytes per vertex index as required. For example, if a mesh contains fewer than 256 vertices, only one byte will be allocated per vertex index.
+
+## Geometry
+
+### Query mesh convexity
+
+A new method [PolyfaceQuery.isConvexByDihedralAngleCount]($core-geometry) permits testing the convexity of a mesh by inspecting the dihedral angles of all of its edges. For an example of its usage, see the [element clipping example](#element-clipping-example).
+
 ## API promotions
 
-The following APIs have been promoted to `@public`, indicating they are now part of their respective packages' stability contract.
+The following APIs have been promoted to `@public`, indicating they are now part of their respective packages' [stability contract](../learning/api-support-policies.md).
 
 ### @itwin/core-bentley
 
