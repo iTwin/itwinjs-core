@@ -309,10 +309,10 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
       receivedError = error;
     }
     chai.assert(receivedError);
-    chai.assert(receivedError!.conflictingLocks);
-    chai.expect(receivedError!.conflictingLocks!.length).to.be.equal(1);
-    chai.expect(receivedError!.conflictingLocks![0].lockLevel).to.be.equal(lock2.lockLevel);
-    chai.expect(receivedError!.conflictingLocks![0].lockType).to.be.equal(lock2.lockType);
+    chai.assert(receivedError.conflictingLocks);
+    chai.expect(receivedError.conflictingLocks.length).to.be.equal(1);
+    chai.expect(receivedError.conflictingLocks[0].lockLevel).to.be.equal(lock2.lockLevel);
+    chai.expect(receivedError.conflictingLocks[0].lockType).to.be.equal(lock2.lockType);
   });
 
   it("should return conflicting locks", async () => {
@@ -344,12 +344,12 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
       receivedError = error;
     }
     chai.assert(receivedError);
-    chai.assert(receivedError!.conflictingLocks);
-    chai.expect(receivedError!.conflictingLocks!.length).to.be.equal(2);
-    chai.expect(receivedError!.conflictingLocks![0].lockLevel).to.be.equal(lock2.lockLevel);
-    chai.expect(receivedError!.conflictingLocks![0].lockType).to.be.equal(lock2.lockType);
-    chai.expect(receivedError!.conflictingLocks![1].lockLevel).to.be.equal(lock3.lockLevel);
-    chai.expect(receivedError!.conflictingLocks![1].lockType).to.be.equal(lock3.lockType);
+    chai.assert(receivedError.conflictingLocks);
+    chai.expect(receivedError.conflictingLocks.length).to.be.equal(2);
+    chai.expect(receivedError.conflictingLocks[0].lockLevel).to.be.equal(lock2.lockLevel);
+    chai.expect(receivedError.conflictingLocks[0].lockType).to.be.equal(lock2.lockType);
+    chai.expect(receivedError.conflictingLocks[1].lockLevel).to.be.equal(lock3.lockLevel);
+    chai.expect(receivedError.conflictingLocks[1].lockType).to.be.equal(lock3.lockType);
   });
 
   it("should delete all locks", async () => {
@@ -368,7 +368,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should not create a query by locks with no object id", () => {
@@ -382,7 +382,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should fail deleting all locks with invalid briefcase id", async () => {
@@ -394,6 +394,6 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 });

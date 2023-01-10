@@ -119,6 +119,6 @@ describe("iModelHubClient UserInfoHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 });

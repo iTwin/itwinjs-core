@@ -147,10 +147,10 @@ describe("iModelHub CodeHandler", () => {
       receivedError = error;
     }
     chai.assert(receivedError);
-    chai.assert(receivedError!.conflictingCodes);
-    chai.expect(receivedError!.conflictingCodes!.length).to.be.equal(2);
-    chai.expect(receivedError!.conflictingCodes![0].value).to.be.equal(code2.value);
-    chai.expect(receivedError!.conflictingCodes![1].value).to.be.equal(code3.value);
+    chai.assert(receivedError.conflictingCodes);
+    chai.expect(receivedError.conflictingCodes.length).to.be.equal(2);
+    chai.expect(receivedError.conflictingCodes[0].value).to.be.equal(code2.value);
+    chai.expect(receivedError.conflictingCodes[1].value).to.be.equal(code3.value);
   });
 
   it("should update code multiple times (#iModelBank)", async () => {
@@ -336,7 +336,7 @@ describe("iModelHub CodeHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should not create a query by codes with invalid codes (#iModelBank)", () => {
@@ -348,7 +348,7 @@ describe("iModelHub CodeHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 
   it("should fail deleting all codes with invalid briefcase id (#iModelBank)", async () => {
@@ -360,7 +360,7 @@ describe("iModelHub CodeHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 });
 

@@ -158,7 +158,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
 
     chai.assert(lastChangeSetPushDate);
     chai.assert(lastChangeSetPushDate.lastChangeSetPushDate);
-    chai.expect(lastChangeSetPushDate.lastChangeSetPushDate!.length > 1);
+    chai.expect(lastChangeSetPushDate.lastChangeSetPushDate.length > 1);
   });
 
   it("should get user pushed changesets count and last changeset push date", async () => {
@@ -259,6 +259,6 @@ describe("iModelHubClient UserStatisticsHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.InvalidArgumentError);
   });
 });

@@ -58,6 +58,7 @@ export class StateManager {
 
     // create the Redux Store.
     // istanbul ignore next
+    // eslint-disable-next-line deprecation/deprecation
     this._store = createStore(allReducers, (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
     ReducerRegistryInstance.setChangeListener((newDynamicReducers) => {
