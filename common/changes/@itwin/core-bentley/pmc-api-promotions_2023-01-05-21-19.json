@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-bentley",
-      "comment": "Promote AccessToken to public; remove beta ExtractLiterals and alpha AsyncMutex.",
+      "comment": "Promote AccessToken to public; and remove beta ExtractLiterals and alpha AsyncMutex.",
       "type": "none"
     }
   ],
