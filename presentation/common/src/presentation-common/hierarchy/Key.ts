@@ -158,6 +158,9 @@ export interface BaseNodeKey {
 
   /** Node hash path from root to the node whose key this is */
   pathFromRoot: string[];
+
+  /** Query that returns all selected instance keys */
+  instanceKeysSelectQuery: InstanceKeysSelectQuery;
 }
 /**
  * Serialized [[BaseNodeKey]] JSON representation.
@@ -167,6 +170,7 @@ export interface BaseNodeKeyJSON {
   type: string;
   version?: number;
   pathFromRoot: string[];
+  instanceKeysSelectQuery: InstanceKeysSelectQuery;
 }
 
 /**
@@ -274,3 +278,23 @@ export interface LabelGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
  * @public
  */
 export type NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON;
+
+/**
+ * Data structure that describes an instance keys select query
+ * @beta
+ */
+export interface InstanceKeysSelectQuery {
+  /** The query to select instance keys */
+  query: string;
+  /** The query parameters */
+  bindings: string[];
+}
+
+/**
+ * Serialized [[InstanceKeysSelectQuery]] JSON representation.
+ * @beta
+ */
+export interface InstanceKeysSelectQueryJSON {
+  query: string;
+  bindings: string[];
+}

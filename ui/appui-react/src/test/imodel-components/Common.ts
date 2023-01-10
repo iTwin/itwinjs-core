@@ -103,6 +103,7 @@ export const createKey = (type: "subject" | "model" | "category" | "element", id
     version: 0,
     instanceKeys,
     pathFromRoot: [],
+    instanceKeysSelectQuery: { query: "", bindings: [] },
   };
 };
 
@@ -114,5 +115,6 @@ export const createClassGroupingKey = (ids: Id64String[]): ECClassGroupingNodeKe
     className: "MyDomain:SomeElementType",
     groupedInstancesCount: Array.isArray(ids) ? ids.length : 1,
     pathFromRoot: [],
+    instanceKeysSelectQuery: { query: "", bindings: [] },
   };
 };

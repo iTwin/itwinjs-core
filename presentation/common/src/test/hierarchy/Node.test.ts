@@ -8,13 +8,13 @@ import { Node, NodeJSON } from "../../presentation-common/hierarchy/Node";
 
 describe("Node", () => {
   const testNodeJson: NodeJSON = {
-    key: { instanceKeys: [], pathFromRoot: [], version: 0, type: StandardNodeTypes.ECInstancesNode },
+    key: { instanceKeys: [], pathFromRoot: [], version: 0, type: StandardNodeTypes.ECInstancesNode, instanceKeysSelectQuery: { query: "", bindings: [] } },
     labelDefinition: { displayValue: "TestNode", rawValue: "test_node", typeName: "string" },
     description: "test description",
   };
 
   const testNode: Node = {
-    key: { instanceKeys: [], pathFromRoot: [], version: 0, type: StandardNodeTypes.ECInstancesNode },
+    key: { instanceKeys: [], pathFromRoot: [], version: 0, type: StandardNodeTypes.ECInstancesNode, instanceKeysSelectQuery: { query: "", bindings: [] } },
     label: { displayValue: "TestNode", rawValue: "test_node", typeName: "string" },
     description: "test description",
   };

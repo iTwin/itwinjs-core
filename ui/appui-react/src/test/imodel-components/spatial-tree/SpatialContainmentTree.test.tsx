@@ -41,6 +41,7 @@ describe("SpatialContainmentTree", () => {
         version: 0,
         instanceKeys: [{ className: "MyDomain:SomeElementType", id }],
         pathFromRoot: [],
+        instanceKeysSelectQuery: { query: "", bindings: [] },
       };
     };
 

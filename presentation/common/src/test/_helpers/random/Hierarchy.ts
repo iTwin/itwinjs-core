@@ -23,6 +23,7 @@ export const createRandomBaseNodeKey = (): BaseNodeKey => {
     type: faker.random.word(),
     version: 2,
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
+    instanceKeysSelectQuery: { query: "", bindings: [] },
   };
 };
 
@@ -36,6 +37,7 @@ export const createRandomECInstancesNodeKey = (instanceKeys?: InstanceKey[]): EC
     version: 2,
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
     instanceKeys,
+    instanceKeysSelectQuery: { query: "", bindings: [] },
   };
 };
 
@@ -48,6 +50,7 @@ export const createRandomECInstancesNodeKeyJSON = (instanceKeys?: InstanceKeyJSO
     version: 2,
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
     instanceKeys: instanceKeys ?? [createRandomECInstanceKeyJSON(), createRandomECInstanceKeyJSON()],
+    instanceKeysSelectQuery: { query: "", bindings: [] },
   };
 };
 
@@ -60,6 +63,7 @@ export const createRandomECClassGroupingNodeKey = (groupedInstancesCount?: numbe
   pathFromRoot: [faker.random.uuid()],
   className: faker.random.word(),
   groupedInstancesCount: groupedInstancesCount || faker.random.number(),
+  instanceKeysSelectQuery: { query: "", bindings: [] },
 });
 
 /**
@@ -73,6 +77,7 @@ export const createRandomECPropertyGroupingNodeKey = (groupedInstancesCount?: nu
   propertyName: faker.random.word(),
   groupingValues: [faker.random.number(), faker.random.number()],
   groupedInstancesCount: groupedInstancesCount || faker.random.number(),
+  instanceKeysSelectQuery: { query: "", bindings: [] },
 });
 
 /**
@@ -84,6 +89,7 @@ export const createRandomLabelGroupingNodeKey = (groupedInstancesCount?: number)
   pathFromRoot: [faker.random.uuid()],
   label: faker.random.words(),
   groupedInstancesCount: groupedInstancesCount || faker.random.number(),
+  instanceKeysSelectQuery: { query: "", bindings: [] },
 });
 
 /**

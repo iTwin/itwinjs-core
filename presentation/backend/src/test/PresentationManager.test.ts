@@ -741,6 +741,7 @@ describe("PresentationManager", () => {
           key: {
             type: "type1",
             pathFromRoot: ["p1", "p2", "p3"],
+            instanceKeysSelectQuery: { query: "", bindings: [] },
           },
           labelDefinition: LabelDefinition.fromLabelString("test1"),
           description: "description1",
@@ -760,6 +761,7 @@ describe("PresentationManager", () => {
             type: StandardNodeTypes.ECInstancesNode,
             pathFromRoot: ["p1"],
             instanceKeys: [createRandomECInstanceKeyJSON()],
+            instanceKeysSelectQuery: { query: "", bindings: [] },
           },
           labelDefinition: LabelDefinition.fromLabelString("test2"),
           description: "description2",
@@ -778,6 +780,7 @@ describe("PresentationManager", () => {
           key: {
             type: "some node",
             pathFromRoot: ["p1", "p3"],
+            instanceKeysSelectQuery: { query: "", bindings: [] },
           },
           labelDefinition: LabelDefinition.fromLabelString("test2"),
         }];
@@ -811,12 +814,14 @@ describe("PresentationManager", () => {
             type: StandardNodeTypes.ECInstancesNode,
             pathFromRoot: ["p1"],
             instanceKeys: [createRandomECInstanceKeyJSON()],
+            instanceKeysSelectQuery: { query: "", bindings: [] },
           },
           labelDefinition: LabelDefinition.fromLabelString("test2"),
         }, {
           key: {
             type: "type 2",
             pathFromRoot: ["p1", "p3"],
+            instanceKeysSelectQuery: { query: "", bindings: [] },
           },
           labelDefinition: LabelDefinition.fromLabelString("test3"),
         }];
@@ -848,6 +853,7 @@ describe("PresentationManager", () => {
           key: {
             type: "type1",
             pathFromRoot: ["p1", "p2", "p3"],
+            instanceKeysSelectQuery: { query: "", bindings: [] },
           },
           labelDefinition: LabelDefinition.fromLabelString("@RulesEngine:LABEL_General_NotSpecified@"),
           description: "description1",
@@ -2419,6 +2425,7 @@ describe("PresentationManager", () => {
           key: {
             type: "type1",
             pathFromRoot: ["p1", "p2", "p3"],
+            instanceKeysSelectQuery: { query: "", bindings: [] },
           },
           labelDefinition: LabelDefinition.fromLabelString("@RulesEngine:LABEL_General_NotSpecified@"),
         }];

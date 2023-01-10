@@ -68,7 +68,7 @@ describe("Utils", () => {
     it("assigns item id and label from loaded node", () => {
       const node = createPartialTreeNodeItem(
         {
-          key: { type: "", version: 0, pathFromRoot: [] },
+          key: { type: "", version: 0, pathFromRoot: [], instanceKeysSelectQuery: { query: "", bindings: [] } },
           label: LabelDefinition.fromLabelString("test"),
         },
         undefined,
@@ -87,7 +87,7 @@ describe("Utils", () => {
     it("uses provided callback to customize tree node", () => {
       const treeNode = createPartialTreeNodeItem(
         {
-          key: { type: "", version: 0, pathFromRoot: [] },
+          key: { type: "", version: 0, pathFromRoot: [], instanceKeysSelectQuery: { query: "", bindings: [] } },
           label: LabelDefinition.fromLabelString("test"),
         }, undefined,
         {

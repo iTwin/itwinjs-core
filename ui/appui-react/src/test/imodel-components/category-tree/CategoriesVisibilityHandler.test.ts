@@ -24,6 +24,7 @@ const createKey = (id: Id64String): ECInstancesNodeKey => {
     version: 0,
     instanceKeys: [{ className: "MyDomain:SpatialCategory", id }],
     pathFromRoot: [],
+    instanceKeysSelectQuery: { query: "", bindings: [] },
   };
 };
 

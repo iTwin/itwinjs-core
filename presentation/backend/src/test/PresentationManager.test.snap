@@ -747,6 +747,10 @@ Array [
             "id": "0x11bf10000002c01",
           },
         ],
+        "instanceKeysSelectQuery": Object {
+          "bindings": Array [],
+          "query": "",
+        },
         "pathFromRoot": Array [
           "21d1c027-bea3-4416-9fd3-ff8cf9035f83",
           "30662f47-039f-481e-8693-75ec166aa453",
@@ -794,6 +798,10 @@ Array [
             "id": "0xc2bd000000e8c9",
           },
         ],
+        "instanceKeysSelectQuery": Object {
+          "bindings": Array [],
+          "query": "",
+        },
         "pathFromRoot": Array [
           "15fc4488-4edc-4357-88f0-7d6c4dd68a7b",
           "1c2ff0f1-6636-4b10-bded-2a66e751f893",
@@ -821,6 +829,10 @@ Array [
           "id": "0xa906000001474f",
         },
       ],
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "",
+      },
       "pathFromRoot": Array [
         "p1",
       ],
@@ -835,6 +847,10 @@ Array [
   },
   Object {
     "key": Object {
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "",
+      },
       "pathFromRoot": Array [
         "p1",
         "p3",
@@ -867,6 +883,10 @@ Array [
     "isExpanded": true,
     "isSelectionDisabled": true,
     "key": Object {
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "",
+      },
       "pathFromRoot": Array [
         "p1",
         "p2",
@@ -900,6 +920,10 @@ Array [
     "isExpanded": true,
     "isSelectionDisabled": true,
     "key": Object {
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "",
+      },
       "pathFromRoot": Array [
         "p1",
         "p2",
@@ -934,6 +958,10 @@ Array [
           "id": "0x671b0000017448",
         },
       ],
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "",
+      },
       "pathFromRoot": Array [
         "p1",
       ],
@@ -948,6 +976,10 @@ Array [
   },
   Object {
     "key": Object {
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "",
+      },
       "pathFromRoot": Array [
         "p1",
         "p3",

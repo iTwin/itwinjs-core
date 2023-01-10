@@ -15,6 +15,7 @@ const testNode: Node = {
     instanceKeys: [],
     pathFromRoot: [],
     type: StandardNodeTypes.ECInstancesNode,
+    instanceKeysSelectQuery: { query: "", bindings: [] },
   },
   label: {
     displayValue: "TestNode",
@@ -28,6 +29,7 @@ const testNodeJson: NodeJSON = {
     instanceKeys: [],
     pathFromRoot: [],
     type: StandardNodeTypes.ECInstancesNode,
+    instanceKeysSelectQuery: { query: "", bindings: [] },
   },
   labelDefinition: {
     displayValue: "TestNode",

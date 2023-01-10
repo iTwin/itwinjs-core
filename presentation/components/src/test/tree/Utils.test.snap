@@ -3,6 +3,10 @@
 exports[`Utils createPartialTreeNodeItem uses provided callback to customize tree node 1`] = `
 Object {
   "__presentation-components/key": Object {
+    "instanceKeysSelectQuery": Object {
+      "bindings": Array [],
+      "query": "",
+    },
     "pathFromRoot": Array [],
     "type": "",
     "version": 0,
@@ -34,6 +38,10 @@ Object {
       8424,
       36516,
     ],
+    "instanceKeysSelectQuery": Object {
+      "bindings": Array [],
+      "query": "",
+    },
     "pathFromRoot": Array [
       "6102db55-652c-4aa1-ba19-db173124462c",
     ],
@@ -84,6 +92,10 @@ Object {
         "id": "0x77870000000460",
       },
     ],
+    "instanceKeysSelectQuery": Object {
+      "bindings": Array [],
+      "query": "",
+    },
     "pathFromRoot": Array [
       "6127f623-1285-4848-8bc1-c9d119fb96ab",
       "449df282-09dc-4ff6-9195-5c55e9e31699",
@@ -131,6 +143,10 @@ Object {
         "id": "0xd08e000000759d",
       },
     ],
+    "instanceKeysSelectQuery": Object {
+      "bindings": Array [],
+      "query": "",
+    },
     "pathFromRoot": Array [
       "ca2b1044-8007-4ce7-a4f6-d779f7dd0ef0",
       "a772c3d3-03a4-40a8-8a6a-8c62fda69701",
@@ -178,6 +194,10 @@ Object {
         "id": "0x15060000000e479",
       },
     ],
+    "instanceKeysSelectQuery": Object {
+      "bindings": Array [],
+      "query": "",
+    },
     "pathFromRoot": Array [
       "a389bc4e-ef0a-45d0-8b8b-62e60b80175c",
       "270da1a3-ba31-44ef-8866-c2a100d70bea",
@@ -222,6 +242,10 @@ Object {
         "id": "0xf87f00000121ba",
       },
     ],
+    "instanceKeysSelectQuery": Object {
+      "bindings": Array [],
+      "query": "",
+    },
     "pathFromRoot": Array [
       "41098202-0113-4061-b4f4-6d7625fa7310",
       "346ddc01-cc61-4177-aa7e-cf3dfd8b3352",
@@ -263,6 +287,10 @@ Array [
           "id": "0x12cd5000000ff83",
         },
       ],
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "",
+      },
       "pathFromRoot": Array [
         "32e09daf-f7de-466e-95cc-f6b5e845ce78",
         "d0490790-e52c-4185-a841-f2ddecb9648f",
@@ -306,6 +334,10 @@ Array [
           "id": "0x4000000009ab0",
         },
       ],
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "",
+      },
       "pathFromRoot": Array [
         "08153750-f3da-4eab-b142-1892b75ef471",
         "908fcd9c-af25-4d63-bb21-a81337a8ad7e",
@@ -353,6 +385,10 @@ Array [
           "id": "0x109c70000003fd5",
         },
       ],
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "",
+      },
       "pathFromRoot": Array [
         "9ca8debb-3f29-40e0-b8b0-0330fde07d2e",
         "c992c8d5-f776-46e2-957c-ff276d241866",
@@ -396,6 +432,10 @@ Array [
           "id": "0xe6180000005197",
         },
       ],
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "",
+      },
       "pathFromRoot": Array [
         "805abe6e-d9fc-4d7b-9a1c-500d4d5d63c0",
         "9e4f2bda-d7ba-42e4-affe-37f852bc8f5d",
