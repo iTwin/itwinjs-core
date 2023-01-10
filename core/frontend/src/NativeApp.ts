@@ -16,6 +16,7 @@ import { ProgressCallback, RequestGlobalOptions } from "./request/Request";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
+import { ProgressFunction } from "./BriefcaseConnection";
 
 /** Properties for specifying the BriefcaseId for downloading. May either specify a BriefcaseId directly (preferable) or, for
  * backwards compatibility, a [SyncMode]($common). If [SyncMode.PullAndPush]($common) is supplied, a new briefcaseId will be acquired.
@@ -32,6 +33,8 @@ export type DownloadBriefcaseId =
 export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
   /** the full path for the briefcase file */
   fileName?: string;
+  /** Function called regularly to report progress of download. */
+  progressCallback?: ProgressFunction;
   /** interval for calling progress function, in milliseconds */
   progressInterval?: number;
 };
@@ -135,13 +138,32 @@ export class NativeApp {
   }
 
   public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
-    asOf: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {
+    asOf?: IModelVersion): Promise<BriefcaseDownloader>;
+
+  /**
+   * @deprecated [[progress]] argument is now deprecated, use new [[progressCallback]] in [[downloadOptions]] argument. Deprecated since 3.6
+   */
+  public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
+    // eslint-disable-next-line @typescript-eslint/unified-signatures
+    asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
+
+  public static async requestDownloadBriefcase(
+    iTwinId: string,
+    iModelId: string,
+    downloadOptions: DownloadBriefcaseOptions,
+    asOf: IModelVersion = IModelVersion.latest(),
+    progress?: ProgressCallback
+  ): Promise<BriefcaseDownloader> {
+    const shouldReportProgress = !!progress || !!downloadOptions.progressCallback;
 
     let stopProgressEvents = () => { };
-    if (progress !== undefined) {
-      stopProgressEvents = IpcApp.addListener(`nativeApp.progress-${iModelId}`, (_evt: Event, data: { loaded: number, total: number }) => {
-        progress(data);
-      });
+    if (shouldReportProgress) {
+      const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
+        progress?.(data);
+        downloadOptions.progressCallback?.(data.loaded, data.total);
+      };
+
+      stopProgressEvents = IpcApp.addListener(`nativeApp.progress-${iModelId}`, handleProgress);
     }
 
     const briefcaseId = (undefined !== downloadOptions.briefcaseId) ? downloadOptions.briefcaseId :
@@ -152,7 +174,7 @@ export class NativeApp {
 
     const doDownload = async (): Promise<void> => {
       try {
-        await this.nativeAppIpc.downloadBriefcase(requestProps, progress !== undefined, downloadOptions.progressInterval);
+        await this.nativeAppIpc.downloadBriefcase(requestProps, shouldReportProgress, downloadOptions.progressInterval);
       } finally {
         stopProgressEvents();
       }

@@ -2589,6 +2589,7 @@ export type DownloadBriefcaseId = {
 // @public
 export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
     fileName?: string;
+    progressCallback?: ProgressFunction;
     progressInterval?: number;
 };
 
@@ -3429,7 +3430,7 @@ export class FuzzySearchResults<T> implements Iterable<T> {
     results: any[];
 }
 
-// @alpha
+// @beta
 export interface GenericAbortSignal {
     addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
     removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
@@ -7147,6 +7148,8 @@ export class NativeApp {
     // @internal (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
+    static requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion): Promise<BriefcaseDownloader>;
+    // @deprecated (undocumented)
     static requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // @internal (undocumented)
     static shutdown(): Promise<void>;
@@ -7877,6 +7880,9 @@ export enum PrimitiveVisibility {
     Uninstanced = 2
 }
 
+// @public
+export type ProgressFunction = (loaded: number, total: number) => void;
+
 // @alpha
 export interface PublisherProductInfo {
     engine: string;
@@ -7886,8 +7892,10 @@ export interface PublisherProductInfo {
 
 // @public
 export interface PullChangesOptions {
-    // @alpha
+    // @beta
     abortSignal?: GenericAbortSignal;
+    downloadProgressCallback?: ProgressFunction;
+    // @deprecated
     progressCallback?: ProgressCallback;
     progressInterval?: number;
 }

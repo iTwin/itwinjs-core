@@ -21,9 +21,15 @@ import { disposeTileTreesForGeometricModels } from "./tile/internal";
 import { Viewport } from "./Viewport";
 
 /**
+ * Called to show progress during a download.
+ * @public
+ */
+export type ProgressFunction = (loaded: number, total: number) => void;
+
+/**
  * Partial interface of AbortSignal.
  * @see https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal
- * @alpha
+ * @beta
  */
 export interface GenericAbortSignal {
   /** Add Listener for abort signal. */
@@ -37,12 +43,17 @@ export interface GenericAbortSignal {
  * @public
  */
 export interface PullChangesOptions {
-  /** Function called regularly to report progress of changes download. */
+  /**
+   * Function called regularly to report progress of changes download.
+   * @deprecated Use [[downloadProgressCallback]] instead. Deprecated since 3.6
+   */
   progressCallback?: ProgressCallback;
+  /** Function called regularly to report progress of changes download. */
+  downloadProgressCallback?: ProgressFunction;
   /** Interval for calling progress callback (in milliseconds). */
   progressInterval?: number;
   /** Signal for cancelling the download.
-   * @alpha
+   * @beta
    */
   abortSignal?: GenericAbortSignal;
 }
@@ -318,13 +329,23 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
     const removeListeners: VoidFunction[] = [];
-    if (options?.progressCallback) {
+    // eslint-disable-next-line deprecation/deprecation
+    const shouldReportProgress = !!options?.progressCallback && !!options?.downloadProgressCallback;
+
+    if (shouldReportProgress) {
+      const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
+        // eslint-disable-next-line deprecation/deprecation
+        options?.progressCallback?.(data);
+        options?.downloadProgressCallback?.(data.loaded, data.total);
+      };
+
       const removeProgressListener = IpcApp.addListener(
         getPullChangesIpcChannel(this.iModelId),
-        (_evt: Event, data: { loaded: number, total: number }) => options?.progressCallback?.(data),
+        handleProgress,
       );
       removeListeners.push(removeProgressListener);
     }
+
     if (options?.abortSignal) {
       const abort = () => void IpcApp.appFunctionIpc.cancelPullChangesRequest(this.key);
       options?.abortSignal.addEventListener("abort", abort);
@@ -333,7 +354,7 @@ export class BriefcaseConnection extends IModelConnection {
 
     this.requireTimeline();
     const ipcAppOptions: IpcAppPullChangesOptions = {
-      reportProgress: !!options?.progressCallback,
+      reportProgress: shouldReportProgress,
       progressInterval: options?.progressInterval,
       enableCancellation: !!options?.abortSignal,
     };
