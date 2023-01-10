@@ -10,7 +10,7 @@
 import { assert, BentleyError } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import {
-  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerScaleRangeVisibility, MapLayerSource, MapLayerSources, MapTileTreeScaleRangeVisibility, NotifyMessageDetails, OutputMessagePriority,
+  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerScaleRangeVisibility, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
