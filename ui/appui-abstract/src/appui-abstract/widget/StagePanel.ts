@@ -17,18 +17,22 @@ export enum AbstractZoneLocation {
 }
 
 /** Available Stage Panel locations.
+ * @deprecated Use [StagePanelLocation]($appui-react) instead.
  * @public
  */
 export enum StagePanelLocation {
   Top = 101,
+  /** @deprecated Used in UI1.0 only. */
   TopMost,
   Left,
   Right,
   Bottom,
+  /** @deprecated Used in UI1.0 only. */
   BottomMost,
 }
 
 /** Enum for Stage Panel Sections
+ * @deprecated Use [StagePanelSection]($appui-react) instead.
  * @public
  */
 export enum StagePanelSection {
