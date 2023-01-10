@@ -69,7 +69,7 @@ interface ToolbarGroupItemState {
 /** Group Item React component.
  * @internal
  */
-export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentProps, ToolbarGroupItemState> {
+export class ToolbarGroupItemComponent extends React.Component<ToolbarGroupItemComponentProps, ToolbarGroupItemState> {
   /** @internal */
   public override readonly state: Readonly<ToolbarGroupItemState>;
   private _trayIndex = 0;
@@ -105,8 +105,8 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
     const trayId = this.resetTrayId();
 
     this.processGroupItem(groupItem, trayId, trays);
-    const isHidden = ConditionalBooleanValue.getValue(groupItem.isHidden);
-    const isDisabled = ConditionalBooleanValue.getValue(groupItem.isDisabled);
+    const isHidden = ConditionalBooleanValue.getValue(groupItem.isHidden); // eslint-disable-line deprecation/deprecation
+    const isDisabled = ConditionalBooleanValue.getValue(groupItem.isDisabled); // eslint-disable-line deprecation/deprecation
 
     return {
       activeToolId: FrontstageManager.activeToolId,
@@ -151,7 +151,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
 
     trays.set(trayId, {
       items,
-      title: ConditionalStringValue.getValue(groupItem.panelLabel),
+      title: ConditionalStringValue.getValue(groupItem.panelLabel), // eslint-disable-line deprecation/deprecation
       groupItem,
     });
   }
@@ -221,7 +221,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                         onClick={this._handleDragInteractionClick}
                         onKeyDown={onEscapeSetFocusToHome}
                         onOpenPanel={this._handleOpenPanel}
-                        title={ConditionalStringValue.getValue(activeItem.label)}
+                        title={ConditionalStringValue.getValue(activeItem.label)} // eslint-disable-line deprecation/deprecation
                       />
                     </div>
                   ) :
@@ -233,7 +233,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                         isDisabled={!this.state.isEnabled}
                         onClick={this._handleClick}
                         onKeyDown={onEscapeSetFocusToHome}
-                        title={ConditionalStringValue.getValue(this.state.groupItem.label)}
+                        title={ConditionalStringValue.getValue(this.state.groupItem.label)} // eslint-disable-line deprecation/deprecation
                       />
                     </div>
                   )}
@@ -382,7 +382,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                     <GroupToolExpander
                       isDisabled={!!item.isDisabled}
                       key={itemKey}
-                      label={ConditionalStringValue.getValue(item.label)}
+                      label={ConditionalStringValue.getValue(item.label)} // eslint-disable-line deprecation/deprecation
                       icon={icon}
                       badge={badge}
                       onClick={() => this._handleExpanderClick(tgItem.trayId!)}
@@ -397,7 +397,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                     isDisabled={!!item.isDisabled}
                     isActive={isActive}
                     key={itemKey}
-                    label={ConditionalStringValue.getValue(item.label)}
+                    label={ConditionalStringValue.getValue(item.label)} // eslint-disable-line deprecation/deprecation
                     onClick={
                       // istanbul ignore next
                       () => this.handleToolGroupItemClicked(this.state.trayId, itemKey)
@@ -468,8 +468,8 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
 /** @internal */
 const getFirstItem = (groupItem: GroupButton): ActionButton | GroupButton | undefined => {
   for (const item of groupItem.items) {
-    const isHidden = ConditionalBooleanValue.getValue(item.isHidden);
-    const isDisabled = ConditionalBooleanValue.getValue(item.isDisabled);
+    const isHidden = ConditionalBooleanValue.getValue(item.isHidden); // eslint-disable-line deprecation/deprecation
+    const isDisabled = ConditionalBooleanValue.getValue(item.isDisabled); // eslint-disable-line deprecation/deprecation
 
     if (ToolbarItemUtilities.isGroupButton(item)) {
       const firstItem = getFirstItem(item);
@@ -504,7 +504,7 @@ interface GroupButtonProps {
  */
 export function GroupButtonItem(props: GroupButtonProps) {
   return (
-    <ToolbarGroupItem
+    <ToolbarGroupItemComponent
       groupItem={props.item}
       key={props.item.id}
       onItemExecuted={props.onItemExecuted}
