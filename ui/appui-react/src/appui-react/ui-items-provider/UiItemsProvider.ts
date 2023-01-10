@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module UiProvider
+ * @module UiItemsProvider
  */
 
-import { ProvidedItem } from "@itwin/appui-abstract";
+import { UiItemsProvider as UIA_UiItemsProvider } from "@itwin/appui-abstract";
 
-/** Properties for an item provided by UiItemsProvider.
+/** Describes interface of objects that want to provide UI component to the running IModelApp.
  * @public
  */
-export type ProviderItem = ProvidedItem;
+export type UiItemsProvider = UIA_UiItemsProvider;
