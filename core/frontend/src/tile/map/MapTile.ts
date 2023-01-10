@@ -160,7 +160,9 @@ export class MapTile extends RealityTile {
   public get isPlanar(): boolean { return this._patch instanceof PlanarTilePatch; }
   /** @internal */
   public get imageryTiles(): ImageryMapTile[] | undefined { return this._imageryTiles; }
-  /** @internal */
+  /** List of selected tiles but are currently in hidden state (i.e. scale range visibility)
+   * @internal
+   */
   public get hiddenImageryTiles(): ImageryMapTile[] | undefined { return this._hiddenTiles; }
   /** The [[MapTileTree]] to which this tile belongs. */
   public readonly mapTree: MapTileTree;

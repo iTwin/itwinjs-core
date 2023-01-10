@@ -44,12 +44,19 @@ interface MapLayerTreeSetting {
   settings: MapLayerSettings;
 }
 
-/**
+/** Map tile tree scale range visibility values.
  * @beta */
 export enum MapTileTreeScaleRangeVisibility {
+  /** state is currently unknown (i.e. never been displayed)  */
   Unknown = 0,
+
+  /** all currently selected tree tiles are visible (i.e within the scale range)  */
   Visible,
+
+  /** all currently selected tree tiles are hidden (i.e outside the scale range)  */
   Hidden,
+
+  /** currently selected tree tiles are partially visible (i.e some tiles are within the scale range, and some are outside.) */
   Partial
 }
 
@@ -164,12 +171,16 @@ export class MapTileTree extends RealityTileTree {
     return this.useDepthBuffer ? this.loader.parentsAndChildrenExclusive : false;
   }
 
-  /** @internal */
+  /** Return the imagery tile tree state of matching the provided imagery tree id.
+   * @internal
+   */
   public getImageryTreeState(imageryTreeId: string) {
     return this._imageryTreeState.get(imageryTreeId);
   }
 
-  /** @internal */
+  /** Return a cloned dictionary of the imagery tile tree states
+   * @internal
+   */
   public cloneImageryTreeState() {
     const clone = new Map<Id64String, ImageryTileTreeState>();
     for (const [treeId, state] of this._imageryTreeState) {
@@ -183,7 +194,9 @@ export class MapTileTree extends RealityTileTree {
     return (this._rootTile as MapTile).tileFromQuadId(quadId);
   }
 
-  /** @internal */
+  /** Add a new imagery tile tree / map-layer settings pair and initialize the imagery tile tree state.
+   * @internal
+   */
   public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number) {
     this.layerImageryTrees.push({tree, settings});
     this._layerSettings.set(tree.modelId, settings);
@@ -449,7 +462,10 @@ export class MapTileTree extends RealityTileTree {
     }
   }
 
-  /** @internal */
+  /** Scan the list of currently selected reality tiles, and fire the viewport's 'onMapLayerScaleRangeVisibilityChanged ' event
+   * if any scale range visibility change is detected for one more map-layer definition.
+   * @internal
+   */
   public override reportTileVisibility(args: TileDrawArgs, selected: RealityTile[]) {
 
     const debugControl = args.context.target.debugControl;
@@ -902,6 +918,9 @@ export class MapTileTreeReference extends TileTreeReference {
     return index < 0 || treeIndex >= this._layerTrees.length ? undefined : this._layerTrees[treeIndex];
   }
 
+  /** Return the map-layer scale range visibility for the provided map-layer index.
+ * @internal
+ */
   public getMapLayerScaleRangeVisibility(index: number): MapTileTreeScaleRangeVisibility {
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (undefined !== tree) {

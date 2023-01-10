@@ -224,7 +224,10 @@ export interface ReadImageBufferArgs {
  * @beta
  */
 export interface MapLayerScaleRangeVisibility {
+  // Index of the map-layer
   index: MapLayerIndex;
+
+  // Scale range visibility value of the map-layer
   visibility: MapTileTreeScaleRangeVisibility;
 }
 
@@ -824,7 +827,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     }
     return undefined;
   }
-  /** Return a list of map-layers indexes match a given  MapTile tree Id and a layer imagery tree id.
+  /** Return a list of map-layers indexes matching a given  MapTile tree Id and a layer imagery tree id.
    * Note: A imagery tree can be shared for multiple map-layers.
    * @internal */
   public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {

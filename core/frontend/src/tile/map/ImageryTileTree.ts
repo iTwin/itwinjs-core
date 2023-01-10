@@ -153,18 +153,23 @@ export class ImageryMapTile extends RealityTile {
  * @internal */
 export class ImageryTileTreeState {
   private _scaleRangeVis: MapTileTreeScaleRangeVisibility;
-  public getScaleRangeVisibility() {return this._scaleRangeVis;}
 
   constructor() {
     this._scaleRangeVis = MapTileTreeScaleRangeVisibility.Unknown;
   }
 
+  /** Get the scale range visibility of the imagery tile tree.
+   * @returns the scale range visibility of the imagery tile tree.
+   */
+  public getScaleRangeVisibility() {return this._scaleRangeVis;}
   public clone() {
     const clone = new ImageryTileTreeState();
     clone._scaleRangeVis = this._scaleRangeVis;
     return clone;
   }
 
+  /** Reset the scale range visibility of imagery tile tree (i.e. unknown)
+   */
   public reset() {
     this._scaleRangeVis = MapTileTreeScaleRangeVisibility.Unknown;
   }

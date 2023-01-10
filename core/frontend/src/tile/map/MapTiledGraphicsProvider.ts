@@ -16,7 +16,10 @@ import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, T
 /** Position of a map-layer in the viewport
  * @beta */
 export interface MapLayerIndex {
+  // true if layer is overlay, otherwise layer is background.
   isOverlay: boolean;
+
+  // index of the map-layer
   index: number;
 }
 
@@ -95,7 +98,9 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     imageryTreeRef?.resetTreeOwner();
   }
 
-  /** @internal */
+  /** Return a list of map-layers indexes matching a given MapTile tree Id and a layer imagery tree id.
+   * @internal
+   */
   public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
     const layers = new Array<MapLayerIndex>();
     if (mapTreeId === this.backgroundMap.treeOwner.tileTree?.id) {

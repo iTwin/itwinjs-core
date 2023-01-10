@@ -4626,9 +4626,7 @@ export class ImageryTileTreeState {
     constructor();
     // (undocumented)
     clone(): ImageryTileTreeState;
-    // (undocumented)
     getScaleRangeVisibility(): MapTileTreeScaleRangeVisibility;
-    // (undocumented)
     reset(): void;
     setScaleRangeVisibility(visible: boolean): void;
 }
@@ -6086,7 +6084,7 @@ export class MapTile extends RealityTile {
     get heightRange(): Range1d | undefined;
     // @internal (undocumented)
     protected _heightRange: Range1d | undefined;
-    // @internal (undocumented)
+    // @internal
     get hiddenImageryTiles(): ImageryMapTile[] | undefined;
     // @internal (undocumented)
     get imageryIsReady(): boolean;
@@ -6152,7 +6150,6 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
     // (undocumented)
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
-    // (undocumented)
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
     // (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
@@ -6227,7 +6224,7 @@ export abstract class MapTileProjection {
 export class MapTileTree extends RealityTileTree {
     // @internal
     constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId, applyTerrain: boolean);
-    // @internal (undocumented)
+    // @internal
     addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number): void;
     // @internal (undocumented)
     addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext): void;
@@ -6241,7 +6238,7 @@ export class MapTileTree extends RealityTileTree {
     clearImageryTreesAndClassifiers(): void;
     // @internal (undocumented)
     clearLayers(): void;
-    // @internal (undocumented)
+    // @internal
     cloneImageryTreeState(): Map<string, ImageryTileTreeState>;
     // @internal (undocumented)
     protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]): void;
@@ -6269,7 +6266,7 @@ export class MapTileTree extends RealityTileTree {
     getCornerRays(rectangle: MapCartoRectangle): Ray3d[] | undefined;
     // @internal (undocumented)
     getFractionalTileCorners(quadId: QuadId): Point3d[];
-    // @internal (undocumented)
+    // @internal
     getImageryTreeState(imageryTreeId: string): ImageryTileTreeState | undefined;
     // @internal (undocumented)
     getLayerIndex(imageryTreeId: Id64String): number;
@@ -6314,7 +6311,7 @@ export class MapTileTree extends RealityTileTree {
     pointAboveEllipsoid(point: Point3d): boolean;
     // @internal (undocumented)
     produceGeometry?: boolean;
-    // @internal (undocumented)
+    // @internal
     reportTileVisibility(args: TileDrawArgs, selected: RealityTile[]): void;
     // @internal (undocumented)
     sourceTilingScheme: MapTilingScheme;
@@ -6347,7 +6344,6 @@ export class MapTileTreeReference extends TileTreeReference {
     getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined;
     // (undocumented)
     getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
-    // (undocumented)
     getMapLayerScaleRangeVisibility(index: number): MapTileTreeScaleRangeVisibility;
     // (undocumented)
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
@@ -6385,15 +6381,11 @@ export class MapTileTreeReference extends TileTreeReference {
     get useDepthBuffer(): boolean;
 }
 
-// @beta (undocumented)
+// @beta
 export enum MapTileTreeScaleRangeVisibility {
-    // (undocumented)
     Hidden = 2,
-    // (undocumented)
     Partial = 3,
-    // (undocumented)
     Unknown = 0,
-    // (undocumented)
     Visible = 1
 }
 
