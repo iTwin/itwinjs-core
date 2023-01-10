@@ -33,7 +33,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
   const [isActive, setIsActive] = React.useState(content === ContentViewManager.getActiveContent());
   const activeFrontstageDef = useActiveFrontstageDef();
 
-  const contentControlKey = (contentControl: React.ReactNode) : string | undefined => {
+  const contentControlKey = (contentControl: React.ReactNode): string | undefined => {
     let controlId: string | undefined;
     if (contentControl && (contentControl as React.ReactElement<any>).key) {
       const key = ((contentControl as React.ReactElement<any>).key as string);
