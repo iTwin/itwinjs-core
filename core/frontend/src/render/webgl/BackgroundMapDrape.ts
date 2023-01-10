@@ -105,7 +105,7 @@ export class BackgroundMapDrape extends TextureDrape {
     this._debugFrustum = projection.debugFrustum;
     this._projectionMatrix = projection.projectionMatrix;
 
-    const drawArgs = GraphicsCollectorDrawArgs.create(context, this, this._mapTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
+    const drawArgs = GraphicsCollectorDrawArgs.create(context, this, this._mapTree, FrustumPlanes.fromFrustum(this._frustum), projection.worldToViewMap);
     if (undefined !== drawArgs)
       tileTree.draw(drawArgs);
 
