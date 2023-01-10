@@ -29,12 +29,12 @@ export enum BackstageItemType {
 /** Describes the data needed to insert a button into the backstage menu.
  * @public
  */
-export type CommonBackstageItem = UIA_CommonBackstageItem;
+export type CommonBackstageItem = UIA_CommonBackstageItem; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert an action button into the backstage menu.
  * @public
  */
-export interface BackstageActionItem extends UIA_BackstageActionItem {
+export interface BackstageActionItem extends UIA_BackstageActionItem { // eslint-disable-line deprecation/deprecation
   /** @deprecated Use type guards instead. */
   readonly type: BackstageItemType.ActionItem; // eslint-disable-line deprecation/deprecation
 }
@@ -42,7 +42,7 @@ export interface BackstageActionItem extends UIA_BackstageActionItem {
 /** Describes the data needed to insert an action button into the backstage menu.
  * @public
  */
-export interface BackstageStageLauncher extends UIA_BackstageStageLauncher {
+export interface BackstageStageLauncher extends UIA_BackstageStageLauncher { // eslint-disable-line deprecation/deprecation
   /** @deprecated Use type guards instead. */
   readonly type: BackstageItemType.StageLauncher; // eslint-disable-line deprecation/deprecation
 }
@@ -50,18 +50,18 @@ export interface BackstageStageLauncher extends UIA_BackstageStageLauncher {
 /** Describes the data needed to insert a button into the backstage menu.
  * @public
  */
-export type BackstageItem = UIA_BackstageItem;
+export type BackstageItem = UIA_BackstageItem; // eslint-disable-line deprecation/deprecation
 
 /** BackstageActionItem type guard.
  * @public
  */
-export function isBackstageActionItem(item: UIA_BackstageActionItem): item is BackstageActionItem {
-  return isActionItem(item);
+export function isBackstageActionItem(item: BackstageItem): item is UIA_BackstageActionItem { // eslint-disable-line deprecation/deprecation
+  return isActionItem(item); // eslint-disable-line deprecation/deprecation
 }
 
 /** BackstageStageLauncher type guard.
  * @public
  */
-export function isBackstageStageLauncher(item: UIA_BackstageStageLauncher): item is BackstageStageLauncher {
-  return isStageLauncher(item);
+export function isBackstageStageLauncher(item: BackstageItem): item is UIA_BackstageStageLauncher { // eslint-disable-line deprecation/deprecation
+  return isStageLauncher(item); // eslint-disable-line deprecation/deprecation
 }

@@ -13,6 +13,7 @@ import {
   CommonToolbarItem as UIA_CommonToolbarItem,
   ToolbarItem as UIA_ToolbarItem,
   ToolbarItemId as UIA_ToolbarItemId,
+  ToolbarItemUtilities as UIA_ToolbarItemUtilities,
   ToolbarOrientation as UIA_ToolbarOrientation,
   ToolbarUsage as UIA_ToolbarUsage,
 } from "@itwin/appui-abstract";
@@ -40,29 +41,50 @@ export const ToolbarOrientation = UIA_ToolbarOrientation; // eslint-disable-line
 /** Describes the data needed to insert a UI items into an existing set of UI items.
  * @public
  */
-export type CommonToolbarItem = UIA_ToolbarItem;
+export type CommonToolbarItem = UIA_ToolbarItem; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert an action button into a toolbar.
  * @public
  */
-export type ToolbarActionItem = ActionButton;
+export type ToolbarActionItem = ActionButton; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert a group button into a toolbar.
  * @public
  */
-export type ToolbarGroupItem = GroupButton;
+export type ToolbarGroupItem = GroupButton; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert a custom button into a toolbar.
  * @public
  */
-export type ToolbarCustomItem = CustomButtonDefinition;
+export type ToolbarCustomItem = CustomButtonDefinition; // eslint-disable-line deprecation/deprecation
 
 /** Any Button Type that can be inserted into a toolbar.
  * @public
  */
-export type ToolbarItem = UIA_CommonToolbarItem;
+export type ToolbarItem = UIA_CommonToolbarItem; // eslint-disable-line deprecation/deprecation
 
 /** Type for Toolbar Item Id
  * @public
  */
-export type ToolbarItemId = UIA_ToolbarItemId;
+export type ToolbarItemId = UIA_ToolbarItemId; // eslint-disable-line deprecation/deprecation
+
+/** ToolbarActionItem type guard.
+ * @public
+ */
+export function isToolbarActionItem(item: ToolbarItem): item is ToolbarActionItem {
+  return UIA_ToolbarItemUtilities.isActionButton(item); // eslint-disable-line deprecation/deprecation
+}
+
+/** ToolbarGroupItem type guard.
+ * @public
+ */
+export function isToolbarGroupItem(item: ToolbarItem): item is ToolbarGroupItem {
+  return UIA_ToolbarItemUtilities.isGroupButton(item); // eslint-disable-line deprecation/deprecation
+}
+
+/** ToolbarCustomItem type guard.
+ * @public
+ */
+export function isToolbarCustomItem(item: ToolbarItem): item is ToolbarCustomItem {
+  return UIA_ToolbarItemUtilities.isActionButton(item); // eslint-disable-line deprecation/deprecation
+}

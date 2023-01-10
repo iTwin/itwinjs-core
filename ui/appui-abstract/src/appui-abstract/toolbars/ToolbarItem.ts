@@ -149,21 +149,21 @@ export class ToolbarItemUtilities {
   });
 
   /** ActionButton type guard.
-   * @deprecated Use [ToolbarItemUtilities.isActionItem]($appui-react) instead.
+   * @deprecated Use [isToolbarActionItem]($appui-react) instead.
    */
   public static isActionButton(item: CommonToolbarItem): item is ActionButton { // eslint-disable-line deprecation/deprecation
     return (item as ActionButton).execute !== undefined; // eslint-disable-line deprecation/deprecation
   }
 
   /** GroupButton type guard.
-   * @deprecated Use [ToolbarItemUtilities.isGroupItem]($appui-react) instead.
+   * @deprecated Use [isToolbarGroupItem]($appui-react) instead.
    */
   public static isGroupButton(item: CommonToolbarItem): item is GroupButton { // eslint-disable-line deprecation/deprecation
     return (item as GroupButton).items !== undefined; // eslint-disable-line deprecation/deprecation
   }
 
   /** CustomButtonDefinition type guard.
-   * @deprecated Use [ToolbarItemUtilities.isCustomItem]($appui-react) instead.
+   * @deprecated Use [isToolbarCustomItem]($appui-react) instead.
    */
   public static isCustomDefinition(item: CommonToolbarItem): item is CustomButtonDefinition { // eslint-disable-line deprecation/deprecation
     return !!(item as CustomButtonDefinition).isCustom; // eslint-disable-line deprecation/deprecation
