@@ -5,15 +5,24 @@ publish: false
 
 Table of contents:
 
+- [API support policies](#api-support-policies)
 - [Electron 22 support](#electron-22-support)
 - [Display system](#display-system)
   - [Eye-dome lighting of Point Clouds](#eye-dome-lighting-of-point-clouds)
   - [Smooth viewport resizing](#smooth-viewport-resizing)
   - [Pickable view overlays](#pickable-view-overlays)
+  - [Element clipping example](#element-clipping-example)
+  - [Support larger terrain meshes](#support-larger-terrain-meshes)
+- [Geometry](#geometry)
+  - [Query mesh convexity](#query-mesh-convexity)
 - [Deprecations](#deprecations)
   - [@itwin/core-bentley](#itwincore-bentley)
   - [@itwin/core-frontend](#itwincore-frontend)
   - [@itwin/appui-react](#itwinappui-react)
+
+## API support policies
+
+iTwin.js now documents the [official policies](../learning/api-support-policies.md) defining the level of stability and support afforded to its public APIs and each major release.
 
 ## Electron 22 support
 
@@ -44,6 +53,22 @@ Previously, when a [Viewport]($frontend)'s canvas was resized there would be a d
 ### Pickable view overlays
 
 A bug preventing users from interacting with [pickable decorations](../learning/frontend/ViewDecorations.md#pickable-view-graphic-decorations) defined as [GraphicType.ViewOverlay]($frontend) has been fixed.
+
+### Element clipping example
+
+In some cases it is useful to apply a [clipping volume](https://www.itwinjs.org/reference/core-common/views/viewdetails/clipvector/) to a view that mimics the shape of one or more elements. For example, you may have a view displaying a reality mesh captured from a real-world asset like a factory, and a design model representing the same asset, and wish to isolate the portions of the reality mesh corresponding to a series of pipe elements in the design model.
+
+display-test-app now provides an [example tool](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/ViewClipByElementGeometryTool.ts) demonstrating how this can be achieved. It uses [IModelConnection.generateElementMeshes]($frontend) to produce [Polyface]($core-geometry)s from one or more elements; decomposes them into a set of convex hulls using [VHACD.js](https://www.npmjs.com/package/vhacd-js); and creates a clipping volume from the hulls via [ConvexClipPlaneSet.createConvexPolyface]($core-geometry). The example tool can be accessed in display-test-app using the keyin `dta clip element geometry`.
+
+### Support larger terrain meshes
+
+Previously, [RealityMeshParams]($frontend) only supported 16-bit vertex indices, which limited the number of vertices that could be produced by a [TerrainMeshProvider]($frontend). That limit has been extended to 32 bits (the maximum supported by WebGL). The code has also been optimized to allocate only as many bytes per vertex index as required. For example, if a mesh contains fewer than 256 vertices, only one byte will be allocated per vertex index.
+
+## Geometry
+
+### Query mesh convexity
+
+A new method [PolyfaceQuery.isConvexByDihedralAngleCount]($core-geometry) permits testing the convexity of a mesh by inspecting the dihedral angles of all of its edges. For an example of its usage, see the [element clipping example](#element-clipping-example).
 
 ## Deprecations
 
