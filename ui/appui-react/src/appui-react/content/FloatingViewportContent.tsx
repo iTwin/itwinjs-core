@@ -91,7 +91,7 @@ export function FloatingViewportContent(props: FloatingViewportContentProps) { /
         contentControl.current.reactNode = viewPortControl;
       }
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      contentControl.current.processViewSelectorChange(viewState.iModel, viewState.id, viewState, viewState.name);
+      contentControl.current.viewport.changeView(viewState);
     }
   }, [viewState, viewPortControl, viewport]);
 
