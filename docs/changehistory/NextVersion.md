@@ -8,7 +8,7 @@ Table of contents:
 - [API support policies](#api-support-policies)
 - [Electron 22 support](#electron-22-support)
 - [Display system](#display-system)
-  - [Eye-dome lighting of Point Clouds](#eye-dome-lighting-of-point-clouds)
+  - [Point cloud shading](#point-cloud-shading)
   - [Smooth viewport resizing](#smooth-viewport-resizing)
   - [Pickable view overlays](#pickable-view-overlays)
   - [Element clipping example](#element-clipping-example)
@@ -28,21 +28,26 @@ In addition to already supported Electron versions, iTwin.js now supports [Elect
 
 ## Display system
 
-### Eye-Dome Lighting of Point Clouds
+### Point cloud shading
 
-You can now apply eye-dome lighting (EDL) to point cloud reality models. This effect helps accentuate the depth, shape, and surface of a point cloud model. This is particularly helpful when a point cloud model lacks color data and would otherwise appear fully monochrome. The EDL settings are specified independently for each point cloud.
+Point clouds can provide valuable real-world context when visualizing an iTwin, but it can often be difficult to discern individual features within the cloud of points - especially when the point cloud lacks color data. You can now accentuate the depth, shape, and surface of a point cloud using a technique called "eye-dome lighting" that uses the relative depths of the points to compute a lighting effect.
 
-Note: EDL only applies when camera is enabled in the view.
+Point cloud shading is specified by several properties of [RealityModelDisplaySettings.pointCloud]($common), all with names prefixed with `edl` (short for "eye-dome lighting"):
 
-To apply eye-dome lighting to a point cloud, you must apply a [RealityModelDisplaySettings]($common) to the model, customizing its point cloud display settings to utilize the eye-dome lighting properties, described below:
+- [PointCloudDisplaySettings.edlMode]($common) enables the effect if set to "on" or "full".
+- [PointCloudDisplaySettings.edlStrength]($common) specifies the intensity of the effect.
+- [PointCloudDisplaySettings.edlRadius]($common) specifies the radius in pixels around each point that should be sampled to detect differences in depth.
+- [PointCloudDisplaySettings.eldFilter]($common) specifies whether to apply a filtering pass to smooth out the effect, when `edlMode` is set to "full".
 
-- [PointCloudDisplaySettings.edlMode]($common) specifies the mode to use for EDL. This defaults to "off". See [PointCloudEDLMode]($common) for more details.
-- [PointCloudDisplaySettings.edlStrength]($common) specifies the strength value for the EDL effect, a positive floating point number. This defaults to 5.0.
-- [PointCloudDisplaySettings.edlRadius]($common) specifies a radius value for the EDL effect, a positive floating point number which determines how far away in pixels to sample for depth change. This defaults to 2.0.
-- [PointCloudDisplaySettings.edlFilter]($common) specifies a flag for whether or not to apply a filtering pass in the EDL effect; this only applies if edlMode is "full". This defaults to 1.0.
-- [PointCloudDisplaySettings.edlMixWts1]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the full image when combining it with the half and quarter sized ones; this only applies if edlMode is "full". This defaults to 1.0.
-- [PointCloudDisplaySettings.edlMixWts2]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the half image when combining it with the full and quarter sized ones; this only applies if edlMode is "full". This defaults to 0.5.
-- [PointCloudDisplaySettings.edlMixWts4]($common) specifies a weighting value (a floating point number between 0 and 1 inclusive) to apply to the full image when combining it with the full and half sized ones; this only applies if edlMode is "full". This defaults to 0.25.
+Each point cloud in a view can have its own independent EDL settings. You can configure those settings via [ContextRealityModel.displaySettings]($common) for context reality models, and [DisplayStyleSettings.setRealityModelDisplaySettings]($common) for persistent reality models. Adjusting related settings like [PointCloudDisplaySettings.sizeMode]($common) and [PointCloudDisplaySettings.shape]($common) can influence the shading effect.
+
+A monochrome point cloud with (bottom) and without (top) shading:
+
+![Monochrome point cloud shading](./assets/edl-mono.jpg)
+
+A colorized point cloud with (bottom) and without (top) shading:
+
+![Colorized point cloud shading](./assets/edl-color.jpg)
 
 ### Smooth viewport resizing
 
