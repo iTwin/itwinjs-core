@@ -37,7 +37,7 @@ Point cloud shading is specified by several properties of [RealityModelDisplaySe
 - [PointCloudDisplaySettings.edlMode]($common) enables the effect if set to "on" or "full".
 - [PointCloudDisplaySettings.edlStrength]($common) specifies the intensity of the effect.
 - [PointCloudDisplaySettings.edlRadius]($common) specifies the radius in pixels around each point that should be sampled to detect differences in depth.
-- [PointCloudDisplaySettings.eldFilter]($common) specifies whether to apply a filtering pass to smooth out the effect, when `edlMode` is set to "full".
+- [PointCloudDisplaySettings.edlFilter]($common) specifies whether to apply a filtering pass to smooth out the effect, when `edlMode` is set to "full".
 
 Each point cloud in a view can have its own independent EDL settings. You can configure those settings via [ContextRealityModel.displaySettings]($common) for context reality models, and [DisplayStyleSettings.setRealityModelDisplaySettings]($common) for persistent reality models. Adjusting related settings like [PointCloudDisplaySettings.sizeMode]($common) and [PointCloudDisplaySettings.shape]($common) can influence the shading effect.
 
