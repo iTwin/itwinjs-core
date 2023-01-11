@@ -330,7 +330,7 @@ export class BriefcaseConnection extends IModelConnection {
   public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
     const removeListeners: VoidFunction[] = [];
     // eslint-disable-next-line deprecation/deprecation
-    const shouldReportProgress = !!options?.progressCallback && !!options?.downloadProgressCallback;
+    const shouldReportProgress = !!options?.progressCallback || !!options?.downloadProgressCallback;
 
     if (shouldReportProgress) {
       const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
