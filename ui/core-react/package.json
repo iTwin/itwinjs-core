@@ -129,6 +129,16 @@
     "extends": [
       "plugin:@itwin/ui",
       "plugin:@itwin/jsdoc"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "src/test/**/*"
+        ],
+        "rules": {
+          "deprecation/deprecation": "off"
+        }
+      }
     ]
   }
 }
