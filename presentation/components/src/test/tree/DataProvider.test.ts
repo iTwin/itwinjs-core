@@ -10,6 +10,7 @@ import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { PageOptions, PropertyFilterRuleOperator, TreeNodeItem } from "@itwin/components-react";
 import { BeEvent, Logger } from "@itwin/core-bentley";
+import { EmptyLocalization } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CheckBoxState } from "@itwin/core-react";
 import { Node, RegisteredRuleset } from "@itwin/presentation-common";
@@ -18,6 +19,7 @@ import {
   createTestPropertiesContentField, createTestPropertyInfo, PromiseContainer, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
+import { translate } from "../../presentation-components/common/Utils";
 import { isPresentationTreeNodeItem, PresentationTreeDataProvider, PresentationTreeNodeItem } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
@@ -33,6 +35,7 @@ describe("TreeDataProvider", () => {
 
   before(() => {
     rulesetId = faker.random.word();
+    Presentation.setLocalization(new EmptyLocalization());
     Presentation.setPresentationManager(presentationManagerMock.object);
   });
 
@@ -305,6 +308,21 @@ describe("TreeDataProvider", () => {
       expect(actualResult1).to.have.lengthOf(2);
 
       presentationManagerMock.verifyAll();
+    });
+
+    it("returns info node if filtered hierarchy level does not have children", async () => {
+      const parentKey = createRandomECInstancesNodeKey();
+      const parentNode = createRandomTreeNodeItem(parentKey);
+      const instanceFilter = applyInstanceFilter(parentNode);
+
+      const pageOptions: PageOptions = { start: 0, size: faker.random.number() };
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter }))
+        .returns(async () => ({ nodes: [], count: 0 }));
+
+      const actualResult = await provider.getNodes(parentNode, pageOptions);
+      expect(actualResult).to.have.lengthOf(1);
+      expect((actualResult[0] as PresentationTreeNodeItem).infoMessage).to.eq(translate("tree.no-filtered-children"));
     });
   });
 

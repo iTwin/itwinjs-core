@@ -23,7 +23,7 @@ export function createTreeModelNode(node?: Partial<TreeModelNode>, nodeItem?: Tr
   return {
     id: node?.id ?? "0",
     parentId: node?.parentId,
-    numChildren: node?.numChildren ?? 0,
+    numChildren: node?.numChildren,
     depth: node?.depth ?? 0,
     isExpanded: node?.isExpanded ?? false,
     isSelected: node?.isSelected ?? false,

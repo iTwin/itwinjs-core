@@ -13,7 +13,6 @@ import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { createTestPropertiesContentField, createTestPropertyInfo } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { translate } from "../../../presentation-components/common/Utils";
 import { PresentationInstanceFilterInfo } from "../../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 import { PresentationTreeNodeRenderer } from "../../../presentation-components/tree/controlled/PresentationTreeNodeRenderer";
 import { createTreeModelNode, createTreeNodeItem } from "./Helpers";
@@ -68,9 +67,10 @@ describe("PresentationTreeNodeRenderer", () => {
     expect(container.querySelector(".presentation-components-node")).to.be.null;
   });
 
-  it("renders too many children tree node", () => {
+  it("renders info tree node", () => {
+    const message = "Some info";
     const item = createTreeNodeItem({
-      tooManyChildren: true,
+      infoMessage: message,
     });
     const node = createTreeModelNode(undefined, item);
 
@@ -82,7 +82,7 @@ describe("PresentationTreeNodeRenderer", () => {
         onClearFilterClick={() => { }}
       />);
 
-    getByText(translate("tree.too-many-child-nodes"));
+    getByText(message);
   });
 
   it("renders presentation tree node", async () => {
@@ -135,7 +135,7 @@ describe("PresentationTreeNodeRenderer", () => {
   });
 
   it("renders without buttons when node is not filterable", () => {
-    const nodeItem = createTreeNodeItem({ filteringDisabled: true });
+    const nodeItem = createTreeNodeItem({ isFilteringDisabled: true });
     const node = createTreeModelNode(undefined, nodeItem);
 
     const { container } = render(

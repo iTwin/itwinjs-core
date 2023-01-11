@@ -24,7 +24,8 @@
     "filter": "Filter"
   },
   "tree": {
-    "too-many-child-nodes": "Too many child nodes"
+    "too-many-child-nodes": "Too many child nodes",
+    "no-filtered-children": "There are no child nodes matching current filter"
   },
   "navigation-property-editor": {
     "select-target-instance": "Select target instance",

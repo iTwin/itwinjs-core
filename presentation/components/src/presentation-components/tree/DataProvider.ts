@@ -7,20 +7,23 @@
  */
 
 import memoize from "micro-memoize";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/components-react";
 import { IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  ClientDiagnosticsOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceFilterDefinition, Node, NodeKey, NodePathElement, Paged, Ruleset,
+  BaseNodeKey, ClientDiagnosticsOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceFilterDefinition, Node, NodeKey,
+  NodePathElement, Paged, Ruleset,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
+import { translate } from "../common/Utils";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
-import { PresentationInstanceFilterInfo } from "../instance-filter-builder/PresentationInstanceFilterBuilder";
 import { convertToInstanceFilterDefinition } from "../instance-filter-builder/InstanceFilterConverter";
+import { PresentationInstanceFilterInfo } from "../instance-filter-builder/PresentationInstanceFilterBuilder";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
-import { CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
+import { createTreeNodeId, CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
 
 /**
  * Properties for creating a `PresentationTreeDataProvider` instance.
@@ -189,7 +192,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     // TODO: pass complex instance filter
     const requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>> = { ...this.createRequestOptions(parentKey), paging: pageOptionsUiToPresentation(pageOptions), instanceFilter: instanceFilter?.expression };
     const result = await this._dataSource.getNodesAndCount(requestOptions);
-    return { nodes: createTreeNodeItems(result.nodes, parentNode?.id, this._nodesCreateProps), count: result.count };
+    return createNodesAndCountResult(result.nodes, result.count, parentNode, this._nodesCreateProps);
   }, { isMatchingKey: MemoizationHelpers.areNodesRequestsEqual as any });
 
   /**
@@ -208,8 +211,8 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
 export interface PresentationTreeNodeItem extends DelayLoadedTreeNodeItem {
   key: NodeKey;
   filterInfo?: PresentationInstanceFilterInfo;
-  filteringDisabled?: boolean;
-  tooManyChildren?: boolean;
+  isFilteringDisabled?: boolean;
+  infoMessage?: string;
 }
 
 /** @alpha */
@@ -221,6 +224,39 @@ function getFilterDefinition(imodel: IModelConnection, node?: TreeNodeItem) {
   if (!node || !isPresentationTreeNodeItem(node) || !node.filterInfo)
     return undefined;
   return convertToInstanceFilterDefinition(node.filterInfo.filter, imodel);
+}
+
+function createNodesAndCountResult(nodes: Node[], count: number, parentNode?: TreeNodeItem, nodesCreateProps?: CreateTreeNodeItemProps) {
+  if (nodes.length > 0 || !parentNode || !isPresentationTreeNodeItem(parentNode) || !parentNode.filterInfo) {
+    return { nodes: createTreeNodeItems(nodes, parentNode?.id, nodesCreateProps), count };
+  }
+
+  // TODO: handle case when requesting children for node with too many children
+
+  return {
+    nodes: [createInfoNode(parentNode, translate("tree.no-filtered-children"))],
+    count: 1,
+  };
+}
+
+function createInfoNode(parentNode: PresentationTreeNodeItem, message: string): PresentationTreeNodeItem {
+  const key = createInfoNodeKey(parentNode.key);
+  return {
+    key,
+    id: createTreeNodeId(key),
+    label: PropertyRecord.fromString(message),
+    isSelectionDisabled: true,
+    isFilteringDisabled: true,
+    infoMessage: message,
+  };
+}
+
+function createInfoNodeKey(parentKey: BaseNodeKey): BaseNodeKey {
+  return {
+    type: "PresentationInfoNode",
+    version: 1,
+    pathFromRoot: [...parentKey.pathFromRoot, "info-node"],
+  };
 }
 
 class MemoizationHelpers {
