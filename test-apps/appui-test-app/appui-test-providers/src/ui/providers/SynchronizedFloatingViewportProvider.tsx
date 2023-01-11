@@ -6,7 +6,7 @@
 import * as React from "react";
 import { BackstageItem, BackstageItemUtilities, CommonToolbarItem, StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 import { CustomItemDef, IModelConnectedViewSelector, ToolbarHelper } from "@itwin/appui-react";
-import { ISVPIPViewDialogTool } from "../../tools/ISVPIPViewDialogTool";
+import { OpenSynchronizedViewTool } from "../../tools/OpenSynchronizedViewTool";
 import { SynchronizedFloatingViewportStage } from "../frontstages/SynchronizedFloatingViewport";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 
@@ -19,7 +19,7 @@ export class SynchronizedFloatingViewportProvider implements UiItemsProvider {
   public static providerId = "SynchronizedFloatingViewportProvider";
   public readonly id = SynchronizedFloatingViewportProvider.providerId;
   constructor(localizationNamespace: string) {
-    ISVPIPViewDialogTool.register(localizationNamespace);
+    OpenSynchronizedViewTool.register(localizationNamespace);
   }
 
   public static register(localizationNamespace: string) {
@@ -59,8 +59,8 @@ export class SynchronizedFloatingViewportProvider implements UiItemsProvider {
         }
       );
       toolbarItems.push(viewSelectorButton);
-      ISVPIPViewDialogTool.register("ThisTestApp");
-      toolbarItems.push(ISVPIPViewDialogTool.getActionButtonDef(10,10));
+      OpenSynchronizedViewTool.register("ThisTestApp");
+      toolbarItems.push(OpenSynchronizedViewTool.getActionButtonDef(10,10));
     }
     return toolbarItems;
   }

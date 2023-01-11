@@ -8,16 +8,16 @@ import { IModelApp, ScreenViewport, ViewManip, ViewState } from "@itwin/core-fro
 import { AbstractMenuItemProps } from "@itwin/appui-abstract";
 import { ContentControl, ContentViewManager, FloatingViewportContent, FloatingViewportContentControl, FrontstageManager, UiFramework, useActiveIModelConnection } from "@itwin/appui-react";
 
-import "./ISVPIPView.scss";
+import "./SynchronizedFloatingViewComponent.scss";
 import { Id64String } from "@itwin/core-bentley";
 import ViewDefinitionSelector, { getViewDefinitions } from "../components/ViewDefinitionSelector";
 import { ViewIdChangedEventArgs, ViewportComponentEvents } from "@itwin/imodel-components-react";
 import { Presentation, TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/presentation-frontend";
 import { KeySet } from "@itwin/presentation-common";
-interface ISVPIPViewDefInterfaceLocal {
+interface SynchronizedViewDefInterfaceLocal {
   id: string; class: string; label: string;
 }
-export function ISVPIPView({ contentId, showViewPicker }: { contentId: string, showViewPicker?: boolean }) {
+export function SynchronizedFloatingView({ contentId, showViewPicker }: { contentId: string, showViewPicker?: boolean }) {
   const getIds=(args: Readonly<KeySet>) =>{
     let allIds: Set<string> = new Set<string>();
     args.instanceKeys.forEach((ids: Set<string>, key: string) => {
@@ -48,8 +48,8 @@ export function ISVPIPView({ contentId, showViewPicker }: { contentId: string, s
   const divRef = React.useRef<HTMLDivElement>(null);
 
   const [initialViewState, setInitialViewState] = React.useState<ViewState | undefined>(undefined);
-  const [twoDViewDefinitions, settwoDViewDefinitions] = React.useState<ISVPIPViewDefInterfaceLocal[]>([]);
-  const [threeDViewDefinitions, setthreeDViewDefinitions] = React.useState<ISVPIPViewDefInterfaceLocal[]>([]);
+  const [twoDViewDefinitions, settwoDViewDefinitions] = React.useState<SynchronizedViewDefInterfaceLocal[]>([]);
+  const [threeDViewDefinitions, setthreeDViewDefinitions] = React.useState<SynchronizedViewDefInterfaceLocal[]>([]);
 
   const handleViewIdChange = React.useCallback (async (args: ViewIdChangedEventArgs) => {
     if (args.newId === args.oldId)
@@ -120,7 +120,7 @@ export function ISVPIPView({ contentId, showViewPicker }: { contentId: string, s
 
     const acceptedDrawingViewClasses = ["BisCore:DrawingViewDefinition"];
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    getViewDefinitions(activeIModelConnection).then((viewDefinitions: ISVPIPViewDefInterfaceLocal[]) => {
+    getViewDefinitions(activeIModelConnection).then((viewDefinitions: SynchronizedViewDefInterfaceLocal[]) => {
 
       const localThreeTwoDViewDefs = viewDefinitions.filter((def: any) => {
         return acceptedSpatialViewClasses.indexOf(def.class) > -1;

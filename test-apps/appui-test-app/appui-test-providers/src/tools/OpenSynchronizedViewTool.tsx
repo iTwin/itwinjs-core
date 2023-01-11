@@ -6,15 +6,15 @@ import { IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { ContentDialog, ContentDialogManager, FrontstageManager } from "@itwin/appui-react";
 import { IModelApp, Tool } from "@itwin/core-frontend";
 import * as React from "react";
-import { ISVPIPView } from "../ui/dialogs/ISVPIPView";
+import { SynchronizedFloatingView } from "../ui/dialogs/SynchronizedFloatingViewComponent";
 import panoramaconSvg from "@bentley/icons-generic/icons/panorama.svg";
 
-export class ISVPIPViewDialogTool extends Tool {
+export class OpenSynchronizedViewTool extends Tool {
   private static _counter = 0;
   public static override toolId = "OpenViewDialog";
   public static override iconSpec = IconSpecUtilities.createWebComponentIconSpec(panoramaconSvg);
   public static get dialogId(): string {
-    return `ui-test-app:popup-view-dialog-${ISVPIPViewDialogTool._counter}`;
+    return `ui-test-app:popup-view-dialog-${OpenSynchronizedViewTool._counter}`;
   }
 
   public static override get minArgs() { return 0; }
@@ -26,7 +26,7 @@ export class ISVPIPViewDialogTool extends Tool {
   }
 
   private async _run(): Promise<void> {
-    ISVPIPViewDialogTool._counter = ISVPIPViewDialogTool._counter + 1;
+    OpenSynchronizedViewTool._counter = OpenSynchronizedViewTool._counter + 1;
     let x: number | undefined;
     let y: number | undefined;
     const stage = FrontstageManager.activeFrontstageDef;
@@ -38,8 +38,8 @@ export class ISVPIPViewDialogTool extends Tool {
         y = (.3 * stage.nineZoneState.size.height) + (40 * (floatingContentCount - 1));
       }
     }
-    ContentDialogManager.openDialog(<IModelViewDialog x={x} y={y} id={ISVPIPViewDialogTool.dialogId}
-      title={`IModel View (${ISVPIPViewDialogTool._counter})`} />, ISVPIPViewDialogTool.dialogId);
+    ContentDialogManager.openDialog(<IModelViewDialog x={x} y={y} id={OpenSynchronizedViewTool.dialogId}
+      title={`IModel View (${OpenSynchronizedViewTool._counter})`} />, OpenSynchronizedViewTool.dialogId);
   }
 
   public static override get flyover(): string {
@@ -59,8 +59,8 @@ export class ISVPIPViewDialogTool extends Tool {
     const overrides = {
       groupPriority,
     };
-    return ToolbarItemUtilities.createActionButton(ISVPIPViewDialogTool.toolId, itemPriority, ISVPIPViewDialogTool.iconSpec, ISVPIPViewDialogTool.flyover,
-      async () => { await IModelApp.tools.run(ISVPIPViewDialogTool.toolId); }, overrides);
+    return ToolbarItemUtilities.createActionButton(OpenSynchronizedViewTool.toolId, itemPriority, OpenSynchronizedViewTool.iconSpec, OpenSynchronizedViewTool.flyover,
+      async () => { await IModelApp.tools.run(OpenSynchronizedViewTool.toolId); }, overrides);
   }
 }
 
@@ -82,7 +82,7 @@ export function IModelViewDialog({ x, y, id, title }: { x?: number, y?: number, 
       x={x}
       y={y}
     >
-      <ISVPIPView contentId={id} showViewPicker= {false}/>
+      <SynchronizedFloatingView contentId={id} showViewPicker= {false}/>
     </ContentDialog>
   );
 }
