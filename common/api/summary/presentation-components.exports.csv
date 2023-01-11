@@ -47,12 +47,12 @@ deprecated;IPresentationTableDataProvider = TableDataProvider & IContentDataProv
 public;IPresentationTreeDataProvider 
 internal;IPropertiesAppender
 alpha;isPresentationInstanceFilterConditionGroup(filter: PresentationInstanceFilter): filter is PresentationInstanceFilterConditionGroup
+alpha;isPresentationTreeNodeItem(item: TreeNodeItem): item is PresentationTreeNodeItem
 public;IUnifiedSelectionComponent
 alpha;NavigationPropertyEditor 
 alpha;NavigationPropertyEditorContext
 alpha;navigationPropertyEditorContext: React_2.Context
 alpha;NavigationPropertyTargetEditor 
-internal;PRESENTATION_TREE_NODE_KEY = "__presentation-components/key"
 public;PresentationComponentsLoggerCategory
 alpha;PresentationInstanceFilter = PresentationInstanceFilterConditionGroup | PresentationInstanceFilterCondition
 alpha;PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps): JSX.Element
@@ -75,11 +75,13 @@ deprecated;PresentationTableDataProviderProps
 public;PresentationTreeDataProvider 
 beta;PresentationTreeDataProviderDataSourceEntryPoints
 public;PresentationTreeDataProviderProps 
+alpha;PresentationTreeNodeItem 
 public;PresentationTreeNodeLoaderProps 
 public;PresentationTreeNodeLoaderResult
 alpha;PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): JSX.Element
 alpha;PresentationTreeNodeRendererProps 
-alpha;PresentationTreeRenderer(props: TreeRendererProps): JSX.Element
+alpha;PresentationTreeRenderer(props: PresentationTreeRendererProps): JSX.Element
+alpha;PresentationTreeRendererProps 
 public;PropertyDataProviderWithUnifiedSelectionProps
 internal;class PropertyRecordsBuilder 
 internal;ReloadedHierarchyPart
@@ -101,6 +103,8 @@ public;UnifiedSelectionTreeEventHandlerParams
 public;useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps):
 internal;useFilterBuilderNavigationPropertyEditorContext(imodel: IModelConnection, descriptor: Descriptor): NavigationPropertyEditorContext
 internal;useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider
+alpha;useHierarchyLevelFiltering(props: UseHierarchyLevelFilteringProps):
+alpha;UseHierarchyLevelFilteringProps
 alpha;useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext
 internal;useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider
 alpha;usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection, initialClasses?: ClassInfo[]):

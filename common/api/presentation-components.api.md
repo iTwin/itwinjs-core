@@ -38,6 +38,7 @@ import { IPropertyDataProvider } from '@itwin/components-react';
 import { IPropertyValueRenderer } from '@itwin/components-react';
 import { Item } from '@itwin/presentation-common';
 import { ITreeDataProvider } from '@itwin/components-react';
+import { ITreeNodeLoader } from '@itwin/components-react';
 import { ITreeNodeLoaderWithProvider } from '@itwin/components-react';
 import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
@@ -459,6 +460,9 @@ export interface IPropertiesAppender {
 // @alpha (undocumented)
 export function isPresentationInstanceFilterConditionGroup(filter: PresentationInstanceFilter): filter is PresentationInstanceFilterConditionGroup;
 
+// @alpha (undocumented)
+export function isPresentationTreeNodeItem(item: TreeNodeItem): item is PresentationTreeNodeItem;
+
 // @public
 export interface IUnifiedSelectionComponent {
     readonly imodel: IModelConnection;
@@ -498,9 +502,6 @@ export class NavigationPropertyTargetEditor extends React_2.PureComponent<Proper
     render(): JSX.Element;
 }
 
-// @internal (undocumented)
-export const PRESENTATION_TREE_NODE_KEY = "__presentation-components/key";
-
 // @public
 export enum PresentationComponentsLoggerCategory {
     Content = "presentation-components.Content",
@@ -519,8 +520,6 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
 export interface PresentationInstanceFilterBuilderProps {
     // (undocumented)
     descriptor: Descriptor;
-    // (undocumented)
-    enableClassFilteringByProperties?: boolean;
     // (undocumented)
     imodel: IModelConnection;
     // (undocumented)
@@ -553,13 +552,15 @@ export interface PresentationInstanceFilterConditionGroup {
 export function PresentationInstanceFilterDialog(props: PresentationInstanceFilterDialogProps): JSX.Element;
 
 // @alpha (undocumented)
-export interface PresentationInstanceFilterDialogProps extends Omit<PresentationInstanceFilterBuilderProps, "onInstanceFilterChanged"> {
+export interface PresentationInstanceFilterDialogProps extends Omit<PresentationInstanceFilterBuilderProps, "onInstanceFilterChanged" | "descriptor"> {
+    // (undocumented)
+    descriptor: (() => Promise<Descriptor>) | Descriptor;
     // (undocumented)
     filterResultCountRenderer?: (filter?: PresentationInstanceFilterInfo) => React_2.ReactNode;
     // (undocumented)
     isOpen: boolean;
     // (undocumented)
-    onApply: (filter?: PresentationInstanceFilterInfo) => void;
+    onApply: (filter: PresentationInstanceFilterInfo) => void;
     // (undocumented)
     onClose: () => void;
     // (undocumented)
@@ -704,6 +705,18 @@ export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
     ruleset: string | Ruleset;
 }
 
+// @alpha (undocumented)
+export interface PresentationTreeNodeItem extends DelayLoadedTreeNodeItem {
+    // (undocumented)
+    filterInfo?: PresentationInstanceFilterInfo;
+    // (undocumented)
+    filteringDisabled?: boolean;
+    // (undocumented)
+    key: NodeKey;
+    // (undocumented)
+    tooManyChildren?: boolean;
+}
+
 // @public
 export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataProviderProps {
     // @alpha
@@ -726,11 +739,21 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
 // @alpha (undocumented)
 export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
     // (undocumented)
-    onFilter?: (item: TreeNodeItem) => void;
+    onClearFilterClick: (node: PresentationTreeNodeItem) => void;
+    // (undocumented)
+    onFilterClick: (node: PresentationTreeNodeItem) => void;
 }
 
 // @alpha (undocumented)
-export function PresentationTreeRenderer(props: TreeRendererProps): JSX.Element;
+export function PresentationTreeRenderer(props: PresentationTreeRendererProps): JSX.Element;
+
+// @alpha (undocumented)
+export interface PresentationTreeRendererProps extends TreeRendererProps {
+    // (undocumented)
+    imodel: IModelConnection;
+    // (undocumented)
+    modelSource: TreeModelSource;
+}
 
 // @public
 export interface PropertyDataProviderWithUnifiedSelectionProps {
@@ -882,6 +905,20 @@ export function useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProv
     filterApplied: string | undefined;
     matchesCount: number | undefined;
 };
+
+// @alpha (undocumented)
+export function useHierarchyLevelFiltering(props: UseHierarchyLevelFilteringProps): {
+    applyFilter: (node: TreeNodeItem, info: PresentationInstanceFilterInfo) => void;
+    clearFilter: (node: TreeNodeItem) => void;
+};
+
+// @alpha (undocumented)
+export interface UseHierarchyLevelFilteringProps {
+    // (undocumented)
+    modelSource: TreeModelSource;
+    // (undocumented)
+    nodeLoader: ITreeNodeLoader;
+}
 
 // @alpha (undocumented)
 export function useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext;
