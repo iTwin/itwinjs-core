@@ -7881,7 +7881,10 @@ export enum PrimitiveVisibility {
 }
 
 // @public
-export type ProgressFunction = (loaded: number, total: number) => void;
+export type ProgressFunction = (progress: {
+    loaded: number;
+    total: number;
+}) => void;
 
 // @alpha
 export interface PublisherProductInfo {
