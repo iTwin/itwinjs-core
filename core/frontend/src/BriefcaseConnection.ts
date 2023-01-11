@@ -56,7 +56,7 @@ export interface GenericAbortSignal {
 export interface PullChangesOptions {
   /**
    * Function called regularly to report progress of changes download.
-   * @deprecated Use [[downloadProgressCallback]] instead. Deprecated since 3.6
+   * @deprecated in 3.6. Use [[downloadProgressCallback]] instead.
    */
   progressCallback?: ProgressCallback;
   /** Function called regularly to report progress of changes download. */
