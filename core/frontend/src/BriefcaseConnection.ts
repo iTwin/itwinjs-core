@@ -24,7 +24,7 @@ import { Viewport } from "./Viewport";
  * Called to show progress during a download.
  * @public
  */
-export type ProgressFunction = (loaded: number, total: number) => void;
+export type ProgressFunction = (progress: { loaded: number, total: number }) => void;
 
 /**
  * Partial interface of AbortSignal.
@@ -336,7 +336,7 @@ export class BriefcaseConnection extends IModelConnection {
       const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
         // eslint-disable-next-line deprecation/deprecation
         options?.progressCallback?.(data);
-        options?.downloadProgressCallback?.(data.loaded, data.total);
+        options?.downloadProgressCallback?.(data);
       };
 
       const removeProgressListener = IpcApp.addListener(

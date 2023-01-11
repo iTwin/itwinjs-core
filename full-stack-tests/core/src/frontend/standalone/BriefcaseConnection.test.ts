@@ -57,11 +57,10 @@ if (ProcessDetector.isElectronAppFrontend) {
       const connection = await BriefcaseConnection.openFile({ fileName, readonly: true });
 
       let lastProgressReport = { loaded: 0, total: 0 };
-      const assertProgress: ProgressFunction = (loaded, total) => {
-        assert.isAbove(loaded, lastProgressReport.loaded);
-        assert.isDefined(total);
-        assert.isAtLeast(total, lastProgressReport.total);
-        lastProgressReport = { loaded, total };
+      const assertProgress: ProgressFunction = (progress) => {
+        assert.isAbove(progress.loaded, lastProgressReport.loaded);
+        assert.isAtLeast(progress.total, lastProgressReport.total);
+        lastProgressReport = progress;
       };
 
       try {
@@ -92,11 +91,10 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       const abortSignal = new MockAbortSignal();
       let lastProgressReport = { loaded: 0, total: 0 };
-      const downloadProgressCallback: ProgressFunction = (loaded, total) => {
-        assert.isDefined(total);
-        lastProgressReport = { loaded, total };
+      const downloadProgressCallback: ProgressFunction = (progress) => {
+        lastProgressReport = progress;
 
-        if (loaded > total / 4)
+        if (progress.loaded > progress.total / 4)
           abortSignal.abort();
       };
 

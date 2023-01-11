@@ -160,7 +160,7 @@ export class NativeApp {
     if (shouldReportProgress) {
       const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
         progress?.(data);
-        downloadOptions.progressCallback?.(data.loaded, data.total);
+        downloadOptions.progressCallback?.(data);
       };
 
       stopProgressEvents = IpcApp.addListener(`nativeApp.progress-${iModelId}`, handleProgress);

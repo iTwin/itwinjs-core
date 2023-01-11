@@ -389,7 +389,7 @@ export class SampleAppIModelApp {
 
     let iModelConnection: IModelConnection | undefined;
     if (ProcessDetector.isMobileAppFrontend) {
-      const progressCallback: ProgressFunction = (loaded, total) => {
+      const progressCallback: ProgressFunction = ({ loaded, total }) => {
         const percent = (loaded / total).toFixed(2);
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${loaded}/${total}) -> ${percent}%`);
       };
@@ -484,7 +484,7 @@ export class SampleAppIModelApp {
 
       let iModelConnection: IModelConnection | undefined;
       if (ProcessDetector.isMobileAppFrontend) {
-        const progressCallback: ProgressFunction = (loaded, total) => {
+        const progressCallback: ProgressFunction = ({ loaded, total }) => {
           const percent = (loaded / total).toFixed(2);
           Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${loaded}/${total}) -> ${percent}%`);
         };
