@@ -56,6 +56,9 @@ jobs:
       - script: node common/scripts/install-run-rush.js build:ci
         displayName: rush build
         workingDirectory: ${{ parameters.workingDir }}
+        env:
+          RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+          RUSH_BUILD_CACHE_ENABLED: 1
 
       - script: node common/scripts/install-run-rush.js docs
         displayName: rush docs
