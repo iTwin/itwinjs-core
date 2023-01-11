@@ -28,10 +28,10 @@ export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps
  * @alpha
  */
 export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps) {
-  const { onFilterClick, onClearFilterClick, className, ...restProps } = props;
+  const { onFilterClick, onClearFilterClick, ...restProps } = props;
   const nodeItem = props.node.item;
   if (!isPresentationTreeNodeItem(nodeItem))
-    return null;
+    return <TreeNodeRenderer {...restProps} />;
 
   if (nodeItem.tooManyChildren) {
     return (
@@ -48,7 +48,7 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
   return (
     <TreeNodeRenderer
       {...restProps}
-      className={classnames("presentation-components-node", className)}
+      className={classnames("presentation-components-node", restProps.className)}
     >
       <PresentationTreeNodeActions
         isFiltered={nodeItem.filterInfo !== undefined}
@@ -73,7 +73,7 @@ function PresentationTreeNodeActions(props: PresentationTreeNodeActionsProps) {
     return null;
 
   return (
-    <div className={classnames("presentation-components-filter-action-buttons", isFiltered && "filtered")}>
+    <div className={classnames("presentation-components-node-action-buttons", isFiltered && "filtered")}>
       <ButtonGroup>
         {isFiltered
           ? <IconButton

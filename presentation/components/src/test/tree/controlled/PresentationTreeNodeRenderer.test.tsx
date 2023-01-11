@@ -2,54 +2,35 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import * as React from "react";
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import {
-  TreeActions, TreeModelNode, UiComponents,
-} from "@itwin/components-react";
-import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
+import { PropertyFilterRuleOperator, TreeActions, UiComponents } from "@itwin/components-react";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { createTestPropertiesContentField, createTestPropertyInfo } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
-import { render } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { translate } from "../../../presentation-components/common/Utils";
-import {
-  PresentationTreeNodeRenderer,
-} from "../../../presentation-components/tree/controlled/PresentationTreeNodeRenderer";
-import { PresentationTreeNodeItem } from "../../../presentation-components/tree/DataProvider";
-import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
+import { PresentationInstanceFilterInfo } from "../../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
+import { PresentationTreeNodeRenderer } from "../../../presentation-components/tree/controlled/PresentationTreeNodeRenderer";
+import { createTreeModelNode, createTreeNodeItem } from "./Helpers";
 
-function createTreeNodeItem(item?: Partial<PresentationTreeNodeItem>): PresentationTreeNodeItem {
+function createFilterInfo(propName: string = "prop"): PresentationInstanceFilterInfo {
+  const property = createTestPropertyInfo({ name: propName });
+  const field = createTestPropertiesContentField({ properties: [{ property }] });
   return {
-    id: item?.id ?? "node_id",
-    key: item?.key ?? createRandomECInstancesNodeKey(),
-    label: item?.label ?? PropertyRecord.fromString("Node Label"),
-    ...item,
-  };
-}
-
-function createTreeModelNode(nodeId: string = "0", nodeItem?: PresentationTreeNodeItem): TreeModelNode {
-  return {
-    id: nodeId,
-    numChildren: 0,
-    parentId: "parentId",
-    checkbox: {
-      isDisabled: false,
-      isVisible: false,
-      state: 0,
+    filter: {
+      field,
+      operator: PropertyFilterRuleOperator.IsNull,
     },
-    depth: 0,
-    isExpanded: false,
-    isSelected: false,
-    description: "desc",
-    label: nodeItem?.label ?? PropertyRecord.fromString("TestLabel"),
-    item: nodeItem ?? createTreeNodeItem(),
+    usedClasses: [],
   };
 }
 
 describe("PresentationTreeNodeRenderer", () => {
-  const imodelMock = moq.Mock.ofType<IModelConnection>();
   const treeActionsMock = moq.Mock.ofType<TreeActions>();
 
   before(async () => {
@@ -71,22 +52,20 @@ describe("PresentationTreeNodeRenderer", () => {
     sinon.restore();
   });
 
-  it("renders default tree node", () => {
+  it("renders default tree node", async () => {
     const testLabel = "testLabel";
-    const nodeItem = createTreeNodeItem({ label: PropertyRecord.fromString(testLabel) });
-    const node = createTreeModelNode(undefined, nodeItem);
+    const node = createTreeModelNode(undefined, { id: "node_id", label: PropertyRecord.fromString(testLabel) });
 
-    const { getByText } = render(
+    const { getByText, container } = render(
       <PresentationTreeNodeRenderer
         treeActions={treeActionsMock.object}
         node={node}
-        nodeItem={nodeItem}
-        imodel={imodelMock.object}
-        onFilterApplied={() => { }}
-        onFilterClear={() => { }}
+        onFilterClick={() => { }}
+        onClearFilterClick={() => { }}
       />);
 
-    getByText(testLabel);
+    await waitFor(() => getByText(testLabel));
+    expect(container.querySelector(".presentation-components-node")).to.be.null;
   });
 
   it("renders too many children tree node", () => {
@@ -99,13 +78,28 @@ describe("PresentationTreeNodeRenderer", () => {
       <PresentationTreeNodeRenderer
         treeActions={treeActionsMock.object}
         node={node}
-        nodeItem={item}
-        imodel={imodelMock.object}
-        onFilterApplied={() => { }}
-        onFilterClear={() => { }}
+        onFilterClick={() => { }}
+        onClearFilterClick={() => { }}
       />);
 
     getByText(translate("tree.too-many-child-nodes"));
+  });
+
+  it("renders presentation tree node", async () => {
+    const testLabel = "testLabel";
+    const item = createTreeNodeItem({ label: PropertyRecord.fromString(testLabel) });
+    const node = createTreeModelNode(undefined, item);
+
+    const { getByText, container } = render(
+      <PresentationTreeNodeRenderer
+        treeActions={treeActionsMock.object}
+        node={node}
+        onFilterClick={() => { }}
+        onClearFilterClick={() => { }}
+      />);
+
+    await waitFor(() => getByText(testLabel));
+    expect(container.querySelector(".presentation-components-node")).to.not.be.null;
   });
 
   it("renders node with filter button", () => {
@@ -116,34 +110,81 @@ describe("PresentationTreeNodeRenderer", () => {
       <PresentationTreeNodeRenderer
         treeActions={treeActionsMock.object}
         node={node}
-        nodeItem={nodeItem}
-        imodel={imodelMock.object}
-        onFilterApplied={() => { }}
-        onFilterClear={() => { }}
+        onFilterClick={() => { }}
+        onClearFilterClick={() => { }}
       />);
 
-    const button = container.querySelector("presentation-components-filter-action-buttons");
-    expect(button).to.not.be.undefined;
+    const buttons = container.querySelectorAll(".presentation-components-node-action-buttons button");
+    expect(buttons.length).to.eq(1);
   });
 
-  // it("invokes 'onFilter' callback when filter button is clicked", () => {
-  //   const nodeItem = createTreeNodeItem();
-  //   const node = createTreeModelNode(undefined, nodeItem);
-  //   const buttonSpy = sinon.spy();
+  it("renders filtered node with filter and clear filter buttons", () => {
+    const nodeItem = createTreeNodeItem({ filterInfo: createFilterInfo() });
+    const node = createTreeModelNode(undefined, nodeItem);
 
-  //   const { container } = render(
-  //     <PresentationTreeNodeRenderer
-  //       treeActions={treeActionsMock.object}
-  //       node={node}
-  //       nodeItem={nodeItem}
-  //       onFilterApplied={buttonSpy}
-  //       onFilterClear={() => { }}
-  //       imodel={imodelMock.object}
-  //     />);
+    const { container } = render(
+      <PresentationTreeNodeRenderer
+        treeActions={treeActionsMock.object}
+        node={node}
+        onFilterClick={() => { }}
+        onClearFilterClick={() => { }}
+      />);
 
-  //   const buttonContainer = container.getElementsByClassName("presentation-components-filter-action-buttons")[0];
-  //   const button = buttonContainer.getElementsByClassName("iui-button")[0];
-  //   fireEvent.click(button);
-  //   expect(buttonSpy).to.be.called;
-  // });
+    const buttons = container.querySelectorAll(".presentation-components-node-action-buttons button");
+    expect(buttons.length).to.eq(2);
+  });
+
+  it("renders without buttons when node is not filterable", () => {
+    const nodeItem = createTreeNodeItem({ filteringDisabled: true });
+    const node = createTreeModelNode(undefined, nodeItem);
+
+    const { container } = render(
+      <PresentationTreeNodeRenderer
+        treeActions={treeActionsMock.object}
+        node={node}
+        onFilterClick={() => { }}
+        onClearFilterClick={() => { }}
+      />);
+
+    const buttons = container.querySelectorAll(".presentation-components-node-action-buttons button");
+    expect(buttons).to.be.empty;
+  });
+
+  it("invokes 'onFilterClick' when filter button is clicked", () => {
+    const spy = sinon.spy();
+    const nodeItem = createTreeNodeItem();
+    const node = createTreeModelNode(undefined, nodeItem);
+
+    const { container } = render(
+      <PresentationTreeNodeRenderer
+        treeActions={treeActionsMock.object}
+        node={node}
+        onFilterClick={spy}
+        onClearFilterClick={() => { }}
+      />);
+
+    const buttons = container.querySelectorAll(".presentation-components-node-action-buttons button");
+    expect(buttons.length).to.eq(1);
+    fireEvent.click(buttons[0]);
+    expect(spy).be.calledOnce;
+  });
+
+  it("invokes 'onClearFilterClick' when clear button is clicked", () => {
+    const spy = sinon.spy();
+    const nodeItem = createTreeNodeItem({ filterInfo: createFilterInfo() });
+    const node = createTreeModelNode(undefined, nodeItem);
+
+    const { container } = render(
+      <PresentationTreeNodeRenderer
+        treeActions={treeActionsMock.object}
+        node={node}
+        onFilterClick={() => { }}
+        onClearFilterClick={spy}
+      />);
+
+    const buttons = container.querySelectorAll(".presentation-components-node-action-buttons button");
+    expect(buttons.length).to.eq(2);
+    fireEvent.click(buttons[0]);
+    expect(spy).be.calledOnce;
+  });
 });

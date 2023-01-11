@@ -36,25 +36,18 @@ export function useHierarchyLevelFiltering(props: UseHierarchyLevelFilteringProp
   return { applyFilter, clearFilter };
 }
 
-
 function applyHierarchyLevelFilter(nodeLoader: ITreeNodeLoader, modelSource: TreeModelSource, nodeId: string, filter?: PresentationInstanceFilterInfo) {
-  let reloadChildren = true;
   modelSource.modifyModel((model) => {
     const modelNode = model.getNode(nodeId);
     if (!modelNode || !isTreeModelNode(modelNode) || !isPresentationTreeNodeItem(modelNode.item))
       return;
-
-    if (modelNode.item.filterInfo === filter) {
-      reloadChildren = false;
-      return;
-    }
 
     modelNode.item.filterInfo = filter;
     model.clearChildren(nodeId);
   });
 
   const updatedNode = modelSource.getModel().getNode(nodeId);
-  if (!reloadChildren || updatedNode === undefined || !updatedNode.isExpanded)
+  if (updatedNode === undefined || !updatedNode.isExpanded || updatedNode.numChildren !== undefined)
     return;
   nodeLoader.loadNode(updatedNode, 0).subscribe();
 }

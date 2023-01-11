@@ -7,31 +7,15 @@
  */
 
 import * as React from "react";
-import { TreeModelSource, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps } from "@itwin/components-react";
+import { TreeModelSource, TreeNodeRendererProps, TreeRenderer, TreeRendererProps } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { PresentationInstanceFilterInfo } from "../../instance-filter-builder/PresentationInstanceFilterBuilder";
 import { PresentationInstanceFilterDialog } from "../../instance-filter-builder/PresentationInstanceFilterDialog";
-import { isPresentationTreeNodeItem, PresentationTreeNodeItem } from "../DataProvider";
+import { PresentationTreeNodeItem } from "../DataProvider";
 import { PresentationTreeNodeRenderer } from "./PresentationTreeNodeRenderer";
 import { useHierarchyLevelFiltering } from "./UseHierarchyLevelFiltering";
-
-/**
- * @alpha
- */
-export interface UsePresentationTreeRendererProps {
-  imodel: IModelConnection;
-  modelSource: TreeModelSource;
-}
-
-/**
- * @alpha
- */
-export function usePresentationTreeRenderer(props: UsePresentationTreeRendererProps) {
-  const { imodel, modelSource } = props;
-  return React.useCallback((treeProps: TreeRendererProps) => <PresentationTreeRenderer {...treeProps} imodel={imodel} modelSource={modelSource} />, [imodel, modelSource]);
-}
 
 /**
  * @alpha
@@ -55,9 +39,6 @@ export function PresentationTreeRenderer(props: PresentationTreeRendererProps) {
   }, []);
 
   const filterableNodeRenderer = React.useCallback((nodeProps: TreeNodeRendererProps) => {
-    if (!isPresentationTreeNodeItem(nodeProps.node.item))
-      return <TreeNodeRenderer {...nodeProps} />;
-
     return (
       <PresentationTreeNodeRenderer
         {...nodeProps}
@@ -105,7 +86,7 @@ function TreeNodeFilterBuilderDialog(props: TreeNodeFilterBuilderDialogProps) {
       onApply={onApply}
       imodel={imodel}
       descriptor={descriptorGetter}
-      initialFilter={node?.filterInfo}
+      initialFilter={node.filterInfo}
     />
   );
 }
@@ -117,21 +98,20 @@ interface ChildInstancesInfo {
   className: string;
 }
 
-function getChildInstancesInfo(node: PresentationTreeNodeItem) {
+// istanbul ignore next
+function getChildInstancesInfo(node: PresentationTreeNodeItem): ChildInstancesInfo {
   if (!node.extendedData || !node.extendedData.childSchemaName || !node.extendedData.childClassName)
-    return undefined;
+    return { schemaName: "BisCore", className: "Element" };
   return {
     schemaName: node.extendedData.childSchemaName,
     className: node.extendedData.childClassName,
   };
 }
 
+// istanbul ignore next
 function useChildInstancesDescriptorGetter(imodel: IModelConnection, node: PresentationTreeNodeItem) {
   return React.useCallback<() => Promise<Descriptor>>(async () => {
     const childInfo = getChildInstancesInfo(node);
-    if (!childInfo)
-      throw new Error(`Cannot create descriptor for node ${node.id} as it is missing child info`);
-
     const descriptor = await Presentation.presentation.getContentDescriptor({
       imodel,
       keys: new KeySet(),
@@ -146,6 +126,7 @@ function useChildInstancesDescriptorGetter(imodel: IModelConnection, node: Prese
   }, [imodel, node]);
 }
 
+// istanbul ignore next
 function createChildNodesRuleset(childInfo: ChildInstancesInfo): Ruleset {
   return {
     id: "child-instance-properties",

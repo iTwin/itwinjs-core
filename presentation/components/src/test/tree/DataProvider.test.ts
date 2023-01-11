@@ -2,24 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { PageOptions, TreeNodeItem } from "@itwin/components-react";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PageOptions, PropertyFilterRuleOperator, TreeNodeItem } from "@itwin/components-react";
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CheckBoxState } from "@itwin/core-react";
 import { Node, RegisteredRuleset } from "@itwin/presentation-common";
 import {
   createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
-  PromiseContainer, ResolvablePromise,
+  createTestPropertiesContentField, createTestPropertyInfo, PromiseContainer, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { isPresentationTreeNodeItem, PresentationTreeDataProvider, PresentationTreeNodeItem } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
-import { PropertyRecord } from "@itwin/appui-abstract";
 
 describe("TreeDataProvider", () => {
 
@@ -168,6 +169,20 @@ describe("TreeDataProvider", () => {
       expect(override).to.be.calledOnce;
     });
 
+    it("passes instance filter to presentation manager", async () => {
+      const parentKey = createRandomECInstancesNodeKey();
+      const parentNode = createRandomTreeNodeItem(parentKey);
+      const instanceFilter = applyInstanceFilter(parentNode);
+      presentationManagerMock
+        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, parentKey, instanceFilter }))
+        .returns(async () => 1)
+        .verifiable();
+
+      const actualResult = await provider.getNodesCount(parentNode);
+      expect(actualResult).to.eq(1);
+      presentationManagerMock.verifyAll();
+    });
+
   });
 
   describe("getNodes", () => {
@@ -266,6 +281,31 @@ describe("TreeDataProvider", () => {
       expect(loggerSpy.notCalled).to.be.true;
     });
 
+    it("passes instance filter to presentation manager", async () => {
+      const parentKey = createRandomECInstancesNodeKey();
+      const parentNode = createRandomTreeNodeItem(parentKey);
+      const instanceFilter0 = applyInstanceFilter(parentNode);
+
+      const pageOptions: PageOptions = { start: 0, size: faker.random.number() };
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter: instanceFilter0 }))
+        .returns(async () => ({ nodes: [createRandomECInstancesNode()], count: 1 }))
+        .verifiable();
+
+      const actualResult0 = await provider.getNodes(parentNode, pageOptions);
+      expect(actualResult0).to.have.lengthOf(1);
+
+      const instanceFilter1 = applyInstanceFilter(parentNode, "prop2");
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter: instanceFilter1 }))
+        .returns(async () => ({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 }))
+        .verifiable();
+
+      const actualResult1 = await provider.getNodes(parentNode, pageOptions);
+      expect(actualResult1).to.have.lengthOf(2);
+
+      presentationManagerMock.verifyAll();
+    });
   });
 
   describe("getFilteredNodes", () => {
@@ -458,3 +498,17 @@ describe("isPresentationTreeNodeItem", () => {
     expect(isPresentationTreeNodeItem(simpleItem)).to.be.false;
   });
 });
+
+function applyInstanceFilter(node: PresentationTreeNodeItem, propName: string = "prop") {
+  const property = createTestPropertyInfo({ name: propName });
+  const field = createTestPropertiesContentField({ properties: [{ property }], name: property.name });
+  const instanceFilter = `this.${property.name} IS NULL`;
+  node.filterInfo = {
+    filter: {
+      field,
+      operator: PropertyFilterRuleOperator.IsNull,
+    },
+    usedClasses: [],
+  };
+  return instanceFilter;
+}

@@ -11,7 +11,7 @@
 }
 
 .presentation-components-node {
-  .presentation-components-filter-action-buttons {
+  .presentation-components-node-action-buttons {
     visibility: hidden;
     position: sticky;
     background-color: inherit;
@@ -24,11 +24,11 @@
       }
     }
 
-  &:hover > .presentation-components-filter-action-buttons {
+  &:hover > .presentation-components-node-action-buttons {
     visibility: visible;
   }
 
-  .presentation-components-filter-action-buttons.filtered {
+  .presentation-components-node-action-buttons.filtered {
     visibility: visible;
   }
 }
