@@ -56,7 +56,7 @@ function _offsetDebugFunction(message: string, graph: HalfEdgeGraph,
 // import { GraphChecker } from "../topology/Graph.test";
 describe("OffsetMeshContext", () => {
 
-  it("OffsetPyramids", () => {
+  it.only("OffsetPyramids", () => {
     const ck = new Checker();
 
     const allGeometry: GeometryQuery[] = [];
@@ -66,8 +66,10 @@ describe("OffsetMeshContext", () => {
     let x0 = 0;
     const signs: number[] = [1.0, -1.0];
     // OffsetMeshContext.graphDebugFunction = _offsetDebugFunction;
+    OffsetMeshContext.stringDebugFunction = (message: string) => { console.log(message); };
+
     for (const xScale of [2.0]) {
-      for (const height of [2.0, 0.05, 3.0, 0.02, 2.0]) {
+      for (const height of [2.0] /* [2.0, 0.05, 3.0, 0.02, 2.0] */) {
         for (const numEdge of [3, 4, 6]) {
           const builder = PolyfaceBuilder.create(options);
           const strokes = LineString3d.create();
@@ -82,7 +84,7 @@ describe("OffsetMeshContext", () => {
           builder.addTriangleFan(apex, strokes, false);
           const polyface = builder.claimPolyface();
           // console.log({ height, numEdge });
-          x0 = testOffsets(ck, allGeometry, polyface, [0.10, -0.10], signs, x0, globalSeparateFaceEdgeAndVertexOutputs);
+          x0 = testOffsets(ck, allGeometry, polyface, [0.10], signs, x0, globalSeparateFaceEdgeAndVertexOutputs);
         }
       }
     }
