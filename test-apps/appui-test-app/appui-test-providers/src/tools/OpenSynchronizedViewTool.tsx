@@ -82,7 +82,7 @@ export function IModelViewDialog({ x, y, id, title }: { x?: number, y?: number, 
       x={x}
       y={y}
     >
-      <SynchronizedFloatingView contentId={id} showViewPicker= {false}/>
+      <SynchronizedFloatingView contentId={id} />
     </ContentDialog>
   );
 }
