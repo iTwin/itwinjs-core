@@ -1,6 +1,11 @@
 # Change Log - @bentley/extension-cli
 
-This log was last generated on Wed, 04 Jan 2023 14:17:27 GMT and should not be manually modified.
+This log was last generated on Wed, 11 Jan 2023 15:59:00 GMT and should not be manually modified.
+
+## 2.19.50
+Wed, 11 Jan 2023 15:59:00 GMT
+
+_Version update only_
 
 ## 2.19.49
 Wed, 04 Jan 2023 14:17:27 GMT

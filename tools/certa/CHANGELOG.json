@@ -2,6 +2,12 @@
   "name": "@bentley/certa",
   "entries": [
     {
+      "version": "2.19.50",
+      "tag": "@bentley/certa_v2.19.50",
+      "date": "Wed, 11 Jan 2023 15:59:00 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.49",
       "tag": "@bentley/certa_v2.19.49",
       "date": "Wed, 04 Jan 2023 14:17:27 GMT",
