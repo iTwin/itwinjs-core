@@ -157,7 +157,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
           return undefined;
 
         return array.map((curStyledLayer) => {
-          const foundScaleRangeVisibility = layerIndexes.find((layerIdx)=> layerIdx.index.index === curStyledLayer.layerIndex && layerIdx.index.isOverlay === curStyledLayer.isOverlay);
+          const foundScaleRangeVisibility = layerIndexes.find((layerIdx)=> layerIdx.index === curStyledLayer.layerIndex && layerIdx.isOverlay === curStyledLayer.isOverlay);
           if (undefined === foundScaleRangeVisibility)
             return curStyledLayer;
           else

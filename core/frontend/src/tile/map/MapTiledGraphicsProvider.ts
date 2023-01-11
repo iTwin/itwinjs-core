@@ -14,12 +14,16 @@ import { Viewport } from "../../Viewport";
 import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, TileTreeReference } from "../internal";
 
 /** Position of a map-layer in the display style's map (i.e. background/overlay map)
- * @beta */
+ * @internal */
 export interface MapLayerIndex {
-  /** true if map-layer is part of the display style's overlay map, otherwise map-layer is part of display style's background map */
+  /** True if map-layer is part of [[DisplayStyleState]]'s overlay map, otherwise map-layer is part of [[DisplayStyleState]]'s background map
+  * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
   isOverlay: boolean;
 
-  /** index of the map-layer in the display style's background/overlay map */
+  /** Index of the map-layer in [[DisplayStyleState]]'s background/overlay map
+   * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
   index: number;
 }
 

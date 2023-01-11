@@ -5895,11 +5895,9 @@ export enum MapLayerImageryProviderStatus {
     Valid = 0
 }
 
-// @beta
+// @internal
 export interface MapLayerIndex {
-    // (undocumented)
     index: number;
-    // (undocumented)
     isOverlay: boolean;
 }
 
@@ -5913,8 +5911,8 @@ export interface MapLayerOptions {
 
 // @beta
 export interface MapLayerScaleRangeVisibility {
-    // (undocumented)
-    index: MapLayerIndex;
+    index: number;
+    isOverlay: boolean;
     // (undocumented)
     visibility: MapTileTreeScaleRangeVisibility;
 }

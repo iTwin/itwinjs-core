@@ -362,7 +362,7 @@ beta;MapLayerFormatRegistry
 beta;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
 beta;MapLayerImageryProviderStatus
-beta;MapLayerIndex
+internal;MapLayerIndex
 beta;MapLayerOptions
 beta;MapLayerScaleRangeVisibility
 public;MapLayerSource

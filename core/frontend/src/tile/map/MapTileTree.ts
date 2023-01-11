@@ -527,7 +527,7 @@ export class MapTileTree extends RealityTileTree {
 
           const mapLayersIndexes = args.context.viewport.getMapLayerIndexesFromIds(this.id, treeId);
           for (const index of mapLayersIndexes ) {
-            changes.push({index, visibility});
+            changes.push({index:index.index, isOverlay: index.isOverlay, visibility});
           }
 
         }

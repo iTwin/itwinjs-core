@@ -224,8 +224,15 @@ export interface ReadImageBufferArgs {
  * @beta
  */
 export interface MapLayerScaleRangeVisibility {
-  // Index of the map-layer
-  index: MapLayerIndex;
+  /** True if map-layer is part of [[DisplayStyleState]]'s overlay map, otherwise map-layer is part of [[DisplayStyleState]]'s background map
+  * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
+  isOverlay: boolean;
+
+  /** Index of the map-layer in [[DisplayStyleState]]'s background/overlay map
+   * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
+  index: number;
 
   // Scale range visibility value of the map-layer
   visibility: MapTileTreeScaleRangeVisibility;
