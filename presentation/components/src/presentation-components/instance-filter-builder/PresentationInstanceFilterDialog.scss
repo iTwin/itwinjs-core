@@ -1,0 +1,37 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/theme";
+
+.presentation-instance-filter-dialog {
+  .presentation-instance-filter-title {
+    margin-bottom: 0;
+    padding: 6px;
+  }
+
+  .presentation-instance-filter-content {
+   max-height: 80vh;
+   overflow: hidden;
+
+    .presentation-property-filter-builder {
+      overflow: scroll;
+      max-height: 70vh;
+    }
+  }
+
+  .presentation-instance-filter-dialog-bottom-container{
+    display: grid;
+    grid-template-columns: 50% 50%;
+    align-items: center;
+    border-style: solid none none none;
+    padding-top: 6px;
+    @include themed {
+      border-color: t(iui-color-background-border);
+    }
+
+    .presentation-instance-filter-button-bar {
+      margin-top: 0;
+    }
+  }
+}
