@@ -44,6 +44,17 @@ Previously, when a [Viewport]($frontend)'s canvas was resized there would be a d
 
 A bug preventing users from interacting with [pickable decorations](../learning/frontend/ViewDecorations.md#pickable-view-graphic-decorations) defined as [GraphicType.ViewOverlay]($frontend) has been fixed.
 
+## WAL (Write-Ahead Logging) mode for briefcases
+
+Previously, iTwin.js used [DELETE](https://www.sqlite.org/pragma.html#pragma_journal_mode) journal mode for writes to local briefcase files. It now uses [WAL](https://www.sqlite.org/wal.html) mode (see SQLite documentation for details). This change should be invisible to applications, other than performance of [IModelDb.saveChanges]($backend) should improve in most cases. However, there are a few subtle implications of this change that may affect existing applications:
+
+- Multiple writeable connections will now fail on open. Previously it was possible to open the same briefcase for write more than once, and one or the other would fail on its first write. Now, the second attempt to open for write will fail.
+
+- Failure to close a writeable briefcase may leave a "-wal" file. Previously, if a program crashed or exited with an open briefcase, it would leave the briefcase file as-of its last call to `IModelDb.saveChanges`. Now, there will be another file with the name of the briefcase with "-wal" appended. This is not a problem and the briefcase is completely intact, except that the briefcase file itself is not sufficient for copying (it will not include recent changes.) The "-wal" file will be used by future connections and will be deleted the next time the briefcase is successfully closed.
+
+- Attempting to copy an open-for-write briefcase file may not include recent changes. This scenario generally only arises for tests. If you wish to copy an open-for-write briefcase file, you must now call [IModelDb.performCheckpoint]($backend).
+
+
 ## Deprecations
 
 ### @itwin/core-bentley
