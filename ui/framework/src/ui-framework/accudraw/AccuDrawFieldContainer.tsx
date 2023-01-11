@@ -7,7 +7,7 @@
  */
 
 import "./AccuDrawFieldContainer.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import {
   AccuDrawField, AccuDrawMode,
@@ -204,11 +204,11 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
         fieldStyle = inStyle ? inStyle : {};
         if (backgroundColor) {
           rgbaString = typeof backgroundColor === "string" ? backgroundColor : getCSSColorFromDef(backgroundColor);
-          fieldStyle = {...fieldStyle, backgroundColor: rgbaString};
+          fieldStyle = { ...fieldStyle, backgroundColor: rgbaString };
         }
         if (foregroundColor) {
           rgbaString = typeof foregroundColor === "string" ? foregroundColor : getCSSColorFromDef(foregroundColor);
-          fieldStyle = {...fieldStyle, color: rgbaString};
+          fieldStyle = { ...fieldStyle, color: rgbaString };
         }
       }
       return fieldStyle;

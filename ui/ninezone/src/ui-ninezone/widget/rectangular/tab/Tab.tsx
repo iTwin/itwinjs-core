@@ -7,7 +7,7 @@
  */
 
 import "./Tab.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { DragHandle } from "../../../base/DragHandle";

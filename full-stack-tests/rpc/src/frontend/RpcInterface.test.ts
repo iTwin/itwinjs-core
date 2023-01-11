@@ -288,8 +288,8 @@ describe("RpcInterface", () => {
     const test = async (code: string | null, expectValid: boolean, c: TestRpcInterface | ZeroMajorRpcInterface) => {
       assert(code !== null);
 
-      TestRpcInterface.interfaceVersion = code as string;
-      ZeroMajorRpcInterface.interfaceVersion = code as string;
+      TestRpcInterface.interfaceVersion = code;
+      ZeroMajorRpcInterface.interfaceVersion = code;
 
       let err: Error | undefined;
       try {

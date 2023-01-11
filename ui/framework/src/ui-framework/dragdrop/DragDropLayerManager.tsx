@@ -6,7 +6,7 @@
  * @module DragDrop
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { DndComponentClass, DragLayer, DragLayerMonitor } from "react-dnd";
 import { DragLayerProps, DragSourceArguments } from "@bentley/ui-components";

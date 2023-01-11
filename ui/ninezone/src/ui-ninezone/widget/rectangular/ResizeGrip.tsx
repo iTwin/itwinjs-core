@@ -7,7 +7,7 @@
  */
 
 import "./ResizeGrip.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { PointerCaptor } from "../../base/PointerCaptor";

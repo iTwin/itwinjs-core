@@ -7,7 +7,7 @@
  */
 
 import "./SendBack.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { FloatingWidgetContext } from "./FloatingWidget";

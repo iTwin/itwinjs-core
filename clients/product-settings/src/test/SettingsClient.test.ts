@@ -805,7 +805,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     chai.assert((SettingsStatus.Success === readResult.status), "Reading settings by namespace 'NamespaceTest' should work");
     chai.assert(((undefined !== readResult.settingsMap) && (40 <= readResult.settingsMap.size)), "NamespaceTest should contain at least 40 settings"); // Re-use this namespace for all test runs so there may be more than the 40 we added in this test run
     for (let iSetting = 0; iSetting < 40; iSetting++) {
-      const returnedValue: any = readResult.settingsMap!.get(`ManySettings${guids[iSetting]}`);
+      const returnedValue: any = readResult.settingsMap.get(`ManySettings${guids[iSetting]}`);
       chai.assert(((undefined !== returnedValue) && (returnedValue.testString === `Setting${iSetting}`) && (returnedValue.value === iSetting)), `Returned Setting ${iSetting} should contain the right values`);
     }
 
@@ -821,7 +821,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     chai.assert((SettingsStatus.Success === readResult.status), "Reading settings by namespace 'NamespaceTest' should work");
     chai.assert(((undefined !== readResult.settingsMap) && (42 <= readResult.settingsMap.size)), "NamespaceTest should contain at least 42 settings"); // Re-use this namespace for all test runs so there may be more than the 40 we added in this test run
     for (let iSetting = 0; iSetting < 42; iSetting++) {
-      const returnedValue: any = readResult.settingsMap!.get(`ManySettings${guids[iSetting]}`);
+      const returnedValue: any = readResult.settingsMap.get(`ManySettings${guids[iSetting]}`);
       chai.assert(((undefined !== returnedValue) && (returnedValue.testString === `Setting${iSetting}`) && (returnedValue.value === iSetting)), `Returned Setting ${iSetting} should contain the right values`);
     }
 

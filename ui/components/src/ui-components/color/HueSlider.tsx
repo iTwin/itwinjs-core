@@ -18,9 +18,9 @@ import { SpecialKey } from "@bentley/ui-abstract";
 function calculateHue(currentPos: number, high: number, isVertical: boolean) {
   // istanbul ignore next
   if (currentPos <= 0) {
-    return isVertical?359:0;
+    return isVertical ? 359 : 0;
   } else if (currentPos >= high) {
-    return isVertical?0:359;
+    return isVertical ? 0 : 359;
   } else {
     let percent = ((currentPos * 100) / high);
     if (isVertical)

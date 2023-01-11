@@ -6,7 +6,7 @@
  * @module Picker
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
 import { SpatialModelState, SpatialViewState } from "@bentley/imodeljs-frontend";

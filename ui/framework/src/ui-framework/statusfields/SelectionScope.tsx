@@ -7,7 +7,7 @@
  */
 
 import "./SelectionScope.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { connect } from "react-redux";
 import { FooterIndicator } from "@bentley/ui-ninezone";

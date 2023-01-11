@@ -6,7 +6,7 @@
  * @module Notification
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
 import { ToolTipOptions } from "@bentley/imodeljs-frontend";
@@ -17,7 +17,7 @@ import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 
 /** [[ElementTooltip]] State.
  * @internal
- */
+ */
 interface ElementTooltipState {
   isVisible: boolean;
   message: NotifyMessageType;
@@ -27,7 +27,7 @@ interface ElementTooltipState {
 
 /** [[ElementTooltipChangedEvent]] arguments.
  * @public
- */
+ */
 export interface ElementTooltipChangedEventArgs {
   isTooltipVisible: boolean;
   message: NotifyMessageType;
@@ -38,12 +38,12 @@ export interface ElementTooltipChangedEventArgs {
 
 /** ElementTooltip Changed Event class.
  * @public
- */
+ */
 export class ElementTooltipChangedEvent extends UiEvent<ElementTooltipChangedEventArgs> { }
 
 /** ElementTooltip React component.
  * @public
- */
+ */
 export class ElementTooltip extends React.Component<CommonProps, ElementTooltipState> {
   private static _elementTooltipChangedEvent: ElementTooltipChangedEvent = new ElementTooltipChangedEvent();
   private static _isTooltipVisible: boolean;

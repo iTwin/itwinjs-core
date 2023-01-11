@@ -6,7 +6,7 @@
  * @module Inputs
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { Input, InputProps } from "./Input";
 import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";

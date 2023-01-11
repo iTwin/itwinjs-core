@@ -7,7 +7,7 @@
  */
 
 import "./TabTarget.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { DraggedWidgetIdContext, useTabTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";

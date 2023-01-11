@@ -7,7 +7,7 @@
  */
 
 import "./App.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { NoChildrenProps, OmitChildrenProp } from "@bentley/ui-core";
 import { ToolbarIcon, ToolbarIconProps } from "./Icon";

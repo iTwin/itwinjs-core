@@ -7,7 +7,7 @@
  */
 
 import "./SplitButton.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { PopupContextMenu } from "../contextmenu/PopupContextMenu";
 import { Icon, IconSpec } from "../icons/IconComponent";

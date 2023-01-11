@@ -425,7 +425,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                     </MessageCenterMessage>
                     <MessageCenterMessage icon={<i className="icon icon-status-warning nzdemo-warning" />}>
                       Missing 10 fonts. Replaces with Arial.
-                      </MessageCenterMessage>
+                    </MessageCenterMessage>
                     <MessageCenterMessage icon={<i className="icon icon-star nzdemo-favorite" />}>
                       Your document has been favorited by 5 people in the...
                     </MessageCenterMessage>
@@ -2501,7 +2501,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
             }}
           >
             Custom content of bottom most panel.
-          <HollowButton onClick={this.props.onCloseBottomMostPanel} style={{ float: "right" }}>X</HollowButton>
+            <HollowButton onClick={this.props.onCloseBottomMostPanel} style={{ float: "right" }}>X</HollowButton>
           </div>
         </StagePanel>
       );

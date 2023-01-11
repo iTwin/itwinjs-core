@@ -7,7 +7,7 @@
  */
 
 import "./DefaultDialogGridContainer.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { DialogRow } from "@bentley/ui-abstract";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";

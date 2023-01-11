@@ -7,7 +7,7 @@
  */
 
 import "./SplitterPane.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { Arrow } from "./Arrow";
 import { MergeTargetProps } from "./Merge";

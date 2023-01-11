@@ -7,7 +7,7 @@
  */
 
 import "./StandardRotationNavigationAid.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
@@ -26,7 +26,7 @@ const NZ_ContainedTray = withContainIn(NZ_Tray);
 
 /** A 3D Standard Rotation Navigation Aid control.
  * @alpha
- */
+ */
 export class StandardRotationNavigationAidControl extends NavigationAidControl {
   public static navigationAidId = "StandardRotationNavigationAid";
 
@@ -52,7 +52,7 @@ interface StandardRotationNavigationAidState {
 
 /** A 3D Standard Rotation Navigation Aid.
  * @alpha
- */
+ */
 export class StandardRotationNavigationAid extends React.Component<CommonProps, StandardRotationNavigationAidState> {
   private _title = UiFramework.translate("standardRotationNavigationAid.title");
 

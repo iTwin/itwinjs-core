@@ -7,7 +7,7 @@
  */
 
 import "./ModelSelector.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as _ from "lodash";
 import * as React from "react";
 import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
@@ -140,9 +140,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _getDefaultModelGroup = () => {
     return {
       id: Groups.Models,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- false positive
       ruleset: this._modelRuleset!,
       dataProvider: new ModelSelectorDataProvider(
         this.props.iModelConnection,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- false positive
         this._modelRuleset!.id,
       ),
       label: UiFramework.translate("categoriesModels.models"),
@@ -211,9 +213,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _getDefaultCategoryGroup = () => {
     return {
       id: Groups.Categories,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- false positive
       ruleset: this._categoryRuleset!,
       dataProvider: new ModelSelectorDataProvider(
         this.props.iModelConnection,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- false positive
         this._categoryRuleset!.id,
       ),
       label: UiFramework.translate("categoriesModels.categories"),

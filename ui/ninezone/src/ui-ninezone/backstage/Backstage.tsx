@@ -7,7 +7,7 @@
  */
 
 import "./Backstage.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";

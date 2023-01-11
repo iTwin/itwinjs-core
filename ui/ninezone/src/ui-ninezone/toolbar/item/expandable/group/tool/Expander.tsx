@@ -7,7 +7,7 @@
  */
 
 import "./Expander.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { NoChildrenProps, Omit } from "@bentley/ui-core";
 import { GroupTool, GroupToolProps } from "./Tool";

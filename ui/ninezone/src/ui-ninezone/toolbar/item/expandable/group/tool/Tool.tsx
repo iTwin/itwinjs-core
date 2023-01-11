@@ -7,7 +7,7 @@
  */
 
 import "./Tool.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useTargeted } from "@bentley/ui-core";
 

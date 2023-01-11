@@ -7,7 +7,7 @@
  */
 
 import "./Popup.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, Popup } from "@bentley/ui-core";

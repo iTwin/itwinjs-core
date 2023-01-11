@@ -7,7 +7,7 @@
  */
 
 import "./Toggle.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "../utils/Props";
 import { useRefs } from "../utils/hooks/useRefs";
@@ -81,14 +81,14 @@ const ForwardRefToggle = React.forwardRef<HTMLInputElement, ToggleProps>(
         props.onChange(newChecked);
 
       setTimeout(() => {
-      // istanbul ignore else
+        // istanbul ignore else
         if (inputElement.current)
           setToggling(false);
       }, 250);
     }, [props, checked]);
 
     const handleBlur = React.useCallback((event: React.FocusEvent) => {
-    // istanbul ignore else
+      // istanbul ignore else
       if (props.onBlur)
         props.onBlur(event);
     }, [props]);
@@ -99,7 +99,7 @@ const ForwardRefToggle = React.forwardRef<HTMLInputElement, ToggleProps>(
 
     const setHeightFromRef = React.useCallback((el: HTMLLabelElement | null) => {
       if (el !== null) {
-      // istanbul ignore next
+        // istanbul ignore next
         if (el.clientHeight > 0 && el.clientWidth > 0) {
           setHeight(el.clientHeight);
           setWidth(el.clientWidth);

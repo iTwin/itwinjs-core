@@ -6,7 +6,7 @@
  * @module Radio
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { LabeledComponentProps } from "../inputs/LabeledComponentProps";
 import { CommonProps } from "../utils/Props";

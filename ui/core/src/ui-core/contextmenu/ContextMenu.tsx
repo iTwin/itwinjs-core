@@ -7,7 +7,7 @@
  */
 
 import "./ContextMenu.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { ConditionalBooleanValue, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "../utils/Props";

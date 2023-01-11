@@ -7,7 +7,7 @@
  */
 
 import "./Splitter.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { MergeTargetProps } from "./Merge";
 import { WidgetTarget } from "./Target";

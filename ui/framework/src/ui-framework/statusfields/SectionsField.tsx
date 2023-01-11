@@ -7,7 +7,7 @@
  */
 
 import "./SectionsField.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { ClipEventType, IModelApp, ViewClipClearTool, ViewClipDecoration, ViewClipDecorationProvider, Viewport } from "@bentley/imodeljs-frontend";
 import { Button, ButtonType, Toggle } from "@bentley/ui-core";

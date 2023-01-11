@@ -7,7 +7,7 @@
  */
 
 import "./ExpandableBlock.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "../utils/Props";
 
@@ -16,7 +16,7 @@ import { CommonProps } from "../utils/Props";
  */
 export interface ExpandableBlockProps extends CommonProps {
   /** Label */
-  title: string|JSX.Element;
+  title: string | JSX.Element;
   /** Indicates whether the ExpandableBlock is expanded */
   isExpanded: boolean;
   /** Callback function for click event */

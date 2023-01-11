@@ -7,7 +7,7 @@
  */
 
 import "./PositionPopup.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonDivProps, CommonProps, Div, PointProps, Size, SizeProps } from "@bentley/ui-core";
 

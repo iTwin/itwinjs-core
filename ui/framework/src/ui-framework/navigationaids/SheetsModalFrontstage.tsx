@@ -7,7 +7,7 @@
  */
 
 import "./SheetsModalFrontstage.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { CommonProps, FlexWrapContainer, ScrollView, SearchBox, UiCore, UiEvent } from "@bentley/ui-core";

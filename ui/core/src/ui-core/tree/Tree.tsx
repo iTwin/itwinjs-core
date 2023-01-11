@@ -7,7 +7,7 @@
  */
 
 import "./Tree.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { Range2d } from "@bentley/geometry-core";
 import { CommonProps } from "../utils/Props";

@@ -25,7 +25,7 @@ interface ShadowFieldState {
 /**
  * Shadow Field React component. This component is designed to be specified in a status bar definition.
  * It is used to enable/disable display of shadows.
- */
+ */
 export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldState> {
 
   constructor(props: StatusFieldProps) {

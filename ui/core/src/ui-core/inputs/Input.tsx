@@ -6,7 +6,7 @@
  * @module Inputs
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { useRefs } from "../utils/hooks/useRefs";
 import { CommonProps } from "../utils/Props";

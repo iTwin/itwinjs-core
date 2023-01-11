@@ -7,7 +7,7 @@
  */
 
 import "./SheetNavigationAid.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { IModelApp, IModelConnection, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { UiComponents, ViewIdChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
@@ -208,6 +208,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   // istanbul ignore next
   private _handleViewIdChanged = (args: ViewIdChangedEventArgs) => {
     if (this._viewport === args.viewport)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- false positive
       this._handleViewportChanged(args.viewport as ScreenViewport);
   };
 

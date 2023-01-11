@@ -8,7 +8,7 @@
 
 import "./ActivityMessagePopup.scss";
 import * as React from "react";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { ActivityMessageEventArgs, MessageManager } from "../messages/MessageManager";
 import { CommonProps } from "@bentley/ui-core";
 import { ActivityMessage } from "./ActivityMessage";

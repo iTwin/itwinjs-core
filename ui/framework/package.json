@@ -149,7 +149,7 @@
     "react-dnd-html5-backend": "^11.1.3",
     "react-split-pane": "0.1.92",
     "rxjs": "^6.6.2",
-    "svg-sprite-loader": "4.2.1"
+    "svg-sprite-loader": "^6.0.10"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",

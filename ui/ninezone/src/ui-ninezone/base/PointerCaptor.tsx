@@ -7,7 +7,7 @@
  */
 
 import "./PointerCaptor.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefEffect } from "@bentley/ui-core";
 import { DragManagerContext } from "./DragManager";

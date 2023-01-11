@@ -7,7 +7,7 @@
  */
 
 import "./SearchBox.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { UiCore } from "../UiCore";
 import { CommonProps } from "../utils/Props";

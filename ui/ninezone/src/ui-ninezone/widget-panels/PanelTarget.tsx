@@ -7,7 +7,7 @@
  */
 
 import "./PanelTarget.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { assert } from "@bentley/bentleyjs-core";
 import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager";

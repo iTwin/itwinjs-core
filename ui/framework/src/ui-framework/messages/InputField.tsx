@@ -7,7 +7,7 @@
  */
 
 import "./InputField.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";

@@ -7,7 +7,7 @@
  */
 
 import "./LabeledToggle.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { Toggle, ToggleProps } from "./Toggle";
 

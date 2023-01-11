@@ -7,7 +7,7 @@
  */
 
 import "./Stacked.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps, Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { DisabledResizeHandles, DisabledResizeHandlesHelpers } from "../utilities/DisabledResizeHandles";

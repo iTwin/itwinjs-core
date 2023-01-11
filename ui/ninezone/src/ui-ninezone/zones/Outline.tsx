@@ -7,7 +7,7 @@
  */
 
 import "./Outline.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import { CssProperties } from "../utilities/Css";

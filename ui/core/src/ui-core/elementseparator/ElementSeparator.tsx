@@ -9,7 +9,7 @@
 import "./ElementSeparator.scss";
 import * as React from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"; // eslint-disable-line no-duplicate-imports
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { Orientation } from "../enums/Orientation";
 import { CommonProps } from "../utils/Props";
 import { useThrottledFn } from "../utils/hooks/useThrottledFn";

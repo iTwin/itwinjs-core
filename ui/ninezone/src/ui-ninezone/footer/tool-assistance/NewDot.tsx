@@ -7,7 +7,7 @@
  */
 
 import "./NewDot.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 

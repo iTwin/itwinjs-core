@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import { MessageDiv } from "./MessageSpan";
 import { NotifyMessageType } from "./ReactNotifyMessageDetails";
 

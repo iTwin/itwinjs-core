@@ -7,7 +7,7 @@
  */
 
 import "./Slider.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import {
   Slider as CompoundSlider, GetRailProps, GetTrackProps, Handles, Rail, SliderItem, SliderModeFunction, Ticks, Tracks,

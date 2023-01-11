@@ -6,7 +6,7 @@
  * @module StatusBar
  */
 
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import {
   AbstractStatusBarActionItem, AbstractStatusBarLabelItem, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,

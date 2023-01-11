@@ -83,8 +83,8 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     if (this._isMounted)
       this.setState({
         value: newValue,
-      }, async ()=>{
-        await this._handleCommit ();
+      }, async () => {
+        await this._handleCommit();
       });
   };
 

@@ -481,7 +481,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     if (this.state.isMoving) {
       // add scaled mouse movement
       this._processWindowDrag(movement);
-    } else  {
+    } else {
       // istanbul ignore else
       if (this.state.isPanning && this.state.mode === MapMode.Opened) {
         const vect = Vector3d.create(movement.x / this.state.drawingZoom, -movement.y / this.state.drawingZoom, 0);

@@ -7,7 +7,7 @@
  */
 
 import "./Nested.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { BackArrow } from "./BackArrow";
 import { Columns } from "./Columns";

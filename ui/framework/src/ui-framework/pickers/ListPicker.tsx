@@ -8,7 +8,7 @@
 
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import "./ListPicker.scss";
-import classnames from "classnames";
+import * as classnames from "classnames";
 import * as React from "react";
 import { PopupItem } from "@bentley/ui-components";
 import { CommonProps, Icon, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
