@@ -62,6 +62,9 @@ describe("useHierarchyLevelFiltering", () => {
   it("applies filter", () => {
     const node = createTreeModelInput();
     modelSource.modifyModel((model) => { model.setChildren(undefined, [node], 0); });
+    nodeLoaderMock
+      .setup((x) => x.loadNode(moq.It.isAny(), 0))
+      .returns(() => from([]));
 
     const { result } = renderHook(useHierarchyLevelFiltering,
       { initialProps: { modelSource, nodeLoader: nodeLoaderMock.object } }
@@ -89,13 +92,16 @@ describe("useHierarchyLevelFiltering", () => {
     nodeLoaderMock.verifyAll();
   });
 
-  it("clears children when filter applied", () => {
+  it("clears children from tree model when filter applied", () => {
     const parentNode = createTreeModelInput({ id: "parent_id" });
     const childNode = createTreeModelInput({ id: "child_id" });
     modelSource.modifyModel((model) => {
       model.setChildren(undefined, [parentNode], 0);
       model.setChildren(parentNode.id, [childNode], 0);
     });
+    nodeLoaderMock
+      .setup((x) => x.loadNode(moq.It.isAny(), 0))
+      .returns(() => from([]));
 
     expect(modelSource.getModel().getNode(childNode.id)).to.not.be.undefined;
 
@@ -156,7 +162,7 @@ describe("useHierarchyLevelFiltering", () => {
     nodeLoaderMock.verifyAll();
   });
 
-  it("clears children when filter cleared", () => {
+  it("clears children from tree model when filter cleared", () => {
     const parentNode = createTreeModelInput({ id: "parent_id" }, { filterInfo });
     const childNode = createTreeModelInput({ id: "child_id" });
     modelSource.modifyModel((model) => {

@@ -43,6 +43,8 @@ function applyHierarchyLevelFilter(nodeLoader: ITreeNodeLoader, modelSource: Tre
       return;
 
     modelNode.item.filterInfo = filter;
+    if (filter)
+      modelNode.isExpanded = true;
     model.clearChildren(nodeId);
   });
 
