@@ -2589,9 +2589,15 @@ export type DownloadBriefcaseId = {
 // @public
 export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
     fileName?: string;
-    progressCallback?: ProgressFunction;
+    progressCallback?: OnDownloadProgress;
     progressInterval?: number;
 };
+
+// @public
+export interface DownloadProgressInfo {
+    loaded: number;
+    total: number;
+}
 
 // @internal
 export interface DrawClipOptions {
@@ -7369,6 +7375,9 @@ export interface OldTextureImage {
 }
 
 // @public
+export type OnDownloadProgress = (progress: DownloadProgressInfo) => void;
+
+// @public
 export type OnFlashedIdChangedEventArgs = {
     readonly current: Id64String;
     readonly previous: Id64String;
@@ -7880,12 +7889,6 @@ export enum PrimitiveVisibility {
     Uninstanced = 2
 }
 
-// @public
-export type ProgressFunction = (progress: {
-    loaded: number;
-    total: number;
-}) => void;
-
 // @alpha
 export interface PublisherProductInfo {
     engine: string;
@@ -7897,7 +7900,7 @@ export interface PublisherProductInfo {
 export interface PullChangesOptions {
     // @beta
     abortSignal?: GenericAbortSignal;
-    downloadProgressCallback?: ProgressFunction;
+    downloadProgressCallback?: OnDownloadProgress;
     // @deprecated
     progressCallback?: ProgressCallback;
     progressInterval?: number;

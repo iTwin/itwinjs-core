@@ -27,7 +27,7 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
-  NativeAppOpts, ProgressFunction, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
+  NativeAppOpts, OnDownloadProgress, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -389,7 +389,7 @@ export class SampleAppIModelApp {
 
     let iModelConnection: IModelConnection | undefined;
     if (ProcessDetector.isMobileAppFrontend) {
-      const progressCallback: ProgressFunction = ({ loaded, total }) => {
+      const progressCallback: OnDownloadProgress = ({ loaded, total }) => {
         const percent = (loaded / total).toFixed(2);
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${loaded}/${total}) -> ${percent}%`);
       };
@@ -484,7 +484,7 @@ export class SampleAppIModelApp {
 
       let iModelConnection: IModelConnection | undefined;
       if (ProcessDetector.isMobileAppFrontend) {
-        const progressCallback: ProgressFunction = ({ loaded, total }) => {
+        const progressCallback: OnDownloadProgress = ({ loaded, total }) => {
           const percent = (loaded / total).toFixed(2);
           Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${loaded}/${total}) -> ${percent}%`);
         };

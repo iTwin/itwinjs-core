@@ -21,10 +21,21 @@ import { disposeTileTreesForGeometricModels } from "./tile/internal";
 import { Viewport } from "./Viewport";
 
 /**
+ * Download progress information.
+ * @public
+ */
+export interface DownloadProgressInfo {
+  /** Bytes downloaded. */
+  loaded: number;
+  /** Total size of the download in bytes. */
+  total: number;
+}
+
+/**
  * Called to show progress during a download.
  * @public
  */
-export type ProgressFunction = (progress: { loaded: number, total: number }) => void;
+export type OnDownloadProgress = (progress: DownloadProgressInfo) => void;
 
 /**
  * Partial interface of AbortSignal.
@@ -49,7 +60,7 @@ export interface PullChangesOptions {
    */
   progressCallback?: ProgressCallback;
   /** Function called regularly to report progress of changes download. */
-  downloadProgressCallback?: ProgressFunction;
+  downloadProgressCallback?: OnDownloadProgress;
   /** Interval for calling progress callback (in milliseconds). */
   progressInterval?: number;
   /** Signal for cancelling the download.

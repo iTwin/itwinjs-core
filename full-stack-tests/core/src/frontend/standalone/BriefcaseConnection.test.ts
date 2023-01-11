@@ -5,7 +5,7 @@
 
 import { ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseIdValue, IModelVersion } from "@itwin/core-common";
-import { BriefcaseConnection, GenericAbortSignal, NativeApp, ProgressFunction } from "@itwin/core-frontend";
+import { BriefcaseConnection, GenericAbortSignal, NativeApp, OnDownloadProgress } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
@@ -57,7 +57,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       const connection = await BriefcaseConnection.openFile({ fileName, readonly: true });
 
       let lastProgressReport = { loaded: 0, total: 0 };
-      const assertProgress: ProgressFunction = (progress) => {
+      const assertProgress: OnDownloadProgress = (progress) => {
         assert.isAbove(progress.loaded, lastProgressReport.loaded);
         assert.isAtLeast(progress.total, lastProgressReport.total);
         lastProgressReport = progress;
@@ -91,7 +91,7 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       const abortSignal = new MockAbortSignal();
       let lastProgressReport = { loaded: 0, total: 0 };
-      const downloadProgressCallback: ProgressFunction = (progress) => {
+      const downloadProgressCallback: OnDownloadProgress = (progress) => {
         lastProgressReport = progress;
 
         if (progress.loaded > progress.total / 4)
