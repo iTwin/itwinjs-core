@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "Added ability to override default exclude pattern for tests when generating docs",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}

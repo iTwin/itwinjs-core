@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./AccessToken";
 export * from "./Assert";
-export * from "./AsyncMutex";
 export * from "./BeEvent";
 export * from "./BentleyError";
 export * from "./BentleyLoggerCategory";

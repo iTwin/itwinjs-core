@@ -40,6 +40,9 @@ yargs.strict(true)
         "excludeGlob": {
           describe: "Specify a directory, filename, or pattern to be excluded"
         },
+        "testExcludeGlob": {
+          describe: "Specify a directory, filename, or pattern to exclude tests. Default value: '**/*test*/**/*'"
+        },
         "tsIndexFile": {
           describe: "The barrel file containing the module documentation. This file is copied to the output folder for parsing."
         },
@@ -92,6 +95,21 @@ yargs.strict(true)
       })
     },
     (argv) => { pseudolocalizeCommand(argv) })
+  .command("copy-assets", "copy assets from @itwin or @bentley dependencies into a destination directory",
+    function (yargs) {
+      return yargs.options({
+        "packageJsonDir": {
+          describe: "The path at which the package.json listing deps that need their assets copied can be found. defaults to '.'"
+        },
+        "nodeModulesDir": {
+          describe: "The path to the node_modules directory where the deps that need their assets copied can be found. defaults to '.'"
+        },
+        "destinationDir": {
+          describe: "the location to copy the assets to. defaults to './lib/assets'"
+        },
+      })
+    },
+    (argv) => { copyAssetsCommand(argv) })
   .help()
   .argv;
 
@@ -112,11 +130,12 @@ function docsCommand(options) {
   const includesOpt = options.includes ? ["--includes", options.includes] : [];
   const excludesOpt = options.excludes ? ["--excludes", options.excludes] : [];
   const excludesGlobOpt = options.excludeGlob ? ["--excludeGlob", options.excludeGlob] : [];
+  const testExcludeGlobOpt = options.testExcludeGlob ? ["--testExcludeGlob", options.testExcludeGlob] : [];
   const indexFileOpt = options.tsIndexFile ? ["--tsIndexFile", options.tsIndexFile] : [];
   const onlyJsonOpt = options.onlyJson ? ["--onlyJson"] : [];
   exec(["node", getScriptPath("docs.js"),
     ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt, ...includesOpt,
-    ...excludesOpt, ...excludesGlobOpt, ...indexFileOpt, ...onlyJsonOpt]);
+    ...excludesOpt, ...excludesGlobOpt, ...testExcludeGlobOpt, ...indexFileOpt, ...onlyJsonOpt]);
 }
 
 function extractCommand(options) {
@@ -137,6 +156,13 @@ function pseudolocalizeCommand(options) {
   const englishDir = options.englishDir ? ["--englishDir", options.englishDir] : [];
   const outOpt = options.out ? ["--out", options.out] : [];
   exec(["node", getScriptPath("pseudolocalize"), ...englishDir, ...outOpt]);
+}
+
+function copyAssetsCommand(options) {
+  const packageJsonDir = options.packageJsonDir ? ["--packageJsonDir", options.packageJsonDir] : [];
+  const nodeModulesDir = options.nodeModulesDir ? ["--nodeModulesDir", options.nodeModulesDir] : [];
+  const destinationDir = options.destinationDir ? ["--destinationDir", options.destinationDir] : [];
+  exec(["node", path.resolve(__dirname, "../scripts/copy-assets.js"), ...packageJsonDir, ...nodeModulesDir, ...destinationDir]);
 }
 
 function exec(cmd) {
