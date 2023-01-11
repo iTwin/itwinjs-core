@@ -751,11 +751,11 @@ export abstract class IModelDb extends IModel {
 
   /**
    * Save all changes and perform a [checkpoint](https://www.sqlite.org/c3ref/wal_checkpoint_v2.html) on this IModelDb.
-   * This is necessary to ensure that all changes to the database since it was opened are saved to the iModel's file
-   * (and the WAL file is truncated) so that it may be copied while it is open for write. iModel files should
+   * This ensures that all changes to the database since it was opened are saved to its file and the WAL file is truncated.
+   * @note Checkpoint automatically happens when IModelDbs are closed. However, the checkpoint
+   * operation itself can take some time. It may be useful to call this method prior to closing so that the checkpoint "penalty" is paid earlier.
+   * @note Another use for this function is to permit the file to be copied while it is open for write. iModel files should
    * rarely be copied, and even less so while they're opened. But this scenario is sometimes encountered for tests.
-   * @note Checkpoint automatically happens when IModelDbs are closed. However, the checkpoint operation itself can take some time.
-   * It may sometimes be useful to call this method prior to closing so that the checkpoint "penalty" is paid first.
    */
   public performCheckpoint() {
     if (!this.isReadonly) {
