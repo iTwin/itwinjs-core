@@ -154,7 +154,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     globalEventSubscription = await imodelHubClient.globalEvents.subscriptions.create(serviceAccountRequestContext, id, eventTypesList);
     chai.assert(globalEventSubscription);
     chai.assert(globalEventSubscription.eventTypes);
-    chai.expect(globalEventSubscription.eventTypes!).to.be.deep.equal(eventTypesList);
+    chai.expect(globalEventSubscription.eventTypes).to.be.deep.equal(eventTypesList);
   });
 
   it("should retrieve Global Event SAS token", async () => {
@@ -183,7 +183,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     globalEventSubscription = await imodelHubClient.globalEvents.subscriptions.update(serviceAccountRequestContext, globalEventSubscription);
     chai.assert(globalEventSubscription);
     chai.assert(globalEventSubscription.eventTypes);
-    chai.expect(globalEventSubscription.eventTypes!).to.be.deep.equal(newEventTypesList);
+    chai.expect(globalEventSubscription.eventTypes).to.be.deep.equal(newEventTypesList);
   });
 
   it("should receive Global Event through listener", async () => {

@@ -150,7 +150,7 @@ describe("iModelHub BriefcaseHandler", () => {
 
     for (const briefcase of briefcases) {
       chai.assert(briefcase.iModelId);
-      chai.expect(briefcase.iModelId!.toString()).to.be.equal(imodelId.toString());
+      chai.expect(briefcase.iModelId.toString()).to.be.equal(imodelId.toString());
     }
   });
 
@@ -226,7 +226,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
     chai.expect(briefcase.downloadUrl).to.be.equal(undefined);
     chai.assert(briefcase.iModelId);
-    chai.expect(briefcase.iModelId!.toString()).to.be.equal(imodelId.toString());
+    chai.expect(briefcase.iModelId.toString()).to.be.equal(imodelId.toString());
   });
 
   it("should fail deleting an invalid briefcase (#iModelBank)", async () => {
@@ -246,7 +246,7 @@ describe("iModelHub BriefcaseHandler", () => {
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
     chai.assert(briefcase.fileName);
-    chai.expect(briefcase.fileName!.length).to.be.greaterThan(0);
+    chai.expect(briefcase.fileName.length).to.be.greaterThan(0);
     chai.assert(briefcase.downloadUrl);
     utils.expectMatchesExpectedUrlScheme(briefcase.downloadUrl);
   });
@@ -271,9 +271,9 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
 
     chai.assert(briefcase.fileName);
-    chai.expect(briefcase.fileName!.length).to.be.greaterThan(0);
+    chai.expect(briefcase.fileName.length).to.be.greaterThan(0);
     chai.assert(briefcase.downloadUrl);
-    chai.assert(briefcase.downloadUrl!.startsWith("https://"));
+    chai.assert(briefcase.downloadUrl.startsWith("https://"));
 
     if (TestConfig.enableMocks) {
       chai.assert(briefcase.applicationId);
@@ -400,7 +400,7 @@ describe("iModelHub BriefcaseHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
   it("should fail downloading briefcase with no file url (#iModelBank)", async () => {
@@ -412,6 +412,6 @@ describe("iModelHub BriefcaseHandler", () => {
         error = err;
     }
     chai.assert(error);
-    chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.MissingDownloadUrlError);
+    chai.expect(error.errorNumber).to.be.equal(IModelHubStatus.MissingDownloadUrlError);
   });
 });

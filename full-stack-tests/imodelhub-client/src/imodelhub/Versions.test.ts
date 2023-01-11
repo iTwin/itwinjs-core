@@ -248,11 +248,11 @@ describe("iModelHub VersionHandler", () => {
     // eslint-disable-next-line deprecation/deprecation
     chai.assert(!!versions[0].smallThumbnailId);
     // eslint-disable-next-line deprecation/deprecation
-    chai.expect(versions[0].smallThumbnailId!.toString()).to.be.equal(smallThumbnail.id!.toString());
+    chai.expect(versions[0].smallThumbnailId.toString()).to.be.equal(smallThumbnail.id!.toString());
     // eslint-disable-next-line deprecation/deprecation
     chai.assert(!!versions[0].largeThumbnailId);
     // eslint-disable-next-line deprecation/deprecation
-    chai.expect(versions[0].largeThumbnailId!.toString()).to.be.equal(largeThumbnail.id!.toString());
+    chai.expect(versions[0].largeThumbnailId.toString()).to.be.equal(largeThumbnail.id!.toString());
 
     mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, undefined, mockedLargeThumbnail.id));
     mockGetVersionsByNameWithThumbnails(imodelId2, firstVersion.name!, ["Large"], ...mockedVersions);
@@ -264,7 +264,7 @@ describe("iModelHub VersionHandler", () => {
     // eslint-disable-next-line deprecation/deprecation
     chai.assert(!!versions[0].largeThumbnailId);
     // eslint-disable-next-line deprecation/deprecation
-    chai.expect(versions[0].largeThumbnailId!.toString()).to.be.equal(largeThumbnail.id!.toString());
+    chai.expect(versions[0].largeThumbnailId.toString()).to.be.equal(largeThumbnail.id!.toString());
 
     chai.expect(smallThumbnail.id!.toString()).to.be.not.equal(largeThumbnail.id!.toString());
   });

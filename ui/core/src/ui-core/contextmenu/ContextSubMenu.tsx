@@ -103,7 +103,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
           aria-hidden={isHidden}
           aria-haspopup={true}
         >
-          <div className={classnames("core-context-menu-icon", "icon", icon instanceof ConditionalStringValue && icon.value, typeof icon === "string" && icon)} />
+          <div className={classnames("core-context-menu-icon", "icon", icon instanceof ConditionalStringValue && /* istanbul ignore next */ icon.value, typeof icon === "string" && /* istanbul ignore next */ icon)} />
           <div className={"core-context-menu-content"}>{this._parsedLabel}</div>
           <div className={classnames("core-context-submenu-arrow", "icon", "icon-caret-right")} />
           {badge &&
