@@ -749,6 +749,21 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.abandonChanges();
   }
 
+  /**
+   * Save all changes and perform a [checkpoint](https://www.sqlite.org/c3ref/wal_checkpoint_v2.html) on this IModelDb.
+   * This is only necessary to ensure that all changes to the database since it was opened are saved to the iModel's file
+   * (and the WAL file is truncated) so that it may be copied while it is open for write. iModel files should
+   * rarely be copied, and even less so while they're opened. But this scenario is sometimes encountered for tests.
+   * Otherwise, this function should not be used.
+   * @note Checkpoint automatically happens when IModelDbs are closed.
+   */
+  public performCheckpoint() {
+    if (!this.isReadonly) {
+      this.saveChanges();
+      this.nativeDb.performCheckpoint();
+    }
+  }
+
   /** @internal */
   public reverseTxns(numOperations: number): IModelStatus {
     return this.nativeDb.reverseTxns(numOperations);
@@ -2555,6 +2570,7 @@ export class SnapshotDb extends IModelDb {
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    */
   public static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb {
+    iModelDb.performCheckpoint();
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
 
     const nativeDb = new IModelHost.platform.DgnDb();
@@ -2569,7 +2585,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.saveChanges();
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    nativeDb.saveChanges();
+
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue());
     if (options?.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
