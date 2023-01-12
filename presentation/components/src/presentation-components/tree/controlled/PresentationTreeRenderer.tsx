@@ -34,19 +34,16 @@ export function PresentationTreeRenderer(props: PresentationTreeRendererProps) {
 
   const { applyFilter, clearFilter } = useHierarchyLevelFiltering({ nodeLoader, modelSource });
   const [filterNode, setFilterNode] = React.useState<PresentationTreeNodeItem>();
-  const openFilteringDialog = React.useCallback((node: PresentationTreeNodeItem) => {
-    setFilterNode(node);
-  }, []);
 
   const filterableNodeRenderer = React.useCallback((nodeProps: TreeNodeRendererProps) => {
     return (
       <PresentationTreeNodeRenderer
         {...nodeProps}
-        onFilterClick={openFilteringDialog}
+        onFilterClick={(node) => { setFilterNode(node); }}
         onClearFilterClick={clearFilter}
       />
     );
-  }, [openFilteringDialog, clearFilter]);
+  }, [clearFilter]);
 
   return (
     <>
