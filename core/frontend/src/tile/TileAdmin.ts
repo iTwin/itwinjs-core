@@ -30,6 +30,7 @@ export interface ExternalTileStatistics {
   requested: number;
   selected: number;
   ready: number;
+  hasMissingData?: boolean;
 }
 
 /** Describes two sets of tiles associated with a viewport's current scene.

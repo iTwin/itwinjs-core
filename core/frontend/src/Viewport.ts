@@ -2533,17 +2533,23 @@ export abstract class Viewport implements IDisposable, TileUser {
       haveExternalTexRequests = system.hasExternalTextureRequests;
       haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
       if (!haveNewTiles) {
-        // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
-        for (const vp of this.view.secondaryViewports) {
-          if (vp.numRequestedTiles > 0) {
-            haveNewTiles = true;
-            break;
-          }
+        const tilesThisVp = IModelApp.tileAdmin.getTilesForUser(this);
+        const ext = tilesThisVp?.external;
+        if (undefined !== ext && (ext.requested > 0 || true === ext.hasMissingData)) {
+          haveNewTiles = true;
+        } else {
+          // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
+          for (const vp of this.view.secondaryViewports) {
+            if (vp.numRequestedTiles > 0) {
+              haveNewTiles = true;
+              break;
+            }
 
-          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
-          if (tiles && tiles.external.requested > 0) {
-            haveNewTiles = true;
-            break;
+            const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
+            if (tiles && tiles.external.requested > 0) {
+              haveNewTiles = true;
+              break;
+            }
           }
         }
       }
@@ -3496,17 +3502,23 @@ export class ScreenViewport extends Viewport {
 
         let haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
         if (!haveNewTiles) {
-          // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
-          for (const vp of this.view.secondaryViewports) {
-            if (vp.numRequestedTiles > 0) {
-              haveNewTiles = true;
-              break;
-            }
+          const tilesThisVp = IModelApp.tileAdmin.getTilesForUser(this);
+          const ext = tilesThisVp?.external;
+          if (undefined !== ext && (ext.requested > 0 || true === ext.hasMissingData)) {
+            haveNewTiles = true;
+          } else {
+            // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
+            for (const vp of this.view.secondaryViewports) {
+              if (vp.numRequestedTiles > 0) {
+                haveNewTiles = true;
+                break;
+              }
 
-            const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
-            if (tiles && tiles.external.requested > 0) {
-              haveNewTiles = true;
-              break;
+              const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
+              if (tiles && tiles.external.requested > 0) {
+                haveNewTiles = true;
+                break;
+              }
             }
           }
         }
