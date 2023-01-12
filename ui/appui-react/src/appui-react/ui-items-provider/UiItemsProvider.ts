@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module UiItemsProvider
+ * @module UiProvider
  */
 
 import { UiItemsProvider as UIA_UiItemsProvider } from "@itwin/appui-abstract";
@@ -11,4 +11,4 @@ import { UiItemsProvider as UIA_UiItemsProvider } from "@itwin/appui-abstract";
 /** Describes interface of objects that want to provide UI component to the running IModelApp.
  * @public
  */
-export type UiItemsProvider = UIA_UiItemsProvider;
+export type UiItemsProvider = UIA_UiItemsProvider; // eslint-disable-line deprecation/deprecation
