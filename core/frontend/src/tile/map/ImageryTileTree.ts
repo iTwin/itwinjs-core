@@ -162,6 +162,9 @@ export class ImageryTileTreeState {
    * @returns the scale range visibility of the imagery tile tree.
    */
   public getScaleRangeVisibility() {return this._scaleRangeVis;}
+
+  /** Makes a deep copy of the current object.
+   */
   public clone() {
     const clone = new ImageryTileTreeState();
     clone._scaleRangeVis = this._scaleRangeVis;

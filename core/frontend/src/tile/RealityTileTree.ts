@@ -402,7 +402,10 @@ export class RealityTileTree extends TileTree {
   /** @internal */
   public getBaseRealityDepth(_sceneContext: SceneContext) { return -1; }
 
-  /** @internal */
+  /** Scan the list of currently selected reality tiles, and fire the viewport's 'onMapLayerScaleRangeVisibilityChanged ' event
+   * if any scale range visibility change is detected for one more map-layer definition.
+   * @internal
+   */
   public reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]) {}
 
   /** @internal */

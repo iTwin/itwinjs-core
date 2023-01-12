@@ -234,7 +234,7 @@ export interface MapLayerScaleRangeVisibility {
   */
   index: number;
 
-  // Scale range visibility value of the map-layer
+  /** Scale range visibility value of the map-layer */
   visibility: MapTileTreeScaleRangeVisibility;
 }
 
@@ -813,7 +813,12 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
 
-  /** @beta */
+  /** Return the map-layer scale range visibility for the provided map-layer index.
+   * @param index of the owning map layer.
+   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   * @see [[DisplayStyleState.mapLayerAtIndex]].
+   * @beta
+  */
   public getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility {
     const treeRef = ( isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
     if (treeRef) {
@@ -822,21 +827,11 @@ export abstract class Viewport implements IDisposable, TileUser {
     }
     return MapTileTreeScaleRangeVisibility.Unknown;
   }
-  /** @beta */
-  public getMapLayerTreeIds(index: number, isOverlay: boolean): {mapTreeId: Id64String, layerTreeId: Id64String} | undefined {
-    const treeRef = ( isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
-    const mapTreeId = treeRef?.treeOwner.tileTree?.id;
-    if (mapTreeId) {
-      const imageryTreeRef = treeRef.getLayerImageryTreeRef(index);
-      const layerTreeId = imageryTreeRef?.treeOwner.tileTree?.id;
-      if (layerTreeId)
-        return {mapTreeId, layerTreeId};
-    }
-    return undefined;
-  }
+
   /** Return a list of map-layers indexes matching a given  MapTile tree Id and a layer imagery tree id.
    * Note: A imagery tree can be shared for multiple map-layers.
-   * @internal */
+   * @internal
+   * */
   public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
     if (this._mapTiledGraphicsProvider)
       return this._mapTiledGraphicsProvider?.getMapLayerIndexesFromIds(mapTreeId, layerTreeId);
