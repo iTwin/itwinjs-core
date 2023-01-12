@@ -11,7 +11,7 @@ import * as React from "react";
 import classnames from "classnames";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "@itwin/components-react";
 import { TreeNode } from "@itwin/core-react";
-import { SvgFilter, SvgFilterHollow, SvgRemove } from "@itwin/itwinui-icons-react";
+import { SvgCloseSmall, SvgFilter, SvgFilterHollow } from "@itwin/itwinui-icons-react";
 import { ButtonGroup, IconButton } from "@itwin/itwinui-react";
 import { isPresentationTreeNodeItem, PresentationTreeNodeItem } from "../DataProvider";
 
@@ -86,7 +86,7 @@ function PresentationTreeNodeActions(props: PresentationTreeNodeActionsProps) {
               onClear();
             }}
           >
-            <SvgRemove />
+            <SvgCloseSmall />
           </IconButton>
           : null}
         <IconButton
