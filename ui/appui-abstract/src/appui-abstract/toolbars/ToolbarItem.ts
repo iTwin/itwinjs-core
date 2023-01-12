@@ -34,7 +34,6 @@ export enum ToolbarOrientation {
 }
 
 /** Describes the data needed to insert a UI items into an existing set of UI items.
- * @deprecated Use [CommonToolbarItem]($appui-react) instead.
  * @public
  */
 export interface ToolbarItem extends ProvidedItem { // eslint-disable-line deprecation/deprecation
@@ -71,10 +70,9 @@ export interface ToolbarItem extends ProvidedItem { // eslint-disable-line depre
 }
 
 /** Describes the data needed to insert an action button into a toolbar.
- * @deprecated Use [ToolbarActionItem]($appui-react) instead.
  * @public
  */
-export interface ActionButton extends ToolbarItem { // eslint-disable-line deprecation/deprecation
+export interface ActionButton extends ToolbarItem {
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix  to imported symbol Id. */
   readonly icon: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
   /** label, shown as tool tip on a button or an item label in a group. */
@@ -84,10 +82,9 @@ export interface ActionButton extends ToolbarItem { // eslint-disable-line depre
 }
 
 /** Describes the data needed to insert a group button into a toolbar.
- * @deprecated Use [ToolbarGroupItem]($appui-react) instead.
  * @public
  */
-export interface GroupButton extends ToolbarItem { // eslint-disable-line deprecation/deprecation
+export interface GroupButton extends ToolbarItem {
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
   readonly icon: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
   /** label, shown as tool tip on group button or a group button label in a group panel. */
@@ -99,10 +96,9 @@ export interface GroupButton extends ToolbarItem { // eslint-disable-line deprec
 }
 
 /** Describes the data needed to insert a custom button into a toolbar.
- * @deprecated Use [ToolbarCustomItem]($appui-react) instead.
  * @public
  */
-export interface CustomButtonDefinition extends ToolbarItem { // eslint-disable-line deprecation/deprecation
+export interface CustomButtonDefinition extends ToolbarItem {
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
   readonly icon?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
   /** label, shown as tool tip on group button or a group button label in a group panel. */
@@ -112,10 +108,9 @@ export interface CustomButtonDefinition extends ToolbarItem { // eslint-disable-
 }
 
 /** Any Button Type that can be inserted into a toolbar.
- * @deprecated Use [ToolbarItem]($appui-react) instead.
  * @public
  */
-export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition; // eslint-disable-line deprecation/deprecation
+export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
 
 /** Type for Toolbar Item Id
  * @deprecated Use [ToolbarItemId]($appui-react) instead.
@@ -124,13 +119,10 @@ export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinit
 export type ToolbarItemId = CommonToolbarItem["id"]; // eslint-disable-line deprecation/deprecation
 
 /** Helper class to create Abstract StatusBar Item definitions.
- * @deprecated Use [ToolbarItemUtilities]($appui-react) instead.
  * @public
  */
 export class ToolbarItemUtilities {
-  /** Creates an Action Button
-   * @deprecated Use [ToolbarItemUtilities.createActionItem]($appui-react) instead.
-   */
+  /** Creates an Action Button */
   public static createActionButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, execute: () => void, overrides?: Partial<ActionButton>): ActionButton => ({ // eslint-disable-line deprecation/deprecation
     id, itemPriority,
     icon, label,
@@ -138,9 +130,7 @@ export class ToolbarItemUtilities {
     ...overrides,
   });
 
-  /** Creates a Group button.
-   * @deprecated Use [ToolbarItemUtilities.createGroupItem]($appui-react) instead.
-   */
+  /** Creates a Group button. */
   public static createGroupButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: ReadonlyArray<ActionButton | GroupButton>, overrides?: Partial<GroupButton>): GroupButton => ({ // eslint-disable-line deprecation/deprecation
     id, itemPriority,
     icon, label,
@@ -148,24 +138,18 @@ export class ToolbarItemUtilities {
     ...overrides,
   });
 
-  /** ActionButton type guard.
-   * @deprecated Use [isToolbarActionItem]($appui-react) instead.
-   */
-  public static isActionButton(item: CommonToolbarItem): item is ActionButton { // eslint-disable-line deprecation/deprecation
-    return (item as ActionButton).execute !== undefined; // eslint-disable-line deprecation/deprecation
+  /** ActionButton type guard. */
+  public static isActionButton(item: CommonToolbarItem): item is ActionButton {
+    return (item as ActionButton).execute !== undefined;
   }
 
-  /** GroupButton type guard.
-   * @deprecated Use [isToolbarGroupItem]($appui-react) instead.
-   */
-  public static isGroupButton(item: CommonToolbarItem): item is GroupButton { // eslint-disable-line deprecation/deprecation
-    return (item as GroupButton).items !== undefined; // eslint-disable-line deprecation/deprecation
+  /** GroupButton type guard. */
+  public static isGroupButton(item: CommonToolbarItem): item is GroupButton {
+    return (item as GroupButton).items !== undefined;
   }
 
-  /** CustomButtonDefinition type guard.
-   * @deprecated Use [isToolbarCustomItem]($appui-react) instead.
-   */
-  public static isCustomDefinition(item: CommonToolbarItem): item is CustomButtonDefinition { // eslint-disable-line deprecation/deprecation
-    return !!(item as CustomButtonDefinition).isCustom; // eslint-disable-line deprecation/deprecation
+  /** CustomButtonDefinition type guard. */
+  public static isCustomDefinition(item: CommonToolbarItem): item is CustomButtonDefinition {
+    return !!(item as CustomButtonDefinition).isCustom;
   }
 }
