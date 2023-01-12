@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "PropertyFilterBuilder: Do not show rule group operator if there are less than 2 rules",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react"
+}
