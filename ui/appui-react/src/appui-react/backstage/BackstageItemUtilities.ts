@@ -11,7 +11,7 @@ import { BackstageActionItem, BackstageItemType, BackstageStageLauncher } from "
 import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 
 /** Utilities for creating and maintaining backstage items
- * @public
+ * @beta
  */
 export class BackstageItemUtilities {
   /** Creates a stage launcher backstage item. */

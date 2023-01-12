@@ -8,7 +8,6 @@
 
 /** Class used to return a boolean value. The boolean value is refreshed by using the specified function. The syncEventIds define one or more
  * eventIds that would require the testFunc to be rerun.
- * @deprecated Use [ConditionalBooleanValue]($core-react) instead.
  * @public
  */
 export class ConditionalBooleanValue {

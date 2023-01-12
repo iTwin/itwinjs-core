@@ -7,9 +7,8 @@
  */
 
 import * as React from "react";
-import { AbstractStatusBarItemUtilities, StatusBarSection as UIA_StatusBarSection } from "@itwin/appui-abstract";
+import { AbstractStatusBarItemUtilities, ConditionalStringValue, StatusBarSection as UIA_StatusBarSection } from "@itwin/appui-abstract";
 import { StatusBarActionItem, StatusBarCustomItem, StatusBarItem, StatusBarLabelItem, StatusBarLabelSide, StatusBarSection } from "./StatusBarItem";
-import { ConditionalStringValue } from "@itwin/core-react";
 
 /** Utility methods for creating and maintaining StatusBar items.
  * @public

@@ -32,7 +32,7 @@ export enum BackstageItemType {
 export type CommonBackstageItem = UIA_CommonBackstageItem; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert an action button into the backstage menu.
- * @public
+ * @beta
  */
 export interface BackstageActionItem extends UIA_BackstageActionItem { // eslint-disable-line deprecation/deprecation
   /** @deprecated Use type guards instead. */
@@ -40,7 +40,7 @@ export interface BackstageActionItem extends UIA_BackstageActionItem { // eslint
 }
 
 /** Describes the data needed to insert an action button into the backstage menu.
- * @public
+ * @beta
  */
 export interface BackstageStageLauncher extends UIA_BackstageStageLauncher { // eslint-disable-line deprecation/deprecation
   /** @deprecated Use type guards instead. */

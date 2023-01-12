@@ -40,9 +40,9 @@ export interface ToolbarItem extends ProvidedItem { // eslint-disable-line depre
   /** can be used by application to store miscellaneous data. */
   readonly applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
-  readonly badgeType?: BadgeType; // eslint-disable-line deprecation/deprecation
+  readonly badgeType?: BadgeType;
   /** Optional description */
-  readonly description?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly description?: string | ConditionalStringValue;
   /** Require uniqueId for the item. To ensure uniqueness it is suggested that a namespace prefix of the extension name be used. */
   readonly id: string;
   /** optional data to used by item implementor. */
@@ -50,9 +50,9 @@ export interface ToolbarItem extends ProvidedItem { // eslint-disable-line depre
   /** Defines if the item is active (shown with an active stripe/bar). */
   readonly isActive?: boolean;
   /** Describes if the item is visible or hidden. The default is for the item to be visible. */
-  readonly isHidden?: boolean | ConditionalBooleanValue; // eslint-disable-line deprecation/deprecation
+  readonly isHidden?: boolean | ConditionalBooleanValue;
   /** Describes if the item is enabled or disabled. The default is for the item to be enabled. */
-  readonly isDisabled?: boolean | ConditionalBooleanValue; // eslint-disable-line deprecation/deprecation
+  readonly isDisabled?: boolean | ConditionalBooleanValue;
   /** Describes if the item should appear pressed (used for displaying toggle state). This property is NOT used by Toolbars
    * constructed using the `ToolbarWithOverflow` component, which are used in AppUi 2.0 and later. For these later toolbars
    * the icon is usually changed to denote the state of a toggle.
@@ -74,9 +74,9 @@ export interface ToolbarItem extends ProvidedItem { // eslint-disable-line depre
  */
 export interface ActionButton extends ToolbarItem {
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix  to imported symbol Id. */
-  readonly icon: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly icon: string | ConditionalStringValue;
   /** label, shown as tool tip on a button or an item label in a group. */
-  readonly label: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly label: string | ConditionalStringValue;
   /** function to run when the button is pressed. */
   readonly execute: () => void;
 }
@@ -86,11 +86,11 @@ export interface ActionButton extends ToolbarItem {
  */
 export interface GroupButton extends ToolbarItem {
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
-  readonly icon: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly icon: string | ConditionalStringValue;
   /** label, shown as tool tip on group button or a group button label in a group panel. */
-  readonly label: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly label: string | ConditionalStringValue;
   /** label shown as the title in at top of group panel. */
-  readonly panelLabel?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly panelLabel?: string | ConditionalStringValue;
   /** children of the group */
   readonly items: ReadonlyArray<ActionButton | GroupButton>; // eslint-disable-line deprecation/deprecation
 }
@@ -100,9 +100,9 @@ export interface GroupButton extends ToolbarItem {
  */
 export interface CustomButtonDefinition extends ToolbarItem {
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
-  readonly icon?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly icon?: string | ConditionalStringValue;
   /** label, shown as tool tip on group button or a group button label in a group panel. */
-  readonly label?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly label?: string | ConditionalStringValue;
   /** parameter that marks data as being a custom definition. */
   readonly isCustom: true;
 }
@@ -113,7 +113,7 @@ export interface CustomButtonDefinition extends ToolbarItem {
 export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
 
 /** Type for Toolbar Item Id
- * @deprecated Use [ToolbarItemId]($appui-react) instead.
+ * @deprecated
  * @public
  */
 export type ToolbarItemId = CommonToolbarItem["id"]; // eslint-disable-line deprecation/deprecation

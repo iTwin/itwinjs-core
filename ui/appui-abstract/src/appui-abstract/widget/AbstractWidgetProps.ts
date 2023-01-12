@@ -19,7 +19,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
   /** Gets the widget content. */
   readonly getWidgetContent: () => any;
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
-  readonly icon?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly icon?: string | ConditionalStringValue;
   /** Id used to uniquely identify the widget.
    * @note It is recommended to provide unique widget id to correctly save/restore App layout.
    */
@@ -27,9 +27,9 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
   /** Default Widget state. Controls how the Widget is initially displayed. Defaults to WidgetState.Unloaded. */
   readonly defaultState?: WidgetState;
   /** if set, component will be considered selected but will NOT display an "active stripe" - defaults to false. Typically used by buttons that toggle between two states. */
-  readonly label?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly label?: string | ConditionalStringValue;
   /** used to explicitly set the tooltip shown by a component. */
-  readonly tooltip?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly tooltip?: string | ConditionalStringValue;
   /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false. @deprecated */
   readonly isFreeform?: boolean;
   /** Application data attached to the Widget. */
@@ -63,7 +63,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
   */
   readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
   /** Badge to be overlaid on the widget tab. */
-  readonly badgeType?: BadgeType; // eslint-disable-line deprecation/deprecation
+  readonly badgeType?: BadgeType;
   /** Handler for widget state changed event */
   readonly onWidgetStateChanged?: () => void;
   /** Save transient DOM state (i.e. scroll offset). */

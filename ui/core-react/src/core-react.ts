@@ -8,7 +8,6 @@
 export * from "./core-react/UiCore";
 
 export * from "./core-react/badge/Badge";
-export * from "./core-react/badge/BadgeType";
 export * from "./core-react/badge/BadgeUtilities";
 export * from "./core-react/badge/BetaBadge";
 export * from "./core-react/badge/NewBadge";
@@ -116,9 +115,6 @@ export * from "./core-react/settings/SettingsContainer";
 export * from "./core-react/slider/Slider";
 
 export * from "./core-react/splitbutton/SplitButton";
-
-export * from "./core-react/syncevent/ConditionalBooleanValue";
-export * from "./core-react/syncevent/ConditionalStringValue";
 
 export * from "./core-react/tabs/HorizontalTabs";
 export * from "./core-react/tabs/VerticalTabs";

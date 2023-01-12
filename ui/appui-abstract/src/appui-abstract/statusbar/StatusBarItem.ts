@@ -57,15 +57,15 @@ export interface AbstractStatusBarItem extends ProvidedItem { // eslint-disable-
   /** can be used by application to store miscellaneous data. */
   applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
-  readonly badgeType?: BadgeType; // eslint-disable-line deprecation/deprecation
+  readonly badgeType?: BadgeType;
   /** Required unique id of the item. To ensure uniqueness it is suggested that a namespace prefix of the extension name be used. */
   readonly id: string;
   /** optional data to used by item implementor. */
   readonly internalData?: Map<string, any>;
   /** Describes if the item is visible or hidden. The default is for the item to be visible. */
-  readonly isHidden?: boolean | ConditionalBooleanValue; // eslint-disable-line deprecation/deprecation
+  readonly isHidden?: boolean | ConditionalBooleanValue;
   /** Describes if the item is enabled or disabled. The default is for the item to be enabled. */
-  readonly isDisabled?: boolean | ConditionalBooleanValue; // eslint-disable-line deprecation/deprecation
+  readonly isDisabled?: boolean | ConditionalBooleanValue;
   /** Priority within a section (recommend using values 1 through 100). */
   readonly itemPriority: number;
   /** status bar section */
@@ -80,11 +80,11 @@ export interface AbstractStatusBarActionItem extends AbstractStatusBarItem { // 
   /** method to execute when icon is pressed */
   readonly execute: () => void;
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix  to imported symbol Id. */
-  readonly icon?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly icon?: string | ConditionalStringValue;
   /** Label. */
-  readonly label?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly label?: string | ConditionalStringValue;
   /** tooltip. */
-  readonly tooltip?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly tooltip?: string | ConditionalStringValue;
 }
 
 /** Describes the data needed to insert a label item with an optional icon into the status bar.
@@ -93,9 +93,9 @@ export interface AbstractStatusBarActionItem extends AbstractStatusBarItem { // 
  */
 export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem { // eslint-disable-line deprecation/deprecation
   /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix  to imported symbol Id. */
-  readonly icon?: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly icon?: string | ConditionalStringValue;
   /** Label. */
-  readonly label: string | ConditionalStringValue; // eslint-disable-line deprecation/deprecation
+  readonly label: string | ConditionalStringValue;
   /** Defines which side of icon to display label if icon is defined. */
   readonly labelSide?: StatusBarLabelSide; // eslint-disable-line deprecation/deprecation
 }
