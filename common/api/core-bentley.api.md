@@ -15,7 +15,7 @@ import type { Tracer } from '@opentelemetry/api';
 export class AbandonedError extends Error {
 }
 
-// @beta
+// @public
 export type AccessToken = string;
 
 // @public
@@ -34,14 +34,6 @@ export type AsyncFunction = (...args: any) => Promise<any>;
 export type AsyncMethodsOf<T> = {
     [P in keyof T]: T[P] extends AsyncFunction ? P : never;
 }[keyof T];
-
-// @alpha
-export class AsyncMutex {
-    lock(): Promise<AsyncMutexUnlockFnType>;
-}
-
-// @alpha
-export type AsyncMutexUnlockFnType = () => void;
 
 // @public
 export function base64StringToUint8Array(base64: string): Uint8Array;
@@ -537,9 +529,6 @@ export abstract class ErrorCategory extends StatusCategory {
     // (undocumented)
     error: boolean;
 }
-
-// @beta
-export type ExtractLiterals<T, U extends T> = Extract<T, U>;
 
 // @public
 export enum GeoServiceStatus {

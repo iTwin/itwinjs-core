@@ -211,7 +211,7 @@ class ShadowMapParams {
 
 const defaultSunDirection = Vector3d.create(-1, -1, -1).normalize()!;
 const scratchFrustum = new Frustum();
-const scratchFrustumPlanes = new FrustumPlanes();
+const scratchFrustumPlanes = FrustumPlanes.createEmpty();
 
 export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
   private _bundle?: Bundle;
@@ -376,7 +376,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     scratchFrustumPlanes.init(scratchFrustum);
 
     const viewIntersectShadowRange = Range3d.createNull();
-    const viewClipPlanes = ConvexClipPlaneSet.createPlanes(scratchFrustumPlanes.planes!);
+    const viewClipPlanes = ConvexClipPlaneSet.createPlanes(scratchFrustumPlanes.planes);
     ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(viewClipPlanes, shadowRange, (points: GrowableXYZArray) => {
       for (const point of points.getPoint3dArray())
         viewIntersectShadowRange.extendPoint(point);
