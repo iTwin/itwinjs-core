@@ -28,6 +28,7 @@ describe("<UnderlinedButton />", () => {
 
     const button = screen.getByRole("link");
     expect(button.className).to.include("test-class");
+    expect(button.title).to.eq(title);
   });
 
   it("handles onClick", async () => {

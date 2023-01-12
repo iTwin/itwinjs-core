@@ -10,11 +10,6 @@ import { OpenSynchronizedViewTool } from "../../tools/OpenSynchronizedViewTool";
 import { SynchronizedFloatingViewportStage } from "../frontstages/SynchronizedFloatingViewport";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 
-// interface MyWBSWidgetProps {
-//   pswbsOptions?: any;
-// }
-// eslint-disable-next-line @typescript-eslint/naming-convention
-
 export class SynchronizedFloatingViewportProvider implements UiItemsProvider {
   public static providerId = "SynchronizedFloatingViewportProvider";
   public readonly id = SynchronizedFloatingViewportProvider.providerId;
