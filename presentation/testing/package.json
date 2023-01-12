@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-testing",
-  "version": "3.6.0-dev.35",
+  "version": "3.6.0-dev.44",
   "description": "",
   "license": "MIT",
   "repository": {
@@ -30,7 +30,7 @@
     "cover": "nyc npm -s test",
     "docs": "npm run -s docs:reference && npm run -s docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-testing",
-    "docs:reference": "",
+    "docs:reference": "betools docs --json=../../generated-docs/presentation/presentation-testing/file.json --tsIndexFile=presentation-testing.ts --onlyJson --testExcludeGlob=./src/test/**/*",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-testing",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",

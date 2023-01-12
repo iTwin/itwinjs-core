@@ -2610,7 +2610,6 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param options Specifies how to query.
    * @param callback Callback to invoke with the results.
    * @note This function may be slow, especially if the features are being queried from screen pixels. Avoid calling it repeatedly in rapid succession.
-   * @beta
    */
   public queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void {
     return queryVisibleFeatures(this, options, callback);
