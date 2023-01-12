@@ -118,6 +118,27 @@ export class CodeSpecs {
     throw new IModelError(IModelStatus.BadArg, "Invalid argument");
   }
 
+  /** Update the Json properties of an existing codeSpec.
+   * @param codeSpec The codeSpec holding Json properties values to update
+   * @throws [[IModelError]] if unable to update the codeSpec.
+   */
+  public update(codeSpec: CodeSpec): void {
+    const codeSpecInDb = this.getById(codeSpec.id);
+    if (codeSpecInDb.name !== codeSpec.name)
+      throw new IModelError(IModelStatus.BadArg, "A change in CodeSpec name is not supported");
+
+    try {
+      this._imodel.updateCodeSpec(codeSpec.id, codeSpec.properties);
+    } catch (err: any) {
+      throw new IModelError(err.errorNumber, `error updating codeSpec [${err.message}] id=${codeSpec.id}`);
+    }
+
+    // Now drop the old codeSpec from the pool. The next request will load the updated codeSpec.
+    const codeSpecIdx = this._loadedCodeSpecs.indexOf(codeSpecInDb);
+    if (codeSpecIdx !== undefined)
+      this._loadedCodeSpecs.splice(codeSpecIdx, 1);
+  }
+
   /** Load a CodeSpec from the iModel
    * @param id  The persistent Id of the CodeSpec to load
    */

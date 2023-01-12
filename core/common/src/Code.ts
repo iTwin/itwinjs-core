@@ -233,6 +233,16 @@ export namespace CodeScopeSpec {
   }
 }
 
+/** Specifies whether a CodeSpec is business-related, in which case its universe of code-uniqueness
+ * for associated codes span multiple repositories, or repository-specific, which leads
+ * to code-uniqueness checked in light of a single repository.
+ * @public
+ */
+export enum CodeSpecKind {
+  RepositorySpecific = 1,
+  BusinessRelated = 2,
+}
+
 /** A [Code Specification]($docs/bis/guide/references/glossary#codespec) captures the rules for encoding and decoding significant business information into
  * and from a Code (string). This specification is used to generate and validate Codes.
  *
@@ -310,7 +320,7 @@ export class CodeSpec {
   }
 
   /** Will be true if the codes associated with this CodeSpec are managed along with the iModel and false if the codes are managed by an external service.
-   * @beta
+   * @deprecated Use codeSpecKind instead.
    */
   public get isManagedWithIModel(): boolean {
     if (this.properties.spec && this.properties.spec.isManagedWithDgnDb !== undefined) {
@@ -323,5 +333,25 @@ export class CodeSpec {
       this.properties.spec = {};
 
     this.properties.spec.isManagedWithDgnDb = value;
+  }
+
+  /** Will be `CodeSpecKind.BusinessRelated` if the codes associated with this CodeSpec are related to
+   * a business concept, and therefore, they are used across multiple repositories,
+   * or `CodeSpecKind.RepositorySpecific` if they are associated to identities whose uniqueness
+   * do not go beyond a single repository.
+   *
+   * @beta
+   */
+  public get codeSpecKind(): CodeSpecKind {
+    if (this.properties.spec && this.properties.spec.codeSpecKind !== undefined) {
+      return this.properties.spec.codeSpecKind;
+    }
+    return CodeSpecKind.RepositorySpecific;
+  }
+  public set codeSpecKind(value: CodeSpecKind) {
+    if (!this.properties.spec)
+      this.properties.spec = {};
+
+    this.properties.spec.codeSpecKind = value;
   }
 }
