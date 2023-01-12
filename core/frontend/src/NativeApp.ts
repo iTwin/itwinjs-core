@@ -141,7 +141,7 @@ export class NativeApp {
     asOf?: IModelVersion): Promise<BriefcaseDownloader>;
 
   /**
-   * @deprecated in 3.6. [[progress]] argument is now deprecated, use [[DownloadBriefcaseOptions.progressCallback]].
+   * @deprecated in 3.6. [[progress]] argument is now deprecated, use [[DownloadBriefcaseOptions.progressCallback]] instead.
    */
   public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
     // eslint-disable-next-line @typescript-eslint/unified-signatures
