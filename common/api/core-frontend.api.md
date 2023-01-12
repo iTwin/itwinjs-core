@@ -4624,7 +4624,6 @@ export interface ImageryTileContent extends TileContent {
 // @internal
 export class ImageryTileTreeState {
     constructor();
-    // (undocumented)
     clone(): ImageryTileTreeState;
     getScaleRangeVisibility(): MapTileTreeScaleRangeVisibility;
     reset(): void;
@@ -5913,7 +5912,6 @@ export interface MapLayerOptions {
 export interface MapLayerScaleRangeVisibility {
     index: number;
     isOverlay: boolean;
-    // (undocumented)
     visibility: MapTileTreeScaleRangeVisibility;
 }
 
@@ -8643,7 +8641,7 @@ export class RealityTileTree extends TileTree {
     preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform): void;
     // @internal (undocumented)
     prune(): void;
-    // @internal (undocumented)
+    // @internal
     reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]): void;
     // @internal (undocumented)
     reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void;
@@ -13413,13 +13411,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
     // @internal
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
-    // @beta (undocumented)
+    // @beta
     getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility;
-    // @beta (undocumented)
-    getMapLayerTreeIds(index: number, isOverlay: boolean): {
-        mapTreeId: Id64String;
-        layerTreeId: Id64String;
-    } | undefined;
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
