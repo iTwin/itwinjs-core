@@ -30,7 +30,7 @@ export interface ExternalTileStatistics {
   requested: number;
   selected: number;
   ready: number;
-  hasMissingData?: boolean;
+  hasMissingData?: number;
 }
 
 /** Describes two sets of tiles associated with a viewport's current scene.
@@ -516,9 +516,14 @@ export class TileAdmin {
       return;
     }
 
+    if (undefined === entry.external.hasMissingData)
+      entry.external.hasMissingData = 0;
+
     entry.external.requested += statistics.requested;
     entry.external.selected += statistics.selected;
     entry.external.ready += statistics.ready;
+    if (undefined !== statistics.hasMissingData)
+      entry.external.hasMissingData += statistics.hasMissingData;
   }
 
   /** Clears the sets of tiles associated with a TileUser. */

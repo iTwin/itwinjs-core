@@ -1927,7 +1927,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       transform.multiplyPoint3d(eyePoint, eyePoint);
       targetPoint.setFrom(eyePoint.plusScaled(zDir, zDir.dotProduct(eyePoint.vectorTo(targetPoint))));
 
-      const status = view.lookAt({eyePoint, targetPoint, upVector: view.getYVector(), lensAngle: view.camera.lens });
+      const status = view.lookAt({ eyePoint, targetPoint, upVector: view.getYVector(), lensAngle: view.camera.lens });
       if (ViewStatus.Success !== status)
         return status;
     } else {
@@ -2535,7 +2535,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       if (!haveNewTiles) {
         const tilesThisVp = IModelApp.tileAdmin.getTilesForUser(this);
         const ext = tilesThisVp?.external;
-        if (undefined !== ext && (ext.requested > 0 || true === ext.hasMissingData)) {
+        if (undefined !== ext && (ext.requested > 0 || (ext.hasMissingData ?? 0) > 0)) {
           haveNewTiles = true;
         } else {
           // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
@@ -3503,7 +3503,7 @@ export class ScreenViewport extends Viewport {
         if (!haveNewTiles) {
           const tilesThisVp = IModelApp.tileAdmin.getTilesForUser(this);
           const ext = tilesThisVp?.external;
-          if (undefined !== ext && (ext.requested > 0 || true === ext.hasMissingData)) {
+          if (undefined !== ext && (ext.requested > 0 || (ext.hasMissingData ?? 0) > 0)) {
             haveNewTiles = true;
           } else {
             // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
