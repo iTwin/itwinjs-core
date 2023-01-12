@@ -17,7 +17,7 @@ export interface NormalMapParams {
   normalMap?: RenderTexture;
   /** True if this normal map has the green channel pointing down (+Y is down). */
   greenDown?: boolean;
-  /** Scale factor to strengthen or weaken the normal map. */
+  /** Scale factor by which to multiply the components of the normal extracted from [[normalMap]]. */
   scale?: number;
 }
 

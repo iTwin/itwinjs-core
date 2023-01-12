@@ -143,6 +143,12 @@ interface ImdlTextureMapping {
     /** @see [TextureMapping.Params.worldMapping]($common). Default: false. */
     worldMapping?: boolean;
   };
+  /** @see [NormalMapParams]($common). */
+  normalMapParams?: {
+    textureName?: string;
+    greenDown?: boolean;
+    scale?: number;
+  };
 }
 
 /** Describes a [RenderTexture]($common) with its image embedded into the tile data. */
@@ -726,8 +732,22 @@ export class ImdlReader {
       worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
     };
 
-    // TODO: Need to extract normal map properties from json once they're sent by the backend.
-    return new TextureMapping(texture, new TextureMapping.Params(paramProps));
+    const textureMapping = new TextureMapping(texture, new TextureMapping.Params(paramProps));
+
+    const normalMapJson = json.normalMapParams;
+    if (normalMapJson) {
+      let normalMap;
+      const normalTexName = JsonUtils.asString(normalMapJson.textureName);
+      if (normalTexName.length == 0 || undefined !== (normalMap = this._namedTextures[normalTexName])) {
+        textureMapping.normalMapParams = {
+          normalMap,
+          greenDown: JsonUtils.asBool(normalMapJson.greenDown),
+          normalScale: JsonUtils.asDouble(normalMapJson.scale, 1),
+        };
+      }
+    }
+
+    return textureMapping;
   }
 
   private async loadNamedTextures(): Promise<void> {
