@@ -3,38 +3,53 @@ Release Tag;API Item
 public;AbstractActionItemProps 
 public;AbstractMenuItemProps 
 public;AbstractStatusBarActionItem 
+deprecated;AbstractStatusBarActionItem 
 public;AbstractStatusBarCustomItem 
+deprecated;AbstractStatusBarCustomItem 
 public;AbstractStatusBarItem 
+deprecated;AbstractStatusBarItem 
 public;AbstractStatusBarItemUtilities
+deprecated;AbstractStatusBarItemUtilities
 public;AbstractStatusBarLabelItem 
+deprecated;AbstractStatusBarLabelItem 
 public;AbstractToolbarProps
 public;AbstractWidgetProps 
+deprecated;AbstractWidgetProps 
 public;AbstractZoneLocation
 deprecated;AbstractZoneLocation
 public;ActionButton 
 public;AllowedUiItemProviderOverrides
+deprecated;AllowedUiItemProviderOverrides
 public;AlternateDateFormats
 public;ArrayValue 
 public;BackstageActionItem 
+deprecated;BackstageActionItem 
 public;BackstageItem = BackstageActionItem | BackstageStageLauncher
+deprecated;BackstageItem = BackstageActionItem | BackstageStageLauncher
 internal;BackstageItemsChangedArgs
 internal;BackstageItemsManager
 public;BackstageItemType
+deprecated;BackstageItemType
 public;BackstageItemUtilities
+deprecated;BackstageItemUtilities
 public;BackstageStageLauncher 
+deprecated;BackstageStageLauncher 
 public;BadgeType
 public;BaseDialogItem
 public;BasePropertyEditorParams
 public;BasePropertyValue
 beta;class BaseQuantityDescription 
 public;BaseUiItemsProvider 
+deprecated;BaseUiItemsProvider 
 public;ButtonGroupEditorParams 
 internal;enum CharCode
 public;ColorEditorParams 
 public;CommandHandler
 public;CommonBackstageItem 
+deprecated;CommonBackstageItem 
 public;CommonItemProps
 public;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
+deprecated;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
 public;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
 public;ConditionalBooleanValue
 public;ConditionalStringValue
@@ -80,9 +95,13 @@ public;ImageCheckBoxParams
 public;IMatch
 public;InputEditorSizeParams 
 public;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
+deprecated;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
 public;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
+deprecated;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
 public;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
+deprecated;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
 public;isActionItem: (item: BackstageItem) => item is BackstageActionItem
+deprecated;isActionItem: (item: BackstageItem) => item is BackstageActionItem
 public;isArrowKey(key: string): boolean
 public;isButtonGroupEditorParams: (item: BasePropertyEditorParams) => item is ButtonGroupEditorParams
 public;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEditorParams
@@ -93,6 +112,7 @@ alpha;isLetter(char: string): boolean
 internal;isLowerAsciiLetter(code: number): boolean
 internal;isPatternInWord(patternLow: string, patternPos: number, patternLen: number, wordLow: string, wordPos: number, wordLen: number): boolean
 public;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
+deprecated;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
 public;isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams
 internal;isUpperAsciiLetter(code: number): boolean
 public;LayoutFragmentProps
@@ -134,22 +154,28 @@ public;PropertyRendererInfo
 public;PropertyValue = PrimitiveValue | StructValue | ArrayValue
 public;PropertyValueFormat
 public;ProvidedItem
+deprecated;ProvidedItem
 public;RangeEditorParams 
 public;RelativePosition
 public;SliderEditorParams 
 public;SpecialKey
 public;StagePanelLocation
+deprecated;StagePanelLocation
 public;StagePanelSection
+deprecated;StagePanelSection
 public;StageUsage
 public;StandardContentLayouts
 public;StandardEditorNames
 public;StandardTypeNames
 internal;startsWithIgnoreCase(str: string, candidate: string): boolean
 public;StatusBarItemId = CommonStatusBarItem["id"]
+deprecated;StatusBarItemId = CommonStatusBarItem["id"]
 internal;StatusBarItemsChangedArgs
 internal;StatusBarItemsManager
 public;StatusBarLabelSide
+deprecated;StatusBarLabelSide
 public;StatusBarSection
+deprecated;StatusBarSection
 public;StringGetter = () => string
 public;StructValue 
 public;SuppressLabelEditorParams 
@@ -158,11 +184,14 @@ public;SyncPropertiesChangeEventArgs
 public;TimeDisplay
 public;ToolbarItem 
 public;ToolbarItemId = CommonToolbarItem["id"]
+deprecated;ToolbarItemId = CommonToolbarItem["id"]
 internal;ToolbarItemsChangedArgs
 internal;ToolbarItemsManager
 public;ToolbarItemUtilities
 public;ToolbarOrientation
+deprecated;ToolbarOrientation
 public;ToolbarUsage
+deprecated;ToolbarUsage
 public;UiAdmin
 public;class UiDataProvider
 public;UiError 
@@ -170,11 +199,15 @@ public;UiEvent
 public;UiEventDispatcher
 public;UiFlags
 public;UiItemProviderRegisteredEventArgs
+deprecated;UiItemProviderRegisteredEventArgs
 public;UiItemsApplicationAction
 deprecated;UiItemsApplicationAction
 public;UiItemsManager
+deprecated;UiItemsManager
 public;UiItemsProvider
+deprecated;UiItemsProvider
 public;class UiLayoutDataProvider 
 public;UiSyncEvent 
 public;UiSyncEventArgs
 public;WidgetState
+deprecated;WidgetState
