@@ -18,7 +18,7 @@ import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { CloudSqlite } from "./CloudSqlite";
-import { SnapshotDb, TokenArg } from "./IModelDb";
+import { IModelDb, SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
@@ -329,8 +329,8 @@ export class CheckpointManager {
         if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned)
           nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
-        CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
-        (db as any)._iModelId = nativeDb.getIModelId();
+        CheckpointManager.validateCheckpointGuids(checkpoint, db);
+
         // Apply change sets if necessary
         const currentChangeset: Mutable<ChangesetIndexAndId> = nativeDb.getCurrentChangeset();
         if (currentChangeset.id !== checkpoint.changeset.id) {
@@ -379,9 +379,10 @@ export class CheckpointManager {
   }
 
   /** checks a file's dbGuid & iTwinId for consistency, and updates the dbGuid when possible */
-  public static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb) {
+  public static validateCheckpointGuids(checkpoint: CheckpointProps, iModelDb: IModelDb) {
     const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId };
 
+    const nativeDb = iModelDb.nativeDb;
     const dbChangeset = nativeDb.getCurrentChangeset();
     const iModelId = Guid.normalize(nativeDb.getIModelId());
     if (iModelId !== Guid.normalize(checkpoint.iModelId)) {
@@ -390,6 +391,7 @@ export class CheckpointManager {
 
       Logger.logWarning(loggerCategory, "iModelId is not properly set up in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, dbGuid: iModelId }));
       nativeDb.setIModelId(Guid.normalize(checkpoint.iModelId));
+      (iModelDb as any)._iModelId = Guid.normalize(checkpoint.iModelId);
       // Required to reset the ChangeSetId because setDbGuid clears the value.
       nativeDb.saveLocalValue("ParentChangeSetId", dbChangeset.id);
       if (undefined !== dbChangeset.index)
