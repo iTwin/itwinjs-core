@@ -330,7 +330,6 @@ export class CheckpointManager {
           nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
         CheckpointManager.validateCheckpointGuids(checkpoint, db);
-
         // Apply change sets if necessary
         const currentChangeset: Mutable<ChangesetIndexAndId> = nativeDb.getCurrentChangeset();
         if (currentChangeset.id !== checkpoint.changeset.id) {
