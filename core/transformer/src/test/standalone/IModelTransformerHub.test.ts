@@ -342,7 +342,7 @@ describe("IModelTransformerHub", () => {
     if (IModelJsFs.existsSync(masterSeedFileName))
       IModelJsFs.removeSync(masterSeedFileName); // make sure file from last run does not exist
 
-    const state0 = [1, 2, 20]; // 20 will be deleted by a branch
+    const state0 = [1, 2, 20, 21]; // 20, 21 will be deleted by a branch
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: "Master" } });
     populateMaster(masterSeedDb, state0);
     assert.isTrue(IModelJsFs.existsSync(masterSeedFileName));
@@ -420,20 +420,29 @@ describe("IModelTransformerHub", () => {
       assert.notEqual(changesetBranch1State1, changesetBranch1State0);
 
       // push Branch1 State2
-      const delta12 = [1, -3, 5, 6, -20]; // update 1, delete 3, 20, insert 5 and 6
+      const delta1_2 = [1, -3, 5, 6, -20]; // update 1, delete 3, 20, insert 5 and 6
       const state2 = [1, 2, -3, 4, 5, 6];
-      maintainPhysicalObjects(branchDb1, delta12);
+      maintainPhysicalObjects(branchDb1, delta1_2);
       assertPhysicalObjects(branchDb1, state2);
       await saveAndPushChanges(branchDb1, "State1 -> State2");
       const changesetBranch1State2 = branchDb1.changeset.id;
       assert.notEqual(changesetBranch1State2, changesetBranch1State1);
 
-      // merge changes made on Branch1 back to Master
-      const branch1ToMaster = new IModelTransformer(branchDb1, masterDb, {
+      // push Branch1 State3
+      const delta13 = [1, -3, 5, 6, -20]; // insert 30
+      const state2 = [1, 2, -3, 4, 5, 6];
+      maintainPhysicalObjects(branchDb1, delta1_3);
+      assertPhysicalObjects(branchDb1, state2);
+      await saveAndPushChanges(branchDb1, "State1 -> State2");
+      const changesetBranch1State2 = branchDb1.changeset.id;
+      assert.notEqual(changesetBranch1State2, changesetBranch1State1);
+
+      // merge half of changes made on Branch1 back to Master
+      const branch1ToMaster1 = new IModelTransformer(branchDb1, masterDb, {
         isReverseSynchronization: true, // provenance stored in source/branch
       });
-      await branch1ToMaster.processChanges(accessToken, changesetBranch1State1);
-      branch1ToMaster.dispose();
+      await branch1ToMaster1.processChanges(accessToken, changesetBranch1State1);
+      branch1ToMaster1.dispose();
       assertPhysicalObjects(masterDb, state2);
       assertPhysicalObjectUpdated(masterDb, 1);
       assertPhysicalObjectUpdated(masterDb, 2);
@@ -443,32 +452,47 @@ describe("IModelTransformerHub", () => {
       assert.notEqual(changesetMasterState2, changesetMasterState0);
       branchDb1.saveChanges(); // saves provenance locally in case of re-merge
 
+      // merge second half of changes made on Branch1 back to Master
+      const branch1ToMaster2 = new IModelTransformer(branchDb1, masterDb, {
+        isReverseSynchronization: true, // provenance stored in source/branch
+      });
+      await branch1ToMaster2.processChanges(accessToken, changesetBranch1State2);
+      branch1ToMaster2.dispose();
+      assertPhysicalObjects(masterDb, state2);
+      assertPhysicalObjectUpdated(masterDb, 1);
+      assertPhysicalObjectUpdated(masterDb, 2);
+      assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
+      await saveAndPushChanges(masterDb, "State0 -> State3"); // a squash of 2 branch changes into 1 in the masterDb change ledger
+      const changesetMasterState3 = masterDb.changeset.id;
+      assert.notEqual(changesetMasterState3, changesetMasterState2);
+      branchDb1.saveChanges(); // saves provenance locally in case of re-merge
+
       // merge changes from Master to Branch2
       const masterToBranch2 = new IModelTransformer(masterDb, branchDb2);
       await masterToBranch2.processChanges(accessToken, changesetMasterState2);
       masterToBranch2.dispose();
       assertPhysicalObjects(branchDb2, state2);
-      await saveAndPushChanges(branchDb2, "State0 -> State2");
-      const changesetBranch2State2 = branchDb2.changeset.id;
-      assert.notEqual(changesetBranch2State2, changesetBranch2State0);
+      await saveAndPushChanges(branchDb2, "State0 -> State3");
+      const changesetBranch2State3 = branchDb2.changeset.id;
+      assert.notEqual(changesetBranch2State3, changesetBranch2State0);
 
       // make changes to Branch2
       const delta23 = [7, 8]; // insert 7 (without any updates), and 8
       const state3 = [1, 2, -3, 4, 5, 6, 7, 8];
       maintainPhysicalObjects(branchDb2, delta23);
       assertPhysicalObjects(branchDb2, state3);
-      await saveAndPushChanges(branchDb2, "State2 -> State3");
-      const changesetBranch2State3 = branchDb2.changeset.id;
-      assert.notEqual(changesetBranch2State3, changesetBranch2State2);
+      await saveAndPushChanges(branchDb2, "State3 -> State4");
+      const changesetBranch2State4 = branchDb2.changeset.id;
+      assert.notEqual(changesetBranch2State4, changesetBranch2State3);
 
       // make conflicting changes to master
       const delta3Master = [7, 7, 9]; // insert 7 and update it so it conflicts with the branch, insert 9 too
       const state3Master = [1, 2, -3, 4, 5, 6, 7, 9];
       maintainPhysicalObjects(masterDb, delta3Master);
       assertPhysicalObjects(masterDb, state3Master);
-      await saveAndPushChanges(masterDb, "State2 -> State3M");
-      const changesetMasterState3M = masterDb.changeset.id;
-      assert.notEqual(changesetMasterState3M, changesetMasterState2);
+      await saveAndPushChanges(masterDb, "State3 -> State4M");
+      const changesetMasterState4M = masterDb.changeset.id;
+      assert.notEqual(changesetMasterState4M, changesetMasterState3);
 
       // merge changes made on Branch2 back to Master with a conflict
       const branch2ToMaster = new IModelTransformer(branchDb2, masterDb, {
@@ -480,9 +504,9 @@ describe("IModelTransformerHub", () => {
       assertPhysicalObjects(masterDb, state3Merged); // source wins conflicts
       assertPhysicalObjectUpdated(masterDb, 7); // if it was updated, then the master version of it won
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
-      await saveAndPushChanges(masterDb, "State3M -> State3");
-      const changesetMasterState3 = masterDb.changeset.id;
-      assert.notEqual(changesetMasterState3, changesetMasterState2);
+      await saveAndPushChanges(masterDb, "State4M -> State4");
+      const changesetMasterState4 = masterDb.changeset.id;
+      assert.notEqual(changesetMasterState4, changesetMasterState3);
       branchDb2.saveChanges(); // saves provenance locally in case of re-merge
 
       // make change directly on Master
@@ -490,9 +514,9 @@ describe("IModelTransformerHub", () => {
       const state4 = [1, 2, -3, 4, 5, 6, -7, 8, 9];
       maintainPhysicalObjects(masterDb, delta34);
       assertPhysicalObjects(masterDb, state4);
-      await saveAndPushChanges(masterDb, "State3 -> State4");
-      const changesetMasterState4 = masterDb.changeset.id;
-      assert.notEqual(changesetMasterState4, changesetMasterState3);
+      await saveAndPushChanges(masterDb, "State4 -> State5");
+      const changesetMasterState5 = masterDb.changeset.id;
+      assert.notEqual(changesetMasterState5, changesetMasterState4);
 
       // merge Master to Branch1
       const masterToBranch1 = new IModelTransformer(masterDb, branchDb1);
@@ -500,9 +524,9 @@ describe("IModelTransformerHub", () => {
       masterToBranch1.dispose();
       assertPhysicalObjects(branchDb1, state4);
       assertPhysicalObjectUpdated(branchDb1, 6);
-      await saveAndPushChanges(branchDb1, "State2 -> State4");
-      const changesetBranch1State4 = branchDb1.changeset.id;
-      assert.notEqual(changesetBranch1State4, changesetBranch1State2);
+      await saveAndPushChanges(branchDb1, "State2 -> State5");
+      const changesetBranch1State5 = branchDb1.changeset.id;
+      assert.notEqual(changesetBranch1State5, changesetBranch1State2);
 
       const masterDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: masterIModelId, targetDir: BriefcaseManager.getChangeSetsPath(masterIModelId) });
       assert.equal(masterDbChangesets.length, 4);
