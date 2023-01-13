@@ -24,7 +24,7 @@
     "displayName": "Presentation"
   },
   "metadata": {
-    "home": "learning",
+    "customIndex": "index.html",
     "logo": "assets/itwinjs-logo.svg",
     "smallLogo": "assets/itwinjs-logo-small.svg",
     "sponsoredByLogo": "assets/bentley.svg",
