@@ -2,6 +2,18 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "3.5.3",
+      "tag": "@itwin/core-frontend_v3.5.3",
+      "date": "Fri, 13 Jan 2023 17:23:07 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove dependency on xml-js library in core-frontend."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.2",
       "tag": "@itwin/core-frontend_v3.5.2",
       "date": "Wed, 11 Jan 2023 16:46:30 GMT",

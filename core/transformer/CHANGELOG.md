@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-transformer
 
-This log was last generated on Wed, 11 Jan 2023 16:46:30 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Jan 2023 17:23:07 GMT and should not be manually modified.
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+_Version update only_
 
 ## 3.5.2
 Wed, 11 Jan 2023 16:46:30 GMT
