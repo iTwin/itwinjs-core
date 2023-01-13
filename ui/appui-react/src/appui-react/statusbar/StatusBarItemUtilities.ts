@@ -15,7 +15,7 @@ import { StatusBarActionItem, StatusBarCustomItem, StatusBarItem, StatusBarLabel
  */
 export class StatusBarItemUtilities {
   /** Creates a StatusBar item
-   * @deprecated Use [[StatusBarItemUtilities.createStatusBarItem]] instead.
+   * @deprecated Use [[StatusBarItemUtilities.createCustomItem]] instead.
    */
   public static createStatusBarItem = (id: string, section: UIA_StatusBarSection, itemPriority: number, reactNode: React.ReactNode, itemProps?: Partial<StatusBarItem>): StatusBarItem => ({ // eslint-disable-line deprecation/deprecation
     id, section, itemPriority, reactNode,

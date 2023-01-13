@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  AbstractStatusBarItemUtilities,
-  CommonToolbarItem, IconSpecUtilities, StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
+  CommonToolbarItem, IconSpecUtilities, StageUsage,
 } from "@itwin/appui-abstract";
-import { AnyStatusBarItem, StatusBarSection } from "@itwin/appui-react";
+import { AnyStatusBarItem, StatusBarItemUtilities, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider } from "@itwin/appui-react";
 import { SampleTool } from "../../tools/SampleTool";
 import { UnitsPopupUiDataProvider } from "../dialogs/UnitsPopup";
 import { IModelApp } from "@itwin/core-frontend";
@@ -56,7 +55,7 @@ export class AbstractUiItemsProvider implements UiItemsProvider {
 
       statusBarItems.push(
         /** Add a status bar item that will open a dialog allow the user to set the active unit system used to display quantity values.  */
-        AbstractStatusBarItemUtilities.createActionItem("AppUiTestProviders:UnitsStatusBarItem",
+        StatusBarItemUtilities.createActionItem("AppUiTestProviders:UnitsStatusBarItem",
           this.props?.unitsStatusBarItem?.section ?? StatusBarSection.Center,
           this.props?.unitsStatusBarItem?.itemPriority ?? 100,
           unitsIcon, AppUiTestProviders.translate("StatusBar.UnitsFlyover"),

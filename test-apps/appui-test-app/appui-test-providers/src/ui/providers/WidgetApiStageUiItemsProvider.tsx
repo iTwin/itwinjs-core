@@ -5,8 +5,7 @@
 /* eslint-disable react/display-name */
 
 import * as React from "react";
-import { UiItemsManager } from "@itwin/appui-abstract";
-import { BackstageItem, BackstageItemUtilities, CommonWidgetProps, StagePanelLocation, StagePanelSection, ToolbarHelper, ToolbarItem, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState } from "@itwin/appui-react";
+import { BackstageItem, BackstageItemUtilities, CommonWidgetProps, StagePanelLocation, StagePanelSection, ToolbarHelper, ToolbarItem, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-react";
 import { getShowHideFloatingWidgetCommandItemDef, getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 import { AppUiTestProviders } from "../../AppUiTestProviders";

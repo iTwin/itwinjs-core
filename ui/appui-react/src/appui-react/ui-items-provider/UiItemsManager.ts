@@ -34,4 +34,5 @@ export type UiItemsProviderOverrides = UIA_UiItemProviderOverrides;
 /** Controls registering of UiItemsProviders and calls the provider's methods when populating different parts of the User Interface.
  * @public
  */
-export type UiItemsManager = UIA_UiItemsManager;
+export class UiItemsManager extends UIA_UiItemsManager {
+}

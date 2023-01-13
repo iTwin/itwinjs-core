@@ -5,16 +5,10 @@
 /* eslint-disable react/display-name */
 
 import {
-  AbstractWidgetProps,
-  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, CommonToolbarItem,
-  StagePanelLocation,
-  StagePanelSection,
-  StageUsage,
-  StatusBarSection,
-  ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState,
+  CommonToolbarItem, StageUsage,
 } from "@itwin/appui-abstract";
 import * as React from "react";
-import { StatusBarItemUtilities, ToolbarHelper } from "@itwin/appui-react";
+import { AnyStatusBarItem, BackstageItem, BackstageItemUtilities, CommonWidgetProps, StagePanelLocation, StagePanelSection, StatusBarItemUtilities, StatusBarSection, ToolbarHelper, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-react";
 import { getSplitSingleViewportCommandDef, RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "../../tools/ContentLayoutTools";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { getCustomViewSelectorPopupItem } from "../buttons/ViewSelectorPanel";
@@ -71,10 +65,10 @@ export class ContentLayoutStageUiItemsProvider implements UiItemsProvider {
   }
 
   public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation,
-    section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
-    const widgets: AbstractWidgetProps[] = [];
+    section?: StagePanelSection): ReadonlyArray<CommonWidgetProps> {
+    const widgets: CommonWidgetProps[] = [];
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Bottom && section === StagePanelSection.Start) {
-      const widget: AbstractWidgetProps = {
+      const widget: CommonWidgetProps = {
         id: "appui-test-providers:viewport-widget",
         label: "Viewport",
         icon: "icon-bentley-systems",
@@ -89,16 +83,18 @@ export class ContentLayoutStageUiItemsProvider implements UiItemsProvider {
     }
     return widgets;
   }
-  public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
-    const statusBarItems: CommonStatusBarItem[] = [];
+
+  public provideStatusBarItems(_stageId: string, stageUsage: string): AnyStatusBarItem[] {
+    const statusBarItems: AnyStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
 
       statusBarItems.push(
-        StatusBarItemUtilities.createStatusBarItem("DisplayStyle", StatusBarSection.Center, 400, <DisplayStyleField />),
+        StatusBarItemUtilities.createCustomItem("DisplayStyle", StatusBarSection.Center, 400, <DisplayStyleField />),
       );
     }
     return statusBarItems;
   }
+
   public provideBackstageItems(): BackstageItem[] {
     const label = AppUiTestProviders.translate("backstage.contentLayoutFrontstageLabel");
     return [

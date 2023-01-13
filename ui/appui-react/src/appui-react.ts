@@ -237,6 +237,7 @@ export * from "./appui-react/tools/MarkupToolDefinitions";
 export * from "./appui-react/tools/RestoreLayoutTool";
 export * from "./appui-react/tools/ToolSettingsTools";
 
+export * from "./appui-react/ui-items-provider/BaseUiItemsProvider";
 export * from "./appui-react/ui-items-provider/ProviderItem";
 export * from "./appui-react/ui-items-provider/StandardContentToolsProvider";
 export * from "./appui-react/ui-items-provider/StandardContentToolsUiItemsProvider";
@@ -244,6 +245,7 @@ export * from "./appui-react/ui-items-provider/StandardNavigationToolsProvider";
 export * from "./appui-react/ui-items-provider/StandardNavigationToolsUiItemsProvider";
 export * from "./appui-react/ui-items-provider/StandardStatusbarItemsProvider";
 export * from "./appui-react/ui-items-provider/StandardStatusbarUiItemsProvider";
+export * from "./appui-react/ui-items-provider/UiItemsManager";
 export * from "./appui-react/ui-items-provider/UiItemsProvider";
 
 export * from "./appui-react/uiadmin/FrameworkUiAdmin";

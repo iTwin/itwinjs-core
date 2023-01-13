@@ -9,12 +9,12 @@ import {
   ViewState,
 } from "@itwin/core-frontend";
 import {
-  BackstageItem,
-  BackstageItemUtilities,
-  ContentLayoutProps, StageUsage, StandardContentLayouts, UiItemsManager, UiItemsProvider,
+  ContentLayoutProps, StageUsage, StandardContentLayouts,
 } from "@itwin/appui-abstract";
 import {
   BackstageAppButton,
+  BackstageItem,
+  BackstageItemUtilities,
   ConfigurableUiManager, ContentGroup, ContentGroupProps,
   ContentGroupProvider, ContentProps, FrontstageProps, IModelViewportControl,
   SettingsModalFrontstage, StageContentLayout, StageContentLayoutProps,
@@ -23,6 +23,8 @@ import {
   StandardNavigationToolsUiItemsProvider,
   StandardStatusbarUiItemsProvider,
   UiFramework,
+  UiItemsManager,
+  UiItemsProvider,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../index";
 import { AppUi } from "../AppUi";

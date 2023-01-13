@@ -13,4 +13,5 @@ import { BaseUiItemsProvider as UIA_BaseUiItemsProvider } from "@itwin/appui-abs
  * active stage should be provided items. Derived provider classes should override the `xxxInternal` methods to provide items.
  * @public
  */
-export type BaseUiItemsProvider = UIA_BaseUiItemsProvider;
+export class BaseUiItemsProvider extends UIA_BaseUiItemsProvider {
+}
