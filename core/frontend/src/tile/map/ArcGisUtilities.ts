@@ -24,8 +24,11 @@ export enum ArcGisErrorCode {
  * @internal
  * */
 export interface ArcGISServiceMetadata {
-  content: any;                   // JSON content from the service
-  accessTokenRequired: boolean;   // Indicates if an access token is required to access the service
+  /** JSON content from the service */
+  content: any;
+
+  /** Indicates if an access token is required to access the service */
+  accessTokenRequired: boolean;
 }
 
 /** @internal */

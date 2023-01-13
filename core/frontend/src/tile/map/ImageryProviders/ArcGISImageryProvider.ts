@@ -23,8 +23,9 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   protected _accessClient: MapLayerAccessClient|undefined;
   protected _lastAccessToken: MapLayerAccessToken|undefined;
 
-  // Flag indicating if access token should be added to request.
-  // We assume a service to require access token for the entire viewing session.
+  /** Flag indicating if access token should be added to request.
+  * @note We assume a service to require access token for the entire viewing session.
+  */
   protected _accessTokenRequired = false;
 
   constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean) {

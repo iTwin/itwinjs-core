@@ -1154,7 +1154,6 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean);
     // (undocumented)
     protected _accessClient: MapLayerAccessClient | undefined;
-    // (undocumented)
     protected _accessTokenRequired: boolean;
     protected fetch(url: URL, options?: RequestInit): Promise<Response>;
     protected getServiceJson(): Promise<ArcGISServiceMetadata | undefined>;
@@ -1199,9 +1198,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
 // @internal
 export interface ArcGISServiceMetadata {
-    // (undocumented)
     accessTokenRequired: boolean;
-    // (undocumented)
     content: any;
 }
 
