@@ -18,6 +18,7 @@ import { AccuDraw } from '@itwin/core-frontend';
 import { ActionButton } from '@itwin/appui-abstract';
 import { ActivityMessageDetails } from '@itwin/core-frontend';
 import { ActivityMessageEndReason } from '@itwin/core-frontend';
+import { AllowedUiItemProviderOverrides } from '@itwin/appui-abstract';
 import { AutoSuggestData } from '@itwin/core-react';
 import { BackstageActionItem as BackstageActionItem_2 } from '@itwin/appui-abstract';
 import { BackstageItem as BackstageItem_2 } from '@itwin/appui-abstract';
@@ -26,7 +27,7 @@ import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@itwin/appui
 import { BadgeType } from '@itwin/appui-abstract';
 import { BaseSolarDataProvider } from '@itwin/imodel-components-react';
 import { BaseTimelineDataProvider } from '@itwin/imodel-components-react';
-import { BaseUiItemsProvider } from '@itwin/appui-abstract';
+import { BaseUiItemsProvider as BaseUiItemsProvider_2 } from '@itwin/appui-abstract';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
@@ -179,6 +180,9 @@ import { UiAdmin } from '@itwin/appui-abstract';
 import { UiDataProvider } from '@itwin/appui-abstract';
 import { UiEvent } from '@itwin/appui-abstract';
 import { UiEvent as UiEvent_2 } from '@itwin/core-react';
+import { UiItemProviderOverrides } from '@itwin/appui-abstract';
+import { UiItemProviderRegisteredEventArgs } from '@itwin/appui-abstract';
+import { UiItemsManager as UiItemsManager_2 } from '@itwin/appui-abstract';
 import { UiItemsProvider as UiItemsProvider_2 } from '@itwin/appui-abstract';
 import { UiLayoutDataProvider } from '@itwin/appui-abstract';
 import { UiStateEntry } from '@itwin/core-react';
@@ -533,6 +537,9 @@ export function addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageD
 export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: PanelSide, widgetId: WidgetIdTypes): NineZoneState;
 
 // @public
+export type AllowedUiItemsProviderOverrides = AllowedUiItemProviderOverrides;
+
+// @public
 export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport);
     // (undocumented)
@@ -795,6 +802,10 @@ export interface BaseItemState {
 }
 
 // @public
+export class BaseUiItemsProvider extends BaseUiItemsProvider_2 {
+}
+
+// @public
 export function BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element;
 
 // @public
@@ -1023,13 +1034,13 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     static enableCategory(viewManager: ViewManager, imodel: IModelConnection, ids: string[], enabled: boolean, forAllViewports: boolean, enableAllSubCategories?: boolean): void;
     static enableSubCategory(viewManager: ViewManager, key: string, enabled: boolean, forAllViewports?: boolean): void;
     // (undocumented)
-    getCategoryVisibility(id: string): "visible" | "hidden";
+    getCategoryVisibility(id: string): "hidden" | "visible";
     // (undocumented)
     static getInstanceIdFromTreeNodeKey(nodeKey: NodeKey): string;
     // (undocumented)
     getParent(key: string): Category | undefined;
     // (undocumented)
-    getSubCategoryVisibility(id: string): "visible" | "hidden";
+    getSubCategoryVisibility(id: string): "hidden" | "visible";
     // (undocumented)
     getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus;
     // (undocumented)
@@ -4745,7 +4756,7 @@ export enum SelectionScope {
 }
 
 // @public
-export const SelectionScopeField: ConnectedComponent<typeof SelectionScopeFieldComponent, Omit_3<React_2.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "activeSelectionScope" | "availableSelectionScopes">>;
+export const SelectionScopeField: ConnectedComponent<typeof SelectionScopeFieldComponent, Omit_3<React_2.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
 
 // @public @deprecated
 export class SeparatorBackstageItem extends React_2.PureComponent<BackstageItemProps> {
@@ -4967,6 +4978,11 @@ export const setPanelSize: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | ReactText | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | {
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: Key | null;
@@ -4983,11 +4999,6 @@ export const setPanelSize: (base: {
                 } | any | null | undefined;
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
-            } | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -5414,7 +5425,7 @@ export interface StagePanelZonesProps {
 }
 
 // @public
-export class StandardContentToolsProvider extends BaseUiItemsProvider {
+export class StandardContentToolsProvider extends BaseUiItemsProvider_2 {
     constructor(providerId: string, defaultContentTools?: DefaultContentTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
     provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem_2[];
@@ -5483,7 +5494,7 @@ export interface StandardMessageBoxProps extends CommonProps {
 }
 
 // @public
-export class StandardNavigationToolsProvider extends BaseUiItemsProvider {
+export class StandardNavigationToolsProvider extends BaseUiItemsProvider_2 {
     constructor(providerId: string, defaultNavigationTools?: DefaultNavigationTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
     provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage_2, toolbarOrientation: ToolbarOrientation_2, _stageAppData?: any): CommonToolbarItem_2[];
@@ -5516,7 +5527,7 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
 }
 
 // @public
-export class StandardStatusbarItemsProvider extends BaseUiItemsProvider {
+export class StandardStatusbarItemsProvider extends BaseUiItemsProvider_2 {
     constructor(providerId: string, _defaultItems?: DefaultStatusbarItems | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
     provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem_2[];
@@ -6605,7 +6616,17 @@ export interface UiIntervalEventArgs {
 }
 
 // @public
+export class UiItemsManager extends UiItemsManager_2 {
+}
+
+// @public
 export type UiItemsProvider = UiItemsProvider_2;
+
+// @public
+export type UiItemsProviderOverrides = UiItemProviderOverrides;
+
+// @public
+export type UiItemsProviderRegisteredEventArgs = UiItemProviderRegisteredEventArgs;
 
 // @beta
 export function UiSettingsPage(): JSX.Element;
@@ -7524,7 +7545,7 @@ export enum WidgetType {
 }
 
 // @public @deprecated
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
 
 // @public @deprecated
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React_2.JSXElementConstructor<P> & C) => {
@@ -7582,7 +7603,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public @deprecated
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget">>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
 
 // @internal @deprecated
 export class Workflow extends ItemDefBase {

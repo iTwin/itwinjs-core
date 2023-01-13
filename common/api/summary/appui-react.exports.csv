@@ -49,6 +49,7 @@ public;ActivityMessageUpdatedEvent
 internal;addMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState
 internal;addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageDef, side: PanelSide): NineZoneState
 internal;addWidgets(state: NineZoneState, widgets: ReadonlyArray
+public;AllowedUiItemsProviderOverrides = AllowedUiItemProviderOverrides
 public;AnalysisAnimationTimelineDataProvider 
 public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef
 public;AnyStatusBarItem = CommonStatusBarItem_2
@@ -90,6 +91,7 @@ deprecated;BackstageProps
 beta;BackstageStageLauncher 
 public;BackstageToggledArgs
 public;BaseItemState
+public;BaseUiItemsProvider 
 public;BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element
 public;BasicNavigationWidgetProps
 public;BasicToolWidget(props: BasicToolWidgetProps): JSX.Element
@@ -782,7 +784,10 @@ public;UiDataProvidedDialogProps
 public;UiFramework
 internal;UiIntervalEvent 
 internal;UiIntervalEventArgs
+public;UiItemsManager 
 public;UiItemsProvider = UiItemsProvider_2
+public;UiItemsProviderOverrides = UiItemProviderOverrides
+public;UiItemsProviderRegisteredEventArgs = UiItemProviderRegisteredEventArgs
 beta;UiSettingsPage(): JSX.Element
 beta;UiSettingsPage({ allowSettingUiFrameworkVersion }:
 deprecated;UiSettingsPage({ allowSettingUiFrameworkVersion }:
