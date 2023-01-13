@@ -175,9 +175,7 @@ export interface IModelHostOptions {
    */
   crashReportingConfig?: CrashReportingConfig;
 
-  /** The AuthorizationClient used to get accessTokens
-   * @beta
-   */
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   authorizationClient?: AuthorizationClient;
 }
 
@@ -198,7 +196,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public workspace?: WorkspaceOpts;
   /** @beta */
   public hubAccess?: BackendHubAccess;
-  /** @beta */
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public authorizationClient?: AuthorizationClient;
   /** @beta @deprecated */
   public tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
@@ -258,6 +256,8 @@ class ApplicationSettings extends BaseSettings {
  */
 export class IModelHost {
   private constructor() { }
+
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public static authorizationClient?: AuthorizationClient;
 
   /** @alpha */

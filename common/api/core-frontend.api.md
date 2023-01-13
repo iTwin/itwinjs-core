@@ -4634,6 +4634,15 @@ export interface ImageryTileContent extends TileContent {
 }
 
 // @internal
+export class ImageryTileTreeState {
+    constructor();
+    clone(): ImageryTileTreeState;
+    getScaleRangeVisibility(): MapTileTreeScaleRangeVisibility;
+    reset(): void;
+    setScaleRangeVisibility(visible: boolean): void;
+}
+
+// @internal
 export interface Imdl {
     // (undocumented)
     animationNodes?: ImdlAnimationNodes;
@@ -5528,7 +5537,7 @@ export class LookAndMoveTool extends ViewManip {
     static toolId: string;
 }
 
-// @beta
+// @public
 export interface LookAtArgs {
     readonly backDistance?: number;
     readonly eyePoint: XYAndZ;
@@ -5538,7 +5547,7 @@ export interface LookAtArgs {
     readonly upVector: Vector3d;
 }
 
-// @beta
+// @public
 export interface LookAtOrthoArgs extends LookAtArgs {
     // (undocumented)
     readonly lensAngle?: never;
@@ -5547,7 +5556,7 @@ export interface LookAtOrthoArgs extends LookAtArgs {
     readonly viewDirection: XYAndZ;
 }
 
-// @beta
+// @public
 export interface LookAtPerspectiveArgs extends LookAtArgs {
     // (undocumented)
     readonly lensAngle?: never;
@@ -5556,7 +5565,7 @@ export interface LookAtPerspectiveArgs extends LookAtArgs {
     readonly viewDirection?: never;
 }
 
-// @beta
+// @public
 export interface LookAtUsingLensAngle extends LookAtArgs {
     readonly lensAngle: Angle;
     readonly targetPoint: XYAndZ;
@@ -5897,12 +5906,25 @@ export enum MapLayerImageryProviderStatus {
     Valid = 0
 }
 
+// @internal
+export interface MapLayerIndex {
+    index: number;
+    isOverlay: boolean;
+}
+
 // @beta
 export interface MapLayerOptions {
     [format: string]: MapLayerKey | undefined;
     AzureMaps?: MapLayerKey;
     BingMaps?: MapLayerKey;
     MapboxImagery?: MapLayerKey;
+}
+
+// @beta
+export interface MapLayerScaleRangeVisibility {
+    index: number;
+    isOverlay: boolean;
+    visibility: MapTileTreeScaleRangeVisibility;
 }
 
 // @public
@@ -6070,6 +6092,8 @@ export class MapTile extends RealityTile {
     get heightRange(): Range1d | undefined;
     // @internal (undocumented)
     protected _heightRange: Range1d | undefined;
+    // @internal
+    get hiddenImageryTiles(): ImageryMapTile[] | undefined;
     // @internal (undocumented)
     get imageryIsReady(): boolean;
     // @internal (undocumented)
@@ -6134,6 +6158,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
     // (undocumented)
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
     // (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
@@ -6207,7 +6232,7 @@ export abstract class MapTileProjection {
 export class MapTileTree extends RealityTileTree {
     // @internal
     constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId, applyTerrain: boolean);
-    // @internal (undocumented)
+    // @internal
     addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number): void;
     // @internal (undocumented)
     addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext): void;
@@ -6221,6 +6246,8 @@ export class MapTileTree extends RealityTileTree {
     clearImageryTreesAndClassifiers(): void;
     // @internal (undocumented)
     clearLayers(): void;
+    // @internal
+    cloneImageryTreeState(): Map<string, ImageryTileTreeState>;
     // @internal (undocumented)
     protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]): void;
     // @internal (undocumented)
@@ -6247,6 +6274,8 @@ export class MapTileTree extends RealityTileTree {
     getCornerRays(rectangle: MapCartoRectangle): Ray3d[] | undefined;
     // @internal (undocumented)
     getFractionalTileCorners(quadId: QuadId): Point3d[];
+    // @internal
+    getImageryTreeState(imageryTreeId: string): ImageryTileTreeState | undefined;
     // @internal (undocumented)
     getLayerIndex(imageryTreeId: Id64String): number;
     // @internal (undocumented)
@@ -6259,13 +6288,13 @@ export class MapTileTree extends RealityTileTree {
     // @internal (undocumented)
     globeOrigin: Point3d;
     // @internal (undocumented)
-    imageryTrees: ImageryMapTileTree[];
-    // @internal (undocumented)
     isOverlay: boolean;
     // @internal (undocumented)
     get isTransparent(): boolean;
     // @internal (undocumented)
     layerClassifiers: Map<number, RenderPlanarClassifier>;
+    // @internal (undocumented)
+    layerImageryTrees: MapLayerTreeSetting[];
     // @internal
     loadReprojectionCache(tile: MapTile): Promise<void>;
     // @internal (undocumented)
@@ -6290,6 +6319,8 @@ export class MapTileTree extends RealityTileTree {
     pointAboveEllipsoid(point: Point3d): boolean;
     // @internal (undocumented)
     produceGeometry?: boolean;
+    // @internal
+    reportTileVisibility(args: TileDrawArgs, selected: RealityTile[]): void;
     // @internal (undocumented)
     sourceTilingScheme: MapTilingScheme;
     // @internal (undocumented)
@@ -6321,6 +6352,7 @@ export class MapTileTreeReference extends TileTreeReference {
     getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined;
     // (undocumented)
     getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
+    getMapLayerScaleRangeVisibility(index: number): MapTileTreeScaleRangeVisibility;
     // (undocumented)
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // (undocumented)
@@ -6355,6 +6387,14 @@ export class MapTileTreeReference extends TileTreeReference {
     unionFitRange(_range: Range3d): void;
     // (undocumented)
     get useDepthBuffer(): boolean;
+}
+
+// @beta
+export enum MapTileTreeScaleRangeVisibility {
+    Hidden = 2,
+    Partial = 3,
+    Unknown = 0,
+    Visible = 1
 }
 
 // @beta
@@ -8030,7 +8070,7 @@ export interface QuantityTypeDefinition {
 // @public
 export type QuantityTypeKey = string;
 
-// @beta
+// @public
 export interface QueryScreenFeaturesOptions {
     includeNonLocatable?: boolean;
     rect?: ViewRect;
@@ -8040,7 +8080,7 @@ export interface QueryScreenFeaturesOptions {
 // @public
 export function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number>;
 
-// @beta
+// @public
 export interface QueryTileFeaturesOptions {
     includeNonLocatable?: boolean;
     source: "tiles";
@@ -8049,10 +8089,10 @@ export interface QueryTileFeaturesOptions {
 // @internal
 export function queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
 
-// @beta
+// @public
 export type QueryVisibleFeaturesCallback = (features: Iterable<VisibleFeature>) => void;
 
-// @beta
+// @public
 export type QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions;
 
 // @internal
@@ -8613,6 +8653,8 @@ export class RealityTileTree extends TileTree {
     preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform): void;
     // @internal (undocumented)
     prune(): void;
+    // @internal
+    reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]): void;
     // @internal (undocumented)
     reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void;
     // @internal (undocumented)
@@ -13379,6 +13421,10 @@ export abstract class Viewport implements IDisposable, TileUser {
     getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo>;
     // @internal (undocumented)
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    // @internal
+    getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
+    // @beta
+    getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility;
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
@@ -13448,6 +13494,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     readonly onFlashedIdChanged: BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>;
     // @alpha
     readonly onFrameStats: BeEvent<(frameStats: Readonly<FrameStats>) => void>;
+    // @beta
+    readonly onMapLayerScaleRangeVisibilityChanged: BeEvent<(layerIndexes: MapLayerScaleRangeVisibility[]) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
     // @internal
@@ -13470,7 +13518,6 @@ export abstract class Viewport implements IDisposable, TileUser {
     get pixelsPerInch(): number;
     // @internal (undocumented)
     pointToGrid(point: Point3d): void;
-    // @beta
     queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
     // @deprecated
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
@@ -14000,7 +14047,6 @@ export abstract class ViewState3d extends ViewState {
     isEyePointGlobalView(eyePoint: XYAndZ): boolean;
     // (undocumented)
     get isGlobalView(): boolean;
-    // @beta
     lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus;
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
     lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
@@ -14140,7 +14186,7 @@ export class ViewUndoTool extends ViewTool {
     static toolId: string;
 }
 
-// @beta
+// @public
 export interface VisibleFeature {
     readonly elementId: Id64String;
     readonly geometryClass: GeometryClass;

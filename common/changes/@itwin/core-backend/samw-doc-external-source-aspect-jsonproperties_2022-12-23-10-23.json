@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "security fixes",
+      "comment": "Fix documentation of ExternalSourceAspectProps.jsonProperties. It must be a string.",
       "type": "none"
     }
   ],

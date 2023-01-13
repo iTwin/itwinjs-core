@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add support for pickable view overlay decorations.",
+      "comment": "Promote ViewState3d.lookAt and Viewport.queryVisibleFeatures to public.",
       "type": "none"
     }
   ],

@@ -1,14 +1,12 @@
 sep=;
 Release Tag;API Item
 beta;AbandonedError 
-beta;AccessToken = string
+public;AccessToken = string
 public;areEqualPossiblyUndefined
 public;asInstanceOf
 public;assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition
 public;AsyncFunction = (...args: any) => Promise
 public;AsyncMethodsOf
-alpha;AsyncMutex
-alpha;AsyncMutexUnlockFnType = () => void
 public;base64StringToUint8Array(base64: string): Uint8Array
 public;BeDuration
 public;BeEvent
@@ -46,7 +44,6 @@ public;DuplicatePolicy
 public;Entry
 public;EntryContainer
 alpha;class ErrorCategory 
-beta;ExtractLiterals
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => object | undefined
 public;Guid
