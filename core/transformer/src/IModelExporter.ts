@@ -248,11 +248,10 @@ export class IModelExporter {
 
   /** Export changes from the source iModel.
    * @param user The user
-   * @param startChangesetId Include changes from this changeset up through and including the current changeset.
-   * If this parameter is not provided, then just the current changeset will be exported.
-   * @note To form a range of versions to export, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
+   * @param startChangesetId Include changes from here through `endChangesetId`, defaults to the current changeset will be exported.
+   * @param endChangesetId Include changes to here from `startChangeSetId`, defaults to the latest changeset on the hub.
    */
-  public async exportChanges(user?: AccessToken, startChangesetId?: string): Promise<void> {
+  public async exportChanges(user?: AccessToken, startChangesetId?: string, endChangesetId?: string): Promise<void> {
     if (!this.sourceDb.isBriefcaseDb()) {
       throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes");
     }
@@ -263,7 +262,7 @@ export class IModelExporter {
     if (undefined === startChangesetId) {
       startChangesetId = this.sourceDb.changeset.id;
     }
-    this._sourceDbChanges = await ChangedInstanceIds.initialize(user, this.sourceDb, startChangesetId);
+    this._sourceDbChanges = await ChangedInstanceIds.initialize(user, this.sourceDb, startChangesetId, endChangesetId);
     await this.exportCodeSpecs();
     await this.exportFonts();
     await this.exportModelContents(IModel.repositoryModelId);
@@ -832,10 +831,10 @@ class ChangedInstanceIds {
   public font = new ChangedInstanceOps();
   private constructor() { }
 
-  public static async initialize(accessToken: AccessToken | undefined, iModel: BriefcaseDb, firstChangesetId: string): Promise<ChangedInstanceIds> {
+  public static async initialize(accessToken: AccessToken | undefined, iModel: BriefcaseDb, firstChangesetId: string, endChangesetId?: string): Promise<ChangedInstanceIds> {
     const iModelId = iModel.iModelId;
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, accessToken })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeset.id }, accessToken })).index;
+    const first = await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, accessToken }).then((cs) => cs.index);
+    const end = await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: endChangesetId ?? iModel.changeset.id }, accessToken }).then((cs) => cs.index);
     const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
     const changedInstanceIds = new ChangedInstanceIds();

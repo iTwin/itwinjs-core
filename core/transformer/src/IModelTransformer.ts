@@ -1468,12 +1468,12 @@ export class IModelTransformer extends IModelExportHandler {
  * If this parameter is not provided, then just the current changeset will be exported.
  * @note To form a range of versions to process, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
  */
-  public async processChanges(accessToken: AccessToken, startChangesetId?: string): Promise<void> {
+  public async processChanges(accessToken: AccessToken, startChangesetId?: string, endChangesetId?: string): Promise<void> {
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();
-    await this.initialize({ accessToken, startChangesetId });
-    await this.exporter.exportChanges(accessToken, startChangesetId);
+    await this.initialize({ accessToken, startChangesetId, endChangesetId });
+    await this.exporter.exportChanges(accessToken, startChangesetId, endChangesetId);
     await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
 
     if (this._options.optimizeGeometry)
