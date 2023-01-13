@@ -25,7 +25,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
    */
   readonly id?: string;
   /** Default Widget state. Controls how the Widget is initially displayed. Defaults to WidgetState.Unloaded. */
-  readonly defaultState?: WidgetState;
+  readonly defaultState?: WidgetState; // eslint-disable-line deprecation/deprecation
   /** if set, component will be considered selected but will NOT display an "active stripe" - defaults to false. Typically used by buttons that toggle between two states. */
   readonly label?: string | ConditionalStringValue;
   /** used to explicitly set the tooltip shown by a component. */
@@ -61,7 +61,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
    *  Used by UI 1.0 widgets ONLY.
    * @deprecated
   */
-  readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
+  readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState; // eslint-disable-line deprecation/deprecation
   /** Badge to be overlaid on the widget tab. */
   readonly badgeType?: BadgeType;
   /** Handler for widget state changed event */
