@@ -108,9 +108,3 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 [ModelsTree]($appui-react) and [CategoryTree]($appui-react) were moved to [@itwin/tree-widget-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/tree-widget) package and deprecated in `@itwin/appui-react` packages. They will be removed from `@itwin/appui-react` in future major version.
 
 [SpatialContainmentTree]($appui-react) were deprecated in favor of `SpatialContainmentTree` from [@itwin/breakdown-trees-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/breakdown-trees) package. [SpatialContainmentTree]($appui-react) will be removed in future major version.
-
-### @itwin/core-transformer
-
-Deprecated passing separate access token, and changeset id arguments to [IModelTransformer.processChanges]($transformer),
-pass an [IModelTransformer.InitFromExternalSourceAspectsArgs]($transformer) object with an access token instead. This aligns better with
-the arguments to [IModelTransformer.initialize]($transformer).

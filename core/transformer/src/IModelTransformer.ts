@@ -1462,30 +1462,17 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
-   * Inserts, updates, and deletes are determined by inspecting the changeset(s).
-   * @param accessToken A valid access token string
-   * @param startChangesetId Include changes from this changeset up through and including the current changeset.
-   * If this parameter is not provided, then just the current changeset will be exported.
-   * @note To form a range of versions to process, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
-   */
-  public processChanges(args: MarkRequired<InitFromExternalSourceAspectsArgs, "accessToken">): Promise<void>;
-  /** @deprecated pass an [[InitFromExternalSourceAspectsArgs]] object as a single argument instead */
-  public processChanges(accessToken: AccessToken, startChangesetId?: string, endChangesetId?: string): Promise<void>;
-  public async processChanges(
-    argsOrAccessToken: AccessToken | MarkRequired<InitFromExternalSourceAspectsArgs, "accessToken">,
-    startChangesetId?: string,
-    endChangesetId?: string
-  ): Promise<void> {
-    let accessToken: AccessToken;
-    [accessToken, startChangesetId, endChangesetId] =
-      typeof argsOrAccessToken === "string"
-        ? [argsOrAccessToken, startChangesetId, endChangesetId]
-        : [argsOrAccessToken.accessToken, argsOrAccessToken.startChangesetId, argsOrAccessToken.endChangesetId];
-
+ * Inserts, updates, and deletes are determined by inspecting the changeset(s).
+ * @param accessToken A valid access token string
+ * @param startChangesetId Include changes from this changeset up through and including the current changeset.
+ * If this parameter is not provided, then just the current changeset will be exported.
+ * @note To form a range of versions to process, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
+ */
+  public async processChanges(accessToken: AccessToken, startChangesetId?: string): Promise<void> {
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();
-    await this.initialize({ accessToken, startChangesetId, endChangesetId });
+    await this.initialize({ accessToken, startChangesetId });
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
 
