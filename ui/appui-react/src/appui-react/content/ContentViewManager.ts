@@ -80,11 +80,30 @@ export class ContentViewManager {
 
   private static getControlFromElement(content: React.ReactNode, activeContentGroup: ContentGroup | undefined, floatingControls: ContentControl[] | undefined, logIfNotFound = false) {
     if (floatingControls?.length) {
-      const control = floatingControls.find((contentControl) => contentControl.reactNode === content);
+      // if we find a React node that matches exactly, return its containing control
+      let control = floatingControls.find((contentControl) => contentControl.reactNode === content);
+      if (control)
+        return control;
+
+      // if we don't find a React node that matches exactly, rely on the id specified by the creator
+      let controlId: string;
+      if (content && (content as React.ReactElement<any>).key) {
+        const key = ((content as React.ReactElement<any>).key as string);
+        // key has format `${contentProps.id}::${this.groupId}` which is stored as unique id
+        controlId = key.split("::", 1)[0];
+      }
+      floatingControls.forEach ((contentControl: ContentControl) => {
+        const node = contentControl.reactNode;
+        const key = ((node as React.ReactElement<any>).key as string);
+        const nodeId = key && key.split("::", 1)[0];
+        if (nodeId === controlId)
+          control = contentControl;
+      });
       if (control)
         return control;
     }
 
+    // if it's not a floating control, look through the content area views
     // istanbul ignore else
     if (activeContentGroup) {
       const activeContentControl = activeContentGroup.getControlFromElement(content);
