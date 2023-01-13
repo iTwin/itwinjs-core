@@ -15,10 +15,11 @@ import {
   ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor, DescriptorOverrides, Diagnostics, DiagnosticsOptions,
   DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions,
   DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
-  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
-  Item, KeySet, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus,
-  RequestOptions, RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
-  SingleElementPropertiesRpcRequestOptions, VariableValueTypes, WithCancelEvent,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions,
+  HierarchyLevelDescriptorRpcRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey,
+  NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RequestOptions, RulesetVariable,
+  RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions,
+  VariableValueTypes, WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
@@ -614,6 +615,33 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.verifyAll();
       });
 
+    });
+
+    describe("getNodesDescriptor", () => {
+      it("calls manager for child nodes descriptor", async () => {
+        const result = createTestContentDescriptor({ fields: [] });
+        const parentNodeKey = createRandomECInstancesNodeKey();
+        const rpcOptions: HierarchyLevelDescriptorRpcRequestOptions = {
+          ...defaultRpcParams,
+          rulesetOrId: testData.rulesetOrId,
+          parentKey: NodeKey.toJSON(parentNodeKey),
+        };
+        const managerOptions: WithCancelEvent<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey>> = {
+          imodel: testData.imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          parentKey: parentNodeKey,
+          cancelEvent: new BeEvent<() => void>(),
+        };
+        const presentationManagerDetailStub = {
+          getNodesDescriptor: sinon.spy(async () => JSON.stringify(result.toJSON())),
+        };
+        presentationManagerMock
+          .setup((x) => x.getDetail())
+          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        const actualResult = await impl.getNodesDescriptor(testData.imodelToken, rpcOptions);
+        expect(presentationManagerDetailStub.getNodesDescriptor).to.be.calledOnceWith(managerOptions);
+        expect(actualResult.result).to.eq(JSON.stringify(result.toJSON()));
+      });
     });
 
     describe("getFilteredNodePaths", () => {
