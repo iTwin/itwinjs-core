@@ -336,6 +336,64 @@ describe("IModelTransformerHub", () => {
   });
 
   it("should merge changes made on a branch back to master", async () => {
+    // for each step in timeline, either a string with the id of a previous iModel to seed from,
+    // or the full list of contents at that state, model not listed if unchanged from previous.
+    const timeline: {[modelName: string]: string | number[]}[] = [
+      { master: [1, 2, 20, 21] },
+      { branch1: "master", branch2: "master" },
+      { branch1: [1, 2, 20, 21] },
+    ];
+
+    const iModels = new Map<string, {
+      state: number[];
+      id: string;
+      db: IModelDb;
+    }>();
+
+    for (let i = 0; i < timeline.length; ++i) {
+      const pt = timeline[i];
+      const alreadySeenIModels = Object.keys(iModels).filter((s) => iModels.has(s));
+
+      const newIModels = Object.keys(iModels).filter((s) => !iModels.has(s));
+      for (const newIModelName of newIModels) {
+        const newIModelState = pt[newIModelName];
+        const seed = typeof newIModelState === "string" ? iModels.get(newIModelState)! : undefined;
+        const newIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: newIModelName, version0: seed?.db.pathName, noLocks: true });
+
+        const newIModelDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: newIModelId });
+        assert.isTrue(newIModelDb.isBriefcaseDb());
+        assert.equal(newIModelDb.iTwinId, iTwinId);
+        if (typeof newIModelState === "string")
+          assertPhysicalObjects(newIModelDb, seed!.state);
+        else {
+          maintainPhysicalObjects(newIModelDb, newIModelState);
+          await saveAndPushChanges(newIModelDb, `to state [${newIModelState}] at point ${i}`);
+        }
+
+        iModels.set(newIModelName, {
+          state: seed?.state ?? newIModelState as number[],
+          db: newIModelDb,
+          id: newIModelId,
+        });
+      }
+
+      for (const alreadySeenIModelName of alreadySeenIModels) {
+        const alreadySeenIModelState = pt[alreadySeenIModelName];
+        assert(
+          typeof alreadySeenIModelState !== "string",
+          "cannot seed an iModel that already exists by this point in the timeline"
+        );
+        const alreadySeenIModel = iModels.get(alreadySeenIModelName)!;
+        alreadySeenIModel.state = alreadySeenIModelState;
+        maintainPhysicalObjects(alreadySeenIModel.db, alreadySeenIModelState);
+      }
+
+      const newBranches = newIModels.filter((m: string) => m.startsWith("branch"));
+      for (const newBranch of newBranches) {
+
+      }
+    }
+
     // create and push master IModel
     const masterIModelName = "Master";
     const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
