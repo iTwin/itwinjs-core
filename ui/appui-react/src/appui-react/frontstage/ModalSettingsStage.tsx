@@ -66,7 +66,7 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
   private static noSettingsAvailable = () => new ConditionalBooleanValue(() => 0 === UiFramework.settingsManager.providers.length, [SyncUiEventId.SettingsProvidersChanged]);
 
   public static getBackstageActionItem(groupPriority: number, itemPriority: number) {
-    return BackstageItemUtilities.createActionItem(SettingsModalFrontstage.id, groupPriority, itemPriority, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()),
+    return BackstageItemUtilities.createActionItem(SettingsModalFrontstage.id, groupPriority, itemPriority, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()), // eslint-disable-line deprecation/deprecation
       UiFramework.translate("settings.settingsStageLabel"),
       undefined, IconSpecUtilities.createWebComponentIconSpec(settingsIconSvg), { isHidden: SettingsModalFrontstage.noSettingsAvailable() });
   }

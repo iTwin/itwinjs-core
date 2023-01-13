@@ -28,7 +28,7 @@ interface IndicatorProps extends CommonProps {
   /** Indicator label. */
   label?: string;
   /** Side to display label. */
-  labelSide?: StatusBarLabelSide;
+  labelSide?: StatusBarLabelSide; // eslint-disable-line deprecation/deprecation
   /** Function called when indicator is clicked. */
   onClick?: () => void;
   /** If dialog prop is set, used to determine initial state. */
@@ -66,7 +66,7 @@ export function Indicator(props: IndicatorProps) {
     "uifw-footer-label-left", "uifw-footer-indicator",
     inFooter && "nz-footer-mode",
     hasClickAction && "uifw-footer-action",
-    labelSide === StatusBarLabelSide.Right && "uifw-footer-label-reversed",
+    labelSide === StatusBarLabelSide.Right && "uifw-footer-label-reversed", // eslint-disable-line deprecation/deprecation
     className);
   return (
     <>
