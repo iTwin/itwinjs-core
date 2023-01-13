@@ -3093,6 +3093,8 @@ export interface ExtentLimits {
 // @internal
 export interface ExternalTileStatistics {
     // (undocumented)
+    hasMissingData?: number;
+    // (undocumented)
     ready: number;
     // (undocumented)
     requested: number;
