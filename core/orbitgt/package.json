@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-orbitgt",
-  "version": "3.6.0-dev.42",
+  "version": "3.6.0-dev.45",
   "description": "",
   "main": "lib/cjs/core-orbitgt.js",
   "module": "lib/esm/core-orbitgt.js",

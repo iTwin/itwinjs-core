@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider, MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -220,6 +220,24 @@ export interface ReadImageBufferArgs {
   upsideDown?: boolean;
 }
 
+/** MapLayer visibility based on its scale range definition.
+ * @beta
+ */
+export interface MapLayerScaleRangeVisibility {
+  /** True if map-layer is part of [[DisplayStyleState]]'s overlay map, otherwise map-layer is part of [[DisplayStyleState]]'s background map
+  * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
+  isOverlay: boolean;
+
+  /** Index of the map-layer in [[DisplayStyleState]]'s background/overlay map
+   * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
+  index: number;
+
+  /** Scale range visibility value of the map-layer */
+  visibility: MapTileTreeScaleRangeVisibility;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -291,6 +309,11 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
+
+  /** Event indicating when a map-layer scale range visibility change for the current viewport scale.
+ * @beta
+ */
+  public readonly onMapLayerScaleRangeVisibilityChanged = new BeEvent<(layerIndexes: MapLayerScaleRangeVisibility[]) => void>();
 
   /** @internal */
   protected _hasMissingTiles = false;
@@ -789,6 +812,33 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** @internal */
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
+
+  /** Return the map-layer scale range visibility for the provided map-layer index.
+   * @param index of the owning map layer.
+   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   * @see [[DisplayStyleState.mapLayerAtIndex]].
+   * @beta
+  */
+  public getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility {
+    const treeRef = ( isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
+    if (treeRef) {
+      return treeRef.getMapLayerScaleRangeVisibility(index);
+
+    }
+    return MapTileTreeScaleRangeVisibility.Unknown;
+  }
+
+  /** Return a list of map-layers indexes matching a given  MapTile tree Id and a layer imagery tree id.
+   * Note: A imagery tree can be shared for multiple map-layers.
+   * @internal
+   * */
+  public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
+    if (this._mapTiledGraphicsProvider)
+      return this._mapTiledGraphicsProvider?.getMapLayerIndexesFromIds(mapTreeId, layerTreeId);
+
+    return [];
+
+  }
 
   /** @beta
    * Fully reset a map-layer tile tree; by calling this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
