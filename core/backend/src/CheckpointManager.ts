@@ -378,10 +378,10 @@ export class CheckpointManager {
   }
 
   /** checks a file's dbGuid & iTwinId for consistency, and updates the dbGuid when possible */
-  public static validateCheckpointGuids(checkpoint: CheckpointProps, iModelDb: IModelDb) {
+  public static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb) {
     const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId };
 
-    const nativeDb = iModelDb.nativeDb;
+    const nativeDb = snapshotDb.nativeDb;
     const dbChangeset = nativeDb.getCurrentChangeset();
     const iModelId = Guid.normalize(nativeDb.getIModelId());
     if (iModelId !== Guid.normalize(checkpoint.iModelId)) {
@@ -389,8 +389,9 @@ export class CheckpointManager {
         throw new IModelError(IModelStatus.ValidationFailed, "iModelId is not properly set up in the checkpoint");
 
       Logger.logWarning(loggerCategory, "iModelId is not properly set up in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, dbGuid: iModelId }));
-      nativeDb.setIModelId(Guid.normalize(checkpoint.iModelId));
-      (iModelDb as any)._iModelId = Guid.normalize(checkpoint.iModelId);
+      const iModelIdNormalized = Guid.normalize(checkpoint.iModelId);
+      nativeDb.setIModelId(iModelIdNormalized);
+      (snapshotDb as any)._iModelId = iModelIdNormalized;
       // Required to reset the ChangeSetId because setDbGuid clears the value.
       nativeDb.saveLocalValue("ParentChangeSetId", dbChangeset.id);
       if (undefined !== dbChangeset.index)

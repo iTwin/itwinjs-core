@@ -688,7 +688,7 @@ export class CheckpointManager {
     static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
     // (undocumented)
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
-    static validateCheckpointGuids(checkpoint: CheckpointProps, iModelDb: IModelDb): void;
+    static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb): void;
     // (undocumented)
     static verifyCheckpoint(checkpoint: CheckpointProps, fileName: LocalFileName): boolean;
 }
