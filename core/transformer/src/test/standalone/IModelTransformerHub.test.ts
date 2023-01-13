@@ -338,6 +338,7 @@ describe("IModelTransformerHub", () => {
   it("should merge changes made on a branch back to master", async () => {
     // for each step in timeline, either a string with the id of a previous iModel to seed from,
     // or the full list of contents at that state, model not listed if unchanged from previous.
+    // branches must be seeded and named "branch*" in order to be correctly handled
     const timeline: {[modelName: string]: string | number[]}[] = [
       { master: [1, 2, 20, 21] },
       { branch1: "master", branch2: "master" },
@@ -347,7 +348,7 @@ describe("IModelTransformerHub", () => {
     const iModels = new Map<string, {
       state: number[];
       id: string;
-      db: IModelDb;
+      db: BriefcaseDb;
     }>();
 
     for (let i = 0; i < timeline.length; ++i) {
@@ -375,22 +376,36 @@ describe("IModelTransformerHub", () => {
           db: newIModelDb,
           id: newIModelId,
         });
+
+        const isNewBranch = newIModelName.startsWith("branch");
+        if (isNewBranch) {
+          assert(seed);
+          const master = seed;
+          const branchDb = newIModelDb;
+          // record branch provenance
+          const provenanceInserter = new IModelTransformer(master.db, branchDb, { wasSourceIModelCopiedToTarget: true });
+          await provenanceInserter.processAll();
+          provenanceInserter.dispose();
+          assert.equal(count(master.db, ExternalSourceAspect.classFullName), 0);
+          assert.isAbove(count(branchDb, ExternalSourceAspect.classFullName), master.state.length);
+          await saveAndPushChanges(branchDb, "initialized branch provenance");
+        }
       }
 
       for (const alreadySeenIModelName of alreadySeenIModels) {
-        const alreadySeenIModelState = pt[alreadySeenIModelName];
+        const newState = pt[alreadySeenIModelName];
         assert(
-          typeof alreadySeenIModelState !== "string",
+          typeof newState !== "string",
           "cannot seed an iModel that already exists by this point in the timeline"
         );
         const alreadySeenIModel = iModels.get(alreadySeenIModelName)!;
-        alreadySeenIModel.state = alreadySeenIModelState;
-        maintainPhysicalObjects(alreadySeenIModel.db, alreadySeenIModelState);
-      }
-
-      const newBranches = newIModels.filter((m: string) => m.startsWith("branch"));
-      for (const newBranch of newBranches) {
-
+        const prevState = alreadySeenIModel.state;
+        alreadySeenIModel.state = newState;
+        const additions = newState.filter((s) => !prevState.includes(s));
+        const deletions = prevState.filter((s) => !newState.includes(s));
+        const delta = [...additions, ...deletions.map((n) => -n)];
+        maintainPhysicalObjects(alreadySeenIModel.db, delta);
+        await saveAndPushChanges(alreadySeenIModel.db, `to: [${newState}], delta: [${delta}], at ${i}`);
       }
     }
 
