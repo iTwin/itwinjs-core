@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "reset the iModelId on the TS object after validatingCheckpointGuids",
+      "comment": "",
       "type": "none"
     }
   ],
