@@ -944,7 +944,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties as any);
+    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties as any); // TODO: Remove "as any" when NativeLibrary.ts is updated so "spec" isn't marked as required
   }
 
   /** Prepare an ECSQL statement.
