@@ -9,7 +9,6 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
@@ -18,7 +17,7 @@ import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { CloudSqlite } from "./CloudSqlite";
-import { IModelDb, SnapshotDb, TokenArg } from "./IModelDb";
+import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
