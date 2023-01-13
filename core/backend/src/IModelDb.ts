@@ -944,7 +944,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties);
+    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties as any);
   }
 
   /** Prepare an ECSQL statement.
