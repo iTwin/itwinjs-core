@@ -336,42 +336,87 @@ describe("IModelTransformerHub", () => {
   });
 
   it("should merge changes made on a branch back to master", async () => {
-    // for each step in timeline, either a string with the id of a previous iModel to seed from,
-    // or the full list of contents at that state, model not listed if unchanged from previous.
-    // branches must be seeded and named "branch*" in order to be correctly handled
-    const timeline: {[modelName: string]: string | number[]}[] = [
-      { master: [1, 2, 20, 21] },
-      { branch1: "master", branch2: "master" },
-      { branch1: [1, 2, 20, 21] },
-    ];
-
-    const iModels = new Map<string, {
-      state: number[];
+    interface IModelState {
+      state: Record<number, number>;
       id: string;
       db: BriefcaseDb;
-    }>();
+    }
+
+    type TimelineStateChange =
+      // update the state of that model to match and push a changeset
+      | Record<number, number>
+      // create a copy of an iModel in the hub with a given name
+      | { copy: string }
+      // synchronize with the iModel of a given name
+      | { sync: string };
+
+    // For each step in timeline, either a string with the id of a previous iModel to seed from,
+    // or a list of states to push as individual changes, model not listed if unchanged from previous.
+    // Branches must be seeded and named "branch*" in order to be correctly handled
+    const timeline: {
+      tag?: string;
+      assert?: (imodels: Record<string, IModelState>) => void;
+      [modelName: string]:
+      // only necessary for the previous optional properties
+      | undefined
+      // only necessary for the tag property
+      | string
+      // only necessary for the assert property
+      | ((imodels: Record<string, IModelState>) => void)
+      | TimelineStateChange;
+    }[] = [
+      { master: { 1:1, 2:1, 20:1, 21:1 } },
+      { branch1: { copy: "master" }, branch2: { copy: "master" } },
+      { branch1: { 1:1, 2:2, 3:1, 4:1, 20:1, 21:1 }, tag: "branch1-first-update" },
+      { branch1: { 1:2, 2:2, 4:1, 5:1, 6:1, 21:1 } },
+      { branch1: { 1:2, 2:2, 4:1, 5:1, 6:1, 30:1 } },
+      { master: { sync: "branch1-first-update" } },
+      { master: { sync: "branch1" } }, // squash-merge remaining changes
+      { branch2: { sync: "master" } },
+      { branch2: { 1:2, 2:2, 4:1, 5:1, 6:1, 7:1, 8:1, 30:1 } },
+      // insert a conflicting state for 7 on master
+      { master: { 1:2, 2:2, 4:1, 5:1, 6:1, 7:2, 9:1, 30:1 } },
+      { master: { sync: "branch2" } },
+      { assert({master}) {
+        // master won the conflict
+        assert.equal(count(master.db, ExternalSourceAspect.classFullName), 0);
+        assertPhysicalObjectUpdated(master.db, 7);
+      }},
+      { master: { 1:2, 2:2, 4:1, 5:1, 6:2, 8:1, 9:1, 30:1 } },
+      { branch1: { sync: "master" } },
+    ];
+
+    const trackedIModels = new Map<string, IModelState>();
+
+    const tagToPerIModelChangesetId = new Map<string, Record<string, string>>();
+
+    // HACK: update `maintainPhysicalObjects`
+    const hackObjToArrayState = (obj: Record<number, number>): number[] => Object.keys(obj).map(Number);
 
     for (let i = 0; i < timeline.length; ++i) {
       const pt = timeline[i];
-      const alreadySeenIModels = Object.keys(iModels).filter((s) => iModels.has(s));
+      const iModelChanges = Object.entries(trackedIModels).filter((entry): entry is [string, TimelineStateChange] => entry[0] !== "assert" && entry[0] !== "id" && trackedIModels.has(entry[0]));
 
-      const newIModels = Object.keys(iModels).filter((s) => !iModels.has(s));
+      const newIModels = Object.keys(trackedIModels).filter((s) => s !== "assert" && s !== "id" && !trackedIModels.has(s));
       for (const newIModelName of newIModels) {
-        const newIModelState = pt[newIModelName];
-        const seed = typeof newIModelState === "string" ? iModels.get(newIModelState)! : undefined;
+        if (newIModelName === "id" || typeof newIModelName !== "string")
+          return;
+
+        const newIModelState = pt[newIModelName] as Record<number, number>;
+        const seed = typeof newIModelState === "string" ? trackedIModels.get(newIModelState)! : undefined;
         const newIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: newIModelName, version0: seed?.db.pathName, noLocks: true });
 
         const newIModelDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: newIModelId });
         assert.isTrue(newIModelDb.isBriefcaseDb());
         assert.equal(newIModelDb.iTwinId, iTwinId);
         if (typeof newIModelState === "string")
-          assertPhysicalObjects(newIModelDb, seed!.state);
+          assertPhysicalObjects(newIModelDb, hackObjToArrayState(seed!.state));
         else {
-          maintainPhysicalObjects(newIModelDb, newIModelState);
+          maintainPhysicalObjects(newIModelDb, hackObjToArrayState(newIModelState));
           await saveAndPushChanges(newIModelDb, `to state [${newIModelState}] at point ${i}`);
         }
 
-        iModels.set(newIModelName, {
+        trackedIModels.set(newIModelName, {
           state: seed?.state ?? newIModelState as number[],
           db: newIModelDb,
           id: newIModelId,
@@ -387,25 +432,41 @@ describe("IModelTransformerHub", () => {
           await provenanceInserter.processAll();
           provenanceInserter.dispose();
           assert.equal(count(master.db, ExternalSourceAspect.classFullName), 0);
-          assert.isAbove(count(branchDb, ExternalSourceAspect.classFullName), master.state.length);
+          assert.isAbove(count(branchDb, ExternalSourceAspect.classFullName), Object.keys(master.state).length);
           await saveAndPushChanges(branchDb, "initialized branch provenance");
         }
       }
 
-      for (const alreadySeenIModelName of alreadySeenIModels) {
-        const newState = pt[alreadySeenIModelName];
-        assert(
-          typeof newState !== "string",
-          "cannot seed an iModel that already exists by this point in the timeline"
+      for (const [iModelName, event] of iModelChanges) {
+        if ("sync" in event) {
+          return;
+        } else if ("copy" in event) {
+          return;
+        } else {
+          const newState = event;
+          const alreadySeenIModel = trackedIModels.get(iModelName)!;
+          const prevState = alreadySeenIModel.state;
+          alreadySeenIModel.state = event;
+          // `(maintain|assert)PhysicalObjects` use negative to mean deleted
+          const delta = Object.fromEntries(Object.entries(prevState).map(([k,v]) => [k,v+newState[k]]).filter());
+          maintainPhysicalObjects(alreadySeenIModel.db, delta);
+          await saveAndPushChanges(alreadySeenIModel.db, `to: [${event}], delta: [${delta}], at ${i}`);
+        }
+
+      }
+
+      if (pt.assert) {
+        pt.assert(Object.fromEntries(trackedIModels));
+      }
+
+      if (pt.tag) {
+        assert(!tagToPerIModelChangesetId.has(pt.tag));
+        tagToPerIModelChangesetId.set(
+          pt.tag,
+          Object.fromEntries(
+            [...trackedIModels].map(([name, state]) => [name, state.db.changeset.id])
+          )
         );
-        const alreadySeenIModel = iModels.get(alreadySeenIModelName)!;
-        const prevState = alreadySeenIModel.state;
-        alreadySeenIModel.state = newState;
-        const additions = newState.filter((s) => !prevState.includes(s));
-        const deletions = prevState.filter((s) => !newState.includes(s));
-        const delta = [...additions, ...deletions.map((n) => -n)];
-        maintainPhysicalObjects(alreadySeenIModel.db, delta);
-        await saveAndPushChanges(alreadySeenIModel.db, `to: [${newState}], delta: [${delta}], at ${i}`);
       }
     }
 
@@ -663,14 +724,15 @@ describe("IModelTransformerHub", () => {
       }
       assert.equal(replayedDeletedElementIds.size, 0);
 
-      masterDb.close();
-      branchDb1.close();
-      branchDb2.close();
+      for (const [, state] of trackedIModels) {
+        state.db.close();
+      }
       replayedDb.close();
     } finally {
-      await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: masterIModelId });
-      await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: branchIModelId1 });
-      await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: branchIModelId2 });
+      for (const [, state] of trackedIModels) {
+        state.db.close();
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: state.id });
+      }
       await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: replayedIModelId });
     }
   });
