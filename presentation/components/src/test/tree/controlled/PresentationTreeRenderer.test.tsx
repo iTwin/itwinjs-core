@@ -105,37 +105,6 @@ describe("PresentationTreeRenderer", () => {
     expect(dialog).to.be.null;
   });
 
-  it("renders filter builder dialog when node filter button is clicked", async () => {
-    const label = "Node Label";
-    const node = createTreeModelNode({ label: PropertyRecord.fromString(label) });
-    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
-    visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
-
-    const { getByText, container } = render(
-      <PresentationTreeRenderer
-        {...treeProps}
-      />);
-
-    await waitFor(() => getByText(label));
-    expect(container.querySelector(".presentation-components-node")).to.not.be.null;
-
-    const filterButton = container.querySelector(".presentation-components-node-action-buttons button");
-    expect(filterButton).to.not.be.null;
-    fireEvent.click(filterButton!);
-
-    // wait for dialog to be visible
-    await waitFor(() => {
-      expect(container.querySelector(".presentation-instance-filter-dialog")).to.not.be.null;
-    });
-
-    const closeButton = container.querySelector(".presentation-instance-filter-dialog-close-button");
-    expect(closeButton).to.not.be.null;
-    fireEvent.click(closeButton!);
-
-    const dialog = container.querySelector(".presentation-instance-filter-dialog");
-    expect(dialog).to.be.null;
-  });
-
   it("applies filter and closes dialog", async () => {
     const label = "Node Label";
     const node = createTreeModelNode({ label: PropertyRecord.fromString(label) });
