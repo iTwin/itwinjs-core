@@ -16,6 +16,7 @@ import { CheckBoxState } from "@itwin/core-react";
 import { Node, RegisteredRuleset } from "@itwin/presentation-common";
 import {
   createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
+  createTestContentDescriptor,
   createTestPropertiesContentField, createTestPropertyInfo, PromiseContainer, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
@@ -322,7 +323,7 @@ describe("TreeDataProvider", () => {
 
       const actualResult = await provider.getNodes(parentNode, pageOptions);
       expect(actualResult).to.have.lengthOf(1);
-      expect((actualResult[0] as PresentationTreeNodeItem).infoMessage).to.eq(translate("tree.no-filtered-children"));
+      expect((actualResult[0] as PresentationTreeNodeItem).label).to.eq(translate("tree.no-filtered-children"));
     });
   });
 
@@ -521,12 +522,15 @@ function applyInstanceFilter(node: PresentationTreeNodeItem, propName: string = 
   const property = createTestPropertyInfo({ name: propName });
   const field = createTestPropertiesContentField({ properties: [{ property }], name: property.name });
   const instanceFilter = `this.${property.name} IS NULL`;
-  node.filterInfo = {
-    filter: {
-      field,
-      operator: PropertyFilterRuleOperator.IsNull,
+  node.filtering = {
+    descriptor: createTestContentDescriptor({ fields: [] }),
+    active: {
+      filter: {
+        field,
+        operator: PropertyFilterRuleOperator.IsNull,
+      },
+      usedClasses: [],
     },
-    usedClasses: [],
   };
   return instanceFilter;
 }

@@ -10,7 +10,6 @@ import "./PresentationTreeNodeRenderer.scss";
 import * as React from "react";
 import classnames from "classnames";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "@itwin/components-react";
-import { TreeNode } from "@itwin/core-react";
 import { SvgCloseSmall, SvgFilter, SvgFilterHollow } from "@itwin/itwinui-icons-react";
 import { ButtonGroup, IconButton } from "@itwin/itwinui-react";
 import { isPresentationTreeNodeItem, PresentationTreeNodeItem } from "../DataProvider";
@@ -32,20 +31,8 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
   if (!isPresentationTreeNodeItem(nodeItem))
     return <TreeNodeRenderer {...restProps} />;
 
-  if (nodeItem.infoMessage) {
-    return (
-      <TreeNode
-        className="presentation-components-info-node"
-        isLeaf={true}
-        label={nodeItem.infoMessage}
-        level={props.node.depth}
-        isHoverDisabled={true}
-      />
-    );
-  }
-
   // hide filtering buttons if filtering is disabled explicitly or node is not filtered and has no children
-  const filteringDisabled = nodeItem.isFilteringDisabled || (nodeItem.filterInfo === undefined && props.node.numChildren === 0);
+  const filteringDisabled = nodeItem.filtering === undefined || (nodeItem.filtering.active === undefined && props.node.numChildren === 0);
 
   return (
     <TreeNodeRenderer
@@ -53,7 +40,7 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
       className={classnames("presentation-components-node", restProps.className)}
     >
       <PresentationTreeNodeActions
-        isFiltered={nodeItem.filterInfo !== undefined}
+        isFiltered={nodeItem.filtering?.active !== undefined}
         filteringDisabled={filteringDisabled}
         onClearFilterClick={() => { onClearFilterClick(nodeItem); }}
         onFilterClick={() => { onFilterClick(nodeItem); }}

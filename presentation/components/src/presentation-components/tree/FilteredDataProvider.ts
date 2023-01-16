@@ -78,8 +78,6 @@ export class FilteredPresentationTreeDataProvider implements IFilteredPresentati
     const treeNodes: DelayLoadedTreeNodeItem[] = [];
     for (let i = 0; i < paths.length; i++) {
       const node = createTreeNodeItem(paths[i].node, parentId);
-      // disable hierarchy level filtering
-      node.isFilteringDisabled = true;
 
       if (paths[i].filteringData && paths[i].filteringData!.matchesCount)
         this._filteredResultMatches.push({ id: node.id, matchesCount: paths[i].filteringData!.matchesCount });

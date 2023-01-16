@@ -10,7 +10,7 @@ import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { PropertyFilterRuleOperator, TreeActions, UiComponents } from "@itwin/components-react";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
-import { createTestPropertiesContentField, createTestPropertyInfo } from "@itwin/presentation-common/lib/cjs/test";
+import { createTestContentDescriptor, createTestPropertiesContentField, createTestPropertyInfo } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { PresentationInstanceFilterInfo } from "../../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
@@ -67,24 +67,6 @@ describe("PresentationTreeNodeRenderer", () => {
     expect(container.querySelector(".presentation-components-node")).to.be.null;
   });
 
-  it("renders info tree node", () => {
-    const message = "Some info";
-    const item = createTreeNodeItem({
-      infoMessage: message,
-    });
-    const node = createTreeModelNode(undefined, item);
-
-    const { getByText } = render(
-      <PresentationTreeNodeRenderer
-        treeActions={treeActionsMock.object}
-        node={node}
-        onFilterClick={() => { }}
-        onClearFilterClick={() => { }}
-      />);
-
-    getByText(message);
-  });
-
   it("renders presentation tree node", async () => {
     const testLabel = "testLabel";
     const item = createTreeNodeItem({ label: PropertyRecord.fromString(testLabel) });
@@ -103,7 +85,7 @@ describe("PresentationTreeNodeRenderer", () => {
   });
 
   it("renders node with filter button", () => {
-    const nodeItem = createTreeNodeItem();
+    const nodeItem = createTreeNodeItem({ filtering: { descriptor: createTestContentDescriptor({ fields: [] }) } });
     const node = createTreeModelNode(undefined, nodeItem);
 
     const { container } = render(
@@ -119,7 +101,12 @@ describe("PresentationTreeNodeRenderer", () => {
   });
 
   it("renders filtered node with filter and clear filter buttons", () => {
-    const nodeItem = createTreeNodeItem({ filterInfo: createFilterInfo() });
+    const nodeItem = createTreeNodeItem({
+      filtering: {
+        descriptor: createTestContentDescriptor({ fields: [] }),
+        active: createFilterInfo(),
+      },
+    });
     const node = createTreeModelNode(undefined, nodeItem);
 
     const { container } = render(
@@ -135,7 +122,7 @@ describe("PresentationTreeNodeRenderer", () => {
   });
 
   it("renders without buttons when node is not filterable", () => {
-    const nodeItem = createTreeNodeItem({ isFilteringDisabled: true });
+    const nodeItem = createTreeNodeItem();
     const node = createTreeModelNode(undefined, nodeItem);
 
     const { container } = render(
@@ -152,7 +139,7 @@ describe("PresentationTreeNodeRenderer", () => {
 
   it("invokes 'onFilterClick' when filter button is clicked", () => {
     const spy = sinon.spy();
-    const nodeItem = createTreeNodeItem();
+    const nodeItem = createTreeNodeItem({ filtering: { descriptor: createTestContentDescriptor({ fields: [] }) } });
     const node = createTreeModelNode(undefined, nodeItem);
 
     const { container } = render(
@@ -171,7 +158,12 @@ describe("PresentationTreeNodeRenderer", () => {
 
   it("invokes 'onClearFilterClick' when clear button is clicked", () => {
     const spy = sinon.spy();
-    const nodeItem = createTreeNodeItem({ filterInfo: createFilterInfo() });
+    const nodeItem = createTreeNodeItem({
+      filtering: {
+        descriptor: createTestContentDescriptor({ fields: [] }),
+        active: createFilterInfo(),
+      },
+    });
     const node = createTreeModelNode(undefined, nodeItem);
 
     const { container } = render(

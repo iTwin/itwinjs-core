@@ -7,7 +7,6 @@ Array [
     "description": "Dignissimos rerum ea et veniam deleniti.",
     "id": "3ce91f5f-fb53-47e3-9057-25bcde8fc52b/35e054ff-4af4-4b90-9f05-cf569876c4ad",
     "isCheckboxVisible": true,
-    "isFilteringDisabled": true,
     "key": Object {
       "instanceKeys": Array [
         Object {
@@ -53,7 +52,6 @@ Array [
     "hasChildren": true,
     "id": "cfa9ea2f-5601-44bf-9a7b-68f59066147e/26358d29-4465-4538-87ce-4ea9fecefae2",
     "isCheckboxVisible": true,
-    "isFilteringDisabled": true,
     "key": Object {
       "instanceKeys": Array [
         Object {
@@ -100,7 +98,6 @@ Array [
     "autoExpand": true,
     "hasChildren": true,
     "id": "d6f3ce25-3131-4958-9608-de24d3697e80/29cff0ad-814a-46e1-9924-d1c3285c70fc",
-    "isFilteringDisabled": true,
     "key": Object {
       "instanceKeys": Array [
         Object {
@@ -144,7 +141,6 @@ Array [
     "icon": "Practical Fresh Bacon",
     "id": "b5f84a08-8011-4207-a45e-b578ebc67f7a/05407b9a-87b2-4839-836b-820ec1b15ca0",
     "isCheckboxVisible": true,
-    "isFilteringDisabled": true,
     "key": Object {
       "instanceKeys": Array [
         Object {

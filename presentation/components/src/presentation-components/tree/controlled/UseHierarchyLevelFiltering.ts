@@ -39,10 +39,10 @@ export function useHierarchyLevelFiltering(props: UseHierarchyLevelFilteringProp
 function applyHierarchyLevelFilter(nodeLoader: ITreeNodeLoader, modelSource: TreeModelSource, nodeId: string, filter?: PresentationInstanceFilterInfo) {
   modelSource.modifyModel((model) => {
     const modelNode = model.getNode(nodeId);
-    if (!modelNode || !isTreeModelNode(modelNode) || !isPresentationTreeNodeItem(modelNode.item))
+    if (!modelNode || !isTreeModelNode(modelNode) || !isPresentationTreeNodeItem(modelNode.item) || !modelNode.item.filtering)
       return;
 
-    modelNode.item.filterInfo = filter;
+    modelNode.item.filtering.active = filter;
     if (filter)
       modelNode.isExpanded = true;
     model.clearChildren(nodeId);

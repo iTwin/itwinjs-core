@@ -15,9 +15,8 @@ import { createTestContentDescriptor, createTestPropertiesContentField, createTe
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { PresentationTreeRenderer, PresentationTreeRendererProps } from "../../../presentation-components/tree/controlled/PresentationTreeRenderer";
-import { mockPresentationManager } from "../../_helpers/UiComponents";
 import { stubRaf } from "../../instance-filter-builder/Common";
-import { createTreeModelNode } from "./Helpers";
+import { createTreeModelNode, createTreeNodeItem } from "./Helpers";
 
 describe("PresentationTreeRenderer", () => {
   stubRaf();
@@ -76,7 +75,8 @@ describe("PresentationTreeRenderer", () => {
 
   it("renders filter builder dialog when node filter button is clicked", async () => {
     const label = "Node Label";
-    const node = createTreeModelNode({ label: PropertyRecord.fromString(label) });
+    const nodeItem = createTreeNodeItem({ filtering: { descriptor: createTestContentDescriptor({ fields: [] }) } });
+    const node = createTreeModelNode({ label: PropertyRecord.fromString(label) }, nodeItem);
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
     visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
@@ -107,15 +107,21 @@ describe("PresentationTreeRenderer", () => {
 
   it("applies filter and closes dialog", async () => {
     const label = "Node Label";
-    const node = createTreeModelNode({ label: PropertyRecord.fromString(label) });
+    const property = createTestPropertyInfo({ name: "TestProperty", type: StandardTypeNames.Bool });
+    const propertyField = createTestPropertiesContentField({
+      properties: [{ property }],
+      name: property.name,
+      label: property.name,
+      type: { typeName: StandardTypeNames.Bool, valueFormat: PropertyValueFormat.Primitive },
+    });
+    const nodeItem = createTreeNodeItem({ filtering: { descriptor: createTestContentDescriptor({ fields: [propertyField] }) } });
+    const node = createTreeModelNode({ label: PropertyRecord.fromString(label) }, nodeItem);
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
     visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
     const treeModelMock = moq.Mock.ofType<TreeModel>();
     treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node);
     modelSourceMock.setup((x) => x.getModel()).returns(() => treeModelMock.object);
-
-    const { propertyField } = mockNodeDescriptor();
     modelSourceMock.setup((x) => x.modifyModel(moq.It.isAny())).verifiable(moq.Times.once());
 
     const { getByText, container } = render(
@@ -156,20 +162,3 @@ describe("PresentationTreeRenderer", () => {
     modelSourceMock.verifyAll();
   });
 });
-
-function mockNodeDescriptor() {
-  const { presentationManager } = mockPresentationManager();
-  Presentation.setPresentationManager(presentationManager.object);
-
-  const property = createTestPropertyInfo({ name: "TestProperty", type: StandardTypeNames.Bool });
-  const propertyField = createTestPropertiesContentField({
-    properties: [{ property }],
-    name: property.name,
-    label: property.name,
-    type: { typeName: StandardTypeNames.Bool, valueFormat: PropertyValueFormat.Primitive },
-  });
-  presentationManager
-    .setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
-    .returns(async () => createTestContentDescriptor({ fields: [propertyField] }));
-  return { property, propertyField };
-}
