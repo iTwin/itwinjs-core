@@ -157,17 +157,22 @@ async function testWindowSizeSettings() {
   const storeWindowName = "settingsTestWindow";
 
   await ElectronHost.startup();
+
+  NativeHost.settingsStore.removeData(`windowMaximized-${storeWindowName}`);
+  NativeHost.settingsStore.removeData(`windowPos-${storeWindowName}`);
+
   await ElectronHost.openMainWindow({ storeWindowName });
 
   const window = ElectronHost.mainWindow;
   assert(window);
 
   let size = ElectronHost.getWindowSizeSetting(storeWindowName);
-  const expectedSize = ElectronHost.getWindowSizeSetting(storeWindowName);
-  assert(size?.width === expectedSize?.width);
-  assert(size?.height === expectedSize?.height);
-  assert(size?.x === expectedSize?.x);
-  assert(size?.y === expectedSize?.y);
+  const expectedSize = window.getSize();
+  const expectedPos = window.getPosition();
+  assert(size?.width === expectedSize?.[0]);
+  assert(size?.height === expectedSize?.[1]);
+  assert(size?.x === expectedPos?.[0]);
+  assert(size?.y === expectedPos?.[1]);
 
   let isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized === window.isMaximized());
