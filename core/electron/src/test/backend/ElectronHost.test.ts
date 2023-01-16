@@ -42,14 +42,10 @@ export const electronHostTestSuite: TestSuite = {
       title: "Should open provided URL in main window.",
       func: testMainWindowUrl,
     },
-    /*
-      Test fails if run with xvfb on Linux (works fine in other cases).
-      Such case shouldn't affect real world applications so skipping test until solution is found.
-    */
-    // {
-    //   title: "Should save main window size, position and maximized flag.",
-    //   func: testWindowSizeSettings,
-    // },
+    {
+      title: "Should save main window size, position and maximized flag.",
+      func: testWindowSizeSettings,
+    },
   ],
 };
 
@@ -157,7 +153,7 @@ async function testMainWindowUrl() {
   assert(url === window.webContents.getURL());
 }
 
-async function _testWindowSizeSettings() {
+async function testWindowSizeSettings() {
   const storeWindowName = "settingsTestWindow";
 
   await ElectronHost.startup();
@@ -177,21 +173,23 @@ async function _testWindowSizeSettings() {
   assert(isMaximized === window.isMaximized());
 
   window.maximize();
-  await new Promise((resolve) => setTimeout(resolve, 100)); // "maximize" event is not always emitted immediately
+  window.emit("maximize"); // "maximize" event is not emitted when running with xvfb
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized);
 
   window.unmaximize();
-  await new Promise((resolve) => setTimeout(resolve, 100)); // "unmaximize" event is not always emitted immediately
+  window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(!isMaximized);
 
+  await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for window to "unmaximize"
+
   const width = 250;
   const height = 251;
   window.setSize(width, height);
-  window.emit("resized");
+  window.emit("resized"); // "resized" event is only emitted during manual resize and only on Windows and Macos
   size = ElectronHost.getWindowSizeSetting(storeWindowName);
   assert(size?.width === width);
   assert(size?.height === height);
@@ -199,7 +197,7 @@ async function _testWindowSizeSettings() {
   const x = 15;
   const y = 16;
   window.setPosition(x, y);
-  window.emit("moved");
+  window.emit("moved"); // "moved" event is only emitted during manual move and only on Windows and Macos
   size = ElectronHost.getWindowSizeSetting(storeWindowName);
   assert(size?.x === x);
   assert(size?.y === y);
