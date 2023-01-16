@@ -13,8 +13,8 @@ import {
   ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions,
   DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, LocalizationHelper,
+  FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions,
+  InstanceKey, isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, LocalizationHelper,
   MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized,
   Ruleset, RulesetVariable, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
@@ -444,6 +444,16 @@ export class PresentationManager {
    */
   public async getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
     return this._detail.getNodesCount(requestOptions);
+  }
+
+  /**
+   * Retrieves hierarchy level descriptor
+   * @alpha
+   */
+  public async getNodesDescriptor(requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined> {
+    const response = await this._detail.getNodesDescriptor(requestOptions);
+    const reviver = (key: string, value: any) => key === "" ? Descriptor.fromJSON(value) : value;
+    return JSON.parse(response, reviver);
   }
 
   /**

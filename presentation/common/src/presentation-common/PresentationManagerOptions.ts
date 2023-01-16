@@ -71,6 +71,15 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
 }
 
 /**
+ * Params for hierarchy level descriptor requests.
+ * @alpha
+ */
+export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+  /** Key of the parent node to get descriptor for */
+  parentKey?: TNodeKey;
+}
+
+/**
  * Request type of filtering hierarchies by given ECInstance paths.
  * @public
  */
