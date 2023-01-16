@@ -55,22 +55,22 @@ export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRenderer
       <PresentationTreeNodeActions
         isFiltered={nodeItem.filterInfo !== undefined}
         filteringDisabled={filteringDisabled}
-        onClear={() => { onClearFilterClick(nodeItem); }}
-        onFilter={() => { onFilterClick(nodeItem); }}
+        onClearFilterClick={() => { onClearFilterClick(nodeItem); }}
+        onFilterClick={() => { onFilterClick(nodeItem); }}
       />
     </TreeNodeRenderer>
   );
 }
 
 interface PresentationTreeNodeActionsProps {
-  onFilter: () => void;
-  onClear: () => void;
+  onFilterClick: () => void;
+  onClearFilterClick: () => void;
   filteringDisabled?: boolean;
   isFiltered?: boolean;
 }
 
 function PresentationTreeNodeActions(props: PresentationTreeNodeActionsProps) {
-  const { onFilter, onClear, filteringDisabled, isFiltered } = props;
+  const { onFilterClick, onClearFilterClick, filteringDisabled, isFiltered } = props;
   if (filteringDisabled)
     return null;
 
@@ -83,7 +83,7 @@ function PresentationTreeNodeActions(props: PresentationTreeNodeActionsProps) {
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              onClear();
+              onClearFilterClick();
             }}
           >
             <SvgCloseSmall />
@@ -94,7 +94,7 @@ function PresentationTreeNodeActions(props: PresentationTreeNodeActionsProps) {
           size="small"
           onClick={(e) => {
             e.stopPropagation();
-            onFilter();
+            onFilterClick();
           }}
         >
           {isFiltered ? <SvgFilter /> : <SvgFilterHollow />}
