@@ -80,5 +80,5 @@ export function isToolbarGroupItem(item: ToolbarItem): item is ToolbarGroupItem 
  * @public
  */
 export function isToolbarCustomItem(item: ToolbarItem): item is ToolbarCustomItem {
-  return UIA_ToolbarItemUtilities.isActionButton(item);
+  return UIA_ToolbarItemUtilities.isCustomDefinition(item);
 }
