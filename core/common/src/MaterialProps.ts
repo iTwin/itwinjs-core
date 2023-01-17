@@ -65,6 +65,20 @@ export interface TextureMapProps {
   TextureId: Id64String;
 }
 
+export enum NormalMapFlags {
+  None = 0,
+  InvertGreenChannel = 1 << 0,
+}
+
+export interface NormalMapProps extends TextureMapProps {
+  NormalFlags?: NormalMapFlags;
+}
+
+export interface RenderMaterialAssetMapsProps {
+  Pattern?: TextureMapProps;
+  Normal?: NormalMapProps;
+}
+
 /** Describes the graphical properties of a [RenderMaterialElement]($backend) as part of a [[RenderMaterialProps]].
  * @public
  * @extensions
@@ -102,13 +116,11 @@ export interface RenderMaterialAssetProps {
   HasReflectColor?: boolean;
   /** Surface reflectance color; if undefined, defaults to black */
   reflect_color?: RgbFactorProps;
+  pbr_normal?: number;
   /** An optional set of texture maps associated with this material.
    * A large variety of map types may be present (e.g., bump maps, specular maps, fur, etc), but currently only the pattern map is used.
    */
-  Map?: {
-    /** Optional pattern map. */
-    Pattern?: TextureMapProps;
-  };
+  Map?: RenderMaterialAssetMapsProps;
 }
 
 /** Properties that define a [RenderMaterialElement]($backend).

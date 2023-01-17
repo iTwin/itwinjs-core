@@ -6,8 +6,10 @@
  * @module Elements
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import {
+  BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, NormalMapFlags, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, TextureMapProps,
+} from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -90,7 +92,42 @@ export class RenderMaterialElement extends DefinitionElement {
    * @throws [[IModelError]] if unable to create the element.
    */
   public static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): RenderMaterialElement {
-    const map = undefined !== params.patternMap ? { Pattern: params.patternMap } : undefined;
+    let maps: RenderMaterialAssetMapsProps | undefined;
+    const pbr_normal = params.normalMap?.scale;
+    if (params.patternMap || params.normalMap) {
+      // If both normal and pattern map are present, their texture mapping modes, angles, scales, etc are expected to match.
+      type TexMap = Omit<TextureMapProps, "TextureId">;
+      function choose<K extends keyof TexMap>(obj: TexMap, key: K): void {
+        obj[key] = params.patternMap ? params.patternMap[key] : (params.normalMap ? params.normalMap[key] : undefined);
+      }
+
+      const baseProps: TexMap = { };
+      choose(baseProps, "pattern_angle");
+      choose(baseProps, "pattern_u_flip");
+      choose(baseProps, "pattern_flip");
+      choose(baseProps, "pattern_scale");
+      choose(baseProps, "pattern_offset");
+      choose(baseProps, "pattern_scalemode");
+      choose(baseProps, "pattern_mapping");
+      choose(baseProps, "pattern_weight");
+
+      maps = { };
+      if (params.patternMap)
+        maps.Pattern = { ...params.patternMap, ...baseProps, };
+
+      if (params.normalMap) {
+        let flags = params.normalMap.NormalFlags ?? NormalMapFlags.None;
+        flags = params.normalMap.invertGreen ? (flags | NormalMapFlags.InvertGreenChannel) : (flags & ~NormalMapFlags.InvertGreenChannel);
+        maps.Normal = {
+          ...params.normalMap,
+          ...baseProps,
+          TextureId: params.normalMap.TextureId ?? Id64.invalid,
+          NormalFlags: flags,
+        };
+      }
+    }
+
+    // const map = undefined !== params.patternMap ? { Pattern: params.patternMap } : undefined;
     const renderMaterialProps: RenderMaterialProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, materialName),
@@ -115,15 +152,18 @@ export class RenderMaterialElement extends DefinitionElement {
             reflect: params.reflect,
             HasReflectColor: params.reflectColor !== undefined,
             reflect_color: params.reflectColor,
-            Map: map,
+            Map: maps,
+            pbr_normal,
           },
         },
       },
       model: definitionModelId,
       isPrivate: false,
     };
+
     return new RenderMaterialElement(renderMaterialProps, iModelDb);
   }
+
   /**
    * Insert a new RenderMaterial into a model.
    * @param iModelDb Insert into this iModel
@@ -167,6 +207,11 @@ export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
     public reflectColor?: number[];
     /** If defined, specifies the pattern mapping. */
     public patternMap?: TextureMapProps;
+    public normalMap?: Omit<NormalMapProps, "TextureId"> & {
+      TextureId?: Id64String;
+      scale?: number;
+      invertGreen?: boolean;
+    };
 
     /** Construct a new RenderMaterial.Params object with the specified paletteName.  Alter the public members on that object to specify settings. */
     public constructor(paletteName: string) {
