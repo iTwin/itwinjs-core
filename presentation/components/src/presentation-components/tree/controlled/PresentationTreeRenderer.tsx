@@ -11,9 +11,9 @@ import { TreeModelSource, TreeNodeRendererProps, TreeRenderer, TreeRendererProps
 import { IModelConnection } from "@itwin/core-frontend";
 import { PresentationInstanceFilterInfo } from "../../instance-filter-builder/PresentationInstanceFilterBuilder";
 import { PresentationInstanceFilterDialog } from "../../instance-filter-builder/PresentationInstanceFilterDialog";
-import { PresentationTreeNodeItem, PresentationTreeNodeItemFilteringInfo } from "../DataProvider";
 import { PresentationTreeNodeRenderer } from "./PresentationTreeNodeRenderer";
 import { useHierarchyLevelFiltering } from "./UseHierarchyLevelFiltering";
+import { PresentationTreeNodeItem, PresentationTreeNodeItemFilteringInfo } from "../PresentationTreeNodeItem";
 
 /**
  * @alpha

@@ -12,8 +12,9 @@ import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/compo
 import { IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  BaseNodeKey, ClientDiagnosticsOptions, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceFilterDefinition, KeySet, Node, NodeKey,
-  NodePathElement, Paged, PresentationError, PresentationStatus, Ruleset, RuleTypes,
+  BaseNodeKey, ClientDiagnosticsOptions, ContentSpecificationTypes, DefaultContentDisplayTypes, FilterByTextHierarchyRequestOptions,
+  HierarchyRequestOptions, InstanceFilterDefinition, KeySet, Node, NodeKey, NodePathElement, Paged, PresentationError, PresentationStatus, Ruleset,
+  RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
@@ -21,8 +22,8 @@ import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 import { translate } from "../common/Utils";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { convertToInstanceFilterDefinition } from "../instance-filter-builder/InstanceFilterConverter";
-import { PresentationInstanceFilterInfo } from "../instance-filter-builder/PresentationInstanceFilterBuilder";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
+import { isPresentationTreeNodeItem, PresentationTreeNodeItem } from "./PresentationTreeNodeItem";
 import { createTreeNodeId, createTreeNodeItem, CreateTreeNodeItemProps, pageOptionsUiToPresentation } from "./Utils";
 
 /**
@@ -205,23 +206,6 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
       filterText: filter,
     });
   }
-}
-
-/** @alpha */
-export interface PresentationTreeNodeItemFilteringInfo {
-  descriptor: Descriptor | (() => Promise<Descriptor>);
-  active?: PresentationInstanceFilterInfo;
-}
-
-/** @alpha */
-export interface PresentationTreeNodeItem extends DelayLoadedTreeNodeItem {
-  key: NodeKey;
-  filtering?: PresentationTreeNodeItemFilteringInfo;
-}
-
-/** @alpha */
-export function isPresentationTreeNodeItem(item: TreeNodeItem): item is PresentationTreeNodeItem {
-  return (item as PresentationTreeNodeItem).key !== undefined;
 }
 
 function getFilterDefinition(imodel: IModelConnection, node?: TreeNodeItem) {

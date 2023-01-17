@@ -12,7 +12,7 @@ import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/c
 import {
   IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager, RulesetManager, RulesetVariablesManager,
 } from "@itwin/presentation-frontend";
-import { PresentationTreeNodeItem } from "../../presentation-components/tree/DataProvider";
+import { PresentationTreeNodeItem } from "../../presentation-components/tree/PresentationTreeNodeItem";
 
 /**
  * @internal Used for testing only.

@@ -72,6 +72,7 @@ export * from "./presentation-components/table/WithUnifiedSelection";
 export * from "./presentation-components/tree/DataProvider";
 export * from "./presentation-components/tree/IPresentationTreeDataProvider";
 export * from "./presentation-components/tree/FilteredDataProvider";
+export * from "./presentation-components/tree/PresentationTreeNodeItem";
 export * from "./presentation-components/tree/controlled/UseUnifiedSelection";
 export * from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
 export * from "./presentation-components/tree/controlled/TreeHooks";

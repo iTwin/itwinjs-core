@@ -12,7 +12,7 @@ import { CheckBoxState } from "@itwin/core-react";
 import { LabelDefinition, Node, NodeKey, PartialNode, PageOptions as PresentationPageOptions } from "@itwin/presentation-common";
 import { StyleHelper } from "../common/StyleHelper";
 import { createLabelRecord } from "../common/Utils";
-import { PresentationTreeNodeItem } from "./DataProvider";
+import { PresentationTreeNodeItem } from "./PresentationTreeNodeItem";
 
 /** @internal */
 export interface CreateTreeNodeItemProps {

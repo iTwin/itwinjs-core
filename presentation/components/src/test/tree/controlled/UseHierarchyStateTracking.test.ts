@@ -15,8 +15,8 @@ import { createLabelRecord } from "../../../presentation-components/common/Utils
 import {
   useHierarchyStateTracking, UseHierarchyStateTrackingProps,
 } from "../../../presentation-components/tree/controlled/UseHierarchyStateTracking";
-import { PresentationTreeNodeItem } from "../../../presentation-components/tree/DataProvider";
 import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
+import { PresentationTreeNodeItem } from "../../../presentation-components/tree/PresentationTreeNodeItem";
 import { mockPresentationManager } from "../../_helpers/UiComponents";
 
 function createNodeItem(nodeId: string): PresentationTreeNodeItem {

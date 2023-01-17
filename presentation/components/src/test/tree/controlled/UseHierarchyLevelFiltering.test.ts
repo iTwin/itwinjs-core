@@ -13,7 +13,7 @@ import { createRandomECInstancesNodeKey, createTestContentDescriptor, createTest
 import { renderHook } from "@testing-library/react-hooks";
 import { PresentationInstanceFilterInfo } from "../../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 import { useHierarchyLevelFiltering } from "../../../presentation-components/tree/controlled/UseHierarchyLevelFiltering";
-import { PresentationTreeNodeItem } from "../../../presentation-components/tree/DataProvider";
+import { PresentationTreeNodeItem } from "../../../presentation-components/tree/PresentationTreeNodeItem";
 
 function createTreeModelInput(input?: Partial<TreeModelNodeInput>, treeItem?: Partial<PresentationTreeNodeItem>): TreeModelNodeInput {
   const item: PresentationTreeNodeItem = {

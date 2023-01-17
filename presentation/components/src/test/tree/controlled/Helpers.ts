@@ -7,7 +7,7 @@ import { PropertyRecord } from "@itwin/appui-abstract";
 import { TreeModelNode, TreeNodeItem } from "@itwin/components-react";
 import { CheckBoxState } from "@itwin/core-react";
 import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
-import { PresentationTreeNodeItem } from "../../../presentation-components";
+import { PresentationTreeNodeItem } from "../../../presentation-components/tree/PresentationTreeNodeItem";
 
 export function createTreeNodeItem(item?: Partial<PresentationTreeNodeItem>): PresentationTreeNodeItem {
   return {

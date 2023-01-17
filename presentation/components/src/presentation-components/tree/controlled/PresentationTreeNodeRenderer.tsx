@@ -12,7 +12,7 @@ import classnames from "classnames";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "@itwin/components-react";
 import { SvgCloseSmall, SvgFilter, SvgFilterHollow } from "@itwin/itwinui-icons-react";
 import { ButtonGroup, IconButton } from "@itwin/itwinui-react";
-import { isPresentationTreeNodeItem, PresentationTreeNodeItem } from "../DataProvider";
+import { isPresentationTreeNodeItem, PresentationTreeNodeItem } from "../PresentationTreeNodeItem";
 
 /**
  * @alpha

@@ -9,7 +9,7 @@
 import { isTreeModelNode, ITreeNodeLoader, TreeModelSource, TreeNodeItem } from "@itwin/components-react";
 import * as React from "react";
 import { PresentationInstanceFilterInfo } from "../../instance-filter-builder/PresentationInstanceFilterBuilder";
-import { isPresentationTreeNodeItem } from "../DataProvider";
+import { isPresentationTreeNodeItem } from "../PresentationTreeNodeItem";
 
 /**
  * @alpha

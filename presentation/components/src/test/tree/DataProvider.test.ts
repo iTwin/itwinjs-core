@@ -7,8 +7,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PageOptions, PropertyFilterRuleOperator, TreeNodeItem } from "@itwin/components-react";
+import { PageOptions, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
@@ -21,9 +20,10 @@ import {
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { translate } from "../../presentation-components/common/Utils";
-import { isPresentationTreeNodeItem, PresentationTreeDataProvider, PresentationTreeNodeItem } from "../../presentation-components/tree/DataProvider";
+import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
+import { PresentationTreeNodeItem } from "../../presentation-components/tree/PresentationTreeNodeItem";
 
 describe("TreeDataProvider", () => {
 
@@ -500,22 +500,6 @@ describe("TreeDataProvider", () => {
 
   });
 
-});
-
-describe("isPresentationTreeNodeItem", () => {
-  it("returns correct values", () => {
-    const presentationItem: PresentationTreeNodeItem = {
-      id: "presentation_item_id",
-      key: createRandomECInstancesNodeKey(),
-      label: PropertyRecord.fromString("Presentation Item"),
-    };
-    const simpleItem: TreeNodeItem = {
-      id: "simple_item_id",
-      label: PropertyRecord.fromString("Simple Item"),
-    };
-    expect(isPresentationTreeNodeItem(presentationItem)).to.be.true;
-    expect(isPresentationTreeNodeItem(simpleItem)).to.be.false;
-  });
 });
 
 function applyInstanceFilter(node: PresentationTreeNodeItem, propName: string = "prop") {

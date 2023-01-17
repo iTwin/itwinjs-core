@@ -25,8 +25,8 @@ import {
   IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler,
 } from "../../../presentation-components";
 import { UnifiedSelectionTreeEventHandlerParams } from "../../../presentation-components/tree/controlled/UseUnifiedSelection";
-import { PresentationTreeNodeItem } from "../../../presentation-components/tree/DataProvider";
 import { createRandomTreeNodeItem } from "../../_helpers/UiComponents";
+import { PresentationTreeNodeItem } from "../../../presentation-components/tree/PresentationTreeNodeItem";
 
 const awaitableObservable = <T extends unknown>(input: ObservableInput<T>) => {
   const promise = new ResolvablePromise<void>();
