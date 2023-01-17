@@ -347,84 +347,89 @@ describe("IModelTransformerHub", () => {
       | Record<number, number>
       // create a copy of an iModel in the hub with a given name
       | { copy: string }
-      // synchronize with the iModel of a given name
-      | { sync: string };
+      // synchronize with the changes in an iModel of a given name from a starting timeline point
+      // to the given ending point, inclusive. (end defaults to current point in time)
+      | { sync: [string, number, number?] };
 
-    // For each step in timeline, either a string with the id of a previous iModel to seed from,
-    // or a list of states to push as individual changes, model not listed if unchanged from previous.
-    // Branches must be seeded and named "branch*" in order to be correctly handled
-    const timeline: {
+    // For each step in timeline, an object of iModels mapping to the event that occurs:
+    // - a 'copy' event with the name of an iModel to seed from, creating the iModel
+    // - a 'sync' event with the name of an iModel to sync from
+    // - an object containing the content of the iModel that it updates to,
+    //   creating the iModel with this initial state if it didn't exist before
+    // - an 'assert' function to run on the state of all the iModels in the timeline
+    const timeline: Record<number, {
       tag?: string;
       assert?: (imodels: Record<string, IModelState>) => void;
-      [modelName: string]:
-      // only necessary for the previous optional properties
-      | undefined
-      // only necessary for the tag property
-      | string
-      // only necessary for the assert property
-      | ((imodels: Record<string, IModelState>) => void)
-      | TimelineStateChange;
-    }[] = [
-      { master: { 1:1, 2:1, 20:1, 21:1 } },
-      { branch1: { copy: "master" }, branch2: { copy: "master" } },
-      { branch1: { 1:1, 2:2, 3:1, 4:1, 20:1, 21:1 }, tag: "branch1-first-update" },
-      { branch1: { 1:2, 2:2, 4:1, 5:1, 6:1, 21:1 } },
-      { branch1: { 1:2, 2:2, 4:1, 5:1, 6:1, 30:1 } },
-      { master: { sync: "branch1-first-update" } },
-      { master: { sync: "branch1" } }, // squash-merge remaining changes
-      { branch2: { sync: "master" } },
-      { branch2: { 1:2, 2:2, 4:1, 5:1, 6:1, 7:1, 8:1, 30:1 } },
+      [modelName: string]: | undefined // only necessary for the previous optional properties
+                           | string // only necessary for the tag property
+                           | ((imodels: Record<string, IModelState>) => void) // only necessary for the assert property
+                           | TimelineStateChange;
+    }> = {
+      0: { master: { 1:1, 2:1, 20:1, 21:1 } },
+      1: { branch1: { copy: "master" }, branch2: { copy: "master" } },
+      2: { branch1: { 1:1, 2:2, 3:1, 4:1, 20:1, 21:1 } },
+      3: { branch1: { 1:2, 2:2, 4:1, 5:1, 6:1, 21:1 } },
+      4: { branch1: { 1:2, 2:2, 4:1, 5:1, 6:1, 30:1 } },
+      5: { master: { sync: ["branch1", 2, 2] } },
+      6: { master: { sync: ["branch1", 3, 4] } }, // squash-merge remaining changes
+      7: { branch2: { sync: ["master", 0] } },
+      8: { branch2: { 1:2, 2:2, 4:1, 5:1, 6:1, 7:1, 8:1, 30:1 } },
       // insert a conflicting state for 7 on master
-      { master: { 1:2, 2:2, 4:1, 5:1, 6:1, 7:2, 9:1, 30:1 } },
-      { master: { sync: "branch2" } },
-      { assert({master}) {
+      9: { master: { 1:2, 2:2, 4:1, 5:1, 6:1, 7:2, 9:1, 30:1 } },
+      10: { master: { sync: ["branch2", 8] } },
+      11: { assert({master}) {
         // master won the conflict
         assert.equal(count(master.db, ExternalSourceAspect.classFullName), 0);
         assertPhysicalObjectUpdated(master.db, 7);
       }},
-      { master: { 1:2, 2:2, 4:1, 5:1, 6:2, 8:1, 9:1, 30:1 } },
-      { branch1: { sync: "master" } },
-    ];
+      12: { master: { 1:2, 2:2, 4:1, 5:1, 6:2, 8:1, 9:1, 30:1 } },
+      13: { branch1: { sync: ["master", 5] } },
+    };
 
     const trackedIModels = new Map<string, IModelState>();
+    const masterOfBranch = new Map<string, string>();
 
-    const tagToPerIModelChangesetId = new Map<string, Record<string, string>>();
+    const ptIndexToChangesets = new Map<number, Record<string, string>>();
 
     // HACK: update `maintainPhysicalObjects`
     const hackObjToArrayState = (obj: Record<number, number>): number[] => Object.keys(obj).map(Number);
 
-    for (let i = 0; i < timeline.length; ++i) {
+    for (let i = 0; i < Object.values(timeline).length; ++i) {
       const pt = timeline[i];
       const iModelChanges = Object.entries(trackedIModels).filter((entry): entry is [string, TimelineStateChange] => entry[0] !== "assert" && entry[0] !== "id" && trackedIModels.has(entry[0]));
 
-      const newIModels = Object.keys(trackedIModels).filter((s) => s !== "assert" && s !== "id" && !trackedIModels.has(s));
+      const newIModels = Object.keys(trackedIModels).filter((s) => s !== "assert" && s !== "tag" && !trackedIModels.has(s));
       for (const newIModelName of newIModels) {
-        if (newIModelName === "id" || typeof newIModelName !== "string")
-          return;
+        if (["assert", "tag"].includes(newIModelName) || typeof newIModelName !== "string")
+          continue;
 
-        const newIModelState = pt[newIModelName] as Record<number, number>;
-        const seed = typeof newIModelState === "string" ? trackedIModels.get(newIModelState)! : undefined;
+        const newIModelEvent = pt[newIModelName];
+        assert(typeof newIModelEvent === "object");
+        assert(!("sync" in newIModelEvent), "cannot sync an iModel that hasn't been created yet!");
+
+        const seed = "copy" in newIModelEvent ? trackedIModels.get(newIModelEvent.copy)! : undefined;
         const newIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: newIModelName, version0: seed?.db.pathName, noLocks: true });
 
         const newIModelDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: newIModelId });
         assert.isTrue(newIModelDb.isBriefcaseDb());
         assert.equal(newIModelDb.iTwinId, iTwinId);
-        if (typeof newIModelState === "string")
+        if ("copy" in newIModelEvent)
           assertPhysicalObjects(newIModelDb, hackObjToArrayState(seed!.state));
         else {
-          maintainPhysicalObjects(newIModelDb, hackObjToArrayState(newIModelState));
-          await saveAndPushChanges(newIModelDb, `to state [${newIModelState}] at point ${i}`);
+          maintainPhysicalObjects(newIModelDb, hackObjToArrayState(newIModelEvent));
+          await saveAndPushChanges(newIModelDb, `to state [${newIModelEvent}] at point ${i}`);
         }
 
         trackedIModels.set(newIModelName, {
-          state: seed?.state ?? newIModelState as number[],
+          state: seed?.state ?? newIModelEvent as number[],
           db: newIModelDb,
           id: newIModelId,
         });
 
-        const isNewBranch = newIModelName.startsWith("branch");
+        const isNewBranch = "copy" in newIModelEvent;
         if (isNewBranch) {
           assert(seed);
+          masterOfBranch.set(newIModelName, newIModelEvent.copy);
           const master = seed;
           const branchDb = newIModelDb;
           // record branch provenance
@@ -438,79 +443,43 @@ describe("IModelTransformerHub", () => {
       }
 
       for (const [iModelName, event] of iModelChanges) {
-        if ("sync" in event) {
-          return;
-        } else if ("copy" in event) {
-          return;
+        if ("copy" in event) {
+          // "copy" event has already been handled in the new imodels loop above
+          continue;
+        } else if ("sync" in event) {
+          const [syncTargetName, startIndex, endIndex] = event.sync;
+          // if the target to sync from is master, it's a normal sync
+          const isForwardSync = masterOfBranch.get(iModelName) === syncTargetName;
+          const source = trackedIModels.get(iModelName)!;
+          const target = trackedIModels.get(syncTargetName)!;
+          const syncer = new IModelTransformer(source.db, target.db, { isReverseSynchronization: !isForwardSync });
+          const startChangesetId = ptIndexToChangesets.get(startIndex)?.[syncTargetName];
+          const endChangesetId = endIndex ? ptIndexToChangesets.get(endIndex)?.[syncTargetName] : undefined;
+          await syncer.processChanges(accessToken, startChangesetId, endChangesetId);
+          syncer.dispose();
         } else {
           const newState = event;
           const alreadySeenIModel = trackedIModels.get(iModelName)!;
           const prevState = alreadySeenIModel.state;
           alreadySeenIModel.state = event;
           // `(maintain|assert)PhysicalObjects` use negative to mean deleted
-          const delta = Object.fromEntries(Object.entries(prevState).map(([k,v]) => [k,v+newState[k]]).filter());
+          const delta = Object.fromEntries(Object.entries(prevState).map(([k,v]) => [k,v+newState[+k]]).filter(([k,v]) => v > 0));
           maintainPhysicalObjects(alreadySeenIModel.db, delta);
           await saveAndPushChanges(alreadySeenIModel.db, `to: [${event}], delta: [${delta}], at ${i}`);
         }
-
       }
 
       if (pt.assert) {
         pt.assert(Object.fromEntries(trackedIModels));
       }
 
-      if (pt.tag) {
-        assert(!tagToPerIModelChangesetId.has(pt.tag));
-        tagToPerIModelChangesetId.set(
-          pt.tag,
-          Object.fromEntries(
-            [...trackedIModels].map(([name, state]) => [name, state.db.changeset.id])
-          )
-        );
-      }
+      ptIndexToChangesets.set(
+        i,
+        Object.fromEntries(
+          [...trackedIModels].map(([name, state]) => [name, state.db.changeset.id])
+        )
+      );
     }
-
-    // create and push master IModel
-    const masterIModelName = "Master";
-    const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
-    if (IModelJsFs.existsSync(masterSeedFileName))
-      IModelJsFs.removeSync(masterSeedFileName); // make sure file from last run does not exist
-
-    const state0 = [1, 2, 20, 21]; // 20, 21 will be deleted by a branch
-    const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: "Master" } });
-    populateMaster(masterSeedDb, state0);
-    assert.isTrue(IModelJsFs.existsSync(masterSeedFileName));
-    masterSeedDb.nativeDb.setITwinId(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
-    masterSeedDb.saveChanges();
-    masterSeedDb.close();
-    const masterIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: masterIModelName, description: "master", version0: masterSeedFileName, noLocks: true });
-    assert.isTrue(Guid.isGuid(masterIModelId));
-    IModelJsFs.removeSync(masterSeedFileName); // now that iModel is pushed, can delete local copy of the seed
-    const masterDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: masterIModelId });
-    assert.isTrue(masterDb.isBriefcaseDb());
-    assert.equal(masterDb.iTwinId, iTwinId);
-    assert.equal(masterDb.iModelId, masterIModelId);
-    assertPhysicalObjects(masterDb, state0);
-    const changesetMasterState0 = masterDb.changeset.id;
-
-    // create Branch1 iModel using Master as a template
-    const branchIModelName1 = "Branch1";
-    const branchIModelId1 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, version0: masterDb.pathName, noLocks: true });
-
-    const branchDb1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId1 });
-    assert.isTrue(branchDb1.isBriefcaseDb());
-    assert.equal(branchDb1.iTwinId, iTwinId);
-    assertPhysicalObjects(branchDb1, state0);
-    const changesetBranch1First = branchDb1.changeset.id;
-
-    // create Branch2 iModel using Master as a template
-    const branchIModelName2 = "Branch2";
-    const branchIModelId2 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, version0: masterDb.pathName, noLocks: true });
-    const branchDb2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId2 });
-    assert.isTrue(branchDb2.isBriefcaseDb());
-    assert.equal(branchDb2.iTwinId, iTwinId);
-    assertPhysicalObjects(branchDb2, state0);
-    const changesetBranch2First = branchDb2.changeset.id;
 
     // create empty iModel meant to contain replayed master history
     const replayedIModelName = "Replayed";
@@ -521,148 +490,10 @@ describe("IModelTransformerHub", () => {
     assert.equal(replayedDb.iTwinId, iTwinId);
 
     try {
-      // record provenance in Branch1 and Branch2 iModels
-      const provenanceInserterB1 = new IModelTransformer(masterDb, branchDb1, {
-        wasSourceIModelCopiedToTarget: true,
-      });
-      const provenanceInserterB2 = new IModelTransformer(masterDb, branchDb2, {
-        wasSourceIModelCopiedToTarget: true,
-      });
-      await provenanceInserterB1.processAll();
-      await provenanceInserterB2.processAll();
-      provenanceInserterB1.dispose();
-      provenanceInserterB2.dispose();
-      assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
-      assert.isAbove(count(branchDb1, ExternalSourceAspect.classFullName), state0.length);
-      assert.isAbove(count(branchDb2, ExternalSourceAspect.classFullName), state0.length);
+      const master = trackedIModels.get("master");
+      assert(master);
 
-      // push Branch1 and Branch2 provenance changes
-      await saveAndPushChanges(branchDb1, "State0");
-      await saveAndPushChanges(branchDb2, "State0");
-      const changesetBranch1State0 = branchDb1.changeset.id;
-      const changesetBranch2State0 = branchDb2.changeset.id;
-      assert.notEqual(changesetBranch1State0, changesetBranch1First);
-      assert.notEqual(changesetBranch2State0, changesetBranch2First);
-
-      // push Branch1 State1
-      const delta01 = [2, 3, 4]; // update 2, insert 3 and 4
-      const state1 = [1, 2, 3, 4, 20];
-      maintainPhysicalObjects(branchDb1, delta01);
-      assertPhysicalObjects(branchDb1, state1);
-      await saveAndPushChanges(branchDb1, "State0 -> State1");
-      const changesetBranch1State1 = branchDb1.changeset.id;
-      assert.notEqual(changesetBranch1State1, changesetBranch1State0);
-
-      // push Branch1 State2
-      const delta1_2 = [1, -3, 5, 6, -20]; // update 1, delete 3, 20, insert 5 and 6
-      const state2 = [1, 2, -3, 4, 5, 6];
-      maintainPhysicalObjects(branchDb1, delta1_2);
-      assertPhysicalObjects(branchDb1, state2);
-      await saveAndPushChanges(branchDb1, "State1 -> State2");
-      const changesetBranch1State2 = branchDb1.changeset.id;
-      assert.notEqual(changesetBranch1State2, changesetBranch1State1);
-
-      // push Branch1 State3
-      const delta13 = [1, -3, 5, 6, -20]; // insert 30
-      const state2 = [1, 2, -3, 4, 5, 6];
-      maintainPhysicalObjects(branchDb1, delta1_3);
-      assertPhysicalObjects(branchDb1, state2);
-      await saveAndPushChanges(branchDb1, "State1 -> State2");
-      const changesetBranch1State2 = branchDb1.changeset.id;
-      assert.notEqual(changesetBranch1State2, changesetBranch1State1);
-
-      // merge half of changes made on Branch1 back to Master
-      const branch1ToMaster1 = new IModelTransformer(branchDb1, masterDb, {
-        isReverseSynchronization: true, // provenance stored in source/branch
-      });
-      await branch1ToMaster1.processChanges(accessToken, changesetBranch1State1);
-      branch1ToMaster1.dispose();
-      assertPhysicalObjects(masterDb, state2);
-      assertPhysicalObjectUpdated(masterDb, 1);
-      assertPhysicalObjectUpdated(masterDb, 2);
-      assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
-      await saveAndPushChanges(masterDb, "State0 -> State2"); // a squash of 2 branch changes into 1 in the masterDb change ledger
-      const changesetMasterState2 = masterDb.changeset.id;
-      assert.notEqual(changesetMasterState2, changesetMasterState0);
-      branchDb1.saveChanges(); // saves provenance locally in case of re-merge
-
-      // merge second half of changes made on Branch1 back to Master
-      const branch1ToMaster2 = new IModelTransformer(branchDb1, masterDb, {
-        isReverseSynchronization: true, // provenance stored in source/branch
-      });
-      await branch1ToMaster2.processChanges(accessToken, changesetBranch1State2);
-      branch1ToMaster2.dispose();
-      assertPhysicalObjects(masterDb, state2);
-      assertPhysicalObjectUpdated(masterDb, 1);
-      assertPhysicalObjectUpdated(masterDb, 2);
-      assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
-      await saveAndPushChanges(masterDb, "State0 -> State3"); // a squash of 2 branch changes into 1 in the masterDb change ledger
-      const changesetMasterState3 = masterDb.changeset.id;
-      assert.notEqual(changesetMasterState3, changesetMasterState2);
-      branchDb1.saveChanges(); // saves provenance locally in case of re-merge
-
-      // merge changes from Master to Branch2
-      const masterToBranch2 = new IModelTransformer(masterDb, branchDb2);
-      await masterToBranch2.processChanges(accessToken, changesetMasterState2);
-      masterToBranch2.dispose();
-      assertPhysicalObjects(branchDb2, state2);
-      await saveAndPushChanges(branchDb2, "State0 -> State3");
-      const changesetBranch2State3 = branchDb2.changeset.id;
-      assert.notEqual(changesetBranch2State3, changesetBranch2State0);
-
-      // make changes to Branch2
-      const delta23 = [7, 8]; // insert 7 (without any updates), and 8
-      const state3 = [1, 2, -3, 4, 5, 6, 7, 8];
-      maintainPhysicalObjects(branchDb2, delta23);
-      assertPhysicalObjects(branchDb2, state3);
-      await saveAndPushChanges(branchDb2, "State3 -> State4");
-      const changesetBranch2State4 = branchDb2.changeset.id;
-      assert.notEqual(changesetBranch2State4, changesetBranch2State3);
-
-      // make conflicting changes to master
-      const delta3Master = [7, 7, 9]; // insert 7 and update it so it conflicts with the branch, insert 9 too
-      const state3Master = [1, 2, -3, 4, 5, 6, 7, 9];
-      maintainPhysicalObjects(masterDb, delta3Master);
-      assertPhysicalObjects(masterDb, state3Master);
-      await saveAndPushChanges(masterDb, "State3 -> State4M");
-      const changesetMasterState4M = masterDb.changeset.id;
-      assert.notEqual(changesetMasterState4M, changesetMasterState3);
-
-      // merge changes made on Branch2 back to Master with a conflict
-      const branch2ToMaster = new IModelTransformer(branchDb2, masterDb, {
-        isReverseSynchronization: true, // provenance stored in source/branch
-      });
-      const state3Merged = [1, 2, -3, 4, 5, 6, 7, 8, 9];
-      await branch2ToMaster.processChanges(accessToken, changesetBranch2State3);
-      branch2ToMaster.dispose();
-      assertPhysicalObjects(masterDb, state3Merged); // source wins conflicts
-      assertPhysicalObjectUpdated(masterDb, 7); // if it was updated, then the master version of it won
-      assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
-      await saveAndPushChanges(masterDb, "State4M -> State4");
-      const changesetMasterState4 = masterDb.changeset.id;
-      assert.notEqual(changesetMasterState4, changesetMasterState3);
-      branchDb2.saveChanges(); // saves provenance locally in case of re-merge
-
-      // make change directly on Master
-      const delta34 = [6, -7]; // update 6, delete 7
-      const state4 = [1, 2, -3, 4, 5, 6, -7, 8, 9];
-      maintainPhysicalObjects(masterDb, delta34);
-      assertPhysicalObjects(masterDb, state4);
-      await saveAndPushChanges(masterDb, "State4 -> State5");
-      const changesetMasterState5 = masterDb.changeset.id;
-      assert.notEqual(changesetMasterState5, changesetMasterState4);
-
-      // merge Master to Branch1
-      const masterToBranch1 = new IModelTransformer(masterDb, branchDb1);
-      await masterToBranch1.processChanges(accessToken, changesetMasterState2);
-      masterToBranch1.dispose();
-      assertPhysicalObjects(branchDb1, state4);
-      assertPhysicalObjectUpdated(branchDb1, 6);
-      await saveAndPushChanges(branchDb1, "State2 -> State5");
-      const changesetBranch1State5 = branchDb1.changeset.id;
-      assert.notEqual(changesetBranch1State5, changesetBranch1State2);
-
-      const masterDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: masterIModelId, targetDir: BriefcaseManager.getChangeSetsPath(masterIModelId) });
+      const masterDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: master.id, targetDir: BriefcaseManager.getChangeSetsPath(master.id) });
       assert.equal(masterDbChangesets.length, 4);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeset of masterDbChangesets) {
@@ -671,7 +502,7 @@ describe("IModelTransformerHub", () => {
         const changesetPath = masterDbChangeset.pathname;
         assert.isTrue(IModelJsFs.existsSync(changesetPath));
         // below is one way of determining the set of elements that were deleted in a specific changeset
-        const statusOrResult = masterDb.nativeDb.extractChangedInstanceIdsFromChangeSets([changesetPath]);
+        const statusOrResult = master.db.nativeDb.extractChangedInstanceIdsFromChangeSets([changesetPath]);
         assert.isUndefined(statusOrResult.error);
         const result = statusOrResult.result;
         if (result === undefined)
@@ -685,7 +516,7 @@ describe("IModelTransformerHub", () => {
       assert.isAtLeast(masterDeletedElementIds.size, 1);
 
       // replay master history to create replayed iModel
-      const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: masterIModelId, asOf: IModelVersion.first().toJSON() });
+      const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: master.id, asOf: IModelVersion.first().toJSON() });
       const replayTransformer = new IModelTransformer(sourceDb, replayedDb);
       // this replay strategy pretends that deleted elements never existed
       for (const elementId of masterDeletedElementIds) {
@@ -701,7 +532,7 @@ describe("IModelTransformerHub", () => {
       }
       replayTransformer.dispose();
       sourceDb.close();
-      assertPhysicalObjects(replayedDb, state4); // should have same ending state as masterDb
+      assertPhysicalObjects(replayedDb, hackObjToArrayState(master.state)); // should have same ending state as masterDb
 
       // make sure there are no deletes in the replay history (all elements that were eventually deleted from masterDb were excluded)
       const replayedDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: replayedIModelId, targetDir: BriefcaseManager.getChangeSetsPath(replayedIModelId) });
