@@ -344,14 +344,21 @@ describe("IModelTransformerHub", () => {
 
     const masterIModelName = "Master";
     const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
+    if (IModelJsFs.existsSync(masterSeedFileName))
+      IModelJsFs.removeSync(masterSeedFileName);
+    const masterSeedState = [1, 2, 20, 21];
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: masterIModelName } });
     SpatialCategory.insert(masterSeedDb, IModel.dictionaryId, "SpatialCategory", new SubCategoryAppearance());
     PhysicalModel.insert(masterSeedDb, IModel.rootSubjectId, "PhysicalModel");
-    const masterSeedState = [1, 2, 20, 21];
     maintainPhysicalObjects(masterSeedDb, masterSeedState);
+    assert(IModelJsFs.existsSync(masterSeedFileName));
+    masterSeedDb.nativeDb.setITwinId(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
+    masterSeedDb.saveChanges();
+    masterSeedDb.close(); // must close for profile version to be written to the snapshot
 
     const masterSeed: IModelState = {
-      db: masterSeedDb as any, // hack: we know this will only be used for initial version0
+      // HACK: we know this will only be used for seeding via its path
+      db: { nativeDb: { filePath() { return masterSeedFileName} } } as any as BriefcaseDb,
       id: "master-seed",
       state: masterSeedState
     };
@@ -368,8 +375,9 @@ describe("IModelTransformerHub", () => {
       | { sync: [string, number, number?] };
 
 
-    // For each step in timeline, an object of iModels mapping to the event that occurs:
-    // - a 'copy' event with the name of an iModel to seed from, creating the iModel
+    // For each step in timeline, an object of iModels mapping to the event that occurs for them:
+    // - a 'seed' event with an iModel to seed from, creating the iModel
+    // - a 'branch' event with the name of an iModel to seed from, creating the iModel
     // - a 'sync' event with the name of an iModel and timeline point to sync from
     // - an object containing the content of the iModel that it updates to,
     //   creating the iModel with this initial state if it didn't exist before
@@ -582,16 +590,12 @@ describe("IModelTransformerHub", () => {
         }
       }
       assert.equal(replayedDeletedElementIds.size, 0);
-
-      for (const [, state] of trackedIModels) {
-        state.db.close();
-      }
-      replayedDb.close();
     } finally {
       for (const [, state] of trackedIModels) {
         state.db.close();
         await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: state.id });
       }
+      replayedDb.close();
       await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: replayedIModelId });
     }
   });
