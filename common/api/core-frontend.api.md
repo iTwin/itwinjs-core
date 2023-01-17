@@ -13425,6 +13425,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     // @internal (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     getWorldFrustum(box?: Frustum): Frustum;
+    // @internal
+    protected hasAdditionalTiles(): boolean;
     // @internal (undocumented)
     protected _hasMissingTiles: boolean;
     hasTiledGraphicsProvider(provider: TiledGraphicsProvider): boolean;
