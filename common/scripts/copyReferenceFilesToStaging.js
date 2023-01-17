@@ -8,10 +8,15 @@
 2. Copies the folders from itwinjs-core/docs and itwinjs-core/generated-docs.
 3. Provides the ability for users to give an absolute path
 4. Provides the ability to modify the default path (itwinjs-core/staging-docs) through CLI arguments
-Usage: node copyReferenceFilesToStaging.js itwinjs-core/core/test-staging-directory.
+Usage: node copyReferenceFilesToStaging.js staging-docs-directory.
 */
 const path = require('path');
 const process = require('process');
+const childProcess = require("child_process");
+const options = {
+  encoding: "utf8"
+};
+
 let fse;
 try {
   fse = require("fs-extra");
@@ -20,17 +25,24 @@ try {
   return console.error(err);
 }
 
-const basePath = path.resolve(__dirname, "..", "..", "..");
-let dest;
+let basePath;
+try {
+  basePath = childProcess.execSync("git rev-parse --show-toplevel", options);
+  basePath = basePath.split("\n").join("");
+} catch (err) {
+  console.log("Could not get the root directory");
+  return console.error(err);
+}
 
+let dest;
 if (process.argv[2]) {
-  dest = process.argv[2];
+  dest = path.resolve(basePath, process.argv[2]);
 } else {
-  dest = "itwinjs-core/staging-docs";
+  dest = path.resolve(basePath, "staging-docs");
 }
 
 try {
-  fse.ensureDirSync(path.resolve(basePath, dest, "extract"));
+  fse.ensureDirSync(path.resolve(dest, "extract"));
 } catch (err) {
   console.log("Could not create staging directory structure");
   console.error(err);
@@ -38,16 +50,16 @@ try {
 
 //copy docs
 try {
-  const docsPath = path.resolve(basePath, dest);
-  const referencePath = path.resolve(basePath, dest, "reference");
-  const extractPath = path.resolve(basePath, dest, "extract");
+  const docsPath = dest;
+  const referencePath = path.resolve(dest, "reference");
+  const extractPath = path.resolve(dest, "extract");
   const folderList = ["core", "domains", "editor", "presentation", "ui"];
 
-  fse.copySync(path.resolve(basePath, "itwinjs-core", "docs"), docsPath);
-  fse.copySync(path.resolve(basePath, "itwinjs-core", "generated-docs", "extract"), extractPath);
+  fse.copySync(path.resolve(basePath, "docs"), docsPath);
+  fse.copySync(path.resolve(basePath, "generated-docs", "extract"), extractPath);
 
   folderList.forEach(folder => {
-    fse.copySync(path.resolve(basePath, "itwinjs-core", "generated-docs", folder), referencePath);
+    fse.copySync(path.resolve(basePath, "generated-docs", folder), referencePath);
   })
 
   console.log("Copying finished successfully");
