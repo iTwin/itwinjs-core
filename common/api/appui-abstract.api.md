@@ -1753,7 +1753,7 @@ export enum StagePanelSection {
     Start = 0
 }
 
-// @public
+// @public @deprecated
 export enum StageUsage {
     // (undocumented)
     Edit = "Edit",

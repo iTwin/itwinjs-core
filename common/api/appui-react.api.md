@@ -144,7 +144,7 @@ import { SpecialKey } from '@itwin/appui-abstract';
 import { StagePanelLocation as StagePanelLocation_2 } from '@itwin/appui-abstract';
 import { StagePanelSection as StagePanelSection_2 } from '@itwin/appui-abstract';
 import { StagePanelType } from '@itwin/appui-layout-react';
-import { StageUsage } from '@itwin/appui-abstract';
+import { StageUsage as StageUsage_2 } from '@itwin/appui-abstract';
 import { StandardViewId } from '@itwin/core-frontend';
 import { StatusBarItemId as StatusBarItemId_2 } from '@itwin/appui-abstract';
 import { StatusBarItemsManager as StatusBarItemsManager_2 } from '@itwin/appui-abstract';
@@ -5425,6 +5425,12 @@ export interface StagePanelZonesProps {
 }
 
 // @public
+export type StageUsage = StageUsage_2;
+
+// @public
+export const StageUsage: typeof StageUsage_2;
+
+// @public
 export class StandardContentToolsProvider extends BaseUiItemsProvider_2 {
     constructor(providerId: string, defaultContentTools?: DefaultContentTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
@@ -5461,7 +5467,7 @@ export interface StandardFrontstageProps {
     rightPanelProps?: WidgetPanelProps;
     topPanelProps?: WidgetPanelProps;
     // (undocumented)
-    usage: StageUsage | string;
+    usage: StageUsage_2 | string;
     // (undocumented)
     version?: number;
 }

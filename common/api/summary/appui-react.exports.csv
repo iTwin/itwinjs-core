@@ -615,6 +615,8 @@ deprecated;StagePanelZoneProps
 internal;StagePanelZonesDef
 public;StagePanelZonesProps
 deprecated;StagePanelZonesProps
+public;StageUsage = StageUsage_2
+public;StageUsage: typeof StageUsage_2
 public;StandardContentToolsProvider 
 beta;StandardContentToolsUiItemsProvider 
 public;StandardFrontstageProps

@@ -8,7 +8,7 @@
 
 import "./ModalSettingsStage.scss";
 import * as React from "react";
-import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities, StageUsage } from "@itwin/appui-abstract";
+import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities } from "@itwin/appui-abstract";
 import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { Logger } from "@itwin/core-bentley";
@@ -16,6 +16,7 @@ import { Centered, SettingsContainer } from "@itwin/core-react";
 import { FrontstageManager, ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "./FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { StageUsage } from "./StageUsage";
 
 function ModalSettingsStage({ initialSettingsTabId }: { initialSettingsTabId?: string }) {
   const id = FrontstageManager.activeFrontstageDef?.id ?? "none";

@@ -164,6 +164,7 @@ deprecated;StagePanelLocation
 public;StagePanelSection
 deprecated;StagePanelSection
 public;StageUsage
+deprecated;StageUsage
 public;StandardContentLayouts
 public;StandardEditorNames
 public;StandardTypeNames

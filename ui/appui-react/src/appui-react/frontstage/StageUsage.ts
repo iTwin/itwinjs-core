@@ -6,16 +6,16 @@
  * @module Item
  */
 
+import { StageUsage as UIA_StageUsage } from "@itwin/appui-abstract";
+
 /** Standard stage uses. Allows extension to target ui item to include on a stage without
  * knowing the stage name defined in the host application.
- * @deprecated Use [StageUsage]($appui-react) instead.
  * @public
  */
-export enum StageUsage {
-  Private = "Private",
-  General = "General",
-  Redline = "Redline",
-  ViewOnly = "ViewOnly",
-  Edit = "Edit",
-  Settings = "Settings",
-}
+export type StageUsage = UIA_StageUsage; // eslint-disable-line deprecation/deprecation
+
+/** Standard stage uses. Allows extension to target ui item to include on a stage without
+ * knowing the stage name defined in the host application.
+ * @public
+ */
+export const StageUsage = UIA_StageUsage; // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation

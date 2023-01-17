@@ -11,16 +11,17 @@ import { IModelApp, IModelConnection, SpatialViewState } from "@itwin/core-front
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
-import { ConditionalBooleanValue, FillCentered } from "@itwin/core-react";
+import { FillCentered } from "@itwin/core-react";
 import {
   BackstageAppButton,
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupProps, FrontstageManager,
+  StageUsage,
   StandardFrontstageProps, StandardFrontstageProvider, UiFramework,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { LocalFileSupport } from "../LocalFileSupport";
 import { Button, Headline } from "@itwin/itwinui-react";
-import { BackstageItem, BackstageItemUtilities, StageUsage, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
+import { BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 
 async function getDefaultViewId(iModelConnection: IModelConnection): Promise<Id64String | undefined> {
   const requestedViewId = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;

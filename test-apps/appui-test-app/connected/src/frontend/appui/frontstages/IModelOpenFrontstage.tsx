@@ -4,12 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
-import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 import {
-  BackstageAppButton,
-  BackstageItem,
-  BackstageItemUtilities,
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupProps, FrontstageManager, StandardFrontstageProps, StandardFrontstageProvider, UiItemsManager, UiItemsProvider,
+  BackstageAppButton, BackstageItem, BackstageItemUtilities, ConfigurableCreateInfo, ConfigurableUiManager, ContentControl,
+  ContentGroupProps, FrontstageManager, StageUsage, StandardFrontstageProps, StandardFrontstageProvider, UiItemsManager, UiItemsProvider,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../index";
 import { IModelOpen } from "../imodelopen/IModelOpen";

@@ -9,7 +9,7 @@ import {
   ViewState,
 } from "@itwin/core-frontend";
 import {
-  ContentLayoutProps, StageUsage,
+  ContentLayoutProps,
 } from "@itwin/appui-abstract";
 import {
   BackstageAppButton,
@@ -18,6 +18,7 @@ import {
   ConfigurableUiManager, ContentGroup, ContentGroupProps,
   ContentGroupProvider, ContentProps, FrontstageProps, IModelViewportControl,
   SettingsModalFrontstage, StageContentLayout, StageContentLayoutProps,
+  StageUsage,
   StandardContentToolsUiItemsProvider, StandardFrontstageProps,
   StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
