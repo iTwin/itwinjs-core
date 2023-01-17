@@ -342,31 +342,46 @@ describe("IModelTransformerHub", () => {
       db: BriefcaseDb;
     }
 
+    const masterIModelName = "Master";
+    const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
+    const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: masterIModelName } });
+    SpatialCategory.insert(masterSeedDb, IModel.dictionaryId, "SpatialCategory", new SubCategoryAppearance());
+    PhysicalModel.insert(masterSeedDb, IModel.rootSubjectId, "PhysicalModel");
+    const masterSeedState = [1, 2, 20, 21];
+    maintainPhysicalObjects(masterSeedDb, masterSeedState);
+
+    const masterSeed: IModelState = {
+      db: masterSeedDb as any, // hack: we know this will only be used for initial version0
+      id: "master-seed",
+      state: masterSeedState
+    };
+
     type TimelineStateChange =
       // update the state of that model to match and push a changeset
       | Record<number, number>
-      // create a copy of an iModel in the hub with a given name
-      | { copy: string }
+      // create a new iModel from a seed
+      | { seed: IModelState }
+      // create a branch from an existing iModel with a given name
+      | { branch: string }
       // synchronize with the changes in an iModel of a given name from a starting timeline point
       // to the given ending point, inclusive. (end defaults to current point in time)
       | { sync: [string, number, number?] };
 
+
     // For each step in timeline, an object of iModels mapping to the event that occurs:
     // - a 'copy' event with the name of an iModel to seed from, creating the iModel
-    // - a 'sync' event with the name of an iModel to sync from
+    // - a 'sync' event with the name of an iModel and timeline point to sync from
     // - an object containing the content of the iModel that it updates to,
     //   creating the iModel with this initial state if it didn't exist before
     // - an 'assert' function to run on the state of all the iModels in the timeline
     const timeline: Record<number, {
-      tag?: string;
       assert?: (imodels: Record<string, IModelState>) => void;
       [modelName: string]: | undefined // only necessary for the previous optional properties
-                           | string // only necessary for the tag property
                            | ((imodels: Record<string, IModelState>) => void) // only necessary for the assert property
                            | TimelineStateChange;
     }> = {
-      0: { master: { 1:1, 2:1, 20:1, 21:1 } },
-      1: { branch1: { copy: "master" }, branch2: { copy: "master" } },
+      0: { master: { seed: masterSeed } },
+      1: { branch1: { branch: "master" }, branch2: { branch: "master" } },
       2: { branch1: { 1:1, 2:2, 3:1, 4:1, 20:1, 21:1 } },
       3: { branch1: { 1:2, 2:2, 4:1, 5:1, 6:1, 21:1 } },
       4: { branch1: { 1:2, 2:2, 4:1, 5:1, 6:1, 30:1 } },
@@ -394,28 +409,34 @@ describe("IModelTransformerHub", () => {
     // HACK: update `maintainPhysicalObjects`
     const hackObjToArrayState = (obj: Record<number, number>): number[] => Object.keys(obj).map(Number);
 
+    // you can print additional debug info from this test by setting in your env TRANSFORMER_BRANCH_TEST_DEBUG=1
     for (let i = 0; i < Object.values(timeline).length; ++i) {
       const pt = timeline[i];
-      const iModelChanges = Object.entries(trackedIModels).filter((entry): entry is [string, TimelineStateChange] => entry[0] !== "assert" && entry[0] !== "id" && trackedIModels.has(entry[0]));
+      const iModelChanges = Object.entries(pt)
+        .filter((entry): entry is [string, TimelineStateChange] => entry[0] !== "assert" && trackedIModels.has(entry[0]));
 
-      const newIModels = Object.keys(trackedIModels).filter((s) => s !== "assert" && s !== "tag" && !trackedIModels.has(s));
+      const newIModels = Object.keys(pt).filter((s) => s !== "assert" && !trackedIModels.has(s));
+
       for (const newIModelName of newIModels) {
-        if (["assert", "tag"].includes(newIModelName) || typeof newIModelName !== "string")
-          continue;
+        assert(newIModelName !== "assert", "should have already been filtered out");
 
         const newIModelEvent = pt[newIModelName];
         assert(typeof newIModelEvent === "object");
         assert(!("sync" in newIModelEvent), "cannot sync an iModel that hasn't been created yet!");
 
-        const seed = "copy" in newIModelEvent ? trackedIModels.get(newIModelEvent.copy)! : undefined;
+        const seed
+          = "seed" in newIModelEvent
+          ? newIModelEvent.seed
+          : "branch" in newIModelEvent
+          ? trackedIModels.get(newIModelEvent.branch)!
+          : undefined;
+
         const newIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: newIModelName, version0: seed?.db.pathName, noLocks: true });
 
         const newIModelDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: newIModelId });
         assert.isTrue(newIModelDb.isBriefcaseDb());
         assert.equal(newIModelDb.iTwinId, iTwinId);
-        if ("copy" in newIModelEvent)
-          assertPhysicalObjects(newIModelDb, hackObjToArrayState(seed!.state));
-        else {
+        if (!("branch" in newIModelEvent)) {
           maintainPhysicalObjects(newIModelDb, hackObjToArrayState(newIModelEvent));
           await saveAndPushChanges(newIModelDb, `to state [${newIModelEvent}] at point ${i}`);
         }
@@ -426,10 +447,10 @@ describe("IModelTransformerHub", () => {
           id: newIModelId,
         });
 
-        const isNewBranch = "copy" in newIModelEvent;
+        const isNewBranch = "branch" in newIModelEvent;
         if (isNewBranch) {
           assert(seed);
-          masterOfBranch.set(newIModelName, newIModelEvent.copy);
+          masterOfBranch.set(newIModelName, newIModelEvent.branch);
           const master = seed;
           const branchDb = newIModelDb;
           // record branch provenance
@@ -439,12 +460,13 @@ describe("IModelTransformerHub", () => {
           assert.equal(count(master.db, ExternalSourceAspect.classFullName), 0);
           assert.isAbove(count(branchDb, ExternalSourceAspect.classFullName), Object.keys(master.state).length);
           await saveAndPushChanges(branchDb, "initialized branch provenance");
+          assertPhysicalObjects(branchDb, hackObjToArrayState(seed!.state));
         }
       }
 
       for (const [iModelName, event] of iModelChanges) {
-        if ("copy" in event) {
-          // "copy" event has already been handled in the new imodels loop above
+        if ("branch" in event || "seed" in event) {
+          // "branch" and "seed" event has already been handled in the new imodels loop above
           continue;
         } else if ("sync" in event) {
           const [syncTargetName, startIndex, endIndex] = event.sync;
@@ -463,9 +485,15 @@ describe("IModelTransformerHub", () => {
           const prevState = alreadySeenIModel.state;
           alreadySeenIModel.state = event;
           // `(maintain|assert)PhysicalObjects` use negative to mean deleted
-          const delta = Object.fromEntries(Object.entries(prevState).map(([k,v]) => [k,v+newState[+k]]).filter(([k,v]) => v > 0));
+          const delta = Object.fromEntries(Object.entries(prevState).map(([k,v]) => [k,v+newState[+k]]).filter(([,v]) => v > 0));
+
+          const stateMsg = `to: [${event}], delta: [${delta}], at ${i}`;
+          if (process.env.TRANSFORMER_BRANCH_TEST_DEBUG) {
+            console.log(stateMsg);
+          }
+
           maintainPhysicalObjects(alreadySeenIModel.db, delta);
-          await saveAndPushChanges(alreadySeenIModel.db, `to: [${event}], delta: [${delta}], at ${i}`);
+          await saveAndPushChanges(alreadySeenIModel.db, stateMsg);
         }
       }
 
@@ -869,12 +897,6 @@ describe("IModelTransformerHub", () => {
   async function saveAndPushChanges(briefcaseDb: BriefcaseDb, description: string): Promise<void> {
     briefcaseDb.saveChanges(description);
     await briefcaseDb.pushChanges({ accessToken, description });
-  }
-
-  function populateMaster(iModelDb: IModelDb, numbers: number[]): void {
-    SpatialCategory.insert(iModelDb, IModel.dictionaryId, "SpatialCategory", new SubCategoryAppearance());
-    PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "PhysicalModel");
-    maintainPhysicalObjects(iModelDb, numbers);
   }
 
   function assertPhysicalObjects(iModelDb: IModelDb, numbers: number[]): void {
