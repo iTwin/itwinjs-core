@@ -1259,20 +1259,35 @@ export namespace CodeScopeSpec {
 export class CodeSpec {
     static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec;
     // @internal
-    static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec;
+    static createFromJson(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties): CodeSpec;
     id: Id64String;
     iModel: IModel;
-    // @beta
+    // @deprecated
     get isManagedWithIModel(): boolean;
     set isManagedWithIModel(value: boolean);
     get isValid(): boolean;
     name: string;
     // @internal
-    properties: any;
+    properties: CodeSpecProperties;
     get scopeReq(): CodeScopeSpec.ScopeRequirement;
     set scopeReq(req: CodeScopeSpec.ScopeRequirement);
     get scopeType(): CodeScopeSpec.Type;
     set scopeType(scopeType: CodeScopeSpec.Type);
+}
+
+// @public
+export interface CodeSpecProperties {
+    // (undocumented)
+    scopeSpec: {
+        type: CodeScopeSpec.Type;
+        fGuidRequired?: boolean;
+    };
+    // (undocumented)
+    spec?: {
+        isManagedWithDgnDb?: boolean;
+    };
+    // (undocumented)
+    version?: string;
 }
 
 // @public
