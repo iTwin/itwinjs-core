@@ -31,6 +31,7 @@ import { HighlightableTreeProps } from '@itwin/components-react';
 import { IContentVisitor } from '@itwin/presentation-common';
 import { Id64Arg } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
+import { ImmediatelyLoadedTreeNodeItem } from '@itwin/components-react';
 import { IModelConnection } from '@itwin/core-frontend';
 import { InstanceFilterDefinition } from '@itwin/presentation-common';
 import { InstanceKey } from '@itwin/presentation-common';
@@ -458,6 +459,9 @@ export interface IPropertiesAppender {
 }
 
 // @alpha (undocumented)
+export function isPresentationInfoTreeNodeItem(item: TreeNodeItem): item is PresentationInfoTreeNodeItem;
+
+// @alpha (undocumented)
 export function isPresentationInstanceFilterConditionGroup(filter: PresentationInstanceFilter): filter is PresentationInstanceFilterConditionGroup;
 
 // @alpha (undocumented)
@@ -508,6 +512,16 @@ export enum PresentationComponentsLoggerCategory {
     Hierarchy = "presentation-components.Hierarchy",
     // (undocumented)
     Package = "presentation-components"
+}
+
+// @alpha (undocumented)
+export interface PresentationInfoTreeNodeItem extends ImmediatelyLoadedTreeNodeItem {
+    // (undocumented)
+    children: undefined;
+    // (undocumented)
+    isSelectionDisabled: true;
+    // (undocumented)
+    message: string;
 }
 
 // @alpha (undocumented)
@@ -708,13 +722,17 @@ export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
 // @alpha (undocumented)
 export interface PresentationTreeNodeItem extends DelayLoadedTreeNodeItem {
     // (undocumented)
-    filterInfo?: PresentationInstanceFilterInfo;
-    // (undocumented)
-    filteringDisabled?: boolean;
+    filtering?: PresentationTreeNodeItemFilteringInfo;
     // (undocumented)
     key: NodeKey;
+}
+
+// @alpha (undocumented)
+export interface PresentationTreeNodeItemFilteringInfo {
     // (undocumented)
-    tooManyChildren?: boolean;
+    active?: PresentationInstanceFilterInfo;
+    // (undocumented)
+    descriptor: Descriptor | (() => Promise<Descriptor>);
 }
 
 // @public

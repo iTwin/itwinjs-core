@@ -46,6 +46,7 @@ public;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider
 deprecated;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider &
 public;IPresentationTreeDataProvider 
 internal;IPropertiesAppender
+alpha;isPresentationInfoTreeNodeItem(item: TreeNodeItem): item is PresentationInfoTreeNodeItem
 alpha;isPresentationInstanceFilterConditionGroup(filter: PresentationInstanceFilter): filter is PresentationInstanceFilterConditionGroup
 alpha;isPresentationTreeNodeItem(item: TreeNodeItem): item is PresentationTreeNodeItem
 public;IUnifiedSelectionComponent
@@ -54,6 +55,7 @@ alpha;NavigationPropertyEditorContext
 alpha;navigationPropertyEditorContext: React_2.Context
 alpha;NavigationPropertyTargetEditor 
 public;PresentationComponentsLoggerCategory
+alpha;PresentationInfoTreeNodeItem 
 alpha;PresentationInstanceFilter = PresentationInstanceFilterConditionGroup | PresentationInstanceFilterCondition
 alpha;PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps): JSX.Element
 alpha;PresentationInstanceFilterBuilderProps
@@ -76,6 +78,7 @@ public;PresentationTreeDataProvider
 beta;PresentationTreeDataProviderDataSourceEntryPoints
 public;PresentationTreeDataProviderProps 
 alpha;PresentationTreeNodeItem 
+alpha;PresentationTreeNodeItemFilteringInfo
 public;PresentationTreeNodeLoaderProps 
 public;PresentationTreeNodeLoaderResult
 alpha;PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): JSX.Element
