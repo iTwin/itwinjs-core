@@ -342,15 +342,18 @@ describe("IModelTransformerHub", () => {
       db: BriefcaseDb;
     }
 
+    // HACK: update `maintainPhysicalObjects`
+    const hackObjToArrayState = (obj: Record<number, number>): number[] => Object.keys(obj).map(Number);
+
     const masterIModelName = "Master";
     const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
     if (IModelJsFs.existsSync(masterSeedFileName))
       IModelJsFs.removeSync(masterSeedFileName);
-    const masterSeedState = [1, 2, 20, 21];
+    const masterSeedState = {1:1, 2:1, 20:1, 21:1};
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: masterIModelName } });
     SpatialCategory.insert(masterSeedDb, IModel.dictionaryId, "SpatialCategory", new SubCategoryAppearance());
     PhysicalModel.insert(masterSeedDb, IModel.rootSubjectId, "PhysicalModel");
-    maintainPhysicalObjects(masterSeedDb, masterSeedState);
+    maintainPhysicalObjects(masterSeedDb, hackObjToArrayState(masterSeedState));
     assert(IModelJsFs.existsSync(masterSeedFileName));
     masterSeedDb.nativeDb.setITwinId(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.saveChanges();
@@ -358,7 +361,7 @@ describe("IModelTransformerHub", () => {
 
     const masterSeed: IModelState = {
       // HACK: we know this will only be used for seeding via its path
-      db: { nativeDb: { filePath() { return masterSeedFileName} } } as any as BriefcaseDb,
+      db: { pathName:  masterSeedFileName } as any as BriefcaseDb,
       id: "master-seed",
       state: masterSeedState
     };
@@ -388,7 +391,7 @@ describe("IModelTransformerHub", () => {
                            | ((imodels: Record<string, IModelState>) => void) // only necessary for the assert property
                            | TimelineStateChange;
     }> = {
-      0: { master: { seed: masterSeed } },
+      0: { master: { seed: masterSeed } }, // above: masterSeedState = {1:1, 2:1, 20:1, 21:1};
       1: { branch1: { branch: "master" }, branch2: { branch: "master" } },
       2: { branch1: { 1:1, 2:2, 3:1, 4:1, 20:1, 21:1 } },
       3: { branch1: { 1:2, 2:2, 4:1, 5:1, 6:1, 21:1 } },
@@ -396,7 +399,7 @@ describe("IModelTransformerHub", () => {
       5: { master: { sync: ["branch1", 2, 2] } },
       6: { master: { sync: ["branch1", 3, 4] } }, // squash-merge remaining changes
       7: { branch2: { sync: ["master", 0] } },
-      8: { branch2: { 1:2, 2:2, 4:1, 5:1, 6:1, 7:1, 8:1, 30:1 } },
+      8: { branch2: { 1:2, 2:2, 4:1, 5:1, 6:1, 7:1, 8:1, 30:1 } }, // add 7 and 8
       // insert a conflicting state for 7 on master
       9: { master: { 1:2, 2:2, 4:1, 5:1, 6:1, 7:2, 9:1, 30:1 } },
       10: { master: { sync: ["branch2", 8] } },
@@ -412,10 +415,13 @@ describe("IModelTransformerHub", () => {
     const trackedIModels = new Map<string, IModelState>();
     const masterOfBranch = new Map<string, string>();
 
-    const ptIndexToChangesets = new Map<number, Record<string, string>>();
-
-    // HACK: update `maintainPhysicalObjects`
-    const hackObjToArrayState = (obj: Record<number, number>): number[] => Object.keys(obj).map(Number);
+    const timelineStates = new Map<
+      number,
+      {
+        states: { [iModelName: string]: Record<number, number> };
+        changesetIds: { [iModelName: string]: string };
+      }
+    >();
 
     // you can print additional debug info from this test by setting in your env TRANSFORMER_BRANCH_TEST_DEBUG=1
     for (let i = 0; i < Object.values(timeline).length; ++i) {
@@ -444,10 +450,6 @@ describe("IModelTransformerHub", () => {
         const newIModelDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: newIModelId });
         assert.isTrue(newIModelDb.isBriefcaseDb());
         assert.equal(newIModelDb.iTwinId, iTwinId);
-        if (!("branch" in newIModelEvent)) {
-          maintainPhysicalObjects(newIModelDb, hackObjToArrayState(newIModelEvent));
-          await saveAndPushChanges(newIModelDb, `to state [${newIModelEvent}] at point ${i}`);
-        }
 
         trackedIModels.set(newIModelName, {
           state: seed?.state ?? newIModelEvent as number[],
@@ -468,7 +470,17 @@ describe("IModelTransformerHub", () => {
           assert.equal(count(master.db, ExternalSourceAspect.classFullName), 0);
           assert.isAbove(count(branchDb, ExternalSourceAspect.classFullName), Object.keys(master.state).length);
           await saveAndPushChanges(branchDb, "initialized branch provenance");
-          assertPhysicalObjects(branchDb, hackObjToArrayState(seed!.state));
+        } else if ("seed" in newIModelEvent) {
+          assert(seed);
+          maintainPhysicalObjects(newIModelDb, hackObjToArrayState(seed.state));
+          await saveAndPushChanges(newIModelDb, `seeded from '${newIModelEvent.seed.id}' at point ${i}`);
+        } else {
+          maintainPhysicalObjects(newIModelDb, hackObjToArrayState(newIModelEvent));
+          await saveAndPushChanges(newIModelDb, `new with state [${newIModelEvent}] at point ${i}`);
+        }
+
+        if (seed) {
+          assertPhysicalObjects(newIModelDb, hackObjToArrayState(seed!.state));
         }
       }
 
@@ -477,25 +489,43 @@ describe("IModelTransformerHub", () => {
           // "branch" and "seed" event has already been handled in the new imodels loop above
           continue;
         } else if ("sync" in event) {
-          const [syncTargetName, startIndex, endIndex] = event.sync;
-          // if the target to sync from is master, it's a normal sync
-          const isForwardSync = masterOfBranch.get(iModelName) === syncTargetName;
-          const source = trackedIModels.get(iModelName)!;
-          const target = trackedIModels.get(syncTargetName)!;
+          const [syncSource, startIndex, endIndex] = event.sync;
+          // if the synchronization source is master, it's a normal sync
+          const isForwardSync = masterOfBranch.get(iModelName) === syncSource;
+          const target = trackedIModels.get(iModelName)!;
+          const source = trackedIModels.get(syncSource)!;
+          const targetStateBefore = getPhysicalObjects(target.db);
           const syncer = new IModelTransformer(source.db, target.db, { isReverseSynchronization: !isForwardSync });
-          const startChangesetId = ptIndexToChangesets.get(startIndex)?.[syncTargetName];
-          const endChangesetId = endIndex ? ptIndexToChangesets.get(endIndex)?.[syncTargetName] : undefined;
+          const startChangesetId = timelineStates.get(startIndex)?.changesetIds[syncSource];
+          const endChangesetId = endIndex ? timelineStates.get(endIndex)?.changesetIds[syncSource] : undefined;
           await syncer.processChanges(accessToken, startChangesetId, endChangesetId);
           syncer.dispose();
+
+          const sourceRangeState = endIndex ? timelineStates.get(endIndex)!.states[syncSource] : source.state;
+          const stateMsg = `synced changes ${endIndex ? `through ${endIndex} ` : ""}from ${syncSource} to ${iModelName} at ${i}`;
+          if (process.env.TRANSFORMER_BRANCH_TEST_DEBUG) {
+            console.log(stateMsg);
+            console.log(`target before state: ${JSON.stringify(targetStateBefore)}`)
+            console.log(` source range state: ${JSON.stringify(sourceRangeState)}`)
+            const targetState = getPhysicalObjects(target.db);
+            console.log(` target after state: ${JSON.stringify(targetState)}`)
+          }
+          //const expectedTargetState = Object.fromEntries(Object.entries(sourceRangeState).filter(([k,v])=> k));
+          assertPhysicalObjects(target.db, hackObjToArrayState(sourceRangeState));
+          target.state = sourceRangeState; // update the tracking state
+
+          await saveAndPushChanges(target.db, stateMsg);
         } else {
           const newState = event;
           const alreadySeenIModel = trackedIModels.get(iModelName)!;
           const prevState = alreadySeenIModel.state;
           alreadySeenIModel.state = event;
           // `(maintain|assert)PhysicalObjects` use negative to mean deleted
-          const delta = Object.fromEntries(Object.entries(prevState).map(([k,v]) => [k,v+newState[+k]]).filter(([,v]) => v > 0));
+          const additions = Object.keys(newState).filter(s => !(s in prevState)).map(Number);
+          const deletions = Object.keys(prevState).filter(s => !(s in newState)).map(Number);
+          const delta = [...additions, ...deletions.map((d) => -d)];
 
-          const stateMsg = `to: [${event}], delta: [${delta}], at ${i}`;
+          const stateMsg = `${iModelName} becomes: ${JSON.stringify(event)}, delta: [${delta}], at ${i}`;
           if (process.env.TRANSFORMER_BRANCH_TEST_DEBUG) {
             console.log(stateMsg);
           }
@@ -509,11 +539,12 @@ describe("IModelTransformerHub", () => {
         pt.assert(Object.fromEntries(trackedIModels));
       }
 
-      ptIndexToChangesets.set(
+      timelineStates.set(
         i,
-        Object.fromEntries(
-          [...trackedIModels].map(([name, state]) => [name, state.db.changeset.id])
-        )
+        {
+          changesetIds: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.db.changeset.id])),
+          states: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.state]))
+        }
       );
     }
 
@@ -903,6 +934,10 @@ describe("IModelTransformerHub", () => {
     await briefcaseDb.pushChanges({ accessToken, description });
   }
 
+  function getPhysicalObjects(iModelDb: IModelDb): Id64String[] {
+    return iModelDb.withPreparedStatement(`SELECT UserLabel FROM ${PhysicalObject.classFullName}`, (s) => [...s].map(r => r.userLabel));
+  }
+
   function assertPhysicalObjects(iModelDb: IModelDb, numbers: number[]): void {
     let numPhysicalObjects = 0;
     for (const n of numbers) {
@@ -917,9 +952,9 @@ describe("IModelTransformerHub", () => {
   function assertPhysicalObject(iModelDb: IModelDb, n: number): void {
     const physicalObjectId = getPhysicalObjectId(iModelDb, n);
     if (n > 0) {
-      assert.isTrue(Id64.isValidId64(physicalObjectId), "Expected element to exist");
+      assert.isTrue(Id64.isValidId64(physicalObjectId), `Expected element ${n} to exist`);
     } else {
-      assert.equal(physicalObjectId, Id64.invalid, "Expected element to not exist"); // negative "n" means element was deleted
+      assert.equal(physicalObjectId, Id64.invalid, `Expected element ${n} to not exist`); // negative "n" means element was deleted
     }
   }
 
