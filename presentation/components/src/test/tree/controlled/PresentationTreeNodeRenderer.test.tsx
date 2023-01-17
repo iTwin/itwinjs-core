@@ -16,6 +16,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react";
 import { PresentationInstanceFilterInfo } from "../../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 import { PresentationTreeNodeRenderer } from "../../../presentation-components/tree/controlled/PresentationTreeNodeRenderer";
 import { createTreeModelNode, createTreeNodeItem } from "./Helpers";
+import { PresentationInfoTreeNodeItem } from "../../../presentation-components";
 
 function createFilterInfo(propName: string = "prop"): PresentationInstanceFilterInfo {
   const property = createTestPropertyInfo({ name: propName });
@@ -65,6 +66,28 @@ describe("PresentationTreeNodeRenderer", () => {
 
     await waitFor(() => getByText(testLabel));
     expect(container.querySelector(".presentation-components-node")).to.be.null;
+  });
+
+  it("renders info tree node", () => {
+    const message = "Some info";
+    const item: PresentationInfoTreeNodeItem = {
+      id: "info_node_id",
+      label: PropertyRecord.fromString("Info Node"),
+      children: undefined,
+      isSelectionDisabled: true,
+      message,
+    };
+    const node = createTreeModelNode(undefined, item);
+
+    const { getByText } = render(
+      <PresentationTreeNodeRenderer
+        treeActions={treeActionsMock.object}
+        node={node}
+        onFilterClick={() => { }}
+        onClearFilterClick={() => { }}
+      />);
+
+    getByText(message);
   });
 
   it("renders presentation tree node", async () => {

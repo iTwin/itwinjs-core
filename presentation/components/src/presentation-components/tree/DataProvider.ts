@@ -12,9 +12,8 @@ import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/compo
 import { IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  BaseNodeKey, ClientDiagnosticsOptions, ContentSpecificationTypes, DefaultContentDisplayTypes, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, InstanceFilterDefinition, KeySet, Node, NodeKey, NodePathElement, Paged, PresentationError, PresentationStatus, Ruleset,
-  RuleTypes,
+  ClientDiagnosticsOptions, ContentSpecificationTypes, DefaultContentDisplayTypes, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
+  InstanceFilterDefinition, KeySet, Node, NodeKey, NodePathElement, Paged, PresentationError, PresentationStatus, Ruleset, RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
@@ -23,7 +22,7 @@ import { translate } from "../common/Utils";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { convertToInstanceFilterDefinition } from "../instance-filter-builder/InstanceFilterConverter";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
-import { isPresentationTreeNodeItem, PresentationTreeNodeItem } from "./PresentationTreeNodeItem";
+import { isPresentationTreeNodeItem, PresentationInfoTreeNodeItem, PresentationTreeNodeItem } from "./PresentationTreeNodeItem";
 import { createTreeNodeId, createTreeNodeItem, CreateTreeNodeItemProps, pageOptionsUiToPresentation } from "./Utils";
 
 /**
@@ -238,21 +237,14 @@ function createTreeItems(imodel: IModelConnection, nodes: Node[], parentNode?: T
   return items;
 }
 
-function createInfoNode(parentNode: PresentationTreeNodeItem, message: string): PresentationTreeNodeItem {
-  const key = createInfoNodeKey(parentNode.key);
+function createInfoNode(parentNode: PresentationTreeNodeItem, message: string): PresentationInfoTreeNodeItem {
+  const id = `${createTreeNodeId(parentNode.key)}/info-node`;
   return {
-    key,
-    id: createTreeNodeId(key),
+    id,
     label: PropertyRecord.fromString(message),
+    message,
     isSelectionDisabled: true,
-  };
-}
-
-function createInfoNodeKey(parentKey: BaseNodeKey): BaseNodeKey {
-  return {
-    type: "PresentationInfoNode",
-    version: 1,
-    pathFromRoot: [...parentKey.pathFromRoot, "info-node"],
+    children: undefined,
   };
 }
 

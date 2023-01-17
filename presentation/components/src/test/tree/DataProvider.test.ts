@@ -23,7 +23,7 @@ import { translate } from "../../presentation-components/common/Utils";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
-import { PresentationTreeNodeItem } from "../../presentation-components/tree/PresentationTreeNodeItem";
+import { PresentationInfoTreeNodeItem, PresentationTreeNodeItem } from "../../presentation-components/tree/PresentationTreeNodeItem";
 
 describe("TreeDataProvider", () => {
 
@@ -323,7 +323,7 @@ describe("TreeDataProvider", () => {
 
       const actualResult = await provider.getNodes(parentNode, pageOptions);
       expect(actualResult).to.have.lengthOf(1);
-      expect((actualResult[0] as PresentationTreeNodeItem).label).to.eq(translate("tree.no-filtered-children"));
+      expect((actualResult[0] as PresentationInfoTreeNodeItem).message).to.eq(translate("tree.no-filtered-children"));
     });
   });
 

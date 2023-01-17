@@ -7,12 +7,13 @@
  */
 
 import "./PresentationTreeNodeRenderer.scss";
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "@itwin/components-react";
+import { TreeNode } from "@itwin/core-react";
 import { SvgCloseSmall, SvgFilter, SvgFilterHollow } from "@itwin/itwinui-icons-react";
 import { ButtonGroup, IconButton } from "@itwin/itwinui-react";
-import { isPresentationTreeNodeItem, PresentationTreeNodeItem } from "../PresentationTreeNodeItem";
+import { isPresentationInfoTreeNodeItem, isPresentationTreeNodeItem, PresentationTreeNodeItem } from "../PresentationTreeNodeItem";
 
 /**
  * @alpha
@@ -28,25 +29,38 @@ export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps
 export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps) {
   const { onFilterClick, onClearFilterClick, ...restProps } = props;
   const nodeItem = props.node.item;
-  if (!isPresentationTreeNodeItem(nodeItem))
-    return <TreeNodeRenderer {...restProps} />;
 
-  // hide filtering buttons if filtering is disabled explicitly or node is not filtered and has no children
-  const filteringDisabled = nodeItem.filtering === undefined || (nodeItem.filtering.active === undefined && props.node.numChildren === 0);
-
-  return (
-    <TreeNodeRenderer
-      {...restProps}
-      className={classnames("presentation-components-node", restProps.className)}
-    >
-      <PresentationTreeNodeActions
-        isFiltered={nodeItem.filtering?.active !== undefined}
-        filteringDisabled={filteringDisabled}
-        onClearFilterClick={() => { onClearFilterClick(nodeItem); }}
-        onFilterClick={() => { onFilterClick(nodeItem); }}
+  if (isPresentationInfoTreeNodeItem(nodeItem)) {
+    return (
+      <TreeNode
+        className="presentation-components-info-node"
+        isLeaf={true}
+        label={nodeItem.message}
+        level={props.node.depth}
+        isHoverDisabled={true}
       />
-    </TreeNodeRenderer>
-  );
+    );
+  }
+
+  if (isPresentationTreeNodeItem(nodeItem)) {
+    // hide filtering buttons if filtering is disabled explicitly or node is not filtered and has no children
+    const filteringDisabled = nodeItem.filtering === undefined || (nodeItem.filtering.active === undefined && props.node.numChildren === 0);
+    return (
+      <TreeNodeRenderer
+        {...restProps}
+        className={classnames("presentation-components-node", restProps.className)}
+      >
+        <PresentationTreeNodeActions
+          isFiltered={nodeItem.filtering?.active !== undefined}
+          filteringDisabled={filteringDisabled}
+          onClearFilterClick={() => { onClearFilterClick(nodeItem); }}
+          onFilterClick={() => { onFilterClick(nodeItem); }}
+        />
+      </TreeNodeRenderer>
+    );
+  }
+
+  return <TreeNodeRenderer {...restProps} />;
 }
 
 interface PresentationTreeNodeActionsProps {
