@@ -2585,7 +2585,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       if (!haveNewTiles) {
         const tilesThisVp = IModelApp.tileAdmin.getTilesForUser(this);
         const ext = tilesThisVp?.external;
-        if (undefined !== ext && (ext.requested > 0 || (ext.hasMissingData ?? 0) > 0)) {
+        if ((ext?.requested ?? 0) > 0) {
           haveNewTiles = true;
         } else {
           // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
@@ -3553,7 +3553,7 @@ export class ScreenViewport extends Viewport {
         if (!haveNewTiles) {
           const tilesThisVp = IModelApp.tileAdmin.getTilesForUser(this);
           const ext = tilesThisVp?.external;
-          if (undefined !== ext && (ext.requested > 0 || (ext.hasMissingData ?? 0) > 0)) {
+          if ((ext?.requested ?? 0) > 0) {
             haveNewTiles = true;
           } else {
             // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
