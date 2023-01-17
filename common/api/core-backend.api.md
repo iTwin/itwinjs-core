@@ -1084,6 +1084,7 @@ export class CodeSpecs {
     insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
+    updateProperties(codeSpec: CodeSpec): void;
 }
 
 // @public
