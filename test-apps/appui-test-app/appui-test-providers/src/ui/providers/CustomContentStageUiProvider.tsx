@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, StageUsage, ToolbarItemUtilities,
+  CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { BackstageItem, BackstageItemUtilities, CommandItemDef, CommonWidgetProps, ModelessDialogManager, StagePanelLocation, StagePanelSection, StateManager, SyncUiEventDispatcher, ToolbarHelper, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState } from "@itwin/appui-react";
+import { BackstageItem, BackstageItemUtilities, CommandItemDef, CommonWidgetProps, ModelessDialogManager, StagePanelLocation, StagePanelSection, StageUsage, StateManager, SyncUiEventDispatcher, ToolbarHelper, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import * as React from "react";
 import { AppUiTestProviders } from "../../AppUiTestProviders";

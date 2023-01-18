@@ -5,10 +5,10 @@
 /* eslint-disable react/display-name */
 
 import {
-  CommonToolbarItem, StageUsage,
+  CommonToolbarItem,
 } from "@itwin/appui-abstract";
 import * as React from "react";
-import { AnyStatusBarItem, BackstageItem, BackstageItemUtilities, CommonWidgetProps, StagePanelLocation, StagePanelSection, StatusBarItemUtilities, StatusBarSection, ToolbarHelper, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-react";
+import { AnyStatusBarItem, BackstageItem, BackstageItemUtilities, CommonWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, StatusBarItemUtilities, StatusBarSection, ToolbarHelper, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-react";
 import { getSplitSingleViewportCommandDef, RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "../../tools/ContentLayoutTools";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { getCustomViewSelectorPopupItem } from "../buttons/ViewSelectorPanel";

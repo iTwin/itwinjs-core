@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { StageUsage } from "@itwin/appui-abstract";
 import { ViewAttributesWidgetComponent } from "../widgets/ViewAttributesWidget";
-import { CommonWidgetProps, StagePanelLocation, StagePanelSection, UiItemsProvider, WidgetState } from "@itwin/appui-react";
+import { CommonWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider, WidgetState } from "@itwin/appui-react";
 
 /**
  * Test UiItemsProvider that provide FloatingWidgets in any General usage stage.

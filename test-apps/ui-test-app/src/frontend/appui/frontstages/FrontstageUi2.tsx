@@ -10,8 +10,9 @@ import {
   StandardStatusbarUiItemsProvider,
   SyncUiEventDispatcher,
   UiFramework,
+  UiItemsManager,
 } from "@itwin/appui-react";
-import { StandardContentLayouts, UiItemsManager, UiSyncEventArgs } from "@itwin/appui-abstract";
+import { StandardContentLayouts, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";

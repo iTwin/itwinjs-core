@@ -6,11 +6,11 @@ import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, UiFramework,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, StageUsage, UiFramework,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../index";
 import { IModelIndex } from "../imodelindex/IModelIndex";
-import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 class IModelIndexControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

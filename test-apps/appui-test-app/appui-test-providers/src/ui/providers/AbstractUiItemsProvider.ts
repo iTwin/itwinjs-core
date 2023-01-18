@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  CommonToolbarItem, IconSpecUtilities, StageUsage,
+  CommonToolbarItem, IconSpecUtilities,
 } from "@itwin/appui-abstract";
-import { AnyStatusBarItem, StatusBarItemUtilities, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider } from "@itwin/appui-react";
+import { AnyStatusBarItem, StageUsage, StatusBarItemUtilities, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider } from "@itwin/appui-react";
 import { SampleTool } from "../../tools/SampleTool";
 import { UnitsPopupUiDataProvider } from "../dialogs/UnitsPopup";
 import { IModelApp } from "@itwin/core-frontend";
