@@ -149,6 +149,8 @@ public;HierarchyCompareInfo
 public;HierarchyCompareInfo
 public;HierarchyCompareInfoJSON
 public;HierarchyCompareOptions
+alpha;HierarchyLevelDescriptorRequestOptions
+alpha;HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions
 public;HierarchyRequestOptions
 public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
 alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | HierarchyUpdateRecord[]

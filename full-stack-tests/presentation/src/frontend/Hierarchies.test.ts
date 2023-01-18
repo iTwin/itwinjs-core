@@ -8,8 +8,8 @@ import { Guid, Id64, using } from "@itwin/core-bentley";
 import { BisCodeSpec, IModel } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
-  ChildNodeSpecificationTypes, ECInstancesNodeKey, getInstancesCount, GroupingSpecificationTypes, HierarchyRequestOptions, InstanceKey, KeySet, Node,
-  NodeKey, RegisteredRuleset, RelationshipDirection, Ruleset, RulesetVariable, RuleTypes,
+  ChildNodeSpecificationTypes, Descriptor, ECInstancesNodeKey, getInstancesCount, GroupingSpecificationTypes, HierarchyRequestOptions, InstanceKey,
+  KeySet, Node, NodeKey, PropertyValueFormat, RegisteredRuleset, RelationshipDirection, Ruleset, RulesetVariable, RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { buildTestIModel, TestIModelBuilder } from "@itwin/presentation-testing";
@@ -382,6 +382,105 @@ describe("Hierarchies", () => {
 
   });
 
+  describe("Getting hierarchy level descriptors", () => {
+
+    it("creates descriptor for root hierarchy level", async () => {
+      // create an "empty" iModel - we'll use the root Subject for our test
+      const imodel = await buildTestIModel("root-hierarchy-level-descriptor", (_) => { });
+
+      // set up ruleset
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.RootNodes,
+          specifications: [{
+            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            classes: [{
+              schemaName: "BisCore",
+              classNames: ["Subject"],
+              arePolymorphic: false,
+            }],
+            groupByClass: false,
+            groupByLabel: false,
+          }],
+        }],
+      };
+
+      const result = await Presentation.presentation.getNodesDescriptor({ imodel, rulesetOrId: ruleset });
+      expect(result).to.containSubset({
+        selectClasses: [{
+          selectClassInfo: { name: "BisCore:Subject" },
+        }],
+        fields: [{
+          label: "Model",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "navigation" },
+        }, {
+          label: "Code",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+        }, {
+          label: "User Label",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+        }, {
+          label: "Description",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+        }],
+      } as Partial<Descriptor>);
+    });
+
+    it("creates descriptor for child hierarchy level", async () => {
+      // create an "empty" iModel - we'll use the root Subject and default Models for our test
+      const imodel = await buildTestIModel("child-hierarchy-level-descriptor", (_) => { });
+
+      // set up ruleset
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.RootNodes,
+          specifications: [{
+            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            classes: [{
+              schemaName: "BisCore",
+              classNames: ["Subject"],
+              arePolymorphic: false,
+            }],
+            groupByClass: false,
+            groupByLabel: false,
+          }],
+        }, {
+          ruleType: RuleTypes.ChildNodes,
+          condition: `ParentNode.IsOfClass("Subject", "BisCore")`,
+          specifications: [{
+            specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+            relationshipPaths: [[{
+              relationship: { schemaName: "BisCore", className: "SubjectOwnsPartitionElements" },
+              direction: RelationshipDirection.Forward,
+            }, {
+              relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+              direction: RelationshipDirection.Backward,
+            }]],
+          }],
+        }],
+      };
+
+      const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+      expect(rootNodes.length).to.eq(1);
+
+      const result = await Presentation.presentation.getNodesDescriptor({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+      expect(result).to.containSubset({
+        selectClasses: [{
+          selectClassInfo: { name: "BisCore:DictionaryModel" },
+        }, {
+          selectClassInfo: { name: "BisCore:LinkModel" },
+        }],
+        fields: [{
+          label: "Modeled Element",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "navigation" },
+        }],
+      } as Partial<Descriptor>);
+    });
+
+  });
+
   describe("Getting node paths", () => {
 
     let imodel: IModelConnection;
@@ -599,7 +698,7 @@ describe("Hierarchies", () => {
 
   });
 
-  describe("Multiple backends for one frontend", async () => {
+  describe("Multiple backends for one frontend", () => {
 
     let imodel: IModelConnection;
     let frontend: PresentationManager;
