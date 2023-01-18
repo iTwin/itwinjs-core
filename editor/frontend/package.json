@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-frontend",
-  "version": "3.6.0-dev.49",
+  "version": "3.6.0-dev.51",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/editor-frontend.js",
   "module": "lib/esm/editor-frontend.js",
@@ -36,11 +36,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.6.0-dev.49",
-    "@itwin/core-bentley": "workspace:^3.6.0-dev.49",
-    "@itwin/core-common": "workspace:^3.6.0-dev.49",
-    "@itwin/core-frontend": "workspace:^3.6.0-dev.49",
-    "@itwin/core-geometry": "workspace:^3.6.0-dev.49"
+    "@itwin/appui-abstract": "workspace:^3.6.0-dev.51",
+    "@itwin/core-bentley": "workspace:^3.6.0-dev.51",
+    "@itwin/core-common": "workspace:^3.6.0-dev.51",
+    "@itwin/core-frontend": "workspace:^3.6.0-dev.51",
+    "@itwin/core-geometry": "workspace:^3.6.0-dev.51"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

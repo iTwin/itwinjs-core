@@ -2628,7 +2628,7 @@ export class SnapshotDb extends IModelDb {
     const snapshot = SnapshotDb.openFile(dbName, { key, tempFileBase, container });
     snapshot._iTwinId = checkpoint.iTwinId;
     try {
-      CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
+      CheckpointManager.validateCheckpointGuids(checkpoint, snapshot);
     } catch (err: any) {
       snapshot.close();
       throw err;
