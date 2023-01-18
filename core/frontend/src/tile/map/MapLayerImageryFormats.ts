@@ -132,7 +132,7 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 
       if (supportedTms.length === 0) {
         // This WMTS server doesn't support either GoogleMaps or WSG84
-        return { status: MapLayerSourceStatus.InvalidTileTree };
+        return { status: MapLayerSourceStatus.InvalidCoordinateSystem };
       }
 
       let subLayerId = 0;
