@@ -9,11 +9,11 @@
 import { StagePanelSection as UIA_StagePanelSection } from "@itwin/appui-abstract";
 
 /** Enum for Stage Panel Sections
- * @public
+ * @beta
  */
 export type StagePanelSection = UIA_StagePanelSection; // eslint-disable-line deprecation/deprecation
 
 /** Enum for Stage Panel Sections
- * @public
+ * @beta
  */
 export const StagePanelSection = UIA_StagePanelSection; // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation

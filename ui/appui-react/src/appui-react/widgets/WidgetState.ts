@@ -9,11 +9,11 @@
 import { WidgetState as UIA_WidgetState } from "@itwin/appui-abstract";
 
 /** Widget state enum.
- * @public
+ * @beta
  */
 export type WidgetState = UIA_WidgetState; // eslint-disable-line deprecation/deprecation
 
 /** Widget state enum.
- * @public
+ * @beta
  */
 export const WidgetState = UIA_WidgetState; // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation

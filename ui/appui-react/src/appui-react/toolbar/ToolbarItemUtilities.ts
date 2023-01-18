@@ -10,7 +10,7 @@ import {  ToolbarItemUtilities as UIA_ToolbarItemUtilities } from "@itwin/appui-
 import { ToolbarActionItem, ToolbarGroupItem } from "./ToolbarItem";
 
 /** Helper class to create Abstract StatusBar Item definitions.
- * @public
+ * @beta
  */
 export namespace ToolbarItemUtilities {
   /** Creates an Action Button */

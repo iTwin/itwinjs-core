@@ -9,6 +9,6 @@
 import { UiItemsProvider as UIA_UiItemsProvider } from "@itwin/appui-abstract";
 
 /** Describes interface of objects that want to provide UI component to the running IModelApp.
- * @public
+ * @beta
  */
 export type UiItemsProvider = UIA_UiItemsProvider; // eslint-disable-line deprecation/deprecation

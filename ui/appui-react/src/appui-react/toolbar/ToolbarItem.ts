@@ -18,66 +18,66 @@ import {
 } from "@itwin/appui-abstract";
 
 /** Used to specify the usage of the toolbar which determine the toolbar position.
- * @public
+ * @beta
  */
 export type ToolbarUsage = UIA_ToolbarUsage; // eslint-disable-line deprecation/deprecation
 
 /** Used to specify the usage of the toolbar which determine the toolbar position.
- * @public
+ * @beta
  */
 export const ToolbarUsage = UIA_ToolbarUsage; // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation
 
 /** Used to specify the orientation of the toolbar.
- * @public
+ * @beta
  */
 export type ToolbarOrientation = UIA_ToolbarOrientation; // eslint-disable-line deprecation/deprecation
 
 /** Used to specify the orientation of the toolbar.
- * @public
+ * @beta
  */
 export const ToolbarOrientation = UIA_ToolbarOrientation; // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation
 
 /** Describes the data needed to insert a UI items into an existing set of UI items.
- * @public
+ * @beta
  */
 export type CommonToolbarItem = UIA_ToolbarItem; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert an action button into a toolbar.
- * @public
+ * @beta
  */
 export type ToolbarActionItem = ActionButton;
 
 /** Describes the data needed to insert a group button into a toolbar.
- * @public
+ * @beta
  */
 export type ToolbarGroupItem = GroupButton;
 
 /** Describes the data needed to insert a custom button into a toolbar.
- * @public
+ * @beta
  */
 export type ToolbarCustomItem = CustomButtonDefinition;
 
 /** Any Button Type that can be inserted into a toolbar.
- * @public
+ * @beta
  */
 export type ToolbarItem = UIA_CommonToolbarItem;
 
 /** ToolbarActionItem type guard.
- * @public
+ * @beta
  */
 export function isToolbarActionItem(item: ToolbarItem): item is ToolbarActionItem {
   return UIA_ToolbarItemUtilities.isActionButton(item);
 }
 
 /** ToolbarGroupItem type guard.
- * @public
+ * @beta
  */
 export function isToolbarGroupItem(item: ToolbarItem): item is ToolbarGroupItem {
   return UIA_ToolbarItemUtilities.isGroupButton(item);
 }
 
 /** ToolbarCustomItem type guard.
- * @public
+ * @beta
  */
 export function isToolbarCustomItem(item: ToolbarItem): item is ToolbarCustomItem {
   return UIA_ToolbarItemUtilities.isCustomDefinition(item);

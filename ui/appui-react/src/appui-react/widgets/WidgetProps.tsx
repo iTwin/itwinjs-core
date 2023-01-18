@@ -31,7 +31,7 @@ export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent
 }
 
 /** Properties of a Widget.
- * @public
+ * @beta
  */
 export interface CommonWidgetProps extends Readonly<AbstractWidgetProps> { // eslint-disable-line deprecation/deprecation
   /** Id used to uniquely identify the widget. */

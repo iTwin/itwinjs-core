@@ -22,42 +22,42 @@ import {
 } from "@itwin/appui-abstract";
 
 /** Status bar Groups/Sections from Left to Right
- * @public
+ * @beta
  */
 export type StatusBarSection = UIA_StatusBarSection; // eslint-disable-line deprecation/deprecation
 
 /** Status bar Groups/Sections from Left to Right
- * @public
+ * @beta
  */
 export const StatusBarSection = UIA_StatusBarSection; // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation
 
 /** Defines which side of Icon where label is placed
- * @public
+ * @beta
  */
 export type StatusBarLabelSide = UIA_StatusBarLabelSide; // eslint-disable-line deprecation/deprecation
 
 /** Defines which side of Icon where label is placed
- * @public
+ * @beta
  */
 export const StatusBarLabelSide = UIA_StatusBarLabelSide; // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation
 
 /** Type for StatusBar Item Id
- * @public
+ * @beta
  */
 export type StatusBarItemId = UIA_StatusBarItemId; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert a button into the status bar.
- * @public
+ * @beta
  */
 export type CommonStatusBarItem = AbstractStatusBarItem; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert an action item into the status bar.
- * @public
+ * @beta
  */
 export type StatusBarActionItem = AbstractStatusBarActionItem; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert a label item with an optional icon into the status bar.
- * @public
+ * @beta
  */
 export type StatusBarLabelItem = AbstractStatusBarLabelItem; // eslint-disable-line deprecation/deprecation
 
@@ -71,32 +71,32 @@ export interface StatusBarItem extends AbstractStatusBarCustomItem { // eslint-d
 }
 
 /** Describes the data needed to insert an item into the StatusBar.
- * @public
+ * @beta
  */
 export type StatusBarCustomItem = StatusBarItem; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert a button into the status bar.
- * @public
+ * @beta
  */
 // eslint-disable-next-line deprecation/deprecation
 export type AnyStatusBarItem = UIA_CommonStatusBarItem; // TODO: Rename to StatusBarItem.
 
 /** StatusBarActionItem type guard.
- * @public
+ * @beta
  */
 export function isStatusBarActionItem(item: AnyStatusBarItem): item is StatusBarActionItem {
   return isAbstractStatusBarActionItem(item); // eslint-disable-line deprecation/deprecation
 }
 
 /** StatusBarLabelItem type guard.
- * @public
+ * @beta
  */
 export function isStatusBarLabelItem(item: AnyStatusBarItem): item is StatusBarLabelItem {
   return isAbstractStatusBarLabelItem(item); // eslint-disable-line deprecation/deprecation
 }
 
 /** StatusBarCustomItem type guard.
- * @public
+ * @beta
  */
 export function isStatusBarCustomItem(item: AnyStatusBarItem): item is StatusBarCustomItem {
   return isStatusBarItem(item); // eslint-disable-line deprecation/deprecation

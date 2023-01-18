@@ -10,12 +10,12 @@ import { StageUsage as UIA_StageUsage } from "@itwin/appui-abstract";
 
 /** Standard stage uses. Allows extension to target ui item to include on a stage without
  * knowing the stage name defined in the host application.
- * @public
+ * @beta
  */
 export type StageUsage = UIA_StageUsage; // eslint-disable-line deprecation/deprecation
 
 /** Standard stage uses. Allows extension to target ui item to include on a stage without
  * knowing the stage name defined in the host application.
- * @public
+ * @beta
  */
 export const StageUsage = UIA_StageUsage; // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation
