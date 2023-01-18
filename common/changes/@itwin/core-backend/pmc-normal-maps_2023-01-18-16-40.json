@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add support for material elements with normal maps",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
