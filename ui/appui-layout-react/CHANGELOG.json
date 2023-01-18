@@ -1436,7 +1436,7 @@
             "comment": "Add support for 2.0 ui Tool and Navigation widgets to react to UiFramework.onUiVisibilityChanged events"
           },
           {
-            "comment": "Removed @deprecated APIs from ui-framework & ui-core and updated NextVersion.md"
+            "comment": "Removed @deprecated in 3.x. APIs from ui-framework & ui-core and updated NextVersion.md"
           },
           {
             "comment": "Removed deprecated Expandable item History Tray support"

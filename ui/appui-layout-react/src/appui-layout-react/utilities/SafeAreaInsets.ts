@@ -8,7 +8,7 @@
 
 /** Describes available safe area insets.
  * @beta
- * @deprecated Use [SafeAreaInsets]($appui-react) instead.
+ * @deprecated in 3.x. Use [SafeAreaInsets]($appui-react) instead.
  */
 export enum SafeAreaInsets {
   None = 0,

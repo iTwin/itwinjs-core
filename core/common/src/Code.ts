@@ -314,7 +314,7 @@ export class CodeSpec {
   }
 
   /** Will be true if the codes associated with this CodeSpec are managed along with the iModel and false if the codes are managed by an external service.
-   * @deprecated in 3.6 Use scopeReq instead.
+   * @deprecated in 3.x. in 3.6 Use scopeReq instead.
    */
   public get isManagedWithIModel(): boolean {
     return this.properties.spec?.isManagedWithDgnDb ?? true;

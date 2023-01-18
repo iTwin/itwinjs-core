@@ -193,7 +193,7 @@ export function createPresentationInstanceFilter(descriptor: Descriptor, filter:
 // @internal (undocumented)
 export function createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class DataProvidersFactory {
     constructor(props?: DataProvidersFactoryProps);
     createSimilarInstancesTableDataProvider(propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord, props: Omit_2<PresentationTableDataProviderProps, "imodel" | "ruleset">): Promise<IPresentationTableDataProvider & {
@@ -201,7 +201,7 @@ export class DataProvidersFactory {
     }>;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface DataProvidersFactoryProps {
     rulesetsFactory?: RulesetsFactory;
 }
@@ -437,7 +437,7 @@ export interface IPresentationLabelsProvider {
 // @public
 export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export type IPresentationTableDataProvider = TableDataProvider & IContentDataProvider & {
     getRowKey: (row: RowItem) => InstanceKey;
 };
@@ -631,7 +631,7 @@ export interface PresentationPropertyDataProviderProps extends DiagnosticsProps 
     ruleset?: string | Ruleset;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
     constructor(props: PresentationTableDataProviderProps);
     get filterExpression(): string | undefined;
@@ -654,7 +654,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     get sortDirection(): SortDirection;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface PresentationTableDataProviderProps extends DiagnosticsProps {
     cachedPagesCount?: number;
     displayType?: string;
@@ -791,16 +791,16 @@ export interface ReloadedHierarchyPart {
 // @internal (undocumented)
 export function reloadVisibleHierarchyParts(visibleNodes: VisibleTreeNodes, renderedItems: RenderedItemsRange, dataProvider: IPresentationTreeDataProvider): Promise<ReloadedHierarchyPart[]>;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React_2.ComponentType<P>): React_2.ComponentType<P & TableWithUnifiedSelectionProps>;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface TableWithUnifiedSelectionProps {
     dataProvider: IPresentationTableDataProvider;
     // @internal (undocumented)

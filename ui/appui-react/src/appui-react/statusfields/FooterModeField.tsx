@@ -22,15 +22,15 @@ export interface FooterModeFieldProps extends StatusFieldProps {
 /**
  * A component that renders its children if the StatusBar is in Footer mode.
  * @public
- * @deprecated In upcoming version, widget mode will be removed, in footer mode will always be true, making this component useless.
+ * @deprecated in 3.x. In upcoming version, widget mode will be removed, in footer mode will always be true, making this component useless.
  */
 export function FooterModeField(props: FooterModeFieldProps) {
   const { children, ...otherProps } = props as any;
   const statusBarContext = React.useContext(StatusBarContext);
-  const conditionProps = {...statusBarContext, ...otherProps};
+  const conditionProps = { ...statusBarContext, ...otherProps };
 
   return (
-  // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line deprecation/deprecation
     <ConditionalField {...conditionProps} boolFunc={(innerProps): boolean => innerProps.isInFooterMode} >
       {(isInFooterMode: boolean) => isInFooterMode && children}
     </ConditionalField>

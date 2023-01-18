@@ -383,7 +383,7 @@ export class B3dmHeader extends TileHeader {
     readonly length: number;
 }
 
-// @internal @deprecated (undocumented)
+// @internal @deprecated in 3.x. (undocumented)
 export type BackendBuffer = Buffer_2;
 
 // @public (undocumented)
@@ -391,10 +391,10 @@ export class BackendError extends IModelError {
     constructor(errorNumber: number, name: string, message: string, getMetaData?: GetMetaDataFunction);
 }
 
-// @public @deprecated (undocumented)
+// @public @deprecated in 3.x. (undocumented)
 export type BackendReadable = Readable;
 
-// @public @deprecated (undocumented)
+// @public @deprecated in 3.x. (undocumented)
 export type BackendWritable = Writable;
 
 // @public
@@ -1119,7 +1119,7 @@ export interface CloudContainerUri {
     readonly uriParams: string;
 }
 
-// @beta @deprecated (undocumented)
+// @beta @deprecated in 3.x. (undocumented)
 export abstract class CloudStorageCache<TContentId, TContentType> {
     constructor();
     // (undocumented)
@@ -1144,7 +1144,7 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
     protected supplyUrlBase(_container: CloudStorageContainerUrl, _id: TContentId): string | undefined;
 }
 
-// @beta @deprecated (undocumented)
+// @beta @deprecated in 3.x. (undocumented)
 export interface CloudStorageContainerDescriptor {
     // (undocumented)
     name: string;
@@ -1154,7 +1154,7 @@ export interface CloudStorageContainerDescriptor {
     resource?: string;
 }
 
-// @beta @deprecated (undocumented)
+// @beta @deprecated in 3.x. (undocumented)
 export interface CloudStorageContainerUrl {
     // (undocumented)
     bound?: boolean;
@@ -1172,13 +1172,13 @@ export interface CloudStorageContainerUrl {
     valid: number;
 }
 
-// @beta @deprecated (undocumented)
+// @beta @deprecated in 3.x. (undocumented)
 export namespace CloudStorageContainerUrl {
     // (undocumented)
     export function empty(): CloudStorageContainerUrl;
 }
 
-// @beta @deprecated (undocumented)
+// @beta @deprecated in 3.x. (undocumented)
 export enum CloudStorageProvider {
     // (undocumented)
     AliCloud = 2,
@@ -1192,7 +1192,7 @@ export enum CloudStorageProvider {
     Unknown = 4
 }
 
-// @beta @deprecated (undocumented)
+// @beta @deprecated in 3.x. (undocumented)
 export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
     protected constructor();
     // (undocumented)
@@ -1262,7 +1262,7 @@ export class CodeSpec {
     static createFromJson(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties): CodeSpec;
     id: Id64String;
     iModel: IModel;
-    // @deprecated
+    // @deprecated in 3.x.
     get isManagedWithIModel(): boolean;
     set isManagedWithIModel(value: boolean);
     get isValid(): boolean;
@@ -2000,11 +2000,11 @@ export interface DeletedElementGeometryChange {
 
 // @public
 export interface DeprecatedBackgroundMapProps {
-    // @deprecated
+    // @deprecated in 3.x.
     providerData?: {
         mapType?: BackgroundMapType;
     };
-    // @deprecated
+    // @deprecated in 3.x.
     providerName?: string;
 }
 
@@ -3160,11 +3160,11 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     readonly neverDrawnAnimationNodes: Set<number>;
     override(args: OverrideFeatureAppearanceArgs): void;
     overrideAnimationNode(id: number, app: FeatureAppearance): void;
-    // @deprecated
+    // @deprecated in 3.x.
     overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
-    // @deprecated
+    // @deprecated in 3.x.
     overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
-    // @deprecated
+    // @deprecated in 3.x.
     overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
     // @internal
     protected _patterns: boolean;
@@ -4351,7 +4351,7 @@ export interface HydrateViewStateRequestProps {
     acsId?: string;
     // (undocumented)
     baseModelId?: Id64String;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     notLoadedCategoryIds?: CompressedId64Set;
     // (undocumented)
     notLoadedModelSelectorStateModels?: CompressedId64Set;
@@ -4369,7 +4369,7 @@ export interface HydrateViewStateResponseProps {
     acsElementProps?: ElementProps;
     // (undocumented)
     baseModelProps?: ModelProps;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     categoryIdsResult?: SubCategoryResultRow[];
     // (undocumented)
     modelSelectorStateModels?: ModelProps[];
@@ -4667,7 +4667,7 @@ export interface IModelCoordinatesResponseProps {
     iModelCoords: PointWithStatus[];
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface IModelEncryptionProps {
     readonly password?: string;
 }
@@ -4736,7 +4736,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
     getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps>;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
     // (undocumented)
     hydrateViewState(_iModelToken: IModelRpcProps, _options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps>;
@@ -4790,11 +4790,11 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
     getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig | undefined>;
-    // @beta @deprecated
+    // @beta @deprecated in 3.x.
     getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
-    // @internal @deprecated
+    // @internal @deprecated in 3.x.
     isUsingExternalTileCache(): Promise<boolean>;
     // @internal
     purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void>;
@@ -5296,7 +5296,7 @@ export interface Localization {
     getLanguageList(): readonly string[];
     getLocalizedKeys(inputString: string): string;
     getLocalizedString(key: string | string[], options?: TranslationOptions): string;
-    // @deprecated
+    // @deprecated in 3.x.
     getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
     // @internal (undocumented)
     getNamespacePromise(name: string): Promise<void> | undefined;
@@ -7112,7 +7112,7 @@ export abstract class RenderMaterial {
 
 // @public (undocumented)
 export namespace RenderMaterial {
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     export class Params {
         constructor(key?: string);
         get alpha(): number | undefined;
@@ -7516,7 +7516,7 @@ export abstract class RenderTexture implements IDisposable {
 
 // @public (undocumented)
 export namespace RenderTexture {
-    // @deprecated
+    // @deprecated in 3.x.
     export class Params {
         constructor(key?: string, type?: RenderTexture.Type, isOwned?: boolean);
         // (undocumented)
@@ -8987,7 +8987,7 @@ export interface TerrainProps {
     providerName?: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export type TerrainProviderName = string;
 
 // @public

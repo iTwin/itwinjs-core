@@ -150,13 +150,13 @@ export function BlockText(props: TextProps): JSX.Element;
 // @public
 export function BodyText(props: TextProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class Button extends React_2.PureComponent<ButtonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ButtonProps extends React_2.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     buttonType?: ButtonType;
     id?: string;
@@ -164,7 +164,7 @@ export interface ButtonProps extends React_2.ButtonHTMLAttributes<HTMLButtonElem
     size?: ButtonSize;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum ButtonSize {
     // (undocumented)
     Default = "",
@@ -172,7 +172,7 @@ export enum ButtonSize {
     Large = "large"
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum ButtonType {
     // (undocumented)
     Blue = "blue",
@@ -199,7 +199,7 @@ export const calculateToolbarOpacity: (proximityScale: number) => number;
 // @public
 export function Centered(props: CommonDivProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class Checkbox extends React_2.PureComponent<CheckboxProps> {
     // @internal
     constructor(props: CheckboxProps);
@@ -223,7 +223,7 @@ export interface CheckBoxInfo {
     tooltip?: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface CheckboxProps extends Omit_2<React_2.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
     indeterminate?: boolean;
     inputClassName?: string;
@@ -496,7 +496,7 @@ export enum DialogAlignment {
     TopRight = "top-right"
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface DialogButtonDef {
     buttonStyle?: DialogButtonStyle;
     className?: string;
@@ -506,7 +506,7 @@ export interface DialogButtonDef {
     type: DialogButtonType;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum DialogButtonStyle {
     // (undocumented)
     Blue = "iui-high-visibility",
@@ -518,7 +518,7 @@ export enum DialogButtonStyle {
     Primary = "iui-cta"
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum DialogButtonType {
     // (undocumented)
     Cancel = "cancel",
@@ -683,13 +683,13 @@ export interface ElementSeparatorProps extends CommonProps {
 // @public
 export type ExecuteHandler = (this: void) => void;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class ExpandableBlock extends React_2.PureComponent<ExpandableBlockProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ExpandableBlockProps extends CommonProps {
     caption?: string;
     isExpanded: boolean;
@@ -734,17 +734,17 @@ export interface ExpansionToggleProps extends CommonProps {
     onClick?: (e: React_2.MouseEvent<HTMLDivElement>) => void;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export function FeaturedTile(props: TileProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class Field extends React_2.Component<FieldProps> {
     constructor(props: FieldProps);
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface FieldDef {
     // (undocumented)
     editor?: FieldEditor;
@@ -764,16 +764,16 @@ export interface FieldDefinitions {
     [key: string]: FieldDef;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface FieldProps extends FieldDef {
     // (undocumented)
     id: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface FieldValues {
     // (undocumented)
     [key: string]: any;
@@ -820,7 +820,7 @@ export class Form extends React_2.Component<FormProps, FormState> {
     render(): JSX.Element;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const FormContext: React_2.Context<FormContextState | undefined>;
 
 // @public
@@ -920,7 +920,7 @@ export interface GlobalDialogState {
 // @internal
 export function hasPointerEventsSupport(): boolean;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function Headline(props: TextProps): JSX.Element;
 
 // @public
@@ -935,7 +935,7 @@ export enum HorizontalAlignment {
     Right = "right"
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function HorizontalTabs(props: TabsProps): JSX.Element;
 
 // @public
@@ -988,7 +988,7 @@ export interface ImageCheckBoxProps extends CommonProps {
     tooltip?: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const Input: (props: InputProps) => JSX.Element | null;
 
 // @public
@@ -1003,7 +1003,7 @@ export interface InputLabelProps extends LabeledComponentProps, MessagedComponen
     disabled?: boolean;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface InputProps extends React_2.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     nativeKeyHandler?: (e: KeyboardEvent) => void;
     ref?: React_2.Ref<HTMLInputElement>;
@@ -1061,54 +1061,54 @@ export interface LabeledComponentProps {
     status?: InputStatus;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function LabeledInput(props: LabeledInputProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps {
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class LabeledSelect extends React_2.PureComponent<LabeledSelectProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, MessagedComponentProps {
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function LabeledTextarea(props: LabeledTextareaProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export function LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface LabeledThemedSelectProps extends ThemedSelectProps, LabeledComponentProps, MessagedComponentProps {
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class LabeledToggle extends React_2.PureComponent<LabeledToggleProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface LabeledToggleProps extends ToggleSwitchProps {
     label?: string;
     labelClassName?: string;
     labelStyle?: React_2.CSSProperties;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function LeadingText(props: TextProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function LeadingText2(props: TextProps): JSX.Element;
 
 // @internal
@@ -1312,7 +1312,7 @@ export interface MessageRendererProps extends ClassNameProps {
     useSpan?: boolean;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum MessageSeverity {
     // (undocumented)
     Error = 4,
@@ -1331,10 +1331,10 @@ export enum MessageSeverity {
 // @public
 export type MessageType = string | HTMLElement | ReactMessage;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export function MinimalFeaturedTile(props: TileProps): JSX.Element;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export function MinimalTile(props: TileProps): JSX.Element;
 
 // @public
@@ -1395,10 +1395,10 @@ export type OmitChildrenProp<T extends {
     children?: React_2.ReactNode;
 }> = Omit_2<T, "children">;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export type OptionsType = Array<OptionType>;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface OptionType {
     // (undocumented)
     label: string;
@@ -1452,7 +1452,7 @@ export class Point implements PointProps_2 {
     readonly y: number;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface PointProps {
     // (undocumented)
     readonly x: number;
@@ -1556,10 +1556,10 @@ export interface ProcessSettingsTabActivationEventArgs {
     readonly tabSelectionFunc: (tabId: string) => void;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export function ProgressBar(props: ProgressBarProps): JSX.Element;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface ProgressBarProps extends CommonProps {
     barHeight?: number;
     indeterminate?: boolean;
@@ -1568,10 +1568,10 @@ export interface ProgressBarProps extends CommonProps {
     percent?: number;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export function ProgressSpinner(props: ProgressSpinnerProps): JSX.Element;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface ProgressSpinnerProps extends CommonProps {
     children?: React_2.ReactNode;
     error?: boolean;
@@ -1638,13 +1638,13 @@ export interface RadialMenuProps extends CommonProps {
 // @public
 export type RadialSizeType = ProgressRadialProps["size"];
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class Radio extends React_2.PureComponent<RadioProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface RadioProps extends React_2.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
 }
 
@@ -1782,17 +1782,17 @@ export interface SearchBoxProps extends CommonProps {
     valueChangedDelay?: number;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const Select: (props: SelectProps) => JSX.Element | null;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface SelectOption {
     disabled?: boolean;
     label: string;
     value?: string | number | readonly string[];
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface SelectProps extends React_2.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
     options: (string | SelectOption)[] | {
         [key: string]: (string | SelectOption);
@@ -1895,7 +1895,7 @@ export interface SizeProps {
     readonly width: number;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function Slider(props: SliderProps): JSX.Element;
 
 // @public
@@ -1927,7 +1927,7 @@ export interface SliderProps extends CommonProps {
     values: number[];
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function SmallText(props: TextProps): JSX.Element;
 
 // @public
@@ -1940,19 +1940,19 @@ export enum SortDirection {
     NoSort = 0
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class Spinner extends React_2.PureComponent<SpinnerProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface SpinnerProps {
     size?: SpinnerSize;
     sizeClass?: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum SpinnerSize {
     Large = 2,
     Medium = 1,
@@ -1960,7 +1960,7 @@ export enum SpinnerSize {
     XLarge = 3
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class SplitButton extends React_2.Component<SplitButtonProps, SplitButtonState> {
     constructor(props: SplitButtonProps);
     // (undocumented)
@@ -1977,7 +1977,7 @@ export enum SplitButtonActionType {
     List = 1
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface SplitButtonProps extends CommonProps {
     buttonType?: ButtonType;
     drawBorder?: boolean;
@@ -2002,10 +2002,10 @@ export interface StyledTextProps extends TextProps {
     mainClassName: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function Subheading(props: TextProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function Subheading2(props: TextProps): JSX.Element;
 
 // @public
@@ -2021,13 +2021,13 @@ export interface SvgPathProps extends CommonProps {
     viewBoxWidth: number;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class SvgSprite extends React_2.PureComponent<SvgSpriteProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
@@ -2066,10 +2066,10 @@ export interface TabsProps extends React_2.AllHTMLAttributes<HTMLUListElement>, 
     onActivateTab?: (index: number) => any;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const Textarea: (props: TextareaProps) => JSX.Element | null;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface TextareaProps extends React_2.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
     ref?: React_2.Ref<HTMLTextAreaElement>;
     rows?: number;
@@ -2080,10 +2080,10 @@ export interface TextareaProps extends React_2.TextareaHTMLAttributes<HTMLTextAr
 export interface TextProps extends React_2.AllHTMLAttributes<HTMLSpanElement>, CommonProps {
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export function ThemedSelect(props: ThemedSelectProps): JSX.Element;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export type ThemedSelectProps = {
     "aria-label"?: string;
     "aria-labelledby"?: string;
@@ -2148,7 +2148,7 @@ export type ThemedSelectProps = {
     value?: ValueType<OptionType>;
 };
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class Tile extends React_2.Component<TileProps> {
     // @internal (undocumented)
     static readonly defaultProps: TileDefaultProps;
@@ -2159,7 +2159,7 @@ export class Tile extends React_2.Component<TileProps> {
 // @internal (undocumented)
 export type TileDefaultProps = Pick<TileProps, "stepNum">;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface TileProps extends CommonDivProps {
     // (undocumented)
     featured?: boolean;
@@ -2197,24 +2197,24 @@ export class Timer {
     stop(): void;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function Title(props: TextProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function Title2(props: TextProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const Toggle: (props: ToggleProps) => JSX.Element | null;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum ToggleButtonType {
     Blue = 1,
     Primary = 0
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ToggleProps extends CommonProps {
-    // @deprecated
+    // @deprecated in 3.x.
     buttonType?: ToggleButtonType;
     disabled?: boolean;
     isOn?: boolean;
@@ -2237,13 +2237,13 @@ export const TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35;
 // @internal
 export const TOOLBAR_OPACITY_DEFAULT = 0.5;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export function Tooltip(props: TooltipProps): JSX.Element;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export type TooltipPlacement = "bottom" | "left" | "right" | "top";
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface TooltipProps extends CommonProps {
     children?: React_2.ReactNode;
     placement?: TooltipPlacement;
@@ -2373,7 +2373,7 @@ export class UiCore {
     static translate(key: string | string[]): string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
 }
 

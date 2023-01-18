@@ -26,7 +26,7 @@ export interface NestedGroupProps extends GroupProps {
 }
 
 /** Nested tool group component. Used in [[ExpandableItem]] component.
- * @deprecated Use [GroupItemDef]($appui-react) instead
+ * @deprecated in 3.x. Use [GroupItemDef]($appui-react) instead
  * @internal
  */
 export class NestedGroup extends React.PureComponent<NestedGroupProps> {

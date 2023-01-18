@@ -2080,7 +2080,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return viewStateData;
     }
 
-    /** @deprecated use [[getViewStateProps]]. */
+    /** @deprecated in 3.x. use [[getViewStateProps]]. */
     public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
       const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
       let drawingExtents;

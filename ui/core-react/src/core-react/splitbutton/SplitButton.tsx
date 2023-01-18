@@ -24,7 +24,7 @@ export enum SplitButtonActionType {
 
 /** Properties for [[SplitButton]] component
  * @public
- * @deprecated Use SplitButtonProps in itwinui-react instead
+ * @deprecated in 3.x. Use SplitButtonProps in itwinui-react instead
  */
 export interface SplitButtonProps extends CommonProps {
   /** Label to display in click area. */
@@ -56,7 +56,7 @@ interface SplitButtonState {
 /**
  * SplitButton with an action button on the left and an arrow button that displays a context menu on the right.
  * @public
- * @deprecated Use SplitButton in itwinui-react instead
+ * @deprecated in 3.x. Use SplitButton in itwinui-react instead
  */
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {    // eslint-disable-line deprecation/deprecation
   private _arrowElement = React.createRef<HTMLDivElement>();

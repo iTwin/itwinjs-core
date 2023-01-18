@@ -92,7 +92,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly internalData?: Map<string, any>;
     readonly isFloatingStateSupported?: boolean;
     readonly isFloatingStateWindowResizable?: boolean;
-    // @deprecated
+    // @deprecated in 3.x.
     readonly isFreeform?: boolean;
     readonly isStatusBar?: boolean;
     readonly isToolSettings?: boolean;
@@ -101,13 +101,13 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly priority?: number;
     readonly restoreTransientState?: () => boolean;
     readonly saveTransientState?: () => void;
-    // @deprecated
+    // @deprecated in 3.x.
     readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
     readonly syncEventIds?: string[];
     readonly tooltip?: string | ConditionalStringValue;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum AbstractZoneLocation {
     // (undocumented)
     BottomLeft = 7,
@@ -1096,7 +1096,7 @@ export enum DisplayMessageType {
 // @public
 export interface EditorPosition {
     columnIndex: number;
-    // @deprecated
+    // @deprecated in 3.x.
     columnSpan?: number;
     rowPriority: number;
 }
@@ -1218,10 +1218,10 @@ export interface IconListEditorParams extends BasePropertyEditorParams {
 
 // @public
 export class IconSpecUtilities {
-    // @deprecated
+    // @deprecated in 3.x.
     static createSvgIconSpec(svgSrc: string): string;
     static createWebComponentIconSpec(srcString: string): string;
-    // @deprecated
+    // @deprecated in 3.x.
     static getSvgSource(iconSpec: string): string | undefined;
     static getWebComponentSource(iconSpec: string): string | undefined;
     static readonly SVG_PREFIX = "svg:";
@@ -1747,7 +1747,7 @@ export enum StagePanelLocation {
 export enum StagePanelSection {
     // (undocumented)
     End = 2,
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     Middle = 1,
     // (undocumented)
     Start = 0
@@ -2120,7 +2120,7 @@ export interface UiItemProviderRegisteredEventArgs {
     providerId: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum UiItemsApplicationAction {
     Allow = 0,
     Disallow = 1,

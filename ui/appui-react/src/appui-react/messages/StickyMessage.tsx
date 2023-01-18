@@ -22,7 +22,7 @@ import { HollowIcon } from "./HollowIcon";
 import { Icon, MessageContainer } from "@itwin/core-react";
 
 /** Properties for a [[StickyMessage]]
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.x. Props of a deprecated component.
  * @public
  */
 export interface StickyMessageProps {
@@ -34,7 +34,7 @@ export interface StickyMessageProps {
 
 /** Sticky Message React component
  * @public
- * @deprecated
+ * @deprecated in 3.x.
  */
 export function StickyMessage(props: StickyMessageProps) { // eslint-disable-line deprecation/deprecation
   const { id, messageDetails, severity, closeMessage } = props;

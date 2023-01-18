@@ -18,7 +18,7 @@ export interface ConditionalFieldProps extends StatusFieldProps {
   /** Function to be called to return a boolean value. If the boolean value is different than the component's state value setState is
    * called to update the value and trigger a re-render.
    */
-  boolFunc: (props: StatusFieldProps & {isInFooterMode: boolean}) => boolean;
+  boolFunc: (props: StatusFieldProps & { isInFooterMode: boolean }) => boolean;
   /** Optional, default/initial boolean value that is saved in the components state. If
    * not defined it will default to true.
    */
@@ -36,7 +36,7 @@ interface ConditionalFieldState {
 /**
  * A component that expects its children to be a function that will be passed the current component Props.
  * @public
- * @deprecated In upcoming version, all props passed down to the bool function will be undefined, making this component useless.
+ * @deprecated in 3.x. In upcoming version, all props passed down to the bool function will be undefined, making this component useless.
  */
 export class ConditionalField extends React.PureComponent<ConditionalFieldProps, ConditionalFieldState> {
   /** @internal */
@@ -51,7 +51,7 @@ export class ConditionalField extends React.PureComponent<ConditionalFieldProps,
 
   private _resolveBooleanValue = (): void => {
     // eslint-disable-next-line deprecation/deprecation
-    const boolValue = this.props.boolFunc({...this.props, isInFooterMode: this.props.isInFooterMode ?? true});
+    const boolValue = this.props.boolFunc({ ...this.props, isInFooterMode: this.props.isInFooterMode ?? true });
     if (this.state.boolValue !== boolValue) {
       this.setState({ boolValue });
     }

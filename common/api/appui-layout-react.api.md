@@ -202,13 +202,13 @@ export interface ColumnsProps extends CommonProps {
     children?: React_2.ReactNode;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export const contain: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export const containHorizontally: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export const containVertically: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
 
 // @internal (undocumented)
@@ -249,19 +249,19 @@ export type CursorType = "nwse-resize" | "nesw-resize" | "ew-resize" | "ns-resiz
 // @internal (undocumented)
 export const CursorTypeContext: React_2.Context<CursorType | undefined>;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class Dialog extends React_2.PureComponent<DialogProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface DialogProps extends CommonProps {
     children?: React_2.ReactNode;
     titleBar?: React_2.ReactNode;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export enum Direction {
     // (undocumented)
     Bottom = 4,
@@ -506,13 +506,13 @@ export interface ExpandableButtonProps extends CommonProps {
     children?: React_2.ReactNode;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class ExpandableItem extends React_2.PureComponent<ExpandableItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface ExpandableItemProps extends CommonProps {
     hideIndicator?: boolean;
     isActive?: boolean;
@@ -681,25 +681,25 @@ export interface FloatingWidgetState {
 // @internal (undocumented)
 export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState;
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class Footer extends React_2.PureComponent<FooterProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export const FooterIndicator: React_2.ForwardRefExoticComponent<FooterIndicatorProps & React_2.RefAttributes<HTMLDivElement>>;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface FooterIndicatorProps extends CommonProps {
     children?: React_2.ReactNode;
-    // @deprecated
+    // @deprecated in 3.x.
     isInFooterMode?: boolean;
     onClick?: (event: React_2.MouseEvent) => void;
     title?: string;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class FooterPopup extends React_2.PureComponent<FooterPopupProps> {
     // (undocumented)
     static readonly defaultProps: FooterPopupDefaultProps;
@@ -707,21 +707,21 @@ export class FooterPopup extends React_2.PureComponent<FooterPopupProps> {
     render(): JSX.Element;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export enum FooterPopupContentType {
     Dialog = "nz-content-dialog",
     Panel = "nz-content-panel"
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export type FooterPopupDefaultProps = Pick<FooterPopupProps, "contentType">;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface FooterPopupProps extends Partial<PopupProps> {
     contentType: FooterPopupContentType;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export interface FooterProps extends CommonProps {
     children?: React_2.ReactNode;
     isInFooterMode?: boolean;
@@ -731,13 +731,13 @@ export interface FooterProps extends CommonProps {
     safeAreaInsets?: SafeAreaInsets;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class FooterSeparator extends React_2.PureComponent<FooterSeparatorProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface FooterSeparatorProps extends CommonProps, NoChildrenProps {
 }
 
@@ -831,24 +831,24 @@ export const getZoneCell: (id: ZoneId) => Cell;
 // @internal (undocumented)
 export const getZoneIdFromCell: (cell: CellProps) => WidgetZoneId;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export class Group extends React_2.PureComponent<GroupProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export class GroupColumn extends React_2.PureComponent<GroupColumnProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface GroupColumnProps extends CommonProps {
     children?: React_2.ReactNode;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface GroupProps extends CommonProps, NoChildrenProps {
     columns?: React_2.ReactNode;
     title?: string;
@@ -988,7 +988,7 @@ export class HandleModeHelpers {
 // @internal (undocumented)
 export function handleToCursorType(handle: FloatingWidgetResizeHandle): CursorType;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export enum HorizontalAnchor {
     // (undocumented)
     Left = 0,
@@ -1072,13 +1072,13 @@ export function isWidgetDropTargetState(state: DropTargetState): state is Widget
 // @internal (undocumented)
 export function isWindowDropTargetState(state: WidgetDragDropTargetState): state is WindowDropTargetState;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class Item extends React_2.PureComponent<ItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface ItemProps extends CommonProps {
     badge?: React_2.ReactNode;
     icon?: React_2.ReactNode;
@@ -1119,7 +1119,7 @@ export interface MergeTargetProps extends CommonProps {
     onTargetChanged?: (isTargeted: boolean) => void;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class Message extends React_2.PureComponent<StatusMessageProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -1236,7 +1236,7 @@ export interface NavigationAreaProps extends CommonProps, NoChildrenProps {
     verticalToolbar?: React_2.ReactNode;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class NestedGroup extends React_2.PureComponent<NestedGroupProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -1539,7 +1539,7 @@ export const offsetAndContainInContainer: (tooltipBounds: RectangleProps, contai
 // @internal (undocumented)
 export function onOverflowLabelAndEditorResize(): void;
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export enum OrthogonalDirection {
     // (undocumented)
     Horizontal = 1,
@@ -1579,9 +1579,9 @@ export interface OverflowProps extends ExpandableItemProps {
     onClick?: () => void;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export class Panel extends React_2.PureComponent<PanelProps> {
-    // @deprecated
+    // @deprecated in 3.x.
     static get isPanelOpen(): boolean;
     // (undocumented)
     render(): JSX.Element;
@@ -1607,7 +1607,7 @@ export interface PanelInitializeAction {
     readonly type: "PANEL_INITIALIZE";
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface PanelProps extends CommonProps {
     children?: React_2.ReactNode;
 }
@@ -1970,7 +1970,7 @@ export function restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): S
 // @internal (undocumented)
 export type RightPanelSide = "right";
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export enum SafeAreaInsets {
     // (undocumented)
     All = 15,
@@ -2162,7 +2162,7 @@ export class Snap extends React_2.PureComponent<SnapProps> {
     render(): JSX.Element;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class SnapMode extends React_2.PureComponent<SnapModeProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -2572,7 +2572,7 @@ export class Title extends React_2.PureComponent<TitleProps> {
     render(): JSX.Element;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class TitleBar extends React_2.PureComponent<TitleBarProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -2591,7 +2591,7 @@ export interface TitleBarButtonProps extends CommonProps {
     title?: string;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface TitleBarProps extends CommonProps {
     children?: React_2.ReactNode;
     title?: string;
@@ -2602,7 +2602,7 @@ export interface TitleProps extends CommonProps {
     children?: React_2.ReactNode;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class Toast extends React_2.PureComponent<ToastProps, ToastState> {
     constructor(props: ToastProps);
     // (undocumented)
@@ -2691,7 +2691,7 @@ export interface ToolAssistanceSeparatorProps extends CommonProps {
     children?: string;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class Toolbar extends React_2.PureComponent<ToolbarProps, ToolbarState> {
     // (undocumented)
     static readonly defaultProps: {
@@ -2749,7 +2749,7 @@ export interface ToolbarItemProps<TItem extends ToolbarItem = ToolbarItem> {
     readonly toolbarItemRef?: React_2.Ref<TItem>;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export enum ToolbarPanelAlignment {
     // (undocumented)
     End = 1,
@@ -2765,7 +2765,7 @@ export class ToolbarPanelAlignmentHelpers {
     static readonly START_CLASS_NAME = "nz-panel-alignment-start";
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
     items?: React_2.ReactNode;
@@ -2903,7 +2903,7 @@ export interface ToolsProps extends CommonProps, NoChildrenProps {
     verticalToolbar?: React_2.ReactNode;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class Tooltip extends React_2.PureComponent<TooltipProps> {
     // (undocumented)
     componentDidMount(): void;
@@ -2915,10 +2915,10 @@ export class Tooltip extends React_2.PureComponent<TooltipProps> {
     render(): JSX.Element;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export type TooltipDefaultProps = Pick<TooltipProps, "position">;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface TooltipProps extends CommonProps {
     children?: React_2.ReactNode;
     icon?: React_2.ReactNode;
@@ -3114,13 +3114,13 @@ export const usePointerCaptor: <T extends HTMLElement>(onPointerDown?: ((args: P
 // @internal (undocumented)
 export const useResizeGrip: <T extends HTMLElement>() => [(instance: T | null) => void, boolean, boolean];
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class UserProfile extends React_2.PureComponent<UserProfileProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface UserProfileProps extends CommonProps {
     children?: string;
     color?: string;
@@ -3210,7 +3210,7 @@ export interface VerticalPanelState extends PanelState {
 // @internal (undocumented)
 export const Widget: React_2.MemoExoticComponent<React_2.ForwardRefExoticComponent<WidgetProps & React_2.RefAttributes<HTMLDivElement>>>;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export class WidgetContent extends React_2.PureComponent<WidgetContentProps> {
     // (undocumented)
     componentDidUpdate(): void;
@@ -3255,7 +3255,7 @@ export interface WidgetContentManagerProps {
 // @internal (undocumented)
 export const WidgetContentNodeContext: React_2.Context<React_2.ReactNode>;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface WidgetContentProps extends CommonProps, NoChildrenProps {
     anchor: HorizontalAnchor;
     containerRef?: React_2.Ref<HTMLDivElement>;
@@ -3637,7 +3637,7 @@ export interface WidgetToolSettingsState {
 // @internal (undocumented)
 export const widgetZoneColumnIds: ReadonlyArray<WidgetZoneId>;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export type WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
 
 // @internal
@@ -3649,7 +3649,7 @@ export interface WindowDropTargetState {
     readonly type: "window";
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export const withContainIn: <ComponentProps extends {}>(Component: React_2.ComponentType<ComponentProps>) => {
     new (props: (ComponentProps & WithContainInProps) | Readonly<ComponentProps & WithContainInProps>): {
         ref: React_2.RefObject<HTMLDivElement>;
@@ -3712,7 +3712,7 @@ export const withContainIn: <ComponentProps extends {}>(Component: React_2.Compo
     contextType?: React_2.Context<any> | undefined;
 };
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface WithContainInProps {
     container?: HTMLElement | null;
     containFn?: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
@@ -3966,7 +3966,7 @@ export interface ZonesProps extends CommonProps {
     isHidden?: boolean;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export enum ZoneTargetType {
     // (undocumented)
     Back = 1,

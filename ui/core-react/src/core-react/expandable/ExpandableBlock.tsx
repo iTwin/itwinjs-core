@@ -13,7 +13,7 @@ import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[ExpandableBlock]] React component
  * @public
- * @deprecated Use ExpandableBlockProps from itwinui-react instead
+ * @deprecated in 3.x. Use ExpandableBlockProps from itwinui-react instead
  */
 export interface ExpandableBlockProps extends CommonProps {
   /** Label */
@@ -34,7 +34,7 @@ export interface ExpandableBlockProps extends CommonProps {
 
 /** ExpandableBlock React component is a container that shows and hides child content.
  * @public
- * @deprecated Use ExpandableBlock from itwinui-react instead
+ * @deprecated in 3.x. Use ExpandableBlock from itwinui-react instead
  */
 export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {  // eslint-disable-line deprecation/deprecation
 

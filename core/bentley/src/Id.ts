@@ -665,7 +665,7 @@ export class TransientIdSequence {
   private _localId: number = 0;
 
   /** Generate and return the next transient Id64String in the sequence.
-   * @deprecated Use [[getNext]].
+   * @deprecated in 3.x. Use [[getNext]].
    */
   public get next(): Id64String {
     return this.getNext();

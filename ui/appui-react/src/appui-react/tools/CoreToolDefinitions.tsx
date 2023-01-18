@@ -38,7 +38,7 @@ import cameraAnimationDisabledIcon from "@itwin/itwinui-icons/icons/camera-anima
 // istanbul ignore next
 export class CoreTools {
   /** Get the CustomItemDef for PopupButton
-   * @deprecated
+   * @deprecated in 3.x.
    * @public
    */
   public static get keyinBrowserButtonItemDef() {

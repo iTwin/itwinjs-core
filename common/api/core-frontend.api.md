@@ -2547,7 +2547,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
     readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
-    // @deprecated
+    // @deprecated in 3.x.
     readonly onScheduleScriptReferenceChanged: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
     // @internal (undocumented)
     get overlayMapLayers(): MapLayerSettings[];
@@ -2562,7 +2562,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     protected registerSettingsEventListeners(): void;
     get scheduleScript(): RenderSchedule.Script | undefined;
     set scheduleScript(script: RenderSchedule.Script | undefined);
-    // @deprecated
+    // @deprecated in 3.x.
     get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
     abstract get settings(): DisplayStyleSettings;
@@ -4127,7 +4127,7 @@ export abstract class GraphicBuilder {
     // (undocumented)
     protected readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
     readonly pickable?: Readonly<PickableGraphicOptions>;
-    // @deprecated
+    // @deprecated in 3.x.
     get pickId(): Id64String | undefined;
     readonly placement: Transform;
     readonly preserveOrder: boolean;
@@ -4995,7 +4995,7 @@ export namespace IModelConnection {
         // @internal
         constructor(_iModel: IModelConnection);
         convertViewStatePropsToViewState(viewProps: ViewStateProps): Promise<ViewState>;
-        // @deprecated
+        // @deprecated in 3.x.
         getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
         load(viewDefinitionId: Id64String): Promise<ViewState>;
@@ -5322,7 +5322,7 @@ export class IpcApp {
     static appFunctionIpc: PickAsyncMethods<IpcAppFunctions>;
     // @internal
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     static callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>): Promise<PromiseReturnType<IpcAppFunctions[T]>>;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
@@ -7178,7 +7178,7 @@ export class MutableChangeFlags extends ChangeFlags {
 
 // @public
 export class NativeApp {
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     static callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType<NativeAppFunctions[T]>>;
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage_2, deleteStorage?: boolean): Promise<void>;
@@ -7195,7 +7195,7 @@ export class NativeApp {
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
     static requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion): Promise<BriefcaseDownloader>;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     static requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // @internal (undocumented)
     static shutdown(): Promise<void>;
@@ -7941,7 +7941,7 @@ export interface PullChangesOptions {
     // @beta
     abortSignal?: GenericAbortSignal;
     downloadProgressCallback?: OnDownloadProgress;
-    // @deprecated
+    // @deprecated in 3.x.
     progressCallback?: ProgressCallback;
     progressInterval?: number;
 }
@@ -9100,7 +9100,7 @@ export abstract class RenderSystem implements IDisposable {
     createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner;
     // @internal (undocumented)
     createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
-    // @deprecated
+    // @deprecated in 3.x.
     createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined;
     // @internal (undocumented)
     createMesh(params: MeshParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
@@ -9139,11 +9139,11 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined;
-    // @deprecated
+    // @deprecated in 3.x.
     createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined;
-    // @deprecated
+    // @deprecated in 3.x.
     createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
-    // @deprecated
+    // @deprecated in 3.x.
     createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
     createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined>;
     // @internal (undocumented)
@@ -9288,7 +9288,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined;
     queryVisibleTileFeatures(_options: QueryTileFeaturesOptions, _iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
     readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined;
@@ -9616,7 +9616,7 @@ export class ScreenViewport extends Viewport {
     resetUndo(): void;
     saveViewUndo(): void;
     setCursor(cursor?: string): void;
-    // @deprecated
+    // @deprecated in 3.x.
     setEventController(controller?: EventController): void;
     // @internal
     static setToParentSize(div: HTMLElement): void;
@@ -13523,7 +13523,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     // @internal (undocumented)
     pointToGrid(point: Point3d): void;
     queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
-    // @deprecated
+    // @deprecated in 3.x.
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
     readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined;
     readImageToCanvas(): HTMLCanvasElement;

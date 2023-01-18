@@ -64,7 +64,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * The computed projectExtents will either include or exclude *outliers* depending on the `excludeOutliers` flag that defaults to `false`.
    * @see [[IModelImportOptions.autoExtendProjectExtents]]
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
-   * @deprecated Use [[IModelImporter.options.autoExtendProjectExtents]] instead
+   * @deprecated in 3.x. Use [[IModelImporter.options.autoExtendProjectExtents]] instead
    */
   public get autoExtendProjectExtents(): Required<IModelImportOptions>["autoExtendProjectExtents"] {
     return this.options.autoExtendProjectExtents;
@@ -75,7 +75,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
 
   /**
    * See [IModelTransformOptions.preserveElementIdsForFiltering]($transformer)
-   * @deprecated Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
+   * @deprecated in 3.x. Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
    */
   public get preserveElementIdsForFiltering(): boolean {
     return this.options.preserveElementIdsForFiltering;
@@ -86,7 +86,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
 
   /**
    * See [[IModelImportOptions.simplifyElementGeometry]]
-   * @deprecated Use [[IModelImporter.options.simplifyElementGeometry]] instead
+   * @deprecated in 3.x. Use [[IModelImporter.options.simplifyElementGeometry]] instead
    */
   public get simplifyElementGeometry(): boolean {
     return this.options.simplifyElementGeometry;
@@ -338,15 +338,15 @@ export class IModelImporter implements Required<IModelImportOptions> {
     aspectClassFullNames.forEach((aspectClassFullName: string) => {
       const proposedAspects = aspectPropsArray
         .map((props, index) => ({ props, index }))
-        .filter(({props}) => aspectClassFullName === props.classFullName);
+        .filter(({ props }) => aspectClassFullName === props.classFullName);
 
       const currentAspects = this.targetDb.elements
         .getAspects(elementId, aspectClassFullName)
         .map((props, index) => ({ props, index }) as const)
-        .filter(({props}) => filterFunc(props));
+        .filter(({ props }) => filterFunc(props));
 
       if (proposedAspects.length >= currentAspects.length) {
-        proposedAspects.forEach(({props, index: resultIndex}, index) => {
+        proposedAspects.forEach(({ props, index: resultIndex }, index) => {
           let id: Id64String;
           if (index < currentAspects.length) {
             id = currentAspects[index].props.id;
@@ -361,7 +361,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
           result[resultIndex] = id;
         });
       } else {
-        currentAspects.forEach(({props, index: resultIndex}, index) => {
+        currentAspects.forEach(({ props, index: resultIndex }, index) => {
           let id: Id64String;
           if (index < proposedAspects.length) {
             id = props.id;
@@ -563,7 +563,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * You may override this to load arbitrary json state in a transformer state dump, useful for some resumptions
    * @see [[IModelTransformer.loadStateFromFile]]
    */
-  protected loadAdditionalStateJson(_additionalState: any): void {}
+  protected loadAdditionalStateJson(_additionalState: any): void { }
 
   /**
    * Reload our state from a JSON object

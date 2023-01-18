@@ -32,7 +32,7 @@ interface StatusBarState {
 export interface StatusBarProps extends CommonProps {
   widgetControl?: StatusBarWidgetControl;
   /** Indicates whether the StatusBar is in footer mode
-   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+   * @deprecated in 3.x. In upcoming version, widget mode will be removed. Consider this parameter to always be true.
   */
   isInFooterMode?: boolean;
 }
@@ -124,8 +124,8 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     const messagesToAdd = MessageManager.activeMessageManager.messages.filter((msg) => !this.messages.find((m) => m.id === msg.id));
     messagesToAdd.forEach((msg) => {
       const displayedMessage = MessageManager.displayMessage(msg.messageDetails, { onRemove: () => this._closeMessage(msg.id) });
-      if(!!displayedMessage)
-        this.messages.push({close: displayedMessage.close, id: msg.id});
+      if (!!displayedMessage)
+        this.messages.push({ close: displayedMessage.close, id: msg.id });
     });
   };
 
@@ -167,7 +167,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 
   private getFooterMessages(): React.ReactNode {
     return (
-      <CustomActivityMessageRenderer settings={{placement: "bottom"}} activityMessageInfo={this.state.activityMessageInfo} cancelActivityMessage={this._cancelActivityMessage} />
+      <CustomActivityMessageRenderer settings={{ placement: "bottom" }} activityMessageInfo={this.state.activityMessageInfo} cancelActivityMessage={this._cancelActivityMessage} />
     );
   }
 

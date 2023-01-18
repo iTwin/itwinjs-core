@@ -135,7 +135,7 @@ export abstract class IModelExportHandler {
 // @beta
 export class IModelImporter implements Required<IModelImportOptions> {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
-    // @deprecated
+    // @deprecated in 3.x.
     get autoExtendProjectExtents(): Required<IModelImportOptions>["autoExtendProjectExtents"];
     set autoExtendProjectExtents(val: Required<IModelImportOptions>["autoExtendProjectExtents"]);
     computeProjectExtents(): void;
@@ -168,13 +168,13 @@ export class IModelImporter implements Required<IModelImportOptions> {
     protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
     optimizeGeometry(options: OptimizeGeometryOptions): void;
     readonly options: Required<IModelImportOptions>;
-    // @deprecated
+    // @deprecated in 3.x.
     get preserveElementIdsForFiltering(): boolean;
     set preserveElementIdsForFiltering(val: boolean);
     progressInterval: number;
     // @internal
     saveStateToJson(): IModelImporterState;
-    // @deprecated
+    // @deprecated in 3.x.
     get simplifyElementGeometry(): boolean;
     set simplifyElementGeometry(val: boolean);
     readonly targetDb: IModelDb;
@@ -214,7 +214,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected getAdditionalStateJson(): any;
     protected hasElementChanged(sourceElement: Element_2, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
-    // @deprecated
+    // @deprecated in 3.x.
     initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): void | Promise<void>;
     initialize(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
     // @internal
@@ -247,7 +247,7 @@ export class IModelTransformer extends IModelExportHandler {
     processChildElements(sourceElementId: Id64String): Promise<void>;
     processCodeSpec(codeSpecName: string): Promise<void>;
     processCodeSpecs(): Promise<void>;
-    // @deprecated
+    // @deprecated in 3.x.
     processDeferredElements(_numRetries?: number): Promise<void>;
     processElement(sourceElementId: Id64String): Promise<void>;
     processFonts(): Promise<void>;
@@ -267,7 +267,7 @@ export class IModelTransformer extends IModelExportHandler {
     shouldExportElement(_sourceElement: Element_2): boolean;
     shouldExportRelationship(_sourceRelationship: Relationship): boolean;
     shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
-    // @deprecated
+    // @deprecated in 3.x.
     protected skipElement(_sourceElement: Element_2): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
@@ -277,7 +277,7 @@ export class IModelTransformer extends IModelExportHandler {
 // @beta
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
-    // @deprecated
+    // @deprecated in 3.x.
     danglingPredecessorsBehavior?: "reject" | "ignore";
     danglingReferencesBehavior?: "reject" | "ignore";
     includeSourceProvenance?: boolean;

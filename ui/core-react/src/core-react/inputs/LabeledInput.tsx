@@ -15,13 +15,13 @@ import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponen
 
 /** Properties for [[LabeledInput]] components
  * @public
- * @deprecated Use LabeledInputProps in itwinui-react instead
+ * @deprecated in 3.x. Use LabeledInputProps in itwinui-react instead
  */
 export interface LabeledInputProps extends InputProps, LabeledComponentProps, MessagedComponentProps { }  // eslint-disable-line deprecation/deprecation
 
 /** Text input wrapper that provides additional styling and labeling
  * @public
- * @deprecated Use LabeledInput in itwinui-react instead
+ * @deprecated in 3.x. Use LabeledInput in itwinui-react instead
  */
 export function LabeledInput(props: LabeledInputProps) {    // eslint-disable-line deprecation/deprecation
   const { label, status, className, style,

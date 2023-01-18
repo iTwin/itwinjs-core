@@ -13,13 +13,13 @@ import { CommonProps } from "../utils/Props";
 
 /** Properties for [[Radio]] component
  * @public
- * @deprecated Use RadioProps in itwinui-react instead
+ * @deprecated in 3.x. Use RadioProps in itwinui-react instead
  */
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps { }
 
 /** Basic radio input component is a wrapper for the `<input type="radio">` HTML element.
  * @public
- * @deprecated Use Radio in itwinui-react instead
+ * @deprecated in 3.x. Use Radio in itwinui-react instead
  */
 export class Radio extends React.PureComponent<RadioProps> {  // eslint-disable-line deprecation/deprecation
   public override render(): JSX.Element {

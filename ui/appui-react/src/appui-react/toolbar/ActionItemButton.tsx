@@ -18,7 +18,7 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Properties that must be specified for an [[ActionItemButton]] component
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.x. Props of a deprecated component.
  * @public
  */
 export interface ActionItemButtonProps extends CommonProps {
@@ -42,7 +42,7 @@ const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
 };
 
 /** A Toolbar button React Component that executes an action defined by a CommandItemDef or a ToolItemDef.
- * @deprecated Use [ActionButton]($appui-abstract) instead.
+ * @deprecated in 3.x. Use [ActionButton]($appui-abstract) instead.
  * @public
  */
 export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> { // eslint-disable-line deprecation/deprecation

@@ -64,7 +64,7 @@ export interface SubCategoryResultRow {
 export interface HydrateViewStateRequestProps {
   acsId?: string;
   notLoadedModelSelectorStateModels?: CompressedId64Set;
-  /** @deprecated If loading categoryIds is necessary, see [IModelConnection.SubCategoriesCache.load]($frontend)*/
+  /** @deprecated in 3.x. If loading categoryIds is necessary, see [IModelConnection.SubCategoriesCache.load]($frontend)*/
   notLoadedCategoryIds?: CompressedId64Set;
   sheetViewAttachmentIds?: CompressedId64Set;
   viewStateLoadProps?: ViewStateLoadProps;
@@ -83,7 +83,7 @@ export interface HydrateViewStateResponseProps {
   sheetViewViews?: (ViewStateProps | undefined)[];
   baseModelProps?: ModelProps;
   spatialViewProps?: ViewStateProps;
-  /** @deprecated If loading categoryIds is necessary, see [IModelConnection.SubCategoriesCache.load]($frontend)*/
+  /** @deprecated in 3.x. If loading categoryIds is necessary, see [IModelConnection.SubCategoriesCache.load]($frontend)*/
   categoryIdsResult?: SubCategoryResultRow[];
 }
 

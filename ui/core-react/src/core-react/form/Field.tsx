@@ -14,7 +14,7 @@ import { FieldDef, FormContext, FormContextState } from "./Form";
 // cSpell:ignore multilinetextbox
 
 /** Properties used to create a [[Field]] in a [[Form]]
- * @public @deprecated
+ * @public @deprecated in 3.x.
  */
 export interface FieldProps extends FieldDef {
   /* The unique field name */
@@ -24,7 +24,7 @@ export interface FieldProps extends FieldDef {
 type FieldDefOptions = FieldDef["options"];
 
 /** Component that represents a single field in an input form. Only four type of editors are supported. Field gets/sets state data from/to the context control by the form.
- * @public @deprecated
+ * @public @deprecated in 3.x.
  */
 export class Field extends React.Component<FieldProps> {
   constructor(props: FieldProps) {

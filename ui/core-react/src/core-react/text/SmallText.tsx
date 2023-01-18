@@ -12,7 +12,7 @@ import { TextProps } from "./TextProps";
 
 /** Styled small text React functional component
  * @public
- * @deprecated Use Small in itwinui-react instead
+ * @deprecated in 3.x. Use Small in itwinui-react instead
  */
 export function SmallText(props: TextProps) {
   return <StyledText {...props} mainClassName="uicore-text-small" />;

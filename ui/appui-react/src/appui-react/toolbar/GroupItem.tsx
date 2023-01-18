@@ -47,11 +47,11 @@ export class GroupItemDef extends ActionButtonItemDef {
   public static groupIdPrefix = "Group-";
 
   public groupId: string;
-  /** @deprecated Used in UI1.0 only. */
+  /** @deprecated in 3.x. Used in UI1.0 only. */
   public direction: Direction; // eslint-disable-line deprecation/deprecation
   public itemsInColumn: number;
   public items: AnyItemDef[];
-  /** @deprecated Used in UI1.0 only. */
+  /** @deprecated in 3.x. Used in UI1.0 only. */
   public directionExplicit: boolean;
   public defaultActiveItemId?: string;
 
@@ -126,7 +126,7 @@ export class GroupItemDef extends ActionButtonItemDef {
   public override execute(): void {
   }
 
-  /** @deprecated Used in UI1.0 only. */
+  /** @deprecated in 3.x. Used in UI1.0 only. */
   public override toolbarReactNode(index?: number): React.ReactNode {
     this.resolveItems();
     const key = this.getKey(index);
@@ -653,13 +653,13 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 }
 
 /** Properties for the [[GroupButton]] React component
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.x. Props of a deprecated component.
  * @public
  */
 export interface GroupButtonProps extends GroupItemProps, CommonProps { }
 
 /** Group Button React component
- * @deprecated Use [GroupButton]($appui-abstract) instead.
+ * @deprecated in 3.x. Use [GroupButton]($appui-abstract) instead.
  * @public
  */
 export function GroupButton(props: GroupButtonProps) { // eslint-disable-line deprecation/deprecation

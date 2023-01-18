@@ -13,7 +13,7 @@ import * as React from "react";
 import { CommonProps } from "../utils/Props";
 
 /** Properties of [[SvgSprite]] component.
- * @public @deprecated
+ * @public @deprecated in 3.x.
  */
 export interface SvgSpriteProps extends CommonProps {
   /** Source for the Svg */
@@ -22,7 +22,7 @@ export interface SvgSpriteProps extends CommonProps {
 
 /** Svg element wrapper.
  * This component is deprecate -- use IconComponent
- * @public @deprecated
+ * @public @deprecated in 3.x.
  */
 export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
   public override render() {

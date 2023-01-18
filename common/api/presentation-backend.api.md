@@ -151,7 +151,7 @@ export class Presentation {
 // @public
 export interface PresentationAssetsRootConfig {
     backend: string;
-    // @deprecated
+    // @deprecated in 3.x.
     common: string;
 }
 
@@ -201,7 +201,7 @@ export enum PresentationBackendNativeLoggerCategory {
 // @public
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
-    // @deprecated
+    // @deprecated in 3.x.
     activeLocale: string | undefined;
     get activeUnitSystem(): UnitSystemKey | undefined;
     set activeUnitSystem(value: UnitSystemKey | undefined);
@@ -252,7 +252,7 @@ export interface PresentationManagerCachingConfig {
     workerConnectionCacheSize?: number;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum PresentationManagerMode {
     ReadOnly = 0,
     ReadWrite = 1
@@ -266,20 +266,20 @@ export interface PresentationManagerProps {
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
     };
-    // @deprecated
+    // @deprecated in 3.x.
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
     // @beta
     diagnostics?: BackendDiagnosticsOptions;
-    // @deprecated
+    // @deprecated in 3.x.
     enableSchemasPreload?: boolean;
     // @beta
     getLocalizedString?: (key: string) => string;
     // @internal
     id?: string;
-    // @deprecated
+    // @deprecated in 3.x.
     localeDirectories?: string[];
-    // @deprecated
+    // @deprecated in 3.x.
     mode?: PresentationManagerMode;
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];

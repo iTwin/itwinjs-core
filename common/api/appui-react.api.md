@@ -417,7 +417,7 @@ export type ActionCreatorsObject = {
     [actionCreatorName: string]: FunctionType;
 };
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class ActionItemButton extends React_2.Component<ActionItemButtonProps, BaseItemState> {
     constructor(props: ActionItemButtonProps);
     // @internal (undocumented)
@@ -432,7 +432,7 @@ export class ActionItemButton extends React_2.Component<ActionItemButtonProps, B
     readonly state: Readonly<BaseItemState>;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ActionItemButtonProps extends CommonProps {
     actionItem: ActionButtonItemDef;
     isEnabled?: boolean;
@@ -477,7 +477,7 @@ export class ActivityCenterField extends React_2.Component<StatusFieldProps, Act
     render(): React_2.ReactNode;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function ActivityMessage(props: ActivityMessageProps): JSX.Element;
 
 // @public
@@ -492,10 +492,10 @@ export interface ActivityMessageEventArgs {
     restored?: boolean;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ActivityMessagePopupProps extends CommonProps {
     // (undocumented)
     cancelActivityMessage?: () => void;
@@ -503,7 +503,7 @@ export interface ActivityMessagePopupProps extends CommonProps {
     dismissActivityMessage?: () => void;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ActivityMessageProps {
     // (undocumented)
     activityMessageInfo: ActivityMessageEventArgs;
@@ -543,7 +543,7 @@ export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionBut
 // @public
 export type AnyToolbarItemDef = AnyItemDef | CustomItemDef;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
 // @internal (undocumented)
@@ -581,7 +581,7 @@ export class AppUiSettings implements UserSettingsProvider {
     colorTheme: UiStateEntry<string>;
     // (undocumented)
     dragInteraction: UiStateEntry<boolean>;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     frameworkVersion: UiStateEntry<FrameworkVersionId>;
     // (undocumented)
     loadUserSettings(storage: UiStateStorage): Promise<void>;
@@ -600,7 +600,7 @@ export class AppUiSettings implements UserSettingsProvider {
 // @beta
 export function areNoFeatureOverridesActive(): boolean;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class Backstage extends React_2.Component<BackstageProps, BackstageState> {
     constructor(props: BackstageProps);
     static get backstageToggleCommand(): CommandItemDef;
@@ -623,7 +623,7 @@ export class Backstage extends React_2.Component<BackstageProps, BackstageState>
     readonly state: BackstageState;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface BackstageActionItem extends BackstageActionItem_2 {
     // (undocumented)
     readonly type: BackstageItemType.ActionItem;
@@ -678,17 +678,17 @@ export interface BackstageComposerStageLauncherProps {
     readonly item: BackstageStageLauncher_2;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class BackstageEvent extends UiEvent_2<BackstageEventArgs> {
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface BackstageEventArgs {
     // (undocumented)
     isVisible: boolean;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface BackstageItemProps extends IconProps {
     description?: string | StringGetter;
     descriptionKey?: string;
@@ -702,7 +702,7 @@ export interface BackstageItemProps extends IconProps {
     tooltipKey?: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface BackstageItemState {
     // (undocumented)
     iconSpec: IconSpec;
@@ -718,17 +718,17 @@ export interface BackstageItemState {
     tooltip: string;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export enum BackstageItemType {
     ActionItem = 1,
     StageLauncher = 2
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class BackstageItemUtilities {
-    // @deprecated
+    // @deprecated in 3.x.
     static createActionItem: (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, overrides?: Partial<BackstageActionItem> | undefined) => BackstageActionItem;
-    // @deprecated
+    // @deprecated in 3.x.
     static createStageLauncher: (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, overrides?: Partial<BackstageStageLauncher> | undefined) => BackstageStageLauncher;
     static getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 }
@@ -747,7 +747,7 @@ export class BackstageManager {
     toggle(): void;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface BackstageProps extends CommonProps {
     // (undocumented)
     header?: React_2.ReactNode;
@@ -759,7 +759,7 @@ export interface BackstageProps extends CommonProps {
     showOverlay?: boolean;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface BackstageStageLauncher extends BackstageStageLauncher_2 {
     // (undocumented)
     readonly type: BackstageItemType.StageLauncher;
@@ -803,14 +803,14 @@ export interface BasicToolWidgetProps {
     showCategoryAndModelsContextTools?: boolean;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface BooleanListenerProps {
     boolFunc: () => boolean;
     defaultValue?: boolean;
     eventIds: string[];
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class BooleanSyncUiListener extends React_2.Component<BooleanListenerProps, BooleanListenerState> {
     constructor(props: BooleanListenerProps);
     // (undocumented)
@@ -975,7 +975,7 @@ export interface CardSelectedEventArgs {
     index: number;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface Category {
     // (undocumented)
     children?: string[];
@@ -983,10 +983,10 @@ export interface Category {
     key: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function CategoryTree(props: CategoryTreeProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface CategoryTreeProps {
     activeView?: Viewport;
     allViewports?: boolean;
@@ -1002,7 +1002,7 @@ export interface CategoryTreeProps {
     width: number;
 }
 
-// @alpha @deprecated (undocumented)
+// @alpha @deprecated in 3.x. (undocumented)
 export class CategoryVisibilityHandler implements IVisibilityHandler {
     constructor(params: CategoryVisibilityHandlerParams);
     // (undocumented)
@@ -1025,7 +1025,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     onVisibilityChange: BeEvent<VisibilityChangeListener>;
 }
 
-// @alpha @deprecated (undocumented)
+// @alpha @deprecated in 3.x. (undocumented)
 export interface CategoryVisibilityHandlerParams {
     // (undocumented)
     activeView?: Viewport;
@@ -1066,14 +1066,14 @@ export class ChildWindowManager {
     get openChildWindows(): OpenChildWindowInfo[];
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export enum ClassGroupingOption {
     No = 0,
     Yes = 1,
     YesWithCounts = 2
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element;
 
 // @internal (undocumented)
@@ -1115,7 +1115,7 @@ export interface CommandItemProps extends ItemProps, CommandHandler {
     commandId?: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class CommandLaunchBackstageItem extends React_2.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> {
     constructor(props: CommandLaunchBackstageItemProps);
     // (undocumented)
@@ -1132,12 +1132,12 @@ export class CommandLaunchBackstageItem extends React_2.PureComponent<CommandLau
     readonly state: Readonly<BackstageItemState>;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler {
     commandId: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class ConditionalField extends React_2.PureComponent<ConditionalFieldProps, ConditionalFieldState> {
     constructor(props: ConditionalFieldProps);
     // (undocumented)
@@ -1189,7 +1189,7 @@ export enum ConfigurableUiActionId {
     AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
     // (undocumented)
     SetDragInteraction = "configurableui:set-drag-interaction",
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     SetFrameworkVersion = "configurableui:set-framework-version",
     // (undocumented)
     SetShowWidgetIcon = "configurableui:set-show-widget-icon",
@@ -1295,11 +1295,11 @@ export class ConfigurableUiManager {
     static initialize(): void;
     static isControlRegistered(classId: string): boolean;
     static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
-    // @internal @deprecated
+    // @internal @deprecated in 3.x.
     static loadTasks(taskPropsList: TaskPropsList): void;
-    // @internal @deprecated
+    // @internal @deprecated in 3.x.
     static loadWorkflow(workflowProps: WorkflowProps): void;
-    // @internal @deprecated
+    // @internal @deprecated in 3.x.
     static loadWorkflows(workflowPropsList: WorkflowPropsList): void;
     // @internal (undocumented)
     static readonly onUiActivityEvent: UiActivityEvent;
@@ -1318,7 +1318,7 @@ export interface ConfigurableUiState {
     animateToolSettings: boolean;
     // (undocumented)
     autoCollapseUnpinnedPanels: boolean;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
     showWidgetIcon: boolean;
@@ -1465,7 +1465,7 @@ export abstract class ContentGroupProvider {
     contentGroup?(config: FrontstageConfig): Promise<ContentGroup>;
     onFrontstageDeactivated(): Promise<void>;
     prepareToSaveProps(contentGroupProps: ContentGroupProps): ContentGroupProps;
-    // @deprecated
+    // @deprecated in 3.x.
     abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
 }
 
@@ -1500,7 +1500,7 @@ export interface ContentLayoutComponentProps extends CommonProps {
     contentGroup: ContentGroup;
     // (undocumented)
     contentLayout: ContentLayoutDef;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     isInFooterMode?: boolean;
 }
 
@@ -1585,7 +1585,7 @@ export class CoreTools {
     static get fitViewCommand(): ToolItemDef;
     // (undocumented)
     static get flyViewCommand(): ToolItemDef;
-    // @deprecated
+    // @deprecated in 3.x.
     static get keyinBrowserButtonItemDef(): CustomItemDef;
     // (undocumented)
     static get keyinPaletteButtonItemDef(): ToolItemDef;
@@ -1637,10 +1637,10 @@ export function createAction<T extends string>(type: T): Action<T>;
 // @public
 export function createAction<T extends string, P>(type: T, payload: P): ActionWithPayload<T, DeepReadonly<P>>;
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export function createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export const createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element;
 
 // @public
@@ -1936,7 +1936,7 @@ export function DefaultDialogGridContainer({ componentGenerator, isToolSettings 
     isToolSettings?: boolean;
 }): JSX.Element;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface DefaultNavigationProps {
     prefixHorizontalItems?: ItemList;
     prefixVerticalItems?: ItemList;
@@ -1962,7 +1962,7 @@ export interface DefaultNavigationTools {
     };
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class DefaultNavigationWidget extends React_2.Component<DefaultNavigationProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -2205,7 +2205,7 @@ export class FocusToolSettings extends Tool {
     static toolId: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function FooterModeField(props: FooterModeFieldProps): JSX.Element;
 
 // @public
@@ -2379,7 +2379,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function FrameworkVersion(props: FrameworkVersionProps): JSX.Element;
 
 // @internal
@@ -2394,13 +2394,13 @@ export interface FrameworkVersionChangedEventArgs {
     version: FrameworkVersionId;
 }
 
-// @public @deprecated (undocumented)
+// @public @deprecated in 3.x. (undocumented)
 export const FrameworkVersionContext: React_2.Context<FrameworkVersionId>;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export type FrameworkVersionId = "1" | "2";
 
-// @public @deprecated (undocumented)
+// @public @deprecated in 3.x. (undocumented)
 export interface FrameworkVersionProps {
     // (undocumented)
     children?: React_2.ReactNode;
@@ -2459,7 +2459,7 @@ export interface FrameworkZoneProps extends CommonProps {
     zone: ZoneManagerProps;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class Frontstage extends React_2.Component<FrontstageProps, FrontstageState> {
     // @internal
     constructor(props: FrontstageProps);
@@ -2492,7 +2492,7 @@ export interface FrontstageActivatedEventArgs {
     deactivatedFrontstageDef?: FrontstageDef;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class FrontstageComposer extends React_2.Component<CommonProps, FrontstageComposerState> implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler {
     constructor(props: CommonProps);
     // (undocumented)
@@ -2574,21 +2574,21 @@ export interface FrontstageDeactivatedEventArgs {
 export class FrontstageDef {
     // (undocumented)
     addFloatingContentControl(contentControl?: ContentControl): void;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get applicationData(): any | undefined;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get bottomCenter(): ZoneDef | undefined;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get bottomLeft(): ZoneDef | undefined;
-    // @beta @deprecated (undocumented)
+    // @beta @deprecated in 3.x. (undocumented)
     get bottomMostPanel(): StagePanelDef | undefined;
     // @beta (undocumented)
     get bottomPanel(): StagePanelDef | undefined;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get bottomRight(): ZoneDef | undefined;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get centerLeft(): ZoneDef | undefined;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get centerRight(): ZoneDef | undefined;
     get contentControls(): ContentControl[];
     // (undocumented)
@@ -2600,9 +2600,9 @@ export class FrontstageDef {
     // @beta (undocumented)
     get contentManipulation(): WidgetDef | undefined;
     static create(provider: FrontstageProvider): Promise<FrontstageDef>;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get defaultContentId(): string;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get defaultTool(): ToolItemDef | undefined;
     // @internal
     dockPopoutWidgetContainer(widgetContainerId: string): void;
@@ -2629,7 +2629,7 @@ export class FrontstageDef {
     getStagePanelDef(location: StagePanelLocation): StagePanelDef | undefined;
     // @internal
     getWidgetCurrentState(widgetDef: WidgetDef): WidgetState | undefined;
-    // @deprecated
+    // @deprecated in 3.x.
     getZoneDef(zoneId: number): ZoneDef | undefined;
     // (undocumented)
     get id(): string;
@@ -2685,7 +2685,7 @@ export class FrontstageDef {
     setFloatingWidgetContainerBounds(floatingWidgetId: string, bounds: RectangleProps): boolean;
     // @internal (undocumented)
     setIsApplicationClosing(value: boolean): void;
-    // @deprecated
+    // @deprecated in 3.x.
     startDefaultTool(): void;
     // @beta (undocumented)
     get statusBar(): WidgetDef | undefined;
@@ -2693,15 +2693,15 @@ export class FrontstageDef {
     get timeTracker(): TimeTracker;
     // @beta (undocumented)
     get toolSettings(): WidgetDef | undefined;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get topCenter(): ZoneDef | undefined;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get topLeft(): ZoneDef | undefined;
-    // @beta @deprecated (undocumented)
+    // @beta @deprecated in 3.x. (undocumented)
     get topMostPanel(): StagePanelDef | undefined;
     // @beta (undocumented)
     get topPanel(): StagePanelDef | undefined;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get topRight(): ZoneDef | undefined;
     // @internal (undocumented)
     updateWidgetDefs(): void;
@@ -2716,7 +2716,7 @@ export class FrontstageDef {
     get widgetDefs(): {
         [Symbol.iterator](): Iterator<WidgetDef, any, undefined>;
     };
-    // @deprecated
+    // @deprecated in 3.x.
     get zoneDefs(): ZoneDef[];
 }
 
@@ -2726,7 +2726,7 @@ export interface FrontstageEventArgs {
     frontstageDef: FrontstageDef;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class FrontstageLaunchBackstageItem extends React_2.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> {
     constructor(props: FrontstageLaunchBackstageItemProps);
     // (undocumented)
@@ -2743,7 +2743,7 @@ export class FrontstageLaunchBackstageItem extends React_2.PureComponent<Frontst
     readonly state: Readonly<BackstageItemState>;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
     frontstageId: string;
 }
@@ -2781,7 +2781,7 @@ export class FrontstageManager {
     static get isLoading(): boolean;
     static get modalFrontstageCount(): number;
     static get nestedFrontstageCount(): number;
-    // @deprecated
+    // @deprecated in 3.x.
     static get NineZoneManager(): NineZoneManager;
     // @internal (undocumented)
     static get nineZoneSize(): Size | undefined;
@@ -2837,21 +2837,21 @@ export interface FrontstageNineZoneStateChangedEventArgs extends FrontstageEvent
     state: NineZoneState | undefined;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface FrontstageProps extends CommonProps {
     applicationData?: any;
-    // @deprecated
+    // @deprecated in 3.x.
     bottomCenter?: React_2.ReactElement<ZoneProps>;
-    // @deprecated
+    // @deprecated in 3.x.
     bottomLeft?: React_2.ReactElement<ZoneProps>;
-    // @deprecated
+    // @deprecated in 3.x.
     bottomMostPanel?: React_2.ReactElement<StagePanelProps>;
     bottomPanel?: React_2.ReactElement<StagePanelProps>;
-    // @deprecated
+    // @deprecated in 3.x.
     bottomRight?: React_2.ReactElement<ZoneProps>;
-    // @deprecated
+    // @deprecated in 3.x.
     centerLeft?: React_2.ReactElement<ZoneProps>;
-    // @deprecated
+    // @deprecated in 3.x.
     centerRight?: React_2.ReactElement<ZoneProps>;
     contentGroup: ContentGroup | ContentGroupProvider;
     contentManipulationTools?: React_2.ReactElement<ZoneProps>;
@@ -2859,7 +2859,7 @@ export interface FrontstageProps extends CommonProps {
     defaultTool: ToolItemDef;
     id: string;
     isIModelIndependent?: boolean;
-    // @deprecated
+    // @deprecated in 3.x.
     isInFooterMode?: boolean;
     leftPanel?: React_2.ReactElement<StagePanelProps>;
     rightPanel?: React_2.ReactElement<StagePanelProps>;
@@ -2867,14 +2867,14 @@ export interface FrontstageProps extends CommonProps {
     runtimeProps?: FrontstageRuntimeProps;
     statusBar?: React_2.ReactElement<ZoneProps>;
     toolSettings?: React_2.ReactElement<ZoneProps>;
-    // @deprecated
+    // @deprecated in 3.x.
     topCenter?: React_2.ReactElement<ZoneProps>;
-    // @deprecated
+    // @deprecated in 3.x.
     topLeft?: React_2.ReactElement<ZoneProps>;
-    // @deprecated
+    // @deprecated in 3.x.
     topMostPanel?: React_2.ReactElement<StagePanelProps>;
     topPanel?: React_2.ReactElement<StagePanelProps>;
-    // @deprecated
+    // @deprecated in 3.x.
     topRight?: React_2.ReactElement<ZoneProps>;
     usage?: string;
     version?: number;
@@ -2883,7 +2883,7 @@ export interface FrontstageProps extends CommonProps {
 
 // @public
 export abstract class FrontstageProvider {
-    // @deprecated
+    // @deprecated in 3.x.
     abstract get frontstage(): React_2.ReactElement<FrontstageProps>;
     // @beta
     frontstageConfig?(): FrontstageConfig;
@@ -2923,13 +2923,13 @@ export interface FrontstageRuntimeProps {
 // @public
 export type FunctionType = (...args: any[]) => any;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 
 // @internal (undocumented)
 export function getBadgeClassName(badgeType: BadgeType | undefined): "uifw-badge-new" | "uifw-badge-tp" | undefined;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export function getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise<string[]>;
 
 // @internal (undocumented)
@@ -2988,19 +2988,19 @@ export const getStagePanelType: (location: StagePanelLocation) => StagePanelType
 // @beta
 export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntry;
 
-// @beta @deprecated (undocumented)
+// @beta @deprecated in 3.x. (undocumented)
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry;
 
 // @internal (undocumented)
 export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function GroupButton(props: GroupButtonProps): JSX.Element;
 
 // @internal
 export function GroupButtonItem(props: GroupButtonProps_2): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface GroupButtonProps extends GroupItemProps, CommonProps {
 }
 
@@ -3031,9 +3031,9 @@ export class GroupItemDef extends ActionButtonItemDef {
     constructor(groupItemProps: GroupItemProps, onItemExecuted?: OnItemExecutedFunc);
     // (undocumented)
     defaultActiveItemId?: string;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     direction: Direction;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     directionExplicit: boolean;
     // (undocumented)
     execute(): void;
@@ -3059,7 +3059,7 @@ export class GroupItemDef extends ActionButtonItemDef {
     // (undocumented)
     resolveItems(force?: boolean): void;
     setPanelLabel(v: string | StringGetter | ConditionalStringValue): void;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     toolbarReactNode(index?: number): React_2.ReactNode;
 }
 
@@ -3067,7 +3067,7 @@ export class GroupItemDef extends ActionButtonItemDef {
 export interface GroupItemProps extends ItemProps {
     // (undocumented)
     defaultActiveItemId?: string;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     direction?: Direction;
     // (undocumented)
     groupId?: string;
@@ -3180,7 +3180,7 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
     relativePosition: RelativePosition;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export const IModelConnectedNavigationWidget: ConnectedComponent<typeof DefaultNavigationWidget, any>;
 
 // @public
@@ -3234,7 +3234,7 @@ export interface IModelViewportControlOptions {
 // @internal
 export const INACTIVITY_TIME_DEFAULT = 3500;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export function Indicator(props: IndicatorProps): JSX.Element;
 
 // @public
@@ -3247,7 +3247,7 @@ export interface InitialAppUiSettings {
     colorTheme: string;
     // (undocumented)
     dragInteraction: boolean;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
     showWidgetIcon?: boolean;
@@ -3378,22 +3378,22 @@ export abstract class ItemDefBase {
     set isActive(v: boolean);
     // (undocumented)
     isDisabled?: boolean | ConditionalBooleanValue;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     isEnabled: boolean;
     // (undocumented)
     isHidden?: boolean | ConditionalBooleanValue;
     // (undocumented)
     isPressed: boolean;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     isVisible: boolean;
     get label(): string;
     get rawLabel(): string | StringGetter | ConditionalStringValue;
     setDescription(v: string | StringGetter | ConditionalStringValue): void;
     setLabel(v: string | StringGetter | ConditionalStringValue): void;
     setTooltip(v: string | StringGetter | ConditionalStringValue): void;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     stateSyncIds: string[];
     get tooltip(): string;
     // (undocumented)
@@ -3429,23 +3429,23 @@ export interface ItemProps extends IconProps {
     icon?: string | ConditionalStringValue;
     isActive?: boolean;
     isDisabled?: boolean | ConditionalBooleanValue;
-    // @deprecated
+    // @deprecated in 3.x.
     isEnabled?: boolean;
     isHidden?: boolean | ConditionalBooleanValue;
     isPressed?: boolean;
-    // @deprecated
+    // @deprecated in 3.x.
     isVisible?: boolean;
     label?: string | StringGetter | ConditionalStringValue;
     labelKey?: string;
-    // @deprecated
+    // @deprecated in 3.x.
     stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
-    // @deprecated
+    // @deprecated in 3.x.
     stateSyncIds?: string[];
     tooltip?: string | StringGetter | ConditionalStringValue;
     tooltipKey?: string;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface IVisibilityHandler extends IDisposable {
     // (undocumented)
     changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
@@ -3539,7 +3539,7 @@ export interface KeyboardShortcutProps extends ItemProps {
     shortcuts?: KeyboardShortcutProps[];
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class KeyinBrowser extends React_2.PureComponent<KeyinBrowserProps, KeyinBrowserState> {
     // @internal
     constructor(props: any);
@@ -3551,14 +3551,14 @@ export class KeyinBrowser extends React_2.PureComponent<KeyinBrowserProps, Keyin
     render(): React_2.ReactNode;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface KeyinBrowserExecuteArgs {
     args: string[];
     runStatus: boolean;
     toolId: string | undefined;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export interface KeyinBrowserProps extends CommonProps {
     onCancel?: () => void;
     onExecute?: (args: KeyinBrowserExecuteArgs) => void;
@@ -3639,7 +3639,7 @@ export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
     render(): JSX.Element;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class ListPickerBase extends React_2.PureComponent<ListPickerProps, ListPickerState> {
     constructor(props: any);
     // @internal (undocumented)
@@ -3700,7 +3700,7 @@ export interface ListPickerPropsExtended extends ListPickerProps {
 // @internal (undocumented)
 export function loadCategoriesFromViewport(iModel?: IModelConnection, vp?: Viewport): Promise<Category[]>;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class MarkupTools {
     // (undocumented)
     static get arrowToolDef(): ToolItemDef;
@@ -3803,7 +3803,7 @@ export class MessageCenterField extends React_2.Component<MessageCenterFieldProp
 
 // @public
 export interface MessageCenterFieldProps extends StatusFieldProps {
-    // @deprecated
+    // @deprecated in 3.x.
     targetRef?: React_2.Ref<HTMLElement>;
 }
 
@@ -3995,10 +3995,10 @@ export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
     render(): React_2.ReactNode;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function ModelsTree(props: ModelsTreeProps): JSX.Element;
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export enum ModelsTreeNodeType {
     // (undocumented)
     Category = 3,
@@ -4014,7 +4014,7 @@ export enum ModelsTreeNodeType {
     Unknown = 0
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ModelsTreeProps {
     activeView?: Viewport;
     // @beta
@@ -4037,10 +4037,10 @@ export interface ModelsTreeProps {
     width: number;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export class ModelsVisibilityHandler implements IVisibilityHandler {
     constructor(props: ModelsVisibilityHandlerProps);
     // (undocumented)
@@ -4141,7 +4141,7 @@ export interface NavigationAidHostProps {
     minWidth?: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class NavigationWidget extends React_2.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
     constructor(props: NavigationWidgetPropsEx);
     componentDidMount(): void;
@@ -4165,7 +4165,7 @@ export interface NavigationWidgetComposerProps extends CommonProps {
     verticalToolbar?: React_2.ReactNode;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     constructor(props: NavigationWidgetProps);
     // (undocumented)
@@ -4176,13 +4176,13 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     updateNavigationAid(navigationAidId: string, imodel?: IModelConnection): void;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface NavigationWidgetProps extends ToolbarWidgetProps {
     // (undocumented)
     navigationAidId?: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
     // (undocumented)
     horizontalToolbar?: React_2.ReactNode;
@@ -4197,7 +4197,7 @@ export class NestedFrontstage {
     static get backToPreviousFrontstageCommand(): CommandItemDef;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface NineZoneChangeHandler {
     // (undocumented)
     handleFloatingZonesBoundsChange(bounds: RectangleProps): void;
@@ -4304,7 +4304,7 @@ export interface PointerMessageProps extends CommonProps {
     message?: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemState> {
     constructor(props: PopupButtonProps);
     // (undocumented)
@@ -4317,16 +4317,16 @@ export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemSta
     render(): JSX.Element | null;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React_2.ReactNode;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface PopupButtonChildrenRenderPropArgs {
     // (undocumented)
     closePanel: () => void;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface PopupButtonProps extends ItemProps, CommonProps {
     // (undocumented)
     children?: React_2.ReactNode | PopupButtonChildrenRenderProp;
@@ -4457,7 +4457,7 @@ export interface PresentationSelectionScope {
     label: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const PromptField: ConnectedComponent<typeof PromptFieldComponent, Omit_3<React_2.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "toolPrompt">>;
 
 // @public
@@ -4695,7 +4695,7 @@ export enum SelectionScope {
 // @public
 export const SelectionScopeField: ConnectedComponent<typeof SelectionScopeFieldComponent, Omit_3<React_2.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class SeparatorBackstageItem extends React_2.PureComponent<BackstageItemProps> {
     constructor(separatorBackstageItemDef: BackstageItemProps);
     // (undocumented)
@@ -5080,10 +5080,10 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     protected _viewState: ViewState;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface SpatialContainmentTreeProps {
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
@@ -5156,7 +5156,7 @@ export interface StageContentLayoutProps {
     viewStateProps: ViewStateHelperProps[];
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class StagePanel extends React_2.Component<StagePanelProps, StagePanelComponentState> {
     constructor(props: StagePanelProps);
     // (undocumented)
@@ -5173,7 +5173,7 @@ export class StagePanel extends React_2.Component<StagePanelProps, StagePanelCom
     render(): React_2.ReactNode;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface StagePanelChangeHandler {
     // @alpha (undocumented)
     handlePanelInitialize(panelLocation: StagePanelLocation, size: number): void;
@@ -5228,16 +5228,16 @@ export class StagePanelDef extends WidgetHost {
     get widgetDefs(): ReadonlyArray<WidgetDef>;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export class StagePanelHeader extends React_2.PureComponent<StagePanelHeaderProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface StagePanelHeaderProps extends CommonProps {
     collapseButton?: boolean;
     collapseButtonTitle?: string;
@@ -5250,7 +5250,7 @@ export type StagePanelMaxSizeSpec = number | {
     percentage: number;
 };
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface StagePanelProps {
     allowedZones?: ZoneLocation[];
     applicationData?: any;
@@ -5324,7 +5324,7 @@ export class StagePanelZoneDef extends WidgetHost {
 // @internal (undocumented)
 export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "end">;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface StagePanelZoneProps {
     applicationData?: any;
     widgets: Array<React_2.ReactElement<WidgetProps>>;
@@ -5342,7 +5342,7 @@ export class StagePanelZonesDef {
     get start(): StagePanelZoneDef;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface StagePanelZonesProps {
     end?: StagePanelZoneProps;
     middle?: StagePanelZoneProps;
@@ -5557,7 +5557,7 @@ export interface StatusBarItemProps extends CommonProps {
     section?: string;
 }
 
-// @beta @deprecated
+// @beta @deprecated in 3.x.
 export class StatusBarItemsManager extends StatusBarItemsManager_2 {
 }
 
@@ -5581,7 +5581,7 @@ export function StatusBarLeftSection(props: CommonDivProps): JSX.Element;
 
 // @public
 export interface StatusBarProps extends CommonProps {
-    // @deprecated
+    // @deprecated in 3.x.
     isInFooterMode?: boolean;
     // (undocumented)
     widgetControl?: StatusBarWidgetControl;
@@ -5615,11 +5615,11 @@ export abstract class StatusBarWidgetControl extends WidgetControl {
 
 // @public
 export interface StatusBarWidgetControlArgs {
-    // @deprecated
+    // @deprecated in 3.x.
     isInFooterMode: boolean;
-    // @deprecated
+    // @deprecated in 3.x.
     onOpenWidget: (widget: StatusBarFieldId) => void;
-    // @deprecated
+    // @deprecated in 3.x.
     openWidget: StatusBarFieldId;
     toastTargetRef: React.Ref<HTMLElement>;
 }
@@ -5652,18 +5652,18 @@ export interface StatusBarZoneProps extends CommonProps {
 
 // @public
 export interface StatusFieldProps extends CommonProps {
-    // @deprecated
+    // @deprecated in 3.x.
     isInFooterMode?: boolean;
-    // @deprecated
+    // @deprecated in 3.x.
     onOpenWidget?: (widget: StatusBarFieldId) => void;
-    // @deprecated
+    // @deprecated in 3.x.
     openWidget?: StatusBarFieldId;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface StatusMessageRendererProps extends CommonProps {
     // (undocumented)
     cancelActivityMessage?: () => void;
@@ -5673,10 +5673,10 @@ export interface StatusMessageRendererProps extends CommonProps {
     dismissActivityMessage?: () => void;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function StickyMessage(props: StickyMessageProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface StickyMessageProps {
     // (undocumented)
     closeMessage: (id: string) => void;
@@ -5713,10 +5713,10 @@ export interface SyncToolSettingsPropertiesEventArgs {
     toolId: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export type SyncUiEvent = UiSyncEvent;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export type SyncUiEventArgs = UiSyncEventArgs;
 
 // @public
@@ -5740,7 +5740,7 @@ export enum SyncUiEventId {
     AccuDrawRotationChanged = "accudrawrotationchanged",
     ActiveContentChanged = "activecontentchanged",
     ActiveViewportChanged = "activeviewportchanged",
-    // @deprecated
+    // @deprecated in 3.x.
     BackstageCloseEvent = "backstagecloseevent",
     BackstageEvent = "backstageevent",
     ContentControlActivated = "contentcontrolactivated",
@@ -5756,13 +5756,13 @@ export enum SyncUiEventId {
     SettingsProvidersChanged = "settingsproviderschanged",
     // (undocumented)
     ShowHideManagerSettingChange = "show-hide-setting-change",
-    // @deprecated
+    // @deprecated in 3.x.
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
     UiStateStorageChanged = "uistatestoragechanged",
     ViewStateChanged = "viewstatechanged",
     WidgetStateChanged = "widgetstatechanged",
-    // @deprecated
+    // @deprecated in 3.x.
     WorkflowActivated = "workflowactivated"
 }
 
@@ -5783,13 +5783,13 @@ export interface TabLocation {
     widgetIndex: number;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface TargetChangeHandler {
     // (undocumented)
     handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class Task extends ItemDefBase {
     constructor(taskProps: TaskProps);
     // (undocumented)
@@ -5805,11 +5805,11 @@ export class Task extends ItemDefBase {
     taskId: string;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class TaskActivatedEvent extends UiEvent_2<TaskActivatedEventArgs> {
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export interface TaskActivatedEventArgs {
     // (undocumented)
     task?: Task;
@@ -5821,7 +5821,7 @@ export interface TaskActivatedEventArgs {
     workflowId: string;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class TaskLaunchBackstageItem extends React_2.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> {
     constructor(props: TaskLaunchBackstageItemProps);
     // (undocumented)
@@ -5840,13 +5840,13 @@ export class TaskLaunchBackstageItem extends React_2.PureComponent<TaskLaunchBac
     readonly state: Readonly<BackstageItemState>;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export interface TaskLaunchBackstageItemProps extends BackstageItemProps {
     taskId: string;
     workflowId: string;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class TaskManager {
     // (undocumented)
     static addTask(taskId: string, task: Task): void;
@@ -5860,7 +5860,7 @@ export class TaskManager {
     static loadTasks(taskListDef: TaskPropsList): void;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export interface TaskProps extends ItemProps {
     // (undocumented)
     id: string;
@@ -5868,7 +5868,7 @@ export interface TaskProps extends ItemProps {
     primaryStageId: string;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export interface TaskPropsList {
     // (undocumented)
     tasks: TaskProps[];
@@ -5887,10 +5887,10 @@ export class TileLoadingIndicator extends React_2.PureComponent<StatusFieldProps
     render(): JSX.Element;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function ToastMessage(props: ToastMessageProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ToastMessageProps {
     // (undocumented)
     closeMessage: (id: string) => void;
@@ -5904,7 +5904,7 @@ export interface ToastMessageProps {
     toastTarget: HTMLElement | null;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
 
 // @public
@@ -6056,7 +6056,7 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
     toolbarId?: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class ToolbarWidgetDefBase extends WidgetDef {
     constructor(def: ToolbarWidgetProps);
     // (undocumented)
@@ -6080,7 +6080,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     get widgetBaseName(): string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ToolbarWidgetProps extends WidgetProps {
     // (undocumented)
     horizontalDirection?: Direction;
@@ -6092,7 +6092,7 @@ export interface ToolbarWidgetProps extends WidgetProps {
     verticalItems?: ItemList;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class ToolButton extends React_2.Component<ToolButtonProps, BaseItemState> {
     constructor(props: ToolItemProps);
     // (undocumented)
@@ -6107,7 +6107,7 @@ export class ToolButton extends React_2.Component<ToolButtonProps, BaseItemState
     readonly state: Readonly<BaseItemState>;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ToolButtonProps extends ToolItemProps, CommonProps {
 }
 
@@ -6254,7 +6254,7 @@ export class ToolUiProvider extends ConfigurableUiControl {
     get uniqueId(): string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class ToolWidget extends React_2.Component<ToolWidgetPropsEx, ToolWidgetState> {
     constructor(props: ToolWidgetPropsEx);
     // (undocumented)
@@ -6275,7 +6275,7 @@ export interface ToolWidgetComposerProps extends CommonProps {
     verticalToolbar?: React_2.ReactNode;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
     constructor(props: ToolWidgetProps);
     // (undocumented)
@@ -6284,13 +6284,13 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
     renderCornerItem(): React_2.ReactNode | undefined;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ToolWidgetProps extends ToolbarWidgetProps {
     // (undocumented)
     appButton?: CommandItemDef;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
     // (undocumented)
     button?: React_2.ReactNode;
@@ -6385,7 +6385,7 @@ export class UiFramework {
     // @alpha (undocumented)
     static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
     static initialize(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     static initialize(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void>;
     static get initialized(): boolean;
     // @internal
@@ -6441,7 +6441,7 @@ export class UiFramework {
     static setToolbarOpacity(opacity: number): void;
     // (undocumented)
     static setUiStateStorage(storage: UiStateStorage, immediateSync?: boolean): Promise<void>;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     static setUiVersion(version: FrameworkVersionId): void;
     // (undocumented)
     static setUseDragInteraction(useDragInteraction: boolean): void;
@@ -6456,7 +6456,7 @@ export class UiFramework {
     static terminate(): void;
     // @internal
     static translate(key: string | string[]): string;
-    // @deprecated
+    // @deprecated in 3.x.
     static get uiVersion(): FrameworkVersionId;
     // (undocumented)
     static useDefaultPopoutUrl: boolean;
@@ -6481,7 +6481,7 @@ export interface UiIntervalEventArgs {
 // @beta
 export function UiSettingsPage(): JSX.Element;
 
-// @beta @deprecated (undocumented)
+// @beta @deprecated in 3.x. (undocumented)
 export function UiSettingsPage({ allowSettingUiFrameworkVersion }: {
     allowSettingUiFrameworkVersion: boolean;
 }): JSX.Element;
@@ -6613,7 +6613,7 @@ export const useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => rea
 // @public
 export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[];
 
-// @public @deprecated (undocumented)
+// @public @deprecated in 3.x. (undocumented)
 export function useFrameworkVersion(): FrameworkVersionId;
 
 // @internal (undocumented)
@@ -6646,7 +6646,7 @@ export interface UserSettingsProvider {
     providerId: string;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class UserSettingsStorage implements UiStateStorage {
     // (undocumented)
     deleteSetting(namespace: string, name: string): Promise<UiStateStorageResult>;
@@ -6698,14 +6698,14 @@ export function useUiVisibility(): boolean;
 // @internal
 export function useUpdateNineZoneSize(frontstageDef: FrontstageDef): void;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
     filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
     isFiltering: boolean;
     nodeHighlightingProps: HighlightableTreeProps | undefined;
 };
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export const useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element;
 
 // @internal (undocumented)
@@ -6863,10 +6863,10 @@ export class ViewUtilities {
     static viewSupportsCamera(viewport: ScreenViewport): boolean;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface VisibilityStatus {
     // (undocumented)
     isDisabled?: boolean;
@@ -6876,7 +6876,7 @@ export interface VisibilityStatus {
     tooltip?: string;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler {
     constructor(params: VisibilityTreeEventHandlerParams);
     // (undocumented)
@@ -6889,7 +6889,7 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
     onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs): Subscription | undefined;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEventHandlerParams {
     // (undocumented)
     selectionPredicate?: VisibilityTreeSelectionPredicate;
@@ -6897,7 +6897,7 @@ export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEv
     visibilityHandler: IVisibilityHandler | undefined;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface VisibilityTreeFilterInfo {
     // (undocumented)
     activeMatchIndex?: number;
@@ -6905,13 +6905,13 @@ export interface VisibilityTreeFilterInfo {
     filter: string;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export const visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export function VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element;
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export interface VisibilityTreeNoFilteredDataProps {
     // (undocumented)
     message: string;
@@ -6919,10 +6919,10 @@ export interface VisibilityTreeNoFilteredDataProps {
     title: string;
 }
 
-// @alpha @deprecated
+// @alpha @deprecated in 3.x.
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class Widget extends React_2.Component<WidgetProps> {
     constructor(props: WidgetProps);
     // (undocumented)
@@ -6938,7 +6938,7 @@ export interface WidgetChangedEventArgs {
     widgetDef: WidgetDef;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface WidgetChangeHandler {
     // (undocumented)
     handleResize(zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number): void;
@@ -6979,7 +6979,7 @@ export class WidgetControl extends ConfigurableUiControl {
 // @public
 export class WidgetDef {
     constructor();
-    // @deprecated
+    // @deprecated in 3.x.
     constructor(props: WidgetProps);
     // (undocumented)
     get activeState(): WidgetState;
@@ -6996,7 +6996,7 @@ export class WidgetDef {
     get canPopout(): boolean | undefined;
     // (undocumented)
     get classId(): string | ConfigurableUiControlConstructor | undefined;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps;
     // @internal (undocumented)
     get defaultFloatingPosition(): PointProps | undefined;
@@ -7010,7 +7010,7 @@ export class WidgetDef {
     get defaultTabLocation(): TabLocation;
     // @alpha
     expand(): void;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get fillZone(): boolean;
     // (undocumented)
     get floatingContainerId(): string | undefined;
@@ -7024,7 +7024,7 @@ export class WidgetDef {
     set iconSpec(spec: IconSpec);
     // (undocumented)
     get id(): string;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef): void;
     // (undocumented)
     get initialProps(): WidgetProps | undefined;
@@ -7036,7 +7036,7 @@ export class WidgetDef {
     get isFloatingStateSupported(): boolean;
     // (undocumented)
     get isFloatingStateWindowResizable(): boolean;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get isFreeform(): boolean;
     // (undocumented)
     get isStatusBar(): boolean;
@@ -7065,7 +7065,7 @@ export class WidgetDef {
     setFloatingContainerId(value: string | undefined): void;
     setLabel(v: string | ConditionalStringValue | StringGetter): void;
     setTooltip(v: string | ConditionalStringValue | StringGetter): void;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     setUpSyncSupport(props: WidgetProps): void;
     // (undocumented)
     setWidgetState(newState: WidgetState): void;
@@ -7075,9 +7075,9 @@ export class WidgetDef {
     get state(): WidgetState;
     // (undocumented)
     get stateChanged(): boolean;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get stateFunc(): WidgetStateFunc | undefined;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get syncEventIds(): string[];
     // @internal (undocumented)
     get tabLocation(): TabLocation | undefined;
@@ -7169,7 +7169,7 @@ export function WidgetPanelsToolbars(): JSX.Element;
 // @internal (undocumented)
 export function WidgetPanelsToolSettings(): JSX.Element | null;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps {
     classId?: string | ConfigurableUiControlConstructor;
     control?: ConfigurableUiControlConstructor;
@@ -7354,7 +7354,7 @@ export interface WidgetStateChangedEventArgs {
     widgetState: WidgetState;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;
 
 // @internal
@@ -7374,7 +7374,7 @@ export type WidgetTabs = {
 
 // @public
 export enum WidgetType {
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     FreeFrom = 2,
     // (undocumented)
     Navigation = 1,
@@ -7388,10 +7388,10 @@ export enum WidgetType {
     ToolSettings = 4
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React_2.JSXElementConstructor<P> & C) => {
     new (props: JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>> | Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>): {
         render(): JSX.Element;
@@ -7446,10 +7446,10 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
     contextType?: React_2.Context<any> | undefined;
 };
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class Workflow extends ItemDefBase {
     constructor(workflowDef: WorkflowProps);
     get activeTask(): Task | undefined;
@@ -7466,11 +7466,11 @@ export class Workflow extends ItemDefBase {
     workflowId: string;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class WorkflowActivatedEvent extends UiEvent_2<WorkflowActivatedEventArgs> {
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export interface WorkflowActivatedEventArgs {
     // (undocumented)
     workflow?: Workflow;
@@ -7478,7 +7478,7 @@ export interface WorkflowActivatedEventArgs {
     workflowId?: string;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export class WorkflowManager {
     static get activeTask(): Task | undefined;
     static get activeTaskId(): string;
@@ -7499,7 +7499,7 @@ export class WorkflowManager {
     static setDefaultWorkflowId(id: string): void;
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export interface WorkflowProps extends ItemProps {
     // (undocumented)
     defaultTaskId: string;
@@ -7511,7 +7511,7 @@ export interface WorkflowProps extends ItemProps {
     tasks: string[];
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export interface WorkflowPropsList {
     // (undocumented)
     defaultWorkflowId: string;
@@ -7519,7 +7519,7 @@ export interface WorkflowPropsList {
     workflows: WorkflowProps[];
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class Zone extends React_2.Component<ZoneProps> {
     constructor(props: ZoneProps);
     // (undocumented)
@@ -7532,10 +7532,10 @@ export class Zone extends React_2.Component<ZoneProps> {
     render(): React_2.ReactNode;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export class ZoneDef extends WidgetHost {
     constructor();
-    // @deprecated
+    // @deprecated in 3.x.
     get allowsMerging(): boolean;
     get applicationData(): any | undefined;
     // @internal (undocumented)
@@ -7543,7 +7543,7 @@ export class ZoneDef extends WidgetHost {
     get initialWidth(): number | undefined;
     get isStatusBar(): boolean;
     get isToolSettings(): boolean;
-    // @deprecated
+    // @deprecated in 3.x.
     get mergeWithZone(): ZoneLocation | undefined;
     // @internal (undocumented)
     setInitialWidth(width: number | undefined): void;
@@ -7551,17 +7551,17 @@ export class ZoneDef extends WidgetHost {
     // @internal
     get zoneLocation(): ZoneLocation;
     set zoneLocation(zoneLocation: ZoneLocation);
-    // @deprecated
+    // @deprecated in 3.x.
     get zoneState(): ZoneState;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ZoneDefProvider {
     // (undocumented)
     getZoneDef(zoneId: number): ZoneDef | undefined;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum ZoneLocation {
     // (undocumented)
     BottomCenter = 8,
@@ -7581,7 +7581,7 @@ export enum ZoneLocation {
     TopRight = 3
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ZoneProps extends CommonProps {
     allowsMerging?: boolean;
     applicationData?: any;
@@ -7629,7 +7629,7 @@ export interface ZoneRuntimeProps {
     zoneDefProvider: ZoneDefProvider;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export enum ZoneState {
     // (undocumented)
     Floating = 4,

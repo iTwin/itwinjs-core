@@ -187,10 +187,10 @@ export interface ColorPickerDialogProps {
     onOkResult: (selectedColor: ColorDef) => void;
 }
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element;
 
-// @public @deprecated
+// @public @deprecated in 3.x.
 export interface ColorPickerPanelProps {
     // (undocumented)
     activeColor: ColorDef;
@@ -590,7 +590,7 @@ export function getCSSColorFromDef(colorDef: ColorDef): string;
 // @internal (undocumented)
 export function getPercentageOfRectangle(rect: DOMRect, pointer: number): number;
 
-// @internal @deprecated (undocumented)
+// @internal @deprecated in 3.x. (undocumented)
 export enum HitBoxX {
     // (undocumented)
     Left = -1,
@@ -600,7 +600,7 @@ export enum HitBoxX {
     Right = 1
 }
 
-// @internal @deprecated (undocumented)
+// @internal @deprecated in 3.x. (undocumented)
 export enum HitBoxY {
     // (undocumented)
     Back = 1,
@@ -610,7 +610,7 @@ export enum HitBoxY {
     None = 0
 }
 
-// @internal @deprecated (undocumented)
+// @internal @deprecated in 3.x. (undocumented)
 export enum HitBoxZ {
     // (undocumented)
     Bottom = -1,
@@ -667,7 +667,7 @@ export enum MapMode {
     Opened = "map-opened"
 }
 
-// @internal @deprecated
+// @internal @deprecated in 3.x.
 export interface Milestone {
     // (undocumented)
     children?: Milestone[];

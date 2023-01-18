@@ -29,7 +29,7 @@ import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStr
 /**
  * Presentation manager working mode.
  * @public
- * @deprecated The attribute is not used by [[PresentationManager]] anymore
+ * @deprecated in 3.x. The attribute is not used by [[PresentationManager]] anymore
  */
 export enum PresentationManagerMode {
   /**
@@ -211,7 +211,7 @@ export interface PresentationAssetsRootConfig {
   /**
    * Path to `presentation-common` assets.
    *
-   * @deprecated This path is not used anymore
+   * @deprecated in 3.x. This path is not used anymore
    */
   common: string;
 }
@@ -254,7 +254,7 @@ export interface PresentationManagerProps {
    * A list of directories containing application's locale-specific localized
    * string files (in simplified i18next v3 format)
    *
-   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   localeDirectories?: string[];
 
@@ -262,7 +262,7 @@ export interface PresentationManagerProps {
    * Sets the active locale to use when localizing presentation-related
    * strings. It can later be changed through [[PresentationManager.activeLocale]].
    *
-   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   defaultLocale?: string;
 
@@ -286,7 +286,7 @@ export interface PresentationManagerProps {
    * Should schemas preloading be enabled. If true, presentation manager listens
    * for `BriefcaseDb.onOpened` event and force pre-loads all ECSchemas.
    *
-   * @deprecated Use [[PresentationPropsBase.enableSchemasPreload]] instead.
+   * @deprecated in 3.x. Use [[PresentationPropsBase.enableSchemasPreload]] instead.
    */
   enableSchemasPreload?: boolean;
 
@@ -301,7 +301,7 @@ export interface PresentationManagerProps {
    *
    * Defaults to [[PresentationManagerMode.ReadWrite]].
    *
-   * @deprecated The attribute is not used by [[PresentationManager]] anymore
+   * @deprecated in 3.x. The attribute is not used by [[PresentationManager]] anymore
    */
   mode?: PresentationManagerMode; // eslint-disable-line deprecation/deprecation
 
@@ -368,7 +368,7 @@ export class PresentationManager {
 
   /**
    * Get / set active locale used for localizing presentation data
-   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   public activeLocale: string | undefined;
 

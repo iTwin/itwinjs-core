@@ -146,7 +146,7 @@ export enum BriefcaseStatus {
 
 // @public
 export class ByteStream {
-    // @deprecated
+    // @deprecated in 3.x.
     constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
         byteOffset: number;
         byteLength: number;
@@ -164,22 +164,22 @@ export class ByteStream {
     get isPastTheEnd(): boolean;
     get length(): number;
     nextBytes(numBytes: number): Uint8Array;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get nextFloat32(): number;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get nextFloat64(): number;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get nextId64(): Id64String;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get nextInt32(): number;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get nextUint16(): number;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get nextUint24(): number;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get nextUint32(): number;
     nextUint32s(numUint32s: number): Uint32Array;
-    // @deprecated (undocumented)
+    // @deprecated in 3.x. (undocumented)
     get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
     readFloat32(): number;
@@ -1573,7 +1573,7 @@ export class Tracing {
 // @public
 export class TransientIdSequence {
     getNext(): Id64String;
-    // @deprecated
+    // @deprecated in 3.x.
     get next(): Id64String;
 }
 

@@ -3,11 +3,13 @@
 This log was last generated on Wed, 11 Jan 2023 16:46:30 GMT and should not be manually modified.
 
 ## 3.5.2
+
 Wed, 11 Jan 2023 16:46:30 GMT
 
 _Version update only_
 
 ## 3.5.1
+
 Thu, 15 Dec 2022 16:38:28 GMT
 
 ### Updates
@@ -15,6 +17,7 @@ Thu, 15 Dec 2022 16:38:28 GMT
 - Eye-Dome-Lighting
 
 ## 3.5.0
+
 Wed, 07 Dec 2022 19:12:36 GMT
 
 ### Updates
@@ -34,21 +37,25 @@ Wed, 07 Dec 2022 19:12:36 GMT
 - Add GraphicsRequestProps.useAbsolutePositions to address precision issues with coordinates far from the origin.
 
 ## 3.4.7
+
 Wed, 30 Nov 2022 14:28:19 GMT
 
 _Version update only_
 
 ## 3.4.6
+
 Tue, 22 Nov 2022 14:24:19 GMT
 
 _Version update only_
 
 ## 3.4.5
+
 Thu, 17 Nov 2022 21:32:50 GMT
 
 _Version update only_
 
 ## 3.4.4
+
 Thu, 10 Nov 2022 19:32:17 GMT
 
 ### Updates
@@ -56,16 +63,19 @@ Thu, 10 Nov 2022 19:32:17 GMT
 - handle null ExternalSourceAspect.scope
 
 ## 3.4.3
+
 Fri, 28 Oct 2022 13:34:57 GMT
 
 _Version update only_
 
 ## 3.4.2
+
 Mon, 24 Oct 2022 13:23:45 GMT
 
 _Version update only_
 
 ## 3.4.1
+
 Mon, 17 Oct 2022 20:06:51 GMT
 
 ### Updates
@@ -73,6 +83,7 @@ Mon, 17 Oct 2022 20:06:51 GMT
 - update RenderScheduleScript.discloseIds to use EntityReferences
 
 ## 3.4.0
+
 Thu, 13 Oct 2022 20:24:47 GMT
 
 ### Updates
@@ -91,6 +102,7 @@ Thu, 13 Oct 2022 20:24:47 GMT
 - ModelProps.parentModel doc change
 
 ## 3.3.5
+
 Tue, 27 Sep 2022 11:50:59 GMT
 
 ### Updates
@@ -98,26 +110,31 @@ Tue, 27 Sep 2022 11:50:59 GMT
 - add 408,429, and consider 408,429, and 500 transient fault
 
 ## 3.3.4
+
 Thu, 08 Sep 2022 19:00:04 GMT
 
 _Version update only_
 
 ## 3.3.3
+
 Tue, 06 Sep 2022 20:54:19 GMT
 
 _Version update only_
 
 ## 3.3.2
+
 Thu, 01 Sep 2022 14:37:22 GMT
 
 _Version update only_
 
 ## 3.3.1
+
 Fri, 26 Aug 2022 15:40:02 GMT
 
 _Version update only_
 
 ## 3.3.0
+
 Thu, 18 Aug 2022 19:08:02 GMT
 
 ### Updates
@@ -135,36 +152,43 @@ Thu, 18 Aug 2022 19:08:02 GMT
 - DisplayStyleSettings.scheduleScriptProps is no longer deprecated. Add comparison methods for types in the RenderSchedule namespace.
 
 ## 3.2.9
+
 Fri, 26 Aug 2022 14:21:40 GMT
 
 _Version update only_
 
 ## 3.2.8
+
 Tue, 09 Aug 2022 15:52:41 GMT
 
 _Version update only_
 
 ## 3.2.7
+
 Mon, 01 Aug 2022 13:36:56 GMT
 
 _Version update only_
 
 ## 3.2.6
+
 Fri, 15 Jul 2022 19:04:43 GMT
 
 _Version update only_
 
 ## 3.2.5
+
 Wed, 13 Jul 2022 15:45:52 GMT
 
 _Version update only_
 
 ## 3.2.4
+
 Tue, 21 Jun 2022 18:06:33 GMT
 
 _Version update only_
 
 ## 3.2.3
+
 Fri, 17 Jun 2022 15:18:39 GMT
 
 ### Updates
@@ -172,11 +196,13 @@ Fri, 17 Jun 2022 15:18:39 GMT
 - Made public MapLayers related objects, methods.
 
 ## 3.2.2
+
 Fri, 10 Jun 2022 16:11:36 GMT
 
 _Version update only_
 
 ## 3.2.1
+
 Tue, 07 Jun 2022 15:02:56 GMT
 
 ### Updates
@@ -184,6 +210,7 @@ Tue, 07 Jun 2022 15:02:56 GMT
 - Add option to quantize positions to GraphicsRequestProps.
 
 ## 3.2.0
+
 Fri, 20 May 2022 13:10:54 GMT
 
 ### Updates
@@ -200,21 +227,25 @@ Fri, 20 May 2022 13:10:54 GMT
 - Add extension API generation
 
 ## 3.1.3
+
 Fri, 15 Apr 2022 13:49:25 GMT
 
 _Version update only_
 
 ## 3.1.2
+
 Wed, 06 Apr 2022 22:27:56 GMT
 
 _Version update only_
 
 ## 3.1.1
+
 Thu, 31 Mar 2022 15:55:48 GMT
 
 _Version update only_
 
 ## 3.1.0
+
 Tue, 29 Mar 2022 20:53:47 GMT
 
 ### Updates
@@ -227,16 +258,19 @@ Tue, 29 Mar 2022 20:53:47 GMT
 - Web IPC fix (when reloading frontend).
 
 ## 3.0.3
+
 Fri, 25 Mar 2022 15:10:02 GMT
 
 _Version update only_
 
 ## 3.0.2
+
 Thu, 10 Mar 2022 21:18:13 GMT
 
 _Version update only_
 
 ## 3.0.1
+
 Thu, 24 Feb 2022 15:26:55 GMT
 
 ### Updates
@@ -244,6 +278,7 @@ Thu, 24 Feb 2022 15:26:55 GMT
 - Migrated from deprecated MapBox api.
 
 ## 3.0.0
+
 Mon, 24 Jan 2022 14:00:52 GMT
 
 ### Updates
@@ -294,7 +329,7 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - rework locks
 - Fix for IModel._ecefTrans not being updated when setting IModel._ecefLocation.
 - Deprecate RenderTexture.Params
--  Renamed an iModel's parent container to iTwin
+- Renamed an iModel's parent container to iTwin
 - Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their own azure environment.
 - FeatureAppearance transparency override by default ignores render mode and transparency view flag.
 - Adding WebEditServer (test scenarios only for now)
@@ -302,11 +337,13 @@ Mon, 24 Jan 2022 14:00:52 GMT
 - Add ViewFlags.wiremesh to control wiremesh display.
 
 ## 2.19.28
+
 Wed, 12 Jan 2022 14:52:38 GMT
 
 _Version update only_
 
 ## 2.19.27
+
 Wed, 05 Jan 2022 20:07:20 GMT
 
 ### Updates
@@ -314,46 +351,55 @@ Wed, 05 Jan 2022 20:07:20 GMT
 - Add compare method to ThematicGradientSettings. Fix Gradient.Symb.compareSymb method to also compare thematicSettings.
 
 ## 2.19.26
+
 Wed, 08 Dec 2021 20:54:52 GMT
 
 _Version update only_
 
 ## 2.19.25
+
 Fri, 03 Dec 2021 20:05:49 GMT
 
 _Version update only_
 
 ## 2.19.24
+
 Mon, 29 Nov 2021 18:44:31 GMT
 
 _Version update only_
 
 ## 2.19.23
+
 Mon, 22 Nov 2021 20:41:39 GMT
 
 _Version update only_
 
 ## 2.19.22
+
 Wed, 17 Nov 2021 01:23:26 GMT
 
 _Version update only_
 
 ## 2.19.21
+
 Wed, 10 Nov 2021 10:58:24 GMT
 
 _Version update only_
 
 ## 2.19.20
+
 Fri, 29 Oct 2021 16:14:22 GMT
 
 _Version update only_
 
 ## 2.19.19
+
 Mon, 25 Oct 2021 16:16:25 GMT
 
 _Version update only_
 
 ## 2.19.18
+
 Thu, 21 Oct 2021 20:59:44 GMT
 
 ### Updates
@@ -361,6 +407,7 @@ Thu, 21 Oct 2021 20:59:44 GMT
 - Backport from PR#2451 enable reprojection and merge
 
 ## 2.19.17
+
 Thu, 14 Oct 2021 21:19:43 GMT
 
 ### Updates
@@ -368,11 +415,13 @@ Thu, 14 Oct 2021 21:19:43 GMT
 - Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their  own azure environment.
 
 ## 2.19.16
+
 Mon, 11 Oct 2021 17:37:46 GMT
 
 _Version update only_
 
 ## 2.19.15
+
 Fri, 08 Oct 2021 16:44:23 GMT
 
 ### Updates
@@ -380,21 +429,25 @@ Fri, 08 Oct 2021 16:44:23 GMT
 - Add a new property to ContextRealityModelState named rdSourecKey that provide a new way of attaching Reality Data that will resolve tilesetUrl at runtime.
 
 ## 2.19.14
+
 Fri, 01 Oct 2021 13:07:03 GMT
 
 _Version update only_
 
 ## 2.19.13
+
 Tue, 21 Sep 2021 21:06:40 GMT
 
 _Version update only_
 
 ## 2.19.12
+
 Wed, 15 Sep 2021 18:06:46 GMT
 
 _Version update only_
 
 ## 2.19.11
+
 Thu, 09 Sep 2021 21:04:58 GMT
 
 ### Updates
@@ -402,11 +455,13 @@ Thu, 09 Sep 2021 21:04:58 GMT
 - Added WhiteOnWhiteReversalSettings to control whether background color must be white for white-on-white reversal to apply.
 
 ## 2.19.10
+
 Wed, 08 Sep 2021 14:36:01 GMT
 
 _Version update only_
 
 ## 2.19.9
+
 Wed, 25 Aug 2021 15:36:01 GMT
 
 ### Updates
@@ -414,46 +469,55 @@ Wed, 25 Aug 2021 15:36:01 GMT
 - documentation fix
 
 ## 2.19.8
+
 Mon, 23 Aug 2021 13:23:13 GMT
 
 _Version update only_
 
 ## 2.19.7
+
 Fri, 20 Aug 2021 17:47:22 GMT
 
 _Version update only_
 
 ## 2.19.6
+
 Tue, 17 Aug 2021 20:34:29 GMT
 
 _Version update only_
 
 ## 2.19.5
+
 Fri, 13 Aug 2021 21:48:08 GMT
 
 _Version update only_
 
 ## 2.19.4
+
 Thu, 12 Aug 2021 13:09:26 GMT
 
 _Version update only_
 
 ## 2.19.3
+
 Wed, 04 Aug 2021 20:29:34 GMT
 
 _Version update only_
 
 ## 2.19.2
+
 Tue, 03 Aug 2021 18:26:23 GMT
 
 _Version update only_
 
 ## 2.19.1
+
 Thu, 29 Jul 2021 20:01:11 GMT
 
 _Version update only_
 
 ## 2.19.0
+
 Mon, 26 Jul 2021 12:21:25 GMT
 
 ### Updates
@@ -468,52 +532,61 @@ Mon, 26 Jul 2021 12:21:25 GMT
 - Add frustum method to support reality tile reprojection
 
 ## 2.18.4
+
 Tue, 10 Aug 2021 19:35:13 GMT
 
 _Version update only_
 
 ## 2.18.3
+
 Wed, 28 Jul 2021 17:16:30 GMT
 
 _Version update only_
 
 ## 2.18.2
+
 Mon, 26 Jul 2021 16:18:31 GMT
 
 _Version update only_
 
 ## 2.18.1
+
 Fri, 16 Jul 2021 17:45:09 GMT
 
 _Version update only_
 
 ## 2.18.0
+
 Fri, 09 Jul 2021 18:11:24 GMT
 
 ### Updates
 
-- Accomodated the inability to reverse Changesets when creating change summaries. 
-- Use ecef location calculated for projected models.  
+- Accomodated the inability to reverse Changesets when creating change summaries.
+- Use ecef location calculated for projected models.
 - Clean up and promote AnalysisStyle APIs.
 - Added support for section clip to ElementGraphicsRequestProps.
 - Add internal API for reconstructing TileOptions from tree and content Ids.
 
 ## 2.17.3
+
 Mon, 26 Jul 2021 16:08:36 GMT
 
 _Version update only_
 
 ## 2.17.2
+
 Thu, 08 Jul 2021 15:23:00 GMT
 
 _Version update only_
 
 ## 2.17.1
+
 Fri, 02 Jul 2021 15:38:31 GMT
 
 _Version update only_
 
 ## 2.17.0
+
 Mon, 28 Jun 2021 16:20:11 GMT
 
 ### Updates
@@ -542,31 +615,37 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - Add RenderSchedule.ScriptBuilder for assembling a new schedule script.
 
 ## 2.16.10
+
 Thu, 22 Jul 2021 20:23:45 GMT
 
 _Version update only_
 
 ## 2.16.9
+
 Tue, 06 Jul 2021 22:08:34 GMT
 
 _Version update only_
 
 ## 2.16.8
+
 Fri, 02 Jul 2021 17:40:46 GMT
 
 _Version update only_
 
 ## 2.16.7
+
 Mon, 28 Jun 2021 18:13:04 GMT
 
 _Version update only_
 
 ## 2.16.6
+
 Mon, 28 Jun 2021 13:12:55 GMT
 
 _Version update only_
 
 ## 2.16.5
+
 Fri, 25 Jun 2021 16:03:01 GMT
 
 ### Updates
@@ -574,26 +653,31 @@ Fri, 25 Jun 2021 16:03:01 GMT
 - Synch map settings provider when base layer provider changes.
 
 ## 2.16.4
+
 Wed, 23 Jun 2021 17:09:07 GMT
 
 _Version update only_
 
 ## 2.16.3
+
 Wed, 16 Jun 2021 20:29:32 GMT
 
 _Version update only_
 
 ## 2.16.2
+
 Thu, 03 Jun 2021 18:08:11 GMT
 
 _Version update only_
 
 ## 2.16.1
+
 Thu, 27 May 2021 20:04:22 GMT
 
 _Version update only_
 
 ## 2.16.0
+
 Mon, 24 May 2021 15:58:39 GMT
 
 ### Updates
@@ -612,31 +696,37 @@ Mon, 24 May 2021 15:58:39 GMT
 - add placement to GeomtricElementProps
 
 ## 2.15.6
+
 Wed, 26 May 2021 15:55:19 GMT
 
 _Version update only_
 
 ## 2.15.5
+
 Thu, 20 May 2021 15:06:26 GMT
 
 _Version update only_
 
 ## 2.15.4
+
 Tue, 18 May 2021 21:59:07 GMT
 
 _Version update only_
 
 ## 2.15.3
+
 Mon, 17 May 2021 13:31:38 GMT
 
 _Version update only_
 
 ## 2.15.2
+
 Wed, 12 May 2021 18:08:13 GMT
 
 _Version update only_
 
 ## 2.15.1
+
 Wed, 05 May 2021 13:18:31 GMT
 
 ### Updates
@@ -644,6 +734,7 @@ Wed, 05 May 2021 13:18:31 GMT
 - FeatureOverrides can hide or override the symbology of unanimated nodes.
 
 ## 2.15.0
+
 Fri, 30 Apr 2021 12:36:58 GMT
 
 ### Updates
@@ -664,26 +755,31 @@ Fri, 30 Apr 2021 12:36:58 GMT
 - Update api tags
 
 ## 2.14.4
+
 Thu, 22 Apr 2021 21:07:33 GMT
 
 _Version update only_
 
 ## 2.14.3
+
 Thu, 15 Apr 2021 15:13:16 GMT
 
 _Version update only_
 
 ## 2.14.2
+
 Thu, 08 Apr 2021 14:30:09 GMT
 
 _Version update only_
 
 ## 2.14.1
+
 Mon, 05 Apr 2021 16:28:00 GMT
 
 _Version update only_
 
 ## 2.14.0
+
 Fri, 02 Apr 2021 13:18:42 GMT
 
 ### Updates
@@ -698,6 +794,7 @@ Fri, 02 Apr 2021 13:18:42 GMT
 - Support for transient errors
 
 ## 2.13.0
+
 Tue, 09 Mar 2021 20:28:13 GMT
 
 ### Updates
@@ -713,16 +810,19 @@ Tue, 09 Mar 2021 20:28:13 GMT
 - begin rename project from iModel.js to iTwin.js
 
 ## 2.12.3
+
 Mon, 08 Mar 2021 15:32:00 GMT
 
 _Version update only_
 
 ## 2.12.2
+
 Wed, 03 Mar 2021 18:48:52 GMT
 
 _Version update only_
 
 ## 2.12.1
+
 Tue, 23 Feb 2021 20:54:45 GMT
 
 ### Updates
@@ -730,6 +830,7 @@ Tue, 23 Feb 2021 20:54:45 GMT
 - Persist the time point used to compute solar light direction in LightSettingsProps.
 
 ## 2.12.0
+
 Thu, 18 Feb 2021 22:10:13 GMT
 
 ### Updates
@@ -744,22 +845,25 @@ Thu, 18 Feb 2021 22:10:13 GMT
 - remove IpcInterface, getVersion() method is not needed
 
 ## 2.11.2
+
 Thu, 18 Feb 2021 02:50:59 GMT
 
 _Version update only_
 
 ## 2.11.1
+
 Thu, 04 Feb 2021 17:22:41 GMT
 
 _Version update only_
 
 ## 2.11.0
+
 Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
 - Fix brep DataProps to/from flatbuffer to account for base64 string header.
-- Element geometry creation by brep operations. 
+- Element geometry creation by brep operations.
 - add EditCommand
 - Improve ElementGeometry documentation.
 - Remove assertion in supplyPathForOperation when defaulting changeSetId.
@@ -772,21 +876,25 @@ Thu, 28 Jan 2021 13:39:27 GMT
 - Add change events to DisplayStyleSettings and ViewDetails.
 
 ## 2.10.3
+
 Fri, 08 Jan 2021 18:34:03 GMT
 
 _Version update only_
 
 ## 2.10.2
+
 Fri, 08 Jan 2021 14:52:02 GMT
 
 _Version update only_
 
 ## 2.10.1
+
 Tue, 22 Dec 2020 00:53:38 GMT
 
 _Version update only_
 
 ## 2.10.0
+
 Fri, 18 Dec 2020 18:24:01 GMT
 
 ### Updates
@@ -800,16 +908,19 @@ Fri, 18 Dec 2020 18:24:01 GMT
 - Version compare top parents ChangedElements update
 
 ## 2.9.9
+
 Sun, 13 Dec 2020 19:00:03 GMT
 
 _Version update only_
 
 ## 2.9.8
+
 Fri, 11 Dec 2020 02:57:36 GMT
 
 _Version update only_
 
 ## 2.9.7
+
 Wed, 09 Dec 2020 20:58:23 GMT
 
 ### Updates
@@ -817,11 +928,13 @@ Wed, 09 Dec 2020 20:58:23 GMT
 - Fix cartographicRange computation. The 8 corners are calculated in the ECEF coordinate system but I think they should be calculated in the spatial coordinate system and then converted to ECEF.
 
 ## 2.9.6
+
 Mon, 07 Dec 2020 18:40:48 GMT
 
 _Version update only_
 
 ## 2.9.5
+
 Sat, 05 Dec 2020 01:55:56 GMT
 
 ### Updates
@@ -829,26 +942,31 @@ Sat, 05 Dec 2020 01:55:56 GMT
 - Bump Tile Version to 18
 
 ## 2.9.4
+
 Wed, 02 Dec 2020 20:55:40 GMT
 
 _Version update only_
 
 ## 2.9.3
+
 Mon, 23 Nov 2020 20:57:56 GMT
 
 _Version update only_
 
 ## 2.9.2
+
 Mon, 23 Nov 2020 15:33:50 GMT
 
 _Version update only_
 
 ## 2.9.1
+
 Thu, 19 Nov 2020 17:03:42 GMT
 
 _Version update only_
 
 ## 2.9.0
+
 Wed, 18 Nov 2020 16:01:50 GMT
 
 ### Updates
@@ -861,11 +979,13 @@ Wed, 18 Nov 2020 16:01:50 GMT
 - Support for push events
 
 ## 2.8.1
+
 Tue, 03 Nov 2020 00:33:56 GMT
 
 _Version update only_
 
 ## 2.8.0
+
 Fri, 23 Oct 2020 17:04:02 GMT
 
 ### Updates
@@ -877,16 +997,19 @@ Fri, 23 Oct 2020 17:04:02 GMT
 - Added color mix to thematic display for background map terrain and point clouds
 
 ## 2.7.6
+
 Wed, 11 Nov 2020 16:28:23 GMT
 
 _Version update only_
 
 ## 2.7.5
+
 Fri, 23 Oct 2020 16:23:50 GMT
 
 _Version update only_
 
 ## 2.7.4
+
 Mon, 19 Oct 2020 17:57:01 GMT
 
 ### Updates
@@ -894,29 +1017,33 @@ Mon, 19 Oct 2020 17:57:01 GMT
 - Update Access-Control header values
 
 ## 2.7.3
+
 Wed, 14 Oct 2020 17:00:59 GMT
 
 _Version update only_
 
 ## 2.7.2
+
 Tue, 13 Oct 2020 18:20:38 GMT
 
 _Version update only_
 
 ## 2.7.1
+
 Thu, 08 Oct 2020 13:04:35 GMT
 
 _Version update only_
 
 ## 2.7.0
+
 Fri, 02 Oct 2020 18:03:32 GMT
 
 ### Updates
 
 - Add documentation for ContextRealityModelProps.
 - Fix calculation of cartographic range.
-- Fixes to front end methods to pull, merge and push. 
-- Fixed desktop authorization after recent changes. 
+- Fixes to front end methods to pull, merge and push.
+- Fixed desktop authorization after recent changes.
 - Update Tile version due to changes to indexes for tesselated polylines
 - On iOS download in background
 - Introduce NoContentError (transmitted via 204)
@@ -924,6 +1051,7 @@ Fri, 02 Oct 2020 18:03:32 GMT
 - fixed display of isolines mode
 
 ## 2.6.5
+
 Sat, 26 Sep 2020 16:06:34 GMT
 
 ### Updates
@@ -931,26 +1059,31 @@ Sat, 26 Sep 2020 16:06:34 GMT
 - changed elements properties for version compare
 
 ## 2.6.4
+
 Tue, 22 Sep 2020 17:40:07 GMT
 
 _Version update only_
 
 ## 2.6.3
+
 Mon, 21 Sep 2020 14:47:09 GMT
 
 _Version update only_
 
 ## 2.6.2
+
 Mon, 21 Sep 2020 13:07:44 GMT
 
 _Version update only_
 
 ## 2.6.1
+
 Fri, 18 Sep 2020 13:15:09 GMT
 
 _Version update only_
 
 ## 2.6.0
+
 Thu, 17 Sep 2020 13:16:12 GMT
 
 ### Updates
@@ -960,31 +1093,37 @@ Thu, 17 Sep 2020 13:16:12 GMT
 - Add API to compute tile chord tolerance.
 
 ## 2.5.5
+
 Wed, 02 Sep 2020 17:42:23 GMT
 
 _Version update only_
 
 ## 2.5.4
+
 Fri, 28 Aug 2020 15:34:15 GMT
 
 _Version update only_
 
 ## 2.5.3
+
 Wed, 26 Aug 2020 11:46:00 GMT
 
 _Version update only_
 
 ## 2.5.2
+
 Tue, 25 Aug 2020 22:09:08 GMT
 
 _Version update only_
 
 ## 2.5.1
+
 Mon, 24 Aug 2020 18:13:04 GMT
 
 _Version update only_
 
 ## 2.5.0
+
 Thu, 20 Aug 2020 20:57:09 GMT
 
 ### Updates
@@ -999,6 +1138,7 @@ Thu, 20 Aug 2020 20:57:09 GMT
 - Switch to ESLint
 
 ## 2.4.2
+
 Fri, 14 Aug 2020 16:34:09 GMT
 
 ### Updates
@@ -1007,6 +1147,7 @@ Fri, 14 Aug 2020 16:34:09 GMT
 - Add support for restart query
 
 ## 2.4.1
+
 Fri, 07 Aug 2020 19:57:43 GMT
 
 ### Updates
@@ -1015,6 +1156,7 @@ Fri, 07 Aug 2020 19:57:43 GMT
 - Fixes for map transparency.  Do not set base layer transparency when overall transparency is modified.  Keep layers in synch when settings change.
 
 ## 2.4.0
+
 Tue, 28 Jul 2020 16:26:24 GMT
 
 ### Updates
@@ -1023,6 +1165,7 @@ Tue, 28 Jul 2020 16:26:24 GMT
 - iModelHub permissions handler
 
 ## 2.3.3
+
 Thu, 23 Jul 2020 12:57:15 GMT
 
 ### Updates
@@ -1030,16 +1173,19 @@ Thu, 23 Jul 2020 12:57:15 GMT
 - Fix regression that could result in increased number of tile requests.
 
 ## 2.3.2
+
 Tue, 14 Jul 2020 23:50:36 GMT
 
 _Version update only_
 
 ## 2.3.1
+
 Mon, 13 Jul 2020 18:50:14 GMT
 
 _Version update only_
 
 ## 2.3.0
+
 Fri, 10 Jul 2020 17:23:14 GMT
 
 ### Updates
@@ -1048,18 +1194,20 @@ Fri, 10 Jul 2020 17:23:14 GMT
 - Add ability to create selective overrides from display style settings, and apply the overrides to another settings.
 - Fix orientation of Ecef.createFromCartographicOrigin
 - Add non-locatable flag to TerrainSettings.
-- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades. 
+- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades.
 - Support for multiple RPC interface clients and attaching interfaces after startup.
 - Add function to convert solar angles to solar direction.
 - enforce max texture size for stepped gradients.
 - New thematic gradient modes implemented and documented: Stepped, SteppedWithDelimiter, and IsoLines
 
 ## 2.2.1
+
 Tue, 07 Jul 2020 14:44:52 GMT
 
 _Version update only_
 
 ## 2.2.0
+
 Fri, 19 Jun 2020 14:10:03 GMT
 
 ### Updates
@@ -1077,17 +1225,19 @@ Fri, 19 Jun 2020 14:10:03 GMT
 - Switching from JSC to V8
 
 ## 2.1.0
+
 Thu, 28 May 2020 22:48:59 GMT
 
 ### Updates
 
 - Improved log message written on rpc error
-- Change default origin mode for terrain to Geodetic. 
+- Change default origin mode for terrain to Geodetic.
 - Fix transforms for creating and querying part instance geometry in world coordinate.
 - channel rules
 - Optimize thematic sensor display by culling sensors based on a distanceCutoff property on ThematicDisplaySensorSettings.
 
 ## 2.0.0
+
 Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
@@ -1097,7 +1247,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - Show min/max window error for mouse wheel zoom.
 - Make animation state of a display style persistent.
 - Send a default pending message since Azure strips content-type header if no data is present
-- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases.
 - Added to DisplayStyle3dSettings: MonochromeMode, LightSettings.
 - Simplify GeometryStreamIteratorEntry (breaking API change).
 - constructor of ColorDef wasn't setting transparency properly for rgba() strings
@@ -1120,11 +1270,11 @@ Wed, 06 May 2020 13:17:49 GMT
 - Added file size.
 - Supply RPC routing props for SnapshotIModelRpcInterface open methods"
 - MobileRpcConfiguration throws exception
-- Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. 
-- Refactored NativeApp API and RPC interfaces. This continues to be WIP. 
-- Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase. 
+- Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline.
+- Refactored NativeApp API and RPC interfaces. This continues to be WIP.
+- Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase.
 - Added new interface for native app
-- VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP). 
+- VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP).
 - Handle null JSON in ViewDetails.
 - Renamed OIDC constructs for consistency; Removed SAML support.
 - OrbitGT point cloud interface.
@@ -1149,16 +1299,19 @@ Wed, 06 May 2020 13:17:49 GMT
 - Add a ViewFlag to control white-on-white reversal.
 
 ## 1.14.1
+
 Wed, 22 Apr 2020 19:04:00 GMT
 
 _Version update only_
 
 ## 1.14.0
+
 Tue, 31 Mar 2020 15:44:19 GMT
 
 _Version update only_
 
 ## 1.13.0
+
 Wed, 04 Mar 2020 16:16:31 GMT
 
 ### Updates
@@ -1166,6 +1319,7 @@ Wed, 04 Mar 2020 16:16:31 GMT
 - MobileRpc throw exception
 
 ## 1.12.0
+
 Wed, 12 Feb 2020 17:45:50 GMT
 
 ### Updates
@@ -1174,13 +1328,14 @@ Wed, 12 Feb 2020 17:45:50 GMT
 - iModel write API development
 - Fix issue with constructing the tile cache URL() on Safari.
 - Prevent reuse of cached tiles after project extents change.
-- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests.
 - Define ViewDetails for manipulating optional detail settings of ViewDefinition and ViewState.
 - Add support for plan projection models with 3d display priority.
 - Add settings to control display of plan projection models.
 - Add PlanProjectionSettings.enforceDisplayPriority.
 
 ## 1.11.0
+
 Wed, 22 Jan 2020 19:24:12 GMT
 
 ### Updates
@@ -1193,6 +1348,7 @@ Wed, 22 Jan 2020 19:24:12 GMT
 - Upgrade to TypeScript 3.7.2.
 
 ## 1.10.0
+
 Tue, 07 Jan 2020 19:44:01 GMT
 
 ### Updates
@@ -1204,6 +1360,7 @@ Tue, 07 Jan 2020 19:44:01 GMT
 - Moved tile IO-related APIs from frontend to common.
 
 ## 1.9.0
+
 Tue, 10 Dec 2019 18:08:56 GMT
 
 ### Updates
@@ -1216,6 +1373,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 - Addressing typo in a couple of members, making them match the schema properly.
 
 ## 1.8.0
+
 Fri, 22 Nov 2019 14:03:34 GMT
 
 ### Updates
@@ -1231,6 +1389,7 @@ Fri, 22 Nov 2019 14:03:34 GMT
 - Fixed camera.equals
 
 ## 1.7.0
+
 Fri, 01 Nov 2019 13:28:37 GMT
 
 ### Updates
@@ -1239,7 +1398,7 @@ Fri, 01 Nov 2019 13:28:37 GMT
 - Tweaks to ambient occlusion settings.
 - Callout clip is now local to placement. Only show marker for active clip.
 - Cleanup AO settings.
-- Remove @deprecated tags in GeometryStreamIteratorEntry
+- Remove @deprecated in 3.x. tags in GeometryStreamIteratorEntry
 - Fix comparison of classification properties ignoring the 'volume' flag.
 - Fixes for making volume classifiers work.
 - New wip plugin for hypermodeling support.
@@ -1252,6 +1411,7 @@ Fri, 01 Nov 2019 13:28:37 GMT
 - Convenience methods for overriding aspects of hidden line styles.
 
 ## 1.6.0
+
 Wed, 09 Oct 2019 20:28:42 GMT
 
 ### Updates
@@ -1262,6 +1422,7 @@ Wed, 09 Oct 2019 20:28:42 GMT
 - Fixed multiple viewport shadows
 
 ## 1.5.0
+
 Mon, 30 Sep 2019 22:28:48 GMT
 
 ### Updates
@@ -1276,6 +1437,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
+
 Tue, 10 Sep 2019 12:09:49 GMT
 
 ### Updates
@@ -1287,6 +1449,7 @@ Tue, 10 Sep 2019 12:09:49 GMT
 - Added ability to clear individual overridden flags in ViewFlag.Overrides.
 
 ## 1.3.0
+
 Tue, 13 Aug 2019 20:25:53 GMT
 
 ### Updates
@@ -1301,6 +1464,7 @@ Tue, 13 Aug 2019 20:25:53 GMT
 - Changed the transfer chunk size for mobile RPC transport.
 
 ## 1.2.0
+
 Wed, 24 Jul 2019 11:47:26 GMT
 
 ### Updates
@@ -1309,6 +1473,7 @@ Wed, 24 Jul 2019 11:47:26 GMT
 - Added method to get element mass properties.
 
 ## 1.1.0
+
 Mon, 01 Jul 2019 19:04:29 GMT
 
 ### Updates
@@ -1320,6 +1485,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Update to TypeScript 3.5
 
 ## 1.0.0
+
 Mon, 03 Jun 2019 18:09:39 GMT
 
 ### Updates
@@ -1332,11 +1498,12 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Introduced tile format v4.0
 
 ## 0.191.0
+
 Mon, 13 May 2019 15:52:05 GMT
 
 ### Updates
 
-- Support spatial classification of context reality models. 
+- Support spatial classification of context reality models.
 - Added OpenAPIInfo to the barrel file
 - Adds parameter for api-extractor to validate missing release tags
 - Adds ignoreMissingTags flag
@@ -1349,14 +1516,14 @@ Mon, 13 May 2019 15:52:05 GMT
 - LoggerCategory -> CommonLoggerCategory
 - Fix default line pattern for hidden edges.
 - Introduce LoggerCategory enum to advertise logger categories used by this package.
-- Logging fixes. 
+- Logging fixes.
 - Put sourcemap in npm package.
 - Add SVG to ImageSourceFormat
 - Add imodeljs-markup
 - New tile cache naming scheme.
 - queryPage use memoization/pending pattern
 - Remove StandaloneIModelRpcInterface
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Prefer the IModelToken values in the url (if different from values in JSON body -- should never happen except in a malicious request).
 - Exports interface MarshalingBinaryMarker to prevent errors in api-extractor V7
 - Add SnapshotIModelRpcInterface
@@ -1367,6 +1534,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Only save viewing volume for view undo rather than cloning ViewState
 
 ## 0.190.0
+
 Thu, 14 Mar 2019 14:26:49 GMT
 
 ### Updates
@@ -1376,6 +1544,7 @@ Thu, 14 Mar 2019 14:26:49 GMT
 - Documentation for Skybox
 
 ## 0.189.0
+
 Wed, 06 Mar 2019 15:41:22 GMT
 
 ### Updates
@@ -1409,6 +1578,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
+
 Wed, 16 Jan 2019 16:36:09 GMT
 
 ### Updates
@@ -1417,11 +1587,13 @@ Wed, 16 Jan 2019 16:36:09 GMT
 - Fix error in semver parsing.
 
 ## 0.187.0
+
 Tue, 15 Jan 2019 15:18:59 GMT
 
 _Version update only_
 
 ## 0.186.0
+
 Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
@@ -1430,11 +1602,13 @@ Mon, 14 Jan 2019 23:09:10 GMT
 - Add TextureProps for use by new backend Texture API.
 
 ## 0.185.0
+
 Fri, 11 Jan 2019 18:29:00 GMT
 
 _Version update only_
 
 ## 0.184.0
+
 Thu, 10 Jan 2019 22:46:17 GMT
 
 ### Updates
@@ -1443,6 +1617,7 @@ Thu, 10 Jan 2019 22:46:17 GMT
 - Fix drag select decorator when cursor moves out of view. Doc fixes.
 
 ## 0.183.0
+
 Mon, 07 Jan 2019 21:49:21 GMT
 
 ### Updates
@@ -1451,16 +1626,19 @@ Mon, 07 Jan 2019 21:49:21 GMT
 - Change iModelReadRpcInterface version because Geocoordinate calculation methods added.
 
 ## 0.182.0
+
 Mon, 07 Jan 2019 13:31:34 GMT
 
 _Version update only_
 
 ## 0.181.0
+
 Fri, 04 Jan 2019 13:02:40 GMT
 
 _Version update only_
 
 ## 0.180.0
+
 Wed, 02 Jan 2019 15:18:23 GMT
 
 ### Updates
@@ -1469,6 +1647,7 @@ Wed, 02 Jan 2019 15:18:23 GMT
 - Add path pivot data to render schedule
 
 ## 0.179.0
+
 Wed, 19 Dec 2018 18:26:14 GMT
 
 ### Updates
@@ -1476,16 +1655,19 @@ Wed, 19 Dec 2018 18:26:14 GMT
 - Log context and imodel ids as separate properties. Surface interface and operation names in logging title.
 
 ## 0.178.0
+
 Thu, 13 Dec 2018 22:06:10 GMT
 
 _Version update only_
 
 ## 0.177.0
+
 Wed, 12 Dec 2018 17:21:31 GMT
 
 _Version update only_
 
 ## 0.176.0
+
 Mon, 10 Dec 2018 21:19:45 GMT
 
 ### Updates
@@ -1493,16 +1675,19 @@ Mon, 10 Dec 2018 21:19:45 GMT
 - New signature for RpcInterface.forward
 
 ## 0.175.0
+
 Mon, 10 Dec 2018 17:08:55 GMT
 
 _Version update only_
 
 ## 0.174.0
+
 Mon, 10 Dec 2018 13:24:09 GMT
 
 _Version update only_
 
 ## 0.173.0
+
 Thu, 06 Dec 2018 22:03:29 GMT
 
 ### Updates
@@ -1510,6 +1695,7 @@ Thu, 06 Dec 2018 22:03:29 GMT
 - Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.
 
 ## 0.172.0
+
 Tue, 04 Dec 2018 17:24:39 GMT
 
 ### Updates
@@ -1517,6 +1703,7 @@ Tue, 04 Dec 2018 17:24:39 GMT
 - Changed index file name to match package name. Change imports to use other packages' index file.
 
 ## 0.171.0
+
 Mon, 03 Dec 2018 18:52:58 GMT
 
 ### Updates
@@ -1525,6 +1712,7 @@ Mon, 03 Dec 2018 18:52:58 GMT
 - Front end "read pixels" can now provide subCategoryId and GeometryClass to backend.
 
 ## 0.170.0
+
 Mon, 26 Nov 2018 19:38:42 GMT
 
 ### Updates
@@ -1533,6 +1721,7 @@ Mon, 26 Nov 2018 19:38:42 GMT
 - Remove dependency on 'window'-named global object.
 
 ## 0.169.0
+
 Tue, 20 Nov 2018 16:17:15 GMT
 
 ### Updates
@@ -1540,11 +1729,13 @@ Tue, 20 Nov 2018 16:17:15 GMT
 - GeometryStream markdown
 
 ## 0.168.0
+
 Sat, 17 Nov 2018 14:20:11 GMT
 
 _Version update only_
 
 ## 0.167.0
+
 Fri, 16 Nov 2018 21:45:44 GMT
 
 ### Updates
@@ -1555,16 +1746,19 @@ Fri, 16 Nov 2018 21:45:44 GMT
 - Temporarily disable tile caching.
 
 ## 0.166.0
+
 Mon, 12 Nov 2018 16:42:10 GMT
 
 _Version update only_
 
 ## 0.165.0
+
 Mon, 12 Nov 2018 15:47:00 GMT
 
 _Version update only_
 
 ## 0.164.0
+
 Thu, 08 Nov 2018 17:59:20 GMT
 
 ### Updates
@@ -1577,6 +1771,7 @@ Thu, 08 Nov 2018 17:59:20 GMT
 - Updated to TypeScript 3.1
 
 ## 0.163.0
+
 Wed, 31 Oct 2018 20:55:37 GMT
 
 ### Updates
@@ -1585,6 +1780,7 @@ Wed, 31 Oct 2018 20:55:37 GMT
 - Remove unused RpcInterface methods, move WIP methods
 
 ## 0.162.0
+
 Wed, 24 Oct 2018 19:20:06 GMT
 
 ### Updates
@@ -1597,34 +1793,39 @@ Wed, 24 Oct 2018 19:20:06 GMT
 - Add RpcInterface versioning documentation
 
 ## 0.161.0
+
 Fri, 19 Oct 2018 13:04:14 GMT
 
 _Version update only_
 
 ## 0.160.0
+
 Wed, 17 Oct 2018 18:18:38 GMT
 
 _Version update only_
 
 ## 0.159.0
+
 Tue, 16 Oct 2018 14:09:09 GMT
 
 _Version update only_
 
 ## 0.158.0
+
 Mon, 15 Oct 2018 19:36:09 GMT
 
 _Version update only_
 
 ## 0.157.0
+
 Sun, 14 Oct 2018 17:20:06 GMT
 
 _Version update only_
 
 ## 0.156.0
+
 Fri, 12 Oct 2018 23:00:10 GMT
 
 ### Updates
 
 - Initial release
-
