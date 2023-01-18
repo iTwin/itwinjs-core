@@ -185,10 +185,7 @@ export class ElectronHost {
   /** The "main" BrowserWindow for this application. */
   public static get mainWindow() { return this._mainWindow; }
 
-  /**
-   * Gets window size and position for a window, by name, from settings file, if present.
-   * @note On Linux window size and position in settings file is only updated on window "unmaximize".
-   */
+  /** Gets window size and position for a window, by name, from settings file, if present */
   public static getWindowSizeSetting(windowName: string): WindowSizeAndPositionProps | undefined {
     const saved = NativeHost.settingsStore.getString(`windowPos-${windowName}`);
     return saved ? JSON.parse(saved) as WindowSizeAndPositionProps : undefined;
