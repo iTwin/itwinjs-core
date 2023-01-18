@@ -45,7 +45,7 @@ import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 import {
   AbstractUiItemsProvider, AppUiTestProviders, ContentLayoutStage, CustomContentFrontstage,
-  FloatingWidgetsUiItemsProvider, InspectUiItemInfoToolProvider, WidgetApiStage,
+  FloatingWidgetsUiItemsProvider, InspectUiItemInfoToolProvider, SynchronizedFloatingViewportStage, WidgetApiStage,
 } from "@itwin/appui-test-providers";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
 
@@ -289,6 +289,7 @@ export class SampleAppIModelApp {
     CustomContentFrontstage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
     WidgetApiStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
     ContentLayoutStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
+    SynchronizedFloatingViewportStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();

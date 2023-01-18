@@ -1084,6 +1084,7 @@ export class CodeSpecs {
     insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
+    updateProperties(codeSpec: CodeSpec): void;
 }
 
 // @public
@@ -3004,7 +3005,6 @@ export class IModelHost {
     static set applicationVersion(version: string);
     // @beta
     static get appWorkspace(): Workspace;
-    // (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
     static backendVersion: string;
@@ -3073,7 +3073,6 @@ export class IModelHost {
 export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     appAssetsDir?: LocalDirName;
-    // @beta (undocumented)
     authorizationClient?: AuthorizationClient;
     // (undocumented)
     cacheDir?: LocalDirName;
@@ -3112,7 +3111,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
 // @public
 export interface IModelHostOptions {
     appAssetsDir?: LocalDirName;
-    // @beta
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;

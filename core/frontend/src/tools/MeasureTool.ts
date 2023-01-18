@@ -903,8 +903,8 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       this._orientationValue = updatedValue.value;
       if (!this._orientationValue)
         return false;
-      await this.onReinitialize();
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: MeasureAreaByPointsTool._orientationName, value: this._orientationValue });
+      await this.onReinitialize();
       return true;
     }
     return false;

@@ -17,7 +17,7 @@ public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
-beta;AuthorizationClient
+public;AuthorizationClient
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
 public;AuxCoordSystemProps 
@@ -126,6 +126,7 @@ public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
 public;CodeScopeSpec
 public;CodeSpec
+public;CodeSpecProperties
 public;ColorByName:
 public;ColorDef
 public;ColorDefProps = number
@@ -278,8 +279,8 @@ internal;FormDataCommon
 public;FresnelSettings
 public;FresnelSettingsProps
 public;Frustum
-internal;FrustumPlanes
-internal;FrustumPlanes
+public;FrustumPlanes
+public;FrustumPlanes
 public;FunctionalElementProps 
 public;GeocentricTransform 
 public;GeocentricTransformProps

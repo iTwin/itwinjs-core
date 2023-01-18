@@ -13,6 +13,20 @@ import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
 import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, TileTreeReference } from "../internal";
 
+/** Position of a map-layer in the display style's map (i.e. background/overlay map)
+ * @internal */
+export interface MapLayerIndex {
+  /** True if map-layer is part of [[DisplayStyleState]]'s overlay map, otherwise map-layer is part of [[DisplayStyleState]]'s background map
+  * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
+  isOverlay: boolean;
+
+  /** Index of the map-layer in [[DisplayStyleState]]'s background/overlay map
+   * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
+  index: number;
+}
+
 /** @internal */
 export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   public readonly backgroundMap: MapTileTreeReference;
@@ -86,6 +100,27 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   public resetMapLayer(index: number, isOverlay: boolean) {
     const imageryTreeRef = isOverlay ? this.overlayMap.getLayerImageryTreeRef(index) : this.backgroundMap.getLayerImageryTreeRef(index);
     imageryTreeRef?.resetTreeOwner();
+  }
+
+  /** Return a list of map-layers indexes matching a given MapTile tree Id and a layer imagery tree id.
+   * @internal
+   */
+  public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
+    const layers = new Array<MapLayerIndex>();
+    if (mapTreeId === this.backgroundMap.treeOwner.tileTree?.id) {
+      for (let i = 0; i < this.backgroundMap.layerSettings.length; i++) {
+        if (this.backgroundMap.getLayerImageryTreeRef(i)?.treeOwner.tileTree?.id === layerTreeId) {
+          layers.push({index: i, isOverlay:false});
+        }
+      }
+    } else if (mapTreeId === this.overlayMap.treeOwner.tileTree?.id) {
+      for (let i = 0; i < this.overlayMap.layerSettings.length; i++) {
+        if (this.overlayMap.getLayerImageryTreeRef(i)?.treeOwner.tileTree?.id === layerTreeId) {
+          layers.push({index: i, isOverlay:true});
+        }
+      }
+    }
+    return layers;
   }
 
   /** @internal */

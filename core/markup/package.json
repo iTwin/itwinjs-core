@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-markup",
-  "version": "3.6.0-dev.36",
+  "version": "3.6.0-dev.50",
   "description": "iTwin.js markup package",
   "main": "lib/cjs/core-markup.js",
   "module": "lib/esm/core-markup.js",
@@ -42,10 +42,10 @@
     "@svgdotjs/svg.js": "3.0.13"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.6.0-dev.36",
-    "@itwin/core-common": "workspace:^3.6.0-dev.36",
-    "@itwin/core-frontend": "workspace:^3.6.0-dev.36",
-    "@itwin/core-geometry": "workspace:^3.6.0-dev.36"
+    "@itwin/core-bentley": "workspace:^3.6.0-dev.50",
+    "@itwin/core-common": "workspace:^3.6.0-dev.50",
+    "@itwin/core-frontend": "workspace:^3.6.0-dev.50",
+    "@itwin/core-geometry": "workspace:^3.6.0-dev.50"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

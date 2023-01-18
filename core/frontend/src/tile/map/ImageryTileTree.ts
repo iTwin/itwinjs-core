@@ -15,7 +15,7 @@ import { RenderMemory } from "../../render/RenderMemory";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import {
-  MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
+  MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTileTreeScaleRangeVisibility, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
   TileTreeSupplier,
 } from "../internal";
@@ -53,9 +53,16 @@ export class ImageryMapTile extends RealityTile {
 
   public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
-    if (this.isLeaf || (this.rectangle.xLength() / this.maximumSize) < drapePixelSize || this._anyChildNotFound) {
-      if (this.isDisplayable && !this.isNotFound && !this.isOutOfLodRange)
+    const isSmallerThanDrape = (this.rectangle.xLength() / this.maximumSize) < drapePixelSize;
+    if (  this.isLeaf           // Include leaves so tiles get stretched past max LOD levels.
+      || isSmallerThanDrape
+      || this._anyChildNotFound) {
+      if (this.isOutOfLodRange) {
         drapeTiles.push(this);
+        this.setIsReady();
+      } else {
+        drapeTiles.push(this);
+      }
       return TileTreeLoadStatus.Loaded;
     }
 
@@ -139,6 +146,50 @@ export class ImageryMapTile extends RealityTile {
   public override dispose() {
     this._mapTileUsageCount = 0;
     super.dispose();
+  }
+}
+
+/** Object that holds various state values for an ImageryTileTree
+ * @internal */
+export class ImageryTileTreeState {
+  private _scaleRangeVis: MapTileTreeScaleRangeVisibility;
+
+  constructor() {
+    this._scaleRangeVis = MapTileTreeScaleRangeVisibility.Unknown;
+  }
+
+  /** Get the scale range visibility of the imagery tile tree.
+   * @returns the scale range visibility of the imagery tile tree.
+   */
+  public getScaleRangeVisibility() {return this._scaleRangeVis;}
+
+  /** Makes a deep copy of the current object.
+   */
+  public clone() {
+    const clone = new ImageryTileTreeState();
+    clone._scaleRangeVis = this._scaleRangeVis;
+    return clone;
+  }
+
+  /** Reset the scale range visibility of imagery tile tree (i.e. unknown)
+   */
+  public reset() {
+    this._scaleRangeVis = MapTileTreeScaleRangeVisibility.Unknown;
+  }
+
+  /** Sets the scale range visibility of the current imagery tile tree.
+   * The state will be derived based on the previous visibility values:
+   * Initial state: 'Unknown'
+   * The first call will set the state to either: 'Visible' or 'Hidden'.
+   * If subsequent visibility values are not consistent with the first visibility state, the state become 'Partial',
+   * meaning the imagery tree currently contains a mixed of tiles being in range and out of range.
+   */
+  public setScaleRangeVisibility(visible: boolean) {
+    if (this._scaleRangeVis === MapTileTreeScaleRangeVisibility.Unknown) {
+      this._scaleRangeVis = (visible ? MapTileTreeScaleRangeVisibility.Visible : MapTileTreeScaleRangeVisibility.Hidden);
+    } else if ((visible && this._scaleRangeVis === MapTileTreeScaleRangeVisibility.Hidden) || (!visible && this._scaleRangeVis === MapTileTreeScaleRangeVisibility.Visible)) {
+      this._scaleRangeVis = MapTileTreeScaleRangeVisibility.Partial;
+    }
   }
 }
 

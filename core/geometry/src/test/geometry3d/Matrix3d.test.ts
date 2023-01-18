@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+
 import { AxisOrder } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -152,9 +153,11 @@ describe("Matrix3d.Construction", () => {
 describe("Matrix3d.Inverse", () => {
   it("Matrix3d.Inverse", () => {
     const ck = new bsiChecker.Checker();
-    const matrixA = Matrix3d.createRowValues(4, 2, 1,
+    const matrixA = Matrix3d.createRowValues(
+      4, 2, 1,
       -1, 5, 3,
-      0.5, 0.75, 9);
+      0.5, 0.75, 9
+    );
     MatrixTests.checkInverse(ck, matrixA);
     ck.checkpoint("End Matrix3d.Inverse");
     expect(ck.getNumErrors()).equals(0);
@@ -168,6 +171,23 @@ describe("Point3dArray.HelloWorld", () => {
     MatrixTests.checkPointArrays(ck, pointA);
     ck.checkpoint("Point3dArray.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("Matrix3d.isAlmostEqualAllowZRotation", () => {
+  it("Matrix3d.isAlmostEqualAllowZRotation", () => {
+    const thisMatrix = Matrix3d.createRowValues(
+      1, 1, 0,
+      0, 1, 0,
+      0, 0, 1
+    );
+    const otherMatrix = Matrix3d.createRowValues(
+      -1, -1, 0,
+      0, -1, 0,
+      0, 0, 1
+    );
+    const output: boolean = thisMatrix.isAlmostEqualAllowZRotation(otherMatrix);
+    expect(output).equal(true);
   });
 });
 
