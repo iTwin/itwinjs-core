@@ -16,11 +16,16 @@ import { Point4d } from "./geometry4d/Point4d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
 /** Enumeration of the 6 possible orderings of XYZ axis order
+ *
+ * * **Note:** There are 3 axis order with right hand system (XYZ = 0, YZX = 1, ZXY = 2) and 3 axis order with
+ * left hand system (XZY = 4, YXZ = 5, ZYX = 6). Note that AxisOrder is encoding the handedness as well. Cross
+ * product of the i_th axis in an ordering (i=0,1,2), with the i+1_th in that ordering, will produce the i+2_th
+ * axis in that ordering.
  * @public
  */
 export enum AxisOrder {
   /** Right handed system, X then Y then Z */
-  XYZ = 0, // eslint-disable-line @typescript-eslint/no-shadow
+  XYZ = 0, /* eslint-disable-line @typescript-eslint/no-shadow */
   /** Right handed system, Y then Z then X */
   YZX = 1,
   /** Right handed system, Z then X then Y */
@@ -43,7 +48,7 @@ export enum AxisIndex {
   /** 2 axis is index 2 */
   Z = 2,
 }
-/** Standard views.   Used in `Matrix3d.createStandardViewAxes (index: StandardViewIndex, worldToView :boolean)`
+/** Standard views. Used in `Matrix3d.createStandardViewAxes(index: StandardViewIndex, invert: boolean)`
  * @public
  */
 export enum StandardViewIndex {
@@ -59,9 +64,9 @@ export enum StandardViewIndex {
   Front = 5,
   /** negative X to right, Z up */
   Back = 6,
-  /** View towards origin from (-1,-1,1) */
-  Iso = 7,
-  /** View towards origin from (1,-1,1) */
+  /** isometric: view towards origin from (-1,-1,1) */
+  Iso = 7, //
+  /** right isometric: view towards origin from (1,-1,1) */
   RightIso = 8,
 }
 /** Enumeration among choice for how a coordinate transformation should incorporate scaling.
@@ -364,7 +369,7 @@ export class Geometry {
   }
   /**
    * Toleranced equality test, using caller-supplied tolerance.
-   * If no tolerance is given, use smallMetricDistance
+   * If no tolerance is given, use smallMetricDistance.
    */
   public static isDistanceWithinTol(distance: number, tol?: number): boolean {
     if (tol !== undefined)
@@ -638,11 +643,18 @@ export class Geometry {
   public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined {
     return value === targetValue ? undefined : value;
   }
-  /** simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
+  /** Simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
   public static interpolate(a: number, f: number, b: number): number {
     return f <= 0.5 ? a + f * (b - a) : b - (1.0 - f) * (b - a);
   }
-  /** given an axisOrder (e.g. XYZ, YZX, ZXY, XZYLeftHanded etc) and an (integer) offset, resolve to an axis index. */
+  /**
+   * Given an axisOrder (e.g. XYZ, YZX, etc) and an index, returns the axis index at the given index.
+   * * For example, if axisOrder = XYZ, then for index 0 returns X (or axis index 0), for index 1 returns
+   * Y (or axis index 1), and for index 2 returns Z (or axis index 2). For indexes greater than 2 or smaller
+   * than 0, it returns cyclic axis index. See Geometry.cyclic3dAxis for more info.
+   * * Another example: if axisOrder = ZYX, then for index 0 returns Z (or axis index 2), for index 1 returns
+   * Y (or axis index 1), and for index 2 returns X (or axis index 0).
+   * */
   public static axisOrderToAxis(order: AxisOrder, index: number): number {
     const axis = order <= AxisOrder.ZXY ? order + index : (order - AxisOrder.XZY) - index;
     return Geometry.cyclic3dAxis(axis);
