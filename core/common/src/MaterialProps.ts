@@ -94,7 +94,7 @@ export interface RenderMaterialAssetProps {
   specular_color?: RgbFactorProps;
   /** If true, this material has a specular exponent; if undefined, defaults to false */
   HasFinish?: boolean;
-  /** Specular exponent (surface shininess); range is 0 to 128; if undefined, defaults to 15.0 * 0.9 */
+  /** Specular exponent (surface shininess); range is 0 to 128; if undefined, defaults to 13.5 */
   finish?: number;
   /** If true, this material has surface transparency; if undefined, defaults to false */
   HasTransmit?: boolean;
