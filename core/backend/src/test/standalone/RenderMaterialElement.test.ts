@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ImageSourceFormat, IModel, RenderMaterialAssetProps } from "@itwin/core-common";
+import { ImageSourceFormat, IModel, RenderMaterialAssetProps, TextureMapProps } from "@itwin/core-common";
 import { RenderMaterialElement, SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -125,6 +125,20 @@ describe.only("RenderMaterialElement", () => {
           },
         },
       });
+
+      const patternMap: TextureMapProps = {
+        TextureId: textureId,
+        pattern_angle: 1,
+        pattern_u_flip: true,
+        pattern_flip: true,
+        pattern_scale: [-1, 2],
+        pattern_offset: [-2, 1],
+        pattern_scalemode: 3,
+        pattern_mapping: 4,
+        pattern_weight: 0.5,
+      };
+
+      test({ patternMap }, { Map: { Pattern: patternMap } });
     });
 
     it("with normal and pattern maps", () => {
