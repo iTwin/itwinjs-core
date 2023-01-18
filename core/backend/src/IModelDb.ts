@@ -789,7 +789,7 @@ export abstract class IModelDb extends IModel {
    */
   public async importSchemas(schemaFileNames: LocalFileName[]): Promise<void> {
     if (this.isSnapshot || this.isStandalone) {
-      const status = this.nativeDb.importSchemas(schemaFileNames);
+      const status = this.nativeDb.importSchemas(schemaFileNames, true);
       if (DbResult.BE_SQLITE_OK !== status)
         throw new IModelError(status, "Error importing schema");
       this.clearCaches();
@@ -798,7 +798,7 @@ export abstract class IModelDb extends IModel {
 
     await this.acquireSchemaLock();
 
-    const stat = this.nativeDb.importSchemas(schemaFileNames);
+    const stat = this.nativeDb.importSchemas(schemaFileNames, true);
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema");
     }
@@ -817,7 +817,7 @@ export abstract class IModelDb extends IModel {
    */
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
     if (this.isSnapshot || this.isStandalone) {
-      const status = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
+      const status = this.nativeDb.importXmlSchemas(serializedXmlSchemas, true);
       if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Error importing schema");
       }
@@ -827,7 +827,7 @@ export abstract class IModelDb extends IModel {
 
     await this.acquireSchemaLock();
 
-    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
+    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, true);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Error importing schema");
 
@@ -2384,8 +2384,8 @@ export class BriefcaseDb extends IModelDb {
     // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
     await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
     try {
-      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
-      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
+      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, allowDataTransformDuringSchemaUpdate: true }, "Upgraded profile");
+      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, allowDataTransformDuringSchemaUpdate: true }, "Upgraded domain schemas");
     } finally {
       await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
     }
