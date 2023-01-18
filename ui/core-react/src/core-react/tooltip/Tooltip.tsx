@@ -17,13 +17,13 @@ import { RelativePosition } from "@itwin/appui-abstract";
 
 /** Available tooltip placements.
  * @beta
- * @deprecated Use Placement in itwinui-react instead
+ * @deprecated in 3.x. Use Placement in itwinui-react instead
  */
 export type TooltipPlacement = "bottom" | "left" | "right" | "top";
 
 /** Properties for the [[Tooltip]] component
  * @beta
- * @deprecated Use TooltipProps in itwinui-react instead
+ * @deprecated in 3.x. Use TooltipProps in itwinui-react instead
  */
 export interface TooltipProps extends CommonProps {
   /** Tooltip content. */
@@ -38,7 +38,7 @@ export interface TooltipProps extends CommonProps {
 
 /** Component that displays tooltip for a specified target element.
  * @beta
- * @deprecated Use Tooltip in itwinui-react instead
+ * @deprecated in 3.x. Use Tooltip in itwinui-react instead
  */
 export function Tooltip(props: TooltipProps) {
   const { visible, target, placement } = props;

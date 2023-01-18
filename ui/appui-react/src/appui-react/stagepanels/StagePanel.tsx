@@ -42,7 +42,7 @@ import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
  */
 
 /** Properties of a Stage Panel Zone
- * @public @deprecated
+ * @public @deprecated in 3.x.
  */
 export interface StagePanelZoneProps {
   /** Properties for the Widgets in this Zone.
@@ -55,7 +55,7 @@ export interface StagePanelZoneProps {
 }
 
 /** Properties of the Stage Panel Zones
- * @public @deprecated
+ * @public @deprecated in 3.x.
  */
 export interface StagePanelZonesProps {
   /** Properties for the Widgets in the Start section. */
@@ -73,7 +73,7 @@ export interface StagePanelZonesProps {
 export type StagePanelMaxSizeSpec = number | { percentage: number };
 
 /** Properties of a [[StagePanel]] component
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.x. Props of a deprecated component.
  * @public
  */
 export interface StagePanelProps {
@@ -110,7 +110,7 @@ export interface StagePanelProps {
 }
 
 /** Default properties of [[StagePanel]] component.
- * @deprecated Default props of a deprecated component.
+ * @deprecated in 3.x. Default props of a deprecated component.
  * @public
  */
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
@@ -138,7 +138,7 @@ interface StagePanelComponentState {
 }
 
 /** Frontstage Panel React component.
- * @deprecated Use [[StagePanelConfig]] instead.
+ * @deprecated in 3.x. Use [[StagePanelConfig]] instead.
  * @public
  */
 export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {

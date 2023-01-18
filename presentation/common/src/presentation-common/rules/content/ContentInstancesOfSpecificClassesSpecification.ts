@@ -35,7 +35,7 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
    * Tells whether selecting instances from ECClasses specified in [[classes]] and [[excludedClasses]]
    * attributes should be polymorphic or not.
    *
-   * @deprecated Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
+   * @deprecated in 3.x. Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
    */
   handleInstancesPolymorphically?: boolean;
 

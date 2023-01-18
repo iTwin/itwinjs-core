@@ -27,7 +27,7 @@ import { ModalFrontstage } from "./ModalFrontstage";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Interface defining callbacks for widget changes
- * @deprecated
+ * @deprecated in 3.x.
  * @public
  */
 export interface WidgetChangeHandler {
@@ -44,7 +44,7 @@ export interface WidgetChangeHandler {
 }
 
 /** Interface defining callbacks for stage panel changes
- * @deprecated Used in UI1.0 only.
+ * @deprecated in 3.x. Used in UI1.0 only.
  * @public
  */
 export interface StagePanelChangeHandler {
@@ -61,7 +61,7 @@ export interface StagePanelChangeHandler {
 }
 
 /** Interface defining callbacks for ZoneDropTarget changes
- * @deprecated
+ * @deprecated in 3.x.
  * @public
  */
 export interface TargetChangeHandler {
@@ -69,7 +69,7 @@ export interface TargetChangeHandler {
 }
 
 /** Interface defining callbacks for nine zone changes
- * @deprecated Used in UI1.0 only.
+ * @deprecated in 3.x. Used in UI1.0 only.
  * @public
  */
 export interface NineZoneChangeHandler {
@@ -78,7 +78,7 @@ export interface NineZoneChangeHandler {
 }
 
 /** Interface defining a provider for Zone definitions
- * @deprecated Used in UI1.0 only.
+ * @deprecated in 3.x. Used in UI1.0 only.
  * @public
  */
 export interface ZoneDefProvider {
@@ -130,7 +130,7 @@ const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
 ];
 
 /** FrontstageComposer React component.
- * @deprecated
+ * @deprecated in 3.x.
  * @public
  */
 export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState>

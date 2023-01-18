@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[GroupColumn]] component.
- * @deprecated
+ * @deprecated in 3.x.
  * @alpha
  */
 export interface GroupColumnProps extends CommonProps {
@@ -21,7 +21,7 @@ export interface GroupColumnProps extends CommonProps {
 }
 
 /** Tool group column. Used in [[Group]], [[NestedGroup]] components.
- * @deprecated
+ * @deprecated in 3.x.
  * @alpha
  */
 export class GroupColumn extends React.PureComponent<GroupColumnProps> {

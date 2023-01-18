@@ -27,7 +27,7 @@ import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
 import { ZoneDef, ZoneState } from "./ZoneDef";
 
 /** Enum for [[Zone]] Location.
- * @public @deprecated
+ * @public @deprecated in 3.x.
  */
 export enum ZoneLocation {
   TopLeft = 1,
@@ -41,7 +41,7 @@ export enum ZoneLocation {
 }
 
 /** Properties of a [[Zone]] component
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.x. Props of a deprecated component.
  * @public
  */
 export interface ZoneProps extends CommonProps {
@@ -101,7 +101,7 @@ export function getStableWidgetProps<T extends { id?: string }>(widgetProps: T, 
 
 /** Zone React component.
  * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
- * @deprecated Use [[WidgetConfig]] or [[StagePanelConfig]] instead.
+ * @deprecated in 3.x. Use [[WidgetConfig]] or [[StagePanelConfig]] instead.
  * @public
  */
 export class Zone extends React.Component<ZoneProps> {

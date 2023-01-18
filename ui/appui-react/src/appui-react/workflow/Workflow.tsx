@@ -17,7 +17,7 @@ import { Task, TaskManager } from "./Task";
 
 /** Properties for a [[Workflow]].
  * @internal
- * @deprecated
+ * @deprecated in 3.x.
  */
 export interface WorkflowProps extends ItemProps {
   id: string;
@@ -28,7 +28,7 @@ export interface WorkflowProps extends ItemProps {
 
 /** Workflow Properties List definition.
  * @internal
- * @deprecated
+ * @deprecated in 3.x.
  */
 export interface WorkflowPropsList {
   defaultWorkflowId: string;
@@ -38,7 +38,7 @@ export interface WorkflowPropsList {
 /** Workflow class.
  * A Workflow is a defined sequence of tasks used to accomplish a goal.
  * @internal
- * @deprecated
+ * @deprecated in 3.x.
  */
 export class Workflow extends ItemDefBase {
   /** Id of the Workflow */
@@ -144,7 +144,7 @@ export class Workflow extends ItemDefBase {
 
 /** Workflow Activated Event Args class.
  * @internal
- * @deprecated
+ * @deprecated in 3.x.
  */
 export interface WorkflowActivatedEventArgs {
   workflowId?: string;
@@ -153,13 +153,13 @@ export interface WorkflowActivatedEventArgs {
 
 /** Workflow Activated Event class.
  * @internal
- * @deprecated
+ * @deprecated in 3.x.
  */
 export class WorkflowActivatedEvent extends UiEvent<WorkflowActivatedEventArgs> { }
 
 /** Task Activated Event Args class.
  * @internal
- * @deprecated
+ * @deprecated in 3.x.
  */
 export interface TaskActivatedEventArgs {
   taskId?: string;
@@ -171,13 +171,13 @@ export interface TaskActivatedEventArgs {
 
 /** Task Activated Event class.
  * @internal
- * @deprecated
+ * @deprecated in 3.x.
  */
 export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> { }
 
 /** Workflow Manager class.
  * @internal
- * @deprecated
+ * @deprecated in 3.x.
  */
 export class WorkflowManager {
   private static _workflows: Map<string, Workflow> = new Map<string, Workflow>();

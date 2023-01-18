@@ -14,15 +14,15 @@ import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
  */
 export interface StatusFieldProps extends CommonProps {
   /** Indicates whether the StatusBar is in footer mode
-   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+   * @deprecated in 3.x. In upcoming version, widget mode will be removed. Consider this parameter to always be true.
   */
   isInFooterMode?: boolean;
   /** Function called when the widget is opened or closed.
-   * @deprecated In upcoming versions, this will be removed. Field will have the freedom of handling their dialog behavior however they like.
+   * @deprecated in 3.x. In upcoming versions, this will be removed. Field will have the freedom of handling their dialog behavior however they like.
    */
   onOpenWidget?: (widget: StatusBarFieldId) => void;
   /** Field Id for open widgets
-   * @deprecated In upcoming versions, this will be removed. Field will have the freedom of handling their dialog behavior however they like.
+   * @deprecated in 3.x. In upcoming versions, this will be removed. Field will have the freedom of handling their dialog behavior however they like.
    */
   openWidget?: StatusBarFieldId;
 }

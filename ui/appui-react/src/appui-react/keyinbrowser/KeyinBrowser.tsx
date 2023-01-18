@@ -17,7 +17,7 @@ import { UiFramework } from "../UiFramework";
 import { SpecialKey } from "@itwin/appui-abstract";
 
 /** Data for each key-in.
- @deprecated */
+ @deprecated in 3.x. */
 interface KeyinBrowserData extends AutoSuggestData {
   // AutoSuggestData.value is the toolId
   // AutoSuggestData.label is the keyin
@@ -27,7 +27,7 @@ interface KeyinBrowserData extends AutoSuggestData {
 }
 
 /** State of key-in browser.
- @deprecated */
+ @deprecated in 3.x. */
 interface KeyinBrowserState {
   keyins: KeyinBrowserData[];
   currentToolId: string | undefined;
@@ -35,7 +35,7 @@ interface KeyinBrowserState {
 }
 
 /** Arguments for [[KeyinBrowserProps]] onExecute callback.
- * @beta @deprecated
+ * @beta @deprecated in 3.x.
  */
 export interface KeyinBrowserExecuteArgs {
   /** Id of the tool that was run */
@@ -47,7 +47,7 @@ export interface KeyinBrowserExecuteArgs {
 }
 
 /** Properties of the [[KeyinBrowser]] component.
- * @beta @deprecated
+ * @beta @deprecated in 3.x.
  */
 export interface KeyinBrowserProps extends CommonProps {
   /** Function called after the key-in is executed */
@@ -58,7 +58,7 @@ export interface KeyinBrowserProps extends CommonProps {
 
 /**
  * Component used to allow users to select, provide arguments, and execute a key-in.
- * @beta @deprecated
+ * @beta @deprecated in 3.x.
  */
 export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBrowserState> {
   private _toolIdLabel = UiFramework.translate("keyinbrowser.keyin");

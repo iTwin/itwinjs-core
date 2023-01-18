@@ -495,7 +495,7 @@ export interface ContentLayoutComponentProps extends CommonProps {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
   /**
-  * @deprecated In upcoming version, widget mode will be removed and footer mode will always be true.
+  * @deprecated in 3.x. In upcoming version, widget mode will be removed and footer mode will always be true.
   */
   isInFooterMode?: boolean;
 }

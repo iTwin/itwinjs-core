@@ -59,7 +59,7 @@ export interface WidgetEventArgs {
 export enum WidgetType {
   Tool,
   Navigation,
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   FreeFrom,
   Rectangular,
   ToolSettings,
@@ -67,7 +67,7 @@ export enum WidgetType {
 }
 
 /** Properties for a Toolbar Widget.
- * @deprecated
+ * @deprecated in 3.x.
  * @public
  */
 export interface ToolbarWidgetProps extends WidgetProps { // eslint-disable-line deprecation/deprecation
@@ -79,7 +79,7 @@ export interface ToolbarWidgetProps extends WidgetProps { // eslint-disable-line
 }
 
 /** Properties for a Tool Widget.
- * @deprecated
+ * @deprecated in 3.x.
  * @public
  */
 export interface ToolWidgetProps extends ToolbarWidgetProps { // eslint-disable-line deprecation/deprecation
@@ -87,7 +87,7 @@ export interface ToolWidgetProps extends ToolbarWidgetProps { // eslint-disable-
 }
 
 /** Properties for a Navigation Widget.
- * @deprecated
+ * @deprecated in 3.x.
  * @public
  */
 export interface NavigationWidgetProps extends ToolbarWidgetProps { // eslint-disable-line deprecation/deprecation
@@ -95,13 +95,13 @@ export interface NavigationWidgetProps extends ToolbarWidgetProps { // eslint-di
 }
 
 /** Union of all Widget properties.
- * @deprecated
+ * @deprecated in 3.x.
  * @public
  */
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps; // eslint-disable-line deprecation/deprecation
 
 /** Prototype for WidgetDef StateFunc (UI 1.0 only deprecate ???)
- * @deprecated Used in UI1.0 only.
+ * @deprecated in 3.x. Used in UI1.0 only.
  * @public
  */
 export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;
@@ -184,18 +184,18 @@ export class WidgetDef {
   public get id(): string { return this._id; }
   public get classId(): string | ConfigurableUiControlConstructor | undefined { return this._classId; }
   public get priority(): number { return this._priority; }
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   public get isFreeform(): boolean { return this._isFreeform; }
   public get isFloatingStateSupported(): boolean { return this._isFloatingStateSupported; }
   public get isFloatingStateWindowResizable(): boolean { return this._isFloatingStateWindowResizable; }
   public get isToolSettings(): boolean { return this._isToolSettings; }
   public get isStatusBar(): boolean { return this._isStatusBar; }
   public get stateChanged(): boolean { return this._stateChanged; }
-  /** @deprecated UI1.0 is deprecated. */
+  /** @deprecated in 3.x. UI1.0 is deprecated. */
   public get fillZone(): boolean { return this._fillZone; }
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   public get syncEventIds(): string[] { return this._syncEventIds; }
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; } // eslint-disable-line deprecation/deprecation
   public get applicationData(): any | undefined { return this._applicationData; }
   public get isFloating(): boolean { return this.state === WidgetState.Floating; }
@@ -231,7 +231,7 @@ export class WidgetDef {
 
   constructor();
 
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   constructor(props: WidgetProps); // eslint-disable-line @typescript-eslint/unified-signatures, deprecation/deprecation
 
   /** @internal */
@@ -243,7 +243,7 @@ export class WidgetDef {
       WidgetDef.initializeFromWidgetProps(widgetProps, this); // eslint-disable-line deprecation/deprecation
   }
 
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) { // eslint-disable-line deprecation/deprecation
     me._initialProps = widgetProps;
 
@@ -325,14 +325,14 @@ export class WidgetDef {
     me.setUpSyncSupport(widgetProps); // eslint-disable-line deprecation/deprecation
   }
 
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   public static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps { // eslint-disable-line deprecation/deprecation
     const widgetProps: WidgetProps = abstractWidgetProps; // eslint-disable-line deprecation/deprecation
     widgetProps.element = abstractWidgetProps.getWidgetContent();
     return widgetProps;
   }
 
-  /** @deprecated */
+  /** @deprecated in 3.x. */
   public setUpSyncSupport(props: WidgetProps) { // eslint-disable-line deprecation/deprecation
     if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) { // eslint-disable-line deprecation/deprecation
       this._syncEventIds = props.syncEventIds;

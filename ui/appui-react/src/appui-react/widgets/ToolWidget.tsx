@@ -18,7 +18,7 @@ import { UiFramework } from "../UiFramework";
 
 /** Definition of a Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  * @public
- * @deprecated use [[ToolWidgetComposer]] instead
+ * @deprecated in 3.x. use [[ToolWidgetComposer]] instead
  */
 export class ToolWidgetDef extends ToolbarWidgetDefBase { // eslint-disable-line deprecation/deprecation
   private _appButton: CommandItemDef | undefined;
@@ -64,7 +64,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase { // eslint-disable-line
 
 /** Properties for the [[ToolWidget]] React component.
  * @public
- * @deprecated use [[ToolWidgetComposer]] instead
+ * @deprecated in 3.x. use [[ToolWidgetComposer]] instead
  */
 export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps { // eslint-disable-line deprecation/deprecation
   button?: React.ReactNode;
@@ -81,7 +81,7 @@ interface ToolWidgetState {
 
 /** ToolWidget React component.
  * @public
- * @deprecated use [[ToolWidgetComposer]] instead
+ * @deprecated in 3.x. use [[ToolWidgetComposer]] instead
  */
 export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> { // eslint-disable-line deprecation/deprecation
 

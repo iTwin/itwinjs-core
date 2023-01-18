@@ -9,7 +9,7 @@
 /**
  * An option of how class grouping should work in a component.
  * @beta
- * @deprecated Was moved to `@itwin/tree-widget-react` package.
+ * @deprecated in 3.x. Was moved to `@itwin/tree-widget-react` package.
  */
 export enum ClassGroupingOption {
   /** Class grouping is disabled */
@@ -23,7 +23,7 @@ export enum ClassGroupingOption {
 /**
  * Data structure that describes info used to filter visibility tree.
  * @alpha
- * @deprecated Was moved to `@itwin/tree-widget-react` package.
+ * @deprecated in 3.x. Was moved to `@itwin/tree-widget-react` package.
  */
 export interface VisibilityTreeFilterInfo {
   filter: string;

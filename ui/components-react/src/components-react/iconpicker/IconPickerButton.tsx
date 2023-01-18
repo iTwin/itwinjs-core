@@ -14,7 +14,7 @@ import { RelativePosition } from "@itwin/appui-abstract";
 import { CommonProps, Popup, SvgSprite } from "@itwin/core-react";
 
 /** Properties for the [[IconItem]] React component
- * @alpha @deprecated
+ * @alpha @deprecated in 3.x.
  */
 interface IconItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** icon specification */
@@ -24,7 +24,7 @@ interface IconItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, C
 }
 
 /** IconItem Functional component
- * @alpha @deprecated
+ * @alpha @deprecated in 3.x.
  */
 // istanbul ignore next
 class IconItem extends React.PureComponent<IconItemProps> {
@@ -56,7 +56,7 @@ class IconItem extends React.PureComponent<IconItemProps> {
 }
 
 /** Properties for the [[IconPicker]] React component
- * @alpha @deprecated
+ * @alpha @deprecated in 3.x.
  */
 // istanbul ignore next
 export interface IconPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
@@ -83,7 +83,7 @@ interface IconPickerState {
 }
 
 /** IconPickerButton component
- * @alpha @deprecated
+ * @alpha @deprecated in 3.x.
  */
 // istanbul ignore next
 export class IconPickerButton extends React.PureComponent<IconPickerProps, IconPickerState> {

@@ -16,7 +16,7 @@ import { DialogButtonType } from "@itwin/appui-abstract";
 import { Checkbox } from "@itwin/itwinui-react";
 
 /** Properties for the [[ShowHideDialog]] component used in the [[Table]] to show/hide columns.
- * @public @deprecated will be removed when deprecated [[Table]] component is removed.
+ * @public @deprecated in 3.x. will be removed when deprecated [[Table]] component is removed.
  */
 export interface ShowHideDialogProps<T extends ShowHideID> extends GlobalDialogProps {
   /** key-label pair list for id's to be shown/hidden, and an accompanying label. */
@@ -34,7 +34,7 @@ interface ShowHideDialogState<T extends ShowHideID> {
 
 /**
  * [Dialog]($core-react) Component used to toggle show/hide table columns, given through items prop, through a list of checkboxes.
- * @public @deprecated will be removed when deprecated [[Table]] component is removed.
+ * @public @deprecated in 3.x. will be removed when deprecated [[Table]] component is removed.
  */
 export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
   /** @internal */
