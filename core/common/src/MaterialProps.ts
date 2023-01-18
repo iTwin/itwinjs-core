@@ -72,8 +72,10 @@ export interface TextureMapProps {
 export enum NormalMapFlags {
   /** No special flags. */
   None = 0,
-  /** Indicates that the Y component of each vector - stored in the texture's green channel - should be inverted. */
-  InvertGreenChannel = 1 << 0,
+  /** Indicates that the Y component of each vector - stored in the texture's green channel - points upward along the positive Y axis and should
+   * be negated. By default it points downward.
+   */
+  GreenUp = 1 << 0,
 }
 
 /** Describes how to apply [normal mapping](https://en.wikipedia.org/wiki/Normal_mapping) to a surface material.

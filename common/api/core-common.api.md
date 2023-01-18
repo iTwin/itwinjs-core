@@ -5764,13 +5764,13 @@ export class NonUniformColor {
 
 // @public
 export enum NormalMapFlags {
-    InvertGreenChannel = 1,
+    GreenUp = 1,
     None = 0
 }
 
 // @beta
 export interface NormalMapParams {
-    greenDown?: boolean;
+    greenUp?: boolean;
     normalMap?: RenderTexture;
     scale?: number;
 }

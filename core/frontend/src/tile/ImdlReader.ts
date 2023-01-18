@@ -146,7 +146,7 @@ interface ImdlTextureMapping {
   /** @see [NormalMapParams]($common). */
   normalMapParams?: {
     textureName?: string;
-    greenDown?: boolean;
+    greenUp?: boolean;
     scale?: number;
   };
 }
@@ -741,7 +741,7 @@ export class ImdlReader {
       if (normalTexName.length === 0 || undefined !== (normalMap = this._namedTextures[normalTexName]?.renderTexture)) {
         textureMapping.normalMapParams = {
           normalMap,
-          greenDown: JsonUtils.asBool(normalMapJson.greenDown),
+          greenUp: JsonUtils.asBool(normalMapJson.greenUp),
           scale: JsonUtils.asDouble(normalMapJson.scale, 1),
         };
       }
