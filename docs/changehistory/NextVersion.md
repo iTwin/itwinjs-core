@@ -103,6 +103,8 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 
 [ScreenViewport.setEventController]($frontend) was only ever intended to be used by [ViewManager]($frontend). In the unlikely event that you are using it for some (probably misguided) purpose, it will continue to behave as before, but it will be removed in a future major version.
 
+[NativeApp.requestDownloadBriefcase]($frontend) parameter `progress` is deprecated in favor of `progressCallback` in [DownloadBriefcaseOptions]($frontend). Similarly, `progressCallback` in [PullChangesOptions]($frontend) is now deprecated and should be replaced with `downloadProgressCallback` in [PullChangesOptions]($frontend). Both new variables are of type [OnDownloadProgress]($frontend), which more accurately represents information reported during downloads.
+
 ### @itwin/appui-react
 
 [ModelsTree]($appui-react) and [CategoryTree]($appui-react) were moved to [@itwin/tree-widget-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/tree-widget) package and deprecated in `@itwin/appui-react` packages. They will be removed from `@itwin/appui-react` in future major version.
