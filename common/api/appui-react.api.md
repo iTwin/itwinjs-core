@@ -146,7 +146,6 @@ import { StagePanelSection as StagePanelSection_2 } from '@itwin/appui-abstract'
 import { StagePanelType } from '@itwin/appui-layout-react';
 import { StageUsage as StageUsage_2 } from '@itwin/appui-abstract';
 import { StandardViewId } from '@itwin/core-frontend';
-import { StatusBarItemId as StatusBarItemId_2 } from '@itwin/appui-abstract';
 import { StatusBarItemsManager as StatusBarItemsManager_2 } from '@itwin/appui-abstract';
 import { StatusBarLabelSide as StatusBarLabelSide_2 } from '@itwin/appui-abstract';
 import { StatusBarSection as StatusBarSection_2 } from '@itwin/appui-abstract';
@@ -5632,9 +5631,6 @@ export interface StatusBarIndicatorProps extends CommonProps {
 export interface StatusBarItem extends AbstractStatusBarCustomItem {
     readonly reactNode: React_2.ReactNode;
 }
-
-// @beta
-export type StatusBarItemId = StatusBarItemId_2;
 
 // @internal
 export interface StatusBarItemProps extends CommonProps {

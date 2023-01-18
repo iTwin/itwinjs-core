@@ -646,7 +646,6 @@ beta;StatusBarIndicator(props: StatusBarIndicatorProps): JSX.Element
 beta;StatusBarIndicatorProps 
 public;StatusBarItem 
 deprecated;StatusBarItem 
-beta;StatusBarItemId = StatusBarItemId_2
 internal;StatusBarItemProps 
 beta;StatusBarItemsManager 
 deprecated;StatusBarItemsManager 

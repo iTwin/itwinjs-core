@@ -41,11 +41,6 @@ export type StatusBarLabelSide = UIA_StatusBarLabelSide; // eslint-disable-line 
  */
 export const StatusBarLabelSide = UIA_StatusBarLabelSide; // eslint-disable-line @typescript-eslint/no-redeclare, deprecation/deprecation
 
-/** Type for StatusBar Item Id
- * @beta
- */
-export type StatusBarItemId = UIA_StatusBarItemId; // eslint-disable-line deprecation/deprecation
-
 /** Describes the data needed to insert a button into the status bar.
  * @beta
  */
