@@ -2589,8 +2589,15 @@ export type DownloadBriefcaseId = {
 // @public
 export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
     fileName?: string;
+    progressCallback?: OnDownloadProgress;
     progressInterval?: number;
 };
+
+// @public
+export interface DownloadProgressInfo {
+    loaded: number;
+    total: number;
+}
 
 // @internal
 export interface DrawClipOptions {
@@ -3429,7 +3436,7 @@ export class FuzzySearchResults<T> implements Iterable<T> {
     results: any[];
 }
 
-// @alpha
+// @beta
 export interface GenericAbortSignal {
     addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
     removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
@@ -7187,6 +7194,8 @@ export class NativeApp {
     // @internal (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
+    static requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion): Promise<BriefcaseDownloader>;
+    // @deprecated (undocumented)
     static requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // @internal (undocumented)
     static shutdown(): Promise<void>;
@@ -7404,6 +7413,9 @@ export interface OldTextureImage {
     format: ImageSourceFormat;
     image: HTMLImageElement;
 }
+
+// @public
+export type OnDownloadProgress = (progress: DownloadProgressInfo) => void;
 
 // @public
 export type OnFlashedIdChangedEventArgs = {
@@ -7926,8 +7938,10 @@ export interface PublisherProductInfo {
 
 // @public
 export interface PullChangesOptions {
-    // @alpha
+    // @beta
     abortSignal?: GenericAbortSignal;
+    downloadProgressCallback?: OnDownloadProgress;
+    // @deprecated
     progressCallback?: ProgressCallback;
     progressInterval?: number;
 }
