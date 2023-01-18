@@ -61,6 +61,27 @@ describe.only("RenderMaterialElement", () => {
     });
 
     it("with custom values", () => {
+      const params: Omit<RenderMaterialElement.Params, "paletteName"> = {
+        color: [1, 0, 0],
+        specularColor: [0, 1, 0],
+        finish: 21,
+        transmit: 0.5,
+        diffuse: 0.2,
+        specular: 0.8,
+        reflect: 0.5,
+        reflectColor: [0, 0, 1],
+      };
+
+      test(params, {
+        HasBaseColor: true, color: params.color,
+        HasSpecularColor: true, specular_color: params.specularColor,
+        HasFinish: true, finish: params.finish,
+        HasTransmit: true, transmit: params.transmit,
+        HasDiffuse: true, diffuse: params.diffuse,
+        HasSpecular: true, specular: params.specular,
+        HasReflect: true, reflect: params.reflect,
+        HasReflectColor: true, reflect_color: params.reflectColor,
+      });
     });
 
     it("with pattern map", () => {
