@@ -98,7 +98,11 @@ export class RenderMaterialElement extends DefinitionElement {
       // If both normal and pattern map are present, their texture mapping modes, angles, scales, etc are expected to match.
       type TexMap = Omit<TextureMapProps, "TextureId">;
       function choose<K extends keyof TexMap>(obj: TexMap, key: K): void {
-        obj[key] = params.patternMap ? params.patternMap[key] : (params.normalMap ? params.normalMap[key] : undefined);
+        const pat = params.patternMap;
+        if (pat && undefined !== pat[key])
+          obj[key] = pat[key];
+        else if (params.normalMap && undefined !== params.normalMap[key])
+          obj[key] = params.normalMap[key];
       }
 
       const baseProps: TexMap = { };
@@ -121,7 +125,6 @@ export class RenderMaterialElement extends DefinitionElement {
         maps.Normal = {
           ...params.normalMap,
           ...baseProps,
-          TextureId: params.normalMap.TextureId ?? Id64.invalid,
           NormalFlags: flags,
         };
       }
@@ -207,8 +210,7 @@ export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
     public reflectColor?: number[];
     /** If defined, specifies the pattern mapping. */
     public patternMap?: TextureMapProps;
-    public normalMap?: Omit<NormalMapProps, "TextureId"> & {
-      TextureId?: Id64String;
+    public normalMap?: NormalMapProps & {
       scale?: number;
       invertGreen?: boolean;
     };

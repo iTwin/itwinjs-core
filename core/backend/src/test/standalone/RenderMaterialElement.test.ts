@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ImageSourceFormat, IModel, RenderMaterialAssetProps, TextureMapProps } from "@itwin/core-common";
+import { ImageSourceFormat, IModel, NormalMapProps, RenderMaterialAssetProps, TextureMapProps } from "@itwin/core-common";
 import { RenderMaterialElement, SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -112,7 +112,7 @@ describe.only("RenderMaterialElement", () => {
       return textureId;
     }
 
-    it("with pattern map", () => {
+    it("pattern map with default values", () => {
       const textureId = insertTexture();
       test({
         patternMap: {
@@ -125,9 +125,11 @@ describe.only("RenderMaterialElement", () => {
           },
         },
       });
+    });
 
+    it("pattern map with custom values", () => {
       const patternMap: TextureMapProps = {
-        TextureId: textureId,
+        TextureId: insertTexture(),
         pattern_angle: 1,
         pattern_u_flip: true,
         pattern_flip: true,
@@ -141,10 +143,75 @@ describe.only("RenderMaterialElement", () => {
       test({ patternMap }, { Map: { Pattern: patternMap } });
     });
 
-    it("with normal and pattern maps", () => {
+    it("normal and pattern maps with default values", () => {
+      const normalId = insertTexture();
+      const patternId = insertTexture();
+      expect(normalId).not.to.equal(patternId);
+
+      test({
+        patternMap: { TextureId: patternId },
+        normalMap: { TextureId: normalId },
+      }, {
+        Map: {
+          Pattern: { TextureId: patternId },
+          Normal: {
+            TextureId: normalId,
+            NormalFlags: 0,
+          },
+        },
+      });
     });
 
-    it("with normal map", () => {
+    it("merges mapping params from normal and pattern maps", () => {
+      const normalId = insertTexture();
+      const patternId = insertTexture();
+      expect(normalId).not.to.equal(patternId);
+
+      const patternMap: TextureMapProps = {
+        TextureId: patternId,
+        pattern_scale: [-1, 2],
+        pattern_weight: 0.5,
+      };
+
+      const normalMap: NormalMapProps = {
+        TextureId: normalId,
+        pattern_angle: 0.8,
+        pattern_flip: true,
+        pattern_weight: 1.5,
+      };
+
+      const sharedProps: Omit<TextureMapProps, "TextureId"> = {
+        pattern_scale: patternMap.pattern_scale,
+        pattern_weight: patternMap.pattern_weight,
+        pattern_angle: normalMap.pattern_angle,
+        pattern_flip: normalMap.pattern_flip,
+      };
+
+      test({ patternMap, normalMap }, {
+        Map: {
+          Pattern: {
+            ...sharedProps,
+            TextureId: patternId,
+          },
+          Normal: {
+            ...sharedProps,
+            NormalFlags: 0,
+            TextureId: normalId,
+          },
+        },
+      });
+    });
+
+    it("normal map with default values", () => {
+    });
+
+    it("normal map with inverted green channel", () => {
+    });
+
+    it("normal map with scale", () => {
+    });
+
+    it("normal map with flags", () => {
     });
   });
 });
