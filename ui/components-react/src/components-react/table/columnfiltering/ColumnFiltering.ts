@@ -12,7 +12,7 @@ import { RowItem } from "../TableDataProvider";
 /* eslint-disable deprecation/deprecation */
 
 /** Operator used in FilterDescriptor
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this enum.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this enum.
  * @public
  */
 export enum FilterOperator {
@@ -43,7 +43,7 @@ export enum FilterOperator {
 }
 
 /** Logical operator used for filter descriptor composition
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this enum.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this enum.
  * @public
  */
 export enum FilterCompositionLogicalOperator {
@@ -52,7 +52,7 @@ export enum FilterCompositionLogicalOperator {
 }
 
 /** FilterableTable contains the properties and methods provided by a filterable Table.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface FilterableTable {
@@ -64,7 +64,7 @@ export interface FilterableTable {
 }
 
 /** Represents a column that is filterable.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface FilterableColumn {
@@ -100,7 +100,7 @@ export interface FilterableColumn {
 }
 
 /** A filtering abstraction that knows how to create predicate filtering expression.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface FilterDescriptor {
@@ -122,7 +122,7 @@ export interface FilterDescriptor {
 }
 
 /** An abstraction for all filter descriptors that have an operator and a value
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface OperatorValueFilterDescriptor extends FilterDescriptor {
@@ -143,7 +143,7 @@ export interface OperatorValueFilterDescriptor extends FilterDescriptor {
 }
 
 /** Represents the distinct filter descriptor of a column filter descriptor.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
@@ -169,7 +169,7 @@ export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
 }
 
 /** Represents the field filter descriptor of a column filter descriptor.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface FieldFilterDescriptor extends FilterDescriptor {
@@ -191,7 +191,7 @@ export interface FieldFilterDescriptor extends FilterDescriptor {
 }
 
 /** Represents a column filter descriptor associated with a specific column.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface ColumnFilterDescriptor extends FilterDescriptor {
@@ -203,7 +203,7 @@ export interface ColumnFilterDescriptor extends FilterDescriptor {
 }
 
 /** Distinct Value for Table filtering purposes
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface TableDistinctValue {
@@ -212,7 +212,7 @@ export interface TableDistinctValue {
 }
 
 /** A set of distinct values for a column.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export class DistinctValueCollection {
@@ -228,7 +228,7 @@ export class DistinctValueCollection {
 
 /** Represents a composite filtering abstraction which has a collection of
  * filter descriptors combined together by a logical operator.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface CompositeFilterDescriptor extends FilterDescriptor {
@@ -240,7 +240,7 @@ export interface CompositeFilterDescriptor extends FilterDescriptor {
 }
 
 /** Collection of FilterDescriptor objects composed together by a logical operator.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface CompositeFilterDescriptorCollection {
@@ -271,7 +271,7 @@ export interface CompositeFilterDescriptorCollection {
 }
 
 /** Collection of filter descriptors.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterDescriptor> {
@@ -322,14 +322,14 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
 }
 
 /** Collection of filter descriptors.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export class FilterDescriptorCollection extends FilterDescriptorCollectionBase<FilterDescriptor> {
 }
 
 /** Collection of OperatorValue filter descriptors.
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCollectionBase<OperatorValueFilterDescriptor> {

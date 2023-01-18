@@ -18,7 +18,7 @@ import { IPresentationTableDataProvider, PresentationTableDataProvider, Presenta
 /**
  * Data structure holding initialization properties for [[DataProvidersFactory]]
  * @public
- * @deprecated in 3.x. Used by [[DataProvidersFactory]] which is deprecated
+ * @deprecated Used by [[DataProvidersFactory]] which is deprecated
  */
 export interface DataProvidersFactoryProps {
   /** Rulesets' factory to use when creating data providers */
@@ -30,7 +30,7 @@ export interface DataProvidersFactoryProps {
  * specific use cases.
  *
  * @public
- * @deprecated in 3.x. Uses [[PresentationTableDataProvider]] which is deprecated
+ * @deprecated Uses [[PresentationTableDataProvider]] which is deprecated
  */
 export class DataProvidersFactory {
   private _rulesetsFactory: RulesetsFactory;

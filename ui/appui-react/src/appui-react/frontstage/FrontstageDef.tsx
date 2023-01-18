@@ -96,33 +96,33 @@ export class FrontstageDef {
   private _savedWidgetDefs?: SavedWidgets;
 
   public get id(): string { return this._id; }
-  /** @deprecated in 3.x. */
+  /** @deprecated */
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
-  /** @deprecated in 3.x. */
+  /** @deprecated */
   public get defaultContentId(): string { return this._defaultContentId; }
   public get isInFooterMode(): boolean { return this._isInFooterMode; }
-  /** @deprecated in 3.x. */
+  /** @deprecated */
   public get applicationData(): any | undefined { return this._applicationData; }
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
   public get version(): number { return this._version; }
   public get contentGroupProvider(): ContentGroupProvider | undefined { return this._contentGroupProvider; }
   public get floatingContentControls() { return this._floatingContentControls; }
 
-  /** @deprecated in 3.x. Use [[FrontstageDef.contentManipulation]] instead. */
+  /** @deprecated Use [[FrontstageDef.contentManipulation]] instead. */
   public get topLeft(): ZoneDef | undefined { return this._topLeft; }
-  /** @deprecated in 3.x. Use [[FrontstageDef.toolSettings]] instead. */
+  /** @deprecated Use [[FrontstageDef.toolSettings]] instead. */
   public get topCenter(): ZoneDef | undefined { return this._topCenter; }
-  /** @deprecated in 3.x. Use [[FrontstageDef.viewNavigation]] instead. */
+  /** @deprecated Use [[FrontstageDef.viewNavigation]] instead. */
   public get topRight(): ZoneDef | undefined { return this._topRight; }
-  /** @deprecated in 3.x. Use [[FrontstageDef.leftPanel]] instead. */
+  /** @deprecated Use [[FrontstageDef.leftPanel]] instead. */
   public get centerLeft(): ZoneDef | undefined { return this._centerLeft; }
-  /** @deprecated in 3.x. Use [[FrontstageDef.rightPanel]] instead. */
+  /** @deprecated Use [[FrontstageDef.rightPanel]] instead. */
   public get centerRight(): ZoneDef | undefined { return this._centerRight; }
-  /** @deprecated in 3.x. Use [[FrontstageDef.leftPanel]] instead. */
+  /** @deprecated Use [[FrontstageDef.leftPanel]] instead. */
   public get bottomLeft(): ZoneDef | undefined { return this._bottomLeft; }
-  /** @deprecated in 3.x. Use [[FrontstageDef.statusBar]] instead. */
+  /** @deprecated Use [[FrontstageDef.statusBar]] instead. */
   public get bottomCenter(): ZoneDef | undefined { return this._bottomCenter; }
-  /** @deprecated in 3.x. Use [[FrontstageDef.rightPanel]] instead. */
+  /** @deprecated Use [[FrontstageDef.rightPanel]] instead. */
   public get bottomRight(): ZoneDef | undefined { return this._bottomRight; }
 
   /** @beta */
@@ -137,7 +137,7 @@ export class FrontstageDef {
   /** @beta */
   public get topPanel(): StagePanelDef | undefined { return this._topPanel; }
   /** @beta
-   * @deprecated in 3.x. Only topPanel is supported in UI 2.0 */
+   * @deprecated Only topPanel is supported in UI 2.0 */
   public get topMostPanel(): StagePanelDef | undefined { return this._topMostPanel; }
   /** @beta */
   public get leftPanel(): StagePanelDef | undefined { return this._leftPanel; }
@@ -146,7 +146,7 @@ export class FrontstageDef {
   /** @beta */
   public get bottomPanel(): StagePanelDef | undefined { return this._bottomPanel; }
   /** @beta
-   * @deprecated in 3.x. Only bottomPanel is supported in UI 2.0  */
+   * @deprecated Only bottomPanel is supported in UI 2.0  */
   public get bottomMostPanel(): StagePanelDef | undefined { return this._bottomMostPanel; }
 
   public get contentLayoutDef(): ContentLayoutDef | undefined { return this._contentLayoutDef; }
@@ -407,7 +407,7 @@ export class FrontstageDef {
   }
 
   /** Starts the default tool for the Frontstage.
-   * @deprecated in 3.x.
+   * @deprecated
    */
   public startDefaultTool(): void {
     // Start the default tool
@@ -475,7 +475,7 @@ export class FrontstageDef {
   }
 
   /** Gets a [[ZoneDef]] based on a given zone id.
-   * @deprecated in 3.x. UI1.0 is deprecated.
+   * @deprecated UI1.0 is deprecated.
    */
   public getZoneDef(zoneId: number): ZoneDef | undefined {
     let zoneDef;
@@ -516,7 +516,7 @@ export class FrontstageDef {
   }
 
   /** Gets a list of [[ZoneDef]]s.
-   * @deprecated in 3.x. UI1.0 is deprecated.
+   * @deprecated UI1.0 is deprecated.
    */
   public get zoneDefs(): ZoneDef[] {
     const zones = [1, 2, 3, 4, 6, 7, 8, 9];

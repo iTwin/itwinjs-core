@@ -27,7 +27,7 @@ export class FunctionalSchema extends Schema {
     }
   }
 
-  /** @deprecated in 3.x. Use [[schemaFilePath]] and IModelDb.importSchemas instead */
+  /** @deprecated Use [[schemaFilePath]] and IModelDb.importSchemas instead */
   public static async importSchema(iModelDb: IModelDb) {
     if (iModelDb.isBriefcaseDb())
       await iModelDb.acquireSchemaLock();

@@ -34,7 +34,7 @@ const RULESET_MODELS_SEARCH: Ruleset = require("./ModelsTreeSearch.json"); // es
 
 /** Props for [[ModelsTree]] component
  * @public
- * @deprecated in 3.x. Was moved to `@itwin/tree-widget-react` package.
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export interface ModelsTreeProps {
   /**
@@ -98,7 +98,7 @@ export interface ModelsTreeProps {
  * hierarchy along with checkboxes that represent and allow changing
  * the display of those instances.
  * @public
- * @deprecated in 3.x. Was moved to `@itwin/tree-widget-react` package.
+ * @deprecated Was moved to `@itwin/tree-widget-react` package.
  */
 export function ModelsTree(props: ModelsTreeProps) {
   const { nodeLoader, onItemsRendered } = useModelsTreeNodeLoader(props);

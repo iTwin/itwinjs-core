@@ -33,7 +33,7 @@ export class ByteStream {
    * argument is supplied, with correct offset and length.
    *
    * For both of the above reasons, prefer to use [[fromUint8Array]].
-   * @deprecated in 3.x. Use [[fromUint8Array]] or [[fromArrayBuffer]].
+   * @deprecated Use [[fromUint8Array]] or [[fromArrayBuffer]].
    */
   public constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: { byteOffset: number, byteLength: number }) {
     if (undefined !== subView) {
@@ -127,21 +127,21 @@ export class ByteStream {
   /** Read an unsigned 24-bit integer from the current read position and advance by 3 bytes. */
   public readUint24(): number { return this.readUint8() | (this.readUint8() << 8) | (this.readUint8() << 16); }
 
-  /** @deprecated in 3.x. use [[readUint8]]. */
+  /** @deprecated use [[readUint8]]. */
   public get nextUint8(): number { return this.readUint8(); }
-  /** @deprecated in 3.x. use [[readUint16]]. */
+  /** @deprecated use [[readUint16]]. */
   public get nextUint16(): number { return this.readUint16(); }
-  /** @deprecated in 3.x. use [[readUint32]]. */
+  /** @deprecated use [[readUint32]]. */
   public get nextUint32(): number { return this.readUint32(); }
-  /** @deprecated in 3.x. use [[readInt32]]. */
+  /** @deprecated use [[readInt32]]. */
   public get nextInt32(): number { return this.readInt32(); }
-  /** @deprecated in 3.x. use [[readFloat32]]. */
+  /** @deprecated use [[readFloat32]]. */
   public get nextFloat32(): number { return this.readFloat32(); }
-  /** @deprecated in 3.x. use [[readFloat64]]. */
+  /** @deprecated use [[readFloat64]]. */
   public get nextFloat64(): number { return this.readFloat64(); }
-  /** @deprecated in 3.x. use [[readId64]]. */
+  /** @deprecated use [[readId64]]. */
   public get nextId64(): Id64String { return this.readId64(); }
-  /** @deprecated in 3.x. use [[readUint32]]. */
+  /** @deprecated use [[readUint32]]. */
   public get nextUint24(): number { return this.readUint24(); }
 
   /** Read the specified number of bytes beginning at the current read position into a Uint8Array and advance by the specified number of byte.

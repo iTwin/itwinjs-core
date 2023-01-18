@@ -157,7 +157,7 @@ export enum FavoritePropertiesScope {
 // @internal (undocumented)
 export const getFieldInfos: (field: Field) => Set<PropertyFullName>;
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export function getScopeId(scope: SelectionScope | string | undefined): string;
 
 // @internal (undocumented)

@@ -1151,7 +1151,7 @@
             "comment": "Update DialogButtonType enum."
           },
           {
-            "comment": "Changed AutoSuggest getSuggestions prop to async and removed @deprecated in 3.x. tag"
+            "comment": "Changed AutoSuggest getSuggestions prop to async and removed @deprecated tag"
           },
           {
             "comment": "Change Editor components to process native keyboard events instead of synthe"
@@ -1616,7 +1616,7 @@
             "comment": "Qualified .label & .message CSS classes. Removed .cell CSS class usage. Fixed cell editor sizes."
           },
           {
-            "comment": "Removed @deprecated in 3.x. APIs from ui-framework & ui-core and updated NextVersion.md"
+            "comment": "Removed @deprecated APIs from ui-framework & ui-core and updated NextVersion.md"
           },
           {
             "comment": "Changes to WebFontIcon to support custom font-family icons."

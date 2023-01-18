@@ -64,7 +64,7 @@ export interface NativeAppOpts extends IpcAppOptions {
 export class NativeApp {
   private static _removeAppNotify?: RemoveFunction;
 
-  /** @deprecated in 3.x. use nativeAppIpc */
+  /** @deprecated use nativeAppIpc */
   public static async callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
     return IpcApp.callIpcChannel(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
   }
@@ -141,7 +141,7 @@ export class NativeApp {
     asOf?: IModelVersion): Promise<BriefcaseDownloader>;
 
   /**
-   * @deprecated in 3.x. in 3.6. [[progress]] argument is now deprecated, use [[DownloadBriefcaseOptions.progressCallback]] instead.
+   * @deprecated in 3.6. [[progress]] argument is now deprecated, use [[DownloadBriefcaseOptions.progressCallback]] instead.
    */
   public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
     // eslint-disable-next-line @typescript-eslint/unified-signatures

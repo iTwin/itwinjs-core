@@ -12,7 +12,7 @@ import { Orientation } from "../enums/Orientation";
 
 /** Horizontal tabs meant to represent the current position in a page/section
  * @public
- * @deprecated in 3.x. Use HorizontalTabs in itwinui-react instead
+ * @deprecated Use HorizontalTabs in itwinui-react instead
  */
 export function HorizontalTabs(props: TabsProps) {
   return (

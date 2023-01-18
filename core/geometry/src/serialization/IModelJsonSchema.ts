@@ -391,7 +391,7 @@ export namespace IModelJson {
      * Now both native and TypeScript will output both and accept either, preferring "origin".
      * "baseOrigin" is undocumented in TypeScript; it's also "deprecated" so that the linter will warn to use the documented property instead.
      * @internal
-     * @deprecated in 3.x. use origin
+     * @deprecated use origin
      */
     baseOrigin?: XYZProps;
     /** base x size (required) */

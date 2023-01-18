@@ -237,7 +237,7 @@ export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
     readonly briefcaseAlias?: string;
 }
 
-// @beta @deprecated in 3.x. (undocumented)
+// @beta @deprecated (undocumented)
 export class AliCloudStorageService extends CloudStorageService {
     constructor(credentials: AliCloudStorageServiceCredentials);
     // (undocumented)
@@ -250,7 +250,7 @@ export class AliCloudStorageService extends CloudStorageService {
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
 
-// @beta @deprecated in 3.x. (undocumented)
+// @beta @deprecated (undocumented)
 export interface AliCloudStorageServiceCredentials {
     // (undocumented)
     accessKeyId: string;
@@ -314,7 +314,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
-// @beta @deprecated in 3.x. (undocumented)
+// @beta @deprecated (undocumented)
 export class AzureBlobStorage extends CloudStorageService {
     constructor(credentials: AzureBlobStorageCredentials);
     // (undocumented)
@@ -346,7 +346,7 @@ export interface BackendHubAccess {
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-    // @internal @deprecated in 3.x.
+    // @internal @deprecated
     downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
@@ -633,7 +633,7 @@ export interface ChangeSummary {
     id: Id64String;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export interface ChangeSummaryExtractOptions {
     currentVersionOnly?: boolean;
     startVersion?: IModelVersion;
@@ -653,7 +653,7 @@ export class ChangeSummaryManager {
     static createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]>;
     static createChangeSummary(accessToken: AccessToken, iModel: BriefcaseDb): Promise<Id64String>;
     static detachChangeCache(iModel: IModelDb): void;
-    // @deprecated in 3.x.
+    // @deprecated
     static extractChangeSummaries(accessToken: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
     static isChangeCacheAttached(iModel: IModelDb): boolean;
@@ -673,7 +673,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
     toJSON(): ChannelRootAspectProps;
 }
 
-// @internal @deprecated in 3.x. (undocumented)
+// @internal @deprecated (undocumented)
 export type CheckpointArg = DownloadRequest;
 
 // @internal (undocumented)
@@ -868,7 +868,7 @@ export namespace CloudSqlite {
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
 }
 
-// @beta @deprecated in 3.x. (undocumented)
+// @beta @deprecated (undocumented)
 export abstract class CloudStorageService {
     // (undocumented)
     download(_name: string): Promise<Readable | undefined>;
@@ -889,7 +889,7 @@ export abstract class CloudStorageService {
     abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
 }
 
-// @beta @deprecated in 3.x. (undocumented)
+// @beta @deprecated (undocumented)
 export class CloudStorageTileUploader {
     // (undocumented)
     get activeUploads(): Iterable<Promise<void>>;
@@ -897,7 +897,7 @@ export class CloudStorageTileUploader {
     cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): Promise<void>;
 }
 
-// @beta @deprecated in 3.x. (undocumented)
+// @beta @deprecated (undocumented)
 export interface CloudStorageUploadOptions {
     // (undocumented)
     cacheControl?: string;
@@ -1682,7 +1682,7 @@ class Element_2 extends Entity {
     // @internal (undocumented)
     static get className(): string;
     code: Code;
-    // @beta @deprecated in 3.x.
+    // @beta @deprecated
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
@@ -1691,7 +1691,7 @@ class Element_2 extends Entity {
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
-    // @beta @deprecated in 3.x.
+    // @beta @deprecated
     getPredecessorIds(): Id64Set;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
@@ -2203,7 +2203,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
         elementId: Id64String;
         aspectId: Id64String;
     }>;
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): {
         elementId?: Id64String;
         aspectId?: Id64String;
@@ -2361,7 +2361,7 @@ export class FunctionalPartition extends InformationPartitionElement {
 
 // @public (undocumented)
 export class FunctionalSchema extends Schema {
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     static importSchema(iModelDb: IModelDb): Promise<void>;
     // (undocumented)
     static registerSchema(): void;
@@ -2722,10 +2722,10 @@ export class HubMock {
     static startup(mockName: LocalDirName, outputDir: string): void;
 }
 
-// @beta @deprecated in 3.x. (undocumented)
+// @beta @deprecated (undocumented)
 export const IModelCloneContext: typeof IModelElementCloneContext;
 
-// @beta @deprecated in 3.x. (undocumented)
+// @beta @deprecated (undocumented)
 export type IModelCloneContext = IModelElementCloneContext;
 
 // @public
@@ -2954,7 +2954,7 @@ export namespace IModelDb {
         constructor(_iModel: IModelDb);
         static readonly defaultQueryParams: ViewQueryParams;
         getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined;
-        // @deprecated in 3.x. (undocumented)
+        // @deprecated (undocumented)
         getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps;
         getViewStateProps(viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps>;
         iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean;
@@ -3055,7 +3055,7 @@ export class IModelHost {
     static startup(options?: IModelHostOptions): Promise<void>;
     // @alpha (undocumented)
     static readonly telemetry: TelemetryManager;
-    // @internal @deprecated in 3.x. (undocumented)
+    // @internal @deprecated (undocumented)
     static tileCacheService?: CloudStorageService;
     // @internal
     static get tileContentRequestTimeout(): number;
@@ -3063,7 +3063,7 @@ export class IModelHost {
     static tileStorage?: TileStorage;
     // @internal
     static get tileTreeRequestTimeout(): number;
-    // @internal @deprecated in 3.x. (undocumented)
+    // @internal @deprecated (undocumented)
     static tileUploader?: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
@@ -3098,7 +3098,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     restrictTileUrlsByClientIp?: boolean;
     // @beta (undocumented)
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
-    // @beta @deprecated in 3.x. (undocumented)
+    // @beta @deprecated (undocumented)
     tileCacheService?: CloudStorageService;
     // @internal (undocumented)
     tileContentRequestTimeout: number;
@@ -3130,7 +3130,7 @@ export interface IModelHostOptions {
     restrictTileUrlsByClientIp?: boolean;
     // @beta
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
-    // @beta @deprecated in 3.x. (undocumented)
+    // @beta @deprecated (undocumented)
     tileCacheService?: CloudStorageService;
     // @beta
     tileCacheStorage?: ServerStorage;

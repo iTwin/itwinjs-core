@@ -15,13 +15,13 @@ import { Select, SelectProps } from "./Select";
 
 /** Properties for [[LabeledSelect]] components
  * @public
- * @deprecated in 3.x. Use LabeledSelectProps in itwinui-react instead
+ * @deprecated Use LabeledSelectProps in itwinui-react instead
  */
 export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, MessagedComponentProps { }
 
 /** Dropdown wrapper that allows for additional styling and labelling
  * @public
- * @deprecated in 3.x. Use LabeledSelect in itwinui-react instead
+ * @deprecated Use LabeledSelect in itwinui-react instead
  */
 export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
   public override render(): JSX.Element {

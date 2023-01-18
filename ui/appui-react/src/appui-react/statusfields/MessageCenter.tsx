@@ -39,7 +39,7 @@ interface MessageCenterState {
  */
 export interface MessageCenterFieldProps extends StatusFieldProps {
   /** Message center dialog target.
-   * @deprecated in 3.x. Use `MessageManager.registerAnimateOutToElement` to register this ref in the related component.
+   * @deprecated Use `MessageManager.registerAnimateOutToElement` to register this ref in the related component.
   */
   targetRef?: React.Ref<HTMLElement>;
 }
@@ -236,6 +236,6 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   private setOpenWidget(openWidget: StatusBarFieldId) {
     // eslint-disable-next-line deprecation/deprecation
     this.props.onOpenWidget?.(openWidget);
-    this.setState({ openWidget });
+    this.setState({openWidget});
   }
 }

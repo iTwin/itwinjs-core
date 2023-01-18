@@ -174,7 +174,7 @@ export class ConfigurableUiManager {
   /** Loads one or more Tasks into the [[TaskManager]].
    * @param taskPropsList  the list of Tasks to load
    * @internal
-   * @deprecated in 3.x.
+   * @deprecated
    */
   public static loadTasks(taskPropsList: TaskPropsList): void {   // eslint-disable-line deprecation/deprecation
     TaskManager.loadTasks(taskPropsList);   // eslint-disable-line deprecation/deprecation
@@ -183,7 +183,7 @@ export class ConfigurableUiManager {
   /** Loads a Workflow into the [[WorkflowManager]].
    * @param workflowProps  the Workflow to load
    * @internal
-   * @deprecated in 3.x.
+   * @deprecated
    */
   public static loadWorkflow(workflowProps: WorkflowProps): void {    // eslint-disable-line deprecation/deprecation
     WorkflowManager.loadWorkflow(workflowProps);    // eslint-disable-line deprecation/deprecation
@@ -192,7 +192,7 @@ export class ConfigurableUiManager {
   /** Loads one or more Workflows into the [[WorkflowManager]].
    * @param workflowPropsList  the list of Workflows to load
    * @internal
-   * @deprecated in 3.x.
+   * @deprecated
    */
   public static loadWorkflows(workflowPropsList: WorkflowPropsList): void {   // eslint-disable-line deprecation/deprecation
     WorkflowManager.loadWorkflows(workflowPropsList);   // eslint-disable-line deprecation/deprecation

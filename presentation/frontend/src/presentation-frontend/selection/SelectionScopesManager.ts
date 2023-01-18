@@ -106,7 +106,7 @@ export function createSelectionScopeProps(scope: SelectionScopeProps | Selection
  * Determines the scope id
  * @param scope Selection scope
  * @public
- * @deprecated in 3.x. This is an internal utility that should've never become public.
+ * @deprecated This is an internal utility that should've never become public.
  */
 // istanbul ignore next
 export function getScopeId(scope: SelectionScope | string | undefined): string {

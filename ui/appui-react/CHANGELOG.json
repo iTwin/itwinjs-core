@@ -1601,7 +1601,7 @@
             "comment": "Add support for reloading enum choices or reloading all components constructed from UiDataProvider data."
           },
           {
-            "comment": "Changed AutoSuggest getSuggestions prop to async and removed @deprecated in 3.x. tag"
+            "comment": "Changed AutoSuggest getSuggestions prop to async and removed @deprecated tag"
           },
           {
             "comment": "Added FrameworkUiAdmin.showReactCard"
@@ -2153,7 +2153,7 @@
             "comment": "Add ConditionStringValue support. Used to define labels and icons."
           },
           {
-            "comment": "Removed @deprecated in 3.x. APIs from ui-framework & ui-core and updated NextVersion.md"
+            "comment": "Removed @deprecated APIs from ui-framework & ui-core and updated NextVersion.md"
           },
           {
             "comment": "Rename some new widget classes and deprecate classes we don't want user to continue to use."

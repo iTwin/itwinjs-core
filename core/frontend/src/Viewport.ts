@@ -820,7 +820,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @beta
   */
   public getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility {
-    const treeRef = (isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
+    const treeRef = ( isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
     if (treeRef) {
       return treeRef.getMapLayerScaleRangeVisibility(index);
 
@@ -2539,7 +2539,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param flipVertically If true, the image is flipped along the x-axis.
    * @returns The contents of the viewport within the specified rectangle as a bitmap image, or undefined if the image could not be read.
    * @note By default the image is returned with the coordinate (0,0) referring to the bottom-most pixel. Pass `true` for `flipVertically` to flip it along the x-axis.
-   * @deprecated in 3.x. Use readImageBuffer.
+   * @deprecated Use readImageBuffer.
    */
   public readImage(rect: ViewRect = new ViewRect(1, 1, 0, 0), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
     // eslint-disable-next-line deprecation/deprecation
@@ -3070,7 +3070,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined.
-   * @deprecated in 3.x. this was intended for internal use only.
+   * @deprecated this was intended for internal use only.
    */
   public setEventController(controller?: EventController) {
     if (this._evController)

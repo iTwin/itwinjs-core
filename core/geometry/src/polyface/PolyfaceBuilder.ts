@@ -333,7 +333,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    * Announce point coordinates.
-   * @deprecated in 3.x. Use addPoint instead.
+   * @deprecated Use addPoint instead.
    */
   public findOrAddPoint(xyz: Point3d): number {
     return this.addPoint(xyz);
@@ -347,7 +347,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    * Announce uv parameter coordinates.
-   * @deprecated in 3.x. Use addParamXY instead.
+   * @deprecated Use addParamXY instead.
    */
   public findOrAddParamXY(x: number, y: number): number {
     return this.addParamXY(x, y);
@@ -417,7 +417,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    * Announce uv parameter coordinates.
-   * @deprecated in 3.x. Use addParamInGrowableXYArray instead.
+   * @deprecated Use addParamInGrowableXYArray instead.
    */
   public findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined {
     return this.addParamInGrowableXYArray(data, index);
@@ -461,7 +461,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    * Announce point coordinates.
-   * @deprecated in 3.x. Use addPointXYZ instead.
+   * @deprecated Use addPointXYZ instead.
    */
   public findOrAddPointXYZ(x: number, y: number, z: number): number {
     return this.addPointXYZ(x, y, z);

@@ -16,7 +16,7 @@ export class IconSpecUtilities {
 
   /** Create an IconSpec for an SVG loaded into web component with sprite loader
    * This method is deprecated --  use createWebComponentIconSpec()
-   * @public @deprecated in 3.x.
+   * @public @deprecated
   */
   public static createSvgIconSpec(svgSrc: string): string {
     return `${IconSpecUtilities.SVG_PREFIX}${svgSrc}`;
@@ -30,7 +30,7 @@ export class IconSpecUtilities {
 
   /** Get the SVG Source from an sprite IconSpec
    * This method is deprecated -- use getWebComponentSource()
-   * @public @deprecated in 3.x.
+   * @public @deprecated
   */
   public static getSvgSource(iconSpec: string): string | undefined {
     if (iconSpec.startsWith(IconSpecUtilities.SVG_PREFIX) && iconSpec.length > 4) {

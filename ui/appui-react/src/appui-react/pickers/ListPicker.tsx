@@ -226,7 +226,7 @@ export function getListPanel(props: ListPickerProps): React.ReactNode {
 /**
  * List picker base class.
  * Used to provide an expandable list of items to enable/disable items.
- * @deprecated in 3.x. Used in UI1.0 only.
+ * @deprecated Used in UI1.0 only.
  * @beta
  */
 export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPickerState> {

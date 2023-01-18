@@ -50,7 +50,7 @@ export interface InstanceChange {
 
 /** Options for [ChangeSummaryManager.extractChangeSummaries]($backend).
  * @beta
- * @deprecated in 3.x. Use [CreateChangeSummaryArgs]($core-backend) instead
+ * @deprecated Use [CreateChangeSummaryArgs]($core-backend) instead
  */
 export interface ChangeSummaryExtractOptions {
   /** If specified, change summaries are extracted from the start version to the current version as of which the iModel
@@ -151,7 +151,7 @@ export class ChangeSummaryManager {
    * @param options Extraction options
    * @return the Ids of the extracted change summaries.
    * @throws [IModelError]($common) if the iModel is standalone
-   * @deprecated in 3.x. Use [ChangeSummaryManager.createChangeSummaries]($core-backend) instead
+   * @deprecated Use [ChangeSummaryManager.createChangeSummaries]($core-backend) instead
    */
   public static async extractChangeSummaries(accessToken: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> { // eslint-disable-line deprecation/deprecation
     if (!iModel?.isOpen)

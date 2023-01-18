@@ -166,7 +166,7 @@ export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadPr
 }
 
 /**
- * @deprecated in 3.x.
+ * @deprecated
  * @internal
  */
 export type CheckpointArg = DownloadRequest;
@@ -216,7 +216,7 @@ export interface BackendHubAccess {
 
   /**
    * download a v1 checkpoint
-   * @deprecated in 3.x.
+   * @deprecated
    * @internal
    */
   downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>; // eslint-disable-line deprecation/deprecation

@@ -14,7 +14,7 @@ import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[Input]] component
  * @public
- * @deprecated in 3.x. Use InputProps in itwinui-react instead
+ * @deprecated Use InputProps in itwinui-react instead
  */
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
   /** Indicates whether to set focus to the input element */
@@ -64,6 +64,6 @@ const ForwardRefInput = React.forwardRef<HTMLInputElement, InputProps>(   // esl
 
 /** Basic text input, is a wrapper for the `<input type="text">` HTML element.
  * @public
- * @deprecated in 3.x. Use Input in itwinui-react instead
+ * @deprecated Use Input in itwinui-react instead
  */
 export const Input: (props: InputProps) => JSX.Element | null = ForwardRefInput;  // eslint-disable-line deprecation/deprecation

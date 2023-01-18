@@ -2282,7 +2282,7 @@
             "comment": "Cleanup AO settings."
           },
           {
-            "comment": "Remove @deprecated in 3.x. tags in GeometryStreamIteratorEntry"
+            "comment": "Remove @deprecated tags in GeometryStreamIteratorEntry"
           },
           {
             "comment": "Fix comparison of classification properties ignoring the 'volume' flag."

@@ -67,28 +67,28 @@ export class PathFragment {
   public containsChainDistance(distance: number): boolean {
     return distance >= this.chainDistance0 && distance <= this.chainDistance1;
   }
-  // Return a quick distance to the curve.   This may be SMALLER than true distance but may
-  // not be larger.
+// Return a quick distance to the curve.   This may be SMALLER than true distance but may
+// not be larger.
   public quickMinDistanceToChildCurve(spacePoint: Point3d): number {
-    if (this.range) {
-      return this.range.distanceToPoint(spacePoint);
+    if (this.range){
+      return this.range.distanceToPoint (spacePoint);
     }
     // ugh.  have to do real computation ..
-    const detail = this.childCurve.closestPoint(spacePoint, false);
+    const detail = this.childCurve.closestPoint (spacePoint, false);
     if (detail)
       return detail.a;
     return 0;
   }
   // Return an array with (references to) all the path fragments, sorted smallest to largest on
   //   the "a" value equal to the quick min distance to the fragment
-  public static collectSortedQuickMinDistances(fragments: PathFragment[], spacePoint: Point3d): PathFragment[] {
-    const sortedFragments: PathFragment[] = [];
-    for (const f of fragments) {
-      f.a = f.quickMinDistanceToChildCurve(spacePoint);
-      sortedFragments.push(f);
+  public static collectSortedQuickMinDistances(fragments: PathFragment[], spacePoint: Point3d): PathFragment[]{
+    const sortedFragments: PathFragment [] = [];
+    for (const f of fragments){
+      f.a = f.quickMinDistanceToChildCurve (spacePoint);
+      sortedFragments.push (f);
     }
-    sortedFragments.sort((a: PathFragment, b: PathFragment) => a.a - b.a);
-    return sortedFragments;
+  sortedFragments.sort ((a: PathFragment, b: PathFragment) => a.a- b.a);
+  return sortedFragments;
   }
   /**
    * Return true if this fragment addresses `curve` and brackets `fraction`
@@ -135,7 +135,7 @@ export class PathFragment {
     this.chainDistance0 = totalDistance - d1;
     this.chainDistance1 = totalDistance - d0;
   }
-  /** @deprecated in 3.x. Use childFractionToChainDistance */
+  /** @deprecated Use childFractionToChainDistance */
   public childFractionTChainDistance(fraction: number): number {
     return this.childFractionToChainDistance(fraction);
   }
@@ -174,23 +174,23 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
     numStrokes: number,
     fraction0: number,
     fraction1: number): void {
-    const fragmentPoint0 = point0.clone();
-    const fragmentPoint1 = point1.clone();
+      const fragmentPoint0 = point0.clone ();
+      const fragmentPoint1 = point1.clone ();
     let d0 = this._accumulatedDistance;
     if (numStrokes <= 1) {
       this._accumulatedDistance += point0.distance(point1);
       this._fragments.push(new PathFragment(fraction0, fraction1, d0, this._accumulatedDistance, cp,
-        Range3d.create(fragmentPoint0, fragmentPoint1)));
+        Range3d.create (fragmentPoint0, fragmentPoint1)));
     } else {
       let f1;
       for (let i = 1, f0 = fraction0; i <= numStrokes; i++, f0 = f1) {
         f1 = Geometry.interpolate(fraction0, i / numStrokes, fraction1);
-        point0.interpolate(f1, point1, fragmentPoint1);
+        point0.interpolate (f1, point1, fragmentPoint1);
         d0 = this._accumulatedDistance;
         this._accumulatedDistance += (Math.abs(f1 - f0) * point0.distance(point1));
         this._fragments.push(new PathFragment(f0, f1, d0, this._accumulatedDistance, cp,
-          Range3d.create(fragmentPoint0, fragmentPoint1)));
-        fragmentPoint0.setFrom(fragmentPoint1);
+          Range3d.create (fragmentPoint0, fragmentPoint1)));
+        fragmentPoint0.setFrom (fragmentPoint1);
       }
     }
   }
@@ -205,11 +205,11 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
       d = cp.curveLengthBetweenFractions(f0, f1);
       d0 = this._accumulatedDistance;
       this._accumulatedDistance += d;
-      const range = cp.rangeBetweenFractions(f0, f1);
+      const range = cp.rangeBetweenFractions (f0, f1);
       this._fragments.push(new PathFragment(f0, f1, d0, this._accumulatedDistance, cp, range));
     }
   }
-  public needPrimaryGeometryForStrokes?(): boolean { return true; }
+  public needPrimaryGeometryForStrokes?(): boolean { return true;}
   public static createPathFragmentIndex(path: CurveChain, options?: StrokeOptions): PathFragment[] {
     const handler = new DistanceIndexConstructionContext();
     for (const curve of path.children) {
@@ -275,7 +275,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     let fracA = fractionA;
     let fracB = fractionB;
     const reversed = fractionA > fractionB;
-    if (reversed) {
+    if (reversed){
       fracA = fractionB;
       fracB = fractionA;
     }
@@ -297,19 +297,19 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     const childFractionB = fragmentB.chainDistanceToAccurateChildFraction(chainDistanceB, true);
 
     // add a (possibly reversed) partial clone to newPath
-    const newPath = Path.create();
+    const newPath = Path.create ();
     const addPartialChild = (childCurve: CurvePrimitive, childFraction0: number, childFraction1: number, reversedClone: boolean): boolean => {
       if (childFraction0 === childFraction1)
         return false;
       let newCurve;
-      if (childFraction0 === 0.0 && childFraction1 === 1.0) {
-        newCurve = childCurve.clone();
+      if (childFraction0 === 0.0 && childFraction1 === 1.0 ) {
+        newCurve = childCurve.clone ();
         if (reversedClone)
-          newCurve.reverseInPlace();
+          newCurve.reverseInPlace ();
       } else {
-        newCurve = reversedClone ?
-          childCurve.clonePartialCurve(childFraction1, childFraction0)
-          : childCurve.clonePartialCurve(childFraction0, childFraction1);
+        newCurve = reversedClone?
+                      childCurve.clonePartialCurve (childFraction1, childFraction0)
+                    : childCurve.clonePartialCurve (childFraction0, childFraction1);
       }
       if (newCurve) {
         newPath.children.push(newCurve);
@@ -318,22 +318,22 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       return false;
     };
 
-    if (fragmentA.childCurve === fragmentB.childCurve) {
+    if (fragmentA.childCurve === fragmentB.childCurve){
       // the two distances are within the same curve.
-      if (addPartialChild(fragmentA.childCurve, childFractionA, childFractionB, reversed))
-        return CurveChainWithDistanceIndex.createCapture(newPath);   // singleton -- children[] does not need to be reversed.
+      if (addPartialChild (fragmentA.childCurve, childFractionA, childFractionB, reversed))
+        return CurveChainWithDistanceIndex.createCapture (newPath);   // singleton -- children[] does not need to be reversed.
       return undefined;
     }
-    addPartialChild(this._path.children[childCurveIndexA], childFractionA, 1.0, reversed);
+    addPartialChild (this._path.children[childCurveIndexA], childFractionA, 1.0, reversed);
     // at least two distinct children are impacted ....
-    for (let childIndex = childCurveIndexA + 1; childIndex < childCurveIndexB; childIndex++) {
-      addPartialChild(this._path.children[childIndex], 0.0, 1.0, reversed);
+    for (let childIndex = childCurveIndexA + 1; childIndex < childCurveIndexB; childIndex++){
+      addPartialChild (this._path.children[childIndex], 0.0, 1.0, reversed);
     }
-    addPartialChild(this._path.children[childCurveIndexB], 0.0, childFractionB, reversed);
-    // This reverses array entries but not orientation within each curve ...
+    addPartialChild (this._path.children[childCurveIndexB], 0.0, childFractionB, reversed);
+  // This reverses array entries but not orientation within each curve ...
     if (reversed)
-      newPath.children.reverse();
-    return CurveChainWithDistanceIndex.createCapture(newPath);
+      newPath.children.reverse ();
+    return CurveChainWithDistanceIndex.createCapture (newPath);
   }
 
   /** Ask if the curve is within tolerance of a plane.
@@ -461,7 +461,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * @param distance
    * @param allowExtrapolation
    */
-  protected chainDistanceToFragmentIndex(distance: number, allowExtrapolation: boolean = false): number | undefined {
+   protected chainDistanceToFragmentIndex(distance: number, allowExtrapolation: boolean = false): number | undefined {
     const numFragments = this._fragments.length;
     const fragments = this._fragments;
     if (numFragments > 0) {
@@ -642,25 +642,25 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return chainDetail;
   }
 
-  /**
-   *
-   * The returned object has
-   * * numCalls = number of times closestPoint was called.
-   * * numCurvesTested = number of curves tested with full closestPoint
-   * * numAssigned = number of times a new minimum value was recorded
-   * * numCandidate = number of curves that would be tested in worst case.
-   * return an object summarizing closest point test counts
-   * @param clear if true, counts are cleared after the return object is formed.
-   */
-  public static getClosestPointTestCounts(clear: boolean = true): { numCalls: number, numTested: number, numAssigned: number, numCandidate: number } {
+/**
+ *
+ * The returned object has
+ * * numCalls = number of times closestPoint was called.
+ * * numCurvesTested = number of curves tested with full closestPoint
+ * * numAssigned = number of times a new minimum value was recorded
+ * * numCandidate = number of curves that would be tested in worst case.
+ * return an object summarizing closest point test counts
+ * @param clear if true, counts are cleared after the return object is formed.
+ */
+  public static getClosestPointTestCounts(clear: boolean = true):
+  {numCalls: number, numTested: number, numAssigned: number, numCandidate: number}{
     const a = {
       numCalls: this._numCalls,
       numTested: this._numTested,
       numAssigned: this._numAssigned,
-      numCandidate: this._numCandidate
-    };
+      numCandidate: this._numCandidate};
 
-    if (clear) {
+    if (clear){
       this._numTested = this._numAssigned = this._numCandidate = 0;
     }
     return a;
@@ -684,15 +684,15 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     if (numChildren === 1) {
       childDetail = this.path.children[0].closestPoint(spacePoint, extend);
     } else {
-      const sortedFragments = PathFragment.collectSortedQuickMinDistances(this._fragments, spacePoint);
+      const sortedFragments = PathFragment.collectSortedQuickMinDistances (this._fragments, spacePoint);
       const extend0 = [CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0), CurveExtendMode.None];
       const extend1 = [CurveExtendMode.None, CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1)];
       const fragment0 = this._fragments[0];
       const fragment1 = this._fragments[this._fragments.length - 1];
       CurveChainWithDistanceIndex._numCalls++;
-      CurveChainWithDistanceIndex._numCandidate += sortedFragments.length;
+      CurveChainWithDistanceIndex._numCandidate+= sortedFragments.length;
       for (const f of sortedFragments) {
-        if (f.a > aMin)
+        if (f.a >aMin)
           break;
         CurveChainWithDistanceIndex._numTested++;
         const child = f.childCurve;

@@ -10,6 +10,6 @@ import { StatusBarItemsManager as UIA_StatusBarItemsManager } from "@itwin/appui
 
 /** StatusBar Items Manager class.
  * @beta
- * @deprecated in 3.x. Use [StatusBarItemsManager]($appui-abstract) instead
+ * @deprecated Use [StatusBarItemsManager]($appui-abstract) instead
  */
 export class StatusBarItemsManager extends UIA_StatusBarItemsManager { }

@@ -20,7 +20,7 @@ import { CellItem } from "../TableDataProvider";
 
 /**
  * Properties of the [[TableCell]] React component
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface TableCellProps extends CommonProps {
@@ -42,7 +42,7 @@ export interface TableCellProps extends CommonProps {
 
 /**
  * A React component that renders a table cell
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this class.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this class.
  * @public
  */
 export class TableCell extends React.PureComponent<TableCellProps> {
@@ -80,7 +80,7 @@ export class TableCell extends React.PureComponent<TableCellProps> {
 }
 
 /** Properties of the [[TableCellContent]] React component
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface TableCellContentProps extends CommonProps {
@@ -97,7 +97,7 @@ export interface TableCellContentProps extends CommonProps {
 }
 
 /** State of the [[TableCellContent]] React component
- * @internal @deprecated in 3.x.
+ * @internal @deprecated
  */
 interface TableCellContentState {
   /** Rendered content */
@@ -105,7 +105,7 @@ interface TableCellContentState {
 }
 
 /** A React component that renders table cell content
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this class.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this class.
  * @public
  */
 export class TableCellContent extends React.PureComponent<TableCellContentProps, TableCellContentState> {
@@ -183,7 +183,7 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
 }
 
 /** Properties for the [[TableIconCellContent]] React component
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface TableIconCellContentProps {
@@ -193,7 +193,7 @@ export interface TableIconCellContentProps {
 
 /**
  * A React component that renders table cell content as a Bentley icon
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export class TableIconCellContent extends React.PureComponent<TableIconCellContentProps> {

@@ -15,7 +15,7 @@ import { DisabledResizeHandles, DisabledResizeHandlesHelpers } from "../utilitie
 import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
 
 /** Available [[Stacked]] widget horizontal anchors.
- * @deprecated in 3.x.
+ * @deprecated
  * @beta
  */
 export enum HorizontalAnchor {

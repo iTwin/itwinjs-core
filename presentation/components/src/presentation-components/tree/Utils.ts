@@ -106,7 +106,7 @@ function assignOptionalTreeNodeItemFields(
 /**
  * Applies customization from [[Node]] to [[TreeNodeItem]].
  * @public
- * @deprecated in 3.x.
+ * @deprecated
  */
 export function customizeTreeNodeItem(item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) {
   if (node.imageId) { // eslint-disable-line deprecation/deprecation

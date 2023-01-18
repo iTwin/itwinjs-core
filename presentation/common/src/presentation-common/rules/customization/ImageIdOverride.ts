@@ -13,7 +13,7 @@ import { RuleBase, RuleTypes } from "../Rule";
  *
  * @see [Image ID override reference documentation page]($docs/presentation/customization/ImageIdOverride.md)
  * @public
- * @deprecated in 3.x. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+ * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
  */
 export interface ImageIdOverride extends RuleBase {
   /** Used for serializing to JSON. */

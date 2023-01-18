@@ -14,7 +14,7 @@ import * as React from "react";
 
 /** Size for [[Spinner]] component
  * @public
- * @deprecated in 3.x. Use `size` in ProgressRadialProps in itwinui-react instead.
+ * @deprecated Use `size` in ProgressRadialProps in itwinui-react instead.
  */
 export enum SpinnerSize {
   /** width/height of 16px */
@@ -29,7 +29,7 @@ export enum SpinnerSize {
 
 /** Properties for [[Spinner]] component
  * @public
- * @deprecated in 3.x. Use ProgressRadialProps in itwinui-react instead.
+ * @deprecated Use ProgressRadialProps in itwinui-react instead.
  */
 export interface SpinnerProps {
   /** Size of spinner */
@@ -41,7 +41,7 @@ export interface SpinnerProps {
 /**
  * An indeterminate spinner component.
  * @public
- * @deprecated in 3.x. Use ProgressRadial in itwinui-react with `indeterminate` prop instead.
+ * @deprecated Use ProgressRadial in itwinui-react with `indeterminate` prop instead.
  */
 export class Spinner extends React.PureComponent<SpinnerProps> {
 

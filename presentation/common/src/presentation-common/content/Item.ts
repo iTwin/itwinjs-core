@@ -20,7 +20,7 @@ export interface ItemJSON {
   inputKeys?: InstanceKeyJSON[];
   primaryKeys: InstanceKeyJSON[];
   labelDefinition: LabelDefinitionJSON;
-  /** @deprecated in 3.x. */
+  /** @deprecated */
   imageId: string;
   classInfo?: ClassInfoJSON;
   values: ValuesDictionary<ValueJSON>;
@@ -45,7 +45,7 @@ export class Item {
   public label: LabelDefinition;
   /**
    * ID of the image associated with this item
-   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   public imageId: string;
   /** For cases when item consists only of same class instances, information about the ECClass */

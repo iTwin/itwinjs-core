@@ -13,7 +13,7 @@ import { RuleBase, RuleTypes } from "../Rule";
  *
  * @see [CheckBox rule reference documentation page]($docs/presentation/customization/CheckBoxRule.md)
  * @public
- * @deprecated in 3.x. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+ * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
  */
 export interface CheckBoxRule extends RuleBase {
   /** Used for serializing to JSON. */

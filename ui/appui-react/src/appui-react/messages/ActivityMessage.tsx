@@ -24,7 +24,7 @@ import { HollowIcon } from "./HollowIcon";
 import { ToasterSettings } from "@itwin/itwinui-react/cjs/core/Toast/Toaster";
 
 /** Properties for a [[ActivityMessage]]
- * @deprecated in 3.x. Props of a deprecated component.
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface ActivityMessageProps {
@@ -35,7 +35,7 @@ export interface ActivityMessageProps {
 
 /** Activity Message React component
  * @public
- * @deprecated in 3.x.
+ * @deprecated
  */
 export function ActivityMessage(props: ActivityMessageProps) { // eslint-disable-line deprecation/deprecation
   const messageDetails = props.activityMessageInfo.details;
@@ -64,10 +64,10 @@ export function ActivityMessage(props: ActivityMessageProps) { // eslint-disable
           </MessageButton>
         )}
         progress={(messageDetails && messageDetails.showProgressBar) &&
-          <MessageProgress
-            status={Status.Information}
-            progress={props.activityMessageInfo.percentage}
-          />
+            <MessageProgress
+              status={Status.Information}
+              progress={props.activityMessageInfo.percentage}
+            />
         }
       >
         <div>
@@ -92,18 +92,18 @@ interface CustomActivityMessageProps {
  * Hook to render an Activity message.
  * @internal
  */
-export function useActivityMessage({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps) {
+export function useActivityMessage({activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings}: CustomActivityMessageProps) {
   const [cancelLabel] = React.useState(UiCore.translate("dialog.cancel"));
-  const recentToast = React.useRef<{ close: () => void } | undefined>();
+  const recentToast = React.useRef<{close: () => void} | undefined>();
   React.useEffect(() => {
-    toaster.setSettings(settings ?? { placement: "top" });
+    toaster.setSettings(settings ?? {placement: "top"});
   }, [settings]);
 
   React.useEffect(() => {
     if (activityMessageInfo?.restored) {
       recentToast.current = toaster.informational(
         <CustomActivityMessageContent initialActivityMessageInfo={activityMessageInfo} />,
-        { onRemove: dismissActivityMessage, type: "persisting", link: activityMessageInfo?.details?.supportsCancellation && cancelActivityMessage ? { title: cancelLabel, onClick: cancelActivityMessage } : undefined }
+        { onRemove: dismissActivityMessage, type: "persisting", link: activityMessageInfo?.details?.supportsCancellation && cancelActivityMessage ? { title: cancelLabel, onClick: cancelActivityMessage } : undefined}
       );
     }
     if (!activityMessageInfo) {
@@ -116,8 +116,8 @@ export function useActivityMessage({ activityMessageInfo, dismissActivityMessage
  * Component wrapping the `useActivityMessage` hook to use in class components.
  * @internal
  */
-export function CustomActivityMessageRenderer({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps) {
-  useActivityMessage({ activityMessageInfo, cancelActivityMessage, dismissActivityMessage, settings });
+export function CustomActivityMessageRenderer({activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings}: CustomActivityMessageProps) {
+  useActivityMessage({activityMessageInfo, cancelActivityMessage, dismissActivityMessage, settings});
 
   return <></>;
 }
@@ -126,7 +126,7 @@ export function CustomActivityMessageRenderer({ activityMessageInfo, dismissActi
  * Component used to show and update activity message content.
  * @internal
  */
-export function CustomActivityMessageContent({ initialActivityMessageInfo }: { initialActivityMessageInfo: ActivityMessageEventArgs }) {
+export function CustomActivityMessageContent({initialActivityMessageInfo}: {initialActivityMessageInfo: ActivityMessageEventArgs})  {
   const [percentCompleteLabel] = React.useState(UiFramework.translate("activityCenter.percentComplete"));
   const [activityMessageInfo, setActivityMessageInfo] = React.useState(initialActivityMessageInfo);
 

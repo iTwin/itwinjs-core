@@ -22,7 +22,7 @@ export interface TileContentIdentifier {
 
 /**
  * @beta
- * @deprecated in 3.x.
+ * @deprecated
  */
 export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
   private static _instance: CloudStorageTileCache;

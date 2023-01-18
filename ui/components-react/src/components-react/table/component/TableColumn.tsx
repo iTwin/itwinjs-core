@@ -15,7 +15,7 @@ import { ColumnDescription, TableDataProvider } from "../TableDataProvider";
 // cSpell:ignore columnfiltering
 
 /** ReactDataGrid.Column with additional properties
- * @deprecated in 3.x. Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
+ * @deprecated Use the Table component in @itwin/itwinui-react instead, which does not use this interface.
  * @public
  */
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {

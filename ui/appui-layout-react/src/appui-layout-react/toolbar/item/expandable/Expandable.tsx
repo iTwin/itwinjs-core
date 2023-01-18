@@ -14,7 +14,7 @@ import { CommonProps } from "@itwin/core-react";
 import { ToolbarItem, ToolbarItemProps } from "../../Toolbar";
 
 /** Properties of [[ExpandableItem]] component.
- * @deprecated in 3.x.
+ * @deprecated
  * @beta
  */
 export interface ExpandableItemProps extends CommonProps {
@@ -57,7 +57,7 @@ class ActualItem extends React.PureComponent<ExpandableItemProps> implements Too
 }
 
 /** Expandable toolbar item.
- * @deprecated in 3.x.
+ * @deprecated
  * @beta
  */
 export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {

@@ -180,7 +180,7 @@ export class BasicPropertyEditor extends PropertyEditorBase {
     get reactNode(): React_2.ReactNode;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export function BeDragDropContext(props: {
     children?: React_2.ReactNode;
 }): JSX.Element;
@@ -231,7 +231,7 @@ export class BooleanTypeConverter extends TypeConverter {
     sortCompare(a: Primitives.Boolean, b: Primitives.Boolean, _ignoreCase?: boolean): number;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export class Breadcrumb extends React_2.Component<BreadcrumbProps, BreadcrumbState> {
     // @internal
     constructor(props: BreadcrumbProps);
@@ -253,7 +253,7 @@ export class Breadcrumb extends React_2.Component<BreadcrumbProps, BreadcrumbSta
     readonly state: Readonly<BreadcrumbState>;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export class BreadcrumbDetails extends React_2.Component<BreadcrumbDetailsProps, BreadcrumbDetailsState> {
     // @internal
     constructor(props: BreadcrumbDetailsProps);
@@ -271,7 +271,7 @@ export class BreadcrumbDetails extends React_2.Component<BreadcrumbDetailsProps,
     readonly state: BreadcrumbDetailsState;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export interface BreadcrumbDetailsProps extends CommonProps {
     // (undocumented)
     columns?: ColumnDescription[];
@@ -326,7 +326,7 @@ export interface BreadcrumbInputState {
     messageBoxOpened: boolean;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export enum BreadcrumbMode {
     // (undocumented)
     Dropdown = "dropdown",
@@ -334,7 +334,7 @@ export enum BreadcrumbMode {
     Input = "input"
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export class BreadcrumbNode extends React_2.Component<BreadcrumbNodeProps> {
     constructor(props: BreadcrumbNodeProps);
     // (undocumented)
@@ -345,7 +345,7 @@ export class BreadcrumbNode extends React_2.Component<BreadcrumbNodeProps> {
     render(): React_2.ReactNode;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export interface BreadcrumbNodeProps {
     icon: string;
     label: PropertyRecord;
@@ -356,7 +356,7 @@ export interface BreadcrumbNodeProps {
 // @internal (undocumented)
 export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React_2.ReactNode;
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export class BreadcrumbPath {
     constructor(dataProvider: TreeDataProvider);
     // (undocumented)
@@ -371,7 +371,7 @@ export class BreadcrumbPath {
     setDataProvider(dataProvider: TreeDataProvider): void;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export interface BreadcrumbProps extends CommonProps {
     background?: boolean;
     dataProvider: TreeDataProvider;
@@ -394,16 +394,16 @@ export interface BreadcrumbProps extends CommonProps {
     width?: number | string;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export class BreadcrumbTreeUtils {
     static aliasNodeListToTableDataProvider(nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: TreeDataProvider): TableDataProvider;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export class BreadcrumbUpdateEvent extends UiEvent<BreadcrumbUpdateEventArgs> {
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export interface BreadcrumbUpdateEventArgs {
     // (undocumented)
     currentNode: TreeNodeItem | undefined;
@@ -439,7 +439,7 @@ export interface CategoryRecordsDict {
     [categoryName: string]: PropertyRecord[];
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface CellItem {
     alignment?: HorizontalAlignment;
     isDisabled?: boolean;
@@ -450,7 +450,7 @@ export interface CellItem {
     style?: ItemStyle;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface CellProps {
     // (undocumented)
     displayValue: string;
@@ -480,7 +480,7 @@ export interface CheckboxStateChange {
     nodeItem: TreeNodeItem;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface ColumnDescription {
     editable?: boolean;
     filterable?: boolean;
@@ -500,7 +500,7 @@ export interface ColumnDescription {
     width?: number;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface ColumnFilterDescriptor extends FilterDescriptor {
     distinctFilter: DistinctValuesFilterDescriptor;
     fieldFilter: FieldFilterDescriptor;
@@ -543,13 +543,13 @@ export interface CompletionObserver<T> {
     next?: (value: T) => void;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface CompositeFilterDescriptor extends FilterDescriptor {
     filterDescriptorCollection: FilterDescriptorCollection;
     logicalOperator: FilterCompositionLogicalOperator;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface CompositeFilterDescriptorCollection {
     add(item: FilterDescriptor): void;
     clear(): void;
@@ -683,7 +683,7 @@ export class CustomNumberPropertyEditor extends PropertyEditorBase {
 
 // @public
 export interface CustomToolbarItem extends CustomButtonDefinition {
-    // @deprecated in 3.x.
+    // @deprecated
     buttonNode?: React_2.ReactNode;
     keepContentsLoaded?: boolean;
     panelContentNode?: React_2.ReactNode;
@@ -876,7 +876,7 @@ export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFilterer
     recordMatchesFilter(node: PropertyRecord): Promise<PropertyDataFilterResult>;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export class DistinctValueCollection {
     constructor();
     // (undocumented)
@@ -884,7 +884,7 @@ export class DistinctValueCollection {
     set values(values: TableDistinctValue[]);
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
     addDistinctValue(distinctValue: any): void;
     distinctValues: DistinctValueCollection;
@@ -1028,7 +1028,7 @@ export interface FavoritePropertyListProps {
     propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface FieldFilterDescriptor extends FilterDescriptor {
     addFieldValue(fieldValue: any, operator: FilterOperator, isCaseSensitive?: boolean): void;
     filterDescriptorCollection: OperatorValueFilterDescriptorCollection;
@@ -1037,7 +1037,7 @@ export interface FieldFilterDescriptor extends FilterDescriptor {
     tryFindDescriptor(fieldValue: any, operator: FilterOperator): FilterDescriptor | undefined;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface FilterableColumn {
     columnFilterDescriptor: ColumnFilterDescriptor;
     createSimpleFilterDescriptor(value: any, filterOperator: FilterOperator): OperatorValueFilterDescriptor;
@@ -1051,13 +1051,13 @@ export interface FilterableColumn {
     showFieldFilters: boolean;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface FilterableTable {
     filterDescriptors: CompositeFilterDescriptorCollection;
     getPropertyDisplayValueExpression(property: string): string;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export enum FilterCompositionLogicalOperator {
     // (undocumented)
     And = 0,
@@ -1065,7 +1065,7 @@ export enum FilterCompositionLogicalOperator {
     Or = 1
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface FilterDescriptor {
     clear(): void;
     evaluateRow(row: RowItem): boolean;
@@ -1075,11 +1075,11 @@ export interface FilterDescriptor {
     isFilterForColumn(columnKey: string): boolean;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export class FilterDescriptorCollection extends FilterDescriptorCollectionBase<FilterDescriptor> {
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterDescriptor> {
     constructor();
     add(item: TDescriptor): void;
@@ -1145,7 +1145,7 @@ export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDi
     onDataChanged: PropertyDataChangeEvent;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export enum FilterOperator {
     // (undocumented)
     Contains = 9,
@@ -1183,7 +1183,7 @@ export enum FilterOperator {
     StartsWith = 7
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export enum FilterRenderer {
     // (undocumented)
     MultiSelect = 2,
@@ -1280,9 +1280,9 @@ export function getVisibleDescendants(model: TreeModel, parentNode: TreeModelNod
 export interface GridCategoryItem extends FlatGridItemBase {
     // (undocumented)
     readonly derivedCategory: PropertyCategory;
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     getChildCategories(): GridCategoryItem[];
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     getDescendantCategoriesAndSelf(): GridCategoryItem[];
     // (undocumented)
     readonly name: string;
@@ -1401,7 +1401,7 @@ export class IconEditor extends React_2.PureComponent<PropertyEditorProps, IconE
     render(): JSX.Element;
 }
 
-// @alpha @deprecated in 3.x.
+// @alpha @deprecated
 export class IconPickerButton extends React_2.PureComponent<IconPickerProps, IconPickerState> {
     // @internal
     constructor(props: IconPickerProps);
@@ -1411,7 +1411,7 @@ export class IconPickerButton extends React_2.PureComponent<IconPickerProps, Ico
     render(): JSX.Element;
 }
 
-// @alpha @deprecated in 3.x.
+// @alpha @deprecated
 export interface IconPickerProps extends React_2.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     disabled?: boolean;
     dropDownTitle?: string;
@@ -1528,9 +1528,9 @@ export interface IMutableFlatPropertyGridItem {
 export interface IMutableGridCategoryItem extends IMutableFlatPropertyGridItem {
     // (undocumented)
     derivedCategory: PropertyCategory;
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     getChildCategories(): IMutableGridCategoryItem[];
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     getDescendantCategoriesAndSelf(): IMutableGridCategoryItem[];
     // (undocumented)
     isRootCategory: boolean;
@@ -1726,7 +1726,7 @@ export interface ITreeDataProvider {
     getNodes(parent?: TreeNodeItem, page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]>;
     // (undocumented)
     getNodesCount(parent?: TreeNodeItem): Promise<number>;
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     onTreeNodeChanged?: BeEvent<TreeDataChangesListener>;
 }
 
@@ -2007,7 +2007,7 @@ export class MutablePropertyGridModel implements IPropertyGridModel, IMutablePro
     getVisibleFlatGrid(): IMutableFlatGridItem[];
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface MutableTableDataProvider extends TableDataProvider {
     addRow(rowItem: RowItem): number;
     deleteRow(rowItem: RowItem): void;
@@ -2015,7 +2015,7 @@ export interface MutableTableDataProvider extends TableDataProvider {
     moveRow(rowItem: RowItem, newIndex: number): number;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export interface MutableTreeDataProvider extends ITreeDataProvider {
     // (undocumented)
     getNodeIndex(parent: TreeNodeItem | undefined, child: TreeNodeItem): number;
@@ -2206,7 +2206,7 @@ export interface OperatorProcessor {
     isNotEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface OperatorValueFilterDescriptor extends FilterDescriptor {
     isCaseSensitive: boolean;
     memberKey: string;
@@ -2215,7 +2215,7 @@ export interface OperatorValueFilterDescriptor extends FilterDescriptor {
     value: any;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCollectionBase<OperatorValueFilterDescriptor> {
 }
 
@@ -2784,7 +2784,7 @@ export class PropertyGrid extends React_2.Component<PropertyGridProps, PropertyG
     render(): JSX.Element;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface PropertyGridCategory {
     // (undocumented)
     properties: PropertyRecord[];
@@ -3030,7 +3030,7 @@ export interface PropertyViewProps extends SharedRendererProps {
     valueElementRenderer?: () => React_2.ReactNode;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
     // (undocumented)
     filterableColumn?: FilterableColumn;
@@ -3070,7 +3070,7 @@ export interface ResultSelectorProps extends CommonProps {
     resultCount: number;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface RowItem {
     cells: CellItem[];
     colorOverrides?: ItemColorOverrides;
@@ -3082,7 +3082,7 @@ export interface RowItem {
     key: string;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface RowProps {
     // (undocumented)
     cells: {
@@ -3201,7 +3201,7 @@ export class ShortDateTypeConverter extends DateTimeTypeConverterBase {
     protected getTimeFormat(): TimeFormat;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export class ShowHideDialog<T extends ShowHideID> extends React_2.PureComponent<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
     constructor(props: ShowHideDialogProps<T>);
     // @internal (undocumented)
@@ -3212,17 +3212,17 @@ export class ShowHideDialog<T extends ShowHideID> extends React_2.PureComponent<
     readonly state: ShowHideDialogState<T>;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface ShowHideDialogProps<T extends ShowHideID> extends GlobalDialogProps {
     initialHidden?: T[];
     items: Array<ShowHideItem<T>>;
     onShowHideChange?: (cols: T[]) => boolean | undefined;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export type ShowHideID = string | number | symbol;
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface ShowHideItem<T extends ShowHideID> {
     // (undocumented)
     id: T;
@@ -3230,7 +3230,7 @@ export interface ShowHideItem<T extends ShowHideID> {
     label: string;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export class ShowHideMenu<T extends ShowHideID> extends React_2.PureComponent<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
     // @internal
     constructor(props: ShowHideMenuProps<T>);
@@ -3242,7 +3242,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React_2.PureComponent<Sh
     readonly state: ShowHideMenuState<T>;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMenuProps {
     initialHidden?: T[];
     items: Array<ShowHideItem<T>>;
@@ -3281,7 +3281,7 @@ export class SimplePropertyDataProvider implements IPropertyDataProvider, Proper
     replaceProperty(propertyRecord: PropertyRecord, categoryIdx: number, newRecord: PropertyRecord): boolean;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export class SimpleTableDataProvider implements MutableTableDataProvider {
     constructor(columns: ColumnDescription[]);
     addRow(rowItem: RowItem): number;
@@ -3464,7 +3464,7 @@ export interface Subscription extends Unsubscribable {
     unsubscribe(): void;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export class Table extends React_2.Component<TableProps, TableState> {
     // @internal
     constructor(props: TableProps);
@@ -3498,13 +3498,13 @@ export class TableArrayValueRenderer extends React_2.PureComponent<TableSpecific
     render(): JSX.Element;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export class TableCell extends React_2.PureComponent<TableCellProps> {
     // @internal (undocumented)
     render(): JSX.Element;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export class TableCellContent extends React_2.PureComponent<TableCellContentProps, TableCellContentState> {
     // @internal (undocumented)
     componentDidMount(): Promise<void>;
@@ -3518,7 +3518,7 @@ export class TableCellContent extends React_2.PureComponent<TableCellContentProp
     readonly state: TableCellContentState;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface TableCellContentProps extends CommonProps {
     cellItem: CellItem;
     height?: number;
@@ -3527,7 +3527,7 @@ export interface TableCellContentProps extends CommonProps {
     propertyValueRendererManager: PropertyValueRendererManager;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface TableCellContextMenuArgs {
     cellItem?: CellItem;
     cellKey: string;
@@ -3536,7 +3536,7 @@ export interface TableCellContextMenuArgs {
     rowIndex: number;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface TableCellEditorState {
     // (undocumented)
     active: boolean;
@@ -3548,7 +3548,7 @@ export interface TableCellEditorState {
     rowIndex?: number;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface TableCellProps extends CommonProps {
     cellEditingProps?: Omit_2<EditorContainerProps, "title">;
     children?: React_2.ReactNode;
@@ -3559,7 +3559,7 @@ export interface TableCellProps extends CommonProps {
     title: string;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface TableCellUpdatedArgs {
     // (undocumented)
     cellKey: string;
@@ -3583,14 +3583,14 @@ export class TableColumn extends FilterableColumnBase {
     readonly reactDataGridColumn: ReactDataGridColumn;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export class TableDataChangeEvent extends BeEvent<TableDataChangesListener> {
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export type TableDataChangesListener = () => void;
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface TableDataProvider {
     applyFilterDescriptors?: (filterDescriptors: CompositeFilterDescriptorCollection) => Promise<void>;
     getColumns(): Promise<ColumnDescription[]>;
@@ -3604,7 +3604,7 @@ export interface TableDataProvider {
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface TableDistinctValue {
     // (undocumented)
     label: string;
@@ -3625,13 +3625,13 @@ export class TableFilterDescriptorCollection extends FilterDescriptorCollection 
     set logicalOperator(value: FilterCompositionLogicalOperator);
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export class TableIconCellContent extends React_2.PureComponent<TableIconCellContentProps> {
     // @internal (undocumented)
     render(): JSX.Element;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface TableIconCellContentProps {
     iconName: string;
 }
@@ -3649,7 +3649,7 @@ export interface TableNonPrimitiveValueRendererProps extends SharedTableNonPrimi
     dialogTitle: string;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface TableProps extends CommonProps {
     dataProvider: TableDataProvider;
     hideHeader?: boolean;
@@ -3682,7 +3682,7 @@ export interface TableProps extends CommonProps {
     showHideColumns?: boolean;
     stripedRows?: boolean;
     tableSelectionTarget?: TableSelectionTarget;
-    // @deprecated in 3.x.
+    // @deprecated
     uiStateStorage?: UiStateStorage;
 }
 
@@ -3707,7 +3707,7 @@ export const TableRowStyleProvider: {
     createStyle: ({ color, backgroundColor }: ItemColorOverrides) => CSSProperties;
 };
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export enum TableSelectionTarget {
     // (undocumented)
     Cell = 1,
@@ -3779,7 +3779,7 @@ export class TextEditor extends React_2.PureComponent<PropertyEditorProps, TextE
     readonly state: Readonly<TextEditorState>;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export class ThemedEnumEditor extends React_2.PureComponent<ThemedEnumEditorProps, EnumEditorState_2> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -3799,7 +3799,7 @@ export class ThemedEnumEditor extends React_2.PureComponent<ThemedEnumEditorProp
     readonly state: Readonly<EnumEditorState_2>;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export interface ThemedEnumEditorProps extends PropertyEditorProps {
     isSearchable?: boolean;
     noOptionsMessage?: (obj: {
@@ -3808,7 +3808,7 @@ export interface ThemedEnumEditorProps extends PropertyEditorProps {
     placeholder?: string;
 }
 
-// @beta @deprecated in 3.x.
+// @beta @deprecated
 export class ThemedEnumPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get containerHandlesBlur(): boolean;

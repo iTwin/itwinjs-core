@@ -15,11 +15,11 @@ import { BaseItemState } from "./ItemDefBase";
  */
 export interface ItemProps extends IconProps {
   /** if set, component will be visible - defaults to true
-   * @deprecated in 3.x. use isHidden
+   * @deprecated use isHidden
    */
   isVisible?: boolean;
   /** if set, component will be enabled - defaults to true
-   * @deprecated in 3.x. use isDisabled
+   * @deprecated use isDisabled
    */
   isEnabled?: boolean;
   /** if true component will be hidden - defaults to false */
@@ -52,11 +52,11 @@ export interface ItemProps extends IconProps {
   tooltipKey?: string;
 
   /** Function called to get the new items state
-   * @deprecated in 3.x. Use ConditionalStringValue or ConditionalBooleanValue instead
+   * @deprecated Use ConditionalStringValue or ConditionalBooleanValue instead
    */
   stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
   /** Synchronize Ids to listen for
-   * @deprecated in 3.x. Use ConditionalStringValue or ConditionalBooleanValue instead
+   * @deprecated Use ConditionalStringValue or ConditionalBooleanValue instead
    */
   stateSyncIds?: string[];
 }

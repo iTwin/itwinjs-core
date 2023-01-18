@@ -22,22 +22,22 @@ export interface Node {
   description?: string;
   /**
    * Image ID
-   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   imageId?: string;
   /**
    * Foreground color
-   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   foreColor?: string;
   /**
    * Background color
-   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   backColor?: string;
   /**
    * Font style
-   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   fontStyle?: string;
   /** Does this node have child nodes */
@@ -50,17 +50,17 @@ export interface Node {
   isExpanded?: boolean;
   /**
    * Is checkbox visible for this node
-   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   isCheckboxVisible?: boolean;
   /**
    * Is this node's checkbox checked
-   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   isChecked?: boolean;
   /**
    * Is this node's checkbox enabled
-   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   isCheckboxEnabled?: boolean;
   /** Extended data injected into this node */
@@ -77,23 +77,23 @@ export interface NodeJSON {
   key: NodeKeyJSON;
   labelDefinition: LabelDefinitionJSON;
   description?: string;
-  /** @deprecated in 3.x. */
+  /** @deprecated */
   imageId?: string;
-  /** @deprecated in 3.x. */
+  /** @deprecated */
   foreColor?: string;
-  /** @deprecated in 3.x. */
+  /** @deprecated */
   backColor?: string;
-  /** @deprecated in 3.x. */
+  /** @deprecated */
   fontStyle?: string;
   hasChildren?: boolean;
   isSelectionDisabled?: boolean;
   isEditable?: boolean;
   isExpanded?: boolean;
-  /** @deprecated in 3.x. */
+  /** @deprecated */
   isCheckboxVisible?: boolean;
-  /** @deprecated in 3.x. */
+  /** @deprecated */
   isChecked?: boolean;
-  /** @deprecated in 3.x. */
+  /** @deprecated */
   isCheckboxEnabled?: boolean;
   extendedData?: {
     [key: string]: any;

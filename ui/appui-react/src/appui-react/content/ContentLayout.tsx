@@ -45,7 +45,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
 
   // istanbul ignore next
   const [hasMultipleContents, setHasMultipleContents] = React.useState(() =>
-  (activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length) ||
+    (activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length) ||
     (activeFrontstageDef?.contentGroup?.getContentControls().length ?? 0) > 1)
   );
 
@@ -495,7 +495,7 @@ export interface ContentLayoutComponentProps extends CommonProps {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
   /**
-  * @deprecated in 3.x. In upcoming version, widget mode will be removed and footer mode will always be true.
+  * @deprecated In upcoming version, widget mode will be removed and footer mode will always be true.
   */
   isInFooterMode?: boolean;
 }

@@ -35,7 +35,7 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     return Math.max(0.0, Math.min(1.0, value));
   }
 
-  /** @deprecated in 3.x. Use [CreateRenderMaterialArgs]($frontend). */
+  /** @deprecated Use [CreateRenderMaterialArgs]($frontend). */
   export class Params {
     /** If the material originates from a Material element in the [[IModel]], the Id of that element. */
     public key?: string;

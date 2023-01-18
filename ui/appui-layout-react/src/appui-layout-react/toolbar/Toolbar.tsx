@@ -14,7 +14,7 @@ import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHe
 import { Items } from "./Items";
 
 /** Available alignment modes of [[Toolbar]] panels.
- * @deprecated in 3.x. Use [ToolbarPanelAlignment]($components-react) instead
+ * @deprecated Use [ToolbarPanelAlignment]($components-react) instead
  * @beta
  */
 export enum ToolbarPanelAlignment {
@@ -119,7 +119,7 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
 }
 
 /** Properties of [[Toolbar]] component.
- * @deprecated in 3.x.
+ * @deprecated
  * @beta
  */
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
@@ -142,7 +142,7 @@ interface ToolbarState {
 }
 
 /** A toolbar that contains toolbar items.
- * @deprecated in 3.x. Use [ToolbarComposer]($appui-react) instead
+ * @deprecated Use [ToolbarComposer]($appui-react) instead
  * @beta
  */
 export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {

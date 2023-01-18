@@ -127,7 +127,7 @@ export class IpcApp {
     });
   }
 
-  /** @deprecated in 3.x. use [[appFunctionIpc]] */
+  /** @deprecated use [[appFunctionIpc]] */
   public static async callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>) {
     return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }

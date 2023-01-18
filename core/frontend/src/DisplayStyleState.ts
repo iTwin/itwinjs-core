@@ -60,7 +60,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _assigningScript = false;
 
   /** Event raised just before the [[scheduleScriptReference]] property is changed.
-   * @deprecated in 3.x. use [[onScheduleScriptChanged]].
+   * @deprecated use [[onScheduleScriptChanged]].
    */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
   /** Event raised just before the [[scheduleScript]] property is changed. */
@@ -318,7 +318,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @deprecated in 3.x. Use [[scheduleScript]].
+   * @deprecated Use [[scheduleScript]].
    */
   public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
     return this._scriptReference;
@@ -409,7 +409,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @public
    *
    */
-  public attachMapLayer(options: { settings: MapLayerSettings, isOverlay?: boolean, insertIndex?: number }): void {
+  public attachMapLayer(options: { settings: MapLayerSettings, isOverlay?: boolean, insertIndex?: number}): void {
     const layerSettings = options.settings.clone({});
     if (undefined === layerSettings)
       return;
@@ -428,12 +428,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public attachMapLayerProps(options: { props: MapLayerProps, isOverlay?: boolean, insertIndex?: number }): void {
+  public attachMapLayerProps(options: { props: MapLayerProps, isOverlay?: boolean, insertIndex?: number}): void {
     const settings = MapLayerSettings.fromJSON(options.props);
     if (undefined === settings)
       return;
 
-    this.attachMapLayer({ settings, isOverlay: options.isOverlay, insertIndex: options.insertIndex });
+    this.attachMapLayer({settings, isOverlay: options.isOverlay, insertIndex:options.insertIndex});
   }
 
   /** @internal */
@@ -493,7 +493,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
       this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
     } else {
-      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({ transparency });
+      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({transparency});
     }
     this._synchBackgroundMapImagery();
   }
@@ -543,7 +543,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return;
 
     if (!(mapLayerSettings instanceof ImageMapLayerSettings)) {
-      assert(false);
+      assert (false);
       return;
     }
 
@@ -579,7 +579,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
       return MapCartoRectangle.fromRadians(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
     }
-    if (!(mapLayerSettings instanceof ImageMapLayerSettings)) {
+    if (! (mapLayerSettings instanceof ImageMapLayerSettings)) {
       assert(false);
       return undefined;
     }

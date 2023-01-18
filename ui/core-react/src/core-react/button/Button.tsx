@@ -12,7 +12,7 @@ import { CommonProps } from "../utils/Props";
 
 /** Sizes for [[Button]] component
  * @public
- * @deprecated in 3.x. Use `size` prop for itwinui-react Button instead
+ * @deprecated Use `size` prop for itwinui-react Button instead
  */
 export enum ButtonSize {
   Default = "",
@@ -21,7 +21,7 @@ export enum ButtonSize {
 
 /** Types for [[Button]] component
  * @public
- * @deprecated in 3.x. Use `styleType` prop for itwinui-react Button instead
+ * @deprecated Use `styleType` prop for itwinui-react Button instead
  */
 export enum ButtonType {
   Primary = "primary",
@@ -32,7 +32,7 @@ export enum ButtonType {
 
 /** Properties for [[Button]] component
  * @public
- * @deprecated in 3.x. Use ButtonProps from itwinui-react instead
+ * @deprecated Use ButtonProps from itwinui-react instead
  */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** Allow ID to be passed to Button */
@@ -47,7 +47,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 /** Generic button component
  * @public
- * @deprecated in 3.x. Use Button from itwinui-react instead
+ * @deprecated Use Button from itwinui-react instead
  */
 export class Button extends React.PureComponent<ButtonProps> {    // eslint-disable-line deprecation/deprecation
   private getIuiButtonType = (buttonType?: ButtonType) => {   // eslint-disable-line deprecation/deprecation

@@ -52,7 +52,7 @@ export declare type Rule = CustomizationRule | NavigationRule | ContentRule | Co
  * Container of a [[condition]] property. Used for rules that support conditions. Not
  * meant to be used directly, see [[Rule]].
  *
- * @deprecated in 3.x. This interface is not used anymore. All interfaces that used to extend it, have the [[condition]]
+ * @deprecated This interface is not used anymore. All interfaces that used to extend it, have the [[condition]]
  * attribute of their own.
  * @public
  */

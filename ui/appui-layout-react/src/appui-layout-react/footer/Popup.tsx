@@ -13,7 +13,7 @@ import { RelativePosition } from "@itwin/appui-abstract";
 import { Popup, PopupProps } from "@itwin/core-react";
 
 /** Available footer popup content types.
- * @deprecated in 3.x. Type used in a deprecated component.
+ * @deprecated Type used in a deprecated component.
  * @beta
  */
 export enum FooterPopupContentType {
@@ -24,7 +24,7 @@ export enum FooterPopupContentType {
 }
 
 /** Properties of [[FooterPopup]] component.
- * @deprecated in 3.x. Props of a deprecated component.
+ * @deprecated Props of a deprecated component.
  * @beta
  */
 export interface FooterPopupProps extends Partial<PopupProps> {
@@ -33,13 +33,13 @@ export interface FooterPopupProps extends Partial<PopupProps> {
 }
 
 /** Default properties of [[FooterPopup]] component.
- * @deprecated in 3.x. Default props of a deprecated component.
+ * @deprecated Default props of a deprecated component.
  * @beta
  */
 export type FooterPopupDefaultProps = Pick<FooterPopupProps, "contentType">;
 
 /** Popup component used in [[Footer]] component.
- * @deprecated in 3.x. Use `popup` prop of [StatusBarIndicator]($appui-react) instead.
+ * @deprecated Use `popup` prop of [StatusBarIndicator]($appui-react) instead.
  * @beta
  */
 export class FooterPopup extends React.PureComponent<FooterPopupProps> {

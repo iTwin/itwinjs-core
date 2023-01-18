@@ -17,20 +17,20 @@ import { BackstageManager } from "./BackstageManager";
 
 /** [[BackstageEvent]] arguments.
  * @public
- * @deprecated in 3.x. Use [[BackstageComposer]] instead.
+ * @deprecated Use [[BackstageComposer]] instead.
  */
 export interface BackstageEventArgs {
   isVisible: boolean;
 }
 
 /** Backstage Event class.
- * @deprecated in 3.x. Use [[BackstageManager.onToggled]] instead.
+ * @deprecated Use [[BackstageManager.onToggled]] instead.
  * @public
  */
 export class BackstageEvent extends UiEvent<BackstageEventArgs> { } // eslint-disable-line deprecation/deprecation
 
 /** Properties for the [[Backstage]] React component.
- * @deprecated in 3.x. Props of a deprecated component.
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface BackstageProps extends CommonProps {
@@ -48,7 +48,7 @@ interface BackstageState {
 }
 
 /** Backstage React component.
- * @deprecated in 3.x. Use [[BackstageComposer]] instead.
+ * @deprecated Use [[BackstageComposer]] instead.
  * @public
  */
 export class Backstage extends React.Component<BackstageProps, BackstageState> { // eslint-disable-line deprecation/deprecation

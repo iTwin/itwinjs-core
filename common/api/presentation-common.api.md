@@ -142,7 +142,7 @@ export interface CategoryDescriptionJSON {
 // @public
 export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier;
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface CheckBoxRule extends RuleBase {
     condition?: string;
     defaultValue?: boolean;
@@ -277,7 +277,7 @@ export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<
 // @alpha (undocumented)
 export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface ConditionContainer {
     condition?: string;
 }
@@ -313,7 +313,7 @@ export enum ContentFlags {
     KeysOnly = 1,
     MergeResults = 8,
     NoFields = 32,
-    // @deprecated in 3.x.
+    // @deprecated
     ShowImages = 2,
     ShowLabels = 4
 }
@@ -331,7 +331,7 @@ export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    // @deprecated in 3.x.
+    // @deprecated
     handleInstancesPolymorphically?: boolean;
     handlePropertiesPolymorphically?: boolean;
     instanceFilter?: string;
@@ -407,7 +407,7 @@ export interface ContentSpecificationBase extends ContentModifiersList {
     onlyIfNotHandled?: boolean;
     priority?: number;
     relatedInstances?: RelatedInstanceSpecification[];
-    // @deprecated in 3.x.
+    // @deprecated
     showImages?: boolean;
     specType: ContentSpecificationTypes;
 }
@@ -490,7 +490,7 @@ export class Descriptor implements DescriptorSource {
     readonly displayType: string;
     readonly fields: Field[];
     fieldsFilterExpression?: string;
-    // @deprecated in 3.x.
+    // @deprecated
     filterExpression?: string;
     static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
@@ -524,7 +524,7 @@ export interface DescriptorJSON {
     fields: FieldJSON<Id64String>[];
     // (undocumented)
     fieldsFilterExpression?: string;
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     filterExpression?: string;
     // (undocumented)
     inputKeysHash: string;
@@ -549,7 +549,7 @@ export interface DescriptorOverrides {
         type: "include" | "exclude";
         fields: FieldDescriptor[];
     };
-    // @deprecated in 3.x.
+    // @deprecated
     filterExpression?: string;
     // @alpha
     instanceFilter?: InstanceFilterDefinition;
@@ -567,7 +567,7 @@ export interface DescriptorSource {
     readonly displayType: string;
     readonly fields: Field[];
     readonly fieldsFilterExpression?: string;
-    // @deprecated in 3.x.
+    // @deprecated
     readonly filterExpression?: string;
     readonly inputKeysHash?: string;
     // @alpha
@@ -1209,7 +1209,7 @@ export interface IdCategoryIdentifier {
     type: "Id";
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface ImageIdOverride extends RuleBase {
     condition?: string;
     imageIdExpression: string;
@@ -1365,7 +1365,7 @@ export enum InstanceLabelOverrideValueSpecificationType {
 
 // @public
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
-    // @deprecated in 3.x.
+    // @deprecated
     arePolymorphic?: boolean;
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
@@ -1422,7 +1422,7 @@ export class Item {
         [key: string]: any;
     };
     static fromJSON(json: ItemJSON | string | undefined): Item | undefined;
-    // @deprecated in 3.x.
+    // @deprecated
     imageId: string;
     // @beta
     inputKeys?: InstanceKey[];
@@ -1446,7 +1446,7 @@ export interface ItemJSON {
     extendedData?: {
         [key: string]: any;
     };
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     imageId: string;
     // @beta (undocumented)
     inputKeys?: InstanceKeyJSON[];
@@ -1582,7 +1582,7 @@ export interface LabelGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
     type: StandardNodeTypes.DisplayLabelGroupingNode;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface LabelOverride extends RuleBase {
     condition?: string;
     description?: string;
@@ -1757,24 +1757,24 @@ export interface NoCategoryIdentifier {
 
 // @public
 interface Node_2 {
-    // @deprecated in 3.x.
+    // @deprecated
     backColor?: string;
     description?: string;
     extendedData?: {
         [key: string]: any;
     };
-    // @deprecated in 3.x.
+    // @deprecated
     fontStyle?: string;
-    // @deprecated in 3.x.
+    // @deprecated
     foreColor?: string;
     hasChildren?: boolean;
-    // @deprecated in 3.x.
+    // @deprecated
     imageId?: string;
-    // @deprecated in 3.x.
+    // @deprecated
     isCheckboxEnabled?: boolean;
-    // @deprecated in 3.x.
+    // @deprecated
     isCheckboxVisible?: boolean;
-    // @deprecated in 3.x.
+    // @deprecated
     isChecked?: boolean;
     isEditable?: boolean;
     isExpanded?: boolean;
@@ -1848,7 +1848,7 @@ export interface NodeInsertionInfoJSON {
 
 // @public
 export interface NodeJSON {
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     backColor?: string;
     // (undocumented)
     description?: string;
@@ -1856,19 +1856,19 @@ export interface NodeJSON {
     extendedData?: {
         [key: string]: any;
     };
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     fontStyle?: string;
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     foreColor?: string;
     // (undocumented)
     hasChildren?: boolean;
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     imageId?: string;
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     isCheckboxEnabled?: boolean;
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     isCheckboxVisible?: boolean;
-    // @deprecated in 3.x. (undocumented)
+    // @deprecated (undocumented)
     isChecked?: boolean;
     // (undocumented)
     isEditable?: boolean;
@@ -2290,17 +2290,17 @@ export interface PropertyEditorSpecification {
 export interface PropertyGroup extends GroupingSpecificationBase {
     createGroupForSingleItem?: boolean;
     createGroupForUnspecifiedValues?: boolean;
-    // @deprecated in 3.x.
+    // @deprecated
     groupingValue?: PropertyGroupingValue;
     imageId?: string;
     propertyName: string;
     ranges?: PropertyRangeGroupSpecification[];
-    // @deprecated in 3.x.
+    // @deprecated
     sortingValue?: PropertyGroupingValue;
     specType: GroupingSpecificationTypes.Property;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export enum PropertyGroupingValue {
     DisplayLabel = "DisplayLabel",
     PropertyValue = "PropertyValue"
@@ -2997,7 +2997,7 @@ export interface StructTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Struct;
 }
 
-// @public @deprecated in 3.x.
+// @public @deprecated
 export interface StyleOverride extends RuleBase {
     backColor?: string;
     condition?: string;
