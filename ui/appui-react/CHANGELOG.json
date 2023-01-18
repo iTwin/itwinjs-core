@@ -2,6 +2,18 @@
   "name": "@itwin/appui-react",
   "entries": [
     {
+      "version": "3.5.4",
+      "tag": "@itwin/appui-react_v3.5.4",
+      "date": "Wed, 18 Jan 2023 15:27:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Issue #4879: Make sure floating viewports properly set their content as active and display the active view highlight bar."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.5.3",
       "tag": "@itwin/appui-react_v3.5.3",
       "date": "Fri, 13 Jan 2023 17:23:07 GMT",

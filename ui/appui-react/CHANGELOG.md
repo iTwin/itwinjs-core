@@ -1,6 +1,13 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Fri, 13 Jan 2023 17:23:07 GMT and should not be manually modified.
+This log was last generated on Wed, 18 Jan 2023 15:27:15 GMT and should not be manually modified.
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+### Updates
+
+- Issue #4879: Make sure floating viewports properly set their content as active and display the active view highlight bar.
 
 ## 3.5.3
 Fri, 13 Jan 2023 17:23:07 GMT
