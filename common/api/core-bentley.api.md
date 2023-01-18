@@ -337,6 +337,7 @@ export enum DbResult {
     BE_SQLITE_ERROR_BadDbProfile = 100663306,
     BE_SQLITE_ERROR_ChangeTrackError = 218103818,
     BE_SQLITE_ERROR_CouldNotAcquireLocksOrCodes = 352321546,
+    BE_SQLITE_ERROR_DataTransformRequired = 385875978,
     BE_SQLITE_ERROR_FileExists = 16777226,
     BE_SQLITE_ERROR_FileNotFound = 67108874,
     BE_SQLITE_ERROR_InvalidChangeSetVersion = 234881034,

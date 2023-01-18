@@ -9705,6 +9705,7 @@ export type UpdateCallback = (obj: any, t: number) => void;
 
 // @beta
 export interface UpgradeOptions {
+    readonly allowDataTransformDuringSchemaUpdate?: boolean;
     readonly domain?: DomainOptions;
     readonly profile?: ProfileOptions;
 }

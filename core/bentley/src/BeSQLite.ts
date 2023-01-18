@@ -115,8 +115,6 @@ export enum DbResult {
   BE_SQLITE_IOERR_SEEK = (BE_SQLITE_IOERR | (22 << 8)),
   BE_SQLITE_IOERR_DELETE_NOENT = (BE_SQLITE_IOERR | (23 << 8)),
 
-  /** schema update require data transform */
-  BE_SQLITE_ERROR_DataTransformRequired = (BE_SQLITE_IOERR | (1 << 16)),
   /** attempt to create a new file when a file by that name already exists */
   BE_SQLITE_ERROR_FileExists = (BE_SQLITE_IOERR | (1 << 24)),
   /** attempt to open a BeSQLite::Db that is already in use somewhere. */
@@ -161,6 +159,8 @@ export enum DbResult {
   BE_SQLITE_ERROR_CouldNotAcquireLocksOrCodes = (BE_SQLITE_IOERR | 21 << 24),
   /** Recommended that the schemas found in the database be upgraded */
   BE_SQLITE_ERROR_SchemaUpgradeRecommended = (BE_SQLITE_IOERR | 22 << 24),
+  /** schema update require data transform */
+  BE_SQLITE_ERROR_DataTransformRequired = (BE_SQLITE_IOERR | (23 << 24)),
 
   BE_SQLITE_LOCKED_SHAREDCACHE = (BE_SQLITE_LOCKED | (1 << 8)),
   BE_SQLITE_BUSY_RECOVERY = (BE_SQLITE_BUSY | (1 << 8)),
