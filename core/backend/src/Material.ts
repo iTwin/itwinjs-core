@@ -120,13 +120,12 @@ export class RenderMaterialElement extends DefinitionElement {
         maps.Pattern = { ...params.patternMap, ...baseProps, };
 
       if (params.normalMap) {
-        let flags = params.normalMap.NormalFlags ?? NormalMapFlags.None;
-        flags = params.normalMap.invertGreen ? (flags | NormalMapFlags.InvertGreenChannel) : (flags & ~NormalMapFlags.InvertGreenChannel);
         maps.Normal = {
           ...params.normalMap,
           ...baseProps,
-          NormalFlags: flags,
         };
+
+        delete (maps.Normal as any).scale;
       }
     }
 
@@ -212,7 +211,6 @@ export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
     public patternMap?: TextureMapProps;
     public normalMap?: NormalMapProps & {
       scale?: number;
-      invertGreen?: boolean;
     };
 
     /** Construct a new RenderMaterial.Params object with the specified paletteName.  Alter the public members on that object to specify settings. */

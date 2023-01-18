@@ -37,7 +37,7 @@ function defaultBooleans(assetProps: RenderMaterialAssetProps): RenderMaterialAs
   return assetProps;
 }
 
-describe.only("RenderMaterialElement", () => {
+describe("RenderMaterialElement", () => {
   let imodel: SnapshotDb;
   let materialNumber = 0;
   let textureNumber = 0;
@@ -156,7 +156,6 @@ describe.only("RenderMaterialElement", () => {
           Pattern: { TextureId: patternId },
           Normal: {
             TextureId: normalId,
-            NormalFlags: 0,
           },
         },
       });
@@ -195,7 +194,6 @@ describe.only("RenderMaterialElement", () => {
           },
           Normal: {
             ...sharedProps,
-            NormalFlags: 0,
             TextureId: normalId,
           },
         },
@@ -203,15 +201,60 @@ describe.only("RenderMaterialElement", () => {
     });
 
     it("normal map with default values", () => {
+      const id = insertTexture();
+      test({ normalMap: { TextureId: id } }, { Map: { Normal: { TextureId: id } } });
     });
 
     it("normal map with inverted green channel", () => {
+      const id = insertTexture();
+      test({
+        normalMap: {
+          TextureId: id,
+          NormalFlags: 1,
+        },
+      }, {
+        Map: {
+          Normal: {
+            NormalFlags: 1,
+            TextureId: id,
+          },
+        },
+      });
     });
 
     it("normal map with scale", () => {
+      const id = insertTexture();
+      const scale = 2.5;
+      test({
+        normalMap: {
+          TextureId: id,
+          scale,
+        },
+      }, {
+        pbr_normal: 2.5,
+        Map: {
+          Normal: {
+            TextureId: id,
+          },
+        },
+      });
     });
 
     it("normal map with flags", () => {
+      const id = insertTexture();
+      test({
+        normalMap: {
+          TextureId: id,
+          NormalFlags: 0xff00,
+        },
+      }, {
+        Map: {
+          Normal: {
+            TextureId: id,
+            NormalFlags: 0xff00,
+          },
+        },
+      });
     });
   });
 });
