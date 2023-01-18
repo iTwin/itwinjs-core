@@ -738,7 +738,7 @@ export class ImdlReader {
     if (normalMapJson) {
       let normalMap;
       const normalTexName = JsonUtils.asString(normalMapJson.textureName);
-      if (normalTexName.length == 0 || undefined !== (normalMap = this._namedTextures[normalTexName]?.renderTexture)) {
+      if (normalTexName.length === 0 || undefined !== (normalMap = this._namedTextures[normalTexName]?.renderTexture)) {
         textureMapping.normalMapParams = {
           normalMap,
           greenDown: JsonUtils.asBool(normalMapJson.greenDown),

@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ImageSourceFormat, IModel, NormalMapProps, RenderMaterialAssetProps, TextureMapProps } from "@itwin/core-common";
-import { RenderMaterialElement, SnapshotDb, Texture } from "../../core-backend";
+import { RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
@@ -51,7 +51,7 @@ describe("RenderMaterialElement", () => {
   after(() => imodel.close());
 
   describe("insert", () => {
-    function test(params: Omit<RenderMaterialElement.Params, "paletteName">, expected: RenderMaterialAssetProps): RenderMaterialElement {
+    function test(params: Omit<RenderMaterialElementParams, "paletteName">, expected: RenderMaterialAssetProps): RenderMaterialElement {
       const name = `material${++materialNumber}`;
       const paletteName = "palette";
       const id = RenderMaterialElement.insert(imodel, IModel.dictionaryId, name, { ...params, paletteName });
@@ -72,7 +72,7 @@ describe("RenderMaterialElement", () => {
     });
 
     it("with custom values", () => {
-      const params: Omit<RenderMaterialElement.Params, "paletteName"> = {
+      const params: Omit<RenderMaterialElementParams, "paletteName"> = {
         color: [1, 0, 0],
         specularColor: [0, 1, 0],
         finish: 21,
@@ -83,6 +83,7 @@ describe("RenderMaterialElement", () => {
         reflectColor: [0, 0, 1],
       };
 
+      /* eslint-disable @typescript-eslint/naming-convention */
       test(params, {
         HasBaseColor: true, color: params.color,
         HasSpecularColor: true, specular_color: params.specularColor,

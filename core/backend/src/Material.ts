@@ -6,9 +6,9 @@
  * @module Elements
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, NormalMapFlags, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
+  BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -117,7 +117,7 @@ export class RenderMaterialElement extends DefinitionElement {
 
       maps = { };
       if (params.patternMap)
-        maps.Pattern = { ...params.patternMap, ...baseProps, };
+        maps.Pattern = { ...params.patternMap, ...baseProps };
 
       if (params.normalMap) {
         maps.Normal = {
@@ -175,7 +175,7 @@ export class RenderMaterialElement extends DefinitionElement {
    * @returns The Id of the newly inserted RenderMaterial element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): Id64String {
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
     const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
     return iModelDb.elements.insertElement(renderMaterial.toJSON());
   }
@@ -243,5 +243,5 @@ export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
  * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
  * @public
  */
-export interface RenderMaterialElementParams extends RenderMaterialElement.Params { // eslint-disable-line deprecation/deprecation
+export interface RenderMaterialElementParams extends RenderMaterialElement.Params { // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-empty-interface
 }
