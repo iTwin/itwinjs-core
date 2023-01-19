@@ -7,7 +7,7 @@
  */
 
 /** Widget state enum.
- * @deprecated in 3.5. Use [WidgetState]($appui-react) instead.
+ * @deprecated in 3.6. Use [WidgetState]($appui-react) instead.
  * @public
  */
 export enum WidgetState {

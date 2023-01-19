@@ -29,7 +29,7 @@ export enum UiItemsApplicationAction {
 }
 
 /** UIProvider Registered Event Args interface.
- * @deprecated in 3.5. Use [UiItemsProviderRegisteredEventArgs]($appui-react) instead.
+ * @deprecated in 3.6. Use [UiItemsProviderRegisteredEventArgs]($appui-react) instead.
  * @public
  */
 export interface UiItemProviderRegisteredEventArgs {
@@ -37,7 +37,7 @@ export interface UiItemProviderRegisteredEventArgs {
 }
 
 /** UiItemProviderOverrides allows the application that registers a provider to limit when it is allowed to provide items
- * @deprecated in 3.5. Use [AllowedUiItemsProviderOverrides]($appui-react) instead.
+ * @deprecated in 3.6. Use [AllowedUiItemsProviderOverrides]($appui-react) instead.
  * @public
  */
 export interface AllowedUiItemProviderOverrides {
@@ -58,7 +58,7 @@ export interface AllowedUiItemProviderOverrides {
 /** Allowed overrides applied to a UiItemsProvider the application that registers a provider to limit when it is allowed to provide items.
  * Note that if an override `providerId` is specified then either `stageIds` or `stageUsages` must be defined to limit when the provider's
  * items are allowed.
- * @deprecated in 3.5. Use [UiItemsProviderOverrides]($appui-react) instead.
+ * @deprecated in 3.6. Use [UiItemsProviderOverrides]($appui-react) instead.
  * @public
  */
 export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> |
@@ -74,7 +74,7 @@ interface UiItemProviderEntry {
 }
 
 /** Controls registering of UiItemsProviders and calls the provider's methods when populating different parts of the User Interface.
- * @deprecated in 3.5. Use [UiItemsManager]($appui-react) instead.
+ * @deprecated in 3.6. Use [UiItemsManager]($appui-react) instead.
  * @public
  */
 export class UiItemsManager {

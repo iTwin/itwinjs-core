@@ -12,7 +12,7 @@ import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ProvidedItem } from "../items/ProvidedItem";
 
 /** Used to specify the item type added to the backstage menu.
- * @deprecated in 3.5. Use type guards instead.
+ * @deprecated in 3.6. Use type guards instead.
  * @public
  */
 export enum BackstageItemType {
@@ -23,7 +23,7 @@ export enum BackstageItemType {
 }
 
 /** Describes the data needed to insert a button into the backstage menu.
- * @deprecated in 3.5. Use [CommonBackstageItem]($appui-react) instead.
+ * @deprecated in 3.6. Use [CommonBackstageItem]($appui-react) instead.
  * @public
  */
 export interface CommonBackstageItem extends ProvidedItem { // eslint-disable-line deprecation/deprecation
@@ -59,7 +59,7 @@ export interface CommonBackstageItem extends ProvidedItem { // eslint-disable-li
 }
 
 /** Describes the data needed to insert an action button into the backstage menu.
- * @deprecated in 3.5. Use [BackstageActionItem]($appui-react) instead.
+ * @deprecated in 3.6. Use [BackstageActionItem]($appui-react) instead.
  * @public
  */
 export interface BackstageActionItem extends CommonBackstageItem { // eslint-disable-line deprecation/deprecation
@@ -67,7 +67,7 @@ export interface BackstageActionItem extends CommonBackstageItem { // eslint-dis
 }
 
 /** Describes the data needed to insert an action button into the backstage menu.
- * @deprecated in 3.5. Use [BackstageActionItem]($appui-react) instead.
+ * @deprecated in 3.6. Use [BackstageActionItem]($appui-react) instead.
  * @public
  */
 export interface BackstageStageLauncher extends CommonBackstageItem { // eslint-disable-line deprecation/deprecation
@@ -75,13 +75,13 @@ export interface BackstageStageLauncher extends CommonBackstageItem { // eslint-
 }
 
 /** Describes the data needed to insert a button into the backstage menu.
- * @deprecated in 3.5. Use [BackstageItem]($appui-react) instead.
+ * @deprecated in 3.6. Use [BackstageItem]($appui-react) instead.
  * @public
  */
 export type BackstageItem = BackstageActionItem | BackstageStageLauncher; // eslint-disable-line deprecation/deprecation
 
 /** BackstageActionItem type guard.
- * @deprecated in 3.5. Use [isBackstageActionItem]($appui-react) instead.
+ * @deprecated in 3.6. Use [isBackstageActionItem]($appui-react) instead.
  * @public
  */
 export const isActionItem = (item: BackstageItem): item is BackstageActionItem => { // eslint-disable-line deprecation/deprecation
@@ -89,7 +89,7 @@ export const isActionItem = (item: BackstageItem): item is BackstageActionItem =
 };
 
 /** BackstageStageLauncher type guard.
- * @deprecated in 3.5. Use [isBackstageStageLauncher]($appui-react) instead.
+ * @deprecated in 3.6. Use [isBackstageStageLauncher]($appui-react) instead.
  * @public
  */
 export const isStageLauncher = (item: BackstageItem): item is BackstageStageLauncher => { // eslint-disable-line deprecation/deprecation
@@ -97,7 +97,7 @@ export const isStageLauncher = (item: BackstageItem): item is BackstageStageLaun
 };
 
 /** Utilities for creating and maintaining backstage items
- * @deprecated in 3.5. Use [BackstageItemUtilities]($appui-react) instead.
+ * @deprecated in 3.6. Use [BackstageItemUtilities]($appui-react) instead.
  * @public
  */
 export class BackstageItemUtilities {
