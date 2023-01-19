@@ -343,9 +343,6 @@ describe("IModelTransformerHub", () => {
       db: BriefcaseDb;
     }
 
-    // HACK: update `maintainPhysicalObjects`
-    const hackObjToArrayState = (obj: Record<number, number>): number[] => Object.keys(obj).map(Number);
-
     const masterIModelName = "Master";
     const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
     if (IModelJsFs.existsSync(masterSeedFileName))
@@ -354,7 +351,7 @@ describe("IModelTransformerHub", () => {
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: masterIModelName } });
     SpatialCategory.insert(masterSeedDb, IModel.dictionaryId, "SpatialCategory", new SubCategoryAppearance());
     PhysicalModel.insert(masterSeedDb, IModel.rootSubjectId, "PhysicalModel");
-    maintainPhysicalObjects(masterSeedDb, hackObjToArrayState(masterSeedState));
+    maintainPhysicalObjects(masterSeedDb, masterSeedState);
     assert(IModelJsFs.existsSync(masterSeedFileName));
     masterSeedDb.nativeDb.setITwinId(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.saveChanges();
@@ -404,11 +401,13 @@ describe("IModelTransformerHub", () => {
       // insert a conflicting state for 7 on master
       8: { master: { 1:2, 2:2, 4:1, 5:1, 6:1, 7:2, 9:1, 30:1 } },
       9: { master: { sync: ["branch2", 7] } },
-      10: { assert({master}) {
-        // master won the conflict
-        assert.equal(count(master.db, ExternalSourceAspect.classFullName), 0);
-        assertPhysicalObjectUpdated(master.db, 7);
-      }},
+      10: {
+        assert({master}) {
+          assert.equal(count(master.db, ExternalSourceAspect.classFullName), 0);
+          // master won the conflict
+          assertPhysicalObjectUpdated(master.db, 7);
+        }
+      },
       11: { master: { 1:2, 2:2, 4:1, 5:1, 6:2, 8:1, 9:1, 30:1 } },
       12: { branch1: { sync: ["master", 4] } },
     };
@@ -472,15 +471,15 @@ describe("IModelTransformerHub", () => {
           await saveAndPushChanges(branchDb, "initialized branch provenance");
         } else if ("seed" in newIModelEvent) {
           assert(seed);
-          maintainPhysicalObjects(newIModelDb, hackObjToArrayState(seed.state));
+          maintainPhysicalObjects(newIModelDb, seed.state);
           await saveAndPushChanges(newIModelDb, `seeded from '${newIModelEvent.seed.id}' at point ${i}`);
         } else {
-          maintainPhysicalObjects(newIModelDb, hackObjToArrayState(newIModelEvent));
+          maintainPhysicalObjects(newIModelDb, newIModelEvent);
           await saveAndPushChanges(newIModelDb, `new with state [${newIModelEvent}] at point ${i}`);
         }
 
         if (seed) {
-          assertPhysicalObjects(newIModelDb, hackObjToArrayState(seed!.state));
+          assertPhysicalObjects(newIModelDb, seed!.state);
         }
       }
 
@@ -510,7 +509,7 @@ describe("IModelTransformerHub", () => {
             console.log(`target before state: ${JSON.stringify(targetStateBefore)}`);
             console.log(` target after state: ${JSON.stringify(targetState)}`);
           }
-          assertPhysicalObjects(target.db, hackObjToArrayState(sourceRangeState), { ignoreUnknown: true });
+          assertPhysicalObjects(target.db, sourceRangeState, { ignoreUnknown: true });
           target.state = sourceRangeState; // update the tracking state
 
           await saveAndPushChanges(target.db, stateMsg);
@@ -529,7 +528,7 @@ describe("IModelTransformerHub", () => {
             console.log(stateMsg);
           }
 
-          maintainPhysicalObjects(alreadySeenIModel.db, delta);
+          maintainPhysicalObjects(alreadySeenIModel.db, newState);
           await saveAndPushChanges(alreadySeenIModel.db, stateMsg);
         }
       }
@@ -598,7 +597,7 @@ describe("IModelTransformerHub", () => {
       }
       replayTransformer.dispose();
       sourceDb.close();
-      assertPhysicalObjects(replayedDb, hackObjToArrayState(master.state)); // should have same ending state as masterDb
+      assertPhysicalObjects(replayedDb, master.state); // should have same ending state as masterDb
 
       // make sure there are no deletes in the replay history (all elements that were eventually deleted from masterDb were excluded)
       const replayedDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: replayedIModelId, targetDir: BriefcaseManager.getChangeSetsPath(replayedIModelId) });
@@ -933,20 +932,23 @@ describe("IModelTransformerHub", () => {
     await briefcaseDb.pushChanges({ accessToken, description });
   }
 
-  function getPhysicalObjects(iModelDb: IModelDb): Id64String[] {
-    return iModelDb.withPreparedStatement(`SELECT UserLabel FROM ${PhysicalObject.classFullName}`, (s) => [...s].map(r => r.userLabel));
+  function getPhysicalObjects(iModelDb: IModelDb): Record<number, number> {
+    return iModelDb.withPreparedStatement(
+      `SELECT UserLabel, JsonProperties FROM ${PhysicalObject.classFullName}`,
+      (s) =>
+        Object.fromEntries(
+          [...s].map((r) => [r.userLabel, r.jsonProperties && JSON.parse(r.jsonProperties).updateState])
+        )
+    );
   }
 
-  function assertPhysicalObjects(iModelDb: IModelDb, numbers: number[], { ignoreUnknown = false } = {}): void {
-    let numPhysicalObjects = 0;
-    for (const n of numbers) {
-      if (n > 0) { // negative "n" value means element was deleted
-        ++numPhysicalObjects;
+  function assertPhysicalObjects(iModelDb: IModelDb, numbers: Record<number, number>, { ignoreUnknown = false } = {}): void {
+    if (ignoreUnknown) {
+      for (const n in numbers) {
+        assertPhysicalObject(iModelDb, Number(n));
       }
-      assertPhysicalObject(iModelDb, n);
-    }
-    if (!ignoreUnknown) {
-      assert.equal(numPhysicalObjects, count(iModelDb, PhysicalObject.classFullName));
+    } else {
+      assert.deepEqual(getPhysicalObjects(iModelDb), numbers);
     }
   }
 
@@ -963,7 +965,7 @@ describe("IModelTransformerHub", () => {
     assert.isTrue(n > 0);
     const physicalObjectId = getPhysicalObjectId(iModelDb, n);
     const physicalObject = iModelDb.elements.getElement(physicalObjectId, PhysicalObject);
-    assert.isAtLeast(physicalObject.jsonProperties.updated, 1);
+    assert.isAtLeast(physicalObject.jsonProperties.updateState, 2);
   }
 
   function getPhysicalObjectId(iModelDb: IModelDb, n: number): Id64String {
@@ -974,23 +976,26 @@ describe("IModelTransformerHub", () => {
     });
   }
 
-  function maintainPhysicalObjects(iModelDb: IModelDb, numbers: number[]): void {
+  function maintainPhysicalObjects(iModelDb: IModelDb, numbers: Record<number, number>): void {
     const modelId = iModelDb.elements.queryElementIdByCode(PhysicalPartition.createCode(iModelDb, IModel.rootSubjectId, "PhysicalModel"))!;
     const categoryId = iModelDb.elements.queryElementIdByCode(SpatialCategory.createCode(iModelDb, IModel.dictionaryId, "SpatialCategory"))!;
-    for (const n of numbers) {
-      maintainPhysicalObject(iModelDb, modelId, categoryId, n);
+    const objIds = iModelDb.withPreparedStatement(
+      `SELECT ECInstanceId FROM ${PhysicalObject.classFullName}`, (s) => [...s].map((r) => r.id)
+    );
+    const currentObjs = getPhysicalObjects(iModelDb);
+    const objsToDelete = Object.keys(currentObjs).filter(n => !(n in numbers));
+    for (const obj of objsToDelete) {
+      const id = getPhysicalObjectId(iModelDb, Number(obj));
+      iModelDb.elements.deleteElement(id);
     }
-  }
-
-  function maintainPhysicalObject(iModelDb: IModelDb, modelId: Id64String, categoryId: Id64String, n: number): Id64String {
-    if (n > 0) { // positive "n" value means insert or update
+    for (const i in numbers) {
+      const n = Number(i);
+      const value = numbers[i];
       const physicalObjectId = getPhysicalObjectId(iModelDb, n);
       if (Id64.isValidId64(physicalObjectId)) { // if element exists, update it
         const physicalObject = iModelDb.elements.getElement(physicalObjectId, PhysicalObject);
-        const numTimesUpdated: number = physicalObject.jsonProperties?.updated ?? 0;
-        physicalObject.jsonProperties.updated = 1 + numTimesUpdated;
+        physicalObject.jsonProperties.updated = value;
         physicalObject.update();
-        return physicalObjectId;
       } else { // if element does not exist, insert it
         const physicalObjectProps: PhysicalElementProps = {
           classFullName: PhysicalObject.classFullName,
@@ -1003,13 +1008,14 @@ describe("IModelTransformerHub", () => {
             origin: Point3d.create(n, n, 0),
             angles: YawPitchRollAngles.createDegrees(0, 0, 0),
           },
+          jsonProperties: {
+            updateState: value,
+          },
         };
-        return iModelDb.elements.insertElement(physicalObjectProps);
+        iModelDb.elements.insertElement(physicalObjectProps);
       }
-    } else { // negative "n" value means delete
-      const physicalObjectId = getPhysicalObjectId(iModelDb, -n);
-      iModelDb.elements.deleteElement(physicalObjectId);
-      return physicalObjectId;
     }
+    // TODO: iModelDb.performCheckpoint?
+    iModelDb.saveChanges();
   }
 });
