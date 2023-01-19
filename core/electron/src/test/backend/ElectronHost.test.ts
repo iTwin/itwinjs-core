@@ -182,6 +182,8 @@ async function testWindowSizeSettings() {
   window.maximize();
   if (isXvfbRunning)
     window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
+  else
+    await sleep(100); // "maximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized);
@@ -189,11 +191,11 @@ async function testWindowSizeSettings() {
   window.unmaximize();
   if (isXvfbRunning)
     window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb (linux)
+  else
+    await sleep(100); // "unmaximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(!isMaximized);
-
-  await sleep(100); // Wait for window to "unmaximize"
 
   const width = 250;
   const height = 251;
@@ -252,7 +254,7 @@ async function isXvfbProcessRunning(): Promise<boolean> {
     doesXvfbProcessExists = !isNaN(processNumber);
   });
 
-  await new Promise((resolve) => bashProcess.on("exit", resolve));
+  await new Promise((resolve) => bashProcess.on("close", resolve));
   return doesXvfbProcessExists;
 }
 
