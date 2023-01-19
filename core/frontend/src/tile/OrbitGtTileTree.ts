@@ -280,7 +280,7 @@ export class OrbitGtTileTree extends TileTree {
     const tileCount = frameData.tilesToRender.size();
 
     // Inform TileAdmin about tiles we are handling ourselves...
-    IModelApp.tileAdmin.addExternalTilesForUser(args.context.viewport, { requested: frameData.tilesToLoad.size(), selected: tileCount, ready: tileCount });
+    IModelApp.tileAdmin.addExternalTilesForUser(args.context.viewport, { requested: frameData.tilesToLoad.size() + (frameData.hasMissingData() ? 1 : 0), selected: tileCount, ready: tileCount });
 
     if (debugBuilder)
       debugBuilder.setSymbology(ColorDef.red, ColorDef.red, 1);
