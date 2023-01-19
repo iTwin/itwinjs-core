@@ -44,7 +44,7 @@ export interface ContentSpecificationBase extends ContentModifiersList {
    * Should image IDs be calculated for the returned instances. When `true`, [[ImageIdOverride]] rules get applied when
    * creating the content.
    *
-   * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 3.x. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   showImages?: boolean;
 
