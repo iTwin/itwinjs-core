@@ -63,6 +63,6 @@ function mapStateToProps(state: any) {
  * IModelApp.notifications.outputPrompt.
  * This React component is Redux connected.
  * @public
- * @deprecated in 3.x. Use ToolAssistanceField instead
+ * @deprecated Use ToolAssistanceField instead
  */ // eslint-disable-next-line @typescript-eslint/naming-convention
 export const PromptField = connect(mapStateToProps)(PromptFieldComponent);

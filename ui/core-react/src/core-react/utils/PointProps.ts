@@ -8,7 +8,7 @@
 
 /** Describes 2d points.
  * @public
- * @deprecated in 3.x. Use [PointProps]($appui-abstract) instead
+ * @deprecated Use [PointProps]($appui-abstract) instead
  */
 export interface PointProps {
   readonly x: number;

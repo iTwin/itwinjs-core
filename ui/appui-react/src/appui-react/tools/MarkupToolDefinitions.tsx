@@ -13,7 +13,7 @@ import { ToolItemDef } from "../shared/ToolItemDef";
 
 /** Utility Class that provides definitions of tools provided by @itwin/core-markup package. These definitions can be used to populate the UI.
  *  Note: Application must call 'MarkupApp.initialize()' or 'MarkupApp.start()' before using these definitions.
- * @public @deprecated in 3.x. Use the tools directly from the @itwin/core-markup package.
+ * @public @deprecated Use the tools directly from the @itwin/core-markup package.
  */
 // istanbul ignore next
 export class MarkupTools {

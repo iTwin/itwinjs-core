@@ -25,7 +25,7 @@ export interface StatusMessageProps extends CommonProps {
 }
 
 /** Component used to define toast, sticky and activity message.
- * @deprecated in 3.x. Use [ActivityMessage]($appui-react), [StickyMessage]($appui-react) or [ToastMessage]($appui-react) instead
+ * @deprecated Use [ActivityMessage]($appui-react), [StickyMessage]($appui-react) or [ToastMessage]($appui-react) instead
  * @internal
  */
 export class Message extends React.PureComponent<StatusMessageProps> {

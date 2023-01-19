@@ -12,7 +12,7 @@ import { WidgetHost } from "../widgets/WidgetHost";
 import { ZoneLocation, ZoneProps } from "./Zone";
 
 /** Zone State enum.
- * @public @deprecated in 3.x.
+ * @public @deprecated
  */
 export enum ZoneState {
   Off,
@@ -24,7 +24,7 @@ export enum ZoneState {
 
 /**
  * A ZoneDef represents each zone within a Frontstage.
- * @deprecated in 3.x. Use [[StagePanelDef]] or [[WidgetDef]] instead.
+ * @deprecated Use [[StagePanelDef]] or [[WidgetDef]] instead.
  * @public
  */
 export class ZoneDef extends WidgetHost {
@@ -35,13 +35,13 @@ export class ZoneDef extends WidgetHost {
   private _mergeWithZone?: ZoneLocation;
   private _zoneLocation: ZoneLocation = ZoneLocation.TopLeft;
 
-  /** Zone state.  Defaults to ZoneState.Open. @deprecated in 3.x. */
+  /** Zone state.  Defaults to ZoneState.Open. @deprecated */
   public get zoneState(): ZoneState { return this._zoneState; }
-  /** Indicates if other Zones may be merged with this Zone. Defaults to false. @deprecated in 3.x. */
+  /** Indicates if other Zones may be merged with this Zone. Defaults to false. @deprecated */
   public get allowsMerging(): boolean { return this._allowsMerging; }
   /** Any application data to attach to this Zone. */
   public get applicationData(): any | undefined { return this._applicationData; }
-  /** Indicates with which other zone to merge. @deprecated in 3.x. */
+  /** Indicates with which other zone to merge. @deprecated */
   public get mergeWithZone(): ZoneLocation | undefined { return this._mergeWithZone; }
 
   /** The Zone's location.

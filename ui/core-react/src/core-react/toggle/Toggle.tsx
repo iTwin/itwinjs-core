@@ -14,7 +14,7 @@ import { useRefs } from "../utils/hooks/useRefs";
 
 /** Toggle display types
  * @public
- * @deprecated in 3.x.
+ * @deprecated
  */
 export enum ToggleButtonType {
   /** Primary (green) background */
@@ -25,7 +25,7 @@ export enum ToggleButtonType {
 
 /** Properties for [[Toggle]] component
  * @public
- * @deprecated in 3.x. Use ToggleSwitchProps in itwinui-react instead
+ * @deprecated Use ToggleSwitchProps in itwinui-react instead
  */
 export interface ToggleProps extends CommonProps {
   /** Indicates whether the Toggle is disabled (default is false) */
@@ -37,7 +37,7 @@ export interface ToggleProps extends CommonProps {
   /** Show a check mark icon when the toggle is "on" (false is default) */
   showCheckmark?: boolean;
   /** Button type, either Primary or Blue (Blue is default).
-   * @deprecated in 3.x. */
+   * @deprecated */
   buttonType?: ToggleButtonType;  // eslint-disable-line deprecation/deprecation
   /** Function called when the toggle state is changed */
   onChange?: (checked: boolean) => any;
@@ -163,6 +163,6 @@ const ForwardRefToggle = React.forwardRef<HTMLInputElement, ToggleProps>(   // e
 /**
  * Toggle React component to show an "on" or "off" state
  * @public
- * @deprecated in 3.x. Use ToggleSwitch in itwinui-react instead
+ * @deprecated Use ToggleSwitch in itwinui-react instead
  */
 export const Toggle: (props: ToggleProps) => JSX.Element | null = ForwardRefToggle;   // eslint-disable-line deprecation/deprecation

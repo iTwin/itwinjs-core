@@ -31,7 +31,7 @@ export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNod
 
 /** Properties for [[Breadcrumb]] component
  * @beta
- * @deprecated in 3.x.
+ * @deprecated
  */
 export interface BreadcrumbProps extends CommonProps {
   /** Manager to coordinate state between Breadcrumb element and BreadcrumbDetails element. */
@@ -71,7 +71,7 @@ export interface BreadcrumbProps extends CommonProps {
 
 /** Enum for Breadcrumb Mode
  * @beta
- * @deprecated in 3.x.
+ * @deprecated
  */
 export enum BreadcrumbMode {
   Dropdown = "dropdown",
@@ -97,7 +97,7 @@ interface BreadcrumbState {
  * Text mode includes autocomplete suggestions.
  * Both dropdown and text mode support arrow and tab navigation.
  * @beta
- * @deprecated in 3.x. Use Breadcrumbs from itwinui-react instead
+ * @deprecated Use Breadcrumbs from itwinui-react instead
  */
 export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState> {
   private _mounted: boolean = false;
@@ -903,7 +903,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
 
 /** Properties for [[BreadcrumbNode]] component
  * @beta
- * @deprecated in 3.x.
+ * @deprecated
  */
 export interface BreadcrumbNodeProps {
   /** Icon class string */
@@ -916,7 +916,7 @@ export interface BreadcrumbNodeProps {
 
 /** Default BreadcrumbNode component
  * @beta
- * @deprecated in 3.x.
+ * @deprecated
  */
 export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
   constructor(props: BreadcrumbNodeProps) {

@@ -30,9 +30,9 @@ export abstract class ItemDefBase {
   private _tooltip: string | StringGetter | ConditionalStringValue = "";
   private _description: string | StringGetter | ConditionalStringValue = "";
 
-  /** @deprecated in 3.x. Use isHidden instead */
+  /** @deprecated Use isHidden instead */
   public isVisible: boolean = true;
-  /** @deprecated in 3.x. Use isDisabled instead */
+  /** @deprecated Use isDisabled instead */
   public isEnabled: boolean = true;
   public isPressed: boolean = false;
   private _isActive: boolean = false;
@@ -45,9 +45,9 @@ export abstract class ItemDefBase {
 
   public badgeType?: BadgeType;
 
-  /** @deprecated in 3.x. Use condition instead */
+  /** @deprecated Use condition instead */
   public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
-  /** @deprecated in 3.x. Use condition instead */
+  /** @deprecated Use condition instead */
   public stateSyncIds: string[] = [];
 
   public iconSpec?: IconSpec;

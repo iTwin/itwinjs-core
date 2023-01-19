@@ -12,7 +12,7 @@ import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "@itw
 /**
  * Implementation of [[UiStateStorage]] that uses settings admin from [IModelApp.userPreferences]($core-frontend).
  * @public
- * @deprecated in 3.x. Use [IModelApp.userPreferences]($core-frontend) API directly to store user preferences as a replacement.
+ * @deprecated Use [IModelApp.userPreferences]($core-frontend) API directly to store user preferences as a replacement.
  */
 export class UserSettingsStorage implements UiStateStorage {
   public async getSetting(namespace: string, name: string): Promise<UiStateStorageResult> {

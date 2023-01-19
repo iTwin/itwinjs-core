@@ -12,7 +12,7 @@ import { StatusBarContext } from "./StatusBar";
 
 /** HOC that injects values for [[StatusFieldProps]].
  * @public
- * @deprecated in 3.x. StatusFieldProps props are deprecated, using this is no longer necessary and will be removed.
+ * @deprecated StatusFieldProps props are deprecated, using this is no longer necessary and will be removed.
  */
 export const withStatusFieldProps = <P extends StatusFieldProps, C>(
   // eslint-disable-next-line @typescript-eslint/naming-convention

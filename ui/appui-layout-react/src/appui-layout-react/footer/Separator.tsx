@@ -12,14 +12,14 @@ import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@itwin/core-react";
 
 /** Properties of [[FooterSeparator]] component.
- * @deprecated in 3.x. Props of a deprecated component.
+ * @deprecated Props of a deprecated component.
  * @public
  */
 export interface FooterSeparatorProps extends CommonProps, NoChildrenProps {
 }
 
 /** Footer indicator separator used in [[Footer]] component.
- * @deprecated in 3.x. Use [StatusBarSeparator]($appui-react) instead.
+ * @deprecated Use [StatusBarSeparator]($appui-react) instead.
  * @public
  */
 export class FooterSeparator extends React.PureComponent<FooterSeparatorProps> {

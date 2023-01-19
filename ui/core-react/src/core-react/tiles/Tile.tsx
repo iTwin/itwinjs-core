@@ -13,7 +13,7 @@ import { CommonDivProps } from "../utils/Props";
 
 /** Properties for the [[Tile]] component
  * @beta
- * @deprecated in 3.x. Use TileProps in itwinui-react instead
+ * @deprecated Use TileProps in itwinui-react instead
  */
 export interface TileProps extends CommonDivProps {
   title: string;
@@ -31,7 +31,7 @@ export type TileDefaultProps = Pick<TileProps, "stepNum">;  // eslint-disable-li
 
 /** The Tile React component is a container for rendering elements that can be grouped together.
  * @beta
- * @deprecated in 3.x. Use Tile in itwinui-react instead
+ * @deprecated Use Tile in itwinui-react instead
  */
 export class Tile extends React.Component<TileProps> {  // eslint-disable-line deprecation/deprecation
 

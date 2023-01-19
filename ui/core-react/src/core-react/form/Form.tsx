@@ -16,12 +16,12 @@ import { Button } from "@itwin/itwinui-react";
 // cSpell:ignore multilinetextbox
 
 /** The available editors for the fields in a [[Form]].
- * @public @deprecated in 3.x.
+ * @public @deprecated
  */
 export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
 
 /** Interface used to define each [[Field]] in a [[Form]]
- * @public @deprecated in 3.x.
+ * @public @deprecated
  */
 export interface FieldDef {
   /* The label text for the field */
@@ -38,14 +38,14 @@ export interface FieldDef {
 }
 
 /** Key/value pairs for all the field values with key being the field HTML Id.
- * @public @deprecated in 3.x.
+ * @public @deprecated
  */
 export interface FieldValues {
   [key: string]: any;
 }
 
 /** The state data used by [[Form]] to hold state of each [[Field]] and the result of submit button processing.
- * @public @deprecated in 3.x.
+ * @public @deprecated
  */
 interface FormState {
   /* The field values */
@@ -67,7 +67,7 @@ export interface FormContextState extends FormState {
 }
 
 /** React context used by Form as a Provider and by the Fields as Consumers and updaters.
- * @public @deprecated in 3.x.
+ * @public @deprecated
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const FormContext = React.createContext<FormContextState | undefined>(undefined);

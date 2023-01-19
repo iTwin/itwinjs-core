@@ -31,7 +31,7 @@ type FormatOptionLabelMeta = {
 
 /** OptionType for react-select 2.0 and above. which only accepts pairs of value & label strings
  * @beta
- * @deprecated in 3.x. use Select from @itwin/itwinui-react
+ * @deprecated use Select from @itwin/itwinui-react
  */
 export interface OptionType {
   value: any;
@@ -39,13 +39,13 @@ export interface OptionType {
 }
 /** OptionsType to match label/value pair OptionType
  * @beta
- * @deprecated in 3.x. use Select from @itwin/itwinui-react
+ * @deprecated use Select from @itwin/itwinui-react
 */
 export type OptionsType = Array<OptionType>;
 
 /** ThemedSelectProps to control specific features of ThemedSelect
  * @beta
- * @deprecated in 3.x. use Select from @itwin/itwinui-react
+ * @deprecated use Select from @itwin/itwinui-react
  */
 export type ThemedSelectProps = {
   /* Aria label (for assistive tech) */
@@ -207,7 +207,7 @@ const ThemedMenu = (props: MenuProps<any>) => { // eslint-disable-line @typescri
 };
 /** ThemedSelect is a wrapper for react-select with iTwin.js UI theming applied
  * @beta
- * @deprecated in 3.x. use Select from @itwin/itwinui-react
+ * @deprecated use Select from @itwin/itwinui-react
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function ThemedSelect(props: ThemedSelectProps) {

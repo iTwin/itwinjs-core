@@ -14,7 +14,7 @@ import { CommonProps } from "../utils/Props";
 
 /** Properties for [[Textarea]] component
  * @public
- * @deprecated in 3.x. Use TextareaProps in itwinui-react instead
+ * @deprecated Use TextareaProps in itwinui-react instead
  */
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
   /** Number of textarea rows. Default is 3. */
@@ -54,6 +54,6 @@ const ForwardRefTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 
 /** Basic textarea component
  * @public
- * @deprecated in 3.x. Use Textarea in itwinui-react instead
+ * @deprecated Use Textarea in itwinui-react instead
  */
 export const Textarea: (props: TextareaProps) => JSX.Element | null = ForwardRefTextarea;   // eslint-disable-line deprecation/deprecation

@@ -25,7 +25,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem); // eslint-disable-line dep
 
 /** Properties for a [[CommandLaunchBackstageItem]] component
  * @public
- * @deprecated in 3.x. Use [BackstageActionItem]($appui-abstract) instead.
+ * @deprecated Use [BackstageActionItem]($appui-abstract) instead.
  */
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler { // eslint-disable-line deprecation/deprecation
   /** Unique Id for this backstage item. */
@@ -34,7 +34,7 @@ export interface CommandLaunchBackstageItemProps extends BackstageItemProps, Com
 
 /** Backstage item that launches a Command
  * @public
- * @deprecated in 3.x. Use [BackstageActionItem]($appui-abstract) instead.
+ * @deprecated Use [BackstageActionItem]($appui-abstract) instead.
  */
 export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> { // eslint-disable-line deprecation/deprecation
 

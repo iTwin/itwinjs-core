@@ -32,7 +32,7 @@ interface StatusBarState {
 export interface StatusBarProps extends CommonProps {
   widgetControl?: StatusBarWidgetControl;
   /** Indicates whether the StatusBar is in footer mode
-   * @deprecated in 3.x. In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
   */
   isInFooterMode?: boolean;
 }

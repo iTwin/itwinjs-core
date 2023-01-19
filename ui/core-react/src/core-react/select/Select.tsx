@@ -15,7 +15,7 @@ import { useRefs } from "../utils/hooks/useRefs";
 
 /** Properties for a Select option
  * @public
- * @deprecated in 3.x. Use SelectOption in itwinui-react instead
+ * @deprecated Use SelectOption in itwinui-react instead
  */
 export interface SelectOption {
   /** Label of the option. If `value` is not set when using SelectOption[], also serves as the value. */
@@ -28,7 +28,7 @@ export interface SelectOption {
 
 /** Properties for [[Select]] component
  * @public
- * @deprecated in 3.x. Use SelectProps in itwinui-react instead
+ * @deprecated Use SelectProps in itwinui-react instead
  */
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
   /** Options for Select dropdown.
@@ -125,6 +125,6 @@ const ForwardRefSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
 
 /** Basic select component is a wrapper for the `<select>` HTML element.
  * @public
- * @deprecated in 3.x. Use Select in itwinui-react instead
+ * @deprecated Use Select in itwinui-react instead
  */
 export const Select: (props: SelectProps) => JSX.Element | null = ForwardRefSelect;
