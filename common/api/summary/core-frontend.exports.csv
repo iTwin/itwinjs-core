@@ -140,6 +140,7 @@ public;class DisplayStyleState
 internal;disposeTileTreesForGeometricModels(modelIds: Set
 public;DownloadBriefcaseId =
 public;DownloadBriefcaseOptions = DownloadBriefcaseId &
+public;DownloadProgressInfo
 internal;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -193,7 +194,7 @@ public;FrustumAnimator
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
-alpha;GenericAbortSignal
+beta;GenericAbortSignal
 internal;GeoConverter
 beta;GeographicTilingScheme 
 public;GeometricModel2dState 
@@ -425,6 +426,7 @@ internal;OffScreenTarget
 public;OffScreenViewport 
 public;OffScreenViewportOptions
 internal;OldTextureImage
+public;OnDownloadProgress = (progress: DownloadProgressInfo) => void
 public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
