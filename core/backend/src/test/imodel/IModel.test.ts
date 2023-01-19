@@ -26,7 +26,7 @@ import {
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
-  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement,
+  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory, SqliteStatement,
   SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
@@ -325,19 +325,22 @@ describe("iModel", () => {
       pattern_weight: 0.5,
       TextureId: "test_textureid",
     };
-    /* eslint-enable @typescript-eslint/naming-convention */
 
-    const renderMaterialParams = new RenderMaterialElement.Params(testPaletteName);
-    renderMaterialParams.description = testDescription;
-    renderMaterialParams.color = color;
-    renderMaterialParams.specularColor = specularColor;
-    renderMaterialParams.finish = finish;
-    renderMaterialParams.transmit = transmit;
-    renderMaterialParams.diffuse = diffuse;
-    renderMaterialParams.specular = specular;
-    renderMaterialParams.reflect = reflect;
-    renderMaterialParams.reflectColor = reflectColor;
-    renderMaterialParams.patternMap = textureMapProps;
+    /* eslint-enable @typescript-eslint/naming-convention */
+    const renderMaterialParams: RenderMaterialElementParams = {
+      paletteName: testPaletteName,
+      description: testDescription,
+      color,
+      specularColor,
+      finish,
+      transmit,
+      diffuse,
+      specular,
+      reflect,
+      reflectColor,
+      patternMap: textureMapProps,
+    };
+
     const renderMaterialId = RenderMaterialElement.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
 
     const renderMaterial = imodel2.elements.getElement<RenderMaterialElement>(renderMaterialId);
