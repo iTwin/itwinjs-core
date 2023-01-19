@@ -18,7 +18,7 @@ import { StagePanelState } from "./StagePanelDef";
 // cspell:ignore stagepanelheader
 
 /** Properties of a [[StagePanelHeader]] component
- * @alpha @deprecated
+ * @alpha @deprecated in 3.0.
  */
 export interface StagePanelHeaderProps extends CommonProps {
   /** Describes if the collapse button is visible. */
@@ -32,7 +32,7 @@ export interface StagePanelHeaderProps extends CommonProps {
 }
 
 /** Stage panel header React component.
- * @alpha @deprecated
+ * @alpha @deprecated in 3.0.
  */
 export class StagePanelHeader extends React.PureComponent<StagePanelHeaderProps> {
   public override render() {
