@@ -24,6 +24,7 @@ import { ElementProperties } from '@itwin/presentation-common';
 import { Field } from '@itwin/presentation-common';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
+import { HierarchyLevelDescriptorRequestOptions } from '@itwin/presentation-common';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateInfo } from '@itwin/presentation-common';
 import { Id64Arg } from '@itwin/core-bentley';
@@ -341,6 +342,8 @@ export class PresentationManager implements IDisposable {
         nodes: Node_2[];
     }>;
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number>;
+    // @alpha
+    getNodesDescriptor(requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     get ipcRequestsHandler(): IpcRequestsHandler | undefined;
