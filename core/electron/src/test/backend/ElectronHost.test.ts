@@ -7,6 +7,7 @@ import * as path from "path";
 import { assert } from "chai";
 import { exec } from "child_process";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
+import { BeDuration } from "@itwin/core-bentley";
 import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterface, RpcRegistry, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { ElectronHost, ElectronHostOptions } from "../../ElectronBackend";
@@ -183,7 +184,7 @@ async function testWindowSizeSettings() {
   if (isXvfbRunning)
     window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
   else
-    await sleep(100); // "maximize" event is not always emitted immediately
+    await BeDuration.wait(100); // "maximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized);
@@ -192,7 +193,7 @@ async function testWindowSizeSettings() {
   if (isXvfbRunning)
     window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb (linux)
   else
-    await sleep(100); // "unmaximize" event is not always emitted immediately
+    await BeDuration.wait(100); // "unmaximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(!isMaximized);
@@ -256,8 +257,4 @@ async function isXvfbProcessRunning(): Promise<boolean> {
 
   await new Promise((resolve) => bashProcess.on("close", resolve));
   return doesXvfbProcessExists;
-}
-
-async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
