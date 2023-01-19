@@ -16,15 +16,14 @@ import {
   DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions,
   DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
   FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions,
-  HierarchyLevelDescriptorRpcRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey,
-  NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RequestOptions, RulesetVariable,
+  HierarchyLevelDescriptorRpcRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node,
+  NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RequestOptions, RulesetVariable,
   RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions,
   VariableValueTypes, WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
-  createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
-  createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor, createTestECInstanceKey, createTestSelectClassInfo,
-  ResolvablePromise,
+  createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON, createRandomNodePathElement,
+  createRandomSelectionScope, createTestContentDescriptor, createTestECInstanceKey, createTestNode, createTestSelectClassInfo, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { BackendDiagnosticsAttribute } from "../presentation-backend";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
@@ -449,7 +448,10 @@ describe("PresentationRpcImpl", () => {
     describe("getPagedNodes", () => {
 
       it("calls manager for root nodes", async () => {
-        const getRootNodesResult: Node[] = [createRandomECInstancesNode(), createRandomECInstancesNode(), createRandomECInstancesNode()];
+        const getRootNodesResult: HierarchyLevelJSON = {
+          nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
+          supportsFiltering: true,
+        };
         const getRootNodesCountResult = 999;
         const rpcOptions: Paged<HierarchyRpcRequestOptions> = {
           ...defaultRpcParams,
@@ -465,13 +467,13 @@ describe("PresentationRpcImpl", () => {
         };
 
         const presentationManagerDetailStub = {
-          getNodes: sinon.spy(async () => getRootNodesResult),
+          getNodes: sinon.spy(async () => JSON.stringify(getRootNodesResult)),
         };
         presentationManagerMock
           .setup((x) => x.getDetail())
           .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
-          .returns(async () => getRootNodesResult)
+          .returns(async () => JSON.stringify(getRootNodesResult))
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getRootNodesCountResult)
@@ -479,12 +481,15 @@ describe("PresentationRpcImpl", () => {
         const actualResult = await impl.getPagedNodes(testData.imodelToken, rpcOptions);
 
         presentationManagerMock.verifyAll();
-        expect(actualResult.result!.items).to.deep.eq(getRootNodesResult.map(Node.toJSON));
+        expect(actualResult.result!.items).to.deep.eq(getRootNodesResult.nodes);
         expect(actualResult.result!.total).to.eq(getRootNodesCountResult);
       });
 
       it("calls manager for child nodes", async () => {
-        const getChildNodesResult: Node[] = [createRandomECInstancesNode(), createRandomECInstancesNode(), createRandomECInstancesNode()];
+        const getChildNodesResult: HierarchyLevelJSON = {
+          nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
+          supportsFiltering: true,
+        };
         const getChildNodesCountResult = 999;
         const parentNodeKey = createRandomECInstancesNodeKey();
         const rpcOptions: Paged<HierarchyRpcRequestOptions> = {
@@ -502,13 +507,13 @@ describe("PresentationRpcImpl", () => {
         };
 
         const presentationManagerDetailStub = {
-          getNodes: sinon.spy(async () => getChildNodesResult),
+          getNodes: sinon.spy(async () => JSON.stringify(getChildNodesResult)),
         };
         presentationManagerMock
           .setup((x) => x.getDetail())
           .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
-          .returns(async () => getChildNodesResult)
+          .returns(async () => JSON.stringify(getChildNodesResult))
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getChildNodesCountResult)
@@ -516,7 +521,7 @@ describe("PresentationRpcImpl", () => {
         const actualResult = await impl.getPagedNodes(testData.imodelToken, rpcOptions);
 
         presentationManagerMock.verifyAll();
-        expect(actualResult.result!.items).to.deep.eq(getChildNodesResult.map(Node.toJSON));
+        expect(actualResult.result!.items).to.deep.eq(getChildNodesResult.nodes);
         expect(actualResult.result!.total).to.eq(getChildNodesCountResult);
       });
 
@@ -543,7 +548,7 @@ describe("PresentationRpcImpl", () => {
           .setup((x) => x.getDetail())
           .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
-          .returns(async () => getRootNodesResult)
+          .returns(async () => JSON.stringify(getRootNodesResult))
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getRootNodesCountResult)
@@ -575,7 +580,7 @@ describe("PresentationRpcImpl", () => {
           .setup((x) => x.getDetail())
           .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
-          .returns(async () => getRootNodesResult)
+          .returns(async () => JSON.stringify(getRootNodesResult))
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getRootNodesCountResult)
@@ -606,7 +611,7 @@ describe("PresentationRpcImpl", () => {
           .setup((x) => x.getDetail())
           .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock.setup(async (x) => x.getDetail().getNodes(managerOptions))
-          .returns(async () => getRootNodesResult)
+          .returns(async () => JSON.stringify(getRootNodesResult))
           .verifiable();
         presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getRootNodesCountResult)

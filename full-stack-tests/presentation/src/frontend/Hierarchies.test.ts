@@ -9,7 +9,7 @@ import { BisCodeSpec, IModel } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ChildNodeSpecificationTypes, Descriptor, ECInstancesNodeKey, getInstancesCount, GroupingSpecificationTypes, HierarchyRequestOptions, InstanceKey,
-  KeySet, Node, NodeKey, PropertyValueFormat, RegisteredRuleset, RelationshipDirection, Ruleset, RulesetVariable, RuleTypes,
+  KeySet, Node, NodeKey, PresentationError, PropertyValueFormat, RegisteredRuleset, RelationshipDirection, Ruleset, RulesetVariable, RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { buildTestIModel, TestIModelBuilder } from "@itwin/presentation-testing";
@@ -73,6 +73,7 @@ describe("Hierarchies", () => {
           NodeValidators.createForInstanceNode({ instanceKeys: [imodelElementKeys[0]], label: "a" }),
           NodeValidators.createForInstanceNode({ instanceKeys: [imodelElementKeys[1]], label: "b" }),
         ],
+        supportsFiltering: true,
       });
 
       // validate nodes with partially matching filter
@@ -169,8 +170,10 @@ describe("Hierarchies", () => {
               NodeValidators.createForInstanceNode({ instanceKeys: [imodelElementKeys[0]], label: "a" }),
               NodeValidators.createForInstanceNode({ instanceKeys: [imodelElementKeys[1]], label: "b" }),
             ],
+            supportsFiltering: true,
           }),
         ],
+        supportsFiltering: true,
       });
 
       // validate nodes with partially matching filter
@@ -297,13 +300,17 @@ describe("Hierarchies", () => {
                       NodeValidators.createForInstanceNode({ instanceKeys: [imodelElementKeys[0]], label: "a" }),
                       NodeValidators.createForInstanceNode({ instanceKeys: [imodelElementKeys[1]], label: "a" }),
                     ],
+                    supportsFiltering: true,
                   }),
                   NodeValidators.createForInstanceNode({ instanceKeys: [imodelElementKeys[2]], label: "b" }),
                 ],
+                supportsFiltering: true,
               }),
             ],
+            supportsFiltering: true,
           }),
         ],
+        supportsFiltering: true,
       });
 
       // validate nodes with partially matching filter
@@ -378,6 +385,52 @@ describe("Hierarchies", () => {
         },
         expectedHierarchy: [],
       });
+    });
+
+    it("throws when attempting to filter non-filterable hierarchy level", async () => {
+      // set up an empty imodel - we'll use the root Subject for this test
+      const imodel = await buildTestIModel("filtering-unfilterable-hierarchy-level", (_) => { });
+
+      // set up ruleset
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.RootNodes,
+          specifications: [{
+            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            classes: [{
+              schemaName: "BisCore",
+              classNames: ["Subject"],
+            }],
+            // hierarchy levels built with hide expressions don't support filtering
+            hideExpression: `FALSE`,
+            groupByClass: false,
+            groupByLabel: false,
+          }],
+        }],
+      };
+
+      // ensure the root nodes are returned with `supportsFiltering = false`
+      await validateHierarchy({
+        requestParams: { imodel, rulesetOrId: ruleset },
+        expectedHierarchy: [
+          NodeValidators.createForInstanceNode({ instanceKeys: [{ className: "BisCore:Subject", id: "0x1" }] }),
+        ],
+        supportsFiltering: false,
+      });
+
+      // ensure requesting the hierarchy level with an instance filter throws
+      const requestParams: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> = {
+        imodel,
+        rulesetOrId: ruleset,
+        instanceFilter: {
+          selectClassName: "BisCore:Subject",
+          expression: `TRUE`,
+        },
+      };
+      // FIXME: at the moment the manager eats the error and returns empty nodes result...
+      // await expect(Presentation.presentation.getNodes(requestParams)).to.eventually.be.rejectedWith(PresentationError);
+      expect(await Presentation.presentation.getNodes(requestParams)).to.deep.eq([]);
     });
 
   });
@@ -477,6 +530,33 @@ describe("Hierarchies", () => {
           type: { valueFormat: PropertyValueFormat.Primitive, typeName: "navigation" },
         }],
       } as Partial<Descriptor>);
+    });
+
+    it("throws when attempting to get descriptor non-filterable hierarchy level", async () => {
+      // set up an empty imodel - we'll use the root Subject for this test
+      const imodel = await buildTestIModel("descriptor-for-unfilterable-hierarchy-level", (_) => { });
+
+      // set up ruleset
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.RootNodes,
+          specifications: [{
+            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            classes: [{
+              schemaName: "BisCore",
+              classNames: ["Subject"],
+            }],
+            // hierarchy levels built with hide expressions don't support filtering
+            hideExpression: `FALSE`,
+            groupByClass: false,
+            groupByLabel: false,
+          }],
+        }],
+      };
+
+      // ensure requesting the hierarchy level descriptor throws
+      await expect(Presentation.presentation.getNodesDescriptor({ imodel, rulesetOrId: ruleset })).to.eventually.be.rejectedWith(PresentationError);
     });
 
   });
@@ -688,6 +768,7 @@ describe("Hierarchies", () => {
 
         const keys = new KeySet([
           definitionModelNodes[0].key,
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
           ...(dictionaryModelNodes[0].key as ECInstancesNodeKey).instanceKeys,
           rootNodes[2].key,
         ]);
@@ -766,15 +847,22 @@ interface HierarchyDef<TNode> {
 }
 type ExpectedHierarchyDef = HierarchyDef<(node: Node) => void>;
 namespace NodeValidators {
+  function optionalBooleanToString(value: boolean | undefined) {
+    return value === undefined ? "undefined" : value ? "TRUE" : "FALSE";
+  }
   function validateBaseNodeAttributes(node: Node, expectations: {
     label?: string;
     hasChildren?: boolean;
+    supportsFiltering?: boolean;
   }) {
     if (expectations.label && node.label.displayValue !== expectations.label) {
       throw new Error(`Expected node label to be "${expectations.label}", got "${node.label.displayValue}"`);
     }
-    if ((node.hasChildren ?? false) !== (expectations.hasChildren ?? false)) {
-      throw new Error(`Expected node's \`hasChildren\` flag to be ${expectations.hasChildren ? "TRUE" : "FALSE"}, got ${node.hasChildren ? "TRUE" : "FALSE"}`);
+    if (expectations.hasChildren !== undefined && node.hasChildren !== expectations.hasChildren) {
+      throw new Error(`Expected node's \`hasChildren\` flag to be ${optionalBooleanToString(expectations.hasChildren)}, got ${optionalBooleanToString(node.hasChildren)}`);
+    }
+    if (expectations.supportsFiltering !== undefined && node.supportsFiltering !== expectations.supportsFiltering) {
+      throw new Error(`Expected node's \`supportsFiltering\` flag to be "${optionalBooleanToString(expectations.supportsFiltering)}", got "${optionalBooleanToString(node.supportsFiltering)}"`);
     }
   }
   export function createForInstanceNode(props: {
@@ -782,6 +870,7 @@ namespace NodeValidators {
     label?: string;
     expectChildren?: boolean;
     children?: ExpectedHierarchyDef[];
+    supportsFiltering?: boolean;
   }): ExpectedHierarchyDef {
     return {
       node: (node) => {
@@ -794,6 +883,7 @@ namespace NodeValidators {
         validateBaseNodeAttributes(node, {
           label: props.label,
           hasChildren: props.expectChildren ?? (props.children && props.children.length > 0),
+          supportsFiltering: props.supportsFiltering,
         });
       },
       children: props.children,
@@ -804,6 +894,7 @@ namespace NodeValidators {
     label?: string;
     expectChildren?: boolean;
     children?: ExpectedHierarchyDef[];
+    supportsFiltering?: boolean;
   }): ExpectedHierarchyDef {
     return {
       node: (node) => {
@@ -816,6 +907,7 @@ namespace NodeValidators {
         validateBaseNodeAttributes(node, {
           label: props.label,
           hasChildren: props.expectChildren ?? (props.children && props.children.length > 0),
+          supportsFiltering: props.supportsFiltering,
         });
       },
       children: props.children,
@@ -828,6 +920,7 @@ namespace NodeValidators {
     label?: string;
     expectChildren?: boolean;
     children?: ExpectedHierarchyDef[];
+    supportsFiltering?: boolean;
   }): ExpectedHierarchyDef {
     return {
       node: (node) => {
@@ -846,6 +939,7 @@ namespace NodeValidators {
         validateBaseNodeAttributes(node, {
           label: props.label,
           hasChildren: props.expectChildren ?? (props.children && props.children.length > 0),
+          supportsFiltering: props.supportsFiltering,
         });
       },
       children: props.children,
@@ -855,6 +949,7 @@ namespace NodeValidators {
     label: string;
     expectChildren?: boolean;
     children?: ExpectedHierarchyDef[];
+    supportsFiltering?: boolean;
   }): ExpectedHierarchyDef {
     return {
       node: (node) => {
@@ -864,6 +959,7 @@ namespace NodeValidators {
         validateBaseNodeAttributes(node, {
           label: props.label,
           hasChildren: props.expectChildren ?? (props.children && props.children.length > 0),
+          supportsFiltering: props.supportsFiltering,
         });
       },
       children: props.children,
@@ -876,6 +972,7 @@ async function validateHierarchy(props: {
   requestParams: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>;
   configureParams?: (params: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>) => void;
   expectedHierarchy: ExpectedHierarchyDef[];
+  supportsFiltering?: boolean;
 }) {
   const manager = props.manager ?? Presentation.presentation;
 
@@ -887,6 +984,10 @@ async function validateHierarchy(props: {
 
   if (nodes.length !== props.expectedHierarchy.length) {
     throw new Error(`Expected ${props.expectedHierarchy.length} nodes, got ${nodes.length}`);
+  }
+
+  if (props.supportsFiltering !== undefined) {
+    // TODO: validate the `supportsFiltering` flag once `PresentationManager.getNodes` API is updated to return it
   }
 
   const resultHierarchy = new Array<HierarchyDef<NodeKey>>();
