@@ -18,10 +18,10 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 
 | iTwin.js - Node Support | iTwin.js 1.x | iTwin.js 2.x | iTwin.js 3.x |
 | ----------------------- | ------------ | ------------ | ------------ |
-| Node 18                 | ❌           | ❌           | ✔️ (>= 3.5)  |
-| Node 16 (>=16.13)       | ❌           | ❌           | ✔️           |
-| Node 14 (>=14.17)       | ❌           | ✔️ (>= 2.13) | ✔️           |
-| Node 12 (>=12.22)       | ✔️           | ✔️           | ✔️           |
+| Node 18                 | ❌           | ❌           | ✅ (>= 3.5)  |
+| Node 16 (>=16.13)       | ❌           | ❌           | ✅           |
+| Node 14 (>=14.17)       | ❌           | ✅ (>= 2.13) | ✅           |
+| Node 12 (>=12.22)       | ✅           | ✅           | ✅           |
 | Node 10                 | ❌           | ❌           | ❌           |
 
 ### Backend Prerequisites
