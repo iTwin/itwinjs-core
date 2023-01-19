@@ -12,7 +12,7 @@ import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ProvidedItem } from "../items/ProvidedItem";
 
 /** Status bar Groups/Sections from Left to Right
- * @deprecated Use [StatusBarSection]($appui-react) instead.
+ * @deprecated in 3.5. Use [StatusBarSection]($appui-react) instead.
  * @public
  */
 export enum StatusBarSection {
@@ -33,7 +33,7 @@ export enum StatusBarSection {
 }
 
 /** Defines which side of Icon where label is placed
- * @deprecated Use [StatusBarLabelSide]($appui-react) instead.
+ * @deprecated in 3.5. Use [StatusBarLabelSide]($appui-react) instead.
  * @public
  */
 export enum StatusBarLabelSide {
@@ -44,13 +44,13 @@ export enum StatusBarLabelSide {
 }
 
 /** Type for StatusBar Item Id
- * @deprecated
+ * @deprecated in 3.5.
  * @public
  */
 export type StatusBarItemId = CommonStatusBarItem["id"]; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert a button into the status bar.
- * @deprecated Use [CommonStatusBarItem]($appui-react) instead.
+ * @deprecated in 3.5. Use [CommonStatusBarItem]($appui-react) instead.
  * @public
  */
 export interface AbstractStatusBarItem extends ProvidedItem { // eslint-disable-line deprecation/deprecation
@@ -73,7 +73,7 @@ export interface AbstractStatusBarItem extends ProvidedItem { // eslint-disable-
 }
 
 /** Describes the data needed to insert an action item into the status bar.
- * @deprecated Use [StatusBarActionItem]($appui-react) instead.
+ * @deprecated in 3.5. Use [StatusBarActionItem]($appui-react) instead.
  * @public
  */
 export interface AbstractStatusBarActionItem extends AbstractStatusBarItem { // eslint-disable-line deprecation/deprecation
@@ -88,7 +88,7 @@ export interface AbstractStatusBarActionItem extends AbstractStatusBarItem { // 
 }
 
 /** Describes the data needed to insert a label item with an optional icon into the status bar.
- * @deprecated Use [StatusBarLabelItem]($appui-react) instead.
+ * @deprecated in 3.5. Use [StatusBarLabelItem]($appui-react) instead.
  * @public
  */
 export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem { // eslint-disable-line deprecation/deprecation
@@ -102,7 +102,7 @@ export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem { // e
 
 /** Describes the data needed to insert a custom item into the status bar. This is used to allow extension
  *  implementer to create a framework specific component.
- * @deprecated Use [StatusBarCustomItem]($appui-react) instead.
+ * @deprecated in 3.5. Use [StatusBarCustomItem]($appui-react) instead.
  * @public
  */
 export interface AbstractStatusBarCustomItem extends AbstractStatusBarItem { // eslint-disable-line deprecation/deprecation
@@ -110,13 +110,13 @@ export interface AbstractStatusBarCustomItem extends AbstractStatusBarItem { // 
 }
 
 /** Describes the data needed to insert a button into the status bar.
- * @deprecated Use [AnyStatusBarItem]($appui-react) instead.
+ * @deprecated in 3.5. Use [AnyStatusBarItem]($appui-react) instead.
  * @public
  */
 export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem; // eslint-disable-line deprecation/deprecation
 
 /** AbstractStatusBarActionItem type guard.
- * @deprecated Use [isStatusBarActionItem]($appui-react) instead.
+ * @deprecated in 3.5. Use [isStatusBarActionItem]($appui-react) instead.
  * @public
  */
 export const isAbstractStatusBarActionItem = (item: CommonStatusBarItem): item is AbstractStatusBarActionItem => { // eslint-disable-line deprecation/deprecation
@@ -124,7 +124,7 @@ export const isAbstractStatusBarActionItem = (item: CommonStatusBarItem): item i
 };
 
 /** AbstractStatusBarLabelItem type guard.
- * @deprecated Use [isStatusBarLabelItem]($appui-react) instead.
+ * @deprecated in 3.5. Use [isStatusBarLabelItem]($appui-react) instead.
  * @public
  */
 export const isAbstractStatusBarLabelItem = (item: CommonStatusBarItem): item is AbstractStatusBarLabelItem => { // eslint-disable-line deprecation/deprecation
@@ -132,7 +132,7 @@ export const isAbstractStatusBarLabelItem = (item: CommonStatusBarItem): item is
 };
 
 /** AbstractStatusBarCustomItem type guard.
- * @deprecated Use [isStatusBarCustomItem]($appui-react) instead.
+ * @deprecated in 3.5. Use [isStatusBarCustomItem]($appui-react) instead.
  * @public
  */
 export const isAbstractStatusBarCustomItem = (item: CommonStatusBarItem): item is AbstractStatusBarCustomItem => { // eslint-disable-line deprecation/deprecation
@@ -140,7 +140,7 @@ export const isAbstractStatusBarCustomItem = (item: CommonStatusBarItem): item i
 };
 
 /** Helper class to create Abstract StatusBar Item definitions.
- * @deprecated Use [StatusBarItemUtilities]($appui-react) instead.
+ * @deprecated in 3.5. Use [StatusBarItemUtilities]($appui-react) instead.
  * @public
  */
 export class AbstractStatusBarItemUtilities {

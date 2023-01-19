@@ -13,7 +13,7 @@ import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 
 /** Describes interface of objects that want to provide UI component to the running IModelApp.
- * @deprecated Use [UiItemsProvider]($appui-react) instead.
+ * @deprecated in 3.5. Use [UiItemsProvider]($appui-react) instead.
  * @public
  */
 export interface UiItemsProvider {

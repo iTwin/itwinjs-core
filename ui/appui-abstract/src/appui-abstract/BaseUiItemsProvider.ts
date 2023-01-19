@@ -18,7 +18,7 @@ import { UiItemsManager } from "./UiItemsManager";
 
 /** Base implementation of a UiItemsProvider. The base class allows the user to pass in a function that is used to determine if the
  * active stage should be provided items. Derived provider classes should override the `xxxInternal` methods to provide items.
- * @deprecated Use [BaseUiItemsProvider]($appui-react) instead.
+ * @deprecated in 3.5. Use [BaseUiItemsProvider]($appui-react) instead.
  * @public
  */
 export class BaseUiItemsProvider implements UiItemsProvider {

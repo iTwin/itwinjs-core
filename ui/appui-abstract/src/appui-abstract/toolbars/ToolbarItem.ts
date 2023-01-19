@@ -12,7 +12,7 @@ import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ProvidedItem } from "../items/ProvidedItem";
 
 /** Used to specify the usage of the toolbar which determine the toolbar position.
- * @deprecated Use [ToolbarUsage]($appui-react) instead.
+ * @deprecated in 3.5. Use [ToolbarUsage]($appui-react) instead.
  * @public
  */
 export enum ToolbarUsage {
@@ -23,7 +23,7 @@ export enum ToolbarUsage {
 }
 
 /** Used to specify the orientation of the toolbar.
- * @deprecated Use [ToolbarOrientation]($appui-react) instead.
+ * @deprecated in 3.5. Use [ToolbarOrientation]($appui-react) instead.
  * @public
  */
 export enum ToolbarOrientation {
@@ -113,7 +113,7 @@ export interface CustomButtonDefinition extends ToolbarItem {
 export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
 
 /** Type for Toolbar Item Id
- * @deprecated
+ * @deprecated in 3.5.
  * @public
  */
 export type ToolbarItemId = CommonToolbarItem["id"]; // eslint-disable-line deprecation/deprecation

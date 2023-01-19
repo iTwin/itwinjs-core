@@ -56,7 +56,7 @@ export type StatusBarActionItem = AbstractStatusBarActionItem; // eslint-disable
 export type StatusBarLabelItem = AbstractStatusBarLabelItem; // eslint-disable-line deprecation/deprecation
 
 /** Describes the data needed to insert an item into the StatusBar.
- * @deprecated Use [[StatusBarCustomItem]] instead.
+ * @deprecated in 3.5. Use [[StatusBarCustomItem]] instead.
  * @public
  */
 export interface StatusBarItem extends AbstractStatusBarCustomItem { // eslint-disable-line deprecation/deprecation
@@ -97,7 +97,7 @@ export function isStatusBarCustomItem(item: AnyStatusBarItem): item is StatusBar
 }
 
 /** StatusBarItem type guard.
- * @deprecated Use [[isStatusBarCustomItem]] instead.
+ * @deprecated in 3.5. Use [[isStatusBarCustomItem]] instead.
  * @public
  */
 export const isStatusBarItem = (item: UIA_CommonStatusBarItem): item is StatusBarItem => { // eslint-disable-line deprecation/deprecation
