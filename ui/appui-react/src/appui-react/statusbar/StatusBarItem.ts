@@ -16,7 +16,6 @@ import {
   isAbstractStatusBarCustomItem,
   isAbstractStatusBarLabelItem,
   CommonStatusBarItem as UIA_CommonStatusBarItem,
-  StatusBarItemId as UIA_StatusBarItemId,
   StatusBarLabelSide as UIA_StatusBarLabelSide,
   StatusBarSection as UIA_StatusBarSection,
 } from "@itwin/appui-abstract";
