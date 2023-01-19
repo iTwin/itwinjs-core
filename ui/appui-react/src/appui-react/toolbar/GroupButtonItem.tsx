@@ -105,8 +105,8 @@ export class ToolbarGroupItemComponent extends React.Component<ToolbarGroupItemC
     const trayId = this.resetTrayId();
 
     this.processGroupItem(groupItem, trayId, trays);
-    const isHidden = ConditionalBooleanValue.getValue(groupItem.isHidden); // eslint-disable-line deprecation/deprecation
-    const isDisabled = ConditionalBooleanValue.getValue(groupItem.isDisabled); // eslint-disable-line deprecation/deprecation
+    const isHidden = ConditionalBooleanValue.getValue(groupItem.isHidden);
+    const isDisabled = ConditionalBooleanValue.getValue(groupItem.isDisabled);
 
     return {
       activeToolId: FrontstageManager.activeToolId,
@@ -151,7 +151,7 @@ export class ToolbarGroupItemComponent extends React.Component<ToolbarGroupItemC
 
     trays.set(trayId, {
       items,
-      title: ConditionalStringValue.getValue(groupItem.panelLabel), // eslint-disable-line deprecation/deprecation
+      title: ConditionalStringValue.getValue(groupItem.panelLabel),
       groupItem,
     });
   }
@@ -221,7 +221,7 @@ export class ToolbarGroupItemComponent extends React.Component<ToolbarGroupItemC
                         onClick={this._handleDragInteractionClick}
                         onKeyDown={onEscapeSetFocusToHome}
                         onOpenPanel={this._handleOpenPanel}
-                        title={ConditionalStringValue.getValue(activeItem.label)} // eslint-disable-line deprecation/deprecation
+                        title={ConditionalStringValue.getValue(activeItem.label)}
                       />
                     </div>
                   ) :
@@ -233,7 +233,7 @@ export class ToolbarGroupItemComponent extends React.Component<ToolbarGroupItemC
                         isDisabled={!this.state.isEnabled}
                         onClick={this._handleClick}
                         onKeyDown={onEscapeSetFocusToHome}
-                        title={ConditionalStringValue.getValue(this.state.groupItem.label)} // eslint-disable-line deprecation/deprecation
+                        title={ConditionalStringValue.getValue(this.state.groupItem.label)}
                       />
                     </div>
                   )}
@@ -382,7 +382,7 @@ export class ToolbarGroupItemComponent extends React.Component<ToolbarGroupItemC
                     <GroupToolExpander
                       isDisabled={!!item.isDisabled}
                       key={itemKey}
-                      label={ConditionalStringValue.getValue(item.label)} // eslint-disable-line deprecation/deprecation
+                      label={ConditionalStringValue.getValue(item.label)}
                       icon={icon}
                       badge={badge}
                       onClick={() => this._handleExpanderClick(tgItem.trayId!)}
@@ -397,7 +397,7 @@ export class ToolbarGroupItemComponent extends React.Component<ToolbarGroupItemC
                     isDisabled={!!item.isDisabled}
                     isActive={isActive}
                     key={itemKey}
-                    label={ConditionalStringValue.getValue(item.label)} // eslint-disable-line deprecation/deprecation
+                    label={ConditionalStringValue.getValue(item.label)}
                     onClick={
                       // istanbul ignore next
                       () => this.handleToolGroupItemClicked(this.state.trayId, itemKey)
@@ -468,8 +468,8 @@ export class ToolbarGroupItemComponent extends React.Component<ToolbarGroupItemC
 /** @internal */
 const getFirstItem = (groupItem: GroupButton): ActionButton | GroupButton | undefined => {
   for (const item of groupItem.items) {
-    const isHidden = ConditionalBooleanValue.getValue(item.isHidden); // eslint-disable-line deprecation/deprecation
-    const isDisabled = ConditionalBooleanValue.getValue(item.isDisabled); // eslint-disable-line deprecation/deprecation
+    const isHidden = ConditionalBooleanValue.getValue(item.isHidden);
+    const isDisabled = ConditionalBooleanValue.getValue(item.isDisabled);
 
     if (ToolbarItemUtilities.isGroupButton(item)) {
       const firstItem = getFirstItem(item);

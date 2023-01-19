@@ -123,7 +123,7 @@ export type ToolbarItemId = CommonToolbarItem["id"]; // eslint-disable-line depr
  */
 export class ToolbarItemUtilities {
   /** Creates an Action Button */
-  public static createActionButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, execute: () => void, overrides?: Partial<ActionButton>): ActionButton => ({ // eslint-disable-line deprecation/deprecation
+  public static createActionButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, execute: () => void, overrides?: Partial<ActionButton>): ActionButton => ({
     id, itemPriority,
     icon, label,
     execute,
@@ -131,7 +131,7 @@ export class ToolbarItemUtilities {
   });
 
   /** Creates a Group button. */
-  public static createGroupButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: ReadonlyArray<ActionButton | GroupButton>, overrides?: Partial<GroupButton>): GroupButton => ({ // eslint-disable-line deprecation/deprecation
+  public static createGroupButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: ReadonlyArray<ActionButton | GroupButton>, overrides?: Partial<GroupButton>): GroupButton => ({
     id, itemPriority,
     icon, label,
     items,

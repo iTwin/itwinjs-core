@@ -43,8 +43,8 @@ export class ConditionalBooleanValue {
   }
 
   /** helper function to process properties defined as type ConditionalBooleanValue | boolean | undefined */
-  public static refreshValue(conditionalValue: ConditionalBooleanValue | boolean | undefined, eventIds: Set<string>): boolean { // eslint-disable-line deprecation/deprecation
-    if (undefined === conditionalValue || !(conditionalValue instanceof ConditionalBooleanValue)) // eslint-disable-line deprecation/deprecation
+  public static refreshValue(conditionalValue: ConditionalBooleanValue | boolean | undefined, eventIds: Set<string>): boolean {
+    if (undefined === conditionalValue || !(conditionalValue instanceof ConditionalBooleanValue))
       return false;
 
     if (conditionalValue.syncEventIds.some((value: string): boolean => eventIds.has(value.toLowerCase())))
@@ -54,11 +54,11 @@ export class ConditionalBooleanValue {
   }
 
   /** helper function to get boolean from a ConditionalBooleanValue | boolean | undefined */
-  public static getValue(conditionalValue: ConditionalBooleanValue | boolean | undefined): boolean { // eslint-disable-line deprecation/deprecation
+  public static getValue(conditionalValue: ConditionalBooleanValue | boolean | undefined): boolean {
     if (undefined === conditionalValue)
       return false;
 
-    if (conditionalValue instanceof ConditionalBooleanValue) // eslint-disable-line deprecation/deprecation
+    if (conditionalValue instanceof ConditionalBooleanValue)
       return conditionalValue.value;
 
     return conditionalValue;
