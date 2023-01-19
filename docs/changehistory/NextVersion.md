@@ -55,7 +55,7 @@ A colorized point cloud with (bottom) and without (top) shading:
 
 [Normal mapping](https://en.wikipedia.org/wiki/Normal_mapping) is a technique that simulates additional surface details by mapping a texture containing normal vectors onto a surface. [RenderMaterial]($common)s now support applying normal maps.
 
-You can create a [RenderMaterial]($common) with a normal map on the frontend via [RenderSystem.createRenderMaterial]($frontend). The normal map is specified by [CreateRenderMaterialArgs.textureMapping.normalMapParams]($frontend).
+You can create a [RenderMaterial]($common) with a normal map on the frontend via [RenderSystem.createRenderMaterial]($frontend). The normal map is specified by the [MaterialTextureMappingProps.normalMapParams]($frontend) in your [CreateRenderMaterialArgs.textureMapping]($frontend).
 
 To create a [RenderMaterialElement]($backend) with a normal map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass the normal map in [RenderMaterialElementParams.normalMap]($backend).
 
