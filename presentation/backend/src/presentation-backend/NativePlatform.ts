@@ -20,6 +20,7 @@ export enum NativePlatformRequestTypes {
   GetRootNodesCount = "GetRootNodesCount",
   GetChildren = "GetChildren",
   GetChildrenCount = "GetChildrenCount",
+  GetNodesDescriptor = "GetNodesDescriptor",
   GetNodePaths = "GetNodePaths",
   GetFilteredNodePaths = "GetFilteredNodePaths",
   GetContentSources = "GetContentSources",

@@ -15,11 +15,11 @@ import {
   ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsLoggerSeverity,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
   FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
-  HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
-  LabelDefinitionJSON, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError,
-  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo,
-  SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription,
-  VariableValueTypes,
+  HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet,
+  KindOfQuantityInfo, LabelDefinition, LabelDefinitionJSON, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged,
+  PageOptions, PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo,
+  Ruleset, SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes,
+  StructTypeDescription, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
@@ -30,9 +30,7 @@ import {
 } from "@itwin/presentation-common/lib/cjs/test";
 import { PRESENTATION_BACKEND_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
-import {
-  HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps,
-} from "../presentation-backend/PresentationManager";
+import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps } from "../presentation-backend/PresentationManager";
 import { getKeysForContentRequest } from "../presentation-backend/PresentationManagerDetail";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
@@ -930,6 +928,35 @@ describe("PresentationManager", () => {
         };
         const result = await manager.getNodesCount(options);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
+      });
+
+    });
+
+    describe("getNodesDescriptor", () => {
+
+      it("returns hierarchy level descriptor", async () => {
+        // what the addon receives
+        const parentNodeKey = createRandomECInstancesNodeKey();
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetNodesDescriptor,
+          params: {
+            nodeKey: NodeKey.toJSON(parentNodeKey),
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+          },
+        };
+
+        // what the addon returns
+        const addonResponse = createTestContentDescriptor({ fields: [] });
+        setup(addonResponse);
+
+        // test
+        const options: HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          parentKey: parentNodeKey,
+        };
+        const result = await manager.getNodesDescriptor(options);
+        verifyWithSnapshot(result, expectedParams);
       });
 
     });

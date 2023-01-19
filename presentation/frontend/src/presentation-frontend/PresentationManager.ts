@@ -13,9 +13,9 @@ import {
   ClientDiagnosticsAttribute, Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
   ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
   DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey,
-  NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable,
-  SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
+  FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key,
+  KeySet, LabelDefinition, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler,
+  Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { FrontendLocalizationHelper } from "./LocalizationHelper";
@@ -303,6 +303,21 @@ export class PresentationManager implements IDisposable {
       count: result.total,
       nodes: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
     };
+  }
+
+  /**
+   * Retrieves hierarchy level descriptor.
+   * @alpha
+   */
+  public async getNodesDescriptor(requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined> {
+    await this.onConnection(requestOptions.imodel);
+    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+    const rpcOptions = this.toRpcTokenOptions({
+      ...options,
+      parentKey: optionalNodeKeyToJson(options.parentKey),
+    });
+    const result = await this._requestsHandler.getNodesDescriptor(rpcOptions);
+    return Descriptor.fromJSON(result);
   }
 
   /** Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged. */
