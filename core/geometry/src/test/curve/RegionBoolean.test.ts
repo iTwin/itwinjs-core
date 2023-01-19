@@ -321,9 +321,9 @@ describe("RegionBoolean", () => {
       ),
       LineSegment3d.createXYXY(-2, 0, 0, 0),
     );
-    const expected: SignedLoopCounts[] = [{numPositiveAreaLoops: 2, numNegativeAreaLoops: 1, numSlivers: 2, numEdges: 8}];
+    const expected: SignedLoopCounts[] = [{ numPositiveAreaLoops: 2, numNegativeAreaLoops: 1, numSlivers: 2, numEdges: 8 }];
 
-    createXYRegions([outsideLoop, insideLoop], {ck, allGeometry, x0, y0, z0, delta}, expected);
+    createXYRegions([outsideLoop, insideLoop], { ck, allGeometry, x0, y0, z0, delta }, expected);
 
     // variant input #1: parity region from original input
     ++variant;
@@ -331,7 +331,7 @@ describe("RegionBoolean", () => {
     region.tryAddChild(outsideLoop);
     region.tryAddChild(insideLoop);
     x0 = variant * deltaFactorToNextTest * delta;
-    createXYRegions(region, {ck, allGeometry, x0, y0, z0, delta}, expected);
+    createXYRegions(region, { ck, allGeometry, x0, y0, z0, delta }, expected);
 
     // variant input #2: ccw inner with upward normal arc
     ++variant;
@@ -347,12 +347,12 @@ describe("RegionBoolean", () => {
       LineSegment3d.createXYXY(-2, 0, 0, 0),
     );
     x0 = variant * deltaFactorToNextTest * delta;
-    createXYRegions([outsideLoop, insideLoop], {ck, allGeometry, x0, y0, z0, delta}, expected);
+    createXYRegions([outsideLoop, insideLoop], { ck, allGeometry, x0, y0, z0, delta }, expected);
 
     // variant input #3: parity region from variant #2
     ++variant;
     x0 = variant * deltaFactorToNextTest * delta;
-    createXYRegions(region, {ck, allGeometry, x0, y0, z0, delta}, expected);
+    createXYRegions(region, { ck, allGeometry, x0, y0, z0, delta }, expected);
 
     // variant input #4: cw inner with upward normal arc
     ++variant;
@@ -368,12 +368,12 @@ describe("RegionBoolean", () => {
       LineSegment3d.createXYXY(0, 2, 0, 0),
     );
     x0 = variant * deltaFactorToNextTest * delta;
-    createXYRegions([outsideLoop, insideLoop], {ck, allGeometry, x0, y0, z0, delta}, expected);
+    createXYRegions([outsideLoop, insideLoop], { ck, allGeometry, x0, y0, z0, delta }, expected);
 
     // variant input #5: parity region from variant #4
     ++variant;
     x0 = variant * deltaFactorToNextTest * delta;
-    createXYRegions(region, {ck, allGeometry, x0, y0, z0, delta}, expected);
+    createXYRegions(region, { ck, allGeometry, x0, y0, z0, delta }, expected);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "ParityRegionWithCoincidentBoundary");
     expect(ck.getNumErrors()).equals(0);
@@ -385,12 +385,12 @@ describe("RegionBoolean", () => {
     const allGeometry: GeometryQuery[] = [];
 
     const banana = Loop.create(
-      Arc3d.create(Point3d.create(1,0), Vector3d.create(1,0), Vector3d.create(0,1), AngleSweep.createStartEndDegrees(-180, -360)),
-      Arc3d.create(Point3d.create(1,0), Vector3d.create(1,0), Vector3d.create(0,2), AngleSweep.createStartEndDegrees(0, 180))
+      Arc3d.create(Point3d.create(1, 0), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(-180, -360)),
+      Arc3d.create(Point3d.create(1, 0), Vector3d.create(1, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(0, 180))
     );
-    const expected: SignedLoopCounts[] = [{numPositiveAreaLoops: 1, numNegativeAreaLoops: 1, numSlivers: 0, numEdges: 2}];
+    const expected: SignedLoopCounts[] = [{ numPositiveAreaLoops: 1, numNegativeAreaLoops: 1, numSlivers: 0, numEdges: 2 }];
 
-    createXYRegions(banana, {ck, allGeometry}, expected);
+    createXYRegions(banana, { ck, allGeometry }, expected);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "BananaRegion");
     expect(ck.getNumErrors()).equals(0);
@@ -453,7 +453,7 @@ describe("RegionBoolean", () => {
     for (const fraction of [0.0, 0.25, 0.5, 0.9]) {
       const x = fraction * ax;
       const y = fraction * ay1;   // "on" the lower line
-      allLines.push(LineSegment3d.createXYXY(x, y- by, x, y + dy + by));
+      allLines.push(LineSegment3d.createXYXY(x, y - by, x, y + dy + by));
     }
     {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, allLines, xOut, yOut0);
@@ -463,12 +463,12 @@ describe("RegionBoolean", () => {
 
     xOut += 3 * ax;
     {
-    // repeat with a mirrored set of polygons
-    const n = allLines.length;
-    const transform = Transform.createFixedPointAndMatrix(Point3d.create(ax1, 0, 0),
-      Matrix3d.createScale(-1, 1.4, 1));
-    for (let i = 0; i < n; i++)
-      allLines.push(allLines[i].cloneTransformed(transform) as CurvePrimitive);
+      // repeat with a mirrored set of polygons
+      const n = allLines.length;
+      const transform = Transform.createFixedPointAndMatrix(Point3d.create(ax1, 0, 0),
+        Matrix3d.createScale(-1, 1.4, 1));
+      for (let i = 0; i < n; i++)
+        allLines.push(allLines[i].cloneTransformed(transform) as CurvePrimitive);
 
       const regions = RegionOps.constructAllXYRegionLoops(allLines);
       saveShiftedLoops(allGeometry, regions, xOut, yOut0, 10.5 * dy);
@@ -482,24 +482,24 @@ describe("RegionBoolean", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
-    let   y0 = 0.0;
+    let y0 = 0.0;
     const dy = 2.0;
     const positiveLoopOffset = 0.005;
     // for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "sectionF"]) {
     // sectionA has half a bridge pier
     // sectionF is a mess of diagonals.
     for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "sectionF"]) {
-        console.log({ baseName });
-      const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${ baseName  }.imjs`, "utf8");
+      console.log({ baseName });
+      const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${baseName}.imjs`, "utf8");
       const jsonA = JSON.parse(stringA);
       const section = IModelJson.Reader.parse(jsonA) as GeometryQuery[];
       const closedAreas: LineString3d[] = [];
-      for (const g of section){
+      for (const g of section) {
         if (g instanceof LineString3d) {
           if (g.packedPoints.front()?.isAlmostEqualMetric(g.packedPoints.back()!)) {
             closedAreas.push(g);
             const centroid = PolygonOps.centroidAreaNormal(g.packedPoints);
-            if (ck.testType (centroid, Ray3d) && Number.isFinite (centroid.a!)){
+            if (ck.testType(centroid, Ray3d) && Number.isFinite(centroid.a!)) {
               const areaNormal = PolygonOps.areaNormal(g.points);
               ck.testCoordinate(centroid.a!, areaNormal.magnitude(), "compare area methods");
             }
@@ -517,79 +517,79 @@ describe("RegionBoolean", () => {
       x0 = 0;
       y0 += 100.0;
     }
-  GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningExampleFile");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningExampleFile");
     expect(ck.getNumErrors()).equals(0);
   });
   it("SectioningLineStringApproach", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      let x0 = 0.0;
-      let y0 = 0.0;
-      const dy = 3.0;
-      const minSearchDistance = 3.0;
-      const distanceDisplayFactor = 1.25;
-      // for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "sectionF"]) {
-      for (const baseName of ["sectionC"]) {
-          console.log({ baseName });
-        const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${ baseName  }.imjs`, "utf8");
-        const jsonA = JSON.parse(stringA);
-        const section = IModelJson.Reader.parse(jsonA) as GeometryQuery[];
-        const closedAreas: LineString3d[] = [];
-        for (const g of section){
-          if (g instanceof LineString3d) {
-            if (g.packedPoints.front()?.isAlmostEqualMetric(g.packedPoints.back()!)) {
-              closedAreas.push(g);
-              }
-            }
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    let y0 = 0.0;
+    const dy = 3.0;
+    const minSearchDistance = 3.0;
+    const distanceDisplayFactor = 1.25;
+    // for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "sectionF"]) {
+    for (const baseName of ["sectionC"]) {
+      console.log({ baseName });
+      const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${baseName}.imjs`, "utf8");
+      const jsonA = JSON.parse(stringA);
+      const section = IModelJson.Reader.parse(jsonA) as GeometryQuery[];
+      const closedAreas: LineString3d[] = [];
+      for (const g of section) {
+        if (g instanceof LineString3d) {
+          if (g.packedPoints.front()?.isAlmostEqualMetric(g.packedPoints.back()!)) {
+            closedAreas.push(g);
+          }
         }
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y0);
-        y0 += dy;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedAreas, x0, y0);
-        y0 += dy;
-        for (let i = 0; i < closedAreas.length; i++){
-          for (let j = i + 1; j < closedAreas.length; j++){
-            const pairs = CurveCurve.closeApproachProjectedXYPairs(closedAreas[i], closedAreas[j], minSearchDistance);
-            y0 += dy;
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedAreas[i], x0, y0);
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedAreas[j], x0, y0);
-            let numPoint = 0;
-            let shortestPair: CurveLocationDetailPair | undefined;
-            let shortestDistance = Number.MAX_VALUE;
-            let numOverlap = 0;
-            for (const p of pairs) {
-              if (p.detailA.fraction1 !== undefined)
-                numOverlap++;
-              if (p.detailA.point.isAlmostEqual(p.detailB.point)){
-                GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p.detailA.point, 0.05, x0, y0);
-                numPoint++;
-              } else {
-                const d = p.detailA.point.distance(p.detailB.point);
-                if (d < shortestDistance) {
-                  shortestDistance = d;
-                  shortestPair = p;
-                }
+      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y0);
+      y0 += dy;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedAreas, x0, y0);
+      y0 += dy;
+      for (let i = 0; i < closedAreas.length; i++) {
+        for (let j = i + 1; j < closedAreas.length; j++) {
+          const pairs = CurveCurve.closeApproachProjectedXYPairs(closedAreas[i], closedAreas[j], minSearchDistance);
+          y0 += dy;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedAreas[i], x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedAreas[j], x0, y0);
+          let numPoint = 0;
+          let shortestPair: CurveLocationDetailPair | undefined;
+          let shortestDistance = Number.MAX_VALUE;
+          let numOverlap = 0;
+          for (const p of pairs) {
+            if (p.detailA.fraction1 !== undefined)
+              numOverlap++;
+            if (p.detailA.point.isAlmostEqual(p.detailB.point)) {
+              GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p.detailA.point, 0.05, x0, y0);
+              numPoint++;
+            } else {
+              const d = p.detailA.point.distance(p.detailB.point);
+              if (d < shortestDistance) {
+                shortestDistance = d;
+                shortestPair = p;
               }
             }
-            if (numOverlap > 0)
-              console.log({ numOverlap, i, j});
-            if (shortestPair && numPoint === 0)
+          }
+          if (numOverlap > 0)
+            console.log({ numOverlap, i, j });
+          if (shortestPair && numPoint === 0)
             for (const p of pairs) {
-              if (p.detailA.point.isAlmostEqual(p.detailB.point)){
+              if (p.detailA.point.isAlmostEqual(p.detailB.point)) {
               } else {
                 const d = p.detailA.point.distance(p.detailB.point);
                 if (d < distanceDisplayFactor * shortestDistance) {
                   const arc = constructEllipseAroundSegment(p.detailA.point, p.detailB.point, 1.2, 0.2);
                   GeometryCoreTestIO.captureGeometry(allGeometry, arc, x0, y0);
                   GeometryCoreTestIO.captureCloneGeometry(allGeometry, [p.detailA.point, p.detailB.point], x0, y0);
-                  }
+                }
               }
             }
-          }
         }
-        x0 += 100.0;
       }
+      x0 += 100.0;
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningLineStringApproach");
-      expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).equals(0);
   });
 
   // In the input directories ...
@@ -603,7 +603,7 @@ describe("RegionBoolean", () => {
     // cspell:word Madhav
     for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "MadhavInput"]) {
       console.log({ baseName });
-      const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${ baseName  }.json`, "utf8");
+      const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${baseName}.json`, "utf8");
       const jsonA = JSON.parse(stringA);
       const parser = new SectionDataParser();
       parser.parseAny(jsonA);
@@ -628,9 +628,9 @@ describe("RegionBoolean", () => {
     testSelectedTangencySubsets(true, 0, [-1], [], "Base");
     testSelectedTangencySubsets(false, 0, [],
       [
-        [0,13],
+        [0, 13],
         [7, 20],
-        [8,21],
+        [8, 21],
       ], "ArcSubsetsA");
     testSelectedTangencySubsets(false, 0, [],
       [
@@ -643,18 +643,18 @@ describe("RegionBoolean", () => {
       ], "ArcSubsets");
     const allShuffles = [];
     const n = 13;
-    for (let i0 = 0; i0 < n; i0 += 1){
+    for (let i0 = 0; i0 < n; i0 += 1) {
       allShuffles.push([i0, i0 + n]);
     }
-    testSelectedTangencySubsets(false, 0, [], allShuffles,"ArcShuffle");
-      testSelectedTangencySubsets(true, 0, [2,3,4,7,8], [], "FullPolygon");
-    testSelectedTangencySubsets(true, [1,2,3,4,1], [2,3,4,7,8], [], "UpperSymmetricQuad");
-    testSelectedTangencySubsets(false, [4,5,6,7,4], [-1], [], "LowerRightLobeQuadA");
-    testSelectedTangencySubsets(false, [3,5,6,8,3], [-1], [], "LowerRightLobeQuadB");
+    testSelectedTangencySubsets(false, 0, [], allShuffles, "ArcShuffle");
+    testSelectedTangencySubsets(true, 0, [2, 3, 4, 7, 8], [], "FullPolygon");
+    testSelectedTangencySubsets(true, [1, 2, 3, 4, 1], [2, 3, 4, 7, 8], [], "UpperSymmetricQuad");
+    testSelectedTangencySubsets(false, [4, 5, 6, 7, 4], [-1], [], "LowerRightLobeQuadA");
+    testSelectedTangencySubsets(false, [3, 5, 6, 8, 3], [-1], [], "LowerRightLobeQuadB");
   });
 
   // cspell:word laurynas
-  it("BridgeEdgesAndDegenerateLoops", () => {
+  it.only("BridgeEdgesAndDegenerateLoops", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -671,17 +671,21 @@ describe("RegionBoolean", () => {
     // * almost-equal vertices,
     // * holes, and
     // * polygons with vertices of degree > 2
-    const testCases: TestInput[] = [{jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2},
-                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion1.imjs", expectedNumComponents: 1},
-                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion2.imjs", expectedNumComponents: 2},
-                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion3.imjs", expectedNumComponents: 2},
-                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion4.imjs", expectedNumComponents: 2},
-                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion5.imjs", expectedNumComponents: 2},
-                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion6.imjs", expectedNumComponents: 2},
-                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion7.imjs", expectedNumComponents: 3},
-                                    {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion8.imjs", expectedNumComponents: 2},
-                                    {jsonFilePath: "./src/test/testInputs/curve/disconnectedRegions.imjs", expectedNumComponents: 2},
-                                   ];
+    const testCases: TestInput[] = [
+      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion0.imjs", expectedNumComponents: 2},
+      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion1.imjs", expectedNumComponents: 1},
+      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion2.imjs", expectedNumComponents: 2},
+      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion3.imjs", expectedNumComponents: 2},
+      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion4.imjs", expectedNumComponents: 2},
+      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion5.imjs", expectedNumComponents: 2},
+      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion6.imjs", expectedNumComponents: 2},
+      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion7.imjs", expectedNumComponents: 3},
+      // {jsonFilePath: "./src/test/testInputs/curve/laurynasRegion8.imjs", expectedNumComponents: 2},
+      // {jsonFilePath: "./src/test/testInputs/curve/disconnectedRegions.imjs", expectedNumComponents: 2},
+      { jsonFilePath: "./src/test/testInputs/curve/laurynasLoops.imjs", expectedNumComponents: 1 },
+      // {jsonFilePath: "./src/test/testInputs/curve/laurynasLoops2.imjs", expectedNumComponents: 1},  // fully simplified (DNR)
+      // {jsonFilePath: "./src/test/testInputs/curve/laurynasLoops3.imjs", expectedNumComponents: 1},  // two spikes removed (DNR)
+    ];
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as Loop[];
       if (ck.testDefined(inputs, "inputs successfully parsed") && inputs) {
@@ -695,11 +699,9 @@ describe("RegionBoolean", () => {
             if (ck.testExactNumber(testCase.expectedNumComponents, signedLoops.length, "UnionRegion has expected number of connected components.")) {
               x0 += xDelta;
               for (const signedLoop of signedLoops) {
-                if (ck.testExactNumber(1, signedLoop.negativeAreaLoops.length, "SignedLoop has one outer loop.")) {
-                  GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoop.negativeAreaLoops, x0, y0);
-                  for (const positiveLoop of signedLoop.positiveAreaLoops)
-                    GeometryCoreTestIO.captureCloneGeometry(allGeometry, positiveLoop, x0, y0);
-                }
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoop.negativeAreaLoops, x0, y0);
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoop.positiveAreaLoops, x0, y0, xDelta);
+                ck.testExactNumber(1, signedLoop.negativeAreaLoops.length, "SignedLoop has one outer loop.");
               }
             }
           }
@@ -723,15 +725,15 @@ describe("PlaneAltitudeRangeContext", () => {
     const fitCurve = InterpolationCurve3d.create(opts);
     const lsLoop = Loop.create(linestring);
     let lowHigh: Range1d | undefined;
-    interface RayParam  {
+    interface RayParam {
       ray: Vector3d | Ray3d;  // defines 0-altitude plane
       param: number;          // expected fractional projection parameter (for xy-plane geometry)
     }
     const rayParams: RayParam[] = [
-      {ray: Vector3d.unitZ(), param: 0.0},
-      {ray: Ray3d.create(Point3d.create(0,0,5), Vector3d.unitZ()), param: -5.0},
-      {ray: Ray3d.create(Point3d.create(0,0,-1), Vector3d.unitZ(3.0)), param: 1/3},
-      ];
+      { ray: Vector3d.unitZ(), param: 0.0 },
+      { ray: Ray3d.create(Point3d.create(0, 0, 5), Vector3d.unitZ()), param: -5.0 },
+      { ray: Ray3d.create(Point3d.create(0, 0, -1), Vector3d.unitZ(3.0)), param: 1 / 3 },
+    ];
     for (const geom of [lsLoop, linestring, lsLoop.getPackedStrokes(), linestring.points, fitCurve]) {
       for (const rayParam of rayParams) {
         if (geom instanceof CurveCollection)
@@ -768,12 +770,12 @@ describe("PlaneAltitudeRangeContext", () => {
     const bCurveLoop = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/bsplineCurveLoop.imjs", "utf8"))) as Loop;
     const lsLoop = Loop.create(linestring);
     const circle = Arc3d.createCenterNormalRadius(Point3d.createZero(), Vector3d.unitZ(), 1.0);
-    const diag = Vector3d.create(1,1,0).normalize()!;
+    const diag = Vector3d.create(1, 1, 0).normalize()!;
     const minusDiag = diag.negate();
     const xyRay = Ray3d.create(Point3d.createZero(), diag);
     let lowHigh: Range1d | undefined;
     let x0 = 0;
-    interface TestParams  {
+    interface TestParams {
       geom: GeometryQuery;
       ray: Ray3d;
       minParam: number;
@@ -781,18 +783,18 @@ describe("PlaneAltitudeRangeContext", () => {
       label: string;
     }
     const params: TestParams[] = [
-      {geom: fitCurve!, ray: xyRay, minParam: -2.1249383598895526, maxParam: 4.246258703449196, label: "fitCurve"},
-      {geom: fitCurveLoop, ray: xyRay, minParam: -2.7265388486929107, maxParam: 4.6879835021011536, label: "fitCurveLoop"},
-      {geom: bCurve!, ray: xyRay, minParam: -1.3355667912298879, maxParam: 3.4568871347895316, label: "bCurve"},
-      {geom: bCurveLoop, ray: xyRay, minParam: -3.5945409474105596, maxParam: 3.5804340252875075, label: "bCurveLoop"},
-      {geom: lsLoop, ray: xyRay, minParam: - 1.5 * Math.sqrt(2), maxParam: 3 * Math.sqrt(2), label: "rectangle"},
-      {geom: circle, ray: xyRay, minParam: -1, maxParam: 1, label: "circle-xy"},
-      {geom: circle, ray: Ray3d.create(Point3d.create(2,0), minusDiag), minParam: Math.sqrt(2) - 1, maxParam: Math.sqrt(2) + 1, label: "circle-xy2"},
-      {geom: circle, ray: Ray3d.create(Point3d.create(1,-1), minusDiag), minParam: -1, maxParam: 1, label: "circle-xy3"},
-      {geom: circle, ray: Ray3d.create(Point3d.create(0.5,-0.5), minusDiag), minParam: -1, maxParam: 1, label: "circle-xy4"},
-      {geom: circle, ray: Ray3d.create(Point3d.createZero(), Vector3d.unitY()), minParam: -1, maxParam: 1, label: "circle-y"},
-      {geom: circle, ray: Ray3d.create(Point3d.create(0.9,0), Vector3d.unitX(-1)), minParam: -0.1, maxParam: 1.9, label: "circle-x"},
-      ];
+      { geom: fitCurve!, ray: xyRay, minParam: -2.1249383598895526, maxParam: 4.246258703449196, label: "fitCurve" },
+      { geom: fitCurveLoop, ray: xyRay, minParam: -2.7265388486929107, maxParam: 4.6879835021011536, label: "fitCurveLoop" },
+      { geom: bCurve!, ray: xyRay, minParam: -1.3355667912298879, maxParam: 3.4568871347895316, label: "bCurve" },
+      { geom: bCurveLoop, ray: xyRay, minParam: -3.5945409474105596, maxParam: 3.5804340252875075, label: "bCurveLoop" },
+      { geom: lsLoop, ray: xyRay, minParam: - 1.5 * Math.sqrt(2), maxParam: 3 * Math.sqrt(2), label: "rectangle" },
+      { geom: circle, ray: xyRay, minParam: -1, maxParam: 1, label: "circle-xy" },
+      { geom: circle, ray: Ray3d.create(Point3d.create(2, 0), minusDiag), minParam: Math.sqrt(2) - 1, maxParam: Math.sqrt(2) + 1, label: "circle-xy2" },
+      { geom: circle, ray: Ray3d.create(Point3d.create(1, -1), minusDiag), minParam: -1, maxParam: 1, label: "circle-xy3" },
+      { geom: circle, ray: Ray3d.create(Point3d.create(0.5, -0.5), minusDiag), minParam: -1, maxParam: 1, label: "circle-xy4" },
+      { geom: circle, ray: Ray3d.create(Point3d.createZero(), Vector3d.unitY()), minParam: -1, maxParam: 1, label: "circle-y" },
+      { geom: circle, ray: Ray3d.create(Point3d.create(0.9, 0), Vector3d.unitX(-1)), minParam: -0.1, maxParam: 1.9, label: "circle-x" },
+    ];
     for (const param of params) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [param.geom, LineSegment3d.create(param.ray.origin, param.ray.fractionToPoint(1.0))], x0);
       x0 += 10;
@@ -815,7 +817,7 @@ describe("PlaneAltitudeRangeContext", () => {
 function testSelectedTangencySubsets(
   doImmediateFullBoolean: boolean,
   linestringSimplification: number | number[],
-  arcSimplificationIndices: number [],
+  arcSimplificationIndices: number[],
   arcCyclicIndexRanges: number[][], // POSITIVE indices for (k = first; k < last; k++) loop.   Will be modulo'ed into range for access
   outputFileSuffix: string) {
   const ck = new Checker();
@@ -834,11 +836,11 @@ function testSelectedTangencySubsets(
   captureShiftedClones(allGeometry, inputs, x0, y0, delta, 0);
   if (doImmediateFullBoolean) {
     exerciseAreaBooleans([inputs[0]], [inputs[1]], ck, allGeometry, 0, 0, false);
-}
+  }
   x0 += 4 * delta;
   // Extract each arc (with closure chord) as an independent parameter..
   const loop = inputs[1];
-//    const indicesToTest = [2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8];
+  //    const indicesToTest = [2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8];
   const ex = 0.01;
   const ey = 0.0;
   if (loop instanceof Loop) {
@@ -873,60 +875,60 @@ function testSelectedTangencySubsets(
       }
     }
   }
-  if (arcCyclicIndexRanges.length > 0){
-      x0 += 5 * delta;
+  if (arcCyclicIndexRanges.length > 0) {
+    x0 += 5 * delta;
     y0 = 0;
     const circleRadius = 1.0;
-        // Extract each arc (with closure chord) as an independent parameter..
-        if (loop instanceof Loop) {
-          const n = loop.children.length;
-          for (const indexRange of arcCyclicIndexRanges) {
-            const subsetLoop = new Loop();
-            if (indexRange[0] + n < indexRange[1]) {
-              console.log(`Ignoring index range ${indexRange}`);
-              continue;
-            }
-            for (let k = indexRange[0]; k < indexRange[1]; k++) {
-              const i = k % n;
-              const child = loop.children[i];
-              subsetLoop.children.push(child);
-            }
-            const n1 = subsetLoop.children.length;
-            const pointA = subsetLoop.children[n1 - 1].fractionToPoint(1.0);
-            const pointB = subsetLoop.children[0].startPoint();
-            const pointC = pointA.plusXYZ(-40, 0, 0);
-            const pointD = pointA.plusXYZ(0, -40, 0);
-            const segment1 = LineSegment3d.create(pointA, pointB);
-            subsetLoop.children.push(segment1);
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointD, pointA, pointC], x0, y0, 0);
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, subsetLoop, x0, y0, 0);
-            y0 += delta;
-            captureShiftedClones(allGeometry, [inputs[0], subsetLoop], x0, y0, delta, 0);
-            y0 += delta;
-            const result1 = RegionOps.regionBooleanXY(inputs[0], subsetLoop, RegionBinaryOpType.Union);
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, result1, x0, y0);
-            GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, -8, pointA, circleRadius, x0, y0, 0);
-            y0 += 2 * delta;
-            }
-          }
+    // Extract each arc (with closure chord) as an independent parameter..
+    if (loop instanceof Loop) {
+      const n = loop.children.length;
+      for (const indexRange of arcCyclicIndexRanges) {
+        const subsetLoop = new Loop();
+        if (indexRange[0] + n < indexRange[1]) {
+          console.log(`Ignoring index range ${indexRange}`);
+          continue;
         }
-  GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", `NearTangencyUnion${  outputFileSuffix}`);
+        for (let k = indexRange[0]; k < indexRange[1]; k++) {
+          const i = k % n;
+          const child = loop.children[i];
+          subsetLoop.children.push(child);
+        }
+        const n1 = subsetLoop.children.length;
+        const pointA = subsetLoop.children[n1 - 1].fractionToPoint(1.0);
+        const pointB = subsetLoop.children[0].startPoint();
+        const pointC = pointA.plusXYZ(-40, 0, 0);
+        const pointD = pointA.plusXYZ(0, -40, 0);
+        const segment1 = LineSegment3d.create(pointA, pointB);
+        subsetLoop.children.push(segment1);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointD, pointA, pointC], x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, subsetLoop, x0, y0, 0);
+        y0 += delta;
+        captureShiftedClones(allGeometry, [inputs[0], subsetLoop], x0, y0, delta, 0);
+        y0 += delta;
+        const result1 = RegionOps.regionBooleanXY(inputs[0], subsetLoop, RegionBinaryOpType.Union);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, result1, x0, y0);
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, -8, pointA, circleRadius, x0, y0, 0);
+        y0 += 2 * delta;
+      }
+    }
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", `NearTangencyUnion${outputFileSuffix}`);
   expect(ck.getNumErrors()).equals(0);
 }
 
-  /**
- *
- * @param allGeometry array to receive (cloned) geometry
- * @param components geometry to output
- * @param x0 x shift for positive area loops
- * @param y0 y shift for positive area loops
- * @param dy additional y shift for (1 step) negative loops, (2 steps) non-loop geometry, (3 step) inward offsets of positive area geometry.
- * @param y1 y shift for negative loops and stray geometry
- */
+/**
+*
+* @param allGeometry array to receive (cloned) geometry
+* @param components geometry to output
+* @param x0 x shift for positive area loops
+* @param y0 y shift for positive area loops
+* @param dy additional y shift for (1 step) negative loops, (2 steps) non-loop geometry, (3 step) inward offsets of positive area geometry.
+* @param y1 y shift for negative loops and stray geometry
+*/
 function saveShiftedLoops(allGeometry: GeometryQuery[], components: SignedLoops | SignedLoops[], x0: number, y0: number, dy: number, positiveLoopOffset: number = 0.02,
-    doTriangulation: boolean = true) {
+  doTriangulation: boolean = true) {
   if (Array.isArray(components)) {
-    const allNegativeAreaLoops: Loop [] = [];
+    const allNegativeAreaLoops: Loop[] = [];
     for (const member of components) {
       saveShiftedLoops(allGeometry, member, x0, y0, dy, positiveLoopOffset);
       allNegativeAreaLoops.push(...member.negativeAreaLoops);
@@ -946,15 +948,15 @@ function saveShiftedLoops(allGeometry: GeometryQuery[], components: SignedLoops 
       const outerLoop = Loop.createPolygon(range.rectangleXY(0.0)!);
       const regionLoops = [outerLoop, ...allNegativeAreaLoops];
       const region = ParityRegion.createLoops(regionLoops);
-        const builder = PolyfaceBuilder.create();
-        builder.addTriangulatedRegion(region);
+      const builder = PolyfaceBuilder.create();
+      builder.addTriangulatedRegion(region);
       const polyface = builder.claimPolyface();
       // any triangle with a point outside range1 is extraneous
       const isInteriorFacet = (visitor: PolyfaceVisitor): boolean => {
         const facetRange = visitor.point.getRange();
         return range1.containsRange(facetRange);
       };
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceQuery.cloneFiltered (polyface, isInteriorFacet), x0, yOut);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceQuery.cloneFiltered(polyface, isInteriorFacet), x0, yOut);
     }
   } else {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, components.positiveAreaLoops, x0, y0 + 2 * dy);
@@ -994,7 +996,7 @@ function saveShiftedLoops(allGeometry: GeometryQuery[], components: SignedLoops 
       }
     }
   }
-  }
+}
 
 function runRegionTest(allGeometry: GeometryQuery[], pointArrayA: number[][], pointArrayB: number[][], xBase: number, yBase: number) {
   let x0 = xBase;
@@ -1261,7 +1263,7 @@ describe("GeneralSweepBooleans", () => {
       exerciseAreaBooleans([rectangle1A], [loopB], ck, allGeometry, x0, 0, false);
       x0 += 20;
     }
-    for (const startDegrees of [0, 90]){
+    for (const startDegrees of [0, 90]) {
       for (const cx of [1, 5]) {
         const arc0 = Arc3d.createXY(Point3d.create(cx, 5), 2, AngleSweep.createStartEndDegrees(startDegrees, 180));
         const arc1 = Arc3d.createXY(Point3d.create(cx, 5), 2, AngleSweep.createStartEndDegrees(180, 360));
@@ -1358,7 +1360,7 @@ describe("GeneralSweepBooleans", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, 4, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "FacetPasting");
     expect(ck.getNumErrors()).equals(0);
-});
+  });
 });
 
 function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
@@ -1373,7 +1375,7 @@ function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
   const vertexNeighborhoodFunction = (edgeData: VertexNeighborhoodSortData[]) => {
     console.log({ nodeCount: edgeData.length });
     for (const data of edgeData) {
-      console.log (` id: ${data.node.id}  x: ${  data.node.x}, y: ${  data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature} `);
+      console.log(` id: ${data.node.id}  x: ${data.node.x}, y: ${data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature} `);
     }
   };
   for (const opType of [RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA]) {
@@ -1410,27 +1412,27 @@ class SectionDataParser extends PointStreamXYZHandlerBase {
   private _currentChain?: Point3d[];
   public override startChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void {
     this._currentChain = [];
-    }
+  }
   public override handleXYZ(x: number, y: number, z: number): void {
     this._currentChain!.push(Point3d.create(x, y, z));
-    }
+  }
   public override endChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void {
     if (this._currentChain !== undefined && this._currentChain.length > 0)
       this.allChains.push(this._currentChain);
     this._currentChain = undefined;
-    }
+  }
 
   public parseGeometries(data: any[]) {
-      if (Array.isArray(data)) {
-        VariantPointDataStream.streamXYZ(data, this);
-      }
-}
+    if (Array.isArray(data)) {
+      VariantPointDataStream.streamXYZ(data, this);
+    }
+  }
   public parseElements(elements: any[]) {
     for (const e of elements)
       if (Array.isArray(e.geometries)) {
         this.parseGeometries(e.geometries);
       }
-    }
+  }
   public parseAny(data: any, depth: number = 0) {
     if (Array.isArray(data)) {
       console.log({ sectionDataArrayLength: data.length, depth });
@@ -1472,5 +1474,5 @@ function simplifyLineString(ls: LineString3d, select: number | number[]): LineSt
   } else if (select === 2) {
     return LineString3d.create(PolylineOps.compressByChordError(ls.points, Geometry.smallMetricDistance));
   }
-return ls;
+  return ls;
 }
