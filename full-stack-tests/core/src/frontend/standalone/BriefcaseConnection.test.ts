@@ -5,8 +5,7 @@
 
 import { ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseIdValue, IModelVersion } from "@itwin/core-common";
-import { BriefcaseConnection, GenericAbortSignal, NativeApp } from "@itwin/core-frontend";
-import { ProgressCallback } from "@itwin/core-frontend/lib/cjs/request/Request";
+import { BriefcaseConnection, GenericAbortSignal, NativeApp, OnDownloadProgress } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
@@ -58,15 +57,14 @@ if (ProcessDetector.isElectronAppFrontend) {
       const connection = await BriefcaseConnection.openFile({ fileName, readonly: true });
 
       let lastProgressReport = { loaded: 0, total: 0 };
-      const assertProgress: ProgressCallback = (progress) => {
+      const assertProgress: OnDownloadProgress = (progress) => {
         assert.isAbove(progress.loaded, lastProgressReport.loaded);
-        assert.isDefined(progress.total);
-        assert.isAtLeast(progress.total!, lastProgressReport.total);
-        lastProgressReport = { ...progress, total: progress.total! };
+        assert.isAtLeast(progress.total, lastProgressReport.total);
+        lastProgressReport = progress;
       };
 
       try {
-        await connection.pullChanges(20, { progressCallback: assertProgress });
+        await connection.pullChanges(20, { downloadProgressCallback: assertProgress });
       } finally {
         await connection.close();
         await NativeApp.deleteBriefcase(fileName);
@@ -93,15 +91,14 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       const abortSignal = new MockAbortSignal();
       let lastProgressReport = { loaded: 0, total: 0 };
-      const progressCallback: ProgressCallback = (progress) => {
-        assert.isDefined(progress.total);
-        lastProgressReport = { ...progress, total: progress.total! };
+      const downloadProgressCallback: OnDownloadProgress = (progress) => {
+        lastProgressReport = progress;
 
-        if (progress.loaded > progress.total! / 4)
+        if (progress.loaded > progress.total / 4)
           abortSignal.abort();
       };
 
-      const pullPromise = connection.pullChanges(50, { progressCallback, abortSignal, progressInterval: 50 });
+      const pullPromise = connection.pullChanges(50, { downloadProgressCallback, abortSignal, progressInterval: 50 });
 
       try {
         await expect(pullPromise).to.eventually.be.rejectedWith(/cancelled|aborted/i);
