@@ -5,6 +5,7 @@
 
 import * as path from "path";
 import { assert } from "chai";
+import { exec } from "child_process";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
 import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterface, RpcRegistry, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
@@ -155,6 +156,7 @@ async function testMainWindowUrl() {
 
 async function testWindowSizeSettings() {
   const storeWindowName = "settingsTestWindow";
+  const isXvfbRunning = await isXvfbProcessRunning();
 
   await ElectronHost.startup();
 
@@ -178,18 +180,20 @@ async function testWindowSizeSettings() {
   assert(isMaximized === window.isMaximized());
 
   window.maximize();
-  window.emit("maximize"); // "maximize" event is not emitted when running with xvfb
+  if (isXvfbRunning)
+    window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized);
 
   window.unmaximize();
-  window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb
+  if (isXvfbRunning)
+    window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb (linux)
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(!isMaximized);
 
-  await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for window to "unmaximize"
+  await sleep(100); // Wait for window to "unmaximize"
 
   const width = 250;
   const height = 251;
@@ -232,4 +236,26 @@ function assertElectronHostIsInitialized() {
   assert(typeof ElectronHost.webResourcesPath === "string");
   assert(typeof ElectronHost.appIconPath === "string");
   assert(typeof ElectronHost.frontendURL === "string");
+}
+
+/**
+ * Checks if `xvfb` is running on the machine.
+ * @note `true` doesn't necessary mean that tests are using `xvfb`.
+ */
+async function isXvfbProcessRunning(): Promise<boolean> {
+  if (process.platform !== "linux")
+    return false;
+
+  let doesXvfbProcessExists = false;
+  const bashProcess = exec("pgrep xvfb", (_, stdout) => {
+    const processNumber = Number(stdout);
+    doesXvfbProcessExists = !isNaN(processNumber);
+  });
+
+  await new Promise((resolve) => bashProcess.on("exit", resolve));
+  return doesXvfbProcessExists;
+}
+
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
