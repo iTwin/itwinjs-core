@@ -1977,7 +1977,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       transform.multiplyPoint3d(eyePoint, eyePoint);
       targetPoint.setFrom(eyePoint.plusScaled(zDir, zDir.dotProduct(eyePoint.vectorTo(targetPoint))));
 
-      const status = view.lookAt({eyePoint, targetPoint, upVector: view.getYVector(), lensAngle: view.camera.lens });
+      const status = view.lookAt({ eyePoint, targetPoint, upVector: view.getYVector(), lensAngle: view.camera.lens });
       if (ViewStatus.Success !== status)
         return status;
     } else {
@@ -2562,6 +2562,28 @@ export abstract class Viewport implements IDisposable, TileUser {
     return this.target.readImageToCanvas();
   }
 
+  /** Used internally by `waitForSceneCompletion`.
+   * @internal
+   */
+  protected hasAdditionalTiles(): boolean {
+    const tilesThisVp = IModelApp.tileAdmin.getTilesForUser(this);
+    const ext = tilesThisVp?.external;
+    if ((ext?.requested ?? 0) > 0)
+      return true;
+    // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
+    for (const vp of this.view.secondaryViewports) {
+      if (vp.numRequestedTiles > 0) {
+        return true;
+      }
+
+      const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
+      if (tiles && tiles.external.requested > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** Returns a Promise that resolves after the contents of this viewport are fully loaded and rendered.
    * This can be useful, for example, when you want to capture an image of the viewport's contents, as in the following code:
    * ```ts
@@ -2582,21 +2604,8 @@ export abstract class Viewport implements IDisposable, TileUser {
 
       haveExternalTexRequests = system.hasExternalTextureRequests;
       haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
-      if (!haveNewTiles) {
-        // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
-        for (const vp of this.view.secondaryViewports) {
-          if (vp.numRequestedTiles > 0) {
-            haveNewTiles = true;
-            break;
-          }
-
-          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
-          if (tiles && tiles.external.requested > 0) {
-            haveNewTiles = true;
-            break;
-          }
-        }
-      }
+      if (!haveNewTiles)
+        haveNewTiles = this.hasAdditionalTiles();
 
       // Since the viewport is not being managed by the ViewManager, we must manually pump the TileAdmin to initiate further tile requests each tick of the tile-wait loop.
       if (haveNewTiles)
@@ -3544,21 +3553,8 @@ export class ScreenViewport extends Viewport {
         }
 
         let haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
-        if (!haveNewTiles) {
-          // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
-          for (const vp of this.view.secondaryViewports) {
-            if (vp.numRequestedTiles > 0) {
-              haveNewTiles = true;
-              break;
-            }
-
-            const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
-            if (tiles && tiles.external.requested > 0) {
-              haveNewTiles = true;
-              break;
-            }
-          }
-        }
+        if (!haveNewTiles)
+          haveNewTiles = this.hasAdditionalTiles();
 
         if (!haveNewTiles && !system.hasExternalTextureRequests) {
           removeOnViewClose();
