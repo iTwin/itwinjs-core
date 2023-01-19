@@ -52,20 +52,16 @@ PbxProj2="$RepoRoot/test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-te
 
 for PbxProj in $PbxProj1 $PbxProj2
 do
-  # Note: the '' seems to be required on MacOS to get around a strange "undefined label" error.
-  # But on linux that breaks the command.
-  # sed -i '' "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
-  sed -i "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
+  # Note: on macOS, -i requires ''. linux will only accept that if you omit the space: -i''.
+  sed -i'' "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
 done
 
 # Update Android projects.
 BuildGradle1="$RepoRoot/test-apps/display-test-app/android/imodeljs-test-app/app/build.gradle"
 for BuildGradle in $BuildGradle1
 do
-  # Note: the '' seems to be required on MacOS to get around a strange "undefined label" error.
-  # But on linux that breaks the command.
-  # sed -i '' "s/com.github.itwin:mobile-native-android:.*'/com.github.itwin:mobile-native-android:$AddonVersion'/" "$BuildGradle"
-  sed -i "s/com.github.itwin:mobile-native-android:.*'/com.github.itwin:mobile-native-android:$AddonVersion'/" "$BuildGradle"
+  # Note: on macOS, -i requires ''. linux will only accept that if you omit the space: -i''.
+  sed -i'' "s/com.github.itwin:mobile-native-android:.*'/com.github.itwin:mobile-native-android:$AddonVersion'/" "$BuildGradle"
 done
 
 # Purge node_modules
