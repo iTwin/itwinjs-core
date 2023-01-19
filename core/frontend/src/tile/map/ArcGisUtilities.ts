@@ -164,6 +164,9 @@ export class ArcGisUtilities {
     return { status: MapLayerSourceStatus.Valid, subLayers };
   }
 
+  /**
+   * Validate MapService tiling metadata and checks if the tile tree is 'Google Maps' compatible.
+  */
   public static isEpsg3857Compatible(tileInfo: any) {
     if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods))
       return false;
