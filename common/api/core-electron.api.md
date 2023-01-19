@@ -48,6 +48,8 @@ export class ElectronHost {
     // (undocumented)
     static frontendURL: string;
     static getWindowMaximizedSetting(windowName: string): boolean | undefined;
+    static getWindowSizeAndPositionSetting(windowName: string): WindowSizeAndPositionProps | undefined;
+    // @deprecated
     static getWindowSizeSetting(windowName: string): WindowSizeAndPositionProps | undefined;
     // (undocumented)
     static get ipcMain(): Electron.IpcMain;

@@ -166,8 +166,8 @@ async function _testWindowSizeSettings() {
   const window = ElectronHost.mainWindow;
   assert(window);
 
-  let size = ElectronHost.getWindowSizeSetting(storeWindowName);
-  const expectedSize = ElectronHost.getWindowSizeSetting(storeWindowName);
+  let size = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  const expectedSize = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
   assert(size?.width === expectedSize?.width);
   assert(size?.height === expectedSize?.height);
   assert(size?.x === expectedSize?.x);
@@ -191,16 +191,14 @@ async function _testWindowSizeSettings() {
   const width = 250;
   const height = 251;
   window.setSize(width, height);
-  window.emit("resized");
-  size = ElectronHost.getWindowSizeSetting(storeWindowName);
+  size = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
   assert(size?.width === width);
   assert(size?.height === height);
 
   const x = 15;
   const y = 16;
   window.setPosition(x, y);
-  window.emit("moved");
-  size = ElectronHost.getWindowSizeSetting(storeWindowName);
+  size = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
   assert(size?.x === x);
   assert(size?.y === y);
 }
