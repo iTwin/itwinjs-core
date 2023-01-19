@@ -1087,12 +1087,31 @@ export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = R
 }
 
 // @alpha
+export interface HierarchyLevel {
+    nodes: Node_2[];
+    supportsFiltering?: boolean;
+}
+
+// @alpha (undocumented)
+export namespace HierarchyLevel {
+    export function fromJSON(json: HierarchyLevelJSON): HierarchyLevel;
+}
+
+// @alpha
 export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
     parentKey?: TNodeKey;
 }
 
 // @alpha
 export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions<HierarchyLevelDescriptorRequestOptions<never, NodeKeyJSON, RulesetVariableJSON>>;
+
+// @alpha
+export interface HierarchyLevelJSON {
+    // (undocumented)
+    nodes: NodeJSON[];
+    // (undocumented)
+    supportsFiltering?: boolean;
+}
 
 // @public
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
@@ -1790,6 +1809,8 @@ interface Node_2 {
     isSelectionDisabled?: boolean;
     key: NodeKey;
     label: LabelDefinition;
+    // @alpha
+    supportsFiltering?: boolean;
 }
 
 // @public (undocumented)
@@ -1889,6 +1910,8 @@ export interface NodeJSON {
     key: NodeKeyJSON;
     // (undocumented)
     labelDefinition: LabelDefinitionJSON;
+    // @alpha (undocumented)
+    supportsFiltering?: boolean;
 }
 
 // @public
