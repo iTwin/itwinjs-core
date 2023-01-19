@@ -283,8 +283,8 @@ export class WidgetDef {
         me._state = widgetProps.defaultState === WidgetState.Floating ? WidgetState.Open : widgetProps.defaultState;
     }
 
-    if (widgetProps.isFreeform !== undefined) {
-      me._isFreeform = widgetProps.isFreeform;
+    if (widgetProps.isFreeform !== undefined) {  // eslint-disable-line deprecation/deprecation
+      me._isFreeform = widgetProps.isFreeform;  // eslint-disable-line deprecation/deprecation
       me._widgetType = me.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular; // eslint-disable-line deprecation/deprecation
     }
 
