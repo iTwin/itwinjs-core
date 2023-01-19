@@ -50,12 +50,11 @@ try {
 
 //copy docs
 try {
-  const docsPath = dest;
   const referencePath = path.resolve(dest, "reference");
   const extractPath = path.resolve(dest, "extract");
   const folderList = ["core", "domains", "editor", "presentation", "ui"];
 
-  fse.copySync(path.resolve(basePath, "docs"), docsPath);
+  fse.copySync(path.resolve(basePath, "docs"), dest);
   fse.copySync(path.resolve(basePath, "generated-docs", "extract"), extractPath);
 
   folderList.forEach(folder => {
