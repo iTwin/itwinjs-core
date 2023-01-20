@@ -12,8 +12,8 @@ import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/compo
 import { IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  ClientDiagnosticsOptions, ContentSpecificationTypes, DefaultContentDisplayTypes, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
-  InstanceFilterDefinition, KeySet, Node, NodeKey, NodePathElement, Paged, PresentationError, PresentationStatus, Ruleset, RuleTypes,
+  ClientDiagnosticsOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceFilterDefinition, Node, NodeKey, NodePathElement,
+  Paged, PresentationError, PresentationStatus, RequestOptionsWithRuleset, Ruleset,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
@@ -139,13 +139,20 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   public get pagingSize(): number | undefined { return this._pagingSize; }
   public set pagingSize(value: number | undefined) { this._pagingSize = value; }
 
-  /** Called to get  options for node requests */
-  private createRequestOptions<TNodeKey = NodeKey>(parentKey: TNodeKey | undefined): HierarchyRequestOptions<IModelConnection, TNodeKey> {
+  /** Called to get base options for requests */
+  private createBaseRequestOptions(): RequestOptionsWithRuleset<IModelConnection> {
     return {
       imodel: this._imodel,
       rulesetOrId: this._rulesetRegistration.rulesetId,
-      ...(parentKey ? { parentKey } : undefined),
       ...(this._diagnosticsOptions ? { diagnostics: this._diagnosticsOptions } : undefined),
+    };
+  }
+
+  /** Called to get options for node requests */
+  private createRequestOptions<TNodeKey = NodeKey>(parentKey: TNodeKey | undefined): HierarchyRequestOptions<IModelConnection, TNodeKey> {
+    return {
+      ...this.createBaseRequestOptions(),
+      ...(parentKey ? { parentKey } : undefined),
     };
   }
 
@@ -190,7 +197,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     const parentKey = parentNode ? this.getNodeKey(parentNode) : undefined;
     const requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>> = { ...this.createRequestOptions(parentKey), paging: pageOptionsUiToPresentation(pageOptions), instanceFilter };
     const result = await this._dataSource.getNodesAndCount(requestOptions);
-    return createNodesAndCountResult(this._imodel, result.nodes, result.count, parentNode, this._nodesCreateProps);
+    return createNodesAndCountResult(result.nodes, result.count, this.createBaseRequestOptions(), parentNode, this._nodesCreateProps);
   }, { isMatchingKey: MemoizationHelpers.areNodesRequestsEqual as any });
 
   /**
@@ -211,9 +218,15 @@ function getFilterDefinition(imodel: IModelConnection, node?: TreeNodeItem) {
   return convertToInstanceFilterDefinition(node.filtering.active.filter, imodel);
 }
 
-function createNodesAndCountResult(imodel: IModelConnection, nodes: Node[], count: number, parentNode?: TreeNodeItem, nodesCreateProps?: CreateTreeNodeItemProps) {
+function createNodesAndCountResult(
+  nodes: Node[],
+  count: number,
+  baseOptions: RequestOptionsWithRuleset<IModelConnection>,
+  parentNode?: TreeNodeItem,
+  nodesCreateProps?: CreateTreeNodeItemProps
+) {
   if (nodes.length > 0 || !parentNode || !isPresentationTreeNodeItem(parentNode) || !parentNode.filtering || !parentNode.filtering.active) {
-    return { nodes: createTreeItems(imodel, nodes, parentNode, nodesCreateProps), count };
+    return { nodes: createTreeItems(nodes, baseOptions, parentNode, nodesCreateProps), count };
   }
 
   // TODO: handle case when requesting children for node with too many children
@@ -224,12 +237,25 @@ function createNodesAndCountResult(imodel: IModelConnection, nodes: Node[], coun
   };
 }
 
-function createTreeItems(imodel: IModelConnection, nodes: Node[], parentNode?: TreeNodeItem, nodesCreateProps?: CreateTreeNodeItemProps) {
+function createTreeItems(
+  nodes: Node[],
+  baseOptions: RequestOptionsWithRuleset<IModelConnection>,
+  parentNode?: TreeNodeItem,
+  nodesCreateProps?: CreateTreeNodeItemProps
+) {
   const items: PresentationTreeNodeItem[] = [];
   for (const node of nodes) {
     const item = createTreeNodeItem(node, parentNode?.id, nodesCreateProps);
-    // TODO: do not create filtering info for nodes that do not support filtering
-    item.filtering = createFilteringInfo(node, imodel);
+    if (node.supportsFiltering) {
+      item.filtering = {
+        descriptor: async () => {
+          const descriptor = await Presentation.presentation.getNodesDescriptor({ ...baseOptions, parentKey: node.key });
+          if (!descriptor)
+            throw new PresentationError(PresentationStatus.Error, `Failed to get descriptor for node - ${node.label.displayValue}`);
+          return descriptor;
+        },
+      };
+    }
     items.push(item);
   }
   return items;
@@ -258,54 +284,4 @@ class MemoizationHelpers {
       return false;
     return true;
   }
-}
-
-// TODO: update when RPC for getting child instances descriptor implemented
-
-// istanbul ignore next
-function createFilteringInfo(node: Node, imodel: IModelConnection) {
-  return {
-    descriptor: async () => {
-      const childInfo = getChildInstancesInfo(node);
-      const descriptor = await Presentation.presentation.getContentDescriptor({
-        imodel,
-        rulesetOrId: createChildNodesRuleset(childInfo),
-        keys: new KeySet(),
-        displayType: DefaultContentDisplayTypes.Undefined,
-      });
-      if (!descriptor)
-        throw new PresentationError(PresentationStatus.Error, `Failed to create descriptor for node's - [${node.label.displayValue}] children`);
-      return descriptor;
-    },
-  };
-}
-
-interface ChildInstancesInfo {
-  schemaName: string;
-  className: string;
-}
-
-// istanbul ignore next
-function getChildInstancesInfo(node: Node): ChildInstancesInfo {
-  if (!node.extendedData || !node.extendedData.childSchemaName || !node.extendedData.childClassName)
-    return { schemaName: "BisCore", className: "Element" };
-  return {
-    schemaName: node.extendedData.childSchemaName,
-    className: node.extendedData.childClassName,
-  };
-}
-
-// istanbul ignore next
-function createChildNodesRuleset(childInfo: ChildInstancesInfo): Ruleset {
-  return {
-    id: "child-instance-properties",
-    rules: [{
-      ruleType: RuleTypes.Content,
-      specifications: [{
-        specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-        classes: { schemaName: childInfo.schemaName, classNames: [childInfo.className], arePolymorphic: true },
-        handlePropertiesPolymorphically: true,
-      }],
-    }],
-  };
 }

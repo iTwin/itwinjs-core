@@ -14,7 +14,7 @@ import { EmptyLocalization } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CheckBoxState } from "@itwin/core-react";
 import {
-  HierarchyRequestOptions, InstanceFilterDefinition, Node, NodeKey, Paged, RegisteredRuleset, RulesetVariable,
+  Descriptor, HierarchyRequestOptions, InstanceFilterDefinition, Node, NodeKey, Paged, RegisteredRuleset, RulesetVariable,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
@@ -23,7 +23,9 @@ import {
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { translate } from "../../presentation-components/common/Utils";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
-import { PresentationInfoTreeNodeItem, PresentationTreeNodeItem } from "../../presentation-components/tree/PresentationTreeNodeItem";
+import {
+  PresentationInfoTreeNodeItem, PresentationTreeNodeItem, PresentationTreeNodeItemFilteringInfo,
+} from "../../presentation-components/tree/PresentationTreeNodeItem";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 
@@ -388,6 +390,65 @@ describe("TreeDataProvider", () => {
         .verifiable();
       await provider.getNodesCount();
       presentationManagerMock.verifyAll();
+    });
+
+  });
+
+  describe("filterable nodes", () => {
+    async function loadDescriptor(filteringInfo: PresentationTreeNodeItemFilteringInfo) {
+      if (filteringInfo.descriptor instanceof Descriptor)
+        return filteringInfo.descriptor;
+      return filteringInfo.descriptor();
+    }
+
+    it("sets filtering info if nodes supports filtering", async () => {
+      const nodes = [createRandomECInstancesNode(), createRandomECInstancesNode({ supportsFiltering: true })];
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount(moq.It.isAny()))
+        .returns(async () => ({ nodes, count: 0 }));
+
+      const actualResult = await provider.getNodes();
+      expect(actualResult).to.have.lengthOf(2);
+      expect((actualResult[0] as PresentationTreeNodeItem).filtering).to.be.undefined;
+      expect((actualResult[1] as PresentationTreeNodeItem).filtering).to.not.be.undefined;
+    });
+
+    it("loads node descriptor for filtering", async () => {
+      const nodes = [createRandomECInstancesNode({ supportsFiltering: true })];
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount(moq.It.isAny()))
+        .returns(async () => ({ nodes, count: 0 }));
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, parentKey: nodes[0].key }))
+        .returns(async () => createTestContentDescriptor({ fields: [] }));
+
+      const actualResult = await provider.getNodes();
+      expect(actualResult).to.have.lengthOf(1);
+      const treeItem = actualResult[0] as PresentationTreeNodeItem;
+      expect(treeItem.filtering).to.not.be.undefined;
+      const descriptor = await loadDescriptor(treeItem.filtering!);
+      expect(descriptor).to.not.be.undefined;
+    });
+
+    it("throws if cannot load node descriptor for filtering", async () => {
+      const nodes = [createRandomECInstancesNode({ supportsFiltering: true })];
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount(moq.It.isAny()))
+        .returns(async () => ({ nodes, count: 0 }));
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, parentKey: nodes[0].key }))
+        .returns(async () => undefined);
+
+      const actualResult = await provider.getNodes();
+      expect(actualResult).to.have.lengthOf(1);
+      const treeItem = actualResult[0] as PresentationTreeNodeItem;
+      expect(treeItem.filtering).to.not.be.undefined;
+      await expect(loadDescriptor(treeItem.filtering!)).to.be.rejected;
     });
 
   });
