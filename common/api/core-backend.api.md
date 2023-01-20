@@ -690,7 +690,7 @@ export class CheckpointManager {
     static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
     // (undocumented)
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
-    static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb): void;
+    static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb): void;
     // (undocumented)
     static verifyCheckpoint(checkpoint: CheckpointProps, fileName: LocalFileName): boolean;
 }
@@ -1086,6 +1086,7 @@ export class CodeSpecs {
     insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
+    updateProperties(codeSpec: CodeSpec): void;
 }
 
 // @public
@@ -1555,6 +1556,7 @@ export class ECSqlBinder {
 // @public
 export interface ECSqlColumnInfo {
     getAccessString(): string;
+    getOriginPropertyName(): string | undefined;
     getPropertyName(): string;
     getRootClassAlias(): string;
     getRootClassName(): string;
@@ -3006,7 +3008,6 @@ export class IModelHost {
     static set applicationVersion(version: string);
     // @beta
     static get appWorkspace(): Workspace;
-    // (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
     static backendVersion: string;
@@ -3075,7 +3076,6 @@ export class IModelHost {
 export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     appAssetsDir?: LocalDirName;
-    // @beta (undocumented)
     authorizationClient?: AuthorizationClient;
     // (undocumented)
     cacheDir?: LocalDirName;
@@ -3114,7 +3114,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
 // @public
 export interface IModelHostOptions {
     appAssetsDir?: LocalDirName;
-    // @beta
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;

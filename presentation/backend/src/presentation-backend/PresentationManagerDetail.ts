@@ -11,7 +11,7 @@ import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
   ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions,
-  HierarchyRequestOptions, InstanceKey, Key, KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError,
+  HierarchyRequestOptions, InstanceKey, Key, KeySet, LabelDefinition, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError,
   PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT } from "./Constants";
@@ -106,7 +106,7 @@ export class PresentationManagerDetail implements IDisposable {
     this._onManagerUsed = handler;
   }
 
-  public async getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node[]> {
+  public async getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<string> {
     const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
@@ -114,7 +114,7 @@ export class PresentationManagerDetail implements IDisposable {
       ...strippedOptions,
       nodeKey: parentKey,
     };
-    return JSON.parse(await this.request(params), Node.listReviver);
+    return this.request(params);
   }
 
   public async getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {

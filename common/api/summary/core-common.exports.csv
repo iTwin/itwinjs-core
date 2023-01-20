@@ -17,7 +17,7 @@ public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
-beta;AuthorizationClient
+public;AuthorizationClient
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
 public;AuxCoordSystemProps 
@@ -126,6 +126,7 @@ public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
 public;CodeScopeSpec
 public;CodeSpec
+public;CodeSpecProperties
 public;ColorByName:
 public;ColorDef
 public;ColorDefProps = number
@@ -259,7 +260,6 @@ public;FeatureAppearanceProps
 public;FeatureAppearanceProvider
 public;FeatureAppearanceProvider
 public;FeatureAppearanceSource
-internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
 public;FeatureOverrides 
@@ -279,10 +279,9 @@ internal;FormDataCommon
 public;FresnelSettings
 public;FresnelSettingsProps
 public;Frustum
-internal;FrustumPlanes
-internal;FrustumPlanes
+public;FrustumPlanes
+public;FrustumPlanes
 public;FunctionalElementProps 
-internal;GateValue = number | boolean | string | undefined
 public;GeocentricTransform 
 public;GeocentricTransformProps
 beta;GeoCoordinatesRequestProps
@@ -390,6 +389,7 @@ beta;IModelCoordinatesResponseProps
 public;IModelEncryptionProps
 deprecated;IModelEncryptionProps
 public;IModelError 
+public;IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus
 public;IModelNotFoundResponse 
 public;IModelProps
 internal;class IModelReadRpcInterface 

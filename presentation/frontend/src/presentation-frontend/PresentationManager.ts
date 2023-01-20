@@ -544,6 +544,7 @@ export const buildPagedArrayResponse = async <TItem>(requestedPage: PageOptions 
     }
     return { total: gen.total, items };
   } catch {
+    // FIXME: we should propagate the error...
     return { total: 0, items: [] };
   }
 };

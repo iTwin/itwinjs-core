@@ -63,8 +63,6 @@ import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
-import { RepositoryStatus } from '@itwin/core-bentley';
-import { RpcInterfaceStatus } from '@itwin/core-bentley';
 import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
@@ -331,7 +329,7 @@ export namespace AreaPattern {
     }
 }
 
-// @beta
+// @public
 export interface AuthorizationClient {
     getAccessToken(): Promise<AccessToken>;
 }
@@ -666,14 +664,11 @@ export type BlobRange = QueryLimit;
 // @public
 export class BoundingSphere {
     constructor(center?: Point3d, radius?: number);
-    // (undocumented)
     center: Point3d;
-    // (undocumented)
     init(center: Point3d, radius: number): void;
-    // (undocumented)
     radius: number;
-    // (undocumented)
-    transformBy(transform: Transform, result: BoundingSphere): BoundingSphere;
+    transformBy(transform: Transform, result?: BoundingSphere): BoundingSphere;
+    transformInPlace(transform: Transform): void;
 }
 
 // @alpha
@@ -1264,20 +1259,35 @@ export namespace CodeScopeSpec {
 export class CodeSpec {
     static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec;
     // @internal
-    static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec;
+    static createFromJson(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties): CodeSpec;
     id: Id64String;
     iModel: IModel;
-    // @beta
+    // @deprecated
     get isManagedWithIModel(): boolean;
     set isManagedWithIModel(value: boolean);
     get isValid(): boolean;
     name: string;
     // @internal
-    properties: any;
+    properties: CodeSpecProperties;
     get scopeReq(): CodeScopeSpec.ScopeRequirement;
     set scopeReq(req: CodeScopeSpec.ScopeRequirement);
     get scopeType(): CodeScopeSpec.Type;
     set scopeType(scopeType: CodeScopeSpec.Type);
+}
+
+// @public
+export interface CodeSpecProperties {
+    // (undocumented)
+    scopeSpec: {
+        type: CodeScopeSpec.Type;
+        fGuidRequired?: boolean;
+    };
+    // (undocumented)
+    spec?: {
+        isManagedWithDgnDb?: boolean;
+    };
+    // (undocumented)
+    version?: string;
 }
 
 // @public
@@ -3058,15 +3068,6 @@ export interface FeatureAppearanceSource {
     getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
-// @internal
-export class FeatureGates {
-    addMonitor(feature: string, monitor: (val: GateValue) => void): () => void;
-    check(feature: string, defaultVal?: GateValue): GateValue;
-    readonly gates: Map<string, GateValue>;
-    onChanged: BeEvent<(feature: string, val: GateValue) => void>;
-    setGate(feature: string, val: GateValue): void;
-}
-
 // @internal (undocumented)
 export class FeatureIndex {
     // (undocumented)
@@ -3355,38 +3356,25 @@ export class Frustum {
     translate(offset: XYAndZ): void;
 }
 
-// @internal
+// @public
 export class FrustumPlanes {
-    constructor(frustum?: Frustum);
-    // (undocumented)
     computeContainment(points: Point3d[], sphere?: BoundingSphere, tolerance?: number): FrustumPlanes.Containment;
-    // (undocumented)
     computeFrustumContainment(box: Frustum, sphere?: BoundingSphere): FrustumPlanes.Containment;
-    // (undocumented)
     containsPoint(point: Point3d, tolerance?: number): boolean;
-    // (undocumented)
-    init(frustum: Frustum): void;
-    // (undocumented)
+    static createEmpty(): FrustumPlanes;
+    static fromFrustum(frustum: Frustum): FrustumPlanes;
+    init(frustum: Frustum): boolean;
     intersectsFrustum(box: Frustum, sphere?: BoundingSphere): boolean;
-    // (undocumented)
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
-    // (undocumented)
     get isValid(): boolean;
-    // (undocumented)
-    get planes(): ClipPlane[] | undefined;
+    get planes(): ClipPlane[];
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace FrustumPlanes {
-    // (undocumented)
-    export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance?: number): void;
-    // (undocumented)
     export enum Containment {
-        // (undocumented)
         Inside = 2,
-        // (undocumented)
         Outside = 0,
-        // (undocumented)
         Partial = 1
     }
 }
@@ -3396,9 +3384,6 @@ export interface FunctionalElementProps extends ElementProps {
     // (undocumented)
     typeDefinition?: RelatedElementProps;
 }
-
-// @internal (undocumented)
-export type GateValue = number | boolean | string | undefined;
 
 // @public
 export class GeocentricTransform implements GeocentricTransformProps {
@@ -4689,8 +4674,11 @@ export interface IModelEncryptionProps {
 
 // @public
 export class IModelError extends BentleyError {
-    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus, message: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: GetMetaDataFunction);
 }
+
+// @public
+export type IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus;
 
 // @public
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
@@ -6494,6 +6482,8 @@ export enum PrimitiveTypeCode {
     // (undocumented)
     Double = 1025,
     // (undocumented)
+    IGeometry = 2561,
+    // (undocumented)
     Integer = 1281,
     // (undocumented)
     Long = 1537,
@@ -7584,8 +7574,6 @@ export interface RepositoryLinkProps extends UrlLinkProps {
     repositoryGuid?: GuidString;
 }
 
-export { RepositoryStatus }
-
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
@@ -7832,8 +7820,6 @@ export interface RpcInterfaceEndpoints {
 
 // @internal (undocumented)
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
-
-export { RpcInterfaceStatus }
 
 // @internal
 export class RpcInvocation {
@@ -9895,7 +9881,6 @@ export interface ViewFlagProps {
     shadows?: boolean;
     thematicDisplay?: boolean;
     visEdges?: boolean;
-    // @beta
     wiremesh?: boolean;
 }
 
@@ -9939,7 +9924,6 @@ export class ViewFlags {
     readonly visibleEdges: boolean;
     readonly weights: boolean;
     readonly whiteOnWhiteReversal: boolean;
-    // @beta
     readonly wiremesh: boolean;
     with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags;
     withRenderMode(renderMode: RenderMode): ViewFlags;

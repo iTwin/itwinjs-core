@@ -15,7 +15,7 @@ import type { Tracer } from '@opentelemetry/api';
 export class AbandonedError extends Error {
 }
 
-// @beta
+// @public
 export type AccessToken = string;
 
 // @public
@@ -34,14 +34,6 @@ export type AsyncFunction = (...args: any) => Promise<any>;
 export type AsyncMethodsOf<T> = {
     [P in keyof T]: T[P] extends AsyncFunction ? P : never;
 }[keyof T];
-
-// @alpha
-export class AsyncMutex {
-    lock(): Promise<AsyncMutexUnlockFnType>;
-}
-
-// @alpha
-export type AsyncMutexUnlockFnType = () => void;
 
 // @public
 export function base64StringToUint8Array(base64: string): Uint8Array;
@@ -128,7 +120,7 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
 
-// @beta
+// @public
 export enum BriefcaseStatus {
     // (undocumented)
     BRIEFCASE_STATUS_BASE = 131072,
@@ -203,7 +195,7 @@ export class ByteStream {
     rewind(numBytes: number): boolean;
 }
 
-// @beta
+// @public
 export enum ChangeSetStatus {
     ApplyError = 90113,
     CannotMergeIntoMaster = 90136,
@@ -538,9 +530,6 @@ export abstract class ErrorCategory extends StatusCategory {
     error: boolean;
 }
 
-// @beta
-export type ExtractLiterals<T, U extends T> = Extract<T, U>;
-
 // @public
 export enum GeoServiceStatus {
     // (undocumented)
@@ -668,7 +657,7 @@ export interface IDisposable {
     dispose(): void;
 }
 
-// @beta
+// @public
 export enum IModelHubStatus {
     // (undocumented)
     AnotherUserPushing = 102409,
@@ -1473,7 +1462,7 @@ export enum RealityDataStatus {
     Success = 0
 }
 
-// @beta
+// @internal
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
     ChangeSetRequired = 86025,
@@ -1546,7 +1535,7 @@ export abstract class StatusCategory {
 // @alpha (undocumented)
 export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
 
-// @beta
+// @internal
 export interface StatusCodeWithMessage<ErrorCodeType> {
     // (undocumented)
     message: string;
@@ -1583,6 +1572,8 @@ export class Tracing {
 
 // @public
 export class TransientIdSequence {
+    getNext(): Id64String;
+    // @deprecated
     get next(): Id64String;
 }
 

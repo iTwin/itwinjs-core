@@ -746,6 +746,44 @@ describe("NineZoneStateReducer", () => {
       });
       newState.floatingWidgets.byId.fw1!.userSized!.should.eq(true);
     });
+
+    it("should maintain min size when resizing (top-left)", () => {
+      let state = createNineZoneState();
+      state = addTabs(state, ["t1"]);
+      state = addFloatingWidget(state, "fw1", ["t1"], {
+        bounds: new Rectangle(100, 300, 500, 900),
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_RESIZE",
+        id: "fw1",
+        resizeBy: new Rectangle(-800, -800),
+      });
+      newState.floatingWidgets.byId.fw1!.bounds.should.eql({
+        left: 500 - 200, // 200 is widget min width
+        top: 900 - 120, // 120 is widget min height
+        right: 500,
+        bottom: 900,
+      });
+    });
+
+    it("should maintain min size when resizing (bottom-right)", () => {
+      let state = createNineZoneState();
+      state = addTabs(state, ["t1"]);
+      state = addFloatingWidget(state, "fw1", ["t1"], {
+        bounds: new Rectangle(100, 300, 500, 900),
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_RESIZE",
+        id: "fw1",
+        resizeBy: new Rectangle(0, 0, -800, -800),
+      });
+      newState.floatingWidgets.byId.fw1!.bounds.should.eql({
+        left: 100,
+        top: 300,
+        right: 100 + 200,
+        bottom: 300 + 120,
+      });
+    });
   });
 
   describe("FLOATING_WIDGET_SET_BOUNDS", () => {
