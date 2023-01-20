@@ -343,7 +343,7 @@ describe("IModelTransformerHub", () => {
       IModelJsFs.removeSync(masterSeedFileName);
     const masterSeedState = {1:1, 2:1, 20:1, 21:1};
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: masterIModelName } });
-    populateTimelineSeed(masterSeedDb, masterSeedState)
+    populateTimelineSeed(masterSeedDb, masterSeedState);
     assert(IModelJsFs.existsSync(masterSeedFileName));
     masterSeedDb.nativeDb.setITwinId(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.performCheckpoint();
@@ -352,7 +352,7 @@ describe("IModelTransformerHub", () => {
       // HACK: we know this will only be used for seeding via its path
       db: { pathName:  masterSeedFileName } as any as BriefcaseDb,
       id: "master-seed",
-      state: masterSeedState
+      state: masterSeedState,
     };
 
     const timeline: Timeline = {
@@ -373,7 +373,7 @@ describe("IModelTransformerHub", () => {
           // FIXME: why is this different from master?
           // branch2 won the conflict
           assertPhysicalObjects(master.db, {7:1}, { subset: true });
-        }
+        },
       },
       11: { master: { 1:2, 2:2, 4:1, 5:1, 6:2, 8:1, 9:1, 30:1 } },
       12: { branch1: { sync: ["master", 4] } },
@@ -773,16 +773,16 @@ describe("IModelTransformerHub", () => {
     await branchAt2.pullChanges({ toIndex: branchAt2Changeset.index, accessToken });
 
     const syncer = new IModelTransformer(branchAt2, master.db, {
-      isReverseSynchronization: true
+      isReverseSynchronization: true,
     });
-    const queryChangeset = sinon.spy(HubMock, "queryChangeset")
+    const queryChangeset = sinon.spy(HubMock, "queryChangeset");
     await syncer.processChanges(accessToken, branchAt2Changeset.id);
     expect(queryChangeset.alwaysCalledWith({
       accessToken,
       iModelId: branch.id,
       changeset: {
-        id: branchAt2Changeset.id
-      }
+        id: branchAt2Changeset.id,
+      },
     })).to.be.true;
 
     syncer.dispose();
@@ -817,10 +817,11 @@ describe("IModelTransformerHub", () => {
     db.performCheckpoint();
   }
 
-
   function assertPhysicalObjects(iModelDb: IModelDb, numbers: Record<number, number>, { subset = false } = {}): void {
     if (subset) {
       for (const n in numbers) {
+        if (typeof n !== "string")
+          continue;
         assertPhysicalObject(iModelDb, Number(n));
       }
     } else {
@@ -849,12 +850,14 @@ describe("IModelTransformerHub", () => {
     const modelId = iModelDb.elements.queryElementIdByCode(PhysicalPartition.createCode(iModelDb, IModel.rootSubjectId, "PhysicalModel"))!;
     const categoryId = iModelDb.elements.queryElementIdByCode(SpatialCategory.createCode(iModelDb, IModel.dictionaryId, "SpatialCategory"))!;
     const currentObjs = getPhysicalObjects(iModelDb);
-    const objsToDelete = Object.keys(currentObjs).filter(n => !(n in numbers));
+    const objsToDelete = Object.keys(currentObjs).filter((n) => !(n in numbers));
     for (const obj of objsToDelete) {
       const id = getPhysicalObjectId(iModelDb, Number(obj));
       iModelDb.elements.deleteElement(id);
     }
     for (const i in numbers) {
+      if (typeof i !== "string")
+        continue;
       const n = Number(i);
       const value = numbers[i];
       const physicalObjectId = getPhysicalObjectId(iModelDb, n);
@@ -902,7 +905,6 @@ describe("IModelTransformerHub", () => {
     // to the given ending point, inclusive. (end defaults to current point in time)
     | { sync: [string, number] };
 
-
   /** For each step in timeline, an object of iModels mapping to the event that occurs for them:
    * - a 'seed' event with an iModel to seed from, creating the iModel
    * - a 'branch' event with the name of an iModel to seed from, creating the iModel
@@ -917,8 +919,8 @@ describe("IModelTransformerHub", () => {
   type Timeline = Record<number, {
     assert?: (imodels: Record<string, TimelineIModelState>) => void;
     [modelName: string]: | undefined // only necessary for the previous optional properties
-                         | ((imodels: Record<string, TimelineIModelState>) => void) // only necessary for the assert property
-                         | TimelineStateChange;
+    | ((imodels: Record<string, TimelineIModelState>) => void) // only necessary for the assert property
+    | TimelineStateChange;
   }>;
 
   /**
@@ -929,6 +931,7 @@ describe("IModelTransformerHub", () => {
     const trackedIModels = new Map<string, TimelineIModelState>();
     const masterOfBranch = new Map<string, string>();
 
+    /* eslint-disable @typescript-eslint/indent */
     const timelineStates = new Map<
       number,
       {
@@ -936,6 +939,7 @@ describe("IModelTransformerHub", () => {
         changesets: { [iModelName: string]: ChangesetIdWithIndex };
       }
     >();
+    /* eslint-enable @typescript-eslint/indent */
 
     for (let i = 0; i < Object.values(timeline).length; ++i) {
       const pt = timeline[i];
@@ -953,10 +957,10 @@ describe("IModelTransformerHub", () => {
 
         const seed
           = "seed" in newIModelEvent
-          ? newIModelEvent.seed
-          : "branch" in newIModelEvent
-          ? trackedIModels.get(newIModelEvent.branch)!
-          : undefined;
+            ? newIModelEvent.seed
+            : "branch" in newIModelEvent
+              ? trackedIModels.get(newIModelEvent.branch)!
+              : undefined;
 
         const newIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: newIModelName, version0: seed?.db.pathName, noLocks: true });
 
@@ -991,7 +995,7 @@ describe("IModelTransformerHub", () => {
         }
 
         if (seed) {
-          assertPhysicalObjects(newIModelDb, seed!.state);
+          assertPhysicalObjects(newIModelDb, seed.state);
         }
       }
 
@@ -1013,11 +1017,13 @@ describe("IModelTransformerHub", () => {
 
           const stateMsg = `synced changes from ${syncSource} to ${iModelName} at ${i}`;
           if (process.env.TRANSFORMER_BRANCH_TEST_DEBUG) {
+            /* eslint-disable no-console */
             console.log(stateMsg);
             console.log(` source range state: ${JSON.stringify(source.state)}`);
             const targetState = getPhysicalObjects(target.db);
             console.log(`target before state: ${JSON.stringify(targetStateBefore)}`);
             console.log(` target after state: ${JSON.stringify(targetState)}`);
+            /* eslint-enable no-console */
           }
           // subset because we don't care about elements that the target added itself
           assertPhysicalObjects(target.db, source.state, { subset: true });
@@ -1030,13 +1036,13 @@ describe("IModelTransformerHub", () => {
           const prevState = alreadySeenIModel.state;
           alreadySeenIModel.state = event;
           // `(maintain|assert)PhysicalObjects` use negative to mean deleted
-          const additions = Object.keys(newState).filter(s => !(s in prevState)).map(Number);
-          const deletions = Object.keys(prevState).filter(s => !(s in newState)).map(Number);
+          const additions = Object.keys(newState).filter((s) => !(s in prevState)).map(Number);
+          const deletions = Object.keys(prevState).filter((s) => !(s in newState)).map(Number);
           const delta = [...additions, ...deletions.map((d) => -d)];
 
           const stateMsg = `${iModelName} becomes: ${JSON.stringify(event)}, delta: [${delta}], at ${i}`;
           if (process.env.TRANSFORMER_BRANCH_TEST_DEBUG) {
-            console.log(stateMsg);
+            console.log(stateMsg); // eslint-disable-line no-console
           }
 
           maintainPhysicalObjects(alreadySeenIModel.db, newState);
@@ -1052,7 +1058,7 @@ describe("IModelTransformerHub", () => {
         i,
         {
           changesets: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.db.changeset])),
-          states: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.state]))
+          states: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.state])),
         }
       );
     }
@@ -1065,7 +1071,7 @@ describe("IModelTransformerHub", () => {
           state.db.close();
           await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: state.id });
         }
-      }
+      },
     };
   }
 });
