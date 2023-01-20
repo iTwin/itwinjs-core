@@ -347,8 +347,7 @@ describe("IModelTransformerHub", () => {
     populateTimelineSeed(masterSeedDb, masterSeedState)
     assert(IModelJsFs.existsSync(masterSeedFileName));
     masterSeedDb.nativeDb.setITwinId(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
-    masterSeedDb.saveChanges();
-    masterSeedDb.close(); // must close for profile version to be written to the snapshot
+    masterSeedDb.performCheckpoint();
 
     const masterSeed: TimelineIModelState = {
       // HACK: we know this will only be used for seeding via its path
@@ -483,6 +482,8 @@ describe("IModelTransformerHub", () => {
 
       // create target branch
       const targetIModelName = "ModelSelectorTarget";
+      sourceDb.performCheckpoint();
+
       targetIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true, version0: sourceDb.pathName });
       assert.isTrue(Guid.isGuid(targetIModelId));
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
@@ -606,7 +607,7 @@ describe("IModelTransformerHub", () => {
       const modelInChildSubjectId = PhysicalModel.insert(masterDb, childSubjectId, "model-in-child-subject");
       const childSubjectChildId = Subject.insert(masterDb, childSubjectId, "child-subject-child");
       const modelInChildSubjectChildId = PhysicalModel.insert(masterDb, childSubjectChildId, "model-in-child-subject-child");
-      masterDb.saveChanges();
+      masterDb.performCheckpoint();
       await masterDb.pushChanges({ accessToken, description: "setup master" });
 
       // create and initialize branch from master
@@ -814,8 +815,7 @@ describe("IModelTransformerHub", () => {
     SpatialCategory.insert(db, IModel.dictionaryId, "SpatialCategory", new SubCategoryAppearance());
     PhysicalModel.insert(db, IModel.rootSubjectId, "PhysicalModel");
     maintainPhysicalObjects(db, state);
-    // FIXME: perform checkpoint
-    db.saveChanges();
+    db.performCheckpoint();
   }
 
 

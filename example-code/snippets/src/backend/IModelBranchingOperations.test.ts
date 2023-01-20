@@ -177,8 +177,9 @@ describe("IModelBranchingOperations", () => {
 
   before(async () => {
     HubMock.startup("IModelBranchingOperations", KnownTestLocations.outputDir);
-    if (!fs.existsSync(version0Path))
-      SnapshotDb.createEmpty(version0Path, { rootSubject: { name: "branching-ops" } });
+    if (fs.existsSync(version0Path))
+      fs.unlinkSync(version0Path);
+    SnapshotDb.createEmpty(version0Path, { rootSubject: { name: "branching-ops" } }).close();
   });
 
   after(() => {

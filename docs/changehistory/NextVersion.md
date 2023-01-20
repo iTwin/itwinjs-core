@@ -9,12 +9,14 @@ Table of contents:
 - [Electron 22 support](#electron-22-support)
 - [Display system](#display-system)
   - [Point cloud shading](#point-cloud-shading)
+  - [Normal mapping](#normal-mapping)
   - [Smooth viewport resizing](#smooth-viewport-resizing)
   - [Pickable view overlays](#pickable-view-overlays)
   - [Element clipping example](#element-clipping-example)
   - [Support larger terrain meshes](#support-larger-terrain-meshes)
 - [Geometry](#geometry)
   - [Query mesh convexity](#query-mesh-convexity)
+- [Write-ahead logging](#write-ahead-logging)
 - [API promotions](#api-promotions)
 - [API deprecations](#api-deprecations)
 
@@ -49,6 +51,18 @@ A colorized point cloud with (bottom) and without (top) shading:
 
 ![Colorized point cloud shading](./assets/edl-color.jpg)
 
+### Normal mapping
+
+[Normal mapping](https://en.wikipedia.org/wiki/Normal_mapping) is a technique that simulates additional surface details by mapping a texture containing normal vectors onto a surface. [RenderMaterial]($common)s now support applying normal maps.
+
+You can create a [RenderMaterial]($common) with a normal map on the frontend via [RenderSystem.createRenderMaterial]($frontend). The normal map is specified by the [MaterialTextureMappingProps.normalMapParams]($frontend) in your [CreateRenderMaterialArgs.textureMapping]($frontend).
+
+To create a [RenderMaterialElement]($backend) with a normal map on the backend, use [RenderMaterialElement.insert]($backend) or [RenderMaterialElement.create]($backend). Pass the normal map in [RenderMaterialElementParams.normalMap]($backend).
+
+The image below illustrates the effects of normal mapping. The cubes in the top row have no normal maps, while the cubes in the bottom row are normal mapped.
+
+![Normal mapping](./assets/normal-maps.jpg)
+
 ### Smooth viewport resizing
 
 Previously, when a [Viewport]($frontend)'s canvas was resized there would be a delay of up to one second during which the viewport's contents would appear stretched or squished, before they were redrawn to match the new canvas dimensions. This was due to the unavailability of [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) in some browsers. Now that `ResizeObserver` is supported by all major browsers, we are able to use it to make the contents of the viewport update smoothly during a resize operation.
@@ -72,6 +86,14 @@ Previously, [RealityMeshParams]($frontend) only supported 16-bit vertex indices,
 ### Query mesh convexity
 
 A new method [PolyfaceQuery.isConvexByDihedralAngleCount]($core-geometry) permits testing the convexity of a mesh by inspecting the dihedral angles of all of its edges. For an example of its usage, see the [element clipping example](#element-clipping-example).
+
+## Write-ahead logging
+
+Previously, iTwin.js used [DELETE](https://www.sqlite.org/pragma.html#pragma_journal_mode) journal mode for writes to local briefcase files. It now uses [write-ahead logging](https://www.sqlite.org/wal.html) (WAL) mode. This change should be invisible to applications, other than performance of [IModelDb.saveChanges]($backend) should improve in most cases. However, there are a few subtle implications of this change that may affect existing applications:
+
+- Attempting to open more than one simultaneous writeable connections to the same briefcase will now fail on open. Previously, both opens would succeed, followed by a failure on the first attempted write by one or the other connection.
+- Failure to close a writeable briefcase may leave a "-wal" file. Previously, if a program crashed or exited with an open briefcase, it would leave the briefcase file as-of its last call to `IModelDb.saveChanges`. Now, there will be another file with the name of the briefcase with "-wal" appended. This is not a problem and the briefcase is completely intact, except that the briefcase file itself is not sufficient for copying (it will not include recent changes.) The "-wal" file will be used by future connections and will be deleted the next time the briefcase is successfully closed.
+- Attempting to copy an open-for-write briefcase file may not include recent changes. This scenario generally only arises for tests. If you wish to copy an open-for-write briefcase file, you must now call [IModelDb.performCheckpoint]($backend) first.
 
 ## API promotions
 
@@ -102,6 +124,10 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 ### @itwin/core-frontend
 
 [ScreenViewport.setEventController]($frontend) was only ever intended to be used by [ViewManager]($frontend). In the unlikely event that you are using it for some (probably misguided) purpose, it will continue to behave as before, but it will be removed in a future major version.
+
+[NativeApp.requestDownloadBriefcase]($frontend) parameter `progress` is deprecated in favor of `progressCallback` in [DownloadBriefcaseOptions]($frontend). Similarly, `progressCallback` in [PullChangesOptions]($frontend) is now deprecated and should be replaced with `downloadProgressCallback` in [PullChangesOptions]($frontend). Both new variables are of type [OnDownloadProgress]($frontend), which more accurately represents information reported during downloads.
+
+[RenderMaterialElement.Params]($backend) is defined as a class, which makes it unwieldy to use. You can now use the interface [RenderMaterialElementParams]($backend) instead.
 
 ### @itwin/appui-react
 

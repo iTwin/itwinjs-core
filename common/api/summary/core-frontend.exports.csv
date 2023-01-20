@@ -140,6 +140,7 @@ public;class DisplayStyleState
 internal;disposeTileTreesForGeometricModels(modelIds: Set
 public;DownloadBriefcaseId =
 public;DownloadBriefcaseOptions = DownloadBriefcaseId &
+public;DownloadProgressInfo
 internal;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -193,7 +194,7 @@ public;FrustumAnimator
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
-alpha;GenericAbortSignal
+beta;GenericAbortSignal
 internal;GeoConverter
 beta;GeographicTilingScheme 
 public;GeometricModel2dState 
@@ -287,6 +288,7 @@ internal;ImageryMapLayerTreeReference
 internal;ImageryMapTile 
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
+internal;ImageryTileTreeState
 internal;Imdl
 internal;ImdlReader
 internal;ImdlReaderCreateArgs
@@ -361,7 +363,9 @@ beta;MapLayerFormatRegistry
 beta;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
 beta;MapLayerImageryProviderStatus
+internal;MapLayerIndex
 beta;MapLayerOptions
+beta;MapLayerScaleRangeVisibility
 public;MapLayerSource
 internal;MapLayerSources
 public;MapLayerSourceStatus
@@ -375,6 +379,7 @@ internal;MapTileLoader
 beta;class MapTileProjection
 beta;MapTileTree 
 internal;MapTileTreeReference 
+beta;MapTileTreeScaleRangeVisibility
 beta;class MapTilingScheme
 public;MarginOptions
 public;MarginPercent
@@ -421,6 +426,7 @@ internal;OffScreenTarget
 public;OffScreenViewport 
 public;OffScreenViewportOptions
 internal;OldTextureImage
+public;OnDownloadProgress = (progress: DownloadProgressInfo) => void
 public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 

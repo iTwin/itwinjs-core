@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { SubCategoryAppearance } from "@itwin/core-common";
 import {
-  IModelDb, RenderMaterialElement, SpatialCategory, StandaloneDb, SubCategory,
+  IModelDb, RenderMaterialElement, RenderMaterialElementParams, SpatialCategory, StandaloneDb, SubCategory,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -27,7 +27,7 @@ describe("Category", () => {
   });
 
   it("should insert with default subcategory appearance", () => {
-    const params: RenderMaterialElement.Params = {
+    const params: RenderMaterialElementParams = {
       description: "Field Weld",
       color: [0.9058, 0.298, 0.2352],
       diffuse: 0.5,
