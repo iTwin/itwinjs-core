@@ -23,8 +23,8 @@ import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
   ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Paged, SelectionScopeRequestOptions,
-  SingleElementPropertiesRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions,
+  Paged, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -79,6 +79,12 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationR
  * @public
  */
 export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<never, NodeKeyJSON, RulesetVariableJSON>>;
+
+/**
+ * Data structure for hierarchy level descriptor RPC request options.
+ * @alpha
+ */
+export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions<HierarchyLevelDescriptorRequestOptions<never, NodeKeyJSON, RulesetVariableJSON>>;
 
 /**
  * Data structure for filtering hierarchy by ECInstance paths request options.
@@ -170,7 +176,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // eslint-disable-line @typescript-eslint/naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "3.2.0";
+  public static interfaceVersion = "3.3.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -181,6 +187,10 @@ export class PresentationRpcInterface extends RpcInterface {
 
   @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedNodes(_token: IModelRpcProps, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<NodeJSON>> { return this.forward(arguments); }
+
+  /** @alpha */
+  @RpcOperation.setPolicy({ allowResponseCompression: true })
+  public async getNodesDescriptor(_token: IModelRpcProps, _options: HierarchyLevelDescriptorRpcRequestOptions): PresentationRpcResponse<string | DescriptorJSON | undefined> { return this.forward(arguments); }
 
   // TODO: add paged version of this (#387280)
   @RpcOperation.setPolicy({ allowResponseCompression: true })
@@ -201,7 +211,6 @@ export class PresentationRpcInterface extends RpcInterface {
     if (response.statusCode === PresentationStatus.Success && typeof response.result === "string") {
       response.result = JSON.parse(response.result);
     }
-
     return response as PresentationRpcResponseData<DescriptorJSON | undefined>;
   }
 

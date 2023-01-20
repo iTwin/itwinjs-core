@@ -26,16 +26,16 @@ function interpretCsv(csvString) {
   const apiByType = {
     public: {
       // property names to match the type names from extension eslint rule output
-      enum: [],
-      interface: [],
-      type: [],
-      real: [],
+      enum: new Set(),
+      interface: new Set(),
+      type: new Set(),
+      real: new Set(),
     },
     preview: {
-      enum: [],
-      interface: [],
-      type: [],
-      real: [],
+      enum: new Set(),
+      interface: new Set(),
+      type: new Set(),
+      real: new Set(),
     },
   };
 
@@ -45,8 +45,8 @@ function interpretCsv(csvString) {
       if (line.length === 0) {
         return;
       }
-      line = line.split(",");
-      apiByType[line[2]][line[1]].push(line[0]);
+      [exportName, exportType, releaseTag] = line.split(",");
+      apiByType[releaseTag][exportType].add(exportName);
     });
   } catch (error) {
     console.log("Provided csv with Extension API was malformed.", error);
@@ -126,37 +126,37 @@ function generateRuntimeCode(exportListPreview, exportList) {
       importTrailer = `} from "../core-frontend";\n\n`;
 
     imports +=
-      exportListPreview[packageName].enum.length > 0
+      exportListPreview[packageName].enum.size > 0
         ? addComment(packageName, "preview", "enum")
         : "";
-    exportListPreview[packageName].enum.sort().forEach((enumExport) => {
+    [...exportListPreview[packageName].enum].sort().forEach((enumExport) => {
       imports += `${tab}${enumExport},\n`;
       _exports.push(enumExport);
     });
 
     imports +=
-      exportListPreview[packageName].real.length > 0
+      exportListPreview[packageName].real.size > 0
         ? addComment(packageName, "preview", "real")
         : "";
-    exportListPreview[packageName].real.sort().forEach((realExport) => {
+    [...exportListPreview[packageName].real].sort().forEach((realExport) => {
       imports += `${tab}${realExport},\n`;
       _exports.push(realExport);
     });
 
     imports +=
-      exportList[packageName].enum.length > 0
+      exportList[packageName].enum.size > 0
         ? addComment(packageName, "public", "enum")
         : "";
-    exportList[packageName].enum.sort().forEach((enumExport) => {
+    [...exportList[packageName].enum].sort().forEach((enumExport) => {
       imports += `${tab}${enumExport},\n`;
       _exports.push(enumExport);
     });
 
     imports +=
-      exportList[packageName].real.length > 0
+      exportList[packageName].real.size > 0
         ? addComment(packageName, "public", "real")
         : "";
-    exportList[packageName].real.sort().forEach((realExport) => {
+    [...exportList[packageName].real].sort().forEach((realExport) => {
       imports += `${tab}${realExport},\n`;
       _exports.push(realExport);
     });

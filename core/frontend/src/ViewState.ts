@@ -87,7 +87,7 @@ export interface ComputeDisplayTransformArgs {
 }
 
 /** Arguments to [[ViewState3d.lookAt]] for either a perspective or orthographic view
- * @beta
+ * @public
  */
 export interface LookAtArgs {
   /** The new location of the camera/eye. */
@@ -105,7 +105,7 @@ export interface LookAtArgs {
 }
 
 /** Arguments to [[ViewState3d.lookAt]] to set up a perspective view
- * @beta
+ * @public
  */
 export interface LookAtPerspectiveArgs extends LookAtArgs {
   /** The new location to which the camera should point. This becomes the center of the view on the focus plane. */
@@ -116,7 +116,7 @@ export interface LookAtPerspectiveArgs extends LookAtArgs {
 }
 
 /** Arguments to [[ViewState3d.lookAt]] to set up an orthographic view
- * @beta
+ * @public
  */
 export interface LookAtOrthoArgs extends LookAtArgs {
   /** The direction in which the view should look. */
@@ -127,7 +127,7 @@ export interface LookAtOrthoArgs extends LookAtArgs {
 }
 
 /** Arguments to [[ViewState3d.lookAt]] to set up an perspective view using a (field-of-view) lens angle.
- * @beta
+ * @public
  */
 export interface LookAtUsingLensAngle extends LookAtArgs {
   /** The new location to which the camera should point. This becomes the center of the view on the focus plane. */
@@ -1765,7 +1765,6 @@ export abstract class ViewState3d extends ViewState {
    * @returns A [[ViewStatus]] indicating whether the camera was successfully positioned.
    * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
    * adjusted when the [[Viewport]] is synchronized from this view.
-   * @beta
    */
   public lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus {
     if (args.lensAngle) {

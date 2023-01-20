@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-geometry",
-      "comment": "PolyfaceQuery method to test for convexity",
+      "comment": "",
       "type": "none"
     }
   ],

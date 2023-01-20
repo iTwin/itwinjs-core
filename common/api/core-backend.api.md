@@ -150,6 +150,7 @@ import { NativeCloudSqlite } from '@bentley/imodeljs-native';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@itwin/core-common';
 import { NavigationValue } from '@itwin/core-common';
+import { NormalMapProps } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
 import { OpenMode } from '@itwin/core-bentley';
 import { Optional } from '@itwin/core-bentley';
@@ -179,6 +180,7 @@ import { RenderSchedule } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
 import { RepositoryLinkProps } from '@itwin/core-common';
 import { RequestNewBriefcaseProps } from '@itwin/core-common';
+import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
@@ -688,7 +690,7 @@ export class CheckpointManager {
     static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
     // (undocumented)
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
-    static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb): void;
+    static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb): void;
     // (undocumented)
     static verifyCheckpoint(checkpoint: CheckpointProps, fileName: LocalFileName): boolean;
 }
@@ -1084,6 +1086,7 @@ export class CodeSpecs {
     insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
+    updateProperties(codeSpec: CodeSpec): void;
 }
 
 // @public
@@ -2828,6 +2831,7 @@ export abstract class IModelDb extends IModel {
         key?: string;
     }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs): IModelJsNative.DgnDb;
     get pathName(): LocalFileName;
+    performCheckpoint(): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
@@ -3004,7 +3008,6 @@ export class IModelHost {
     static set applicationVersion(version: string);
     // @beta
     static get appWorkspace(): Workspace;
-    // (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
     static backendVersion: string;
@@ -3073,7 +3076,6 @@ export class IModelHost {
 export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     appAssetsDir?: LocalDirName;
-    // @beta (undocumented)
     authorizationClient?: AuthorizationClient;
     // (undocumented)
     cacheDir?: LocalDirName;
@@ -3112,7 +3114,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
 // @public
 export interface IModelHostOptions {
     appAssetsDir?: LocalDirName;
-    // @beta
     authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;
@@ -4300,31 +4301,39 @@ export class RenderMaterialElement extends DefinitionElement {
     constructor(props: RenderMaterialProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): RenderMaterialElement;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): RenderMaterialElement;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
     description?: string;
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): Id64String;
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
     paletteName: string;
     // @internal (undocumented)
     toJSON(): RenderMaterialProps;
 }
 
-// @public
+// @public (undocumented)
 export namespace RenderMaterialElement {
+    // @deprecated
     export class Params {
         constructor(paletteName: string);
-        color?: number[];
+        color?: RgbFactorProps;
         description?: string;
         diffuse?: number;
         finish?: number;
+        normalMap?: NormalMapProps & {
+            scale?: number;
+        };
         paletteName: string;
         patternMap?: TextureMapProps;
         reflect?: number;
         reflectColor?: number[];
         specular?: number;
-        specularColor?: number[];
+        specularColor?: RgbFactorProps;
         transmit?: number;
     }
+}
+
+// @public
+export interface RenderMaterialElementParams extends RenderMaterialElement.Params {
 }
 
 // @public

@@ -21,12 +21,14 @@ import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
 import {
   ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
   ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, SingleElementPropertiesRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions,
+  SingleElementPropertiesRequestOptions,
 } from "../presentation-common/PresentationManagerOptions";
 import {
   ContentDescriptorRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
-  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions, HierarchyLevelDescriptorRpcRequestOptions, HierarchyRpcRequestOptions,
+  SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { createTestContentDescriptor } from "./_helpers/Content";
@@ -258,6 +260,43 @@ describe("RpcRequestsHandler", () => {
         .returns(async () => successResponse(result)).verifiable();
       expect(await handler.getPagedNodes(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
+    });
+
+    describe("forwards getNodesDescriptor call", async () => {
+
+      function createTestData() {
+        const handlerOptions: HierarchyLevelDescriptorRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON> = {
+          imodel: token,
+          rulesetOrId: "test-ruleset",
+          parentKey: createRandomECInstancesNodeKeyJSON(),
+        };
+        const rpcOptions: HierarchyLevelDescriptorRpcRequestOptions = {
+          clientId,
+          rulesetOrId: handlerOptions.rulesetOrId,
+          parentKey: NodeKey.fromJSON(handlerOptions.parentKey!),
+        };
+        const result = createTestContentDescriptor({ fields: [] }).toJSON();
+        return { handlerOptions, rpcOptions, result };
+      }
+
+      it("when descriptor is sent as serialized JSON string", async () => {
+        const { handlerOptions, rpcOptions, result } = createTestData();
+        rpcInterfaceMock
+          .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
+          .returns(async () => successResponse(JSON.stringify(result))).verifiable();
+        expect(await handler.getNodesDescriptor(handlerOptions)).to.deep.eq(result);
+        rpcInterfaceMock.verifyAll();
+      });
+
+      it("when descriptor is sent as JSON", async () => {
+        const { handlerOptions, rpcOptions, result } = createTestData();
+        rpcInterfaceMock
+          .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
+          .returns(async () => successResponse(result)).verifiable();
+        expect(await handler.getNodesDescriptor(handlerOptions)).to.deep.eq(result);
+        rpcInterfaceMock.verifyAll();
+      });
+
     });
 
     it("forwards getFilteredNodePaths call", async () => {

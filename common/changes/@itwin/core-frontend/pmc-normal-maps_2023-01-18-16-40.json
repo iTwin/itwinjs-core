@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add support for pickable view overlay decorations.",
+      "comment": "Add support for normal maps in iModel tiles.",
       "type": "none"
     }
   ],

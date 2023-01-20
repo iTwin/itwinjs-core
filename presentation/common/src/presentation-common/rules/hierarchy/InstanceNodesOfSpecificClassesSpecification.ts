@@ -35,7 +35,7 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
    * Tells whether selecting instances from ECClasses specified in [[classes]] and [[excludedClasses]]
    * attributes should be polymorphic or not.
    *
-   * @deprecated The attribute was replaced by `arePolymorphic` attribute specified individually for each class definition
+   * @deprecated in 3.x. The attribute was replaced by `arePolymorphic` attribute specified individually for each class definition
    * under [[classes]] and [[excludedClasses]] attributes. At the moment, to keep backwards compatibility, this attribute acts
    * as a fallback value in case the flag is not specified individually for a class definition.
    */
