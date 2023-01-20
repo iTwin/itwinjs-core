@@ -10,7 +10,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.6.3
+      '@bentley/imodeljs-native': 3.6.4
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ~1.4.0
       '@itwin/core-bentley': workspace:*
@@ -56,7 +56,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.12.0
-      '@bentley/imodeljs-native': 3.6.3
+      '@bentley/imodeljs-native': 3.6.4
       '@itwin/cloud-agnostic-core': 1.4.0
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.4.0
@@ -5313,7 +5313,7 @@ packages:
     resolution: {integrity: sha512-1YqGzXtPG3QrZPFBKaMWr2WQdukDj+PelqUCv351+p+hlw/AhdRrb8haY73/iqkhT6Cdrbnh7sL4gikVsF4O1g==}
     engines: {node: '>=0.8.0'}
     dependencies:
-      '@azure/msal-common': 9.1.0
+      '@azure/msal-common': 9.1.1
     dev: false
 
   /@azure/msal-common/7.6.0:
@@ -5321,8 +5321,8 @@ packages:
     engines: {node: '>=0.8.0'}
     dev: false
 
-  /@azure/msal-common/9.1.0:
-    resolution: {integrity: sha512-Ai7SUJPkHOVUNAjepKp753ZXI8Haw5snTNIu+Vi6fdNPAH1KCuxSyWeBZT6hLDJSgfmYf/kazZqz7Q0BjyAGTA==}
+  /@azure/msal-common/9.1.1:
+    resolution: {integrity: sha512-we9xR8lvu47fF0h+J8KyXoRy9+G/fPzm3QEa2TrdR3jaVS3LKAyE2qyMuUkNdbVkvzl8Zr9f7l+IUSP22HeqXw==}
     engines: {node: '>=0.8.0'}
     dev: false
 
@@ -5330,7 +5330,7 @@ packages:
     resolution: {integrity: sha512-em/qqFL5tLMxMPl9vormAs13OgZpmQoJbiQ/GlWr+BA77eCLoL+Ehr5xRHowYo+LFe5b+p+PJVkRvT+mLvOkwA==}
     engines: {node: 10 || 12 || 14 || 16 || 18}
     dependencies:
-      '@azure/msal-common': 9.1.0
+      '@azure/msal-common': 9.1.1
       jsonwebtoken: 9.0.0
       uuid: 8.3.2
     dev: false
@@ -7061,8 +7061,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.6.3:
-    resolution: {integrity: sha512-XNoxyReAfAt5YdxDvSsPDREqayaYc+pGjU4NNXhO8t0vZ5Tyx5UC0MM6FYkQ2yBP++II7N0SGkswl8SaJDpMYg==}
+  /@bentley/imodeljs-native/3.6.4:
+    resolution: {integrity: sha512-l5rObr4Q5O869Thq/2J/Fm96g9AVgjyrU23D9zbAf2SgkgYeynx6jglViludeIvflleZdH3YNDhszJEADrv0vQ==}
     requiresBuild: true
     dev: false
 
@@ -7419,7 +7419,7 @@ packages:
     peerDependencies:
       postcss: ^8.2
     dependencies:
-      '@csstools/selector-specificity': 2.0.2_b0132eb4833290a175e2a58939fd6432
+      '@csstools/selector-specificity': 2.1.0_b0132eb4833290a175e2a58939fd6432
       postcss: 8.4.21
       postcss-selector-parser: 6.0.11
     dev: true
@@ -7472,7 +7472,7 @@ packages:
     peerDependencies:
       postcss: ^8.2
     dependencies:
-      '@csstools/selector-specificity': 2.0.2_b0132eb4833290a175e2a58939fd6432
+      '@csstools/selector-specificity': 2.1.0_b0132eb4833290a175e2a58939fd6432
       postcss: 8.4.21
       postcss-selector-parser: 6.0.11
     dev: true
@@ -7557,11 +7557,11 @@ packages:
       postcss: 8.4.21
     dev: true
 
-  /@csstools/selector-specificity/2.0.2_b0132eb4833290a175e2a58939fd6432:
-    resolution: {integrity: sha512-IkpVW/ehM1hWKln4fCA3NzJU8KwD+kIOvPZA4cqxoJHtE21CCzjyp+Kxbu0i5I4tBNOlXPL9mjwnWlL0VEG4Fg==}
-    engines: {node: ^12 || ^14 || >=16}
+  /@csstools/selector-specificity/2.1.0_b0132eb4833290a175e2a58939fd6432:
+    resolution: {integrity: sha512-zJ6hb3FDgBbO8d2e83vg6zq7tNvDqSq9RwdwfzJ8tdm9JHNvANq2fqwyRn6mlpUb7CwTs5ILdUrGwi9Gk4vY5w==}
+    engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
-      postcss: ^8.2
+      postcss: ^8.4
       postcss-selector-parser: ^6.0.10
     dependencies:
       postcss: 8.4.21
@@ -8366,7 +8366,7 @@ packages:
       '@types/istanbul-lib-coverage': 2.0.4
       '@types/istanbul-reports': 3.0.1
       '@types/node': 18.11.5
-      '@types/yargs': 17.0.20
+      '@types/yargs': 17.0.19
       chalk: 4.1.2
     dev: true
 
@@ -9825,12 +9825,6 @@ packages:
 
   /@types/yargs/17.0.19:
     resolution: {integrity: sha512-cAx3qamwaYX9R0fzOIZAlFpo4A+1uBVCxqpKz9D26uTF4srRXaGTTsikQmaotCtNdbhzyUH7ft6p9ktz9s6UNQ==}
-    dependencies:
-      '@types/yargs-parser': 21.0.0
-    dev: true
-
-  /@types/yargs/17.0.20:
-    resolution: {integrity: sha512-eknWrTHofQuPk2iuqDm1waA7V6xPlbgBoaaXEgYkClhLOnB0TtbW+srJaOToAgawPxPlHQzwypFA2bhZaUGP5A==}
     dependencies:
       '@types/yargs-parser': 21.0.0
     dev: true
@@ -12365,8 +12359,8 @@ packages:
     engines: {node: '>= 6'}
     dev: true
 
-  /cssdb/7.2.1:
-    resolution: {integrity: sha512-btohrCpVaLqOoMt90aumHe6HU4c06duiYA8ymwtpGfwuZAhWKDBve/c2k+E85Jeq5iojPkeonqiKV+aLeY8QlA==}
+  /cssdb/7.3.0:
+    resolution: {integrity: sha512-9YymIstaCsXo9qQSxrXzOv27bXJmb/q/LkbORepKzKjHE0TS6Pn3ewoazoBDGvODUvPO0pMG2O4YzVGmVGYK5A==}
     dev: true
 
   /cssesc/3.0.0:
@@ -18971,7 +18965,7 @@ packages:
     peerDependencies:
       postcss: ^8.2
     dependencies:
-      '@csstools/selector-specificity': 2.0.2_b0132eb4833290a175e2a58939fd6432
+      '@csstools/selector-specificity': 2.1.0_b0132eb4833290a175e2a58939fd6432
       postcss: 8.4.21
       postcss-selector-parser: 6.0.11
     dev: true
@@ -19162,7 +19156,7 @@ packages:
       css-blank-pseudo: 3.0.3_postcss@8.4.21
       css-has-pseudo: 3.0.4_postcss@8.4.21
       css-prefers-color-scheme: 6.0.3_postcss@8.4.21
-      cssdb: 7.2.1
+      cssdb: 7.3.0
       postcss: 8.4.21
       postcss-attribute-case-insensitive: 5.0.2_postcss@8.4.21
       postcss-clamp: 4.1.0_postcss@8.4.21
