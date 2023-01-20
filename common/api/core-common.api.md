@@ -1259,20 +1259,35 @@ export namespace CodeScopeSpec {
 export class CodeSpec {
     static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec;
     // @internal
-    static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec;
+    static createFromJson(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties): CodeSpec;
     id: Id64String;
     iModel: IModel;
-    // @beta
+    // @deprecated
     get isManagedWithIModel(): boolean;
     set isManagedWithIModel(value: boolean);
     get isValid(): boolean;
     name: string;
     // @internal
-    properties: any;
+    properties: CodeSpecProperties;
     get scopeReq(): CodeScopeSpec.ScopeRequirement;
     set scopeReq(req: CodeScopeSpec.ScopeRequirement);
     get scopeType(): CodeScopeSpec.Type;
     set scopeType(scopeType: CodeScopeSpec.Type);
+}
+
+// @public
+export interface CodeSpecProperties {
+    // (undocumented)
+    scopeSpec: {
+        type: CodeScopeSpec.Type;
+        fGuidRequired?: boolean;
+    };
+    // (undocumented)
+    spec?: {
+        isManagedWithDgnDb?: boolean;
+    };
+    // (undocumented)
+    version?: string;
 }
 
 // @public
@@ -1737,8 +1752,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1900544,
-    Major = 29,
+    Combined = 1966080,
+    Major = 30,
     Minor = 0
 }
 
@@ -5735,11 +5750,22 @@ export class NonUniformColor {
     readonly isOpaque: boolean;
 }
 
+// @public
+export enum NormalMapFlags {
+    GreenUp = 1,
+    None = 0
+}
+
 // @beta
 export interface NormalMapParams {
-    greenDown?: boolean;
+    greenUp?: boolean;
     normalMap?: RenderTexture;
     scale?: number;
+}
+
+// @public
+export interface NormalMapProps extends TextureMapProps {
+    NormalFlags?: NormalMapFlags;
 }
 
 // @public
@@ -7128,6 +7154,12 @@ export namespace RenderMaterial {
 }
 
 // @public
+export interface RenderMaterialAssetMapsProps {
+    Normal?: NormalMapProps;
+    Pattern?: TextureMapProps;
+}
+
+// @public
 export interface RenderMaterialAssetProps {
     color?: RgbFactorProps;
     diffuse?: number;
@@ -7140,9 +7172,8 @@ export interface RenderMaterialAssetProps {
     HasSpecular?: boolean;
     HasSpecularColor?: boolean;
     HasTransmit?: boolean;
-    Map?: {
-        Pattern?: TextureMapProps;
-    };
+    Map?: RenderMaterialAssetMapsProps;
+    pbr_normal?: number;
     reflect?: number;
     reflect_color?: RgbFactorProps;
     specular?: number;

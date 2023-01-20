@@ -14,7 +14,7 @@ import { RuleBase, RuleTypes } from "../Rule";
  *
  * @see [Label override reference documentation page]($docs/presentation/customization/LabelOverride.md)
  * @public
- * @deprecated Use [[InstanceLabelOverride]] rule instead.
+ * @deprecated in 3.x. Use [[InstanceLabelOverride]] rule instead.
  */
 export interface LabelOverride extends RuleBase {
   /** Used for serializing to JSON. */

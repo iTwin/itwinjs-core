@@ -26,7 +26,7 @@ import {
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
-  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement,
+  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory, SqliteStatement,
   SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
@@ -325,19 +325,22 @@ describe("iModel", () => {
       pattern_weight: 0.5,
       TextureId: "test_textureid",
     };
-    /* eslint-enable @typescript-eslint/naming-convention */
 
-    const renderMaterialParams = new RenderMaterialElement.Params(testPaletteName);
-    renderMaterialParams.description = testDescription;
-    renderMaterialParams.color = color;
-    renderMaterialParams.specularColor = specularColor;
-    renderMaterialParams.finish = finish;
-    renderMaterialParams.transmit = transmit;
-    renderMaterialParams.diffuse = diffuse;
-    renderMaterialParams.specular = specular;
-    renderMaterialParams.reflect = reflect;
-    renderMaterialParams.reflectColor = reflectColor;
-    renderMaterialParams.patternMap = textureMapProps;
+    /* eslint-enable @typescript-eslint/naming-convention */
+    const renderMaterialParams: RenderMaterialElementParams = {
+      paletteName: testPaletteName,
+      description: testDescription,
+      color,
+      specularColor,
+      finish,
+      transmit,
+      diffuse,
+      specular,
+      reflect,
+      reflectColor,
+      patternMap: textureMapProps,
+    };
+
     const renderMaterialId = RenderMaterialElement.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
 
     const renderMaterial = imodel2.elements.getElement<RenderMaterialElement>(renderMaterialId);
@@ -1219,7 +1222,6 @@ describe("iModel", () => {
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subCategory).scopeType, CodeScopeSpec.Type.ParentElement);
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.viewDefinition).scopeType, CodeScopeSpec.Type.Model);
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subject).scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
-    assert.isTrue(imodel2.codeSpecs.getByName(BisCodeSpec.spatialCategory).isManagedWithIModel);
   });
 
   it("should create and insert CodeSpecs", () => {
@@ -1229,7 +1231,6 @@ describe("iModel", () => {
     assert.deepEqual(codeSpecId, codeSpec.id);
     assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
     assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
-    assert.equal(codeSpec.isManagedWithIModel, true);
 
     // Should not be able to insert a duplicate.
     const codeSpecDup = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
@@ -1248,13 +1249,11 @@ describe("iModel", () => {
 
     const codeSpec4 = testImodel.codeSpecs.getById(codeSpec3Id);
     codeSpec4.name = "CodeSpec4";
-    codeSpec4.isManagedWithIModel = false;
     const codeSpec4Id = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
     assert.notDeepEqual(codeSpec3Id, codeSpec4Id);
     assert.equal(codeSpec4.scopeType, CodeScopeSpec.Type.Repository);
     assert.equal(codeSpec4.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
     const copyOfCodeSpec4 = testImodel.codeSpecs.getById(codeSpec4Id);
-    assert.equal(copyOfCodeSpec4.isManagedWithIModel, false);
     assert.deepEqual(codeSpec4, copyOfCodeSpec4);
 
     assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec1"));
@@ -1278,14 +1277,12 @@ describe("iModel", () => {
     if (true) {
       const iModelDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
       const codeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      codeSpec.isManagedWithIModel = false;
       const codeSpecId = iModelDb.codeSpecs.insert(codeSpec);
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.id, codeSpecId);
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      assert.isFalse(codeSpec.isManagedWithIModel);
       iModelDb.saveChanges();
       iModelDb.close();
     }
@@ -1298,7 +1295,6 @@ describe("iModel", () => {
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      assert.isFalse(codeSpec.isManagedWithIModel);
       iModelDb.close();
     }
   });
