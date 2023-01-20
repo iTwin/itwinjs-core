@@ -770,9 +770,9 @@ describe("IModelTransformerHub", () => {
     const branchAt2Changeset = timelineStates.get(2)?.changesets.branch;
     assert(branchAt2Changeset?.index);
     const branchAt2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branch.id, asOf: { first: true } });
-    branchAt2.pullChanges({ toIndex: branchAt2Changeset.index });
+    await branchAt2.pullChanges({ toIndex: branchAt2Changeset.index, accessToken });
 
-    const syncer = new IModelTransformer(branch.db, master.db, {
+    const syncer = new IModelTransformer(branchAt2, master.db, {
       isReverseSynchronization: true
     });
     const queryChangeset = sinon.spy(HubMock, "queryChangeset")
