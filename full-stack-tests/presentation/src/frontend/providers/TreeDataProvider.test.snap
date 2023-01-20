@@ -4,6 +4,9 @@ exports[`TreeDataProvider returns child nodes 1`] = `
 Array [
   Object {
     "description": "child description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
     "icon": "child image id",
     "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
     "key": Object {
@@ -35,6 +38,9 @@ exports[`TreeDataProvider returns child nodes with paging 1`] = `
 Array [
   Object {
     "description": "child description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
     "icon": "child image id",
     "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
     "key": Object {
@@ -67,6 +73,9 @@ Array [
   Object {
     "checkBoxState": 1,
     "description": "root description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
     "hasChildren": true,
     "icon": "root image id",
     "id": "d40a267dc8ff557a9c69ad79d652e39f",
@@ -108,6 +117,9 @@ Array [
   Object {
     "checkBoxState": 1,
     "description": "root description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
     "hasChildren": true,
     "icon": "root image id",
     "id": "d40a267dc8ff557a9c69ad79d652e39f",
@@ -148,6 +160,9 @@ exports[`TreeDataProvider shows grouping node children counts 1`] = `
 Array [
   Object {
     "description": "A container for persisting definition elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
     "hasChildren": true,
     "id": "80c7ed6b188503c857ac50041bf4b6d0",
     "key": Object {
@@ -188,6 +203,9 @@ Array [
   },
   Object {
     "description": "The singleton container for repository-specific definition elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
     "hasChildren": true,
     "id": "20780ee9a09d76aeba732a9a1e483a49",
     "key": Object {
@@ -228,6 +246,9 @@ Array [
   },
   Object {
     "description": "Contains a list of document elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
     "hasChildren": true,
     "id": "b3334e28acbad8431c46ca61e7f8e5e3",
     "key": Object {
@@ -267,6 +288,9 @@ Array [
     },
   },
   Object {
+    "filtering": Object {
+      "descriptor": [Function],
+    },
     "hasChildren": true,
     "id": "b35e9d24b15bc9912c6abb46cb27ca7f",
     "key": Object {
@@ -307,6 +331,9 @@ Array [
   },
   Object {
     "description": "A container for persisting link elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
     "hasChildren": true,
     "id": "7f40f83df83799f79d13cfb7446d677f",
     "key": Object {
@@ -347,6 +374,9 @@ Array [
   },
   Object {
     "description": "A container for persisting physical elements that model physical space.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
     "hasChildren": true,
     "id": "685c4d0e7d0c2f8d0b6279cfb4a5f03a",
     "key": Object {
@@ -387,6 +417,9 @@ Array [
   },
   Object {
     "description": "The singleton container of repository-related information elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
     "hasChildren": true,
     "id": "72283c5c8ebd68e345d166c40f0b5101",
     "key": Object {
