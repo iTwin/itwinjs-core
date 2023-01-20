@@ -5,6 +5,7 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
+import equal from "fast-deep-equal";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { PageOptions, PropertyFilterRuleOperator } from "@itwin/components-react";
@@ -12,18 +13,19 @@ import { BeEvent, Logger } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CheckBoxState } from "@itwin/core-react";
-import { Node, RegisteredRuleset } from "@itwin/presentation-common";
+import {
+  HierarchyRequestOptions, InstanceFilterDefinition, Node, NodeKey, Paged, RegisteredRuleset, RulesetVariable,
+} from "@itwin/presentation-common";
 import {
   createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
-  createTestContentDescriptor,
-  createTestPropertiesContentField, createTestPropertyInfo, PromiseContainer, ResolvablePromise,
+  createTestContentDescriptor, createTestPropertiesContentField, createTestPropertyInfo, PromiseContainer, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { translate } from "../../presentation-components/common/Utils";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
+import { PresentationInfoTreeNodeItem, PresentationTreeNodeItem } from "../../presentation-components/tree/PresentationTreeNodeItem";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
-import { PresentationInfoTreeNodeItem, PresentationTreeNodeItem } from "../../presentation-components/tree/PresentationTreeNodeItem";
 
 describe("TreeDataProvider", () => {
 
@@ -178,7 +180,7 @@ describe("TreeDataProvider", () => {
       const parentNode = createRandomTreeNodeItem(parentKey);
       const instanceFilter = applyInstanceFilter(parentNode);
       presentationManagerMock
-        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, parentKey, instanceFilter }))
+        .setup(async (x) => x.getNodesCount(is({ imodel: imodelMock.object, rulesetOrId: rulesetId, parentKey, instanceFilter })))
         .returns(async () => 1)
         .verifiable();
 
@@ -292,7 +294,7 @@ describe("TreeDataProvider", () => {
 
       const pageOptions: PageOptions = { start: 0, size: faker.random.number() };
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter: instanceFilter0 }))
+        .setup(async (x) => x.getNodesAndCount(is({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter: instanceFilter0 })))
         .returns(async () => ({ nodes: [createRandomECInstancesNode()], count: 1 }))
         .verifiable();
 
@@ -301,7 +303,7 @@ describe("TreeDataProvider", () => {
 
       const instanceFilter1 = applyInstanceFilter(parentNode, "prop2");
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter: instanceFilter1 }))
+        .setup(async (x) => x.getNodesAndCount(is({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter: instanceFilter1 })))
         .returns(async () => ({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 }))
         .verifiable();
 
@@ -318,7 +320,7 @@ describe("TreeDataProvider", () => {
 
       const pageOptions: PageOptions = { start: 0, size: faker.random.number() };
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter }))
+        .setup(async (x) => x.getNodesAndCount(is({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter })))
         .returns(async () => ({ nodes: [], count: 0 }));
 
       const actualResult = await provider.getNodes(parentNode, pageOptions);
@@ -502,7 +504,17 @@ describe("TreeDataProvider", () => {
 
 });
 
-function applyInstanceFilter(node: PresentationTreeNodeItem, propName: string = "prop") {
+function is(expected: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>) {
+  return moq.It.is((options: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>) => {
+    return equal(options.imodel, expected.imodel)
+      && equal(options.rulesetOrId, expected.rulesetOrId)
+      && equal(options.parentKey, expected.parentKey)
+      && equal(options.paging, expected.paging)
+      && options.instanceFilter?.expression === expected.instanceFilter?.expression;
+  });
+}
+
+function applyInstanceFilter(node: PresentationTreeNodeItem, propName: string = "prop"): InstanceFilterDefinition {
   const property = createTestPropertyInfo({ name: propName });
   const field = createTestPropertiesContentField({ properties: [{ property }], name: property.name });
   const instanceFilter = `this.${property.name} IS NULL`;
@@ -516,5 +528,8 @@ function applyInstanceFilter(node: PresentationTreeNodeItem, propName: string = 
       usedClasses: [],
     },
   };
-  return instanceFilter;
+  return {
+    expression: instanceFilter,
+    selectClassName: property.classInfo.name,
+  };
 }

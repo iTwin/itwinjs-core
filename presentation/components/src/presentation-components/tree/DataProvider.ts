@@ -182,15 +182,13 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
       return (await this._getNodesAndCount(parentNode, { start: 0, size: this.pagingSize }, instanceFilter)).count;
 
     const parentKey = parentNode ? this.getNodeKey(parentNode) : undefined;
-    // TODO: pass complex instance filter
-    const requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey> = { ...this.createRequestOptions(parentKey), instanceFilter: instanceFilter?.expression };
+    const requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey> = { ...this.createRequestOptions(parentKey), instanceFilter };
     return this._dataSource.getNodesCount(requestOptions);
   }
 
   private _getNodesAndCount = memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions, instanceFilter?: InstanceFilterDefinition): Promise<{ nodes: TreeNodeItem[], count: number }> => {
     const parentKey = parentNode ? this.getNodeKey(parentNode) : undefined;
-    // TODO: pass complex instance filter
-    const requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>> = { ...this.createRequestOptions(parentKey), paging: pageOptionsUiToPresentation(pageOptions), instanceFilter: instanceFilter?.expression };
+    const requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>> = { ...this.createRequestOptions(parentKey), paging: pageOptionsUiToPresentation(pageOptions), instanceFilter };
     const result = await this._dataSource.getNodesAndCount(requestOptions);
     return createNodesAndCountResult(this._imodel, result.nodes, result.count, parentNode, this._nodesCreateProps);
   }, { isMatchingKey: MemoizationHelpers.areNodesRequestsEqual as any });
