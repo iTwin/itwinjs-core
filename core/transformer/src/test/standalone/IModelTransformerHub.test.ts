@@ -337,12 +337,6 @@ describe("IModelTransformerHub", () => {
 
   // you can print additional debug info from this test by setting in your env TRANSFORMER_BRANCH_TEST_DEBUG=1
   it("should merge changes made on a branch back to master", async () => {
-    interface IModelState {
-      state: Record<number, number>;
-      id: string;
-      db: BriefcaseDb;
-    }
-
     const masterIModelName = "Master";
     const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
     if (IModelJsFs.existsSync(masterSeedFileName))
@@ -357,38 +351,14 @@ describe("IModelTransformerHub", () => {
     masterSeedDb.saveChanges();
     masterSeedDb.close(); // must close for profile version to be written to the snapshot
 
-    const masterSeed: IModelState = {
+    const masterSeed: TimelineIModelState = {
       // HACK: we know this will only be used for seeding via its path
       db: { pathName:  masterSeedFileName } as any as BriefcaseDb,
       id: "master-seed",
       state: masterSeedState
     };
 
-    type TimelineStateChange =
-      // update the state of that model to match and push a changeset
-      | Record<number, number>
-      // create a new iModel from a seed
-      | { seed: IModelState }
-      // create a branch from an existing iModel with a given name
-      | { branch: string }
-      // synchronize with the changes in an iModel of a given name from a starting timeline point
-      // to the given ending point, inclusive. (end defaults to current point in time)
-      | { sync: [string, number] };
-
-
-    // For each step in timeline, an object of iModels mapping to the event that occurs for them:
-    // - a 'seed' event with an iModel to seed from, creating the iModel
-    // - a 'branch' event with the name of an iModel to seed from, creating the iModel
-    // - a 'sync' event with the name of an iModel and timeline point to sync from
-    // - an object containing the content of the iModel that it updates to,
-    //   creating the iModel with this initial state if it didn't exist before
-    // - an 'assert' function to run on the state of all the iModels in the timeline
-    const timeline: Record<number, {
-      assert?: (imodels: Record<string, IModelState>) => void;
-      [modelName: string]: | undefined // only necessary for the previous optional properties
-                           | ((imodels: Record<string, IModelState>) => void) // only necessary for the assert property
-                           | TimelineStateChange;
-    }> = {
+    const timeline: Timeline = {
       0: { master: { seed: masterSeed } }, // above: masterSeedState = {1:1, 2:1, 20:1, 21:1};
       1: { branch1: { branch: "master" }, branch2: { branch: "master" } },
       2: { branch1: { 1:1, 2:2, 3:1, 4:1, 20:1, 21:1 } },
@@ -412,138 +382,7 @@ describe("IModelTransformerHub", () => {
       12: { branch1: { sync: ["master", 4] } },
     };
 
-    const trackedIModels = new Map<string, IModelState>();
-    const masterOfBranch = new Map<string, string>();
-
-    const timelineStates = new Map<
-      number,
-      {
-        states: { [iModelName: string]: Record<number, number> };
-        changesetIds: { [iModelName: string]: string };
-      }
-    >();
-
-    for (let i = 0; i < Object.values(timeline).length; ++i) {
-      const pt = timeline[i];
-      const iModelChanges = Object.entries(pt)
-        .filter((entry): entry is [string, TimelineStateChange] => entry[0] !== "assert" && trackedIModels.has(entry[0]));
-
-      const newIModels = Object.keys(pt).filter((s) => s !== "assert" && !trackedIModels.has(s));
-
-      for (const newIModelName of newIModels) {
-        assert(newIModelName !== "assert", "should have already been filtered out");
-
-        const newIModelEvent = pt[newIModelName];
-        assert(typeof newIModelEvent === "object");
-        assert(!("sync" in newIModelEvent), "cannot sync an iModel that hasn't been created yet!");
-
-        const seed
-          = "seed" in newIModelEvent
-          ? newIModelEvent.seed
-          : "branch" in newIModelEvent
-          ? trackedIModels.get(newIModelEvent.branch)!
-          : undefined;
-
-        const newIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: newIModelName, version0: seed?.db.pathName, noLocks: true });
-
-        const newIModelDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: newIModelId });
-        assert.isTrue(newIModelDb.isBriefcaseDb());
-        assert.equal(newIModelDb.iTwinId, iTwinId);
-
-        trackedIModels.set(newIModelName, {
-          state: seed?.state ?? newIModelEvent as number[],
-          db: newIModelDb,
-          id: newIModelId,
-        });
-
-        const isNewBranch = "branch" in newIModelEvent;
-        if (isNewBranch) {
-          assert(seed);
-          masterOfBranch.set(newIModelName, newIModelEvent.branch);
-          const master = seed;
-          const branchDb = newIModelDb;
-          // record branch provenance
-          const provenanceInserter = new IModelTransformer(master.db, branchDb, { wasSourceIModelCopiedToTarget: true });
-          await provenanceInserter.processAll();
-          provenanceInserter.dispose();
-          assert.equal(count(master.db, ExternalSourceAspect.classFullName), 0);
-          assert.isAbove(count(branchDb, ExternalSourceAspect.classFullName), Object.keys(master.state).length);
-          await saveAndPushChanges(branchDb, "initialized branch provenance");
-        } else if ("seed" in newIModelEvent) {
-          assert(seed);
-          maintainPhysicalObjects(newIModelDb, seed.state);
-          await saveAndPushChanges(newIModelDb, `seeded from '${newIModelEvent.seed.id}' at point ${i}`);
-        } else {
-          maintainPhysicalObjects(newIModelDb, newIModelEvent);
-          await saveAndPushChanges(newIModelDb, `new with state [${newIModelEvent}] at point ${i}`);
-        }
-
-        if (seed) {
-          assertPhysicalObjects(newIModelDb, seed!.state);
-        }
-      }
-
-      for (const [iModelName, event] of iModelChanges) {
-        if ("branch" in event || "seed" in event) {
-          // "branch" and "seed" event has already been handled in the new imodels loop above
-          continue;
-        } else if ("sync" in event) {
-          const [syncSource, startIndex] = event.sync;
-          // if the synchronization source is master, it's a normal sync
-          const isForwardSync = masterOfBranch.get(iModelName) === syncSource;
-          const target = trackedIModels.get(iModelName)!;
-          const source = trackedIModels.get(syncSource)!;
-          const targetStateBefore = getPhysicalObjects(target.db);
-          const syncer = new IModelTransformer(source.db, target.db, { isReverseSynchronization: !isForwardSync });
-          const startChangesetId = timelineStates.get(startIndex)?.changesetIds[syncSource];
-          await syncer.processChanges(accessToken, startChangesetId);
-          syncer.dispose();
-
-          const stateMsg = `synced changes from ${syncSource} to ${iModelName} at ${i}`;
-          if (process.env.TRANSFORMER_BRANCH_TEST_DEBUG) {
-            console.log(stateMsg);
-            console.log(` source range state: ${JSON.stringify(source.state)}`);
-            const targetState = getPhysicalObjects(target.db);
-            console.log(`target before state: ${JSON.stringify(targetStateBefore)}`);
-            console.log(` target after state: ${JSON.stringify(targetState)}`);
-          }
-          // subset because we don't care about elements that the target added itself
-          assertPhysicalObjects(target.db, source.state, { subset: true });
-          target.state = source.state; // update the tracking state
-
-          await saveAndPushChanges(target.db, stateMsg);
-        } else {
-          const newState = event;
-          const alreadySeenIModel = trackedIModels.get(iModelName)!;
-          const prevState = alreadySeenIModel.state;
-          alreadySeenIModel.state = event;
-          // `(maintain|assert)PhysicalObjects` use negative to mean deleted
-          const additions = Object.keys(newState).filter(s => !(s in prevState)).map(Number);
-          const deletions = Object.keys(prevState).filter(s => !(s in newState)).map(Number);
-          const delta = [...additions, ...deletions.map((d) => -d)];
-
-          const stateMsg = `${iModelName} becomes: ${JSON.stringify(event)}, delta: [${delta}], at ${i}`;
-          if (process.env.TRANSFORMER_BRANCH_TEST_DEBUG) {
-            console.log(stateMsg);
-          }
-
-          maintainPhysicalObjects(alreadySeenIModel.db, newState);
-          await saveAndPushChanges(alreadySeenIModel.db, stateMsg);
-        }
-      }
-
-      if (pt.assert) {
-        pt.assert(Object.fromEntries(trackedIModels));
-      }
-
-      timelineStates.set(
-        i,
-        {
-          changesetIds: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.db.changeset.id])),
-          states: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.state]))
-        }
-      );
-    }
+    const { trackedIModels } = await runTimeline(timeline, { iTwinId, accessToken });
 
     // create empty iModel meant to contain replayed master history
     const replayedIModelName = "Replayed";
@@ -1006,5 +845,175 @@ describe("IModelTransformerHub", () => {
     }
     // TODO: iModelDb.performCheckpoint?
     iModelDb.saveChanges();
+  }
+
+  interface TimelineIModelState {
+    state: Record<number, number>;
+    id: string;
+    db: BriefcaseDb;
+  }
+
+  type TimelineStateChange =
+    // update the state of that model to match and push a changeset
+    | Record<number, number>
+    // create a new iModel from a seed
+    | { seed: TimelineIModelState }
+    // create a branch from an existing iModel with a given name
+    | { branch: string }
+    // synchronize with the changes in an iModel of a given name from a starting timeline point
+    // to the given ending point, inclusive. (end defaults to current point in time)
+    | { sync: [string, number] };
+
+
+  /** For each step in timeline, an object of iModels mapping to the event that occurs for them:
+   * - a 'seed' event with an iModel to seed from, creating the iModel
+   * - a 'branch' event with the name of an iModel to seed from, creating the iModel
+   * - a 'sync' event with the name of an iModel and timeline point to sync from
+   * - an object containing the content of the iModel that it updates to,
+   *   creating the iModel with this initial state if it didn't exist before
+   * - an 'assert' function to run on the state of all the iModels in the timeline
+   */
+  type Timeline = Record<number, {
+    assert?: (imodels: Record<string, TimelineIModelState>) => void;
+    [modelName: string]: | undefined // only necessary for the previous optional properties
+                          | ((imodels: Record<string, TimelineIModelState>) => void) // only necessary for the assert property
+                          | TimelineStateChange;
+  }>;
+
+  async function runTimeline(timeline: Timeline, { iTwinId, accessToken }: { iTwinId: string, accessToken: string }) {
+    const trackedIModels = new Map<string, TimelineIModelState>();
+    const masterOfBranch = new Map<string, string>();
+
+    const timelineStates = new Map<
+      number,
+      {
+        states: { [iModelName: string]: Record<number, number> };
+        changesetIds: { [iModelName: string]: string };
+      }
+    >();
+
+    for (let i = 0; i < Object.values(timeline).length; ++i) {
+      const pt = timeline[i];
+      const iModelChanges = Object.entries(pt)
+        .filter((entry): entry is [string, TimelineStateChange] => entry[0] !== "assert" && trackedIModels.has(entry[0]));
+
+      const newIModels = Object.keys(pt).filter((s) => s !== "assert" && !trackedIModels.has(s));
+
+      for (const newIModelName of newIModels) {
+        assert(newIModelName !== "assert", "should have already been filtered out");
+
+        const newIModelEvent = pt[newIModelName];
+        assert(typeof newIModelEvent === "object");
+        assert(!("sync" in newIModelEvent), "cannot sync an iModel that hasn't been created yet!");
+
+        const seed
+          = "seed" in newIModelEvent
+          ? newIModelEvent.seed
+          : "branch" in newIModelEvent
+          ? trackedIModels.get(newIModelEvent.branch)!
+          : undefined;
+
+        const newIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: newIModelName, version0: seed?.db.pathName, noLocks: true });
+
+        const newIModelDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: newIModelId });
+        assert.isTrue(newIModelDb.isBriefcaseDb());
+        assert.equal(newIModelDb.iTwinId, iTwinId);
+
+        trackedIModels.set(newIModelName, {
+          state: seed?.state ?? newIModelEvent as number[],
+          db: newIModelDb,
+          id: newIModelId,
+        });
+
+        const isNewBranch = "branch" in newIModelEvent;
+        if (isNewBranch) {
+          assert(seed);
+          masterOfBranch.set(newIModelName, newIModelEvent.branch);
+          const master = seed;
+          const branchDb = newIModelDb;
+          // record branch provenance
+          const provenanceInserter = new IModelTransformer(master.db, branchDb, { wasSourceIModelCopiedToTarget: true });
+          await provenanceInserter.processAll();
+          provenanceInserter.dispose();
+          assert.equal(count(master.db, ExternalSourceAspect.classFullName), 0);
+          assert.isAbove(count(branchDb, ExternalSourceAspect.classFullName), Object.keys(master.state).length);
+          await saveAndPushChanges(branchDb, "initialized branch provenance");
+        } else if ("seed" in newIModelEvent) {
+          assert(seed);
+          maintainPhysicalObjects(newIModelDb, seed.state);
+          await saveAndPushChanges(newIModelDb, `seeded from '${newIModelEvent.seed.id}' at point ${i}`);
+        } else {
+          maintainPhysicalObjects(newIModelDb, newIModelEvent);
+          await saveAndPushChanges(newIModelDb, `new with state [${newIModelEvent}] at point ${i}`);
+        }
+
+        if (seed) {
+          assertPhysicalObjects(newIModelDb, seed!.state);
+        }
+      }
+
+      for (const [iModelName, event] of iModelChanges) {
+        if ("branch" in event || "seed" in event) {
+          // "branch" and "seed" event has already been handled in the new imodels loop above
+          continue;
+        } else if ("sync" in event) {
+          const [syncSource, startIndex] = event.sync;
+          // if the synchronization source is master, it's a normal sync
+          const isForwardSync = masterOfBranch.get(iModelName) === syncSource;
+          const target = trackedIModels.get(iModelName)!;
+          const source = trackedIModels.get(syncSource)!;
+          const targetStateBefore = getPhysicalObjects(target.db);
+          const syncer = new IModelTransformer(source.db, target.db, { isReverseSynchronization: !isForwardSync });
+          const startChangesetId = timelineStates.get(startIndex)?.changesetIds[syncSource];
+          await syncer.processChanges(accessToken, startChangesetId);
+          syncer.dispose();
+
+          const stateMsg = `synced changes from ${syncSource} to ${iModelName} at ${i}`;
+          if (process.env.TRANSFORMER_BRANCH_TEST_DEBUG) {
+            console.log(stateMsg);
+            console.log(` source range state: ${JSON.stringify(source.state)}`);
+            const targetState = getPhysicalObjects(target.db);
+            console.log(`target before state: ${JSON.stringify(targetStateBefore)}`);
+            console.log(` target after state: ${JSON.stringify(targetState)}`);
+          }
+          // subset because we don't care about elements that the target added itself
+          assertPhysicalObjects(target.db, source.state, { subset: true });
+          target.state = source.state; // update the tracking state
+
+          await saveAndPushChanges(target.db, stateMsg);
+        } else {
+          const newState = event;
+          const alreadySeenIModel = trackedIModels.get(iModelName)!;
+          const prevState = alreadySeenIModel.state;
+          alreadySeenIModel.state = event;
+          // `(maintain|assert)PhysicalObjects` use negative to mean deleted
+          const additions = Object.keys(newState).filter(s => !(s in prevState)).map(Number);
+          const deletions = Object.keys(prevState).filter(s => !(s in newState)).map(Number);
+          const delta = [...additions, ...deletions.map((d) => -d)];
+
+          const stateMsg = `${iModelName} becomes: ${JSON.stringify(event)}, delta: [${delta}], at ${i}`;
+          if (process.env.TRANSFORMER_BRANCH_TEST_DEBUG) {
+            console.log(stateMsg);
+          }
+
+          maintainPhysicalObjects(alreadySeenIModel.db, newState);
+          await saveAndPushChanges(alreadySeenIModel.db, stateMsg);
+        }
+      }
+
+      if (pt.assert) {
+        pt.assert(Object.fromEntries(trackedIModels));
+      }
+
+      timelineStates.set(
+        i,
+        {
+          changesetIds: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.db.changeset.id])),
+          states: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.state]))
+        }
+      );
+    }
+
+    return { trackedIModels };
   }
 });
