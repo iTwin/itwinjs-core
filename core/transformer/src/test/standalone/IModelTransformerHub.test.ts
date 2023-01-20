@@ -14,7 +14,7 @@ import {
 
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { Code, ColorDef, ElementProps, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { ChangesetIdWithIndex, Code, ColorDef, ElementProps, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelImporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
@@ -24,6 +24,7 @@ import {
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
+import * as sinon from "sinon";
 
 describe("IModelTransformerHub", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
@@ -343,9 +344,7 @@ describe("IModelTransformerHub", () => {
       IModelJsFs.removeSync(masterSeedFileName);
     const masterSeedState = {1:1, 2:1, 20:1, 21:1};
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: masterIModelName } });
-    SpatialCategory.insert(masterSeedDb, IModel.dictionaryId, "SpatialCategory", new SubCategoryAppearance());
-    PhysicalModel.insert(masterSeedDb, IModel.rootSubjectId, "PhysicalModel");
-    maintainPhysicalObjects(masterSeedDb, masterSeedState);
+    populateTimelineSeed(masterSeedDb, masterSeedState)
     assert(IModelJsFs.existsSync(masterSeedFileName));
     masterSeedDb.nativeDb.setITwinId(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.saveChanges();
@@ -382,7 +381,7 @@ describe("IModelTransformerHub", () => {
       12: { branch1: { sync: ["master", 4] } },
     };
 
-    const { trackedIModels } = await runTimeline(timeline, { iTwinId, accessToken });
+    const { trackedIModels, tearDown } = await runTimeline(timeline);
 
     // create empty iModel meant to contain replayed master history
     const replayedIModelName = "Replayed";
@@ -397,7 +396,7 @@ describe("IModelTransformerHub", () => {
       assert(master);
 
       const masterDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: master.id, targetDir: BriefcaseManager.getChangeSetsPath(master.id) });
-      assert.equal(masterDbChangesets.length, 5);
+      assert.equal(masterDbChangesets.length, 4);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeset of masterDbChangesets) {
         assert.isDefined(masterDbChangeset.id);
@@ -458,10 +457,7 @@ describe("IModelTransformerHub", () => {
       }
       assert.equal(replayedDeletedElementIds.size, 0);
     } finally {
-      for (const [, state] of trackedIModels) {
-        state.db.close();
-        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: state.id });
-      }
+      await tearDown();
       replayedDb.close();
       await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: replayedIModelId });
     }
@@ -759,6 +755,40 @@ describe("IModelTransformerHub", () => {
     }
   });
 
+  it.only("should not download more changesets than necessary", async () => {
+    const timeline: Timeline = {
+      0: { master: { 1:1 } },
+      1: { branch: { branch: "master" } },
+      2: { branch: { 1:2, 2:1 } },
+      3: { branch: { 1:2, 3:3 } },
+    };
+
+    const { trackedIModels, timelineStates, tearDown } = await runTimeline(timeline);
+
+    const master = trackedIModels.get("master")!;
+    const branch = trackedIModels.get("branch")!;
+    const branchAt2Changeset = timelineStates.get(2)?.changesets.branch;
+    assert(branchAt2Changeset?.index);
+    const branchAt2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branch.id, asOf: { first: true } });
+    branchAt2.pullChanges({ toIndex: branchAt2Changeset.index });
+
+    const syncer = new IModelTransformer(branch.db, master.db, {
+      isReverseSynchronization: true
+    });
+    const queryChangeset = sinon.spy(HubMock, "queryChangeset")
+    await syncer.processChanges(accessToken, branchAt2Changeset.id);
+    expect(queryChangeset.calledOnceWith({
+      accessToken,
+      iModelId: branch.id,
+      changeset: {
+        id: branchAt2Changeset.id
+      }
+    })).to.be.true;
+
+    syncer.dispose();
+    await tearDown();
+  });
+
   function count(iModelDb: IModelDb, classFullName: string): number {
     return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
@@ -779,6 +809,15 @@ describe("IModelTransformerHub", () => {
         )
     );
   }
+
+  function populateTimelineSeed(db: IModelDb, state: Record<number, number>): void {
+    SpatialCategory.insert(db, IModel.dictionaryId, "SpatialCategory", new SubCategoryAppearance());
+    PhysicalModel.insert(db, IModel.rootSubjectId, "PhysicalModel");
+    maintainPhysicalObjects(db, state);
+    // FIXME: perform checkpoint
+    db.saveChanges();
+  }
+
 
   function assertPhysicalObjects(iModelDb: IModelDb, numbers: Record<number, number>, { subset = false } = {}): void {
     if (subset) {
@@ -872,15 +911,19 @@ describe("IModelTransformerHub", () => {
    * - an object containing the content of the iModel that it updates to,
    *   creating the iModel with this initial state if it didn't exist before
    * - an 'assert' function to run on the state of all the iModels in the timeline
+   *
+   * @note because the timeline manages PhysicalObjects for the state, any seed must contain the necessary
+   * model and category, which can be added to your seed by calling @see populateTimelineSeed
    */
   type Timeline = Record<number, {
     assert?: (imodels: Record<string, TimelineIModelState>) => void;
     [modelName: string]: | undefined // only necessary for the previous optional properties
-                          | ((imodels: Record<string, TimelineIModelState>) => void) // only necessary for the assert property
-                          | TimelineStateChange;
+                         | ((imodels: Record<string, TimelineIModelState>) => void) // only necessary for the assert property
+                         | TimelineStateChange;
   }>;
 
-  async function runTimeline(timeline: Timeline, { iTwinId, accessToken }: { iTwinId: string, accessToken: string }) {
+  /** run the branching and synchronization events in a @see Timeline object */
+  async function runTimeline(timeline: Timeline) {
     const trackedIModels = new Map<string, TimelineIModelState>();
     const masterOfBranch = new Map<string, string>();
 
@@ -888,7 +931,7 @@ describe("IModelTransformerHub", () => {
       number,
       {
         states: { [iModelName: string]: Record<number, number> };
-        changesetIds: { [iModelName: string]: string };
+        changesets: { [iModelName: string]: ChangesetIdWithIndex };
       }
     >();
 
@@ -939,11 +982,9 @@ describe("IModelTransformerHub", () => {
           assert.isAbove(count(branchDb, ExternalSourceAspect.classFullName), Object.keys(master.state).length);
           await saveAndPushChanges(branchDb, "initialized branch provenance");
         } else if ("seed" in newIModelEvent) {
-          assert(seed);
-          maintainPhysicalObjects(newIModelDb, seed.state);
           await saveAndPushChanges(newIModelDb, `seeded from '${newIModelEvent.seed.id}' at point ${i}`);
         } else {
-          maintainPhysicalObjects(newIModelDb, newIModelEvent);
+          populateTimelineSeed(newIModelDb, newIModelEvent);
           await saveAndPushChanges(newIModelDb, `new with state [${newIModelEvent}] at point ${i}`);
         }
 
@@ -964,7 +1005,7 @@ describe("IModelTransformerHub", () => {
           const source = trackedIModels.get(syncSource)!;
           const targetStateBefore = getPhysicalObjects(target.db);
           const syncer = new IModelTransformer(source.db, target.db, { isReverseSynchronization: !isForwardSync });
-          const startChangesetId = timelineStates.get(startIndex)?.changesetIds[syncSource];
+          const startChangesetId = timelineStates.get(startIndex)?.changesets[syncSource].id;
           await syncer.processChanges(accessToken, startChangesetId);
           syncer.dispose();
 
@@ -1008,12 +1049,21 @@ describe("IModelTransformerHub", () => {
       timelineStates.set(
         i,
         {
-          changesetIds: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.db.changeset.id])),
+          changesets: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.db.changeset])),
           states: Object.fromEntries([...trackedIModels].map(([name, state]) => [name, state.state]))
         }
       );
     }
 
-    return { trackedIModels };
+    return {
+      trackedIModels,
+      timelineStates,
+      tearDown: async () => {
+        for (const [, state] of trackedIModels) {
+          state.db.close();
+          await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: state.id });
+        }
+      }
+    };
   }
 });
