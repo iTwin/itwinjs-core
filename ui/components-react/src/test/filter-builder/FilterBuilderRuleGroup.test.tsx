@@ -67,7 +67,7 @@ describe("PropertyFilterBuilderRuleGroupRenderer", () => {
       {...defaultProps}
       group={{ id: "id", items: [{ id: "childId", groupId: "id" }], operator: PropertyFilterRuleGroupOperator.And }}
     />);
-    expect(queryByText(TestUtils.i18n.getLocalizedString("Components:filterBuilder.operators.or"))).to.be.null;
+    expect(queryByText(TestUtils.i18n.getLocalizedString("Components:filterBuilder.operators.and"))).to.be.null;
   });
 
   it("renders child rule", () => {
