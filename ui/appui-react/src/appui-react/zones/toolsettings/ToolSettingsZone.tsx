@@ -13,13 +13,10 @@ import {
   ResizeHandle, TitleBarButton, ToolSettings, ToolSettingsTab, WidgetZoneId, Zone, ZoneManagerProps, ZoneTargetType,
 } from "@itwin/appui-layout-react";
 import { TargetChangeHandler, WidgetChangeHandler } from "../../frontstage/FrontstageComposer";
-import { FrontstageManager } from "../../frontstage/FrontstageManager";
 import { SafeAreaContext } from "../../safearea/SafeAreaContext";
 import { UiFramework } from "../../UiFramework";
-import { UiShowHideManager } from "../../utils/UiShowHideManager";
 import { getFloatingZoneBounds, getFloatingZoneStyle } from "../FrameworkZone";
 import { Outline } from "../Outline";
-import { ToolSettingsManager } from "./ToolSettingsManager";
 import { onEscapeSetFocusToHome } from "../../hooks/useEscapeSetFocusToHome";
 import { ZoneTargets } from "../../dragdrop/ZoneTargets";
 
@@ -69,7 +66,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
   constructor(props: ToolSettingsZoneProps) {
     super(props);
 
-    const title = `${ToolSettingsManager.activeToolLabel}`;
+    const title = `${UiFramework.toolSettings.activeToolLabel}`;
 
     this.state = {
       toolSettingsZoneContent: this.props.isClosed ? ToolSettingsZoneContent.Closed : ToolSettingsZoneContent.ToolSettings,
@@ -79,16 +76,16 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
 
   private _handleToolActivatedEvent = (): void => {
     // Update tool settings title when active tool changes.
-    const title = `${ToolSettingsManager.activeToolLabel}`;
+    const title = `${UiFramework.toolSettings.activeToolLabel}`;
     this.setState({ title });
   };
 
   public override componentDidMount(): void {
-    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+    UiFramework.frontstages.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
   }
 
   public override componentWillUnmount(): void {
-    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    UiFramework.frontstages.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
   public override render(): React.ReactNode {
@@ -147,7 +144,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
           onClick={this._processClick}
           onKeyDown={onEscapeSetFocusToHome}
           title={this.state.title}
-          onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+          onMouseEnter={UiFramework.visibility.handleWidgetMouseEnter}
         >
           <i className="icon icon-settings" />
         </ToolSettingsTab>
@@ -173,7 +170,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
         onDragEnd={this.props.widgetChangeHandler.handleTabDragEnd}
         onDragStart={this._handleDragStart}
         onResize={this.props.zone.floating && this._handleResize}
-        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+        onMouseEnter={UiFramework.visibility.handleWidgetMouseEnter}
         ref={this._widget}
         title={this.state.title}
       />

@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { SelectionTool } from "@itwin/core-frontend";
 import { BadgeType } from "@itwin/appui-abstract";
-import { BaseItemState, FrontstageManager, KeyboardShortcutManager, SyncUiEventDispatcher, SyncUiEventId, ToolButton } from "../../appui-react";
+import { BaseItemState, SyncUiEventId, ToolButton, UiFramework } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ToolButton", () => {
@@ -30,7 +30,7 @@ describe("ToolButton", () => {
   });
 
   it("renders active correctly", () => {
-    FrontstageManager.setActiveToolId("tool1");
+    UiFramework.frontstages.setActiveToolId("tool1");
     shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
   });
 
@@ -69,7 +69,7 @@ describe("ToolButton", () => {
     const element = wrapper.find(".nz-toolbar-item-item");
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape" });
-    expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+    expect(UiFramework.keyboardShortcuts.isFocusOnHome).to.be.true;
   });
 
   it("should use a label function", () => {
@@ -89,10 +89,10 @@ describe("ToolButton", () => {
     const element = wrapper.find(".nz-toolbar-item-item");
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape" });
-    expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+    expect(UiFramework.keyboardShortcuts.isFocusOnHome).to.be.true;
 
     expect(stateFunctionCalled).to.eq(false);
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
   });
 
@@ -108,7 +108,7 @@ describe("ToolButton", () => {
     mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" stateSyncIds={[testEventId]} stateFunc={testStateFunc} />);
 
     expect(stateFunctionCalled).to.eq(false);
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
   });
 });

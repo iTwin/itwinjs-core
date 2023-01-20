@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, FrontstageManager, INACTIVITY_TIME_DEFAULT, UiFramework,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, INACTIVITY_TIME_DEFAULT, UiFramework,
   UiShowHideManager,
   UiShowHideSettingsProvider,
 } from "../../appui-react";
@@ -149,9 +149,9 @@ describe("UiShowHideManager localStorage Wrapper", () => {
         UiShowHideManager.autoHideUi = true;
 
         const frontstageProvider = new TestFrontstage();
-        FrontstageManager.addFrontstageProvider(frontstageProvider);
-        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+        UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+        const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageProvider.frontstage.props.id);
+        await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
         await TestUtils.flushAsyncOperations();
         expect(UiShowHideManager.isUiVisible).to.eq(true);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider, FrontstageProps,
+  BackstageAppButton, ContentGroup, ContentGroupProvider, FrontstageProps,
   IModelViewportControl,
   StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
@@ -84,7 +84,7 @@ export class CustomContentFrontstage {
     };
 
     CustomContentFrontstage.registerToolProviders(localizationNamespace);
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(customStageProps));
+    UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(customStageProps));
   }
 
   private static registerToolProviders(localizationNamespace: string) {

@@ -15,14 +15,10 @@ import {
   Primitives, PropertyDescription, PropertyRecord, RelativePosition, UiAdmin,
 } from "@itwin/appui-abstract";
 import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { CursorInformation } from "../cursor/CursorInformation";
 import { PopupManager } from "../popup/PopupManager";
 import { CursorMenuData } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { ModalDialogManager } from "../dialog/ModalDialogManager";
-import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
 import { UiDataProvidedDialog } from "../dialog/UiDataProvidedDialog";
 
 /** Controls whether localized and/or non-localized key-in strings appear in a KeyinField's auto-completion list.
@@ -65,10 +61,10 @@ export class FrameworkUiAdmin extends UiAdmin {
   public override get cursorPosition(): XAndY { return CursorInformation.cursorPosition; }
 
   /** Determines if focus is set to Home */
-  public override get isFocusOnHome(): boolean { return KeyboardShortcutManager.isFocusOnHome; }
+  public override get isFocusOnHome(): boolean { return UiFramework.keyboardShortcuts.isFocusOnHome; }
 
   /** Sets focus to Home */
-  public override setFocusToHome(): void { KeyboardShortcutManager.setFocusToHome(); }
+  public override setFocusToHome(): void { UiFramework.keyboardShortcuts.setFocusToHome(); }
 
   /** Show a context menu at a particular location.
    * @param items Properties of the menu items to display.
@@ -82,7 +78,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     if (htmlElement) {
       const anchorOffset = htmlElement.getBoundingClientRect();
       position = { x: anchorOffset.left + location.x, y: anchorOffset.top + location.y };
-      childWindowId = UiFramework.childWindowManager.findChildWindowId(htmlElement.ownerDocument.defaultView);
+      childWindowId = UiFramework.childWindows.findId(htmlElement.ownerDocument.defaultView);
     }
 
     const offset = -8;
@@ -97,7 +93,7 @@ export class FrameworkUiAdmin extends UiAdmin {
   /** Resolve location and parent element */
   private resolveHtmlElement(location: XAndY, htmlElement?: HTMLElement): { position: XAndY, el: HTMLElement } {
     const position = location;
-    const el = htmlElement ?? ConfigurableUiManager.getWrapperElement();
+    const el = htmlElement ?? UiFramework.controls.getWrapperElement();
     return { position, el };
   }
 
@@ -136,7 +132,7 @@ export class FrameworkUiAdmin extends UiAdmin {
       return false;
 
     // istanbul ignore next
-    const el = htmlElement ? htmlElement : ConfigurableUiManager.getWrapperElement();
+    const el = htmlElement ? htmlElement : UiFramework.controls.getWrapperElement();
 
     // istanbul ignore next
     const hidePopup = () => {
@@ -401,10 +397,10 @@ export class FrameworkUiAdmin extends UiAdmin {
   */
   public override openDialog(uiDataProvider: DialogLayoutDataProvider, title: string, isModal: boolean, id: string, optionalProps?: DialogProps): boolean {
     if (isModal) {
-      ModalDialogManager.openDialog(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id} {...optionalProps} />, id);
+      UiFramework.dialogs.modal.openDialog(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id} {...optionalProps} />, id);
       return true;
     } else {
-      ModelessDialogManager.openDialog(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id}  {...optionalProps} />, id);
+      UiFramework.dialogs.modeless.openDialog(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id}  {...optionalProps} />, id);
       return true;
     }
   }
@@ -412,14 +408,14 @@ export class FrameworkUiAdmin extends UiAdmin {
   /** Closes the Tool Settings Ui popup. */
   public override closeDialog(dialogId: string): boolean {
     // istanbul ignore else
-    if (ModelessDialogManager.dialogManager.dialogs.findIndex((info) => info.id === dialogId)) {
-      ModelessDialogManager.closeDialog(dialogId);
+    if (UiFramework.dialogs.modeless.dialogManager.dialogs.findIndex((info) => info.id === dialogId)) {
+      UiFramework.dialogs.modeless.closeDialog(dialogId);
       return true;
     }
 
     // istanbul ignore else
-    if (ModalDialogManager.dialogManager.dialogs.findIndex((info) => info.id === dialogId)) {
-      ModalDialogManager.closeDialog();
+    if (UiFramework.dialogs.modal.dialogManager.dialogs.findIndex((info) => info.id === dialogId)) {
+      UiFramework.dialogs.modal.closeDialog();
       return true;
     }
 

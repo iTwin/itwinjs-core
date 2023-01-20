@@ -10,10 +10,9 @@ import * as React from "react";
 import { Dialog } from "@itwin/core-react";
 import { DialogButtonDef, DialogButtonType, DialogLayoutDataProvider } from "@itwin/appui-abstract";
 import { getUniqueId } from "@itwin/appui-layout-react";
-import { ModalDialogManager } from "./ModalDialogManager";
-import { ModelessDialogManager } from "./ModelessDialogManager";
 import { DefaultDialogGridContainer } from "../uiprovider/DefaultDialogGridContainer";
 import { ComponentGenerator } from "../uiprovider/ComponentGenerator";
+import { UiFramework } from "../UiFramework";
 
 /** Props for [[UiDataProvidedDialog]] component.
  * @public
@@ -55,9 +54,9 @@ export function UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogPro
   const onCancel = React.useRef<() => void>();
   const closeDialog = () => {
     if (dialogIsModal.current)
-      ModalDialogManager.closeDialog();
+      UiFramework.dialogs.modal.closeDialog();
     else
-      ModelessDialogManager.closeDialog(dialogId.current);
+      UiFramework.dialogs.modeless.closeDialog(dialogId.current);
   };
 
   const handleOk = React.useCallback(() => {

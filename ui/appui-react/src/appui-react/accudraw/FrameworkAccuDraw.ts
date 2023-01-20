@@ -14,7 +14,7 @@ import {
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";
 import { UiStateStorage, UiStateStorageStatus } from "@itwin/core-react";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
-import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
 
 // cspell:ignore dont
@@ -172,14 +172,14 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
   /** @internal */
   public override onCompassModeChange(): void {
     FrameworkAccuDraw.onAccuDrawSetCompassModeEvent.emit({ mode: this.compassMode });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.AccuDrawCompassModeChanged);
+    UiFramework.events.dispatchSyncUiEvent(SyncUiEventId.AccuDrawCompassModeChanged);
 
     this.outputCompassModeMessage();
   }
 
   /** @internal */
   public override onRotationModeChange(): void {
-    SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.AccuDrawRotationChanged);
+    UiFramework.events.dispatchSyncUiEvent(SyncUiEventId.AccuDrawRotationChanged);
 
     this.outputRotationMessage();
   }

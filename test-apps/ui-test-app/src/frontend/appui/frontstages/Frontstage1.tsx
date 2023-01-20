@@ -5,8 +5,8 @@
 import * as React from "react";
 import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@itwin/imodel-components-react";
 import {
-  ActionItemButton, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
-  ModalDialogManager, NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
+  ActionItemButton, CommandItemDef, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageDef, FrontstageProps, FrontstageProvider, GroupButton,
+  NavigationWidget, StagePanel, ToolButton, ToolWidget, UiFramework, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
   ZoneState,
 } from "@itwin/appui-react";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
@@ -24,7 +24,7 @@ import { TestModalDialog } from "../dialogs/TestModalDialog";
 function RightPanel() {
   const direction = useWidgetDirection();
   const [state, setState] = React.useState(() => {
-    const frontstageDef = FrontstageManager.activeFrontstageDef!;
+    const frontstageDef = UiFramework.frontstages.activeFrontstageDef!;
     const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
     return WidgetState[widgetDef.state];
   });
@@ -33,9 +33,9 @@ function RightPanel() {
       if (args.widgetDef.id === "VerticalPropertyGrid")
         setState(WidgetState[args.widgetState]);
     };
-    FrontstageManager.onWidgetStateChangedEvent.addListener(listener);
+    UiFramework.frontstages.onWidgetStateChangedEvent.addListener(listener);
     return () => {
-      FrontstageManager.onWidgetStateChangedEvent.removeListener(listener);
+      UiFramework.frontstages.onWidgetStateChangedEvent.removeListener(listener);
     };
   });
   return (
@@ -91,13 +91,13 @@ export class Frontstage1 extends FrontstageProvider {
         <span>BottomMost panel:</span>
         &nbsp;
         <button onClick={() => {
-          const frontstageDef = FrontstageManager.activeFrontstageDef;
+          const frontstageDef = UiFramework.frontstages.activeFrontstageDef;
           const widgetDef = frontstageDef?.findWidgetDef("BottomMostPanelWidget");
           widgetDef?.setWidgetState(WidgetState.Open);
         }}>show</button>
         &nbsp;
         <button onClick={() => {
-          const frontstageDef = FrontstageManager.activeFrontstageDef;
+          const frontstageDef = UiFramework.frontstages.activeFrontstageDef;
           const widgetDef = frontstageDef?.findWidgetDef("BottomMostPanelWidget");
           widgetDef?.setWidgetState(WidgetState.Hidden);
         }}>hide</button>
@@ -266,7 +266,7 @@ class FrontstageToolWidget extends React.Component {
       labelKey: "SampleApp:buttons.openNestedFrontstage1",
       execute: async () => {
         const frontstage1Def = await FrontstageToolWidget.getFrontstage1Def();
-        await FrontstageManager.openNestedFrontstage(frontstage1Def);
+        await UiFramework.frontstages.openNestedFrontstage(frontstage1Def);
       },
     });
   }
@@ -277,11 +277,11 @@ class FrontstageToolWidget extends React.Component {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.switchLayout",
       execute: async () => {
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
         if (activeFrontstageDef) {
           const contentLayout = new ContentLayoutDef(StandardContentLayouts.twoHorizontalSplit);
           if (contentLayout && activeFrontstageDef.contentGroup) {
-            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+            await UiFramework.content.layouts.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
           }
         }
       },
@@ -313,7 +313,7 @@ class FrontstageToolWidget extends React.Component {
     return new CommandItemDef({
       iconSpec: "icon-smiley-happy",
       label: "Open Modal Dialog",
-      execute: () => ModalDialogManager.openDialog(<TestModalDialog />),
+      execute: () => UiFramework.dialogs.modal.openDialog(<TestModalDialog />),
     });
   }
 

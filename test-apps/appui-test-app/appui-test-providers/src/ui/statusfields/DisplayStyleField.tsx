@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, ScreenViewport } from "@itwin/core-frontend";
-import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusBarIndicator } from "@itwin/appui-react";
+import { ContentControl, ContentControlActivatedEventArgs, StatusBarIndicator, UiFramework } from "@itwin/appui-react";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { CommonProps } from "@itwin/core-react";
@@ -68,9 +68,9 @@ export function DisplayStyleField(props: CommonProps) {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    setStateFromActiveContent(ContentViewManager.getActiveContentControl());
+    setStateFromActiveContent(UiFramework.content.getActiveContentControl());
 
-    return FrontstageManager.onContentControlActivatedEvent.addListener(handleContentControlActivatedEvent);
+    return UiFramework.frontstages.onContentControlActivatedEvent.addListener(handleContentControlActivatedEvent);
   }, [setStateFromActiveContent]);
 
   const handleDisplayStyleSelected = React.useCallback(async (newValue: string) => {

@@ -19,7 +19,6 @@ import {
   Dialog, Listbox, ListboxItem, SettingsTabEntry,
   useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer,
 } from "@itwin/core-react";
-import { ModalDialogManager } from "../../dialog/ModalDialogManager";
 import { UiFramework } from "../../UiFramework";
 import { UnitSystemSelector } from "./UnitSystemSelector";
 import { Presentation } from "@itwin/presentation-frontend";
@@ -116,7 +115,7 @@ export function QuantityFormatSettingsPage({ initialQuantityType, availableUnitS
       const formatProps = activeFormatterSpec.format.toJSON();
       const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)!.format.toJSON();
       if (formatPropsInUse && !formatAreEqual(formatProps, formatPropsInUse)) {
-        ModalDialogManager.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={args} onDialogClose={afterSaveFunction} />, "saveQuantityFormat");
+        UiFramework.dialogs.modal.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={args} onDialogClose={afterSaveFunction} />, "saveQuantityFormat");
         return;
       }
     }
@@ -141,7 +140,7 @@ export function QuantityFormatSettingsPage({ initialQuantityType, availableUnitS
       const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)!.format.toJSON();
       if (formatPropsInUse && !formatAreEqual(formatProps, formatPropsInUse)) {
         newQuantityTypeRef.current = newQuantityType;
-        ModalDialogManager.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={newQuantityType} onDialogClose={processListboxValueChange} />, "saveQuantityFormat");
+        UiFramework.dialogs.modal.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={newQuantityType} onDialogClose={processListboxValueChange} />, "saveQuantityFormat");
         return;
       }
     }
@@ -235,7 +234,7 @@ function SaveFormatModalDialog({ formatProps, quantityType, onDialogCloseArgs, o
 
   const handleClose = React.useCallback(() => {
     setIsOpen(false);
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
     onDialogClose && onDialogClose(onDialogCloseArgs);
   }, [onDialogClose, onDialogCloseArgs]);
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, InputStatus, ValidationTextbox, WidgetControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, InputStatus, UiFramework, ValidationTextbox, WidgetControl } from "@itwin/appui-react";
 
 /** Feedback Demo Widget */
 export class FeedbackDemoWidget extends WidgetControl {
@@ -63,4 +63,4 @@ export class FeedbackWidget extends React.Component {
   }
 }
 
-ConfigurableUiManager.registerControl("FeedbackWidget", FeedbackDemoWidget);
+UiFramework.controls.register("FeedbackWidget", FeedbackDemoWidget);

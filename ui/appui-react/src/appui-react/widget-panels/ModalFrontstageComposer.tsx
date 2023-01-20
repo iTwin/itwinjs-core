@@ -6,19 +6,20 @@
  * @module Frontstage
  */
 import * as React from "react";
-import { FrontstageManager, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import { ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { ModalFrontstage } from "../frontstage/ModalFrontstage";
+import { UiFramework } from "../UiFramework";
 
 /** @internal */
 export function useActiveModalFrontstageInfo() {
-  const [activeModalFrontstageInfo, setActiveModalFrontstageInfo] = React.useState(FrontstageManager.activeModalFrontstage);
+  const [activeModalFrontstageInfo, setActiveModalFrontstageInfo] = React.useState(UiFramework.frontstages.activeModalFrontstage);
   React.useEffect(() => {
     const handleModalFrontstageChangedEvent = (args: ModalFrontstageChangedEventArgs) => {
-      setActiveModalFrontstageInfo(args.modalFrontstageCount === 0 ? undefined : FrontstageManager.activeModalFrontstage);
+      setActiveModalFrontstageInfo(args.modalFrontstageCount === 0 ? undefined : UiFramework.frontstages.activeModalFrontstage);
     };
-    FrontstageManager.onModalFrontstageChangedEvent.addListener(handleModalFrontstageChangedEvent);
+    UiFramework.frontstages.onModalFrontstageChangedEvent.addListener(handleModalFrontstageChangedEvent);
     return () => {
-      FrontstageManager.onModalFrontstageChangedEvent.removeListener(handleModalFrontstageChangedEvent);
+      UiFramework.frontstages.onModalFrontstageChangedEvent.removeListener(handleModalFrontstageChangedEvent);
     };
   }, [setActiveModalFrontstageInfo]);
   return activeModalFrontstageInfo;
@@ -26,7 +27,7 @@ export function useActiveModalFrontstageInfo() {
 
 /** @internal */
 export function ModalFrontstageComposer({ stageInfo }: { stageInfo: ModalFrontstageInfo | undefined }) {
-  const handleCloseModal = React.useCallback(/* istanbul ignore next */() => FrontstageManager.closeModalFrontstage(), []);
+  const handleCloseModal = React.useCallback(/* istanbul ignore next */() => UiFramework.frontstages.closeModalFrontstage(), []);
   // istanbul ignore next
   if (!stageInfo)
     return null;

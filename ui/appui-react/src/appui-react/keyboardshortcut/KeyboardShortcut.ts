@@ -13,7 +13,6 @@ import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /** Properties for a Keyboard Shortcut
  * @public
@@ -218,8 +217,8 @@ export class KeyboardShortcutContainer {
     const offset = 8;
     KeyboardShortcutMenu.onKeyboardShortcutMenuEvent.emit({
       menuVisible: true,
-      menuX: KeyboardShortcutManager.cursorX - offset,
-      menuY: KeyboardShortcutManager.cursorY - offset,
+      menuX: UiFramework.keyboardShortcuts.cursorX - offset,
+      menuY: UiFramework.keyboardShortcuts.cursorY - offset,
       shortcuts: this.getAvailableKeyboardShortcuts(),
     });
   }
@@ -228,15 +227,17 @@ export class KeyboardShortcutContainer {
 type OnShortcutFunc = (shortcut: KeyboardShortcut) => void;
 
 /** Keyboard Shortcut Manager
- * @public
+ * @internal
  */
-export class KeyboardShortcutManager {
+export class InternalKeyboardShortcutManager {
 
   private static _shortcuts: KeyboardShortcutContainer = new KeyboardShortcutContainer();
 
-  /** Initialize the Keyboard Shortcut manager */
+  /** Initialize the Keyboard Shortcut manager
+   * @internal
+  */
   public static initialize(): void {
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(KeyboardShortcutManager._handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.addListener(InternalKeyboardShortcutManager._handleSyncUiEvent);
   }
 
   /** Loads Keyboard Shortcuts into the managed list */
@@ -314,7 +315,7 @@ export class KeyboardShortcutManager {
 
   private static _handleSyncUiEvent = (args: UiSyncEventArgs) => {
     const updateBooleanValue = (booleanValue: ConditionalBooleanValue) => {
-      if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, booleanValue.syncEventIds))
+      if (UiFramework.events.hasEventOfInterest(args.eventIds, booleanValue.syncEventIds))
         booleanValue.refresh();
     };
     const handleForSyncIds = (shortcut: KeyboardShortcut) => {
@@ -324,7 +325,7 @@ export class KeyboardShortcutManager {
         updateBooleanValue(shortcut.isHidden);
     };
 
-    KeyboardShortcutManager._traverseShortcuts(KeyboardShortcutManager._shortcuts.getAvailableKeyboardShortcuts(), handleForSyncIds);
+    InternalKeyboardShortcutManager._traverseShortcuts(InternalKeyboardShortcutManager._shortcuts.getAvailableKeyboardShortcuts(), handleForSyncIds);
   };
 
   private static _traverseShortcuts = (shortcuts: KeyboardShortcut[], callback: OnShortcutFunc) => {
@@ -333,9 +334,23 @@ export class KeyboardShortcutManager {
 
       if (shortcut.shortcutContainer.areKeyboardShortcutsAvailable()) {
         const childShortcuts = shortcut.shortcutContainer.getAvailableKeyboardShortcuts();
-        KeyboardShortcutManager._traverseShortcuts(childShortcuts, callback);
+        InternalKeyboardShortcutManager._traverseShortcuts(childShortcuts, callback);
       }
     });
   };
 
 }
+
+/** Keyboard Shortcut Manager
+ * @public
+ * @deprecated in 3.6. Use `UiFramework.keyboardShortcuts` property.
+ */
+export class KeyboardShortcutManager extends InternalKeyboardShortcutManager {
+  /** Initialize the Keyboard Shortcut manager
+   * @deprecated in 3.6. This is called internally.
+  */
+  public static override initialize(): void {
+    InternalKeyboardShortcutManager.initialize();
+  }
+}
+

@@ -62,7 +62,7 @@ export class BackstageManager {
       iconSpec: overrideIconSpec ? overrideIconSpec : "icon-home",
       labelKey: "UiFramework:commands.openBackstage",
       execute: () => {
-        UiFramework.backstageManager.toggle();
+        UiFramework.backstage.toggle();
       },
     });
   }
@@ -90,6 +90,6 @@ export const useIsBackstageOpen = (manager: BackstageManager) => {
  * @public
  */
 export const useBackstageManager = () => {
-  const [manager] = React.useState(UiFramework.backstageManager);
+  const [manager] = React.useState(UiFramework.backstage);
   return manager;
 };

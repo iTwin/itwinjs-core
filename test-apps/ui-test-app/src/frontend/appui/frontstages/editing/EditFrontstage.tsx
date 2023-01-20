@@ -7,8 +7,8 @@ import { IModelApp } from "@itwin/core-frontend";
 import { CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, StageUsage, ToolbarItemUtilities, WidgetState } from "@itwin/appui-abstract";
 import {
   AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef,
-  CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager,
-  StagePanel, ToolbarHelper, Widget, Zone, ZoneLocation, ZoneState,
+  CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector,
+  StagePanel, ToolbarHelper, UiFramework, Widget, Zone, ZoneLocation, ZoneState,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../../frontend/index";
 import { EditTools } from "../../../tools/editing/ToolSpecifications";
@@ -158,12 +158,12 @@ class AdditionalTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.accuDrawDialogVertical",
       execute: () => {
-        ModelessDialogManager.openDialog(
+        UiFramework.dialogs.modeless.openDialog(
           <AccuDrawDialog
             opened={true}
             dialogId={dialogId}
             orientation={Orientation.Vertical}
-            onClose={() => ModelessDialogManager.closeDialog(dialogId)}
+            onClose={() => UiFramework.dialogs.modeless.closeDialog(dialogId)}
           />, dialogId);
       },
     });
@@ -175,12 +175,12 @@ class AdditionalTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.accuDrawDialogHorizontal",
       execute: () => {
-        ModelessDialogManager.openDialog(
+        UiFramework.dialogs.modeless.openDialog(
           <AccuDrawDialog
             opened={true}
             dialogId={dialogId}
             orientation={Orientation.Horizontal}
-            onClose={() => ModelessDialogManager.closeDialog(dialogId)}
+            onClose={() => UiFramework.dialogs.modeless.closeDialog(dialogId)}
           />, dialogId);
       },
     });

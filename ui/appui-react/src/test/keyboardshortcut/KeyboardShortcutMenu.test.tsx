@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { CommandItemDef, KeyboardShortcutManager, KeyboardShortcutMenu, KeyboardShortcutProps } from "../../appui-react";
+import { CommandItemDef, KeyboardShortcutMenu, KeyboardShortcutProps } from "../../appui-react";
 import TestUtils, { userEvent } from "../TestUtils";
 import { FunctionKey } from "@itwin/appui-abstract";
 import { UiFramework } from "../../appui-react/UiFramework";
@@ -73,19 +73,19 @@ describe("KeyboardShortcutMenu", () => {
 
   beforeEach(() => {
     testSpyMethod.resetHistory();
-    KeyboardShortcutManager.shortcutContainer.emptyData();
+    UiFramework.keyboardShortcuts.shortcutContainer.emptyData();
     theUserTo = userEvent.setup();
   });
 
   it("Should render shortcuts and close on Escape", async () => {
-    KeyboardShortcutManager.loadKeyboardShortcuts(keyboardShortcutList);
+    UiFramework.keyboardShortcuts.loadKeyboardShortcuts(keyboardShortcutList);
     expect(UiFramework.isContextMenuOpen).to.be.false;
 
     render(
       <KeyboardShortcutMenu />,
     );
 
-    KeyboardShortcutManager.displayShortcutsMenu();
+    UiFramework.keyboardShortcuts.displayShortcutsMenu();
 
     expect(screen.getAllByRole("menuitem")).to.have.lengthOf(3);
     expect(UiFramework.isContextMenuOpen).to.be.true;
@@ -99,13 +99,13 @@ describe("KeyboardShortcutMenu", () => {
   });
 
   it("Should render shortcuts and execute item on click", async () => {
-    KeyboardShortcutManager.loadKeyboardShortcuts(keyboardShortcutList);
+    UiFramework.keyboardShortcuts.loadKeyboardShortcuts(keyboardShortcutList);
 
     render(
       <KeyboardShortcutMenu />,
     );
 
-    KeyboardShortcutManager.displayShortcutsMenu();
+    UiFramework.keyboardShortcuts.displayShortcutsMenu();
 
     expect(screen.queryAllByRole("menuitem")).to.have.lengthOf(3);
 

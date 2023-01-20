@@ -8,9 +8,9 @@
 
 /* eslint-disable deprecation/deprecation */
 
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
+import { UiFramework } from "../UiFramework";
 import { WorkflowManager } from "./Workflow";
 
 /** Properties for a [[Task]]
@@ -65,9 +65,9 @@ export class Task extends ItemDefBase {
   }
 
   public async onActivated(): Promise<void> {
-    const frontstage = await FrontstageManager.getFrontstageDef(this.primaryStageId);
+    const frontstage = await UiFramework.frontstages.getFrontstageDef(this.primaryStageId);
     if (frontstage)
-      await FrontstageManager.setActiveFrontstageDef(frontstage);
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstage);
   }
 }
 

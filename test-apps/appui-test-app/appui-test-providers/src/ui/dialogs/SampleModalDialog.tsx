@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ModalDialogManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 import { Dialog } from "@itwin/core-react";
 import { DialogButtonType } from "@itwin/appui-abstract";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
@@ -17,7 +17,7 @@ export function SampleModalDialog() {
   const title = React.useRef(AppUiTestProviders.translate("Dialogs.SampleModal.title"));
 
   const closeDialog = React.useCallback(() => {
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
   }, []);
 
   const handleOK = React.useCallback(() => {

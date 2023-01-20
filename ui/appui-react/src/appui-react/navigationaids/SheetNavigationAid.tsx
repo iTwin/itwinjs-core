@@ -14,7 +14,7 @@ import { UiComponents } from "@itwin/components-react";
 import { ViewIdChangedEventArgs, ViewportComponentEvents } from "@itwin/imodel-components-react";
 import { CommonProps } from "@itwin/core-react";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import { ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { NavigationAidControl } from "./NavigationAidControl";
@@ -249,6 +249,6 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   /** Opens a new SheetsModelFrontstage on sheetName click */
   // istanbul ignore next
   private _handleOnClickSheetName = () => {
-    FrontstageManager.openModalFrontstage(this.modalFrontstage());
+    UiFramework.frontstages.openModalFrontstage(this.modalFrontstage());
   };
 }

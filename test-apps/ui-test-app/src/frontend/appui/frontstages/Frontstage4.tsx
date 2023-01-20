@@ -9,8 +9,8 @@ import {
   PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardContentLayouts, StandardTypeNames, WidgetState,
 } from "@itwin/appui-abstract";
 import {
-  ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, ModalDialogManager,
-  ModelessDialogManager, NavigationWidget, StagePanel, StagePanelState, ToolButton, ToolWidget, Widget, Zone, ZoneState,
+  ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton,
+  NavigationWidget, StagePanel, StagePanelState, ToolButton, ToolWidget, UiFramework, Widget, Zone, ZoneState,
 } from "@itwin/appui-react";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -315,14 +315,14 @@ export class Frontstage4 extends FrontstageProvider {
   }
 
   private _closeModal = () => {
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
   };
 
   private get _spinnerTestDialogItem() {
     const id = "spinners";
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog",
-      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} onClose={() => ModelessDialogManager.closeDialog(id)} />, id); },
+      execute: () => { UiFramework.dialogs.modeless.openDialog(<SpinnerTestDialog opened={true} onClose={() => UiFramework.dialogs.modeless.closeDialog(id)} />, id); },
     });
   }
 
@@ -332,7 +332,7 @@ export class Frontstage4 extends FrontstageProvider {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.sampleModelessDialog",
       execute: () => {
-        ModelessDialogManager.openDialog(
+        UiFramework.dialogs.modeless.openDialog(
           <SampleModelessDialog
             dialogId={dialogId}
             onClose={() => this._handleModelessClose(dialogId)}
@@ -342,7 +342,7 @@ export class Frontstage4 extends FrontstageProvider {
   }
 
   private _handleModelessClose = (dialogId: string) => {
-    ModelessDialogManager.closeDialog(dialogId);
+    UiFramework.dialogs.modeless.closeDialog(dialogId);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Closed modeless dialog: ${dialogId}`));
   };
 
@@ -352,7 +352,7 @@ export class Frontstage4 extends FrontstageProvider {
       labelKey: "SampleApp:buttons.sampleModalDialog",
       // eslint-disable-next-line no-console
       execute: () => {
-        ModalDialogManager.openDialog(
+        UiFramework.dialogs.modal.openDialog(
           <SampleModalDialog
             onResult={(result) => this._handleModalResult(result)}
           />);
@@ -361,7 +361,7 @@ export class Frontstage4 extends FrontstageProvider {
   }
 
   private _handleModalResult(result: DialogButtonType) {
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Modal dialog result: ${result}`));
   }
 
@@ -396,13 +396,13 @@ export class Frontstage4 extends FrontstageProvider {
           <>
             <ToolButton toolId={AppTools.item6.id} iconSpec={AppTools.item6.iconSpec} labelKey={AppTools.item6.label} />
             <ToolButton toolId={AppTools.item5.id} iconSpec={AppTools.item5.iconSpec} labelKey={AppTools.item5.label} />
-            <ToolButton toolId="openDialog" label="open modal" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.modalDialog())} />
-            <ToolButton toolId="openDialog2" label="open modal 2" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.modalDialog2())} />
+            <ToolButton toolId="openDialog" label="open modal" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.openDialog(this.modalDialog())} />
+            <ToolButton toolId="openDialog2" label="open modal 2" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.openDialog(this.modalDialog2())} />
             <ToolButton toolId="openDynamicModal" label="open dynamic modal" iconSpec="icon-tools" execute={this.handleOpenDynamicModal} />
-            <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.radialMenu())} />
-            <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.testPopup())} />
+            <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.openDialog(this.radialMenu())} />
+            <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => UiFramework.dialogs.modal.openDialog(this.testPopup())} />
             <ToolButton toolId="uiProviderModalTest" iconSpec="icon-placeholder" execute={this.handleOpenUiProviderDialogModal} />
-            <ToolButton toolId="reactSelectModalTest" iconSpec="icon-lightbulb" execute={() => ModalDialogManager.openDialog(this.testReactSelectDialog())} />
+            <ToolButton toolId="reactSelectModalTest" iconSpec="icon-lightbulb" execute={() => UiFramework.dialogs.modal.openDialog(this.testReactSelectDialog())} />
           </>
         }
       />;

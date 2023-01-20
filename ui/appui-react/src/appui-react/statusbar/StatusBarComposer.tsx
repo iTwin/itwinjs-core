@@ -14,7 +14,6 @@ import {
 } from "@itwin/appui-abstract";
 import { CommonProps, Icon, useRefs, useResizeObserver } from "@itwin/core-react";
 import { eqlOverflown, FooterIndicator } from "@itwin/appui-layout-react";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { Indicator } from "../statusfields/Indicator";
 import { StatusBarOverflow } from "./Overflow";
 import { StatusBarOverflowPanel } from "./OverflowPanel";
@@ -22,6 +21,7 @@ import { StatusBarCenterSection, StatusBarContext, StatusBarLeftSection, StatusB
 import { isStatusBarItem } from "./StatusBarItem";
 import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems";
 import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems";
+import { UiFramework } from "../UiFramework";
 
 /** Private  function to generate a value that will allow the proper order to be maintained when items are placed in overflow panel */
 function getCombinedSectionItemPriority(item: CommonStatusBarItem) {
@@ -122,9 +122,9 @@ function useStatusBarItemSyncEffect(itemsManager: StatusBarItemsManager, syncIds
     };
 
     // Note: that items with conditions have condition run when loaded into the items manager
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
     return () => {
-      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+      UiFramework.events.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
   }, [itemsManager, itemsManager.items, syncIdsOfInterest]);
 }

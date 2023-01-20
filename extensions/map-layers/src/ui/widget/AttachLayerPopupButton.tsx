@@ -6,7 +6,7 @@ import * as React from "react";
 import { IModelApp, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
 import * as UiCore from "@itwin/core-react";
-import { ModalDialogManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 import { useSourceMapContext } from "./MapLayerManager";
 import { MapUrlDialog } from "./MapUrlDialog";
 import { ConfirmMessageDialog } from "./ConfirmMessageDialog";
@@ -63,7 +63,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
 
       // We close any open dialogs that we might have opened
       // This was added because the modal dialog remained remained displayed after the session expired.
-      ModalDialogManager.closeDialog();
+      UiFramework.dialogs.modal.closeDialog();
     };
   }, []);
 
@@ -100,7 +100,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
   const handleModalUrlDialogCancel = React.useCallback(() => {
     // close popup and refresh UI
     setLoading(false);
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
     resumeOutsideClick();
   }, [resumeOutsideClick]);
 
@@ -142,7 +142,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
                 }
 
               } else if (status === MapLayerSourceStatus.RequireAuth && isMounted.current) {
-                ModalDialogManager.openDialog(
+                UiFramework.dialogs.modal.openDialog(
                   <MapUrlDialog
                     activeViewport={activeViewport}
                     isOverlay={isOverlay}
@@ -195,7 +195,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
   }, [options, sourceFilterString]);
 
   const handleAddNewMapSource = React.useCallback(() => {
-    ModalDialogManager.openDialog(<MapUrlDialog
+    UiFramework.dialogs.modal.openDialog(<MapUrlDialog
       activeViewport={activeViewport}
       isOverlay={isOverlay}
       onOkResult={()=>handleModalUrlDialogOk(LayerAction.Attached)}
@@ -227,7 +227,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
   }, []);
 
   const handleNoConfirmation = React.useCallback((_layerName: string) => {
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
     resumeOutsideClick();
   }, [resumeOutsideClick]);
 
@@ -244,7 +244,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
       }
     }
 
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
     resumeOutsideClick();
   }, [iTwinId, iModelId, resumeOutsideClick]);
 
@@ -257,7 +257,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
     const layerName = source.name;
 
     const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefDialogMessage", { layerName });
-    ModalDialogManager.openDialog(
+    UiFramework.dialogs.modal.openDialog(
       <ConfirmMessageDialog
         className="map-sources-delete-confirmation"
         title={removeLayerDefDialogTitle}
@@ -287,7 +287,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
     if (matchingSource === undefined) {
       return;
     }
-    ModalDialogManager.openDialog(<MapUrlDialog
+    UiFramework.dialogs.modal.openDialog(<MapUrlDialog
       activeViewport={activeViewport}
       isOverlay={isOverlay}
       mapLayerSourceToEdit={matchingSource}

@@ -8,7 +8,8 @@
  */
 
 import * as React from "react";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "./SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
+import { SyncUiEventArgs } from "./SyncUiEventDispatcher";
 
 /**
  * Properties supported by [[BooleanSyncUiListener]] component.
@@ -71,14 +72,14 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
   public override componentDidMount() {
     /* istanbul ignore else */
     if ((this.props.boolFunc !== undefined) && this.props.eventIds.length > 0)
-      SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleVisibilitySyncUiEvent);
+      UiFramework.events.onSyncUiEvent.addListener(this._handleVisibilitySyncUiEvent);
   }
 
   public override componentWillUnmount() {
     /* istanbul ignore else */
     if ((this.props.boolFunc !== undefined) && this.props.eventIds.length > 0) {
       this._componentUnmounting = true;
-      SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleVisibilitySyncUiEvent);
+      UiFramework.events.onSyncUiEvent.removeListener(this._handleVisibilitySyncUiEvent);
     }
   }
 

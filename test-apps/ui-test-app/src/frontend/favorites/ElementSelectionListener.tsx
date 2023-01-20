@@ -11,7 +11,7 @@ import { AbstractToolbarProps, CommonToolbarItem, RelativePosition, WidgetState 
 import { FavoritePropertiesRenderer, FavoritePropertyList } from "@itwin/components-react";
 import {
   ActionButtonItemDef, CommandItemDef, CoreTools, ElementTooltip,
-  FrameworkUiAdmin, FrontstageManager, SelectionContextToolDefinitions, ToolbarHelper,
+  FrameworkUiAdmin, SelectionContextToolDefinitions, ToolbarHelper, UiFramework,
 } from "@itwin/appui-react";
 import { ViewsFrontstage } from "../appui/frontstages/ViewsFrontstage";
 import { appendContent } from "./appendContent";
@@ -128,7 +128,7 @@ export class ElementSelectionListener {
       labelKey: "SampleApp:tools.OpenPropertyGrid.flyover",
       tooltipKey: "SampleApp:tools.OpenPropertyGrid.description",
       execute: () => {
-        const widgetDef = FrontstageManager.findWidget(ViewsFrontstage.unifiedSelectionPropertyGridId);
+        const widgetDef = UiFramework.frontstages.findWidget(ViewsFrontstage.unifiedSelectionPropertyGridId);
         if (widgetDef)
           widgetDef.setWidgetState(WidgetState.Open);
       },

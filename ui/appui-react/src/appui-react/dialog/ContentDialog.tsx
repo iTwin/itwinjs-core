@@ -9,9 +9,9 @@
 import "./ContentDialog.scss";
 import * as React from "react";
 import { Dialog, DialogProps } from "@itwin/core-react";
-import { ContentDialogManager } from "./ContentDialogManager";
-import { ActiveContentChangedEventArgs, ContentViewManager } from "../content/ContentViewManager";
-import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { ActiveContentChangedEventArgs } from "../content/ContentViewManager";
+import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import classnames from "classnames";
 
@@ -20,19 +20,19 @@ import classnames from "classnames";
  *@internal
  */
 export function useActiveContentControlId(): string | undefined {
-  const [activeContentId, setActiveContentId] = React.useState(ContentViewManager.getActiveContentControl()?.uniqueId);
+  const [activeContentId, setActiveContentId] = React.useState(UiFramework.content.getActiveContentControl()?.uniqueId);
 
   React.useEffect(() => {
     const onActiveContentChanged = (_args: ActiveContentChangedEventArgs) => {
-      setActiveContentId(ContentViewManager.getActiveContentControl()?.uniqueId);
+      setActiveContentId(UiFramework.content.getActiveContentControl()?.uniqueId);
     };
 
     // IModelApp.viewManager.onSelectedViewportChanged will often fire before UI components have mounted
-    // so use ContentViewManager.onActiveContentChangedEvent which will always trigger once all stage components
+    // so use UiFramework.content.onActiveContentChangedEvent which will always trigger once all stage components
     // are loaded and when the IModelApp.viewManager.selectedView changes.
-    ContentViewManager.onActiveContentChangedEvent.addListener(onActiveContentChanged);
+    UiFramework.content.onActiveContentChangedEvent.addListener(onActiveContentChanged);
     return () => {
-      ContentViewManager.onActiveContentChangedEvent.removeListener(onActiveContentChanged);
+      UiFramework.content.onActiveContentChangedEvent.removeListener(onActiveContentChanged);
     };
   }, []);
 
@@ -41,11 +41,11 @@ export function useActiveContentControlId(): string | undefined {
     const handleSyncUiEvent = (args: UiSyncEventArgs): void => {
       // istanbul ignore else
       if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
-        setActiveContentId(ContentViewManager.getActiveContentControl()?.uniqueId);
+        setActiveContentId(UiFramework.content.getActiveContentControl()?.uniqueId);
       }
     };
 
-    return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
   }, []);
 
   return activeContentId;
@@ -71,9 +71,9 @@ export function ContentDialog(props: ContentDialogProps) {
   const dialogClassName = React.useMemo(() => classnames(activeContentControlId === dialogId ? "active-content-dialog" : "inactive-content-dialog", className),
     [activeContentControlId, className, dialogId]);
 
-  const [zIndex, setZIndex] = React.useState(ContentDialogManager.getDialogZIndex(dialogId));
+  const [zIndex, setZIndex] = React.useState(UiFramework.content.dialogs.getDialogZIndex(dialogId));
   const updateZIndex = React.useCallback(() => {
-    const newZ = ContentDialogManager.getDialogZIndex(dialogId);
+    const newZ = UiFramework.content.dialogs.getDialogZIndex(dialogId);
     // istanbul ignore else
     if (newZ !== zIndex) {
       setZIndex(newZ);
@@ -91,7 +91,7 @@ export function ContentDialog(props: ContentDialogProps) {
       modal={false}
       {...otherProps}
       modelessId={dialogId}
-      onModelessPointerDown={(event) => ContentDialogManager.handlePointerDownEvent(event, dialogId, updateZIndex)}
+      onModelessPointerDown={(event) => UiFramework.content.dialogs.handlePointerDownEvent(event, dialogId, updateZIndex)}
       style={{ zIndex, ...style }}
     >
       {children}

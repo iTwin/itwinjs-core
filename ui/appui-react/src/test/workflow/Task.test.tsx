@@ -6,7 +6,9 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  ConfigurableUiManager, CoreTools, Frontstage, FrontstageActivatedEventArgs, FrontstageManager, FrontstageProps, FrontstageProvider, TaskPropsList,
+  ConfigurableUiManager,
+  CoreTools, Frontstage, FrontstageActivatedEventArgs, FrontstageProps, FrontstageProvider, TaskPropsList,
+  UiFramework,
   WorkflowManager, WorkflowPropsList,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
@@ -41,7 +43,7 @@ describe("Task", () => {
       }
     }
     const frontstageProvider = new Frontstage1();
-    ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
 
     const taskPropsList: TaskPropsList = {
       tasks: [
@@ -73,7 +75,7 @@ describe("Task", () => {
     ConfigurableUiManager.loadWorkflows(workflowPropsList);
 
     const spyMethod = sinon.stub();
-    const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
+    const remove = UiFramework.frontstages.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
 
     const workflow = WorkflowManager.findWorkflow("ExampleWorkflow");
     if (workflow) {
@@ -83,7 +85,7 @@ describe("Task", () => {
           await WorkflowManager.setActiveWorkflowAndTask(workflow, task);
           await TestUtils.flushAsyncOperations();
           expect(spyMethod.calledOnce).to.be.true;
-          expect(FrontstageManager.activeFrontstageId).to.eq("Test1");
+          expect(UiFramework.frontstages.activeFrontstageId).to.eq("Test1");
           remove();
         });
       }

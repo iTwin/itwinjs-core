@@ -11,7 +11,7 @@ import {
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
   WidgetState,
 } from "@itwin/appui-abstract";
-import { CommandItemDef, ModelessDialogManager, StateManager, SyncUiEventDispatcher, ToolbarHelper } from "@itwin/appui-react";
+import { CommandItemDef, StateManager, ToolbarHelper, UiFramework } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import * as React from "react";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
@@ -35,7 +35,7 @@ export class CustomContentStageUiProvider implements UiItemsProvider {
     StateManager.store.dispatch(setHideCustomDialogButton(!getTestProviderState().hideCustomDialogButton));
 
     // tell the toolbar to reevaluate state of any item with this event Id
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(
+    UiFramework.events.dispatchImmediateSyncUiEvent(
       AppUiTestProviders.syncEventIdHideCustomDialogButton
     );
   };
@@ -93,7 +93,7 @@ export class CustomContentStageUiProvider implements UiItemsProvider {
         iconSpec: <SvgWindowAdd />,
         labelKey: "SampleApp:buttons.sampleModelessDialog",
         execute: () => {
-          ModelessDialogManager.openDialog(
+          UiFramework.dialogs.modeless.openDialog(
             <SampleModelessDialog
               opened={true}
               dialogId={dialogId}

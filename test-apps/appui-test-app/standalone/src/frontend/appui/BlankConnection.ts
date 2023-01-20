@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
 import {
-  FrontstageManager,
   UiFramework,
 } from "@itwin/appui-react";
 import { Logger } from "@itwin/core-bentley";
@@ -25,7 +24,7 @@ export async function openBlankConnection() {
   const viewState = await createBlankViewState(connection);
   UiFramework.setDefaultViewState(viewState, true);
 
-  FrontstageManager.closeModalFrontstage();
+  UiFramework.frontstages.closeModalFrontstage();
   await SampleAppIModelApp.setViewIdAndOpenMainStage(connection, [viewState.id]);
 }
 

@@ -13,7 +13,7 @@ import {
 import { fireEvent, render } from "@testing-library/react";
 import {
   ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, CoreTools, FrontstageDef, FrontstageManager, FrontstageProps, MessageCenterField, StatusBar, StatusBarComposer, StatusBarItem,
-  StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, withMessageCenterFieldProps, withStatusFieldProps,
+  StatusBarItemUtilities, StatusBarWidgetControl, UiFramework, WidgetDef, withMessageCenterFieldProps, withStatusFieldProps,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
@@ -31,7 +31,7 @@ describe("StatusBarComposer", () => {
 
     public static triggerSyncRefresh = () => {
       TestUiProvider.statusBarItemIsVisible = false;
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(TestUiProvider.uiSyncEventId);
+      UiFramework.events.dispatchImmediateSyncUiEvent(TestUiProvider.uiSyncEventId);
     };
 
     public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {

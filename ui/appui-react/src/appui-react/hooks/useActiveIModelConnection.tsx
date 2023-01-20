@@ -10,7 +10,6 @@ import { useEffect, useState } from "react";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { IModelConnection } from "@itwin/core-frontend";
 import { SessionStateActionId } from "../redux/SessionState";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 
 /** React hook that maintains the active IModelConnection. For this hook to work properly the
@@ -29,9 +28,9 @@ export function useActiveIModelConnection(): IModelConnection | undefined {
       }
     };
 
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
     return () => {
-      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+      UiFramework.events.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
   }, [activeConnection]);
 

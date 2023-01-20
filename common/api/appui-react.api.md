@@ -1051,19 +1051,18 @@ export interface ChildWindowLocationProps {
     width: number;
 }
 
-// @public
-export class ChildWindowManager {
+// @public @deprecated
+export class ChildWindowManager extends InternalChildWindowManager {
+    // @deprecated
     closeAllChildWindows(): void;
-    // (undocumented)
+    // @deprecated (undocumented)
     closeChildWindow: (childWindowId: string, processWindowClose?: boolean) => boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     findChildWindow(childWindowId: string | undefined): OpenChildWindowInfo | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     findChildWindowId(contentWindow: Window | undefined | null): string | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     openChildWindow(childWindowId: string, title: string, content: React_2.ReactNode, location: ChildWindowLocationProps, useDefaultPopoutUrl?: boolean): boolean;
-    // (undocumented)
-    get openChildWindows(): OpenChildWindowInfo[];
 }
 
 // @beta @deprecated
@@ -1282,18 +1281,16 @@ export interface ConfigurableUiElement {
     uniqueId: string;
 }
 
-// @public
-export class ConfigurableUiManager {
-    // @internal (undocumented)
-    static readonly activityTracker: ActivityTracker;
+// @public @deprecated
+export class ConfigurableUiManager extends InternalConfigurableUiManager {
+    // @deprecated
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
-    static closeUi(): void;
+    // @deprecated
     static createControl(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined;
-    // @internal
-    static getConstructorClassId(constructor: ConfigurableUiControlConstructor): string | undefined;
-    static getWrapperElement(): HTMLElement;
+    // @deprecated
     static initialize(): void;
     static isControlRegistered(classId: string): boolean;
+    // @deprecated
     static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
     // @internal @deprecated
     static loadTasks(taskPropsList: TaskPropsList): void;
@@ -1301,11 +1298,9 @@ export class ConfigurableUiManager {
     static loadWorkflow(workflowProps: WorkflowProps): void;
     // @internal @deprecated
     static loadWorkflows(workflowPropsList: WorkflowPropsList): void;
-    // @internal (undocumented)
-    static readonly onUiActivityEvent: UiActivityEvent;
-    // @internal (undocumented)
-    static readonly onUiIntervalEvent: UiIntervalEvent;
+    // @deprecated
     static registerControl(classId: string, constructor: ConfigurableUiControlConstructor): void;
+    // @deprecated
     static unregisterControl(classId: string): void;
 }
 
@@ -1387,24 +1382,10 @@ export function ContentDialog(props: ContentDialogProps): JSX.Element;
 export class ContentDialogChangedEvent extends DialogChangedEvent {
 }
 
-// @public
-export class ContentDialogManager {
-    static get activeDialog(): React_2.ReactNode | undefined;
-    // @internal (undocumented)
-    static closeAll(): void;
-    static closeDialog(id: string): void;
-    static get dialogCount(): number;
-    // @internal (undocumented)
-    static readonly dialogManager: DialogManagerBase;
-    static get dialogs(): DialogInfo[];
-    // (undocumented)
-    static getDialogInfo(id: string): ContentDialogInfo | undefined;
-    static getDialogZIndex(id: string): number;
-    static handlePointerDownEvent(_event: React_2.PointerEvent, id: string, updateFunc: () => void): void;
+// @public @deprecated
+export class ContentDialogManager extends InternalContentDialogManager {
+    // @deprecated
     static initialize(): void;
-    static readonly onContentDialogChangedEvent: ContentDialogChangedEvent;
-    static openDialog(dialog: React_2.ReactNode, id: string, parentDocument?: Document): void;
-    static update(): void;
 }
 
 // @public
@@ -1518,20 +1499,8 @@ export class ContentLayoutDef {
     toJSON(): ContentLayoutProps;
 }
 
-// @public
-export class ContentLayoutManager {
-    static get activeContentGroup(): ContentGroup | undefined;
-    static get activeLayout(): ContentLayoutDef | undefined;
-    static addLayout(layoutId: string, layoutDef: ContentLayoutDef): void;
-    static findLayout(layoutKey: string): ContentLayoutDef | undefined;
-    static getLayoutForGroup(contentGroupProps: ContentGroupProps | ContentGroup, overrideContentLayout?: ContentLayoutProps): ContentLayoutDef;
-    static getLayoutKey(props: {
-        contentGroupId: string;
-        layoutId: string;
-    }): string;
-    static refreshActiveLayout(): void;
-    static setActiveContentGroup(contentGroup: ContentGroup): Promise<void>;
-    static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
+// @public @deprecated
+export class ContentLayoutManager extends InternalContentLayoutManager {
 }
 
 // @public
@@ -1549,29 +1518,8 @@ export interface ContentToolWidgetComposerProps {
     cornerButton?: React_2.ReactNode;
 }
 
-// @public
-export class ContentViewManager {
-    // (undocumented)
-    static addFloatingContentControl(contentControl?: ContentControl): void;
-    static contentSupportsCamera(content: ContentControl | undefined): boolean;
-    // (undocumented)
-    static dropFloatingContentControl(contentControl?: ContentControl): void;
-    static getActiveContent(): React_2.ReactNode | undefined;
-    static getActiveContentControl(): ContentControl | undefined;
-    static isContent3dView(content: ContentControl | undefined): boolean;
-    static isContentDrawingView(content: ContentControl | undefined): boolean;
-    static isContentOrthographicView(content: ContentControl | undefined): boolean;
-    static isContentSheetView(content: ContentControl | undefined): boolean;
-    static isContentSpatialView(content: ContentControl | undefined): boolean;
-    static get isMouseDown(): boolean;
-    static readonly onActiveContentChangedEvent: ActiveContentChangedEvent;
-    static readonly onAvailableContentChangedEvent: UiEvent<{
-        contentId: string;
-    }>;
-    static readonly onMouseDownChangedEvent: MouseDownChangedEvent;
-    static refreshActiveContent(activeContent: React_2.ReactNode): void;
-    static setActiveContent(activeContent?: React_2.ReactNode, forceEventProcessing?: boolean): void;
-    static setMouseDown(mouseDown: boolean): void;
+// @public @deprecated
+export class ContentViewManager extends InternalContentViewManager {
 }
 
 // @internal
@@ -2748,87 +2696,10 @@ export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
     frontstageId: string;
 }
 
-// @public
-export class FrontstageManager {
-    static get activeFrontstageDef(): FrontstageDef | undefined;
-    static get activeFrontstageId(): string;
-    static get activeModalFrontstage(): ModalFrontstageInfo | undefined;
-    static get activeNestedFrontstage(): FrontstageDef | undefined;
-    static get activeToolId(): string;
-    static get activeToolInformation(): ToolInformation | undefined;
-    // @internal
-    static get activeToolSettingsProvider(): ToolUiProvider | undefined;
-    static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
-    static clearFrontstageDefs(): void;
-    // @internal (undocumented)
-    static clearFrontstageDefsForIModelId(iModelId: string | undefined): void;
-    static clearFrontstageProviders(): void;
-    static closeModalFrontstage(): void;
-    static closeNestedFrontstage(): Promise<void>;
-    static deactivateFrontstageDef(): Promise<void>;
-    // @internal
-    static ensureToolInformationIsSet(toolId: string): void;
-    static findWidget(widgetId: string): WidgetDef | undefined;
-    // @internal (undocumented)
-    static get frontstageDefs(): ReadonlyMap<string, FrontstageDef>;
-    static getFrontstageDef(id?: string): Promise<FrontstageDef | undefined>;
-    // (undocumented)
-    static hasFrontstage(frontstageId: string): boolean;
-    static initialize(): void;
-    // @internal (undocumented)
-    static get isInitialized(): boolean;
-    static set isInitialized(v: boolean);
-    static get isLoading(): boolean;
-    static get modalFrontstageCount(): number;
-    static get nestedFrontstageCount(): number;
+// @public @deprecated
+export class FrontstageManager extends InternalFrontstageManager {
     // @deprecated
-    static get NineZoneManager(): NineZoneManager;
-    // @internal (undocumented)
-    static get nineZoneSize(): Size | undefined;
-    static set nineZoneSize(size: Size | undefined);
-    // @alpha
-    static readonly onCloseModalFrontstageRequestedEvent: ModalFrontstageRequestedCloseEvent;
-    static readonly onContentControlActivatedEvent: ContentControlActivatedEvent;
-    static readonly onContentLayoutActivatedEvent: ContentLayoutActivatedEvent;
-    static readonly onFrontstageActivatedEvent: FrontstageActivatedEvent;
-    static readonly onFrontstageDeactivatedEvent: FrontstageDeactivatedEvent;
-    // @internal (undocumented)
-    static readonly onFrontstageNineZoneStateChangedEvent: UiEvent_2<FrontstageNineZoneStateChangedEventArgs>;
-    static readonly onFrontstageReadyEvent: FrontstageReadyEvent;
-    // @internal (undocumented)
-    static readonly onFrontstageRestoreLayoutEvent: UiEvent_2<FrontstageEventArgs>;
-    static readonly onModalFrontstageChangedEvent: ModalFrontstageChangedEvent;
-    static readonly onModalFrontstageClosedEvent: ModalFrontstageClosedEvent;
-    static readonly onNavigationAidActivatedEvent: NavigationAidActivatedEvent;
-    // @internal (undocumented)
-    static readonly onPanelSizeChangedEvent: PanelSizeChangedEvent;
-    // @alpha
-    static readonly onPanelStateChangedEvent: PanelStateChangedEvent;
-    static readonly onToolActivatedEvent: ToolActivatedEvent;
-    static readonly onToolIconChangedEvent: ToolIconChangedEvent;
-    // @internal
-    static readonly onToolPanelOpenedEvent: UiEvent_2<void>;
-    static readonly onToolSettingsReloadEvent: UiEvent_2<void>;
-    // @internal (undocumented)
-    static readonly onWidgetDefsUpdatedEvent: UiEvent_2<void>;
-    // @internal (undocumented)
-    static readonly onWidgetExpandEvent: UiEvent_2<WidgetEventArgs>;
-    // @internal (undocumented)
-    static readonly onWidgetLabelChangedEvent: UiEvent_2<WidgetChangedEventArgs>;
-    // @internal (undocumented)
-    static readonly onWidgetShowEvent: UiEvent_2<WidgetEventArgs>;
-    static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
-    static openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void;
-    static openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
-    static setActiveContentGroup(contentGroup: ContentGroup): Promise<void>;
-    static setActiveFrontstage(frontstageId: string): Promise<void>;
-    static setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void>;
-    static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
-    static setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection): void;
-    static setActiveTool(tool: Tool): void;
-    static setActiveToolId(toolId: string): void;
-    static setWidgetState(widgetId: string, state: WidgetState): boolean;
-    static updateModalFrontstage(): void;
+    static initialize(): void;
 }
 
 // @internal (undocumented)
@@ -3330,6 +3201,296 @@ export enum InputStatus {
     Valid = 0
 }
 
+// @internal
+export class InternalChildWindowManager {
+    close: (childWindowId: string, processWindowClose?: boolean) => boolean;
+    closeAll(): void;
+    find(childWindowId: string | undefined): OpenChildWindowInfo | undefined;
+    findId(contentWindow: Window | undefined | null): string | undefined;
+    open(childWindowId: string, title: string, content: React_2.ReactNode, location: ChildWindowLocationProps, useDefaultPopoutUrl?: boolean): boolean;
+    // (undocumented)
+    get openChildWindows(): OpenChildWindowInfo[];
+}
+
+// @internal
+export class InternalConfigurableUiManager {
+    // (undocumented)
+    static readonly activityTracker: ActivityTracker;
+    static closeUi(): void;
+    static create(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined;
+    static getConstructorClassId(constructor: ConfigurableUiControlConstructor): string | undefined;
+    static getWrapperElement(): HTMLElement;
+    static initialize(): void;
+    static isRegistered(classId: string): boolean;
+    // (undocumented)
+    static readonly onUiActivityEvent: UiActivityEvent;
+    // (undocumented)
+    static readonly onUiIntervalEvent: UiIntervalEvent;
+    static register(classId: string, constructor: ConfigurableUiControlConstructor): void;
+    static unregister(classId: string): void;
+}
+
+// @internal
+export class InternalContentDialogManager {
+    static get activeDialog(): React_2.ReactNode | undefined;
+    // (undocumented)
+    static closeAll(): void;
+    static closeDialog(id: string): void;
+    static get dialogCount(): number;
+    // (undocumented)
+    static readonly dialogManager: DialogManagerBase;
+    static get dialogs(): DialogInfo[];
+    // (undocumented)
+    static getDialogInfo(id: string): ContentDialogInfo | undefined;
+    static getDialogZIndex(id: string): number;
+    static handlePointerDownEvent(_event: React_2.PointerEvent, id: string, updateFunc: () => void): void;
+    static initialize(): void;
+    static readonly onContentDialogChangedEvent: ContentDialogChangedEvent;
+    static openDialog(dialog: React_2.ReactNode, id: string, parentDocument?: Document): void;
+    static update(): void;
+}
+
+// @internal
+export class InternalContentLayoutManager {
+    static get activeContentGroup(): ContentGroup | undefined;
+    static get activeLayout(): ContentLayoutDef | undefined;
+    static addLayout(layoutId: string, layoutDef: ContentLayoutDef): void;
+    static findLayout(layoutKey: string): ContentLayoutDef | undefined;
+    static getLayoutForGroup(contentGroupProps: ContentGroupProps | ContentGroup, overrideContentLayout?: ContentLayoutProps): ContentLayoutDef;
+    static getLayoutKey(props: {
+        contentGroupId: string;
+        layoutId: string;
+    }): string;
+    static refreshActiveLayout(): void;
+    static setActiveContentGroup(contentGroup: ContentGroup): Promise<void>;
+    static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
+}
+
+// @internal
+export class InternalContentViewManager {
+    // (undocumented)
+    static addFloatingContentControl(contentControl?: ContentControl): void;
+    static contentSupportsCamera(content: ContentControl | undefined): boolean;
+    // @beta
+    static get dialogs(): typeof InternalContentDialogManager;
+    // (undocumented)
+    static dropFloatingContentControl(contentControl?: ContentControl): void;
+    static getActiveContent(): React_2.ReactNode | undefined;
+    static getActiveContentControl(): ContentControl | undefined;
+    static isContent3dView(content: ContentControl | undefined): boolean;
+    static isContentDrawingView(content: ContentControl | undefined): boolean;
+    static isContentOrthographicView(content: ContentControl | undefined): boolean;
+    static isContentSheetView(content: ContentControl | undefined): boolean;
+    static isContentSpatialView(content: ContentControl | undefined): boolean;
+    static get isMouseDown(): boolean;
+    // @beta
+    static get layouts(): typeof InternalContentLayoutManager;
+    static readonly onActiveContentChangedEvent: ActiveContentChangedEvent;
+    static readonly onAvailableContentChangedEvent: UiEvent<{
+        contentId: string;
+    }>;
+    static readonly onMouseDownChangedEvent: MouseDownChangedEvent;
+    static refreshActiveContent(activeContent: React_2.ReactNode): void;
+    static setActiveContent(activeContent?: React_2.ReactNode, forceEventProcessing?: boolean): void;
+    static setMouseDown(mouseDown: boolean): void;
+}
+
+// @internal
+export class InternalFrontstageManager {
+    static get activeFrontstageDef(): FrontstageDef | undefined;
+    static get activeFrontstageId(): string;
+    static get activeModalFrontstage(): ModalFrontstageInfo | undefined;
+    static get activeNestedFrontstage(): FrontstageDef | undefined;
+    static get activeToolId(): string;
+    static get activeToolInformation(): ToolInformation | undefined;
+    static get activeToolSettingsProvider(): ToolUiProvider | undefined;
+    static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
+    static clearFrontstageDefs(): void;
+    // (undocumented)
+    static clearFrontstageDefsForIModelId(iModelId: string | undefined): void;
+    static clearFrontstageProviders(): void;
+    static closeModalFrontstage(): void;
+    static closeNestedFrontstage(): Promise<void>;
+    static deactivateFrontstageDef(): Promise<void>;
+    static ensureToolInformationIsSet(toolId: string): void;
+    static findWidget(widgetId: string): WidgetDef | undefined;
+    // (undocumented)
+    static get frontstageDefs(): ReadonlyMap<string, FrontstageDef>;
+    static getFrontstageDef(id?: string): Promise<FrontstageDef | undefined>;
+    // (undocumented)
+    static hasFrontstage(frontstageId: string): boolean;
+    static initialize(): void;
+    // (undocumented)
+    static get isInitialized(): boolean;
+    static set isInitialized(v: boolean);
+    static get isLoading(): boolean;
+    static get modalFrontstageCount(): number;
+    static get nestedFrontstageCount(): number;
+    // @deprecated
+    static get NineZoneManager(): NineZoneManager;
+    // (undocumented)
+    static get nineZoneSize(): Size | undefined;
+    static set nineZoneSize(size: Size | undefined);
+    // @alpha
+    static readonly onCloseModalFrontstageRequestedEvent: ModalFrontstageRequestedCloseEvent;
+    static readonly onContentControlActivatedEvent: ContentControlActivatedEvent;
+    static readonly onContentLayoutActivatedEvent: ContentLayoutActivatedEvent;
+    static readonly onFrontstageActivatedEvent: FrontstageActivatedEvent;
+    static readonly onFrontstageDeactivatedEvent: FrontstageDeactivatedEvent;
+    // (undocumented)
+    static readonly onFrontstageNineZoneStateChangedEvent: UiEvent_2<FrontstageNineZoneStateChangedEventArgs>;
+    static readonly onFrontstageReadyEvent: FrontstageReadyEvent;
+    // (undocumented)
+    static readonly onFrontstageRestoreLayoutEvent: UiEvent_2<FrontstageEventArgs>;
+    static readonly onModalFrontstageChangedEvent: ModalFrontstageChangedEvent;
+    static readonly onModalFrontstageClosedEvent: ModalFrontstageClosedEvent;
+    static readonly onNavigationAidActivatedEvent: NavigationAidActivatedEvent;
+    // (undocumented)
+    static readonly onPanelSizeChangedEvent: PanelSizeChangedEvent;
+    // @alpha
+    static readonly onPanelStateChangedEvent: PanelStateChangedEvent;
+    static readonly onToolActivatedEvent: ToolActivatedEvent;
+    static readonly onToolIconChangedEvent: ToolIconChangedEvent;
+    static readonly onToolPanelOpenedEvent: UiEvent_2<void>;
+    static readonly onToolSettingsReloadEvent: UiEvent_2<void>;
+    // (undocumented)
+    static readonly onWidgetDefsUpdatedEvent: UiEvent_2<void>;
+    // (undocumented)
+    static readonly onWidgetExpandEvent: UiEvent_2<WidgetEventArgs>;
+    // (undocumented)
+    static readonly onWidgetLabelChangedEvent: UiEvent_2<WidgetChangedEventArgs>;
+    // (undocumented)
+    static readonly onWidgetShowEvent: UiEvent_2<WidgetEventArgs>;
+    static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
+    static openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void;
+    static openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
+    static setActiveContentGroup(contentGroup: ContentGroup): Promise<void>;
+    static setActiveFrontstage(frontstageId: string): Promise<void>;
+    static setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void>;
+    static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
+    static setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection): void;
+    static setActiveTool(tool: Tool): void;
+    static setActiveToolId(toolId: string): void;
+    static setWidgetState(widgetId: string, state: WidgetState): boolean;
+    static updateModalFrontstage(): void;
+}
+
+// @internal
+export class InternalKeyboardShortcutManager {
+    static closeShortcutsMenu(): void;
+    static get cursorX(): number;
+    static get cursorY(): number;
+    static displayShortcutsMenu(): void;
+    static getShortcut(keyMapKey: string): KeyboardShortcut | undefined;
+    static initialize(): void;
+    static get isFocusOnHome(): boolean;
+    static loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps): void;
+    static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
+    static processKey(keyboardKey: string, isAltKeyPressed?: boolean, isCtrlKeyPressed?: boolean, isShiftKeyPressed?: boolean): boolean;
+    static setFocusToHome(): void;
+    static get shortcutContainer(): KeyboardShortcutContainer;
+}
+
+// @internal
+export class InternalModalDialogManager {
+    static get activeDialog(): React_2.ReactNode | undefined;
+    // (undocumented)
+    static closeAll(): void;
+    static closeDialog(dialog?: React_2.ReactNode): void;
+    static get dialogCount(): number;
+    // (undocumented)
+    static readonly dialogManager: DialogManagerBase;
+    static get dialogs(): DialogInfo[];
+    static readonly onModalDialogChangedEvent: ModalDialogChangedEvent;
+    static openDialog(dialog: React_2.ReactNode, id?: string, parentDocument?: Document): void;
+    static update(): void;
+}
+
+// @internal
+export class InternalModelessDialogManager {
+    static get activeDialog(): React_2.ReactNode | undefined;
+    // (undocumented)
+    static closeAll(): void;
+    static closeDialog(id: string): void;
+    static get dialogCount(): number;
+    // (undocumented)
+    static readonly dialogManager: DialogManagerBase;
+    static get dialogs(): DialogInfo[];
+    // (undocumented)
+    static getDialogInfo(id: string): ModelessDialogInfo | undefined;
+    static getDialogZIndex(id: string): number;
+    static handlePointerDownEvent(_event: React_2.PointerEvent, id: string, updateFunc: () => void): void;
+    static initialize(): void;
+    static readonly onModelessDialogChangedEvent: ModelessDialogChangedEvent;
+    static openDialog(dialog: React_2.ReactNode, id: string, parentDocument?: Document): void;
+    static update(): void;
+}
+
+// @internal
+export class InternalSyncUiEventDispatcher {
+    static clearConnectionEvents(iModelConnection: IModelConnection): void;
+    static dispatchImmediateSyncUiEvent(eventId: string): void;
+    static dispatchSyncUiEvent(eventId: string): void;
+    static dispatchSyncUiEvents(eventIds: string[]): void;
+    static hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]): boolean;
+    static initialize(): void;
+    static initializeConnectionEvents(iModelConnection: IModelConnection): void;
+    static get onSyncUiEvent(): SyncUiEvent;
+    static setTimeoutPeriod(period: number): void;
+    static get syncEventIds(): Set<string>;
+}
+
+// @internal
+export class InternalToolSettingsManager {
+    static get activeToolDescription(): string;
+    static get activeToolLabel(): string;
+    static set activeToolLabel(label: string);
+    static clearToolSettingsData(): void;
+    // (undocumented)
+    static focusIntoToolSettings(): boolean;
+    static initialize(): void;
+    static initializeDataForTool(tool: InteractiveTool): void;
+    static initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
+    // (undocumented)
+    static readonly onReloadToolSettingsProperties: UiEvent<void>;
+    static readonly onSyncToolSettingsProperties: SyncToolSettingsPropertiesEvent;
+    static get toolIdForToolSettings(): string;
+    static get toolSettingsProperties(): DialogItem[];
+    static get useDefaultToolSettingsProvider(): boolean;
+    static set useDefaultToolSettingsProvider(useDefaultToolSettings: boolean);
+}
+
+// @internal
+export class InternalUiShowHideManager {
+    static get autoHideUi(): boolean;
+    static set autoHideUi(autoHide: boolean);
+    static handleContentMouseMove(_event?: React.MouseEvent<HTMLElement, MouseEvent>): void;
+    static handleFrontstageReady(): void;
+    static handleWidgetMouseEnter(_event?: React.MouseEvent<HTMLElement, MouseEvent>): void;
+    static get inactivityTime(): number;
+    static set inactivityTime(time: number);
+    static get isUiVisible(): boolean;
+    static set isUiVisible(visible: boolean);
+    // (undocumented)
+    static setAutoHideUi(value: boolean): void;
+    // (undocumented)
+    static setSnapWidgetOpacity(value: boolean): void;
+    // (undocumented)
+    static setUseProximityOpacity(value: boolean): void;
+    static get showHideFooter(): boolean;
+    static set showHideFooter(showHide: boolean);
+    static get showHidePanels(): boolean;
+    static set showHidePanels(showHide: boolean);
+    static showUiAndCancelTimer(): void;
+    static showUiAndResetTimer(): void;
+    static get snapWidgetOpacity(): boolean;
+    static set snapWidgetOpacity(value: boolean);
+    // (undocumented)
+    static terminate(): void;
+    static get useProximityOpacity(): boolean;
+    static set useProximityOpacity(value: boolean);
+}
+
 // @internal (undocumented)
 export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open;
 
@@ -3484,20 +3645,10 @@ export class KeyboardShortcutContainer {
     showShortcutsMenu(): void;
 }
 
-// @public
-export class KeyboardShortcutManager {
-    static closeShortcutsMenu(): void;
-    static get cursorX(): number;
-    static get cursorY(): number;
-    static displayShortcutsMenu(): void;
-    static getShortcut(keyMapKey: string): KeyboardShortcut | undefined;
+// @public @deprecated
+export class KeyboardShortcutManager extends InternalKeyboardShortcutManager {
+    // @deprecated
     static initialize(): void;
-    static get isFocusOnHome(): boolean;
-    static loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps): void;
-    static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
-    static processKey(keyboardKey: string, isAltKeyPressed?: boolean, isCtrlKeyPressed?: boolean, isShiftKeyPressed?: boolean): boolean;
-    static setFocusToHome(): void;
-    static get shortcutContainer(): KeyboardShortcutContainer;
 }
 
 // @public
@@ -3862,19 +4013,8 @@ export class MessagesUpdatedEvent extends UiEvent<{}> {
 export class ModalDialogChangedEvent extends DialogChangedEvent {
 }
 
-// @public
-export class ModalDialogManager {
-    static get activeDialog(): React_2.ReactNode | undefined;
-    // @internal (undocumented)
-    static closeAll(): void;
-    static closeDialog(dialog?: React_2.ReactNode): void;
-    static get dialogCount(): number;
-    // @internal (undocumented)
-    static readonly dialogManager: DialogManagerBase;
-    static get dialogs(): DialogInfo[];
-    static readonly onModalDialogChangedEvent: ModalDialogChangedEvent;
-    static openDialog(dialog: React_2.ReactNode, id?: string, parentDocument?: Document): void;
-    static update(): void;
+// @public @deprecated
+export class ModalDialogManager extends InternalModalDialogManager {
 }
 
 // @public
@@ -3960,24 +4100,10 @@ export class ModelessDialog extends React_2.Component<ModelessDialogProps> {
 export class ModelessDialogChangedEvent extends DialogChangedEvent {
 }
 
-// @public
-export class ModelessDialogManager {
-    static get activeDialog(): React_2.ReactNode | undefined;
-    // @internal (undocumented)
-    static closeAll(): void;
-    static closeDialog(id: string): void;
-    static get dialogCount(): number;
-    // @internal (undocumented)
-    static readonly dialogManager: DialogManagerBase;
-    static get dialogs(): DialogInfo[];
-    // (undocumented)
-    static getDialogInfo(id: string): ModelessDialogInfo | undefined;
-    static getDialogZIndex(id: string): number;
-    static handlePointerDownEvent(_event: React_2.PointerEvent, id: string, updateFunc: () => void): void;
+// @public @deprecated
+export class ModelessDialogManager extends InternalModelessDialogManager {
+    // @deprecated
     static initialize(): void;
-    static readonly onModelessDialogChangedEvent: ModelessDialogChangedEvent;
-    static openDialog(dialog: React_2.ReactNode, id: string, parentDocument?: Document): void;
-    static update(): void;
 }
 
 // @public
@@ -5719,19 +5845,10 @@ export type SyncUiEvent = UiSyncEvent;
 // @public @deprecated
 export type SyncUiEventArgs = UiSyncEventArgs;
 
-// @public
-export class SyncUiEventDispatcher {
-    static clearConnectionEvents(iModelConnection: IModelConnection): void;
-    static dispatchImmediateSyncUiEvent(eventId: string): void;
-    static dispatchSyncUiEvent(eventId: string): void;
-    static dispatchSyncUiEvents(eventIds: string[]): void;
-    static hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]): boolean;
+// @public @deprecated
+export class SyncUiEventDispatcher extends InternalSyncUiEventDispatcher {
+    // @deprecated
     static initialize(): void;
-    static initializeConnectionEvents(iModelConnection: IModelConnection): void;
-    static get onSyncUiEvent(): SyncUiEvent;
-    // @internal
-    static setTimeoutPeriod(period: number): void;
-    static get syncEventIds(): Set<string>;
 }
 
 // @public
@@ -6176,24 +6293,10 @@ export interface ToolSettingsGridProps {
     settings?: ToolSettingsEntry[];
 }
 
-// @public
-export class ToolSettingsManager {
-    static get activeToolDescription(): string;
-    static get activeToolLabel(): string;
-    static set activeToolLabel(label: string);
-    static clearToolSettingsData(): void;
-    // (undocumented)
-    static focusIntoToolSettings(): boolean;
+// @public @deprecated
+export class ToolSettingsManager extends InternalToolSettingsManager {
+    // @deprecated
     static initialize(): void;
-    static initializeDataForTool(tool: InteractiveTool): void;
-    static initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
-    // (undocumented)
-    static readonly onReloadToolSettingsProperties: UiEvent<void>;
-    static readonly onSyncToolSettingsProperties: SyncToolSettingsPropertiesEvent;
-    static get toolIdForToolSettings(): string;
-    static get toolSettingsProperties(): DialogItem[];
-    static get useDefaultToolSettingsProvider(): boolean;
-    static set useDefaultToolSettingsProvider(useDefaultToolSettings: boolean);
 }
 
 // @internal (undocumented)
@@ -6345,17 +6448,33 @@ export class UiFramework {
     static get animateToolSettings(): boolean;
     // @alpha (undocumented)
     static get autoCollapseUnpinnedPanels(): boolean;
-    // (undocumented)
+    static get backstage(): BackstageManager;
+    // @deprecated (undocumented)
     static get backstageManager(): BackstageManager;
-    // (undocumented)
+    // @deprecated (undocumented)
     static get childWindowManager(): ChildWindowManager;
+    // @beta
+    static get childWindows(): ChildWindowManager;
     // (undocumented)
     static closeCursorMenu(): void;
+    // @beta
+    static get content(): typeof InternalContentViewManager;
+    // @beta
+    static get controls(): typeof InternalConfigurableUiManager;
+    // (undocumented)
+    static get dialogs(): {
+        modal: typeof InternalModalDialogManager;
+        modeless: typeof InternalModelessDialogManager;
+    };
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
+    // @beta
+    static get events(): typeof InternalSyncUiEventDispatcher;
     static get frameworkState(): FrameworkState | undefined;
     // (undocumented)
     static get frameworkStateKey(): string;
+    // @beta
+    static get frontstages(): typeof InternalFrontstageManager;
     // (undocumented)
     static getAccudrawSnapMode(): SnapMode;
     // (undocumented)
@@ -6395,6 +6514,8 @@ export class UiFramework {
     static get isContextMenuOpen(): boolean;
     // (undocumented)
     static isMobile(): boolean;
+    // @beta
+    static get keyboardShortcuts(): typeof InternalKeyboardShortcutManager;
     // @internal
     static get localization(): Localization;
     static get localizationNamespace(): string;
@@ -6454,6 +6575,8 @@ export class UiFramework {
     static get showWidgetIcon(): boolean;
     static get store(): Store<any>;
     static terminate(): void;
+    // @beta
+    static get toolSettings(): typeof InternalToolSettingsManager;
     // @internal
     static translate(key: string | string[]): string;
     // @deprecated
@@ -6464,6 +6587,8 @@ export class UiFramework {
     static get useDragInteraction(): boolean;
     static get useToolAsToolSettingsLabel(): boolean;
     static get viewOverlayDisplay(): boolean;
+    // @beta
+    static get visibility(): typeof InternalUiShowHideManager;
     // @alpha (undocumented)
     static get widgetManager(): WidgetManager;
 }
@@ -6492,35 +6617,8 @@ export interface UiSettingsProviderProps {
     children?: React_2.ReactNode;
 }
 
-// @public
-export class UiShowHideManager {
-    static get autoHideUi(): boolean;
-    static set autoHideUi(autoHide: boolean);
-    static handleContentMouseMove(_event?: React.MouseEvent<HTMLElement, MouseEvent>): void;
-    static handleFrontstageReady(): void;
-    static handleWidgetMouseEnter(_event?: React.MouseEvent<HTMLElement, MouseEvent>): void;
-    static get inactivityTime(): number;
-    static set inactivityTime(time: number);
-    static get isUiVisible(): boolean;
-    static set isUiVisible(visible: boolean);
-    // @internal (undocumented)
-    static setAutoHideUi(value: boolean): void;
-    // @internal (undocumented)
-    static setSnapWidgetOpacity(value: boolean): void;
-    // @internal (undocumented)
-    static setUseProximityOpacity(value: boolean): void;
-    static get showHideFooter(): boolean;
-    static set showHideFooter(showHide: boolean);
-    static get showHidePanels(): boolean;
-    static set showHidePanels(showHide: boolean);
-    static showUiAndCancelTimer(): void;
-    static showUiAndResetTimer(): void;
-    static get snapWidgetOpacity(): boolean;
-    static set snapWidgetOpacity(value: boolean);
-    // @internal (undocumented)
-    static terminate(): void;
-    static get useProximityOpacity(): boolean;
-    static set useProximityOpacity(value: boolean);
+// @public @deprecated
+export class UiShowHideManager extends InternalUiShowHideManager {
 }
 
 // @internal

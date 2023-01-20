@@ -10,8 +10,8 @@ import { BadgeType } from "@itwin/appui-abstract";
 import { WithOnOutsideClickProps } from "@itwin/core-react";
 import { Direction, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@itwin/appui-layout-react";
 import {
-  BaseItemState, CommandItemDef, getFirstItem, getFirstItemId, GroupButton, GroupItem, GroupItemDef, KeyboardShortcutManager, SyncUiEventDispatcher,
-  ToolbarDragInteractionContext, ToolGroupPanelContext,
+  BaseItemState, CommandItemDef, getFirstItem, getFirstItemId, GroupButton, GroupItem, GroupItemDef,
+  ToolbarDragInteractionContext, ToolGroupPanelContext, UiFramework,
 } from "../../appui-react";
 import * as GroupItemModule from "../../appui-react/toolbar/GroupItem";
 import TestUtils, { mount } from "../TestUtils";
@@ -128,11 +128,11 @@ describe("GroupItem", () => {
       );
 
       expect(stateFunctionCalled).to.eq(false);
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
       expect(stateFunctionCalled).to.eq(true);
 
       stateFunctionCalled = false;
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(`${testEventId}-noop`);
+      UiFramework.events.dispatchImmediateSyncUiEvent(`${testEventId}-noop`);
       expect(stateFunctionCalled).to.eq(false);
     });
 
@@ -149,7 +149,7 @@ describe("GroupItem", () => {
         />,
       );
 
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
     });
 
     it("should set focus to home on Esc", () => {
@@ -157,7 +157,7 @@ describe("GroupItem", () => {
       const element = wrapper.find(".nz-toolbar-item-item");
       element.simulate("focus");
       element.simulate("keyDown", { key: "Escape" });
-      expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+      expect(UiFramework.keyboardShortcuts.isFocusOnHome).to.be.true;
     });
   });
 

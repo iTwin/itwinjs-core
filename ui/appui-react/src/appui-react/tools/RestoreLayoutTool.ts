@@ -6,7 +6,6 @@
  * @module Tools
  */
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageDef } from "../frontstage/FrontstageDef";
 import { UiFramework } from "../UiFramework";
 
@@ -28,9 +27,9 @@ export class RestoreFrontstageLayoutTool extends Tool {
     let frontstageDef: FrontstageDef | undefined;
 
     if (frontstageId) {
-      frontstageDef = await FrontstageManager.getFrontstageDef(frontstageId);
+      frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageId);
     } else {
-      frontstageDef = FrontstageManager.activeFrontstageDef;
+      frontstageDef = UiFramework.frontstages.activeFrontstageDef;
     }
 
     if (frontstageDef)
@@ -54,7 +53,7 @@ export class RestoreAllFrontstagesTool extends Tool {
   public static override iconSpec = "icon-view-layouts";
 
   public override async run() {
-    const frontstages = FrontstageManager.frontstageDefs;
+    const frontstages = UiFramework.frontstages.frontstageDefs;
     for (const [, frontstage] of frontstages) {
       frontstage.restoreLayout();
     }

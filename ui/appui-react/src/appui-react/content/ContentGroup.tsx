@@ -10,7 +10,6 @@ import * as React from "react";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { ContentLayoutProps, UiError } from "@itwin/appui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../UiFramework";
 import { ContentControl } from "./ContentControl";
 import { FrontstageProps } from "../frontstage/Frontstage";
@@ -112,8 +111,8 @@ export class ContentGroup {
       let usedClassId: string = "";
 
       if (typeof contentProps.classId === "string") {
-        if (!this._contentControls.get(contentProps.id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
-          contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData, contentProps.id) as ContentControl;
+        if (!this._contentControls.get(contentProps.id) && UiFramework.controls.isRegistered(contentProps.classId)) {
+          contentControl = UiFramework.controls.create(contentProps.classId, id, contentProps.applicationData, contentProps.id) as ContentControl;
           usedClassId = contentProps.classId;
         }
       } else {
@@ -215,7 +214,7 @@ export class ContentGroup {
 
     contentGroupProps.contents.forEach((content: ContentProps, index: number) => {
       if (typeof content.classId !== "string") {
-        const classId = ConfigurableUiManager.getConstructorClassId(content.classId);
+        const classId = UiFramework.controls.getConstructorClassId(content.classId);
         if (classId !== undefined)
           content.classId = classId;
         else

@@ -12,7 +12,7 @@ import * as React from "react";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { UiEvent } from "@itwin/appui-abstract";
 import { CommonProps, FlexWrapContainer, ScrollView, SearchBox, UiCore } from "@itwin/core-react";
-import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import { ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { SheetData } from "./SheetNavigationAid";
 
@@ -87,7 +87,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
   // istanbul ignore next
   private _handleSearchValueChanged = (value: string): void => {
     this._searchValue = value;
-    FrontstageManager.updateModalFrontstage();
+    UiFramework.frontstages.updateModalFrontstage();
   };
 }
 
@@ -166,7 +166,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
     }
 
     card.isActive = true;
-    FrontstageManager.closeModalFrontstage();
+    UiFramework.frontstages.closeModalFrontstage();
     CardContainer.onCardSelectedEvent.emit({ id: card.viewId, index: card.index });
   }
 }

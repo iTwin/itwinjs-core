@@ -6,8 +6,8 @@ import * as React from "react";
 import { useSelector } from "react-redux";
 
 import {
-  BackstageAppButton, BackstageManager, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps,
-  FrontstageManager, FrontstageProps,
+  BackstageAppButton, BackstageManager, CommandItemDef, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps,
+  FrontstageProps,
   IModelViewportControl, StagePanelState, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
   StandardStatusbarUiItemsProvider,
@@ -145,7 +145,7 @@ export class WidgetApiStage {
       },
     };
 
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(widgetApiStageProps));
+    UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(widgetApiStageProps));
     this.registerToolProviders(localizationNamespace);
   }
 
@@ -200,9 +200,9 @@ export function getShowHideFloatingWidgetCommandItemDef() {
     label: "Toggle Hidden Floating Widget Display",
 
     execute: () => {
-      const def = FrontstageManager.activeFrontstageDef?.findWidgetDef("FW-H1");
+      const def = UiFramework.frontstages.activeFrontstageDef?.findWidgetDef("FW-H1");
       if (def) {
-        const currentState = FrontstageManager.activeFrontstageDef?.getWidgetCurrentState(def);
+        const currentState = UiFramework.frontstages.activeFrontstageDef?.getWidgetCurrentState(def);
         def.setWidgetState(currentState === WidgetState.Floating ? WidgetState.Hidden : WidgetState.Floating);
       }
     },

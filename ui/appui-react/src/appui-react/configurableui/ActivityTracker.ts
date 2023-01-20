@@ -5,10 +5,9 @@
 /** @packageDocumentation
  * @module ConfigurableUi
  */
-
-import { ConfigurableUiManager } from "./ConfigurableUiManager";
-
 // cspell:ignore visibilitychange
+
+import { UiFramework } from "../UiFramework";
 
 /** Properties for [[ActivityTracker]]
  * @internal
@@ -79,10 +78,10 @@ export class ActivityTracker {
   };
 
   private _trackUiInterval = (): void => {
-    ConfigurableUiManager.onUiIntervalEvent.emit({ idleTimeout: this._idleTimeout });
+    UiFramework.controls.onUiIntervalEvent.emit({ idleTimeout: this._idleTimeout });
   };
 
   private _trackUiActivity = (event: Event): void => {
-    ConfigurableUiManager.onUiActivityEvent.emit({ event });
+    UiFramework.controls.onUiActivityEvent.emit({ event });
   };
 }

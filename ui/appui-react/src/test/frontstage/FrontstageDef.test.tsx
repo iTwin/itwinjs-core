@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import produce from "immer";
 import { MockRender } from "@itwin/core-frontend";
-import { ContentGroup, ContentGroupProvider, CoreTools, Frontstage, FrontstageConfig, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
+import { ContentGroup, ContentGroupProvider, CoreTools, Frontstage, FrontstageConfig, FrontstageDef, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState } from "@itwin/appui-layout-react";
@@ -131,19 +131,19 @@ describe("FrontstageDef", () => {
 
   it("setActiveFrontstage should throw Error on invalid content layout", () => {
     const frontstageProvider = new BadLayoutFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    expect(FrontstageManager.setActiveFrontstage("BadLayout")).to.be.rejectedWith(Error); // eslint-disable-line @typescript-eslint/no-floating-promises
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    expect(UiFramework.frontstages.setActiveFrontstage("BadLayout")).to.be.rejectedWith(Error); // eslint-disable-line @typescript-eslint/no-floating-promises
   });
 
   it("setActiveFrontstage should throw Error on invalid content group", () => {
     const frontstageProvider = new BadGroupFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    expect(FrontstageManager.setActiveFrontstage("BadGroup")).to.be.rejectedWith(Error); // eslint-disable-line @typescript-eslint/no-floating-promises
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    expect(UiFramework.frontstages.setActiveFrontstage("BadGroup")).to.be.rejectedWith(Error); // eslint-disable-line @typescript-eslint/no-floating-promises
   });
 
   describe("restoreLayout", () => {
     it("should emit onFrontstageRestoreLayoutEvent", () => {
-      const spy = sinon.spy(FrontstageManager.onFrontstageRestoreLayoutEvent, "emit");
+      const spy = sinon.spy(UiFramework.frontstages.onFrontstageRestoreLayoutEvent, "emit");
       const frontstageDef = new FrontstageDef();
       frontstageDef.restoreLayout();
       spy.calledOnceWithExactly(sinon.match({
@@ -241,11 +241,11 @@ describe("FrontstageDef", () => {
 
     it("should add extension widgets to stage panel zones", async () => {
       const frontstageProvider = new EmptyFrontstageProvider();
-      FrontstageManager.addFrontstageProvider(frontstageProvider);
-      const frontstageDef = await FrontstageManager.getFrontstageDef(EmptyFrontstageProvider.stageId);
+      UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+      const frontstageDef = await UiFramework.frontstages.getFrontstageDef(EmptyFrontstageProvider.stageId);
       expect(!!frontstageDef?.isReady).to.be.false;
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-      const sut = FrontstageManager.activeFrontstageDef!;
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
+      const sut = UiFramework.frontstages.activeFrontstageDef!;
       sut.rightPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderR1"]);
       sut.rightPanel!.panelZones.end.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderRM1"]);
       sut.leftPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderW1"]);
@@ -380,8 +380,8 @@ describe("FrontstageDef", () => {
       const contentGroupProvider = new ConfigContentGroupProvider();
       const spy = sinon.spy(contentGroupProvider, "contentGroup");
       const provider = new ConfigFrontstageProvider(contentGroupProvider);
-      FrontstageManager.addFrontstageProvider(provider);
-      await FrontstageManager.setActiveFrontstage(provider.id);
+      UiFramework.frontstages.addFrontstageProvider(provider);
+      await UiFramework.frontstages.setActiveFrontstage(provider.id);
       sinon.assert.calledOnceWithExactly(spy, sinon.match({ id: provider.id }));
       const config = spy.firstCall.args[0];
 

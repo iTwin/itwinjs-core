@@ -47,7 +47,7 @@ export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopu
       return;
 
     /* istanbul ignore else */
-    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SessionStateActionId.UpdateCursorMenu])) {
+    if (UiFramework.events.hasEventOfInterest(args.eventIds, [SessionStateActionId.UpdateCursorMenu])) {
       const menuData = UiFramework.getCursorMenuData();
       if (menuData && this._hostChildWindowId === menuData.childWindowId) {
         this.setState({ menuVisible: menuData.items && menuData.items.length > 0, items: menuData.items, menuX: menuData.position.x, menuY: menuData.position.y });
@@ -58,18 +58,18 @@ export class CursorPopupMenu extends React.PureComponent<CommonProps, CursorPopu
   };
 
   public override componentDidMount() {
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
   public override componentWillUnmount() {
     this._componentUnmounting = true;
-    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   private _handleRefSet = (popupDiv: HTMLElement | null) => {
     const parentWindow = popupDiv?.ownerDocument.defaultView ?? undefined;
     // if the window is not a pop out set to undefined
-    this._hostChildWindowId = UiFramework.childWindowManager.findChildWindowId(parentWindow);
+    this._hostChildWindowId = UiFramework.childWindows.findId(parentWindow);
     Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Cursor Menu for ${this._hostChildWindowId ?? "main"} window`);
   };
 

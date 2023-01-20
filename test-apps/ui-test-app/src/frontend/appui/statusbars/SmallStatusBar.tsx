@@ -5,8 +5,8 @@
 import * as React from "react";
 import { ConditionalBooleanValue, StatusBarSection } from "@itwin/appui-abstract";
 import {
-  ActivityCenterField, ConfigurableUiManager, MessageCenterField, SnapModeField, StatusBarComposer, StatusBarItem,
-  StatusBarItemUtilities, StatusBarSeparator, StatusBarWidgetControl, StatusBarWidgetControlArgs, ToolAssistanceField,
+  ActivityCenterField, MessageCenterField, SnapModeField, StatusBarComposer, StatusBarItem,
+  StatusBarItemUtilities, StatusBarSeparator, StatusBarWidgetControl, StatusBarWidgetControlArgs, ToolAssistanceField, UiFramework,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
@@ -36,4 +36,4 @@ export class SmallStatusBarWidgetControl extends StatusBarWidgetControl {
   }
 }
 
-ConfigurableUiManager.registerControl("SmallStatusBar", SmallStatusBarWidgetControl);
+UiFramework.controls.register("SmallStatusBar", SmallStatusBarWidgetControl);

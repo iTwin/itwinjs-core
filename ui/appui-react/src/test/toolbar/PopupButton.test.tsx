@@ -10,7 +10,7 @@ import { BadgeType } from "@itwin/appui-abstract";
 import { WithOnOutsideClickProps } from "@itwin/core-react";
 import { Item } from "@itwin/appui-layout-react";
 import { fireEvent, render } from "@testing-library/react";
-import { BaseItemState, PopupButton, SyncUiEventDispatcher } from "../../appui-react";
+import { BaseItemState, PopupButton, UiFramework } from "../../appui-react";
 /* eslint-disable deprecation/deprecation */
 import TestUtils, { mount } from "../TestUtils";
 
@@ -102,7 +102,7 @@ describe("<PopupButton />", async () => {
     </PopupButton>);
     expect(renderedComponent).not.to.be.undefined;
     expect(stateFunctionCalled).to.eq(false);
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
   });
 

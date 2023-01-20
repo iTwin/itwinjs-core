@@ -10,12 +10,12 @@ import * as React from "react";
 import { BadgeUtilities, CommonProps, Icon, SizeProps } from "@itwin/core-react";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Item } from "@itwin/appui-layout-react";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
-import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
+import { UiFramework } from "../UiFramework";
 
 /** Properties that must be specified for an [[ActionItemButton]] component
  * @deprecated Props of a deprecated component.
@@ -67,7 +67,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
     // since this is a tool button automatically monitor the activation of tools so the active state of the button is updated.
     if (args.eventIds.has(SyncUiEventId.ToolActivated)) {
-      newState.isActive = this.props.actionItem.id === FrontstageManager.activeToolId;
+      newState.isActive = this.props.actionItem.id === UiFramework.frontstages.activeToolId;
       refreshState = true;
     }
 
@@ -109,13 +109,13 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
   /** @internal */
   public override componentDidMount() {
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
   /** @internal */
   public override componentWillUnmount() {
     this._componentUnmounting = true;
-    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   private _execute = () => {

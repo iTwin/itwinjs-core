@@ -15,13 +15,13 @@ import {
 import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@itwin/components-react";
 import { Point, ScrollView } from "@itwin/core-react";
 import {
-  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps,
-  ContentGroupProvider, ContentProps, ContentViewManager, CoreTools, CursorInformation,
+  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentGroupProps,
+  ContentGroupProvider, ContentProps, CoreTools, CursorInformation,
   CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs, CustomItemDef,
-  EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider,
+  EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageProps, FrontstageProvider,
   GroupItemDef, HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler,
   HideIsolateEmphasizeManager, MessageManager,
-  ModalDialogManager, ModelessDialogManager, ModelsTreeNodeType, StagePanel,
+  ModelsTreeNodeType, StagePanel,
   SyncUiEventId, ToolbarHelper, UiFramework, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
 } from "@itwin/appui-react";
 import { Button, Slider } from "@itwin/itwinui-react";
@@ -292,8 +292,8 @@ export class ViewsFrontstage extends FrontstageProvider {
   }
 
   private _onEmphasizeElementsChangedHandler = (args: EmphasizeElementsChangedArgs) => {
-    if (FrontstageManager.activeFrontstageDef && FrontstageManager.activeFrontstageId === ViewsFrontstage.stageId)
-      this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // eslint-disable-line @typescript-eslint/no-floating-promises
+    if (UiFramework.frontstages.activeFrontstageDef && UiFramework.frontstages.activeFrontstageId === ViewsFrontstage.stageId)
+      this.applyVisibilityOverrideToSpatialViewports(UiFramework.frontstages.activeFrontstageDef, args.viewport, args.action); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
   constructor() {
@@ -492,19 +492,19 @@ class AdditionalTools {
     iconSpec: "icon-camera-animation",
     labelKey: "SampleApp:buttons.openNestedAnimationStage",
     execute: async () => {
-      const activeContentControl = ContentViewManager.getActiveContentControl();
+      const activeContentControl = UiFramework.content.getActiveContentControl();
       if (activeContentControl && activeContentControl.viewport &&
         (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript)) {
         const frontstageProvider = new NestedAnimationStage();
         const frontstageDef = await FrontstageDef.create(frontstageProvider);
         if (frontstageDef) {
           SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
-          await FrontstageManager.openNestedFrontstage(frontstageDef);
+          await UiFramework.frontstages.openNestedFrontstage(frontstageDef);
         }
       }
     },
     isHidden: new ConditionalBooleanValue(() => {
-      const activeContentControl = ContentViewManager.getActiveContentControl();
+      const activeContentControl = UiFramework.content.getActiveContentControl();
       if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
         return false;
       return true;
@@ -547,7 +547,7 @@ class AdditionalTools {
 
   private _tool4 = () => {
     const details = new NotifyMessageDetails(this._tool4Priority, this._tool4Message, this._tool4Detailed, OutputMessageType.Pointer);
-    const wrapper = ConfigurableUiManager.getWrapperElement();
+    const wrapper = UiFramework.controls.getWrapperElement();
     details.setPointerTypeDetails(wrapper, { x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
     IModelApp.notifications.outputMessage(details);
     document.addEventListener("keyup", this._handleTool4Keypress);
@@ -627,7 +627,7 @@ class AdditionalTools {
 
   private get _radialMenuItem() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openRadial", execute: () => { ModalDialogManager.openDialog(this.radialMenu()); },
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openRadial", execute: () => { UiFramework.dialogs.modal.openDialog(this.radialMenu()); },
     });
   }
 
@@ -638,12 +638,12 @@ class AdditionalTools {
   }
 
   private _closeModal = () => {
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
   };
 
   private get _openCalculatorItem() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openCalculator", execute: () => { ModalDialogManager.openDialog(<CalculatorDialog opened={true} />); },
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.openCalculator", execute: () => { UiFramework.dialogs.modal.openDialog(<CalculatorDialog opened={true} />); },
     });
   }
 
@@ -657,7 +657,7 @@ class AdditionalTools {
     const id = "spinners";
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog",
-      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} onClose={() => ModelessDialogManager.closeDialog(id)} />, id); },
+      execute: () => { UiFramework.dialogs.modeless.openDialog(<SpinnerTestDialog opened={true} onClose={() => UiFramework.dialogs.modeless.closeDialog(id)} />, id); },
     });
   }
 
@@ -669,7 +669,7 @@ class AdditionalTools {
 
     const dialog = <ViewportDialog opened={true} iTwinName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
 
-    ModelessDialogManager.openDialog(dialog, id);
+    UiFramework.dialogs.modeless.openDialog(dialog, id);
   }
 
   private get _reduceWidgetOpacity() {
@@ -690,7 +690,7 @@ class AdditionalTools {
         // const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
         const content = (
           <CursorPopupContent>
-            {FrontstageManager.activeToolSettingsProvider?.toolSettingsNode}
+            {UiFramework.frontstages.activeToolSettingsProvider?.toolSettingsNode}
           </CursorPopupContent>
         );
         // CursorPopupManager.open("test1", content, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 10);
@@ -796,7 +796,7 @@ class AdditionalTools {
       iconSpec: <SvgApple />,
       label: "Show widget",
       execute: () => {
-        const frontstageDef = FrontstageManager.activeFrontstageDef;
+        const frontstageDef = UiFramework.frontstages.activeFrontstageDef;
         if (!frontstageDef)
           return;
         const widgetDef = frontstageDef.findWidgetDef("uitestapp-test-wd3");

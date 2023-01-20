@@ -12,8 +12,8 @@ import * as moq from "typemoq";
 import { BadgeType, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import { HorizontalAnchor, Tab as NZ_Tab, Stacked as NZ_WidgetStack, ResizeHandle, TabMode, VerticalAnchor } from "@itwin/appui-layout-react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, CoreTools, Frontstage, FrontstageComposer, FrontstageManager,
-  FrontstageProps, FrontstageProvider, Widget, WidgetControl, WidgetStack, WidgetStackProps, WidgetStackTab, WidgetStackTabGroup, WidgetStackTabGroupProps,
+  ConfigurableCreateInfo, ContentGroup, CoreTools, Frontstage, FrontstageComposer,
+  FrontstageProps, FrontstageProvider, UiFramework, Widget, WidgetControl, WidgetStack, WidgetStackProps, WidgetStackTab, WidgetStackTabGroup, WidgetStackTabGroupProps,
   WidgetStackTabs, Zone, ZoneState,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
@@ -34,10 +34,10 @@ describe("WidgetStack", () => {
   before(async () => {
     await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageProviders();
+    UiFramework.frontstages.clearFrontstageProviders();
 
     const frontstageProvider = new Frontstage1();
-    ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
   });
 
   after(async () => {
@@ -125,12 +125,12 @@ describe("WidgetStack", () => {
   });
 
   it("should produce a WidgetStack with 2 widgets", async () => {
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
     const wrapper = render(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
-    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef).to.not.be.undefined;
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
     await TestUtils.flushAsyncOperations();
     // wrapper.debug();
 

@@ -6,7 +6,7 @@ import * as React from "react";
 import {
   BaseItemState,
   CommandItemDef,
-  ContentGroup, ContentViewManager, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupItemDef, ItemList, NavigationWidget,
+  ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupItemDef, ItemList, NavigationWidget,
   SelectionContextToolDefinitions,
   SessionStateActionId,
   SyncUiEventId,
@@ -111,7 +111,7 @@ function getSelectionContextSyncEventIds(): string[] {
 }
 
 function isSelectionSetEmpty(): boolean {
-  const activeContentControl = ContentViewManager.getActiveContentControl();
+  const activeContentControl = UiFramework.content.getActiveContentControl();
   let selectionCount = 0;
   if (!UiFramework.frameworkStateKey)
     selectionCount = UiFramework.store.getState()[UiFramework.frameworkStateKey].frameworkState.sessionState.numItemsSelected;

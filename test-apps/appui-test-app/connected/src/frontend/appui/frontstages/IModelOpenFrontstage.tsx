@@ -7,7 +7,7 @@ import { IModelApp } from "@itwin/core-frontend";
 import { BackstageItem, BackstageItemUtilities, StageUsage, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 import {
   BackstageAppButton,
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupProps, FrontstageManager, StandardFrontstageProps, StandardFrontstageProvider,
+  ConfigurableCreateInfo, ContentControl, ContentGroupProps, StandardFrontstageProps, StandardFrontstageProvider, UiFramework,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../index";
 import { IModelOpen } from "../imodelopen/IModelOpen";
@@ -31,7 +31,7 @@ export class IModelOpenFrontstage {
 
   public static register() {
     // if frontstage has not yet been registered register it now
-    if (!FrontstageManager.hasFrontstage(IModelOpenFrontstage.stageId)) {
+    if (!UiFramework.frontstages.hasFrontstage(IModelOpenFrontstage.stageId)) {
       const contentGroupProps: ContentGroupProps = {
         id: "appui-test-app:IModelOpenGroup",
         layout: StandardContentLayouts.singleView,
@@ -53,15 +53,15 @@ export class IModelOpenFrontstage {
         hideStatusBar: true,
       };
 
-      ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
+      UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
       UiItemsManager.register(new BackstageItemsProvider());
     }
   }
 
   public static async open() {
     IModelOpenFrontstage.register();
-    const frontstageDef = await FrontstageManager.getFrontstageDef(IModelOpenFrontstage.stageId);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(IModelOpenFrontstage.stageId);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
   }
 }
 

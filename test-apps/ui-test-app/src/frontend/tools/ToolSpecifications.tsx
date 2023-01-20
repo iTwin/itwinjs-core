@@ -22,9 +22,9 @@ import {
 } from "@itwin/appui-abstract";
 import { Dialog, FillCentered, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@itwin/core-react";
 import {
-  Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
-  FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails, StatusBarDialog,
-  StatusBarItemUtilities, StatusBarLabelIndicator, StatusBarSeparator, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef,
+  Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentProps,
+  IModelViewportControl, MessageManager, ReactNotifyMessageDetails, StatusBarDialog,
+  StatusBarItemUtilities, StatusBarLabelIndicator, StatusBarSeparator, SyncUiEventId, ToolItemDef, UiFramework,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../";
 import { AppUi } from "../appui/AppUi";
@@ -57,7 +57,7 @@ export function UnitsFormatDialog() {
   }, [unitFormat]);
 
   const handleClose = React.useCallback(() => {
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
   }, []);
 
   const onRadioChange = React.useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,12 +111,12 @@ class AppItemsProvider implements UiItemsProvider {
 
   public static toggleStatusBarItem() {
     AppItemsProvider._sampleStatusVisible = !AppItemsProvider._sampleStatusVisible;
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
   }
 
   public static toggleBackstageItem() {
     AppItemsProvider._sampleBackstageItemVisible = !AppItemsProvider._sampleBackstageItemVisible;
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
   }
 
   public provideStatusBarItems(_stageId: string, _stageUsage: string): CommonStatusBarItem[] {
@@ -221,7 +221,7 @@ export class AppTools {
       description: () => AnalysisAnimationTool.description,
       execute: async () => { return IModelApp.tools.run(AnalysisAnimationTool.toolId); },
       isHidden: new ConditionalBooleanValue(() => {
-        const activeContentControl = ContentViewManager.getActiveContentControl();
+        const activeContentControl = UiFramework.content.getActiveContentControl();
         if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
           return false;
         return true;
@@ -429,11 +429,11 @@ export class AppTools {
     const commandId = "splitSingleViewportCommandDef";
     return new CommandItemDef({
       commandId,
-      iconSpec: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? `svg:${splitVerticalIconSvg}` : `svg:${singlePaneIconSvg}`, [SyncUiEventId.ActiveContentChanged]),
-      label: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? "Split Content View" : "Single Content View", [SyncUiEventId.ActiveContentChanged]),
+      iconSpec: new ConditionalStringValue(() => 1 === UiFramework.frontstages.activeFrontstageDef?.contentControls?.length ? `svg:${splitVerticalIconSvg}` : `svg:${singlePaneIconSvg}`, [SyncUiEventId.ActiveContentChanged]),
+      label: new ConditionalStringValue(() => 1 === UiFramework.frontstages.activeFrontstageDef?.contentControls?.length ? "Split Content View" : "Single Content View", [SyncUiEventId.ActiveContentChanged]),
       execute: async () => {
         // if the active frontstage is only showing an single viewport then split it and have two copies of it
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
         if (activeFrontstageDef && 1 === activeFrontstageDef.contentControls?.length &&
           activeFrontstageDef.contentControls[0].viewport) {
           const vp = activeFrontstageDef.contentControls[0].viewport;
@@ -469,7 +469,7 @@ export class AppTools {
               contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
 
             const contentGroup = new ContentGroup(contentGroupProps);
-            await FrontstageManager.setActiveContentGroup(contentGroup);
+            await UiFramework.frontstages.setActiveContentGroup(contentGroup);
           }
         } else if (activeFrontstageDef && 2 === activeFrontstageDef.contentControls?.length &&
           activeFrontstageDef.contentControls[0].viewport) {
@@ -495,7 +495,7 @@ export class AppTools {
               contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
 
             const contentGroup = new ContentGroup(contentGroupProps);
-            await FrontstageManager.setActiveContentGroup(contentGroup);
+            await UiFramework.frontstages.setActiveContentGroup(contentGroup);
           }
         }
       },
@@ -638,14 +638,14 @@ export class AppTools {
       commandId: "errorMessage",
       iconSpec: "icon-status-error",
       labelKey: "SampleApp:buttons.errorMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.localization.getLocalizedString("SampleApp:buttons.errorMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.localization.getLocalizedString("SampleApp:buttons.errorMessageBox"))),
     });
   }
   public static get noIconMessageBoxCommand() {
     return new CommandItemDef({
       commandId: "noIconMessage",
       labelKey: "SampleApp:buttons.noIconMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.noIconMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.noIconMessageBox"))),
     });
   }
 
@@ -654,7 +654,7 @@ export class AppTools {
       commandId: "successMessage",
       iconSpec: "icon-status-success",
       labelKey: "SampleApp:buttons.successMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Success, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.Success, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
     });
   }
 
@@ -663,7 +663,7 @@ export class AppTools {
       commandId: "informationMessage",
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Information, IModelApp.localization.getLocalizedString("SampleApp:buttons.informationMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.Information, IModelApp.localization.getLocalizedString("SampleApp:buttons.informationMessageBox"))),
     });
   }
 
@@ -672,7 +672,7 @@ export class AppTools {
       commandId: "questionMessage",
       iconSpec: "icon-help",
       labelKey: "SampleApp:buttons.questionMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Question, IModelApp.localization.getLocalizedString("SampleApp:buttons.questionMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.Question, IModelApp.localization.getLocalizedString("SampleApp:buttons.questionMessageBox"))),
     });
   }
 
@@ -681,7 +681,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Warning, IModelApp.localization.getLocalizedString("SampleApp:buttons.warningMessageBox"))),
+      execute: () => UiFramework.dialogs.modal.openDialog(AppTools._messageBox(MessageSeverity.Warning, IModelApp.localization.getLocalizedString("SampleApp:buttons.warningMessageBox"))),
     });
   }
 
@@ -690,7 +690,7 @@ export class AppTools {
       commandId: " ",
       iconSpec: " icon-dashboard-2",
       label: "Open Units Formatting Dialog",
-      execute: () => ModalDialogManager.openDialog(<UnitsFormatDialog />, "unitsFormatDialog"),
+      execute: () => UiFramework.dialogs.modal.openDialog(<UnitsFormatDialog />, "unitsFormatDialog"),
     });
   }
 
@@ -777,7 +777,7 @@ export class AppTools {
       labelKey: "SampleApp:buttons.openPropertyGrid",
       tooltip: "Open Vertical PropertyGrid (Tooltip)",
       execute: async () => {
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
         if (activeFrontstageDef) {
           const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
           if (widgetDef) {
@@ -795,7 +795,7 @@ export class AppTools {
       labelKey: "SampleApp:buttons.closePropertyGrid",
       tooltip: "Close PropertyGrid (Tooltip)",
       execute: async () => {
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
         if (activeFrontstageDef) {
           const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
           if (widgetDef) {
@@ -863,11 +863,11 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       label: "Horizontal Layout",
       execute: async () => {
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
         if (activeFrontstageDef?.contentGroup && activeFrontstageDef?.contentGroup.getContentControls().length > 1) {
-          const contentLayout = ContentLayoutManager.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoHorizontalSplit);
+          const contentLayout = UiFramework.content.layouts.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoHorizontalSplit);
           if (contentLayout && activeFrontstageDef.contentGroup) {
-            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+            await UiFramework.content.layouts.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
           } else {
             IModelApp.notifications.outputMessage(
               new NotifyMessageDetails(OutputMessagePriority.Info, "Content group must contain 2 or more content definition to be shown in this layout."));
@@ -882,11 +882,11 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       label: "Vertical Layout",
       execute: async () => {
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
         if (activeFrontstageDef?.contentGroup && activeFrontstageDef?.contentGroup.getContentControls().length > 1) {
-          const contentLayout = ContentLayoutManager.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoVerticalSplit);
+          const contentLayout = UiFramework.content.layouts.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoVerticalSplit);
           if (contentLayout && activeFrontstageDef.contentGroup) {
-            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+            await UiFramework.content.layouts.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
           } else {
             IModelApp.notifications.outputMessage(
               new NotifyMessageDetails(OutputMessagePriority.Info, "Content group must contain 2 or more content definition to be shown in this layout."));

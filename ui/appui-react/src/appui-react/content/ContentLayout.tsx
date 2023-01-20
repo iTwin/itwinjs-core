@@ -13,12 +13,11 @@ import classnames from "classnames";
 import * as React from "react";
 import { SplitPane } from "./split-pane/SplitPane";
 import { CommonProps, Orientation } from "@itwin/core-react";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ContentGroup } from "./ContentGroup";
 import { ContentLayoutProps, LayoutFragmentProps, LayoutHorizontalSplitProps, LayoutSplitPropsBase, LayoutVerticalSplitProps, UiEvent } from "@itwin/appui-abstract";
-import { ActiveContentChangedEventArgs, ContentViewManager } from "./ContentViewManager";
+import { ActiveContentChangedEventArgs } from "./ContentViewManager";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for [[ContentWrapper]] */
 interface ContentWrapperProps extends CommonProps {
@@ -30,7 +29,7 @@ interface ContentWrapperProps extends CommonProps {
  */
 export function ContentWrapper(props: ContentWrapperProps) {
   const { content } = props;
-  const [isActive, setIsActive] = React.useState(content === ContentViewManager.getActiveContent());
+  const [isActive, setIsActive] = React.useState(content === UiFramework.content.getActiveContent());
   const activeFrontstageDef = useActiveFrontstageDef();
 
   const contentControlKey = (contentControl: React.ReactNode): string | undefined => {
@@ -50,7 +49,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
   );
 
   React.useEffect(() => {
-    setIsActive(content === ContentViewManager.getActiveContent());
+    setIsActive(content === UiFramework.content.getActiveContent());
   }, [content]);
 
   React.useEffect(() => {
@@ -67,11 +66,11 @@ export function ContentWrapper(props: ContentWrapperProps) {
       setHasMultipleContents((activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length) ||
         (activeFrontstageDef?.contentGroup?.getContentControls().length ?? 0) > 1));
     };
-    return ContentViewManager.onActiveContentChangedEvent.addListener(handleActiveContentChanged);
+    return UiFramework.content.onActiveContentChangedEvent.addListener(handleActiveContentChanged);
   }, [activeFrontstageDef, content]);
 
   const handleMouseDown = React.useCallback(() => {
-    ContentViewManager.setActiveContent(content);
+    UiFramework.content.setActiveContent(content);
     setIsActive(true);
   }, [content]);
 
@@ -81,7 +80,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
       setHasMultipleContents((activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length) ||
         (activeFrontstageDef?.contentGroup?.getContentControls().length ?? 0) > 1));
     };
-    return ContentViewManager.onAvailableContentChangedEvent.addListener(onAvailableContentChanged);
+    return UiFramework.content.onAvailableContentChangedEvent.addListener(onAvailableContentChanged);
   }, [activeFrontstageDef]);
 
   const overlayClassName = classnames(
@@ -91,7 +90,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
 
   return (
     <div className={classnames("uifw-contentlayout-wrapper", props.className)} style={props.style}
-      onMouseDown={handleMouseDown} onMouseMove={UiShowHideManager.handleContentMouseMove} role="presentation"
+      onMouseDown={handleMouseDown} onMouseMove={UiFramework.visibility.handleContentMouseMove} role="presentation"
     >
       {content}
       <div className={overlayClassName} />
@@ -181,7 +180,7 @@ class SingleContentContainer extends React.Component<SingleContentProps> {
 
     return (
       <div className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style} data-testid="single-content-container"
-        onMouseMove={UiShowHideManager.handleContentMouseMove}
+        onMouseMove={UiFramework.visibility.handleContentMouseMove}
       >
         <ContentWrapper content={this.props.content} style={{ height: "100%", position: "relative" }} />
       </div>
@@ -525,11 +524,11 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
   }
 
   public override componentDidMount() {
-    FrontstageManager.onContentLayoutActivatedEvent.addListener(this._handleContentLayoutActivated);
+    UiFramework.frontstages.onContentLayoutActivatedEvent.addListener(this._handleContentLayoutActivated);
   }
 
   public override componentWillUnmount() {
-    FrontstageManager.onContentLayoutActivatedEvent.removeListener(this._handleContentLayoutActivated);
+    UiFramework.frontstages.onContentLayoutActivatedEvent.removeListener(this._handleContentLayoutActivated);
   }
 
   private _handleContentLayoutActivated = (args: ContentLayoutActivatedEventArgs) => {
@@ -562,10 +561,10 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
   }
 
   private _onMouseDown = (_event: React.MouseEvent<HTMLDivElement>) => {
-    ContentViewManager.setMouseDown(true);
+    UiFramework.content.setMouseDown(true);
   };
 
   private _onMouseUp = (_event: React.MouseEvent<HTMLDivElement>) => {
-    ContentViewManager.setMouseDown(false);
+    UiFramework.content.setMouseDown(false);
   };
 }

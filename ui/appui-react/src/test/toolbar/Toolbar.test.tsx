@@ -7,7 +7,7 @@ import * as React from "react";
 import { Orientation } from "@itwin/core-react";
 import { Direction, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { render } from "@testing-library/react";
-import { BaseItemState, CommandItemDef, CustomItemDef, GroupItemDef, PopupButton, SyncUiEventDispatcher, Toolbar } from "../../appui-react";
+import { BaseItemState, CommandItemDef, CustomItemDef, GroupItemDef, PopupButton, Toolbar, UiFramework } from "../../appui-react";
 import { ItemList } from "../../appui-react/shared/ItemMap";
 import TestUtils from "../TestUtils";
 
@@ -184,7 +184,7 @@ describe("<Toolbar  />", async () => {
     expect(tool1.isEnabled).to.be.false;
     expect(tool2.isEnabled).to.be.true;
 
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(testItemEventId);
 
     expect(tool1.isEnabled).to.be.false;
     expect(tool2.isEnabled).to.be.true;
@@ -211,7 +211,7 @@ describe("<Toolbar  />", async () => {
     expect(tool1c.isEnabled).to.be.false;
     expect(tool1d.isEnabled).to.be.false;
 
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(testItemEventId);
 
     expect(tool1b.isEnabled).to.be.false;
     expect(tool2b.isEnabled).to.be.true;

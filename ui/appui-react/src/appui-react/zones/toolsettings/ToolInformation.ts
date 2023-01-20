@@ -8,9 +8,7 @@
 
 import { UiError } from "@itwin/appui-abstract";
 import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../../UiFramework";
-import { ToolSettingsManager } from "./ToolSettingsManager";
 import { ToolUiProvider } from "./ToolUiProvider";
 
 /** Provides information about a tool with a given id, including the ToolUiProvider.
@@ -27,11 +25,11 @@ export class ToolInformation {
     if (!this._toolUiProvider) {
       let provider: ToolUiProvider | undefined;
 
-      if (ConfigurableUiManager.isControlRegistered(this.toolId)) {
-        provider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
+      if (UiFramework.controls.isRegistered(this.toolId)) {
+        provider = UiFramework.controls.create(this.toolId, this.toolId) as ToolUiProvider;
       } else {
-        if (ToolSettingsManager.useDefaultToolSettingsProvider && this.toolId === ToolSettingsManager.toolIdForToolSettings)
-          provider = ConfigurableUiManager.createControl("DefaultToolSettings", this.toolId) as ToolUiProvider;
+        if (UiFramework.toolSettings.useDefaultToolSettingsProvider && this.toolId === UiFramework.toolSettings.toolIdForToolSettings)
+          provider = UiFramework.controls.create("DefaultToolSettings", this.toolId) as ToolUiProvider;
       }
       // istanbul ignore else
       if (provider) {

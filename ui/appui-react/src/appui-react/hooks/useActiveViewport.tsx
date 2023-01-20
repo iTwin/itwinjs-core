@@ -9,8 +9,9 @@
 import { useEffect, useState } from "react";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { ActiveContentChangedEventArgs, ContentViewManager } from "../content/ContentViewManager";
-import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { ActiveContentChangedEventArgs } from "../content/ContentViewManager";
+import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
 
 /** React hook that maintains the active viewport.
  * @public
@@ -24,11 +25,11 @@ export function useActiveViewport(): ScreenViewport | undefined {
     };
 
     // IModelApp.viewManager.onSelectedViewportChanged will often fire before UI components have mounted
-    // so use ContentViewManager.onActiveContentChangedEvent which will always trigger once all stage components
+    // so use UiFramework.content.onActiveContentChangedEvent which will always trigger once all stage components
     // are loaded and when the IModelApp.viewManager.selectedView changes.
-    ContentViewManager.onActiveContentChangedEvent.addListener(onActiveContentChanged);
+    UiFramework.content.onActiveContentChangedEvent.addListener(onActiveContentChanged);
     return () => {
-      ContentViewManager.onActiveContentChangedEvent.removeListener(onActiveContentChanged);
+      UiFramework.content.onActiveContentChangedEvent.removeListener(onActiveContentChanged);
     };
   }, []);
 
@@ -37,12 +38,12 @@ export function useActiveViewport(): ScreenViewport | undefined {
     const handleSyncUiEvent = (args: UiSyncEventArgs): void => {
       // istanbul ignore else
       if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
-        const activeContentControl = ContentViewManager.getActiveContentControl();
+        const activeContentControl = UiFramework.content.getActiveContentControl();
         setActiveViewport(activeContentControl && activeContentControl.viewport);
       }
     };
 
-    return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
   }, []);
 
   return activeViewport;

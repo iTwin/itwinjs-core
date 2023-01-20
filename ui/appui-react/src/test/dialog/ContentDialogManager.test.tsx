@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { ConfigurableUiManager, ContentDialog, ContentDialogManager, ContentDialogRenderer, DialogChangedEventArgs } from "../../appui-react";
+import { ContentDialog, ContentDialogManager, ContentDialogRenderer, DialogChangedEventArgs, UiFramework } from "../../appui-react";
 import TestUtils, { userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
@@ -25,7 +25,7 @@ describe("ContentDialogManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework(true);
-    ConfigurableUiManager.initialize();
+    UiFramework.controls.initialize();
     await MockRender.App.startup();
 
     ContentDialogManager.onContentDialogChangedEvent.addListener(handleContentDialogChanged);

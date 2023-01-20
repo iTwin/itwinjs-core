@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { ActionButton, BadgeType, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { WithOnOutsideClickProps } from "@itwin/core-react";
 import { GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@itwin/appui-layout-react";
-import { GroupButtonItem, KeyboardShortcutManager, ToolbarDragInteractionContext, ToolbarGroupItem, ToolGroupPanelContext } from "../../appui-react";
+import { GroupButtonItem, ToolbarDragInteractionContext, ToolbarGroupItem, ToolGroupPanelContext, UiFramework } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 const tool1 = ToolbarItemUtilities.createActionButton("childButton1", 10, "icon-button", "label", () => { }, { badgeType: BadgeType.New });
@@ -63,7 +63,7 @@ describe("GroupButtonItem", () => {
       const element = wrapper.find(".nz-toolbar-item-item");
       element.simulate("focus");
       element.simulate("keyDown", { key: "Escape" });
-      expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+      expect(UiFramework.keyboardShortcuts.isFocusOnHome).to.be.true;
     });
   });
 

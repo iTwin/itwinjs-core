@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import { MockRender } from "@itwin/core-frontend";
 import { ContentLayoutProps, StandardContentLayouts } from "@itwin/appui-abstract";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
-  ContentViewManager, CoreTools, FloatingContentControl, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef,
+  CoreTools, FloatingContentControl, Frontstage, FrontstageProps, FrontstageProvider, UiFramework,
 } from "../../appui-react";
 import TestUtils, { childStructure, selectorMatches, userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
@@ -75,12 +75,12 @@ describe("ContentLayout", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
-    FrontstageManager.clearFrontstageProviders();
+    UiFramework.frontstages.clearFrontstageProviders();
 
     const frontstageProvider = new TestFrontstage2();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(TestFrontstage2.stageId);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(TestFrontstage2.stageId);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
   });
 
   after(async () => {
@@ -183,9 +183,9 @@ describe("ContentLayout", () => {
     render(<ContentLayout contentGroup={singleContentGroup} contentLayout={singleContentLayout} isInFooterMode={true} />);
 
     await theUserTo.pointer({target: screen.getByText("Test"), keys: "[MouseLeft>]"});
-    expect(ContentViewManager.isMouseDown).to.be.true;
+    expect(UiFramework.content.isMouseDown).to.be.true;
     await theUserTo.pointer("[/MouseLeft]");
-    expect(ContentViewManager.isMouseDown).to.be.false;
+    expect(UiFramework.content.isMouseDown).to.be.false;
   });
 
   it("ContentWrapper mouse down", async () => {
@@ -251,22 +251,22 @@ describe("ContentLayout", () => {
     ]);
   });
 
-  it("ContentLayoutManager.setActiveLayout & refreshActiveLayout should emit onContentLayoutActivatedEvent", async () => {
+  it("UiFramework.content.layouts.setActiveLayout & refreshActiveLayout should emit onContentLayoutActivatedEvent", async () => {
     const spyMethod = sinon.spy();
     const layoutProps: ContentLayoutProps = {
       id: "UiFramework:tests.singleContent",
       description: "UiFramework:tests.singleContent",
     };
     const contentLayout = new ContentLayoutDef(layoutProps);
-    const remove = FrontstageManager.onContentLayoutActivatedEvent.addListener(spyMethod);
+    const remove = UiFramework.frontstages.onContentLayoutActivatedEvent.addListener(spyMethod);
     render(<ContentLayout contentGroup={fourContentGroup} contentLayout={contentLayout} />);
 
     const emptyContentGroup = new ContentGroup({contents: [], id: "empty-cg", layout: contentLayout.toJSON()});
 
-    await ContentLayoutManager.setActiveLayout(contentLayout, emptyContentGroup);
+    await UiFramework.content.layouts.setActiveLayout(contentLayout, emptyContentGroup);
     spyMethod.calledOnce.should.true;
 
-    ContentLayoutManager.refreshActiveLayout();
+    UiFramework.content.layouts.refreshActiveLayout();
     spyMethod.calledTwice.should.true;
 
     remove();
@@ -333,12 +333,12 @@ describe("SingleContentLayout", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
-    FrontstageManager.clearFrontstageProviders();
+    UiFramework.frontstages.clearFrontstageProviders();
 
     const frontstageProvider = new TestFrontstage1();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(TestFrontstage1.stageId);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(TestFrontstage1.stageId);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
   });
 
   after(async () => {
@@ -355,16 +355,16 @@ describe("SingleContentLayout", () => {
     }
 
     const floatingControl = new TestFloatingContentControl();
-    ContentViewManager.addFloatingContentControl(floatingControl);
+    UiFramework.content.addFloatingContentControl(floatingControl);
 
     render(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
     expect(screen.getByText("Test").parentElement).to.satisfy(childStructure("div+.uifw-contentlayout-overlay-active"));
 
-    ContentViewManager.setActiveContent(floatingControl.reactNode, true);
+    UiFramework.content.setActiveContent(floatingControl.reactNode, true);
 
     expect(screen.getByText("Test").parentElement).to.satisfy(childStructure("div+.uifw-contentlayout-overlay-inactive"));
 
-    ContentViewManager.dropFloatingContentControl(floatingControl);
+    UiFramework.content.dropFloatingContentControl(floatingControl);
   });
 
 });

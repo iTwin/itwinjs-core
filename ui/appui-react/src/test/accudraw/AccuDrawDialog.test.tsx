@@ -11,7 +11,7 @@ import { Orientation } from "@itwin/core-react";
 import { TestUtils } from "../TestUtils";
 import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
 import { AccuDrawDialog } from "../../appui-react/accudraw/AccuDrawDialog";
-import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
+import { UiFramework } from "../../appui-react";
 
 describe("AccuDrawDialog", () => {
   before(async () => {
@@ -38,13 +38,13 @@ describe("AccuDrawDialog", () => {
   });
 
   it("should set focus to Home on Esc key", () => {
-    const spy = sinon.spy(KeyboardShortcutManager, "setFocusToHome");
+    const spy = sinon.spy(UiFramework.keyboardShortcuts, "setFocusToHome");
     const component = render(<AccuDrawDialog opened={true} dialogId="accudraw" />);
 
     component.baseElement.dispatchEvent(new KeyboardEvent("keyup", { key: SpecialKey.Escape }));
     spy.calledOnce.should.true;
 
-    (KeyboardShortcutManager.setFocusToHome as any).restore();
+    (UiFramework.keyboardShortcuts.setFocusToHome as any).restore();
   });
 
   it("should call onClose on close", () => {

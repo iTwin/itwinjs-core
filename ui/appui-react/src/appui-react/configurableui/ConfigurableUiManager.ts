@@ -8,25 +8,19 @@
 
 import { BeUiEvent } from "@itwin/core-bentley";
 import { UiError } from "@itwin/appui-abstract";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";
-import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
+import { KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
 import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
 import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { TaskManager, TaskPropsList } from "../workflow/Task";
 import { WorkflowManager, WorkflowProps, WorkflowPropsList } from "../workflow/Workflow";
-import { ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiElement } from "./ConfigurableUiControl";
-import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
-import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { MessageManager } from "../messages/MessageManager";
 import { PopupManager } from "../popup/PopupManager";
 import { ActivityTracker } from "./ActivityTracker";
-import { ContentDialogManager } from "../dialog/ContentDialogManager";
 
 /** Ui Activity Event Args interface.
  * @internal
@@ -53,9 +47,9 @@ export interface UiIntervalEventArgs {
 export class UiIntervalEvent extends BeUiEvent<UiIntervalEventArgs> { }
 
 /** Configurable Ui Manager maintains controls, Frontstages, Content Groups, Content Layouts, Tasks and Workflows.
- * @public
+ * @internal
  */
-export class ConfigurableUiManager {
+export class InternalConfigurableUiManager {
   private static _registeredControls = new Map<string, ConfigurableUiControlConstructor>();
   private static _initialized = false;
 
@@ -66,34 +60,37 @@ export class ConfigurableUiManager {
   /** @internal */
   public static readonly onUiIntervalEvent = new UiIntervalEvent();
 
-  /** Initializes the ConfigurableUiManager and registers core controls. */
+  /** Initializes the InternalConfigurableUiManager and registers core controls.
+   * @internal
+  */
   public static initialize() {
     if (this._initialized)
       return;
 
     // Register core controls
-    ConfigurableUiManager.registerControl(StandardRotationNavigationAidControl.navigationAidId, StandardRotationNavigationAidControl);
-    ConfigurableUiManager.registerControl(SheetNavigationAidControl.navigationAidId, SheetNavigationAidControl);
-    ConfigurableUiManager.registerControl(DrawingNavigationAidControl.navigationAidId, DrawingNavigationAidControl);
-    ConfigurableUiManager.registerControl(CubeNavigationAidControl.navigationAidId, CubeNavigationAidControl);
+    InternalConfigurableUiManager.register(StandardRotationNavigationAidControl.navigationAidId, StandardRotationNavigationAidControl);
+    InternalConfigurableUiManager.register(SheetNavigationAidControl.navigationAidId, SheetNavigationAidControl);
+    InternalConfigurableUiManager.register(DrawingNavigationAidControl.navigationAidId, DrawingNavigationAidControl);
+    InternalConfigurableUiManager.register(CubeNavigationAidControl.navigationAidId, CubeNavigationAidControl);
 
     // Initialize SyncUiEventDispatcher so it can register event callbacks.
-    SyncUiEventDispatcher.initialize();
+    UiFramework.events.initialize();
 
     // Initialize the FrontstageManager
-    FrontstageManager.initialize();
+    UiFramework.frontstages.initialize();
 
     // Initialize the ToolSettingsManager that manages Tool Settings properties.
-    ToolSettingsManager.initialize();
+    UiFramework.toolSettings.initialize();
 
     // Initialize dialog managers that allow one or more dialogs to be open at a time. These managers adjust the z-indexing
     // to ensure the most recently focused dialog of a specific type displays above its siblings.
-    ModelessDialogManager.initialize();
+    UiFramework.dialogs.modeless.initialize();
+
     // ContentDialog have a z-index just above the fixed content views and below all other UI elements.
-    ContentDialogManager.initialize();
+    UiFramework.content.dialogs.initialize();
 
     // Initialize the Keyboard Shortcut manager
-    KeyboardShortcutManager.initialize();
+    UiFramework.keyboardShortcuts.initialize();
 
     this._initialized = true;
   }
@@ -108,7 +105,7 @@ export class ConfigurableUiManager {
    * @param classId the class id of the control to register
    * @param constructor the constructor of the control to register
    */
-  public static registerControl(classId: string, constructor: ConfigurableUiControlConstructor): void {
+  public static register(classId: string, constructor: ConfigurableUiControlConstructor): void {
     if (this._registeredControls.get(classId) !== undefined) {
       throw new UiError(UiFramework.loggerCategory(this), `registerControl: classId '${classId}' already registered`);
     }
@@ -120,7 +117,7 @@ export class ConfigurableUiManager {
    * @param classId   the class id of the control to test
    * @returns  true if the control is registered or false if not
    */
-  public static isControlRegistered(classId: string): boolean {
+  public static isRegistered(classId: string): boolean {
     const constructor = this._registeredControls.get(classId);
     return constructor !== undefined;
   }
@@ -140,7 +137,7 @@ export class ConfigurableUiManager {
   /** Unregisters a control that has been registered.
    * @param classId   the class id of the control to unregister
    */
-  public static unregisterControl(classId: string): void {
+  public static unregister(classId: string): void {
     const constructor = this._registeredControls.get(classId);
     if (constructor)
       this._registeredControls.delete(classId);
@@ -153,7 +150,7 @@ export class ConfigurableUiManager {
    * @param controlId controlId which may not be unique across all control instances.
    * @returns  the created control
    */
-  public static createControl(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined {
+  public static create(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined {
     const info = new ConfigurableCreateInfo(classId, uniqueId, controlId ?? uniqueId);
     const constructor = this._registeredControls.get(info.classId);
     if (!constructor) {
@@ -164,11 +161,86 @@ export class ConfigurableUiManager {
     return control;
   }
 
+  /** Gets the HTML wrapper element for Configurable UI */
+  public static getWrapperElement(): HTMLElement {
+    const wrapper = document.getElementById("uifw-configurableui-wrapper");
+    const htmlElement = wrapper!;
+    return htmlElement;
+  }
+
+  /** Closes all UI popups currently open */
+  public static closeUi(): void {
+    MessageManager.closeAllMessages();
+    UiFramework.dialogs.modeless.closeAll();
+    UiFramework.dialogs.modal.closeAll();
+    UiFramework.content.dialogs.closeAll();
+    UiFramework.keyboardShortcuts.closeShortcutsMenu();
+    UiFramework.closeCursorMenu();
+    PopupManager.clearPopups();
+  }
+}
+
+/** Configurable Ui Manager maintains controls, Frontstages, Content Groups, Content Layouts, Tasks and Workflows.
+ * @public
+ * @deprecated in 3.6. Use `UiFramework.controls` property.
+ */
+export class ConfigurableUiManager extends InternalConfigurableUiManager {
+  /** Initializes the InternalConfigurableUiManager and registers core controls.
+   * @deprecated in 3.6. This is called internally.
+  */
+  public static override initialize() {
+    InternalConfigurableUiManager.initialize();
+  }
+
+  /** Registers a control implementing the [[ConfigurableUiElement]] interface.
+   * These controls can be a
+   * [[ContentControl]],
+   * [[NavigationAidControl]],
+   * [[StatusBarWidgetControl]],
+   * [[WidgetControl]] or
+   * [[ToolUiProvider]].
+   * @param classId the class id of the control to register
+   * @param constructor the constructor of the control to register
+   * @deprecated in 3.6. Use `register` method.
+   */
+  public static registerControl(classId: string, constructor: ConfigurableUiControlConstructor): void {
+    return InternalConfigurableUiManager.register(classId, constructor);
+  }
+
+  /** Determines if a control has been registered based on its classId.
+   * @param classId   the class id of the control to test
+   * @returns  true if the control is registered or false if not
+   */
+  public static isControlRegistered(classId: string): boolean {
+    return InternalConfigurableUiManager.isRegistered(classId);
+  }
+
+  /** Unregisters a control that has been registered.
+   * @param classId   the class id of the control to unregister
+   * @deprecated in 3.6. Use `unregister` method.
+   */
+  public static unregisterControl(classId: string): void {
+    return InternalConfigurableUiManager.unregister(classId);
+  }
+
+  /** Creates a control registered by calling registerControl.
+   * @param classId   the class id of the control to create
+   * @param uniqueId  a unique id for the control
+   * @param options   options passed to the constructor of the control
+   * @param controlId controlId which may not be unique across all control instances.
+   * @returns  the created control
+   * @deprecated in 3.6. Use `create` method.
+   */
+  public static createControl(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined {
+    return InternalConfigurableUiManager.create(classId, uniqueId, options, controlId);
+  }
+
   /** Add a Frontstage via a provider into the [[FrontstageManager]].
    * @param frontstageProvider  Provider of the Frontstage to add
+   * @deprecated in 3.6. Use `UiFramework.frontstages.addFrontstageProvider` method.
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
   }
 
   /** Loads one or more Tasks into the [[TaskManager]].
@@ -200,27 +272,9 @@ export class ConfigurableUiManager {
 
   /** Loads one or more Keyboard Shortcuts into the [[KeyboardShortcutManager]].
    * @param shortcutList  the properties of the Keyboard Shortcuts to load
+   * @deprecated in 3.6. Use `UiFramework.keyboardShortcuts.loadKeyboardShortcuts` method.
    */
   public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void {
-    KeyboardShortcutManager.loadKeyboardShortcuts(shortcutList);
+    UiFramework.keyboardShortcuts.loadKeyboardShortcuts(shortcutList);
   }
-
-  /** Gets the HTML wrapper element for Configurable UI */
-  public static getWrapperElement(): HTMLElement {
-    const wrapper = document.getElementById("uifw-configurableui-wrapper");
-    const htmlElement = wrapper!;
-    return htmlElement;
-  }
-
-  /** Closes all UI popups currently open */
-  public static closeUi(): void {
-    MessageManager.closeAllMessages();
-    ModelessDialogManager.closeAll();
-    ModalDialogManager.closeAll();
-    ContentDialogManager.closeAll();
-    KeyboardShortcutManager.closeShortcutsMenu();
-    UiFramework.closeCursorMenu();
-    PopupManager.clearPopups();
-  }
-
 }

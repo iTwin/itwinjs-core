@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, MessageBoxIconType, MessageBoxType } from "@itwin/core-frontend";
-import { ModelessDialog, ModelessDialogManager } from "@itwin/appui-react";
+import { ModelessDialog, UiFramework } from "@itwin/appui-react";
 import { Button, ComboBox } from "@itwin/itwinui-react";
 import "./SampleModelessDialog.scss";
 
@@ -90,6 +90,6 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
       { opened: false },
       () => this.props.onClose && this.props.onClose()
     );
-    ModelessDialogManager.closeDialog(this.props.dialogId);
+    UiFramework.dialogs.modeless.closeDialog(this.props.dialogId);
   };
 }

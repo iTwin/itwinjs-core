@@ -5,7 +5,7 @@
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
 import { Dialog } from "@itwin/core-react";
-import { ModalDialogManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 import { DialogButtonType } from "@itwin/appui-abstract";
 
 export interface SampleModalDialogProps {
@@ -52,6 +52,6 @@ export class SampleModalDialog extends React.Component<SampleModalDialogProps> {
 
   private _closeDialog = (followUp: () => void) => {
     followUp && followUp();
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
   };
 }

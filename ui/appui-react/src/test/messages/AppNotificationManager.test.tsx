@@ -10,7 +10,7 @@ import {
   ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, MockRender, NotifyMessageDetails, OutputMessageAlert,
   OutputMessagePriority, OutputMessageType,
 } from "@itwin/core-frontend";
-import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogManager, ModalDialogRenderer } from "../../appui-react";
+import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogRenderer, UiFramework } from "../../appui-react";
 import TestUtils, { userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 
@@ -62,7 +62,7 @@ describe("AppNotificationManager", () => {
     expect(spyMethod.calledOnce).to.be.true;
     expect(alertBoxMethod.calledOnce).to.be.true;
 
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
   });
 
   it("outputMessage with Alert & Balloon", () => {
@@ -103,14 +103,14 @@ describe("AppNotificationManager", () => {
     render(<ModalDialogRenderer />);
 
     const spyMethod = sinon.spy(MessageManager, "openMessageBox");
-    expect(ModalDialogManager.dialogCount).to.eq(0);
+    expect(UiFramework.dialogs.modal.dialogCount).to.eq(0);
     const boxResult = notifications.openMessageBox(MessageBoxType.OkCancel, "Message string", MessageBoxIconType.Information);
 
     expect(spyMethod.calledOnce).to.be.true;
-    expect(ModalDialogManager.dialogCount).to.eq(1);
+    expect(UiFramework.dialogs.modal.dialogCount).to.eq(1);
 
     await theUserTo.click(screen.getByRole("button", {name: "dialog.ok"}));
-    expect(ModalDialogManager.dialogCount).to.eq(0);
+    expect(UiFramework.dialogs.modal.dialogCount).to.eq(0);
 
     const boxValue = await boxResult;
     expect(boxValue).to.eq(MessageBoxValue.Ok);

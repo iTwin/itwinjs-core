@@ -8,7 +8,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, ScreenViewport } from "@itwin/core-frontend";
 import { FillCentered, LoadingSpinner } from "@itwin/core-react";
 import { ViewportComponent } from "@itwin/imodel-components-react";
-import { ModelessDialog, ModelessDialogManager, ViewSelector, ViewSelectorChangedEventArgs } from "@itwin/appui-react";
+import { ModelessDialog, UiFramework, ViewSelector, ViewSelectorChangedEventArgs } from "@itwin/appui-react";
 import { ExternalIModel } from "../ExternalIModel";
 
 export interface ViewportDialogProps {
@@ -122,7 +122,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
       opened: false,
     }), () => {
       if (!this.state.opened)
-        ModelessDialogManager.closeDialog(this.props.dialogId);
+        UiFramework.dialogs.modeless.closeDialog(this.props.dialogId);
       followUp();
     });
   };

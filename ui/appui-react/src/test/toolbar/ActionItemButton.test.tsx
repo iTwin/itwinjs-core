@@ -7,7 +7,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@itwin/appui-abstract";
-import { ActionItemButton, BaseItemState, CommandItemDef, KeyboardShortcutManager, SyncUiEventDispatcher } from "../../appui-react";
+import { ActionItemButton, BaseItemState, CommandItemDef, UiFramework } from "../../appui-react";
 import { SyncUiEventId } from "../../appui-react/syncui/SyncUiEventDispatcher";
 import TestUtils, { mount } from "../TestUtils";
 
@@ -75,7 +75,7 @@ describe("ActionItemButton", () => {
     element.length.should.eq(1);
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape" });
-    expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+    expect(UiFramework.keyboardShortcuts.isFocusOnHome).to.be.true;
   });
 
   it("sync event should trigger stateFunc", () => {
@@ -98,17 +98,17 @@ describe("ActionItemButton", () => {
     const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />); // eslint-disable-line deprecation/deprecation
     expect(stateFunctionCalled).to.eq(false);
     // force to state[0]
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
     // force to state[1]
     stateFunctionCalled = false;
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
     // force to state[2]
     stateFunctionCalled = false;
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
   });
@@ -131,7 +131,7 @@ describe("ActionItemButton", () => {
 
     const wrapper = mount(<ActionItemButton actionItem={testSyncStateCommand} />); // eslint-disable-line deprecation/deprecation
     expect(stateFunctionCalled).to.eq(false);
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
     expect(stateFunctionCalled).to.eq(true);
     wrapper.update();
   });

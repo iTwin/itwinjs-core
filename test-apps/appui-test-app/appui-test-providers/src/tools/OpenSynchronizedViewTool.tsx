@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
-import { ContentDialog, ContentDialogManager, FrontstageManager } from "@itwin/appui-react";
+import { ContentDialog, UiFramework } from "@itwin/appui-react";
 import { IModelApp, Tool } from "@itwin/core-frontend";
 import * as React from "react";
 import { SynchronizedFloatingView } from "../ui/dialogs/SynchronizedFloatingViewComponent";
@@ -29,7 +29,7 @@ export class OpenSynchronizedViewTool extends Tool {
     OpenSynchronizedViewTool._counter = OpenSynchronizedViewTool._counter + 1;
     let x: number | undefined;
     let y: number | undefined;
-    const stage = FrontstageManager.activeFrontstageDef;
+    const stage = UiFramework.frontstages.activeFrontstageDef;
     if (stage && stage.nineZoneState) {
       const floatingContentCount = stage.floatingContentControls?.length ?? 0;
       // we should not really every support more than 8 floating views
@@ -38,7 +38,7 @@ export class OpenSynchronizedViewTool extends Tool {
         y = (.3 * stage.nineZoneState.size.height) + (40 * (floatingContentCount - 1));
       }
     }
-    ContentDialogManager.openDialog(<IModelViewDialog x={x} y={y} id={OpenSynchronizedViewTool.dialogId}
+    UiFramework.content.dialogs.openDialog(<IModelViewDialog x={x} y={y} id={OpenSynchronizedViewTool.dialogId}
       title={`IModel View (${OpenSynchronizedViewTool._counter})`} />, OpenSynchronizedViewTool.dialogId);
   }
 
@@ -66,7 +66,7 @@ export class OpenSynchronizedViewTool extends Tool {
 
 export function IModelViewDialog({ x, y, id, title }: { x?: number, y?: number, id: string, title: string }) {
   const handleClose = React.useCallback(() => {
-    ContentDialogManager.closeDialog(id);
+    UiFramework.content.dialogs.closeDialog(id);
   }, [id]);
 
   return (

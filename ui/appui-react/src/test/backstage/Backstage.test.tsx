@@ -8,7 +8,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  Backstage, FrontstageManager, SyncUiEventDispatcher,
+  Backstage, UiFramework,
 } from "../../appui-react";
 import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 
@@ -18,8 +18,8 @@ describe("Backstage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    await FrontstageManager.setActiveFrontstageDef(undefined);
-    SyncUiEventDispatcher.initialize();   // To process Backstage events
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
+    UiFramework.events.initialize();   // To process Backstage events
     await MockRender.App.startup();
   });
 

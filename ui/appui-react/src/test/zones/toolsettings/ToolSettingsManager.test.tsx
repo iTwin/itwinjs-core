@@ -10,13 +10,13 @@ import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
   DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
 } from "@itwin/appui-abstract";
-import { SyncToolSettingsPropertiesEventArgs, SyncUiEventDispatcher, ToolSettingsManager } from "../../../appui-react";
+import { InternalToolSettingsManager, SyncToolSettingsPropertiesEventArgs, UiFramework } from "../../../appui-react";
 import TestUtils from "../../TestUtils";
 
 // cSpell:Ignore USELENGTH
 
-describe("ToolSettingsManager", () => {
-  const testToolId = "ToolSettingsManager-TestTool";
+describe("InternalToolSettingsManager", () => {
+  const testToolId = "InternalToolSettingsManager-TestTool";
   const testToolLabel = "TestTool";
   const testToolDescription = "TestToolDescription";
   const useLengthName = "use-length";
@@ -62,8 +62,8 @@ describe("ToolSettingsManager", () => {
   });
 
   it("check initial values", () => {
-    expect(ToolSettingsManager.useDefaultToolSettingsProvider).to.be.false;
-    expect(ToolSettingsManager.toolSettingsProperties).to.be.empty;
+    expect(InternalToolSettingsManager.useDefaultToolSettingsProvider).to.be.false;
+    expect(InternalToolSettingsManager.toolSettingsProperties).to.be.empty;
   });
 
   it("simulate a tool starting", () => {
@@ -75,39 +75,39 @@ describe("ToolSettingsManager", () => {
     toolSettingsProperties.push({ value: useLengthValue, property: useLengthDescription, editorPosition: { rowPriority: 0, columnIndex: 1 } });
     toolSettingsProperties.push({ value: lengthValue, property: lengthDescription, editorPosition: { rowPriority: 0, columnIndex: 3 } });
     toolSettingsProperties.push({ value: enumValue, property: enumDescription, editorPosition: { rowPriority: 1, columnIndex: 3 } });
-    ToolSettingsManager.initializeToolSettingsData(toolSettingsProperties, testToolId, testToolLabel, testToolDescription);
+    InternalToolSettingsManager.initializeToolSettingsData(toolSettingsProperties, testToolId, testToolLabel, testToolDescription);
 
     // override the property getter to return the properties needed for the test
-    const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(ToolSettingsManager, "toolSettingsProperties")!;
-    Object.defineProperty(ToolSettingsManager, "toolSettingsProperties", {
+    const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(InternalToolSettingsManager, "toolSettingsProperties")!;
+    Object.defineProperty(InternalToolSettingsManager, "toolSettingsProperties", {
       get: () => toolSettingsProperties,
     });
 
-    expect(ToolSettingsManager.useDefaultToolSettingsProvider).to.be.true;
-    expect(ToolSettingsManager.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
-    expect(ToolSettingsManager.activeToolLabel).to.eq(testToolLabel);
-    expect(ToolSettingsManager.activeToolDescription).to.eq(testToolDescription);
+    expect(InternalToolSettingsManager.useDefaultToolSettingsProvider).to.be.true;
+    expect(InternalToolSettingsManager.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
+    expect(InternalToolSettingsManager.activeToolLabel).to.eq(testToolLabel);
+    expect(InternalToolSettingsManager.activeToolDescription).to.eq(testToolDescription);
 
     // restore the overriden property getter
-    Object.defineProperty(ToolSettingsManager, "toolSettingsProperties", propertyDescriptorToRestore);
+    Object.defineProperty(InternalToolSettingsManager, "toolSettingsProperties", propertyDescriptorToRestore);
 
-    ToolSettingsManager.clearToolSettingsData();
-    expect(ToolSettingsManager.useDefaultToolSettingsProvider).to.be.false;
-    expect(ToolSettingsManager.toolSettingsProperties).to.be.empty;
-    expect(ToolSettingsManager.activeToolLabel).to.be.empty;
-    expect(ToolSettingsManager.activeToolDescription).to.be.empty;
+    InternalToolSettingsManager.clearToolSettingsData();
+    expect(InternalToolSettingsManager.useDefaultToolSettingsProvider).to.be.false;
+    expect(InternalToolSettingsManager.toolSettingsProperties).to.be.empty;
+    expect(InternalToolSettingsManager.activeToolLabel).to.be.empty;
+    expect(InternalToolSettingsManager.activeToolDescription).to.be.empty;
   });
 
   it("should handle no tool settings", () => {
     const toolSettingsProperties: DialogItem[] = [];
-    const result = ToolSettingsManager.initializeToolSettingsData(toolSettingsProperties);
+    const result = InternalToolSettingsManager.initializeToolSettingsData(toolSettingsProperties);
     expect(result).to.be.false;
   });
 
   it("should support setting active tool label", () => {
     const label = "Test Label";
-    ToolSettingsManager.activeToolLabel = label;
-    expect(ToolSettingsManager.activeToolLabel).to.eq(label);
+    InternalToolSettingsManager.activeToolLabel = label;
+    expect(InternalToolSettingsManager.activeToolLabel).to.eq(label);
   });
 
   it("handleSyncToolSettingsPropertiesEvent", () => {
@@ -123,16 +123,16 @@ describe("ToolSettingsManager", () => {
       expect(args.syncProperties[0].propertyName).to.be.equal(useLengthName);
     };
 
-    ToolSettingsManager.onSyncToolSettingsProperties.addListener(handleSyncToolSettingsPropertiesEvent);
+    InternalToolSettingsManager.onSyncToolSettingsProperties.addListener(handleSyncToolSettingsPropertiesEvent);
     expect(eventCalled).to.be.false;
     const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
-    ToolSettingsManager.onSyncToolSettingsProperties.emit(syncArgs);
+    InternalToolSettingsManager.onSyncToolSettingsProperties.emit(syncArgs);
     expect(eventCalled).to.be.true;
-    ToolSettingsManager.onSyncToolSettingsProperties.removeListener(handleSyncToolSettingsPropertiesEvent);
+    InternalToolSettingsManager.onSyncToolSettingsProperties.removeListener(handleSyncToolSettingsPropertiesEvent);
     eventCalled = false;
-    ToolSettingsManager.onSyncToolSettingsProperties.emit(syncArgs);
+    InternalToolSettingsManager.onSyncToolSettingsProperties.emit(syncArgs);
     expect(eventCalled).to.be.false;
-    ToolSettingsManager.onReloadToolSettingsProperties.emit();
+    InternalToolSettingsManager.onReloadToolSettingsProperties.emit();
     expect(eventCalled).to.be.false;
   });
 
@@ -143,20 +143,20 @@ describe("ToolSettingsManager", () => {
       eventCalled = true;
     };
 
-    ToolSettingsManager.onReloadToolSettingsProperties.addListener(handleReloadToolSettingsPropertiesEvent);
+    InternalToolSettingsManager.onReloadToolSettingsProperties.addListener(handleReloadToolSettingsPropertiesEvent);
     expect(eventCalled).to.be.false;
-    ToolSettingsManager.onReloadToolSettingsProperties.emit();
+    InternalToolSettingsManager.onReloadToolSettingsProperties.emit();
     expect(eventCalled).to.be.true;
-    ToolSettingsManager.onReloadToolSettingsProperties.removeListener(handleReloadToolSettingsPropertiesEvent);
+    InternalToolSettingsManager.onReloadToolSettingsProperties.removeListener(handleReloadToolSettingsPropertiesEvent);
     eventCalled = false;
-    ToolSettingsManager.onReloadToolSettingsProperties.emit();
+    InternalToolSettingsManager.onReloadToolSettingsProperties.emit();
     expect(eventCalled).to.be.false;
   });
 
   it("handleDispatchSyncUiEvent", () => {
-    ToolSettingsManager.initialize();
-    const immediateStub = sinon.stub(SyncUiEventDispatcher, "dispatchImmediateSyncUiEvent");
-    const timerStub = sinon.stub(SyncUiEventDispatcher, "dispatchSyncUiEvent");
+    InternalToolSettingsManager.initialize();
+    const immediateStub = sinon.stub(UiFramework.events, "dispatchImmediateSyncUiEvent");
+    const timerStub = sinon.stub(UiFramework.events, "dispatchSyncUiEvent");
     IModelApp.toolAdmin.dispatchUiSyncEvent("test1");
     timerStub.calledOnce.should.be.true;
 
@@ -167,27 +167,27 @@ describe("ToolSettingsManager", () => {
   describe("focusIntoToolSettings", () => {
     it("should return false if no ToolSettings div found", async () => {
       render(<div data-testid="div"></div>);
-      expect(ToolSettingsManager.focusIntoToolSettings()).to.be.false;
+      expect(InternalToolSettingsManager.focusIntoToolSettings()).to.be.false;
     });
 
     it("should return true if focusable item in docked ToolSettings", async () => {
       render(<div className="nz-toolSettings-docked"><button /></div>);
-      expect(ToolSettingsManager.focusIntoToolSettings()).to.be.true;
+      expect(InternalToolSettingsManager.focusIntoToolSettings()).to.be.true;
     });
 
     it("should return false if no focusable item in docked ToolSettings", async () => {
       render(<div className="nz-toolSettings-docked"></div>);
-      expect(ToolSettingsManager.focusIntoToolSettings()).to.be.false;
+      expect(InternalToolSettingsManager.focusIntoToolSettings()).to.be.false;
     });
 
     it("should return true if focusable item in floating ToolSettings", async () => {
       render(<div className="uifw-tool-settings-grid-container"><button /></div>);
-      expect(ToolSettingsManager.focusIntoToolSettings()).to.be.true;
+      expect(InternalToolSettingsManager.focusIntoToolSettings()).to.be.true;
     });
 
     it("should return false if no focusable item in floating ToolSettings", async () => {
       render(<div className="uifw-tool-settings-grid-container"></div>);
-      expect(ToolSettingsManager.focusIntoToolSettings()).to.be.false;
+      expect(InternalToolSettingsManager.focusIntoToolSettings()).to.be.false;
     });
 
     // NEEDSWORK - need tests with real Tool Settings for V1 & V2

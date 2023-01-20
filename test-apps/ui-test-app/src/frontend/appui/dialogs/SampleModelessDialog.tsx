@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
-import { ModelessDialog, ModelessDialogManager } from "@itwin/appui-react";
+import { ModelessDialog, UiFramework } from "@itwin/appui-react";
 
 export interface SampleModelessDialogProps {
   dialogId: string;
@@ -47,6 +47,6 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
 
   private _closeDialog = () => {
     this.props.onClose && this.props.onClose();
-    ModelessDialogManager.closeDialog(this.props.dialogId);
+    UiFramework.dialogs.modeless.closeDialog(this.props.dialogId);
   };
 }

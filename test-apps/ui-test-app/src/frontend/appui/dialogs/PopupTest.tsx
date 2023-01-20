@@ -6,7 +6,7 @@ import "./PopupTest.scss";
 import * as React from "react";
 import { DialogButtonType, RelativePosition } from "@itwin/appui-abstract";
 import { Dialog, Popup } from "@itwin/core-react";
-import { ModalDialogManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 
 interface PopupTestProps {
@@ -136,7 +136,7 @@ export class PopupTestDialog extends React.Component<PopupTestProps, PopupTestSt
       opened: false,
     }), () => {
       if (!this.state.opened)
-        ModalDialogManager.closeDialog();
+        UiFramework.dialogs.modal.closeDialog();
     });
   };
 

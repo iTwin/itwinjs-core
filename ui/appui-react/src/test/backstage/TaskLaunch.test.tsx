@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
-  BackstageItemState, ConfigurableUiManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps,
-  FrontstageProvider, SyncUiEventDispatcher, TaskLaunchBackstageItem, TaskPropsList, WorkflowManager, WorkflowPropsList,
+  BackstageItemState, ConfigurableUiManager, CoreTools, Frontstage, FrontstageProps,
+  FrontstageProvider, TaskLaunchBackstageItem, TaskPropsList, UiFramework, WorkflowManager, WorkflowPropsList,
 } from "../../appui-react";
 import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
@@ -21,7 +21,7 @@ describe("Backstage", () => {
   let theUserTo: ReturnType<typeof userEvent.setup>;
   beforeEach(async ()=>{
     theUserTo = userEvent.setup();
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
     WorkflowManager.setActiveWorkflow(undefined);
   });
 
@@ -45,7 +45,7 @@ describe("Backstage", () => {
       }
     }
     const frontstageProvider = new Frontstage1();
-    ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
 
     const taskPropsList: TaskPropsList = {
       tasks: [
@@ -96,7 +96,7 @@ describe("Backstage", () => {
       );
 
       expect(stateFunc).not.to.be.called;
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
       expect(stateFunc).to.be.called;
 
       await theUserTo.click(screen.getByRole("menuitem"));

@@ -13,7 +13,7 @@ import { OpenDialogOptions } from "electron";
 
 import { FillCentered } from "@itwin/core-react";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage,
   FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../..";
@@ -33,11 +33,11 @@ class LocalFileOpenControl extends ContentControl {
   }
 
   private _handleClose = () => {
-    FrontstageManager.closeModalFrontstage();
+    UiFramework.frontstages.closeModalFrontstage();
   };
 
   private _handleViewsSelected = async (iModelConnection: IModelConnection, views: Id64String[]) => {
-    FrontstageManager.closeModalFrontstage();
+    UiFramework.frontstages.closeModalFrontstage();
     await SampleAppIModelApp.openViews(iModelConnection, views);
   };
 }
@@ -53,9 +53,9 @@ export class LocalFileOpenFrontstage extends FrontstageProvider {
   public static async open() {
     if (LocalFileSupport.localFilesSupported()) {
       const frontstageProvider = new LocalFileOpenFrontstage();
-      FrontstageManager.addFrontstageProvider(frontstageProvider);
-      const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+      const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageProvider.frontstage.props.id);
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
     }
   }
 

@@ -11,7 +11,7 @@ import {
   ColumnDescription, LessGreaterOperatorProcessor,
   PropertyUpdatedArgs, SelectionMode, Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget, TypeConverter, TypeConverterManager,
 } from "@itwin/components-react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, ContentControl, UiFramework, WidgetControl } from "@itwin/appui-react";
 import { Input, Select, SelectOption, ToggleSwitch } from "@itwin/itwinui-react";
 import { BodyText, Gap } from "@itwin/core-react";
 import { TableExampleData } from "./TableExampleData";
@@ -198,7 +198,7 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
   }
 }
 
-ConfigurableUiManager.registerControl("TableExampleContent", TableExampleContentControl);
+UiFramework.controls.register("TableExampleContent", TableExampleContentControl);
 
 /** An example formatter that both formats and parses dates. */
 class MdyFormatter implements DateFormatter {

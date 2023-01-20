@@ -11,13 +11,13 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  ConfigurableCreateInfo, FrontstageDef, FrontstageManager, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsEntry, ToolSettingsGrid,
-  ToolUiProvider, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef,
+  ConfigurableCreateInfo, FrontstageDef, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsEntry, ToolSettingsGrid,
+  ToolUiProvider, UiFramework, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef,
 } from "../../appui-react";
 
 describe("WidgetPanelsToolSettings", () => {
   it("should not render w/o tool settings top center zone", () => {
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
+    sinon.stub(UiFramework.frontstages, "activeFrontstageDef").get(() => undefined);
     const sut = shallow(<WidgetPanelsToolSettings />);
     sut.should.matchSnapshot();
   });
@@ -25,7 +25,7 @@ describe("WidgetPanelsToolSettings", () => {
   it("should render", () => {
     const frontstageDef = new FrontstageDef();
     const topCenter = new ZoneDef();
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(UiFramework.frontstages, "activeFrontstageDef").get(() => frontstageDef);
     sinon.stub(frontstageDef, "topCenter").get(() => topCenter);
     sinon.stub(topCenter, "isToolSettings").get(() => true);
     const { container } = render(
@@ -48,7 +48,7 @@ describe("ToolSettingsDockedContent", () => {
 
   it("should render settings", () => {
     const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
-    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
+    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
     const horizontalToolSettingNodes: ToolSettingsEntry[] = [{ labelNode: "Date", editorNode: <input type="date" /> }];
     sinon.stub(activeToolSettingsProvider, "horizontalToolSettingNodes").get(() => horizontalToolSettingNodes);
     const { container } = render(
@@ -57,7 +57,7 @@ describe("ToolSettingsDockedContent", () => {
       </DragManagerContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
-    FrontstageManager.onToolSettingsReloadEvent.emit();
+    UiFramework.frontstages.onToolSettingsReloadEvent.emit();
   });
 });
 
@@ -88,7 +88,7 @@ describe("ToolSettingsContent", () => {
 
   it("should render (Floating Widget mode)", () => {
     const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
-    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
+    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
     sinon.stub(activeToolSettingsProvider, "toolSettingsNode").get(() => <div>Hello World</div>);
     const state = createNineZoneState({
       toolSettings: {
@@ -115,8 +115,8 @@ describe("ToolSettingsContent", () => {
 
 describe("useHorizontalToolSettingNodes", () => {
   it("should add tool activated event listener", () => {
-    const addListenerSpy = sinon.spy(FrontstageManager.onToolActivatedEvent, "addListener");
-    const removeListenerSpy = sinon.spy(FrontstageManager.onToolActivatedEvent, "removeListener");
+    const addListenerSpy = sinon.spy(UiFramework.frontstages.onToolActivatedEvent, "addListener");
+    const removeListenerSpy = sinon.spy(UiFramework.frontstages.onToolActivatedEvent, "removeListener");
     const sut = renderHook(() => useHorizontalToolSettingNodes());
     sut.unmount();
     addListenerSpy.calledOnce.should.true;
@@ -124,10 +124,10 @@ describe("useHorizontalToolSettingNodes", () => {
   });
 
   it("should add tool settings reload event listener", () => {
-    const addListenerSpy = sinon.spy(FrontstageManager.onToolSettingsReloadEvent, "addListener");
-    const removeListenerSpy = sinon.spy(FrontstageManager.onToolSettingsReloadEvent, "removeListener");
+    const addListenerSpy = sinon.spy(UiFramework.frontstages.onToolSettingsReloadEvent, "addListener");
+    const removeListenerSpy = sinon.spy(UiFramework.frontstages.onToolSettingsReloadEvent, "removeListener");
     const sut = renderHook(() => useHorizontalToolSettingNodes());
-    FrontstageManager.onToolSettingsReloadEvent.emit();
+    UiFramework.frontstages.onToolSettingsReloadEvent.emit();
     sut.unmount();
     addListenerSpy.calledOnce.should.true;
     removeListenerSpy.calledOnce.should.true;
@@ -136,7 +136,7 @@ describe("useHorizontalToolSettingNodes", () => {
   it("should not return undefined if activeToolSettingsProvider is unset", () => {
     const { result } = renderHook(() => useHorizontalToolSettingNodes());
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      FrontstageManager.onToolActivatedEvent.emit({ toolId: "t1" });
+      UiFramework.frontstages.onToolActivatedEvent.emit({ toolId: "t1" });
     });
     (result.current === undefined).should.false;
   });
@@ -157,15 +157,15 @@ describe("useHorizontalToolSettingNodes", () => {
       }
     }
 
-    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
+    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
     const sut = renderHook(() => useHorizontalToolSettingNodes());
 
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
-      FrontstageManager.onToolActivatedEvent.emit({
+      sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
+      UiFramework.frontstages.onToolActivatedEvent.emit({
         toolId: "",
       });
-      FrontstageManager.onToolSettingsReloadEvent.emit();
+      UiFramework.frontstages.onToolSettingsReloadEvent.emit();
     });
 
     sut.result.current!.should.eq(entries);
@@ -180,8 +180,8 @@ describe("useToolSettingsNode", () => {
   }
 
   it("should add/remove tool activated event listener", () => {
-    const addListenerSpy = sinon.spy(FrontstageManager.onToolActivatedEvent, "addListener");
-    const removeListenerSpy = sinon.spy(FrontstageManager.onToolActivatedEvent, "removeListener");
+    const addListenerSpy = sinon.spy(UiFramework.frontstages.onToolActivatedEvent, "addListener");
+    const removeListenerSpy = sinon.spy(UiFramework.frontstages.onToolActivatedEvent, "removeListener");
     const sut = renderHook(() => useToolSettingsNode());
     sut.unmount();
     addListenerSpy.calledOnce.should.true;
@@ -189,10 +189,10 @@ describe("useToolSettingsNode", () => {
   });
 
   it("should add/remove tool settings reload event listener", () => {
-    const addListenerSpy = sinon.spy(FrontstageManager.onToolSettingsReloadEvent, "addListener");
-    const removeListenerSpy = sinon.spy(FrontstageManager.onToolSettingsReloadEvent, "removeListener");
+    const addListenerSpy = sinon.spy(UiFramework.frontstages.onToolSettingsReloadEvent, "addListener");
+    const removeListenerSpy = sinon.spy(UiFramework.frontstages.onToolSettingsReloadEvent, "removeListener");
     const sut = renderHook(() => useToolSettingsNode());
-    FrontstageManager.onToolSettingsReloadEvent.emit();
+    UiFramework.frontstages.onToolSettingsReloadEvent.emit();
     sut.unmount();
     addListenerSpy.calledOnce.should.true;
     removeListenerSpy.calledOnce.should.true;
@@ -200,23 +200,23 @@ describe("useToolSettingsNode", () => {
 
   it("should update toolSettingsNode", () => {
     const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
-    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
+    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
     const sut = renderHook(() => useToolSettingsNode());
 
     const node = <div>Hello World</div>;
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
       sinon.stub(activeToolSettingsProvider, "toolSettingsNode").get(() => node);
-      FrontstageManager.onToolActivatedEvent.emit({
+      UiFramework.frontstages.onToolActivatedEvent.emit({
         toolId: "",
       });
-      FrontstageManager.onToolSettingsReloadEvent.emit();
+      UiFramework.frontstages.onToolSettingsReloadEvent.emit();
     });
 
     sut.result.current!.should.eq(node);
   });
 
   it("should initialize to undefined w/o active activeToolSettingsProvider", () => {
-    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
+    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => undefined);
     const { result } = renderHook(() => useToolSettingsNode());
 
     (result.current === undefined).should.true;
@@ -225,7 +225,7 @@ describe("useToolSettingsNode", () => {
   it("should return undefined if activeToolSettingsProvider is unset", () => {
     const { result } = renderHook(() => useToolSettingsNode());
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      FrontstageManager.onToolActivatedEvent.emit({ toolId: "t1" });
+      UiFramework.frontstages.onToolActivatedEvent.emit({ toolId: "t1" });
     });
     (result.current === undefined).should.true;
   });

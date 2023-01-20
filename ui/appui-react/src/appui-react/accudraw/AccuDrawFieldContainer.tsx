@@ -16,12 +16,12 @@ import { CommonProps, IconSpec, Orientation, UiStateStorage } from "@itwin/core-
 import { getCSSColorFromDef } from "@itwin/imodel-components-react";
 
 import { AccuDrawInputField } from "./AccuDrawInputField";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { AccuDrawSetCompassModeEventArgs, AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldLockEventArgs, FrameworkAccuDraw } from "./FrameworkAccuDraw";
 import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
 
 import angleIconSvg from "./angle.svg";
 import distanceIconSvg from "./distance.svg";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for [[AccuDrawFieldContainer]] component
  * @beta */
@@ -176,7 +176,7 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   }, []);
 
   const handleEscPressed = React.useCallback(() => {
-    KeyboardShortcutManager.setFocusToHome();
+    UiFramework.keyboardShortcuts.setFocusToHome();
   }, []);
 
   React.useEffect(() => {

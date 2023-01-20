@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import {
   BackstageActionItem, BackstageComposerActionItem, BackstageComposerItem, BackstageComposerStageLauncher, BackstageItemType,
-  BackstageStageLauncher, FrontstageManager,
+  BackstageStageLauncher, UiFramework,
 } from "../../appui-react";
 import TestUtils, { childStructure, selectorMatches, userEvent } from "../TestUtils";
 import { BadgeType } from "@itwin/appui-abstract";
@@ -75,8 +75,8 @@ describe("BackstageComposerItem", () => {
     });
 
     it("should activate frontstage", async () => {
-      sinon.stub(FrontstageManager, "hasFrontstage").withArgs("Frontstage-1").returns(true);
-      const spy = sinon.stub(FrontstageManager, "setActiveFrontstage");
+      sinon.stub(UiFramework.frontstages, "hasFrontstage").withArgs("Frontstage-1").returns(true);
+      const spy = sinon.stub(UiFramework.frontstages, "setActiveFrontstage");
 
       render(<BackstageComposerStageLauncher item={getStageLauncherItem({ stageId: "Frontstage-1" })} />);
 
@@ -85,7 +85,7 @@ describe("BackstageComposerItem", () => {
     });
 
     it("should not activate if frontstage is not found", async () => {
-      const spy = sinon.stub(FrontstageManager, "setActiveFrontstage");
+      const spy = sinon.stub(UiFramework.frontstages, "setActiveFrontstage");
 
       render(<BackstageComposerStageLauncher item={getStageLauncherItem()} />);
       await theUserTo.click(screen.getByRole("menuitem"));
@@ -102,8 +102,8 @@ describe("BackstageComposerItem", () => {
 
   describe("BackstageComposerItem", () => {
     it("should render stage launcher", async () => {
-      const spy = sinon.spy(FrontstageManager, "setActiveFrontstage");
-      sinon.stub(FrontstageManager, "hasFrontstage").returns(true);
+      const spy = sinon.spy(UiFramework.frontstages, "setActiveFrontstage");
+      sinon.stub(UiFramework.frontstages, "hasFrontstage").returns(true);
       render(<BackstageComposerItem item={getStageLauncherItem()} />);
 
       await theUserTo.click(screen.getByRole("menuitem"));

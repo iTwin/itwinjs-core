@@ -6,7 +6,7 @@ import * as React from "react";
 import { IModelApp, MessageBoxIconType, MessageBoxType } from "@itwin/core-frontend";
 import { DialogButtonStyle, DialogButtonType, MessageSeverity } from "@itwin/appui-abstract";
 import { MessageBox } from "@itwin/core-react";
-import { ModalDialogManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 
 export interface TestMessageBoxProps {
@@ -67,7 +67,7 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
       opened: !prevState.opened,
     }), () => {
       if (!this.state.opened)
-        ModalDialogManager.closeDialog();
+        UiFramework.dialogs.modal.closeDialog();
       if (this.props.onResult)
         this.props.onResult(DialogButtonType.Close);
     });

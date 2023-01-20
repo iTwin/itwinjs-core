@@ -8,7 +8,6 @@
 
 import { UiStateEntry, UiStateStorage } from "@itwin/core-react";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFramework";
 
 // cSpell:ignore configurableui
@@ -109,7 +108,7 @@ export class AppUiSettings implements UserSettingsProvider {
       () => UiFramework.getToolbarOpacity(), (value: number) => UiFramework.setToolbarOpacity(value), defaults.toolbarOpacity);
     this._settings.push(this.toolbarOpacity);
 
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.addListener(this.handleSyncUiEvent);
   }
 
   private handleSyncUiEvent = async (args: UiSyncEventArgs) => {

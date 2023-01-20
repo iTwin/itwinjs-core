@@ -8,7 +8,6 @@
 
 import { ToolAdmin } from "@itwin/core-frontend";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../UiFramework";
 
 /** UiFramework implementation of ToolAdmin
@@ -21,8 +20,8 @@ export class FrameworkToolAdmin extends ToolAdmin {
     let handled = false;
 
     if (wentDown && !UiFramework.isContextMenuOpen) {
-      if (KeyboardShortcutManager.isFocusOnHome && e.key !== SpecialKey.Escape) {
-        KeyboardShortcutManager.processKey(e.key, e.altKey, e.ctrlKey, e.shiftKey);
+      if (UiFramework.keyboardShortcuts.isFocusOnHome && e.key !== SpecialKey.Escape) {
+        UiFramework.keyboardShortcuts.processKey(e.key, e.altKey, e.ctrlKey, e.shiftKey);
         handled = true;
       }
     }

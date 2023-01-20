@@ -6,7 +6,7 @@
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { Dialog, FieldDefinitions, FieldValues, Form } from "@itwin/core-react";
-import { ModalDialogManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 
 export class ExampleForm extends React.Component {
   private _title = "Example Form";
@@ -17,12 +17,12 @@ export class ExampleForm extends React.Component {
   private _pickListLabel = "Picker";
 
   public static open() {
-    ModalDialogManager.openDialog(<ExampleForm />);
+    UiFramework.dialogs.modal.openDialog(<ExampleForm />);
   }
 
   protected async handleSubmit(values: FieldValues): Promise<void> {
     await this.processFormSubmission(values);
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
     const msg = JSON.stringify(values);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Form Submitted", msg));
   }
@@ -43,7 +43,7 @@ export class ExampleForm extends React.Component {
   }
 
   protected handleCancel() {
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
   }
 
   public override render() {

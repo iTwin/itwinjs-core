@@ -8,14 +8,14 @@
 
 import * as React from "react";
 import { UiEvent } from "@itwin/appui-abstract";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentControl } from "./ContentControl";
-import { ContentLayoutManager } from "./ContentLayoutManager";
+import { InternalContentLayoutManager } from "./ContentLayoutManager";
 import { IModelApp } from "@itwin/core-frontend";
 import { ContentGroup } from "./ContentGroup";
 import { Logger } from "@itwin/core-bentley";
 import { UiFramework } from "../UiFramework";
+import { InternalContentDialogManager } from "../dialog/ContentDialogManager";
 
 /** [[MouseDownChangedEvent]] Args interface.
  * @public
@@ -46,9 +46,9 @@ export interface ActiveContentChangedEventArgs {
 export class ActiveContentChangedEvent extends UiEvent<ActiveContentChangedEventArgs> { }
 
 /** Content View Manager class.
- * @public
+ * @internal
  */
-export class ContentViewManager {
+export class InternalContentViewManager {
   private static _mouseDown: boolean = false;
   private static _activeContent?: React.ReactNode;
 
@@ -120,7 +120,7 @@ export class ContentViewManager {
   /** Return the active ContentControl. */
   public static getActiveContentControl(): ContentControl | undefined {
     let activeContentControl: ContentControl | undefined;
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
 
     // istanbul ignore else
     if (this._activeContent && activeFrontstageDef) {
@@ -132,7 +132,7 @@ export class ContentViewManager {
   }
 
   public static addFloatingContentControl(contentControl?: ContentControl) {
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
     // istanbul ignore else
     if (activeFrontstageDef && contentControl) {
       activeFrontstageDef.addFloatingContentControl(contentControl);
@@ -140,7 +140,7 @@ export class ContentViewManager {
   }
 
   public static dropFloatingContentControl(contentControl?: ContentControl) {
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
     // istanbul ignore else
     if (activeFrontstageDef && contentControl)
       activeFrontstageDef.dropFloatingContentControl(contentControl);
@@ -153,7 +153,7 @@ export class ContentViewManager {
       const oldContent = this._activeContent;
       this._activeContent = activeContent;
 
-      const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+      const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
 
       // istanbul ignore else
       if (activeFrontstageDef) {
@@ -188,7 +188,7 @@ export class ContentViewManager {
 
   /** Refreshes the active [[ContentControl]] */
   public static refreshActiveContent(activeContent: React.ReactNode) {
-    ContentLayoutManager.refreshActiveLayout();
+    this.layouts.refreshActiveLayout();
     this.setActiveContent(activeContent, true);
   }
 
@@ -251,4 +251,26 @@ export class ContentViewManager {
       return false;
     return (ViewUtilities.viewSupportsCamera(content.viewport));
   }
+
+  /**
+   * Manage content layouts.
+   * @beta
+   */
+  public static get layouts() {
+    return InternalContentLayoutManager;
+  }
+  /**
+   * Manage dialogs displaying managed content.
+   * @beta
+   */
+  public static get dialogs() {
+    return InternalContentDialogManager;
+  }
 }
+
+/** Content View Manager class.
+ * @public
+ * @deprecated in 3.6. Use `UiFramework.content` property
+ */
+export class ContentViewManager extends InternalContentViewManager {}
+

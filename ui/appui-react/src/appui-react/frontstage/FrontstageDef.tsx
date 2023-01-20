@@ -21,8 +21,6 @@ import {
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";
-import { ContentLayoutManager } from "../content/ContentLayoutManager";
-import { ContentViewManager } from "../content/ContentViewManager";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { StagePanelDef, StagePanelState, toPanelSide } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
@@ -31,14 +29,12 @@ import { WidgetDef } from "../widgets/WidgetDef";
 import { Zone, ZoneLocation, ZoneProps } from "../zones/Zone";
 import { ZoneDef } from "../zones/ZoneDef";
 import { Frontstage, FrontstageProps } from "./Frontstage";
-import { FrontstageManager } from "./FrontstageManager";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { FrameworkStateReducer, SavedWidgets } from "../widget-panels/Frontstage";
 import { assert, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
-import { ContentDialogManager } from "../dialog/ContentDialogManager";
 import { FrontstageConfig } from "./FrontstageConfig";
 import { Widget } from "../widgets/Widget";
 import { WidgetConfig } from "../widgets/WidgetConfig";
@@ -230,14 +226,14 @@ export class FrontstageDef {
         newWidgetStateMap.forEach((stateValue, widgetDef) => {
           const originalState = originalWidgetStateMap.get(widgetDef);
           if (originalState !== stateValue) {
-            FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef, widgetState: stateValue });
+            UiFramework.frontstages.onWidgetStateChangedEvent.emit({ widgetDef, widgetState: stateValue });
             widgetDef.onWidgetStateChanged();
           }
         });
         newPanelStateMap.forEach((stateValue, panelDef) => {
           const originalState = originalPanelStateMap.get(panelDef);
           if (originalState !== stateValue) {
-            FrontstageManager.onPanelStateChangedEvent.emit({
+            UiFramework.frontstages.onPanelStateChangedEvent.emit({
               panelDef,
               panelState: stateValue,
             });
@@ -263,7 +259,7 @@ export class FrontstageDef {
 
     // istanbul ignore next - don't trigger any side effects until stage "isReady"
     if (!(this._isStageClosing || this._isApplicationClosing) || this.isReady) {
-      FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
+      UiFramework.frontstages.onFrontstageNineZoneStateChangedEvent.emit({
         frontstageDef: this,
         state,
       });
@@ -316,8 +312,8 @@ export class FrontstageDef {
     if (!this._contentGroup)
       throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group not defined`);
 
-    this._contentLayoutDef = ContentLayoutManager.getLayoutForGroup(this._contentGroup);
-    FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
+    this._contentLayoutDef = UiFramework.content.layouts.getLayoutForGroup(this._contentGroup);
+    UiFramework.frontstages.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
 
     this._timeTracker.startTiming();
     await this._onActivated();
@@ -346,10 +342,10 @@ export class FrontstageDef {
     this._timeTracker.stopTiming();
 
     this._isStageClosing = true; // this keeps widgets in child windows from automatically re-docking
-    UiFramework.childWindowManager.closeAllChildWindows();
+    UiFramework.childWindows.closeAll();
 
     if (this._floatingContentControls) {
-      ContentDialogManager.closeAll();
+      UiFramework.content.dialogs.closeAll();
       this._floatingContentControls = undefined;
     }
 
@@ -443,7 +439,7 @@ export class FrontstageDef {
     }
 
     if (contentControl) {
-      ContentViewManager.setActiveContent(contentControl.reactNode, true);
+      UiFramework.content.setActiveContent(contentControl.reactNode, true);
       if (contentControl.viewport) {
         const status = await IModelApp.viewManager.setSelectedView(contentControl.viewport);
         activated = status === BentleyStatus.SUCCESS;
@@ -458,7 +454,7 @@ export class FrontstageDef {
     if (oldContent)
       oldContent.onDeactivated();
     newContent.onActivated();
-    FrontstageManager.onContentControlActivatedEvent.emit({ activeContentControl: newContent, oldContentControl: oldContent });
+    UiFramework.frontstages.onContentControlActivatedEvent.emit({ activeContentControl: newContent, oldContentControl: oldContent });
   }
 
   /** Sets the active view content control based on the selected viewport. */
@@ -466,7 +462,7 @@ export class FrontstageDef {
     const contentControl = this.contentControls.find((control: ContentControl) => control.viewport === viewport);
     // istanbul ignore else
     if (contentControl) {
-      ContentViewManager.setActiveContent(contentControl.reactNode, true);
+      UiFramework.content.setActiveContent(contentControl.reactNode, true);
       return true;
     }
 
@@ -636,7 +632,7 @@ export class FrontstageDef {
       this._floatingContentControls = new Array<ContentControl>();
 
     this._floatingContentControls.push(contentControl);
-    ContentViewManager.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
+    UiFramework.content.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
   }
 
   public dropFloatingContentControl(contentControl?: ContentControl) {
@@ -648,7 +644,7 @@ export class FrontstageDef {
     // istanbul ignore else
     if (index > -1) {
       this._floatingContentControls.splice(index, 1);
-      ContentViewManager.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
+      UiFramework.content.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
     }
   }
 
@@ -739,7 +735,7 @@ export class FrontstageDef {
     for (const widgetDef of this.widgetDefs) {
       widgetDef.setWidgetState(widgetDef.defaultState);
     }
-    FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
+    UiFramework.frontstages.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
   }
 
   /** Used only in UI 2.0 to determine WidgetState from NinezoneState
@@ -837,7 +833,7 @@ export class FrontstageDef {
         if (state) {
           this.nineZoneState = state;
           setTimeout(() => {
-            popoutWidgetContainerId && UiFramework.childWindowManager.closeChildWindow(popoutWidgetContainerId, true);
+            popoutWidgetContainerId && UiFramework.childWindows.close(popoutWidgetContainerId, true);
           }, 600);
         }
       }
@@ -909,7 +905,7 @@ export class FrontstageDef {
       left: bounds.left,
       top: bounds.top,
     };
-    UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
+    UiFramework.childWindows.open(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
   }
 
   /** Create a new popout/child window that contains the widget specified by its Id. Supported only when in
@@ -963,7 +959,7 @@ export class FrontstageDef {
         left: bounds.left,
         top: bounds.top,
       };
-      UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
+      UiFramework.childWindows.open(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
     });
   }
 
@@ -1004,7 +1000,7 @@ export class FrontstageDef {
   }
 
   /** Method used to possibly change a Popout Widget back to a docked widget if the user was the one closing the popout's child
-   * window (i.e. UiFramework.childWindowManager.isClosingChildWindow === false).
+   * window.
    *  @internal
    */
   public dockPopoutWidgetContainer(widgetContainerId: string) {
@@ -1037,7 +1033,7 @@ export class FrontstageDef {
         const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
         state && (this.nineZoneState = state);
         if (isPopoutTabLocation(location)) {
-          UiFramework.childWindowManager.closeChildWindow(location.widgetId, true);
+          UiFramework.childWindows.close(location.widgetId, true);
         }
       }
     }

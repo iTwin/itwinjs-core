@@ -7,21 +7,22 @@
  */
 
 import { useEffect, useState } from "react";
-import { FrontstageActivatedEventArgs, FrontstageManager } from "../frontstage/FrontstageManager";
+import { FrontstageActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { UiFramework } from "../UiFramework";
 
 /** React hook that maintains the active stage Id.
  * @public
  */
 export function useActiveStageId(): string {
-  const [activeStageId, setActiveStageId] = useState(FrontstageManager.activeFrontstageId);
+  const [activeStageId, setActiveStageId] = useState(UiFramework.frontstages.activeFrontstageId);
   useEffect(() => {
     const handleFrontstageActivatedEvent = (args: FrontstageActivatedEventArgs) => {
       setActiveStageId(args.activatedFrontstageDef.id);
     };
 
-    FrontstageManager.onFrontstageActivatedEvent.addListener(handleFrontstageActivatedEvent);
+    UiFramework.frontstages.onFrontstageActivatedEvent.addListener(handleFrontstageActivatedEvent);
     return () => {
-      FrontstageManager.onFrontstageActivatedEvent.removeListener(handleFrontstageActivatedEvent);
+      UiFramework.frontstages.onFrontstageActivatedEvent.removeListener(handleFrontstageActivatedEvent);
     };
   }, []);
   return activeStageId;

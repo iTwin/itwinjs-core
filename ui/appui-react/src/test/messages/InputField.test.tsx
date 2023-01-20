@@ -5,14 +5,14 @@
 import { expect } from "chai";
 import * as React from "react";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
-import { InputFieldMessage, KeyboardShortcutManager, MessageManager } from "../../appui-react";
+import { InputFieldMessage, MessageManager, UiFramework } from "../../appui-react";
 import TestUtils, { childStructure } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 
 describe("InputFieldMessage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
-    KeyboardShortcutManager.closeShortcutsMenu();
+    UiFramework.keyboardShortcuts.closeShortcutsMenu();
   });
 
   after(() => {

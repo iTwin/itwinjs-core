@@ -6,8 +6,8 @@
 import * as React from "react";
 import { WidgetState } from "@itwin/appui-abstract";
 import {
-  ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton, ModalDialogManager,
-  NavigationWidget, NestedFrontstage, ToolButton, ToolWidget, Widget, Zone, ZoneLocation, ZoneState,
+  ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageDef, FrontstageProps, FrontstageProvider, GroupButton,
+  NavigationWidget, NestedFrontstage, ToolButton, ToolWidget, UiFramework, Widget, Zone, ZoneLocation, ZoneState,
 } from "@itwin/appui-react";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -100,7 +100,7 @@ class FrontstageToolWidget extends React.Component {
       labelKey: "SampleApp:buttons.openNestedFrontstage2",
       execute: async () => {
         const frontstage2Def = await FrontstageToolWidget.getFrontstage2Def();
-        await FrontstageManager.openNestedFrontstage(frontstage2Def);
+        await UiFramework.frontstages.openNestedFrontstage(frontstage2Def);
       },
     });
   }
@@ -109,7 +109,7 @@ class FrontstageToolWidget extends React.Component {
     return new CommandItemDef({
       iconSpec: "icon-smiley-happy",
       label: "Open Modal Dialog",
-      execute: () => ModalDialogManager.openDialog(<TestModalDialog />),
+      execute: () => UiFramework.dialogs.modal.openDialog(<TestModalDialog />),
     });
   }
 

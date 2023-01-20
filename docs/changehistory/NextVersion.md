@@ -134,3 +134,44 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 [ModelsTree]($appui-react) and [CategoryTree]($appui-react) were moved to [@itwin/tree-widget-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/tree-widget) package and deprecated in `@itwin/appui-react` packages. They will be removed from `@itwin/appui-react` in future major version.
 
 [SpatialContainmentTree]($appui-react) were deprecated in favor of `SpatialContainmentTree` from [@itwin/breakdown-trees-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/breakdown-trees) package. [SpatialContainmentTree]($appui-react) will be removed in future major version.
+
+In an effort to reduce usage complexity and discoverability of this package, many `*Manager` classes are now exposed through the `UiFramework` entry point. The direct classes access is being deprecated.
+
+Each `initialize` method have been made internal and were always called automatically internally, call to these method can be safely removed from external code.
+
+Below is a list of the changes from this move, some of these new access point may be reworked to further reduce the complexity, so they are marked @beta.
+
+| Original access | New access |
+|---|---|
+`ConfigurableUiManager.addFrontstageProvider` | `UiFramework.frontstages.addFrontstageProvider`
+`ConfigurableUiManager.loadKeyboardShortcuts` | `UiFramework.keyboardShortcuts.loadKeyboardShortcuts`
+`ConfigurableUiManager.registerControl` | `UiFramework.controls.register`
+`ConfigurableUiManager.isControlRegistered` | `UiFramework.controls.isRegistered`
+`ConfigurableUiManager.createControl` | `UiFramework.controls.create`
+`ConfigurableUiManager.unregisterControl` | `UiFramework.controls.unregister`
+`ConfigurableUiManager.initialize` | ---
+`ConfigurableUiManager.loadTasks` | Not moved, already deprecated.
+`ConfigurableUiManager.loadWorkflow` | Not moved, already deprecated.
+`ConfigurableUiManager.loadWorkflows` | Not moved, already deprecated.
+`ConfigurableUiManager` | `UiFramework.controls`
+`KeyboardShortcutManager.initialize` | ---
+`KeyboardShortcutManager` | `UiFramework.keyboardShortcuts`
+`SyncUiEventDispatcher.initialize` | ---
+`SyncUiEventDispatcher` | `UiFramework.events`
+`FrontstageManager.initialize` | ---
+`FrontstageManager` | `UiFramework.frontstages`
+`ToolSettingsManager.initialize` | ---
+`ToolSettingsManager` | `UiFramework.toolSettings`
+`ContentLayoutManager` | `UiFramework.content.layouts`
+`ContentDialogManager.initialize` | ---
+`ContentDialogManager` | `UiFramework.content.dialogs`
+`ContentViewManager` | `UiFramework.content`
+`ModalDialogManager` | `UiFramework.dialogs.modal`
+`ModelessDialogManager.initialize` | ---
+`ModelessDialogManager` | `UiFramework.dialogs.modeless`
+`UiShowHideManager` | `UiFramework.visibility`
+`UiFramework.childWindowManager.openChildWindow` | `UiFramework.childWindows.open`
+`UiFramework.childWindowManager.findChildWindowId` | `UiFramework.childWindows.findId`
+`UiFramework.childWindowManager.closeAllChildWindows` | `UiFramework.childWindows.closeAll`
+`UiFramework.childWindowManager.closeChildWindow` | `UiFramework.childWindows.close`
+`UiFramework.backstageManager` | `UiFramework.backstage`

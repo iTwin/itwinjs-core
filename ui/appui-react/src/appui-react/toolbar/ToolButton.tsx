@@ -11,10 +11,9 @@ import { IModelApp, Tool } from "@itwin/core-frontend";
 import { ConditionalStringValue, StringGetter, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { BadgeUtilities, CommonProps, Icon } from "@itwin/core-react";
 import { getToolbarItemProps, Item } from "@itwin/appui-layout-react";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { ToolItemProps } from "../shared/ItemProps";
-import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
@@ -61,7 +60,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
 
     // since this is a tool button automatically monitor the activation of tools so the active state of the button is updated.
     if (args.eventIds.has(SyncUiEventId.ToolActivated)) {
-      newState.isActive = this.props.toolId === FrontstageManager.activeToolId;
+      newState.isActive = this.props.toolId === UiFramework.frontstages.activeToolId;
       refreshState = true;
     }
 
@@ -86,12 +85,12 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
   };
 
   public override componentDidMount() {
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
   public override componentWillUnmount() {
     this._componentUnmounting = true;
-    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   private _execute = async () => {

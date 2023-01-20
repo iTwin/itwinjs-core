@@ -5,7 +5,7 @@
 /* eslint-disable deprecation/deprecation */
 import * as React from "react";
 import { Dialog, LabeledThemedSelect, ThemedSelect } from "@itwin/core-react";
-import { ModalDialogManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 import { DialogButtonType } from "@itwin/appui-abstract";
 
 enum ColorOptions {
@@ -106,7 +106,7 @@ export class TestReactSelectDialog extends React.Component<TestReactSelectDialog
       opened: false,
     }, () => {
       if (!this.state.opened)
-        ModalDialogManager.closeDialog();
+        UiFramework.dialogs.modal.closeDialog();
       followUp();
     });
   };

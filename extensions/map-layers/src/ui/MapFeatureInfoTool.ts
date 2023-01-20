@@ -12,7 +12,7 @@ import {
   PrimitiveTool,
 } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
-import { FrontstageManager, ToolItemDef } from "@itwin/appui-react";
+import { ToolItemDef, UiFramework } from "@itwin/appui-react";
 import { BeEvent } from "@itwin/core-bentley";
 import { FeatureInfoUiItemsProvider } from "./FeatureInfoUiItemsProvider";
 
@@ -45,7 +45,7 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
       ev.inputSource
     );
     if (hit !== undefined) {
-      const widgetDef = FrontstageManager.findWidget(
+      const widgetDef = UiFramework.frontstages.findWidget(
         FeatureInfoUiItemsProvider.widgetId
       );
       if (widgetDef && widgetDef.state !== WidgetState.Open)

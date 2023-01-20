@@ -8,9 +8,9 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  ContentGroup, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, NestedFrontstage,
+  ContentGroup, Frontstage, FrontstageDef, FrontstageProps, FrontstageProvider, NestedFrontstage,
   ToolItemDef,
-  ToolWidget, Widget, Zone, ZoneState,
+  ToolWidget, UiFramework, Widget, Zone, ZoneState,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { AppStatusBarWidgetControl, TestContentControl, TestFrontstage } from "./FrontstageTestUtils";
@@ -95,7 +95,7 @@ describe("NestedFrontstage", async () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageProviders();
+    UiFramework.frontstages.clearFrontstageProviders();
   });
 
   after(() => {
@@ -103,47 +103,47 @@ describe("NestedFrontstage", async () => {
   });
 
   it("activeNestedFrontstage should return undefined if none active", () => {
-    expect(FrontstageManager.activeNestedFrontstage).to.be.undefined;
-    expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
+    expect(UiFramework.frontstages.activeNestedFrontstage).to.be.undefined;
+    expect(UiFramework.frontstages.nestedFrontstageCount).to.eq(0);
   });
 
   it("openNestedFrontstage & closeNestedFrontstage should open/close nested frontstages", async () => {
     const frontstageProvider = new TestFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageDef.create(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
     await TestUtils.flushAsyncOperations();
 
-    expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageDef);
-    expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
+    expect(UiFramework.frontstages.activeFrontstageDef).to.eq(frontstageDef);
+    expect(UiFramework.frontstages.nestedFrontstageCount).to.eq(0);
 
     const nestedFrontstageProvider = new TestNestedFrontstage();
     const nestedFrontstageDef = await FrontstageDef.create(nestedFrontstageProvider);
     const spyActivated = sinon.spy(nestedFrontstageDef, "_onActivated" as any);
     const spyDeactivated = sinon.spy(nestedFrontstageDef, "_onDeactivated" as any);
 
-    await FrontstageManager.openNestedFrontstage(nestedFrontstageDef);
-    expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
-    expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef);
+    await UiFramework.frontstages.openNestedFrontstage(nestedFrontstageDef);
+    expect(UiFramework.frontstages.nestedFrontstageCount).to.eq(1);
+    expect(UiFramework.frontstages.activeNestedFrontstage).to.eq(nestedFrontstageDef);
     expect(spyActivated.calledOnce).to.be.true;
 
     const nestedFrontstageProvider2 = new TestNestedFrontstage();
     const nestedFrontstageDef2 = await FrontstageDef.create(nestedFrontstageProvider2);
-    await FrontstageManager.openNestedFrontstage(nestedFrontstageDef2);
-    expect(FrontstageManager.nestedFrontstageCount).to.eq(2);
-    expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef2);
+    await UiFramework.frontstages.openNestedFrontstage(nestedFrontstageDef2);
+    expect(UiFramework.frontstages.nestedFrontstageCount).to.eq(2);
+    expect(UiFramework.frontstages.activeNestedFrontstage).to.eq(nestedFrontstageDef2);
     expect(spyDeactivated.calledOnce).to.be.true;
 
     NestedFrontstage.backToPreviousFrontstageCommand.execute();
     await TestUtils.flushAsyncOperations();
 
-    expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
+    expect(UiFramework.frontstages.nestedFrontstageCount).to.eq(1);
 
     NestedFrontstage.backToPreviousFrontstageCommand.execute();
     await TestUtils.flushAsyncOperations();
 
-    expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
-    expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageDef);
+    expect(UiFramework.frontstages.nestedFrontstageCount).to.eq(0);
+    expect(UiFramework.frontstages.activeFrontstageDef).to.eq(frontstageDef);
   });
 
 });

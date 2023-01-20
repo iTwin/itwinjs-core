@@ -19,21 +19,26 @@ import { LocalStateStorage, SettingsManager, UiStateStorage } from "@itwin/core-
 import { UiIModelComponents } from "@itwin/imodel-components-react";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { ChildWindowManager } from "./childwindow/ChildWindowManager";
-import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
+import { InternalConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
 import { ConfigurableUiActionId } from "./configurableui/state";
 import { FrameworkState } from "./redux/FrameworkState";
 import { CursorMenuData, PresentationSelectionScope, SessionStateActionId } from "./redux/SessionState";
 import { StateManager } from "./redux/StateManager";
 import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
-import { SyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
+import { InternalSyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { SYSTEM_PREFERRED_COLOR_THEME, TOOLBAR_OPACITY_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
-import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
+import { InternalUiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
-import { FrontstageManager } from "./frontstage/FrontstageManager";
+import { InternalFrontstageManager } from "./frontstage/FrontstageManager";
+import { InternalContentViewManager } from "./content/ContentViewManager";
+import { InternalModalDialogManager } from "./dialog/ModalDialogManager";
+import { InternalModelessDialogManager } from "./dialog/ModelessDialogManager";
+import { InternalKeyboardShortcutManager } from "./keyboardshortcut/KeyboardShortcut";
+import { InternalToolSettingsManager } from "./zones/toolsettings/ToolSettingsManager";
 
 // cSpell:ignore Mobi
 
@@ -91,6 +96,96 @@ export interface TrackingTime {
  * @public
  */
 export class UiFramework {
+  /**
+   * Operation on the backstage component.
+   * @public
+   */
+  public static get backstage() {
+    // istanbul ignore next
+    if (!UiFramework._backstageManager)
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+    return UiFramework._backstageManager;
+  }
+
+  /**
+   * Manage access to the child windows.
+   * @beta
+   */
+  public static get childWindows() {
+    return this._PopupWindowManager;
+  }
+
+  /**
+   * Manage registered controls
+   * @beta
+   */
+  public static get controls() {
+    return InternalConfigurableUiManager;
+  }
+
+  /**
+   * Manage access to frontstages and related helper methods.
+   * @beta
+   */
+  public static get frontstages() {
+    return InternalFrontstageManager;
+  }
+
+  /**
+   * Manage events
+   * @beta
+   */
+  public static get events() {
+    return InternalSyncUiEventDispatcher;
+  }
+
+  /**
+   * Manage access and behavior of the tool settings.
+   * @beta
+   */
+  public static get toolSettings() {
+    return InternalToolSettingsManager;
+  }
+
+  /**
+   * Manage content presented by the frontstages.
+   * @beta
+   */
+  public static get content() {
+    return InternalContentViewManager;
+  }
+
+  public static get dialogs() {
+    return {
+      /**
+       * Manage modal dialogs.
+       * @beta
+       */
+      modal: InternalModalDialogManager,
+      /**
+       * Manage modeless dialogs
+       * @beta
+       */
+      modeless: InternalModelessDialogManager,
+    };
+  }
+
+  /**
+   * Manages global keyboard shortcuts
+   * @beta
+   */
+  public static get keyboardShortcuts() {
+    return InternalKeyboardShortcutManager;
+  }
+
+  /**
+   * Manages UI visibility (Show/Hide)
+   * @beta
+   */
+  public static get visibility() {
+    return InternalUiShowHideManager;
+  }
+
   private static _initialized = false;
   private static _store?: Store<any>;
   private static _complaint = "UiFramework not initialized";
@@ -103,12 +198,14 @@ export class UiFramework {
   private static _uiStateStorage: UiStateStorage = new LocalStateStorage();
   private static _settingsManager?: SettingsManager;
   private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
-  private static _PopupWindowManager = new ChildWindowManager();
+  private static _PopupWindowManager = new ChildWindowManager(); // eslint-disable-line deprecation/deprecation
   public static useDefaultPopoutUrl = false;
 
-  /** @public */
-  public static get childWindowManager(): ChildWindowManager {
-    return UiFramework._PopupWindowManager;
+  /** @public
+   * @deprecated in 3.6. Use `childWindows` property, name realignment.
+  */
+  public static get childWindowManager(): ChildWindowManager { // eslint-disable-line deprecation/deprecation
+    return UiFramework.childWindows;
   }
 
   /** Registers class that will be informed when the UserSettingsStorage location has been set or changed. This allows
@@ -198,7 +295,7 @@ export class UiFramework {
     await UiIModelComponents.initialize();
 
     UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
+      UiFramework.events.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
     });
 
     // Initialize the MessagePresenter interface in UiAdmin for Editor notifications
@@ -209,7 +306,7 @@ export class UiFramework {
     // initialize any standalone settings providers that don't need to have defaults set by iModelApp
     UiShowHideSettingsProvider.initialize();
 
-    ConfigurableUiManager.initialize();
+    InternalConfigurableUiManager.initialize();
 
     return frameworkNamespace;
   }
@@ -228,7 +325,7 @@ export class UiFramework {
     UiFramework._settingsManager = undefined;
 
     UiIModelComponents.terminate();
-    UiShowHideManager.terminate();
+    UiFramework.visibility.terminate();
     UiFramework._initialized = false;
   }
 
@@ -289,12 +386,11 @@ export class UiFramework {
     return "UiFramework";
   }
 
-  /** @public */
+  /** @public
+   * @deprecated in 3.6. Use `backstage` alternate property, name realignment.
+  */
   public static get backstageManager(): BackstageManager {
-    // istanbul ignore next
-    if (!UiFramework._backstageManager)
-      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._backstageManager;
+    return UiFramework.backstage;
   }
 
   /** @alpha */
@@ -344,9 +440,9 @@ export class UiFramework {
   public static dispatchActionToStore(type: string, payload: any, immediateSync = false) {
     UiFramework.store.dispatch({ type, payload });
     if (immediateSync)
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(type);
+      UiFramework.events.dispatchImmediateSyncUiEvent(type);
     else
-      SyncUiEventDispatcher.dispatchSyncUiEvent(type);
+      UiFramework.events.dispatchSyncUiEvent(type);
   }
 
   public static setAccudrawSnapMode(snapMode: SnapMode) {
@@ -400,9 +496,9 @@ export class UiFramework {
     const oldConnection = UiFramework.getIModelConnection();
     if (oldConnection !== iModelConnection) {
       if (oldConnection?.iModelId)
-        FrontstageManager.clearFrontstageDefsForIModelId(oldConnection.iModelId);
-      oldConnection && undefined === iModelConnection && SyncUiEventDispatcher.clearConnectionEvents(oldConnection);
-      iModelConnection && SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
+        UiFramework.frontstages.clearFrontstageDefsForIModelId(oldConnection.iModelId);
+      oldConnection && undefined === iModelConnection && UiFramework.events.clearConnectionEvents(oldConnection);
+      iModelConnection && UiFramework.events.initializeConnectionEvents(iModelConnection);
       UiFramework.dispatchActionToStore(SessionStateActionId.SetIModelConnection, iModelConnection, immediateSync);
     }
     UiFramework.setActiveIModelId(iModelConnection?.iModelId ?? "");
@@ -424,9 +520,9 @@ export class UiFramework {
 
     // istanbul ignore next
     if (immediateSync)
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
+      UiFramework.events.dispatchImmediateSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
     else
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
+      UiFramework.events.dispatchSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
   }
 
   /** @public */
@@ -479,12 +575,12 @@ export class UiFramework {
   }
 
   public static getIsUiVisible() {
-    return UiShowHideManager.isUiVisible;
+    return UiFramework.visibility.isUiVisible;
   }
 
   public static setIsUiVisible(visible: boolean) {
-    if (UiShowHideManager.isUiVisible !== visible) {
-      UiShowHideManager.isUiVisible = visible;
+    if (UiFramework.visibility.isUiVisible !== visible) {
+      UiFramework.visibility.isUiVisible = visible;
       UiFramework.onUiVisibilityChanged.emit({ visible });
     }
   }

@@ -10,8 +10,8 @@
 
 import { Point3d } from "@itwin/core-geometry";
 import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
-import { ConfigurableUiManager } from "@itwin/appui-react";
 import { AnalysisAnimationToolSettingsProvider } from "./AnalysisAnimationToolSettings";
+import { UiFramework } from "@itwin/appui-react";
 
 /** Tool that shows animation of Analysis information stored as a 'special' property in the display style.
  * @public
@@ -56,4 +56,4 @@ export class AnalysisAnimationTool extends PrimitiveTool {
   }
 }
 
-ConfigurableUiManager.registerControl(AnalysisAnimationTool.toolId, AnalysisAnimationToolSettingsProvider);
+UiFramework.controls.register(AnalysisAnimationTool.toolId, AnalysisAnimationToolSettingsProvider);

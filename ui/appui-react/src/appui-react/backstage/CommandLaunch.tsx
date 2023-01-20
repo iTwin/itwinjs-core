@@ -11,7 +11,6 @@ import { Logger } from "@itwin/core-bentley";
 import { CommandHandler, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import { withSafeArea } from "../safearea/SafeAreaContext";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { Backstage } from "./Backstage";
@@ -55,14 +54,14 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
 
   public override componentDidMount() {
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
-      SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+      UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
   public override componentWillUnmount() {
     this._componentUnmounting = true;
     /* istanbul ignore else */
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
-      SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+      UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
@@ -71,7 +70,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
       return;
 
     /* istanbul ignore else */
-    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds)) {
+    if (UiFramework.events.hasEventOfInterest(args.eventIds, this._stateSyncIds)) {
       /* istanbul ignore else */
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);

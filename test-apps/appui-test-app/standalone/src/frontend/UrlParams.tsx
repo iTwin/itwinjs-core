@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { FrontstageManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 
 import { openBlankConnection } from "./appui/BlankConnection";
 
@@ -19,11 +19,11 @@ export function useHandleURLParams() {
       return;
 
     void (async function () {
-      const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageId);
+      const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageId);
       if (!frontstageDef)
         return;
       await openBlankConnection();
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
     })();
   }, [frontstageId]);
 }

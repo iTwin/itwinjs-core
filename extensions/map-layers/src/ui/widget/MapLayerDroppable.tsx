@@ -12,7 +12,7 @@ import { Draggable, DraggableChildrenFn, Droppable, DroppableProvided, Droppable
 import { MapLayerImageryProviderStatus, MapTileTreeScaleRangeVisibility, ScreenViewport } from "@itwin/core-frontend";
 import { Icon } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
-import { ModalDialogManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
 import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton";
@@ -84,7 +84,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
               if (indexInDisplayStyle !== undefined && indexInDisplayStyle >= 0) {
                 const layerSettings = props.activeViewport.displayStyle.mapLayerAtIndex(indexInDisplayStyle, activeLayer.isOverlay);
                 if (layerSettings instanceof ImageMapLayerSettings) {
-                  ModalDialogManager.openDialog(<MapUrlDialog activeViewport={props.activeViewport}
+                  UiFramework.dialogs.modal.openDialog(<MapUrlDialog activeViewport={props.activeViewport}
                     isOverlay={props.isOverlay}
                     layerRequiringCredentials={layerSettings?.toJSON()}
                     onOkResult={props.onItemEdited}

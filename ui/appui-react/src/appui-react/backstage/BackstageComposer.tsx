@@ -11,11 +11,11 @@ import { BackstageItem, BackstageItemsManager, ConditionalBooleanValue, isStageL
 import { CommonProps } from "@itwin/core-react";
 import { BackstageSeparator, Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { BackstageComposerItem } from "./BackstageComposerItem";
 import { useBackstageManager, useIsBackstageOpen } from "./BackstageManager";
 import { useDefaultBackstageItems } from "./useDefaultBackstageItems";
 import { useUiItemsProviderBackstageItems } from "./useUiItemsProviderBackstageItems";
+import { UiFramework } from "../UiFramework";
 
 // cSpell:ignore safearea
 
@@ -41,9 +41,9 @@ function useBackstageItemSyncEffect(itemsManager: BackstageItemsManager, syncIds
       itemsManager.refreshAffectedItems(new Set(syncIdsOfInterest));
     }
 
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
     return () => {
-      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+      UiFramework.events.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
   }, [itemsManager, itemsManager.items, syncIdsOfInterest]);
 }

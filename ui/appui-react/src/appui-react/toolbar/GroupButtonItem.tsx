@@ -18,7 +18,7 @@ import {
   Group as ToolGroupComponent, withDragInteraction,
 } from "@itwin/appui-layout-react";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
@@ -56,7 +56,7 @@ interface ToolbarGroupItemComponentProps extends CommonProps {
 
 interface ToolbarGroupItemState {
   activeItemId: string; // One of group items id.
-  activeToolId: string; // FrontstageManager.activeToolId
+  activeToolId: string; // UiFramework.frontstages.activeToolId
   groupItem: GroupButton;
   trayId: string;
   backTrays: ReadonlyArray<string>;
@@ -89,13 +89,13 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
   }
 
   public override componentDidMount() {
-    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
-    FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
+    UiFramework.frontstages.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+    UiFramework.frontstages.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   public override componentWillUnmount() {
-    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
-    FrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
+    UiFramework.frontstages.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    UiFramework.frontstages.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }
 
   private getGroupItemState(props: ToolbarGroupItemComponentProps) {
@@ -109,7 +109,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
     const isDisabled = ConditionalBooleanValue.getValue(groupItem.isDisabled);
 
     return {
-      activeToolId: FrontstageManager.activeToolId,
+      activeToolId: UiFramework.frontstages.activeToolId,
       groupItem,
       isEnabled: !isDisabled,
       isPressed: false,
@@ -250,7 +250,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
       isPressed: true,
     });
     this._closeOnPanelOpened = false;
-    FrontstageManager.onToolPanelOpenedEvent.emit();
+    UiFramework.frontstages.onToolPanelOpenedEvent.emit();
     this._closeOnPanelOpened = true;
   };
 

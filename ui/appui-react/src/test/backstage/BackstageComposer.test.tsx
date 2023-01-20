@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import {
   BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, UiItemsManager, UiItemsProvider,
 } from "@itwin/appui-abstract";
-import { BackstageComposer, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../appui-react";
+import { BackstageComposer, UiFramework, useGroupedItems } from "../../appui-react";
 import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
 import { act, render, screen } from "@testing-library/react";
@@ -18,7 +18,7 @@ const uiSyncEventId = "appuiprovider:backstage-item-visibility-changed";
 
 const triggerSyncRefresh = () => {
   TestUiItemsProvider.sampleStatusVisible = false;
-  SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(uiSyncEventId);
+  UiFramework.events.dispatchImmediateSyncUiEvent(uiSyncEventId);
 };
 
 class TestUiItemsProvider implements UiItemsProvider {
@@ -60,9 +60,9 @@ describe("BackstageComposer", () => {
 
   it("should close the backstage", async () => {
     const theUserTo = userEvent.setup();
-    const spy = sinon.spy(UiFramework.backstageManager, "close");
+    const spy = sinon.spy(UiFramework.backstage, "close");
     render(<BackstageComposer items={[]} />);
-    UiFramework.backstageManager.open();
+    UiFramework.backstage.open();
 
     await theUserTo.click(screen.getByRole("presentation"));
 

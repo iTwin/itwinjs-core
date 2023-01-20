@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { ConfigurableUiManager, DialogChangedEventArgs, ModelessDialog, ModelessDialogManager, ModelessDialogRenderer } from "../../appui-react";
+import { DialogChangedEventArgs, ModelessDialog, ModelessDialogManager, ModelessDialogRenderer, UiFramework } from "../../appui-react";
 import TestUtils, { userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
@@ -26,7 +26,7 @@ describe("ModelessDialogManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework(true);
-    ConfigurableUiManager.initialize();
+    UiFramework.controls.initialize();
     await MockRender.App.startup();
 
     ModelessDialogManager.onModelessDialogChangedEvent.addListener(handleModelessDialogChanged);

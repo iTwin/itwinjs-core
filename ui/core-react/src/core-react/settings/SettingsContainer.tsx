@@ -17,7 +17,7 @@ import { ConditionalBooleanValue } from "@itwin/appui-abstract";
 const saveChanges = React.useCallback((afterSaveFunction: (args: any) => void, args?: any) => {
   if (dataIsDirty) {
     // prompt user to save changes passing in function and arguments to call after saving changes.
-    ModalDialogManager.openDialog(<CustomSavePromptModalDialog customProps={customProps}
+    UiFramework.dialogs.modal.openDialog(<CustomSavePromptModalDialog customProps={customProps}
       onDialogCloseArgs={args} onDialogClose={afterSaveFunction} />);
     return;
   }

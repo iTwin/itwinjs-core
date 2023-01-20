@@ -10,16 +10,14 @@ import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import {
-  AnyWidgetProps, ConfigurableCreateInfo, ContentControl, FrontstageManager, ItemList, NavigationAidHost, NavigationWidget, NavigationWidgetDef,
+  AnyWidgetProps, ConfigurableCreateInfo, ContentControl, ItemList, NavigationAidHost, NavigationWidget, NavigationWidgetDef,
   ToolButton,
   UiFramework,
 } from "../../appui-react";
-import { ConfigurableUiManager } from "../../appui-react/configurableui/ConfigurableUiManager";
 import { CoreTools } from "../../appui-react/tools/CoreToolDefinitions";
 import { FrameworkVersion } from "../../appui-react/hooks/useFrameworkVersion";
 import { NavigationAidControl } from "../../appui-react/navigationaids/NavigationAidControl";
 import TestUtils, { storageMock } from "../TestUtils";
-import { UiShowHideManager } from "../../appui-react/utils/UiShowHideManager";
 import { Provider } from "react-redux";
 
 describe("NavigationWidget localStorage Wrapper", () => {
@@ -181,28 +179,28 @@ describe("NavigationWidget localStorage Wrapper", () => {
       const def = new NavigationWidgetDef({ // eslint-disable-line deprecation/deprecation
         navigationAidId: "Aid1",
       });
-      ConfigurableUiManager.registerControl("Aid1", TestContentControl);
+      UiFramework.controls.register("Aid1", TestContentControl);
       expect(() => def.renderCornerItem()).to.throw(Error);
-      ConfigurableUiManager.unregisterControl("Aid1");
+      UiFramework.controls.unregister("Aid1");
     });
 
     it("NavigationWidgetDef should handle updateNavigationAid", () => {
       const def = new NavigationWidgetDef({ // eslint-disable-line deprecation/deprecation
         navigationAidId: "Aid1",
       });
-      ConfigurableUiManager.registerControl("Aid1", TestNavigationAidControl);
+      UiFramework.controls.register("Aid1", TestNavigationAidControl);
 
       const element = def.reactNode;
       expect(def.reactNode).to.eq(element);
       const wrapper = mount(element as React.ReactElement<any>);
 
       const connection = moq.Mock.ofType<IModelConnection>();
-      FrontstageManager.setActiveNavigationAid("Aid1", connection.object);
+      UiFramework.frontstages.setActiveNavigationAid("Aid1", connection.object);
       wrapper.update();
 
-      FrontstageManager.setActiveToolId(CoreTools.selectElementCommand.toolId);
+      UiFramework.frontstages.setActiveToolId(CoreTools.selectElementCommand.toolId);
 
-      ConfigurableUiManager.unregisterControl("Aid1");
+      UiFramework.controls.unregister("Aid1");
     });
 
     it("NavigationAidHost should render in 2.0 mode",  async () => {
@@ -218,14 +216,14 @@ describe("NavigationWidget localStorage Wrapper", () => {
     });
 
     it("NavigationAidHost should render in 2.0 mode with snapWidgetOpacity", async () => {
-      UiShowHideManager.snapWidgetOpacity = true;
+      UiFramework.visibility.snapWidgetOpacity = true;
       mount(
         <Provider store={TestUtils.store} >
           <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
             <NavigationAidHost />
           </FrameworkVersion>
         </Provider>);
-      UiShowHideManager.snapWidgetOpacity = false;
+      UiFramework.visibility.snapWidgetOpacity = false;
     });
   });
 });

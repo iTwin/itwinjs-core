@@ -5,7 +5,7 @@
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { Icon } from "@itwin/core-react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider, UiFramework } from "@itwin/appui-react";
 import { Input, Slider } from "@itwin/itwinui-react";
 
 function showSliderValues(values: ReadonlyArray<number>) {
@@ -64,4 +64,4 @@ class Tool2UiProvider extends ToolUiProvider {
   }
 }
 
-ConfigurableUiManager.registerControl("Tool2", Tool2UiProvider);
+UiFramework.controls.register("Tool2", Tool2UiProvider);

@@ -15,7 +15,7 @@ import {
 } from "@itwin/appui-abstract";
 import {
   BackstageAppButton,
-  ConfigurableUiManager, ContentGroup, ContentGroupProps,
+  ContentGroup, ContentGroupProps,
   ContentGroupProvider, ContentProps, FrontstageProps, IModelViewportControl,
   SettingsModalFrontstage, StageContentLayout, StageContentLayoutProps,
   StandardContentToolsUiItemsProvider, StandardFrontstageProps,
@@ -197,7 +197,7 @@ export class MainFrontstage {
       usage: StageUsage.General,
     };
 
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
+    UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
     this.registerUiItemProviders();
   }
 

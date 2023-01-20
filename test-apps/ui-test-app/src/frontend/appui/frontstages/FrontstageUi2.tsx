@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, BackstageManager, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
+  BackstageAppButton, BackstageManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
   IModelViewportControl, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
   StandardStatusbarUiItemsProvider,
-  SyncUiEventDispatcher,
   UiFramework,
 } from "@itwin/appui-react";
 import { StageUsage, StandardContentLayouts, UiItemsManager, UiSyncEventArgs } from "@itwin/appui-abstract";
@@ -128,7 +127,7 @@ export class FrontstageUi2 {
       applicationData,
     };
 
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(ui2StageProps));
+    UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(ui2StageProps));
     this.registerToolProviders();
   }
 
@@ -177,9 +176,9 @@ export function MyCustomViewOverlay() {
     };
 
     // Note: that items with conditions have condition run when loaded into the items manager
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.addListener(handleSyncUiEvent);
     return () => {
-      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+      UiFramework.events.onSyncUiEvent.removeListener(handleSyncUiEvent);
     };
   }, [setShowOverlay, showOverlay, syncIdsOfInterest]);
 

@@ -5,7 +5,7 @@
 /* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as React from "react";
-import { BooleanSyncUiListener, SyncUiEventDispatcher } from "../../appui-react";
+import { BooleanSyncUiListener, UiFramework } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 const syncUiEventId = "showhellocomponentchanged";  // must be lower case
@@ -34,7 +34,7 @@ describe("BooleanSyncUiListener", () => {
     expect(wrapper.find("div").text()).to.eq(helloWorld);
 
     showHelloComponent = false;
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(syncUiEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(syncUiEventId);
 
     wrapper.update();
 
@@ -57,7 +57,7 @@ describe("BooleanSyncUiListener", () => {
     expect(wrapper.find("div").length).to.eq(1);
     expect(wrapper.find("div").text()).to.eq(goodBye);
 
-    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(syncUiEventId);
+    UiFramework.events.dispatchImmediateSyncUiEvent(syncUiEventId);
     wrapper.update();
 
     // now that sync event forced function to run it should be showing true contents

@@ -14,8 +14,8 @@ import {
 import { BadgeUtilities, Icon, IconHelper } from "@itwin/core-react";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import { useActiveFrontstageId } from "../frontstage/Frontstage";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { useBackstageManager } from "./BackstageManager";
+import { UiFramework } from "../UiFramework";
 
 /** @internal */
 export interface BackstageComposerActionItemProps {
@@ -58,9 +58,9 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
   const manager = useBackstageManager();
   const handleClick = React.useCallback(() => {
     manager.close();
-    if (!FrontstageManager.hasFrontstage(item.stageId))
+    if (!UiFramework.frontstages.hasFrontstage(item.stageId))
       return Logger.logError("BackstageComposerStageLauncher", `Frontstage with id '${item.stageId}' not found`);
-    void FrontstageManager.setActiveFrontstage(item.stageId);
+    void UiFramework.frontstages.setActiveFrontstage(item.stageId);
   }, [manager, item.stageId]);
   const activeFrontstageId = useActiveFrontstageId();
   const isActive = ConditionalBooleanValue.getValue(item.isActive ?? item.stageId === activeFrontstageId);

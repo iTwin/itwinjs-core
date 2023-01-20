@@ -15,9 +15,9 @@ import {
   UiFramework, WidgetStateChangedEventArgs,
 } from "../../appui-react";
 import { Backstage, BackstageEventArgs } from "../../appui-react/backstage/Backstage";
-import { ActiveContentChangedEventArgs, ContentViewManager } from "../../appui-react/content/ContentViewManager";
+import { ActiveContentChangedEventArgs } from "../../appui-react/content/ContentViewManager";
 import {
-  FrontstageActivatedEventArgs, FrontstageManager, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, ToolActivatedEventArgs,
+  FrontstageActivatedEventArgs, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, ToolActivatedEventArgs,
 } from "../../appui-react/frontstage/FrontstageManager";
 import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../appui-react/workflow/Workflow";
 import TestUtils from "../TestUtils";
@@ -157,42 +157,42 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
 
     handleSyncUiEvent.resetHistory();
-    FrontstageManager.onContentControlActivatedEvent.emit({} as ContentControlActivatedEventArgs);
+    UiFramework.frontstages.onContentControlActivatedEvent.emit({} as ContentControlActivatedEventArgs);
     fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    FrontstageManager.onContentLayoutActivatedEvent.emit({} as ContentLayoutActivatedEventArgs);
+    UiFramework.frontstages.onContentLayoutActivatedEvent.emit({} as ContentLayoutActivatedEventArgs);
     fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    FrontstageManager.onFrontstageActivatedEvent.emit({} as FrontstageActivatedEventArgs);
+    UiFramework.frontstages.onFrontstageActivatedEvent.emit({} as FrontstageActivatedEventArgs);
     fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    FrontstageManager.onFrontstageReadyEvent.emit({} as FrontstageReadyEventArgs);
+    UiFramework.frontstages.onFrontstageReadyEvent.emit({} as FrontstageReadyEventArgs);
     fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    FrontstageManager.onModalFrontstageChangedEvent.emit({} as ModalFrontstageChangedEventArgs);
+    UiFramework.frontstages.onModalFrontstageChangedEvent.emit({} as ModalFrontstageChangedEventArgs);
     fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    FrontstageManager.onNavigationAidActivatedEvent.emit({} as NavigationAidActivatedEventArgs);
+    UiFramework.frontstages.onNavigationAidActivatedEvent.emit({} as NavigationAidActivatedEventArgs);
     fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    FrontstageManager.onToolActivatedEvent.emit({} as ToolActivatedEventArgs);
+    UiFramework.frontstages.onToolActivatedEvent.emit({} as ToolActivatedEventArgs);
     fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    FrontstageManager.onWidgetStateChangedEvent.emit({} as WidgetStateChangedEventArgs);
+    UiFramework.frontstages.onWidgetStateChangedEvent.emit({} as WidgetStateChangedEventArgs);
     fakeTimers.runAll();
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
@@ -212,7 +212,7 @@ describe("SyncUiEventDispatcher", () => {
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    ContentViewManager.onActiveContentChangedEvent.emit({} as ActiveContentChangedEventArgs);
+    UiFramework.content.onActiveContentChangedEvent.emit({} as ActiveContentChangedEventArgs);
     fakeTimers.runAll();
     fakeTimers.restore();
     expect(handleSyncUiEvent.calledOnce).to.be.true;

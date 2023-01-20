@@ -12,9 +12,8 @@ import {
   AccuDrawCommandItems,
   AccuDrawKeyboardShortcuts,
   CommandItemDef,
-  ConfigurableUiManager,
-  KeyboardShortcutManager,
   KeyboardShortcutProps,
+  UiFramework,
 } from "@itwin/appui-react";
 
 // cSpell:ignore uitestapp
@@ -68,8 +67,8 @@ export class AppUi {
       },
     ];
 
-    ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
-    ConfigurableUiManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
+    UiFramework.keyboardShortcuts.loadKeyboardShortcuts(keyboardShortcutList);
+    UiFramework.keyboardShortcuts.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
   }
 
   private static get _bumpToolSettingToggle() {
@@ -86,7 +85,7 @@ export class AppUi {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.showShortcutsMenu",
       execute: () => {
-        KeyboardShortcutManager.displayShortcutsMenu();
+        UiFramework.keyboardShortcuts.displayShortcutsMenu();
       },
     });
   }

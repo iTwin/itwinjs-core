@@ -19,8 +19,8 @@ import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
 import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
 import { FrameworkVersion } from "../hooks/useFrameworkVersion";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ThemeManager } from "../theme/ThemeManager";
+import { UiFramework } from "../UiFramework";
 
 const childHtml = `<!DOCTYPE html>
 <html>
@@ -63,22 +63,33 @@ export interface ChildWindowLocationProps {
 /** Supports opening a child browser window from the main application window. The child window is managed by the main application
  * and is running in the same security context. The application must deliver the html file iTwinPopup.html along side its index.html.
  * See also: [Child Window Manager]($docs/learning/ui/appui-react/ChildWindows.md)
- * @public */
-export class ChildWindowManager {
+ * @internal
+ * */
+export class InternalChildWindowManager {
   private _openChildWindows: OpenChildWindowInfo[] = [];
 
   public get openChildWindows() {
     return this._openChildWindows;
   }
 
-  public findChildWindow(childWindowId: string | undefined): OpenChildWindowInfo | undefined {
+  /**
+   * Returns the OpenChildWindowInfo for the related id.
+   * @param childWindowId Id of the window to retrieve.
+   * @returns undefined if not found.
+   */
+  public find(childWindowId: string | undefined): OpenChildWindowInfo | undefined {
     if (undefined === childWindowId)
       return undefined;
 
     return this.openChildWindows.find((openWindow) => openWindow.childWindowId === childWindowId);
   }
 
-  public findChildWindowId(contentWindow: Window | undefined | null): string | undefined {
+  /**
+   * Return the childWindowId of the provided window.
+   * @param contentWindow Window element to identify
+   * @returns undefined if not found
+   */
+  public findId(contentWindow: Window | undefined | null): string | undefined {
     if (!contentWindow)
       return undefined;
 
@@ -124,23 +135,29 @@ export class ChildWindowManager {
       });
 
       childWindow.onbeforeunload = () => {
-        const frontStageDef = FrontstageManager.activeFrontstageDef;
+        const frontStageDef = UiFramework.frontstages.activeFrontstageDef;
         if (!frontStageDef)
           return;
         frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow);
-        this.closeChildWindow(childWindowId, false);
+        this.close(childWindowId, false);
       };
     }
   }
 
   /** Close all child/pop-out windows. This typically is called when the frontstage is changed. */
-  public closeAllChildWindows() {
+  public closeAll() {
     // istanbul ignore next
     this.openChildWindows.forEach((openChildWindow) => openChildWindow.window.close());
     this._openChildWindows = [];
   }
 
-  public closeChildWindow = (childWindowId: string, processWindowClose = true) => {
+  /**
+   * Close a specific child window.
+   * @param childWindowId Id of the window to close
+   * @param processWindowClose should the `close` method be called on the closing window. (defaults to true)
+   * @returns false if the window could not be found.
+   */
+  public close = (childWindowId: string, processWindowClose = true) => {
     const windowIndex = this.openChildWindows.findIndex((openWindow) => openWindow.childWindowId === childWindowId);
     if (-1 === windowIndex)
       return false;
@@ -150,7 +167,7 @@ export class ChildWindowManager {
       childWindow.window.close();
     } else {
       // call the following to convert popout to docked widget
-      const frontStageDef = FrontstageManager.activeFrontstageDef;
+      const frontStageDef = UiFramework.frontstages.activeFrontstageDef;
       frontStageDef && frontStageDef.dockPopoutWidgetContainer(childWindowId);
     }
     return true;
@@ -179,8 +196,17 @@ export class ChildWindowManager {
     return outLocation;
   }
 
+  /**
+   * Open a new child window.
+   * @param childWindowId Id to assign to the newly created window.
+   * @param title Title to display on the window.
+   * @param content ReactNode to be rendered in the window.
+   * @param location Position and size information
+   * @param useDefaultPopoutUrl use "/iTwinPopup.html" as the window Url, "" otherwise.
+   * @returns true if the window is opened successfully.
+   */
   // istanbul ignore next
-  public openChildWindow(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useDefaultPopoutUrl?: boolean) {
+  public open(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useDefaultPopoutUrl?: boolean) {
     // first check to see if content is already open in child window
     if (this.openChildWindows.findIndex((openWindow) => openWindow.childWindowId === childWindowId) >= 0) {
       return false;
@@ -202,12 +228,78 @@ export class ChildWindowManager {
     }
 
     window.addEventListener("unload", () => {
-      const frontStageDef = FrontstageManager.activeFrontstageDef;
+      const frontStageDef = UiFramework.frontstages.activeFrontstageDef;
       if (frontStageDef) {
-        this.closeChildWindow(childWindowId, true);
+        this.close(childWindowId, true);
       }
     }, false);
 
     return true;
   }
 }
+
+/** Supports opening a child browser window from the main application window. The child window is managed by the main application
+ * and is running in the same security context. The application must deliver the html file iTwinPopup.html along side its index.html.
+ * See also: [Child Window Manager]($docs/learning/ui/appui-react/ChildWindows.md)
+ * @public
+ * @deprecated in 3.6. Use `UiFramework.childWindows` property to access.
+ * */
+export class ChildWindowManager extends InternalChildWindowManager {
+  // Deprecation plan: Remove this class and only use InternalChildWindowManager
+
+  /**
+   * @deprecated in 3.6. Use `find` method.
+   */
+  public findChildWindow(
+    childWindowId: string | undefined
+  ): OpenChildWindowInfo | undefined {
+    return this.find(childWindowId);
+  }
+
+  /**
+   * @deprecated in 3.6. Use `findId` method.
+   */
+  public findChildWindowId(
+    contentWindow: Window | undefined | null
+  ): string | undefined {
+    return this.findId(contentWindow);
+  }
+
+  /** Close all child/pop-out windows. This typically is called when the frontstage is changed.
+   * @deprecated in 3.6. Use `closeAll` method.
+   */
+  public closeAllChildWindows() {
+    return this.closeAll();
+  }
+
+  /**
+   * @deprecated in 3.6. Use `close` method.
+   */
+  public closeChildWindow = (
+    childWindowId: string,
+    processWindowClose = true
+  ) => {
+    return this.close(childWindowId, processWindowClose);
+  };
+
+  /**
+   * @deprecated in 3.6. Use `open` method.
+   */
+  // istanbul ignore next
+  public openChildWindow(
+    childWindowId: string,
+    title: string,
+    content: React.ReactNode,
+    location: ChildWindowLocationProps,
+    useDefaultPopoutUrl?: boolean
+  ) {
+    return this.open(
+      childWindowId,
+      title,
+      content,
+      location,
+      useDefaultPopoutUrl
+    );
+  }
+}
+

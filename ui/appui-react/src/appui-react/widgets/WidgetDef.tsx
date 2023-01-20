@@ -10,11 +10,8 @@ import * as React from "react";
 import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, UiEvent, UiSyncEventArgs, WidgetState } from "@itwin/appui-abstract";
 import { Direction, FloatingWidgetState, PanelSide } from "@itwin/appui-layout-react";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { ItemList } from "../shared/ItemMap";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
@@ -171,7 +168,7 @@ export class WidgetDef {
     if ("1" === UiFramework.uiVersion) // eslint-disable-line deprecation/deprecation
       return this._state;
 
-    const frontstageDef = FrontstageManager.activeFrontstageDef;
+    const frontstageDef = UiFramework.frontstages.activeFrontstageDef;
     if (frontstageDef && frontstageDef.findWidgetDef(this.id)) {
       const currentState = frontstageDef.getWidgetCurrentState(this);
       // istanbul ignore else
@@ -337,7 +334,7 @@ export class WidgetDef {
     if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) { // eslint-disable-line deprecation/deprecation
       this._syncEventIds = props.syncEventIds;
       this._stateFunc = props.stateFunc; // eslint-disable-line deprecation/deprecation
-      SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+      UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     }
   }
 
@@ -369,7 +366,7 @@ export class WidgetDef {
     if (this._label === v)
       return;
     this._label = v;
-    FrontstageManager.onWidgetLabelChangedEvent.emit({ widgetDef: this });
+    UiFramework.frontstages.onWidgetLabelChangedEvent.emit({ widgetDef: this });
   }
 
   /** Get the tooltip string */
@@ -395,7 +392,7 @@ export class WidgetDef {
       if (typeof this.classId === "string") {
         // istanbul ignore else
         if (this.classId)
-          this._widgetControl = ConfigurableUiManager.createControl(this.classId, this.id, this.applicationData) as WidgetControl;
+          this._widgetControl = UiFramework.controls.create(this.classId, this.id, this.applicationData) as WidgetControl;
         usedClassId = this.classId;
       } else {
         const info = new ConfigurableCreateInfo(this.classId.name, this.id, this.id);
@@ -447,7 +444,7 @@ export class WidgetDef {
     if ("1" === UiFramework.uiVersion) // eslint-disable-line deprecation/deprecation
       this._state = newState;
     this._stateChanged = true;
-    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: newState });
+    UiFramework.frontstages.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: newState });
     this.onWidgetStateChanged();
   }
 
@@ -535,13 +532,13 @@ export class WidgetDef {
    * @alpha
    */
   public show() {
-    FrontstageManager.onWidgetShowEvent.emit({ widgetDef: this });
+    UiFramework.frontstages.onWidgetShowEvent.emit({ widgetDef: this });
   }
 
   /** Opens the widget and expands it to fill full size of the stage panel.
    * @alpha
    */
   public expand() {
-    FrontstageManager.onWidgetExpandEvent.emit({ widgetDef: this });
+    UiFramework.frontstages.onWidgetExpandEvent.emit({ widgetDef: this });
   }
 }

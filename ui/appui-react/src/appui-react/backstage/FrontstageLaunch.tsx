@@ -10,9 +10,9 @@
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
-import { FrontstageActivatedEventArgs, FrontstageManager } from "../frontstage/FrontstageManager";
+import { FrontstageActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { withSafeArea } from "../safearea/SafeAreaContext";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { Backstage } from "./Backstage";
@@ -53,14 +53,14 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
     const state = BackstageItemUtilities.getBackstageItemStateFromProps(props);
     /* istanbul ignore else */
     if (this.props.isActive === undefined)
-      state.isActive = FrontstageManager.activeFrontstageId === this.props.frontstageId;
+      state.isActive = UiFramework.frontstages.activeFrontstageId === this.props.frontstageId;
     this.state = state;
   }
 
   public override componentDidMount() {
     if (this.props.stateFunc && this._stateSyncIds.length > 0)
-      this._removeSyncUiEventListener = SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
-    this._removeFrontstageActivatedEventListener = FrontstageManager.onFrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
+      this._removeSyncUiEventListener = UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    this._removeFrontstageActivatedEventListener = UiFramework.frontstages.onFrontstageActivatedEvent.addListener(this._handleFrontstageActivatedEvent);
   }
 
   public override componentWillUnmount() {
@@ -75,7 +75,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
       return;
 
     /* istanbul ignore else */
-    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, this._stateSyncIds)) {
+    if (UiFramework.events.hasEventOfInterest(args.eventIds, this._stateSyncIds)) {
       /* istanbul ignore else */
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);
@@ -89,16 +89,16 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
   public execute = async () => {
     Backstage.hide(); // eslint-disable-line deprecation/deprecation
 
-    const frontstageDef = await FrontstageManager.getFrontstageDef(this.props.frontstageId);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(this.props.frontstageId);
     if (frontstageDef)
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
     else
       Logger.logError(UiFramework.loggerCategory(this), `Frontstage with id '${this.props.frontstageId}' not found`);
   };
 
   public override componentDidUpdate(_prevProps: FrontstageLaunchBackstageItemProps) {
     const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
-    updatedState.isActive = FrontstageManager.activeFrontstageId === this.props.frontstageId;
+    updatedState.isActive = UiFramework.frontstages.activeFrontstageId === this.props.frontstageId;
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);
   }

@@ -16,13 +16,13 @@ import {
   StagePanelTarget, StagePanelTypeHelpers, WidgetZoneId, ZonesManagerWidgetsProps,
 } from "@itwin/appui-layout-react";
 import { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
 import { ZoneLocation } from "../zones/Zone";
 import { getNestedStagePanelKey, getStagePanelType } from "./StagePanel";
 import { StagePanelState } from "./StagePanelDef";
 import { WidgetDef } from "../widgets/WidgetDef";
+import { UiFramework } from "../UiFramework";
 
 /** Properties of a [[FrameworkStagePanel]] component
  * @internal
@@ -174,7 +174,7 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
 
   private setMinMaxSize() {
     const panel = getNestedStagePanelKey(this.props.location);
-    const nestedPanelsManager = FrontstageManager.NineZoneManager.getNestedPanelsManager();
+    const nestedPanelsManager = UiFramework.frontstages.NineZoneManager.getNestedPanelsManager();
     this.props.minSize && ( /* istanbul ignore next */ nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).minSize = this.props.minSize);
     this.props.maxSize && ( /* istanbul ignore next */ nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).maxSize = this.props.maxSize);
   }

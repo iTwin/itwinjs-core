@@ -13,7 +13,6 @@ import { CommonProps, Orientation } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
 import { ModelessDialog } from "../dialog/ModelessDialog";
 import { AccuDrawFieldContainer } from "./AccuDrawFieldContainer";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 /** Properties for [[AccuDrawDialog]]
  * @beta */
@@ -44,7 +43,7 @@ export function AccuDrawDialog(props: AccuDrawDialogProps) {
   }, [closeDialog]);
 
   const handleEscape = React.useCallback(() => {
-    KeyboardShortcutManager.setFocusToHome();
+    UiFramework.keyboardShortcuts.setFocusToHome();
   }, []);
 
   const classNames = classnames("uifw-accudraw-dialog", props.className);

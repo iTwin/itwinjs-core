@@ -124,7 +124,8 @@ deprecated;CategoryVisibilityHandler
 alpha;CategoryVisibilityHandlerParams
 deprecated;CategoryVisibilityHandlerParams
 public;ChildWindowLocationProps
-public;ChildWindowManager
+public;ChildWindowManager 
+deprecated;ChildWindowManager 
 beta;ClassGroupingOption
 deprecated;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
@@ -154,7 +155,8 @@ public;class ConfigurableUiControl
 public;ConfigurableUiControlConstructor = new (info: ConfigurableCreateInfo, options: any) => ConfigurableUiElement
 public;ConfigurableUiControlType
 public;ConfigurableUiElement
-public;ConfigurableUiManager
+public;ConfigurableUiManager 
+deprecated;ConfigurableUiManager 
 public;ConfigurableUiReducer(state: ConfigurableUiState | undefined, action: ConfigurableUiActionsUnion): ConfigurableUiState
 public;ConfigurableUiState
 public;connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => InferableComponentEnhancerWithProps
@@ -165,7 +167,8 @@ public;ContentControlActivatedEvent
 public;ContentControlActivatedEventArgs
 public;ContentDialog(props: ContentDialogProps): JSX.Element
 public;ContentDialogChangedEvent 
-public;ContentDialogManager
+public;ContentDialogManager 
+deprecated;ContentDialogManager 
 public;ContentDialogProps 
 public;ContentDialogRenderer 
 public;ContentGroup
@@ -176,11 +179,13 @@ public;ContentLayoutActivatedEvent
 public;ContentLayoutActivatedEventArgs
 public;ContentLayoutComponentProps 
 public;ContentLayoutDef
-public;ContentLayoutManager
+public;ContentLayoutManager 
+deprecated;ContentLayoutManager 
 public;ContentProps
 public;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
 public;ContentToolWidgetComposerProps
-public;ContentViewManager
+public;ContentViewManager 
+deprecated;ContentViewManager 
 internal;ContentWrapper(props: ContentWrapperProps): JSX.Element
 public;CoreTools
 public;createAction
@@ -292,7 +297,8 @@ public;FrontstageLaunchBackstageItem
 deprecated;FrontstageLaunchBackstageItem 
 public;FrontstageLaunchBackstageItemProps 
 deprecated;FrontstageLaunchBackstageItemProps 
-public;FrontstageManager
+public;FrontstageManager 
+deprecated;FrontstageManager 
 internal;FrontstageNineZoneStateChangedEventArgs 
 public;FrontstageProps 
 deprecated;FrontstageProps 
@@ -360,6 +366,18 @@ public;InputFieldMessageAddedEvent
 public;InputFieldMessageEventArgs
 public;InputFieldMessageRemovedEvent 
 alpha;InputStatus
+internal;InternalChildWindowManager
+internal;InternalConfigurableUiManager
+internal;InternalContentDialogManager
+internal;InternalContentLayoutManager
+internal;InternalContentViewManager
+internal;InternalFrontstageManager
+internal;InternalKeyboardShortcutManager
+internal;InternalModalDialogManager
+internal;InternalModelessDialogManager
+internal;InternalSyncUiEventDispatcher
+internal;InternalToolSettingsManager
+internal;InternalUiShowHideManager
 internal;isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open
 internal;isFrontstageStateSettingResult(settingsResult: UiStateStorageResult): settingsResult is
 beta;isNoSelectionActive(): boolean
@@ -376,7 +394,8 @@ alpha;IVisibilityHandler
 deprecated;IVisibilityHandler 
 public;KeyboardShortcut 
 public;KeyboardShortcutContainer
-public;KeyboardShortcutManager
+public;KeyboardShortcutManager 
+deprecated;KeyboardShortcutManager 
 public;KeyboardShortcutMenu 
 public;KeyboardShortcutMenuEvent 
 public;KeyboardShortcutMenuState
@@ -418,7 +437,8 @@ public;MessageCenterFieldProps
 public;MessageManager
 public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
-public;ModalDialogManager
+public;ModalDialogManager 
+deprecated;ModalDialogManager 
 public;ModalDialogRenderer 
 public;ModalFrontstage 
 public;ModalFrontstageChangedEvent 
@@ -432,7 +452,8 @@ alpha;ModalFrontstageRequestedCloseEvent
 alpha;ModalFrontstageRequestedCloseEventArgs
 public;ModelessDialog 
 public;ModelessDialogChangedEvent 
-public;ModelessDialogManager
+public;ModelessDialogManager 
+deprecated;ModelessDialogManager 
 public;ModelessDialogProps 
 public;ModelessDialogRenderer 
 public;ModelsTree(props: ModelsTreeProps): JSX.Element
@@ -655,7 +676,8 @@ public;SyncUiEvent = UiSyncEvent
 deprecated;SyncUiEvent = UiSyncEvent
 public;SyncUiEventArgs = UiSyncEventArgs
 deprecated;SyncUiEventArgs = UiSyncEventArgs
-public;SyncUiEventDispatcher
+public;SyncUiEventDispatcher 
+deprecated;SyncUiEventDispatcher 
 public;SyncUiEventId
 public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"
 internal;TabLocation
@@ -722,7 +744,8 @@ public;ToolSettingsEntry
 internal;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
 public;ToolSettingsGridContainer({ componentGenerator }:
 internal;ToolSettingsGridProps
-public;ToolSettingsManager
+public;ToolSettingsManager 
+deprecated;ToolSettingsManager 
 internal;ToolSettingsWidgetContent(): JSX.Element
 internal;ToolSettingsZone 
 internal;ToolSettingsZoneProps 
@@ -750,7 +773,8 @@ beta;UiSettingsPage(): JSX.Element
 beta;UiSettingsPage({ allowSettingUiFrameworkVersion }:
 deprecated;UiSettingsPage({ allowSettingUiFrameworkVersion }:
 public;UiSettingsProviderProps
-public;UiShowHideManager
+public;UiShowHideManager 
+deprecated;UiShowHideManager 
 internal;UiShowHideSettingsProvider 
 internal;UiStateStorageContext: React_2.Context
 public;UiStateStorageHandler(props: UiSettingsProviderProps): JSX.Element

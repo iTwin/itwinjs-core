@@ -11,8 +11,8 @@ import { WidgetState } from "@itwin/appui-abstract";
 import { Rectangle } from "@itwin/core-react";
 import { getDefaultZoneManagerProps, ResizeHandle, ToolSettings } from "@itwin/appui-layout-react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider,
-  ToolSettingsZone, ToolSettingsZoneProps, ToolUiProvider, Widget, Zone,
+  ConfigurableCreateInfo, CoreTools, Frontstage, FrontstageComposer, FrontstageProps, FrontstageProvider,
+  ToolSettingsZone, ToolSettingsZoneProps, ToolUiProvider, UiFramework, Widget, Zone,
 } from "../../../appui-react";
 import TestUtils, { mount, ReactWrapper } from "../../TestUtils";
 import { Tool1 } from "../../tools/Tool1";
@@ -103,7 +103,7 @@ describe("ToolSettingsZone", () => {
         );
       }
     }
-    ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
+    UiFramework.frontstages.addFrontstageProvider(new Frontstage1());
 
     class Frontstage2 extends FrontstageProvider {
       public static stageId = "ToolSettingsZone-TestFrontstage2";
@@ -128,9 +128,9 @@ describe("ToolSettingsZone", () => {
         );
       }
     }
-    ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
+    UiFramework.frontstages.addFrontstageProvider(new Frontstage2());
 
-    ConfigurableUiManager.registerControl(testToolId, Tool1UiProvider);
+    UiFramework.controls.register(testToolId, Tool1UiProvider);
   });
 
   after(() => {
@@ -139,19 +139,19 @@ describe("ToolSettingsZone", () => {
 
   it("close button closes it & tab opens it", async () => {
     // ToolSetting should open by default if a ToolUiProvider is specified for tool.
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
 
     const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
-    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolSettingsZone-TestFrontstage");
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef("ToolSettingsZone-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
-      FrontstageManager.ensureToolInformationIsSet(testToolId);
-      FrontstageManager.setActiveToolId(testToolId);
-      expect(FrontstageManager.activeToolId).to.eq(testToolId);
+      UiFramework.frontstages.ensureToolInformationIsSet(testToolId);
+      UiFramework.frontstages.setActiveToolId(testToolId);
+      expect(UiFramework.frontstages.activeToolId).to.eq(testToolId);
 
       wrapper.update();
 
@@ -178,19 +178,19 @@ describe("ToolSettingsZone", () => {
 
   it("should be closed with defaultState of Closed", async () => {
     // ToolSettings should closed by default.
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
 
     const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
-    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolSettingsZone-TestFrontstage2");
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef("ToolSettingsZone-TestFrontstage2");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
-      FrontstageManager.ensureToolInformationIsSet(testToolId);
-      FrontstageManager.setActiveToolId(testToolId);
-      expect(FrontstageManager.activeToolId).to.eq(testToolId);
+      UiFramework.frontstages.ensureToolInformationIsSet(testToolId);
+      UiFramework.frontstages.setActiveToolId(testToolId);
+      expect(UiFramework.frontstages.activeToolId).to.eq(testToolId);
 
       wrapper.update();
 

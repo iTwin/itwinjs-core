@@ -5,7 +5,7 @@
 /* eslint-disable deprecation/deprecation */
 // cSpell:ignore droppable Sublayer Basemap
 
-import { ModalDialogManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 import { BaseMapLayerSettings, ColorByName, ColorDef, ImageMapLayerSettings, MapLayerProps } from "@itwin/core-common";
 import { DisplayStyleState } from "@itwin/core-frontend";
 import { WebFontIcon } from "@itwin/core-react";
@@ -105,7 +105,7 @@ export function BasemapPanel(props: BasemapPanelProps) {
   }, [selectedBaseMap, baseMapOptions, baseIsMap]);
 
   const handleBackgroundColorDialogOk = React.useCallback((bgColorDef: ColorDef) => {
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
     if (activeViewport) {
       // change color and make sure previously set transparency is not lost.
       const curTransparency = activeViewport.displayStyle.backgroundMapBase instanceof ColorDef ? activeViewport.displayStyle.backgroundMapBase.getTransparency() : 0;
@@ -116,12 +116,12 @@ export function BasemapPanel(props: BasemapPanelProps) {
   }, [activeViewport]);
 
   const handleBackgroundColorDialogCancel = React.useCallback(() => {
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
   }, []);
 
   const handleBgColorClick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
-    ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors} colorInputType={"rgb"}
+    UiFramework.dialogs.modal.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors} colorInputType={"rgb"}
       onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel} />);
   }, [presetColors, handleBackgroundColorDialogOk]); // eslint-disable-line react-hooks/exhaustive-deps
 

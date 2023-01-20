@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusBarIndicator } from "@itwin/appui-react";
+import { ContentControl, ContentControlActivatedEventArgs, StatusBarIndicator, UiFramework } from "@itwin/appui-react";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 import { CommonProps } from "@itwin/core-react";
 
@@ -76,14 +76,14 @@ export class DisplayStyleField extends React.Component<CommonProps, DisplayStyle
   };
 
   public override componentDidMount() {
-    FrontstageManager.onContentControlActivatedEvent.addListener(this._handleContentControlActivatedEvent);
+    UiFramework.frontstages.onContentControlActivatedEvent.addListener(this._handleContentControlActivatedEvent);
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.setStateFromActiveContent(ContentViewManager.getActiveContentControl());
+    this.setStateFromActiveContent(UiFramework.content.getActiveContentControl());
   }
 
   public override componentWillUnmount() {
-    FrontstageManager.onContentControlActivatedEvent.removeListener(this._handleContentControlActivatedEvent);
+    UiFramework.frontstages.onContentControlActivatedEvent.removeListener(this._handleContentControlActivatedEvent);
   }
 
   private _handleDisplayStyleSelected = async (newValue: string) => {

@@ -13,13 +13,13 @@ import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { Logger } from "@itwin/core-bentley";
 import { Centered, SettingsContainer } from "@itwin/core-react";
-import { FrontstageManager, ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "./FrontstageManager";
+import { ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "./FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 
 function ModalSettingsStage({ initialSettingsTabId }: { initialSettingsTabId?: string }) {
-  const id = FrontstageManager.activeFrontstageDef?.id ?? "none";
-  const stageUsage = FrontstageManager.activeFrontstageDef?.usage ?? StageUsage.General;
+  const id = UiFramework.frontstages.activeFrontstageDef?.id ?? "none";
+  const stageUsage = UiFramework.frontstages.activeFrontstageDef?.usage ?? StageUsage.General;
   const tabEntries = UiFramework.settingsManager.getSettingEntries(id, stageUsage);
   const noSettingsAvailableLabel = React.useRef(UiFramework.translate("settings.noSettingsAvailable"));
 
@@ -38,7 +38,7 @@ function ModalSettingsStage({ initialSettingsTabId }: { initialSettingsTabId?: s
         UiFramework.settingsManager.closeSettingsContainer(stageCloseFunc);
       }
     };
-    return FrontstageManager.onCloseModalFrontstageRequestedEvent.addListener(handleFrontstageCloseRequested);
+    return UiFramework.frontstages.onCloseModalFrontstageRequestedEvent.addListener(handleFrontstageCloseRequested);
   }, [tabEntries]);
 
   return (
@@ -66,7 +66,7 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
   private static noSettingsAvailable = () => new ConditionalBooleanValue(() => 0 === UiFramework.settingsManager.providers.length, [SyncUiEventId.SettingsProvidersChanged]);
 
   public static getBackstageActionItem(groupPriority: number, itemPriority: number) {
-    return BackstageItemUtilities.createActionItem(SettingsModalFrontstage.id, groupPriority, itemPriority, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()),
+    return BackstageItemUtilities.createActionItem(SettingsModalFrontstage.id, groupPriority, itemPriority, () => UiFramework.frontstages.openModalFrontstage(new SettingsModalFrontstage()),
       UiFramework.translate("settings.settingsStageLabel"),
       undefined, IconSpecUtilities.createWebComponentIconSpec(settingsIconSvg), { isHidden: SettingsModalFrontstage.noSettingsAvailable() });
   }
@@ -75,13 +75,13 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
     if (UiFramework.settingsManager.providers.length) {
       // Check to see if it is already open
       // istanbul ignore else
-      if (FrontstageManager.activeModalFrontstage && FrontstageManager.activeModalFrontstage instanceof SettingsModalFrontstage) {
+      if (UiFramework.frontstages.activeModalFrontstage && UiFramework.frontstages.activeModalFrontstage instanceof SettingsModalFrontstage) {
         if (initialSettingsTab) {
           UiFramework.settingsManager.activateSettingsTab(initialSettingsTab);
           return;
         }
       }
-      FrontstageManager.openModalFrontstage(new SettingsModalFrontstage(initialSettingsTab));
+      UiFramework.frontstages.openModalFrontstage(new SettingsModalFrontstage(initialSettingsTab));
     } else {
       const briefMessage = UiFramework.translate("settings.noSettingsAvailable");
       const detailedMessage = UiFramework.translate("settings.noSettingsProvidersRegistered");

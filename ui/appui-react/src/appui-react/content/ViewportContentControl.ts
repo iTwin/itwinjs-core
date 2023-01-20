@@ -11,13 +11,12 @@ import {
   DrawingViewState, IModelApp, IModelConnection, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
 } from "@itwin/core-frontend";
 import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
 import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
+import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentControl, SupportsViewSelectorChange } from "./ContentControl";
-import { ContentViewManager } from "./ContentViewManager";
 
 /**
  * The base class for frontstage Viewport content controls that connects to a `ScreenViewport`
@@ -121,7 +120,7 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
     } else {
       this.reactNode = this.getReactElementForViewSelectorChange(iModel, viewDefinitionId, viewState, name);
     }
-    ContentViewManager.refreshActiveContent(this.reactNode);
+    UiFramework.content.refreshActiveContent(this.reactNode);
   }
 
   /** Get the React.Element for a ViewSelector change. */
@@ -146,7 +145,7 @@ export class FloatingViewportContentControl extends ViewportContentControl {
 
   public override set reactNode(r: React.ReactNode) {
     this._reactNode = r;
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
 
     // istanbul ignore else
     if (this.viewport && activeFrontstageDef)

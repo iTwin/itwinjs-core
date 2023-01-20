@@ -6,13 +6,12 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Point } from "@itwin/core-react";
 import {
-  AccuDrawKeyboardShortcuts, CommandItemDef, ConfigurableUiManager, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
+  AccuDrawKeyboardShortcuts, CommandItemDef, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps, UiFramework,
 } from "../../appui-react";
 import { CursorInformation } from "../../appui-react/cursor/CursorInformation";
 import { KeyboardShortcutMenu } from "../../appui-react/keyboardshortcut/KeyboardShortcutMenu";
 import TestUtils from "../TestUtils";
 import { ConditionalBooleanValue, FunctionKey, SpecialKey } from "@itwin/appui-abstract";
-import { SyncUiEventDispatcher } from "../../appui-react/syncui/SyncUiEventDispatcher";
 
 describe("KeyboardShortcut", () => {
 
@@ -191,7 +190,7 @@ describe("KeyboardShortcut", () => {
 
   describe("KeyboardShortcutManager", () => {
 
-    it("ConfigurableUiManager.loadKeyboardShortcuts should load shortcuts", () => {
+    it("UiFramework.keyboardShortcuts.loadKeyboardShortcuts should load shortcuts", () => {
       const keyboardShortcutList: KeyboardShortcutProps[] = [
         {
           key: "a",
@@ -221,7 +220,7 @@ describe("KeyboardShortcut", () => {
       KeyboardShortcutManager.displayShortcutsMenu();   // No shortcuts to display yet
       expect(menuSpyMethod.calledOnce).to.be.false;
 
-      ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
+      UiFramework.keyboardShortcuts.loadKeyboardShortcuts(keyboardShortcutList);
 
       expect(KeyboardShortcutManager.shortcutContainer.areKeyboardShortcutsAvailable()).to.be.true;
       expect(KeyboardShortcutManager.shortcutContainer.getAvailableKeyboardShortcuts().length).to.eq(4);
@@ -295,7 +294,7 @@ describe("KeyboardShortcut", () => {
       expect(ConditionalBooleanValue.getValue(childShortcutZ!.isDisabled)).to.be.false;
       expect(ConditionalBooleanValue.getValue(childShortcutZ!.isHidden)).to.be.false;
 
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
 
       expect(ConditionalBooleanValue.getValue(shortcut!.isDisabled)).to.be.true;
       expect(ConditionalBooleanValue.getValue(childShortcut!.isDisabled)).to.be.true;

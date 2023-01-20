@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Dialog, DialogProps } from "@itwin/core-react";
-import { ModelessDialogManager } from "./ModelessDialogManager";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for the [[ModelessDialog]] component
  * @public
@@ -35,8 +35,8 @@ export class ModelessDialog extends React.Component<ModelessDialogProps> {
         {...props}
         modal={false}
         modelessId={dialogId}
-        onModelessPointerDown={(event) => ModelessDialogManager.handlePointerDownEvent(event, dialogId, this._updateDialog)}
-        style={{ zIndex: ModelessDialogManager.getDialogZIndex(dialogId), ...style }}
+        onModelessPointerDown={(event) => UiFramework.dialogs.modeless.handlePointerDownEvent(event, dialogId, this._updateDialog)}
+        style={{ zIndex: UiFramework.dialogs.modeless.getDialogZIndex(dialogId), ...style }}
       >
         {this.props.children}
       </Dialog >

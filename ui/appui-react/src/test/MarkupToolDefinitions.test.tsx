@@ -6,7 +6,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import { MarkupApp } from "@itwin/core-markup";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
-import { ActionItemButton, FrontstageManager, MarkupTools, ToolWidget } from "../appui-react";
+import { ActionItemButton, MarkupTools, ToolWidget, UiFramework } from "../appui-react";
 import TestUtils, { mount } from "./TestUtils";
 
 /* eslint-disable deprecation/deprecation */
@@ -54,8 +54,8 @@ describe("MarkupToolDefinitions", () => {
   });
 
   it("ToolWidget should render correctly with Markup Tool Definitions", async () => {
-    FrontstageManager.clearFrontstageProviders();
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    UiFramework.frontstages.clearFrontstageProviders();
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
     setImmediate(async () => {
       await TestUtils.flushAsyncOperations();
       shallow(

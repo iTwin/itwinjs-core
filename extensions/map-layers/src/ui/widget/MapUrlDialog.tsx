@@ -5,7 +5,7 @@
 // cSpell:ignore Modeless WMTS
 
 import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
-import { ModalDialogManager } from "@itwin/appui-react";
+import { UiFramework } from "@itwin/appui-react";
 import { Button, Input, LabeledInput, ProgressLinear, Radio } from "@itwin/itwinui-react";
 import { ImageMapLayerProps } from "@itwin/core-common";
 import { IModelApp, MapLayerAccessClient, MapLayerSource,
@@ -149,7 +149,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       props.onCancelResult();
       return;
     }
-    ModalDialogManager.closeDialog();
+    UiFramework.dialogs.modal.closeDialog();
   }, [props]);
 
   const onUsernameChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -337,7 +337,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     const source = createSource();
     if (source === undefined || props.mapLayerSourceToEdit) {
 
-      ModalDialogManager.closeDialog();
+      UiFramework.dialogs.modal.closeDialog();
       onOkResult();
 
       if (source === undefined) {
@@ -379,12 +379,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         // In theory the modal dialog should always get closed by the parent
         // AttachLayerPanel's 'onOkResult' handler.  We close it here just in case.
         if (closeDialog) {
-          ModalDialogManager.closeDialog();
+          UiFramework.dialogs.modal.closeDialog();
           onOkResult();
         }
       } catch (_error) {
         onOkResult();
-        ModalDialogManager.closeDialog();
+        UiFramework.dialogs.modal.closeDialog();
       }
     })();
 

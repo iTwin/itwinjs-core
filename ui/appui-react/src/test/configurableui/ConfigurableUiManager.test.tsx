@@ -9,8 +9,8 @@ import { MockRender } from "@itwin/core-frontend";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, CoreTools,
-  Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
-  TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
+  Frontstage, FrontstageProps, FrontstageProvider, MessageManager, PopupManager,
+  TaskManager, TaskPropsList, UiFramework, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
@@ -38,8 +38,8 @@ describe("ConfigurableUiManager", () => {
   });
 
   it("setActiveFrontstageDef passed no argument", async () => {
-    await FrontstageManager.setActiveFrontstageDef(undefined);
-    expect(FrontstageManager.activeFrontstageDef).to.be.undefined;
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
+    expect(UiFramework.frontstages.activeFrontstageDef).to.be.undefined;
   });
 
   it("addFrontstageProvider & getFrontstageDef", async () => {
@@ -60,9 +60,9 @@ describe("ConfigurableUiManager", () => {
       }
     }
     ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
-    const frontstageDef2 = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
+    const frontstageDef2 = await UiFramework.frontstages.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef2).to.not.be.undefined;
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef2);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef2);
   });
 
   class TestWidget extends WidgetControl {
@@ -179,8 +179,8 @@ describe("ConfigurableUiManager", () => {
     ConfigurableUiManager.closeUi();
 
     expect(MessageManager.messages.length).to.eq(0);
-    expect(ModelessDialogManager.dialogCount).to.eq(0);
-    expect(ModalDialogManager.dialogCount).to.eq(0);
+    expect(UiFramework.dialogs.modeless.dialogCount).to.eq(0);
+    expect(UiFramework.dialogs.modal.dialogCount).to.eq(0);
     expect(PopupManager.popupCount).to.eq(0);
   });
 

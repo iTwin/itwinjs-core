@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, NavigationAidControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, NavigationAidControl, UiFramework } from "@itwin/appui-react";
 
 // -----------------------------------------------------------------------------
 // Example Cube Navigation Aid Control
@@ -128,4 +128,4 @@ class CubeExampleNavigationAid extends React.Component {
   }
 }
 
-ConfigurableUiManager.registerControl("CubeExampleNavigationAid", CubeExampleNavigationAidControl);
+UiFramework.controls.register("CubeExampleNavigationAid", CubeExampleNavigationAidControl);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ConditionalStringValue, IconSpecUtilities, StandardContentLayouts } from "@itwin/appui-abstract";
-import { CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, FrontstageManager,
+import { CommandItemDef, ContentGroup, ContentGroupProps, ContentProps,
   IModelViewportControl,
   StageContentLayout, StageContentLayoutProps, SyncUiEventId, ToolItemDef, UiFramework } from "@itwin/appui-react";
 import { IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
@@ -62,12 +62,12 @@ export class SaveContentLayoutTool extends Tool {
   }
 
   public override async run(): Promise<boolean> {
-    if (FrontstageManager.activeFrontstageDef && ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
+    if (UiFramework.frontstages.activeFrontstageDef && UiFramework.content.layouts.activeLayout && UiFramework.content.layouts.activeContentGroup) {
       const localSettings = new LocalStateStorage();
 
       // Create props for the Layout, ContentGroup and ViewStates
-      const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(ContentLayoutManager.activeLayout,
-        ContentLayoutManager.activeContentGroup, true, (contentProps: ContentProps) => {
+      const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(UiFramework.content.layouts.activeLayout,
+        UiFramework.content.layouts.activeContentGroup, true, (contentProps: ContentProps) => {
           if (contentProps.applicationData) {
             if (contentProps.applicationData.iModelConnection)
               delete contentProps.applicationData.iModelConnection;
@@ -79,11 +79,11 @@ export class SaveContentLayoutTool extends Tool {
       if (savedViewLayoutProps.contentLayoutProps)
         delete savedViewLayoutProps.contentLayoutProps;
 
-      if (FrontstageManager.activeFrontstageDef.contentGroupProvider)
-        savedViewLayoutProps.contentGroupProps = FrontstageManager.activeFrontstageDef.contentGroupProvider.prepareToSaveProps(savedViewLayoutProps.contentGroupProps);
+      if (UiFramework.frontstages.activeFrontstageDef.contentGroupProvider)
+        savedViewLayoutProps.contentGroupProps = UiFramework.frontstages.activeFrontstageDef.contentGroupProvider.prepareToSaveProps(savedViewLayoutProps.contentGroupProps);
 
       await localSettings.saveSetting("ContentGroupLayout",
-        getIModelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()),
+        getIModelSpecificKey(UiFramework.frontstages.activeFrontstageDef.id, UiFramework.getIModelConnection()),
         savedViewLayoutProps);
     }
     return true;
@@ -115,16 +115,16 @@ export class RestoreSavedContentLayoutTool extends Tool {
   }
 
   public override async run(): Promise<boolean> {
-    if (FrontstageManager.activeFrontstageDef) {
-      const savedViewLayoutProps = await getSavedViewLayoutProps(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection());
+    if (UiFramework.frontstages.activeFrontstageDef) {
+      const savedViewLayoutProps = await getSavedViewLayoutProps(UiFramework.frontstages.activeFrontstageDef.id, UiFramework.getIModelConnection());
       if (savedViewLayoutProps) {
         let contentGroupProps = savedViewLayoutProps.contentGroupProps;
-        if (FrontstageManager.activeFrontstageDef.contentGroupProvider)
-          contentGroupProps = FrontstageManager.activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(savedViewLayoutProps.contentGroupProps);
+        if (UiFramework.frontstages.activeFrontstageDef.contentGroupProvider)
+          contentGroupProps = UiFramework.frontstages.activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(savedViewLayoutProps.contentGroupProps);
         const contentGroup = new ContentGroup(contentGroupProps);
 
         // activate the layout
-        await ContentLayoutManager.setActiveContentGroup(contentGroup);
+        await UiFramework.content.layouts.setActiveContentGroup(contentGroup);
 
         // emphasize the elements
         StageContentLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps);
@@ -150,11 +150,11 @@ export function getSplitSingleViewportCommandDef() {
   const commandId = "splitSingleViewportCommandDef";
   return new CommandItemDef({
     commandId,
-    iconSpec: new ConditionalStringValue(() => IconSpecUtilities.createWebComponentIconSpec(1 === FrontstageManager.activeFrontstageDef?.contentGroup?.getContentControls().length ? splitVerticalIconSvg :singlePaneIconSvg), [SyncUiEventId.ActiveContentChanged]),
-    label: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentGroup?.getContentControls().length ? "Split Content View" : "Single Content View", [SyncUiEventId.ActiveContentChanged]),
+    iconSpec: new ConditionalStringValue(() => IconSpecUtilities.createWebComponentIconSpec(1 === UiFramework.frontstages.activeFrontstageDef?.contentGroup?.getContentControls().length ? splitVerticalIconSvg :singlePaneIconSvg), [SyncUiEventId.ActiveContentChanged]),
+    label: new ConditionalStringValue(() => 1 === UiFramework.frontstages.activeFrontstageDef?.contentGroup?.getContentControls().length ? "Split Content View" : "Single Content View", [SyncUiEventId.ActiveContentChanged]),
     execute: async () => {
       // if the active frontstage is only showing an single viewport then split it and have two copies of it
-      const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+      const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
       if (activeFrontstageDef && 1 === activeFrontstageDef.contentGroup?.getContentControls().length &&
          activeFrontstageDef.contentControls[0].viewport) {
         const vp = activeFrontstageDef.contentControls[0].viewport;
@@ -205,7 +205,7 @@ export function getSplitSingleViewportCommandDef() {
             contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
 
           const contentGroup = new ContentGroup(contentGroupProps);
-          await FrontstageManager.setActiveContentGroup(contentGroup);
+          await UiFramework.frontstages.setActiveContentGroup(contentGroup);
         }
       } else if (activeFrontstageDef && 2 === activeFrontstageDef.contentGroup?.getContentControls().length &&
          activeFrontstageDef.contentControls[0].viewport) {
@@ -231,7 +231,7 @@ export function getSplitSingleViewportCommandDef() {
             contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
 
           const contentGroup = new ContentGroup(contentGroupProps);
-          await FrontstageManager.setActiveContentGroup(contentGroup);
+          await UiFramework.frontstages.setActiveContentGroup(contentGroup);
         }
       }
     },

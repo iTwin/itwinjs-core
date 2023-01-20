@@ -16,7 +16,6 @@ import { AnyItemDef } from "../shared/AnyItemDef";
 import { CustomItemDef } from "../shared/CustomItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemList } from "../shared/ItemMap";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { GroupItemDef } from "./GroupItem";
 
@@ -94,12 +93,12 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
 
   public override componentDidMount() {
     this._isMounted = true;
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
   public override componentWillUnmount() {
     this._isMounted = false;
-    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   public override componentDidUpdate(prevProps: ToolbarProps, _prevState: ToolbarState) {

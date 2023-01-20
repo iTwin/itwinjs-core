@@ -5,8 +5,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, ContentProps,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentGroupProps, ContentProps,
   NavigationAidControl,
+  UiFramework,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
@@ -46,10 +47,10 @@ describe("ContentGroup", () => {
     };
     const contentGroup = new ContentGroup(groupProps);
 
-    ConfigurableUiManager.unregisterControl("TestContentControl");
-    ConfigurableUiManager.registerControl("TestContentControl", TestNavigationAidControl);
+    UiFramework.controls.unregister("TestContentControl");
+    UiFramework.controls.register("TestContentControl", TestNavigationAidControl);
     expect(() => contentGroup.getContentControl(contentProps, 0)).to.throw(Error);
-    ConfigurableUiManager.unregisterControl("TestContentControl");
+    UiFramework.controls.unregister("TestContentControl");
   });
 
   it("ContentGroup.toJSON should throw Error if class not registered", () => {
@@ -66,7 +67,7 @@ describe("ContentGroup", () => {
 
   it("ContentGroup.toJSON should generate properly props for constructor classId", () => {
     const classId = "TestContentControl";
-    ConfigurableUiManager.registerControl(classId, TestContentControl);
+    UiFramework.controls.register(classId, TestContentControl);
 
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
@@ -79,12 +80,12 @@ describe("ContentGroup", () => {
     const props = contentGroup.toJSON();
     expect(props.contents[0].classId).to.eq(classId);
 
-    ConfigurableUiManager.unregisterControl(classId);
+    UiFramework.controls.unregister(classId);
   });
 
   it("ContentGroup.toJSON should generate properly props for string classId", () => {
     const classId = "TestContentControl";
-    ConfigurableUiManager.registerControl(classId, TestContentControl);
+    UiFramework.controls.register(classId, TestContentControl);
 
     const contentProps: ContentProps = { id: "myContent", classId };
     const groupProps: ContentGroupProps = {
@@ -97,11 +98,11 @@ describe("ContentGroup", () => {
     const props = contentGroup.toJSON();
     expect(props.contents[0].classId).to.eq(classId);
 
-    ConfigurableUiManager.unregisterControl(classId);
+    UiFramework.controls.unregister(classId);
   });
 
   it("ContentGroup.getViewports should return array with undefined with no viewports", () => {
-    ConfigurableUiManager.registerControl("TestContentControl", TestContentControl);
+    UiFramework.controls.register("TestContentControl", TestContentControl);
 
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
@@ -114,7 +115,7 @@ describe("ContentGroup", () => {
     const viewports = contentGroup.getViewports();
     expect(viewports[0]).to.eq(undefined);
 
-    ConfigurableUiManager.unregisterControl("TestContentControl");
+    UiFramework.controls.unregister("TestContentControl");
   });
 
 });

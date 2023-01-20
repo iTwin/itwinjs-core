@@ -14,8 +14,8 @@ import * as React from "react";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentProps, CoreTools, Frontstage,
-  FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, StageContentLayout, StageContentLayoutProps, ViewportContentControl, Widget,
+  ConfigurableCreateInfo, ContentGroup, ContentLayoutDef, ContentProps, CoreTools, Frontstage,
+  FrontstageProps, FrontstageProvider, NavigationWidget, StageContentLayout, StageContentLayoutProps, UiFramework, ViewportContentControl, Widget,
   Zone,
 } from "../../appui-react";
 import { ViewUtilities } from "../../appui-react/utils/ViewUtilities";
@@ -129,7 +129,7 @@ describe("StageContentLayout", () => {
     await MockRender.App.startup();
 
     // Required for StageContentLayout
-    ConfigurableUiManager.registerControl("TestViewport", TestViewportContentControl);
+    UiFramework.controls.register("TestViewport", TestViewportContentControl);
   });
 
   beforeEach(async () => {
@@ -197,7 +197,7 @@ describe("StageContentLayout", () => {
   }
 
   beforeEach(async () => {
-    FrontstageManager.clearFrontstageProviders();
+    UiFramework.frontstages.clearFrontstageProviders();
 
     viewportMock.reset();
     viewportMock.setup((x) => x.view).returns(() => viewState);
@@ -215,13 +215,13 @@ describe("StageContentLayout", () => {
     let serializedSavedViewLayoutProps = "";
 
     const frontstageProvider = new Frontstage1();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(Frontstage1.stageId);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
-      if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
-        const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup);
+      if (UiFramework.content.layouts.activeLayout && UiFramework.content.layouts.activeContentGroup) {
+        const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(UiFramework.content.layouts.activeLayout, UiFramework.content.layouts.activeContentGroup);
         const serialized = JSON.stringify(savedViewLayoutProps);
 
         serializedSavedViewLayoutProps = serialized;
@@ -270,16 +270,16 @@ describe("StageContentLayout", () => {
     let serializedSavedViewLayoutProps = "";
 
     const frontstageProvider = new Frontstage1();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
-      if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
+      if (UiFramework.content.layouts.activeLayout && UiFramework.content.layouts.activeContentGroup) {
         const getEmphasizeElements = EmphasizeElements.get;
         EmphasizeElements.get = () => emphasizeElements;
 
-        const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
+        const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(UiFramework.content.layouts.activeLayout, UiFramework.content.layouts.activeContentGroup, true,
           (contentProps: ContentProps) => {
             if (contentProps.applicationData)
               delete contentProps.applicationData;
@@ -313,7 +313,7 @@ describe("StageContentLayout", () => {
       expect(contentGroup.propsId).to.eq("MyContentGroup");
 
       // activate the layout
-      await ContentLayoutManager.setActiveLayout(contentLayoutDef, contentGroup);
+      await UiFramework.content.layouts.setActiveLayout(contentLayoutDef, contentGroup);
 
       // emphasize the elements
       expect(StageContentLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps)).to.be.true;
@@ -332,13 +332,13 @@ describe("StageContentLayout", () => {
     let serializedSavedViewLayoutProps = "";
 
     const frontstageProvider = new Frontstage1();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    UiFramework.frontstages.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
-      if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
-        const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
+      if (UiFramework.content.layouts.activeLayout && UiFramework.content.layouts.activeContentGroup) {
+        const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(UiFramework.content.layouts.activeLayout, UiFramework.content.layouts.activeContentGroup, true,
           (contentProps: ContentProps) => {
             if (contentProps.applicationData)
               delete contentProps.applicationData;

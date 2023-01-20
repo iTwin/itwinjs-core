@@ -7,7 +7,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { ActionButton, BadgeType, ToolbarItemUtilities } from "@itwin/appui-abstract";
-import { ActionButtonItem, CommandItemDef, KeyboardShortcutManager, ToolbarHelper } from "../../appui-react";
+import { ActionButtonItem, CommandItemDef, ToolbarHelper, UiFramework } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ActionButtonItem", () => {
@@ -73,7 +73,7 @@ describe("ActionButtonItem", () => {
     element.length.should.eq(1);
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape" });
-    expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+    expect(UiFramework.keyboardShortcuts.isFocusOnHome).to.be.true;
   });
 
   it("should render with badgeType", () => {

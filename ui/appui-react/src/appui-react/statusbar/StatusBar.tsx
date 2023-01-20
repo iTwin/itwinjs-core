@@ -12,9 +12,9 @@ import { CommonDivProps, CommonProps, Div } from "@itwin/core-react";
 import { Footer } from "@itwin/appui-layout-react";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
 import { CustomActivityMessageRenderer } from "../messages/ActivityMessage";
+import { UiFramework } from "../UiFramework";
 
 // cspell:ignore safearea
 
@@ -91,7 +91,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
               messages={this.getFooterMessages()}
               // eslint-disable-next-line deprecation/deprecation
               isInFooterMode={this.props.isInFooterMode ?? true}
-              onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+              onMouseEnter={UiFramework.visibility.handleWidgetMouseEnter}
               safeAreaInsets={safeAreaInsets}
               style={this.props.style}
             >

@@ -9,8 +9,8 @@ import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
-  BackstageItemState, ConfigurableUiManager, CoreTools, Frontstage, FrontstageLaunchBackstageItem, FrontstageManager,
-  FrontstageProps, FrontstageProvider, SyncUiEventDispatcher,
+  BackstageItemState, CoreTools, Frontstage, FrontstageLaunchBackstageItem,
+  FrontstageProps, FrontstageProvider, UiFramework,
 } from "../../appui-react";
 import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
@@ -20,7 +20,7 @@ describe("Backstage", () => {
   let theUserTo: ReturnType<typeof userEvent.setup>;
   beforeEach(async ()=>{
     theUserTo = userEvent.setup();
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
   });
 
   before(async () => {
@@ -42,7 +42,7 @@ describe("Backstage", () => {
         );
       }
     }
-    ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
+    UiFramework.frontstages.addFrontstageProvider(new Frontstage1());
   });
 
   after(async () => {
@@ -56,7 +56,7 @@ describe("Backstage", () => {
         return { ...state, isActive: true } as BackstageItemState;
       });
 
-      const spy = sinon.spy(FrontstageManager.onFrontstageActivatedEvent, "emit");
+      const spy = sinon.spy(UiFramework.frontstages.onFrontstageActivatedEvent, "emit");
       render(
         <FrontstageLaunchBackstageItem frontstageId={"Test1"} labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
           isEnabled={true} isActive={false}
@@ -64,7 +64,7 @@ describe("Backstage", () => {
       );
 
       expect(stateFunc).not.to.have.been.called;
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+      UiFramework.events.dispatchImmediateSyncUiEvent(testEventId);
       expect(stateFunc).to.have.been.called;
 
       await theUserTo.click(screen.getByRole("menuitem"));
@@ -88,7 +88,7 @@ describe("Backstage", () => {
     });
 
     it("FrontstageLaunchBackstageItem renders correctly when active", async () => {
-      await FrontstageManager.setActiveFrontstage("Test1");
+      await UiFramework.frontstages.setActiveFrontstage("Test1");
       render(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
 
       expect(screen.getByRole("menuitem", {name: "tests.label"})).to.satisfy(selectorMatches(".nz-active"));
@@ -97,7 +97,7 @@ describe("Backstage", () => {
     it("FrontstageLaunchBackstageItem updates on frontstage activation", async () => {
       render(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
 
-      await FrontstageManager.setActiveFrontstage("Test1");
+      await UiFramework.frontstages.setActiveFrontstage("Test1");
       expect(screen.getByRole("menuitem", {name: "tests.label"})).to.satisfy(selectorMatches(".nz-active"));
     });
 

@@ -12,9 +12,8 @@ import {
   AccuDrawCommandItems,
   AccuDrawKeyboardShortcuts,
   CommandItemDef,
-  ConfigurableUiManager,
-  KeyboardShortcutManager,
   KeyboardShortcutProps,
+  UiFramework,
 } from "@itwin/appui-react";
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
@@ -34,7 +33,7 @@ export class AppUi {
   /** Define Frontstages
    */
   private static defineFrontstages() {
-    ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
+    UiFramework.frontstages.addFrontstageProvider(new SignInFrontstage());
     IModelOpenFrontstage.register();
   }
 
@@ -78,9 +77,9 @@ export class AppUi {
       },
     ];
 
-    ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
+    UiFramework.keyboardShortcuts.loadKeyboardShortcuts(keyboardShortcutList);
 
-    ConfigurableUiManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
+    UiFramework.keyboardShortcuts.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
   }
 
   private static get _bumpToolSettingToggle() {
@@ -97,7 +96,7 @@ export class AppUi {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.showShortcutsMenu",
       execute: () => {
-        KeyboardShortcutManager.displayShortcutsMenu();
+        UiFramework.keyboardShortcuts.displayShortcutsMenu();
       },
     });
   }

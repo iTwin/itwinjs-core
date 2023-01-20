@@ -14,7 +14,7 @@ import { SyncToolSettingsPropertiesEventArgs } from "./ToolSettingsManager";
 
 /**
  * ToolUiProvider provides the Tool Settings and/or Tool Assistance UI for a tool.
- * The ToolUiProvider is registered for the tool id via ConfigurableUiManager.registerControl.
+ * The ToolUiProvider is registered for the tool id via UiFramework.controls.register.
  * @public
  */
 export class ToolUiProvider extends ConfigurableUiControl {

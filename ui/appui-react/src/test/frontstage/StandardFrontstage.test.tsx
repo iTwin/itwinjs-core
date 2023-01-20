@@ -13,7 +13,7 @@ import {
   ContentGroupProps,
   ContentGroupProvider,
   ContentProps,
-  CoreTools, FrontstageManager, FrontstageProps,
+  CoreTools, FrontstageManager, FrontstageProps, UiFramework,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { StandardFrontstageProps, StandardFrontstageProvider } from "../../appui-react/frontstage/StandardFrontstageProvider";
@@ -109,7 +109,7 @@ describe("ContentGroupProvider", () => {
   before(async () => {
     await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageProviders();
+    UiFramework.frontstages.clearFrontstageProviders();
   });
 
   after(async () => {
@@ -119,7 +119,7 @@ describe("ContentGroupProvider", () => {
 
   beforeEach(() => {
     sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
-    FrontstageManager.clearFrontstageProviders();
+    UiFramework.frontstages.clearFrontstageProviders();
   });
 
   it("should exercise base Content Group Provider", async () => {
@@ -175,12 +175,12 @@ describe("ContentGroupProvider", () => {
     };
 
     const standardFrontstageProvider = new StandardFrontstageProvider(ui2StageProps);
-    FrontstageManager.addFrontstageProvider(standardFrontstageProvider);
-    await FrontstageManager.setActiveFrontstage(standardFrontstageProvider.id);
+    UiFramework.frontstages.addFrontstageProvider(standardFrontstageProvider);
+    await UiFramework.frontstages.setActiveFrontstage(standardFrontstageProvider.id);
     setImmediate(async () => {
       await TestUtils.flushAsyncOperations();
 
-      expect(FrontstageManager.activeFrontstageId).to.eq(standardFrontstageProvider.id);
+      expect(UiFramework.frontstages.activeFrontstageId).to.eq(standardFrontstageProvider.id);
     });
   });
 
@@ -200,12 +200,12 @@ describe("ContentGroupProvider", () => {
     };
 
     const standardFrontstageProvider = new StandardFrontstageProvider(ui2StageProps);
-    FrontstageManager.addFrontstageProvider(standardFrontstageProvider);
-    await FrontstageManager.setActiveFrontstage(standardFrontstageProvider.id);
+    UiFramework.frontstages.addFrontstageProvider(standardFrontstageProvider);
+    await UiFramework.frontstages.setActiveFrontstage(standardFrontstageProvider.id);
     setImmediate(async () => {
       await TestUtils.flushAsyncOperations();
 
-      expect(FrontstageManager.activeFrontstageId).to.eq(standardFrontstageProvider.id);
+      expect(UiFramework.frontstages.activeFrontstageId).to.eq(standardFrontstageProvider.id);
     });
   });
 
@@ -232,11 +232,11 @@ describe("ContentGroupProvider", () => {
     };
 
     const standardFrontstageProvider = new StandardFrontstageProvider(testStageProps);
-    FrontstageManager.addFrontstageProvider(standardFrontstageProvider);
-    await FrontstageManager.setActiveFrontstage(standardFrontstageProvider.id);
+    UiFramework.frontstages.addFrontstageProvider(standardFrontstageProvider);
+    await UiFramework.frontstages.setActiveFrontstage(standardFrontstageProvider.id);
     setImmediate(async () => {
       await TestUtils.flushAsyncOperations();
-      expect(FrontstageManager.activeFrontstageId).to.eq(standardFrontstageProvider.id);
+      expect(UiFramework.frontstages.activeFrontstageId).to.eq(standardFrontstageProvider.id);
     });
   });
 

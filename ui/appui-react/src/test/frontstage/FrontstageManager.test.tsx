@@ -15,7 +15,7 @@ import { IModelApp, IModelConnection, MockRender, ScreenViewport, SpatialViewSta
 import {
   ConfigurableCreateInfo, ConfigurableUiContent, CoreTools, FrontstageManager,
   ModalFrontstageRequestedCloseEventArgs, RestoreFrontstageLayoutTool, SettingsModalFrontstage,
-  ToolSettingsManager, ToolUiProvider, UiFramework,
+  ToolUiProvider, UiFramework,
 } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { TestFrontstage, TestFrontstage2, TestFrontstage3 } from "./FrontstageTestUtils";
@@ -213,7 +213,7 @@ describe("FrontstageManager", () => {
       const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
       sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
 
-      ToolSettingsManager.onReloadToolSettingsProperties.emit();
+      UiFramework.toolSettings.onReloadToolSettingsProperties.emit();
     });
 
   });

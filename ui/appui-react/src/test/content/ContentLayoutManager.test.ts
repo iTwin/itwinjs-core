@@ -2,17 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { getUniqueId } from "@itwin/appui-layout-react";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import { UiFramework } from "../../appui-react";
 import { ContentGroup, ContentGroupProps, ContentProps } from "../../appui-react/content/ContentGroup";
 import { ContentLayoutManager } from "../../appui-react/content/ContentLayoutManager";
-import { FrontstageManager } from "../../appui-react/frontstage/FrontstageManager";
 
 describe("ContentLayoutManager", () => {
   before(async () => {
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
   });
 
   it("activeLayout should return undefined if no active frontstage", () => {
@@ -59,7 +60,7 @@ describe("ContentLayoutManager", () => {
     expect(foundLayoutDef?.id).to.be.eq(layoutDef.id);
   });
 
-  it("should call  FrontstageManager.setActiveContentGroup", async () => {
+  it("should call  UiFramework.frontstages.setActiveContentGroup", async () => {
     const uniqueGroupId = getUniqueId();
     const contentProps: ContentProps[] = [{ id: "myContent", classId: "TestContentControl" }, { id: "myContent2", classId: "TestContentControl" }];
     const groupProps: ContentGroupProps = {
@@ -69,7 +70,7 @@ describe("ContentLayoutManager", () => {
     };
 
     const contentGroup = new ContentGroup(groupProps);
-    const spy = sinon.stub(FrontstageManager as any, "setActiveContentGroup").returns(Promise.resolve());
+    const spy = sinon.stub(UiFramework.frontstages as any, "setActiveContentGroup").returns(Promise.resolve());
     await ContentLayoutManager.setActiveContentGroup(contentGroup);
     expect(spy).to.have.been.called;
   });

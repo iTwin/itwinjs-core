@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
+  BackstageAppButton, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
   IModelViewportControl, StageContentLayout, StageContentLayoutProps, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
@@ -123,7 +123,7 @@ export class NetworkTracingFrontstage {
     };
 
     NetworkTracingFrontstage.registerToolProviders();
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(networkTracingStageProps));
+    UiFramework.frontstages.addFrontstageProvider(new StandardFrontstageProvider(networkTracingStageProps));
   }
 
   private static registerToolProviders() {

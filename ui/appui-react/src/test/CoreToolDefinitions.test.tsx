@@ -6,7 +6,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import { ToolbarWithOverflow } from "@itwin/components-react";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
-import { ActionItemButton, CoreTools, FrontstageManager, ToolWidget, ToolWidgetComposer } from "../appui-react";
+import { ActionItemButton, CoreTools, ToolWidget, ToolWidgetComposer, UiFramework } from "../appui-react";
 import { ToolbarHelper } from "../appui-react/toolbar/ToolbarHelper";
 import TestUtils, { mount } from "./TestUtils";
 
@@ -17,8 +17,8 @@ describe("CoreToolDefinitions", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageProviders();
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    UiFramework.frontstages.clearFrontstageProviders();
+    await UiFramework.frontstages.setActiveFrontstageDef(undefined);
 
     // Set in the before() after UiFramework.i18n is initialized
     horizontalToolbar =

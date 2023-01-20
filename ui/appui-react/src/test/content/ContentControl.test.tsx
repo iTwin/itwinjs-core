@@ -7,8 +7,8 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentViewManager, CoreTools, Frontstage,
-  FrontstageManager, FrontstageProps, FrontstageProvider,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage,
+  FrontstageProps, FrontstageProvider, UiFramework,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
@@ -24,7 +24,7 @@ describe("ContentControl", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    ConfigurableUiManager.registerControl("TestContentControl", TestContentControl);
+    UiFramework.controls.register("TestContentControl", TestContentControl);
   });
 
   after(() => {
@@ -57,13 +57,13 @@ describe("ContentControl", () => {
         );
       }
     }
-    ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
+    UiFramework.frontstages.addFrontstageProvider(new Frontstage1());
 
-    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
       const contentGroup = frontstageDef.contentGroup;
       expect(contentGroup).to.not.be.undefined;
 
@@ -76,7 +76,7 @@ describe("ContentControl", () => {
 
         if (contentControl) {
           const activatedMethod = sinon.spy(contentControl, "onActivated");
-          ContentViewManager.setActiveContent(contentSet[1]);
+          UiFramework.content.setActiveContent(contentSet[1]);
           expect(activatedMethod.calledOnce, `onActivated called ${activatedMethod.callCount} times`).to.be.true;
 
           expect(contentControl.isViewport).to.be.false;
@@ -113,13 +113,13 @@ describe("ContentControl", () => {
         );
       }
     }
-    ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
+    UiFramework.frontstages.addFrontstageProvider(new Frontstage2());
 
-    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage2.stageId);
+    const frontstageDef = await UiFramework.frontstages.getFrontstageDef(Frontstage2.stageId);
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
       const contentGroup = frontstageDef.contentGroup;
       expect(contentGroup).to.not.be.undefined;
 
@@ -132,11 +132,11 @@ describe("ContentControl", () => {
 
         if (contentControl) {
           const deactivatedMethod = sinon.spy(contentControl, "onDeactivated");
-          ContentViewManager.setActiveContent(contentSet[1]);
+          UiFramework.content.setActiveContent(contentSet[1]);
           expect(deactivatedMethod.calledOnce).to.be.true;
 
           const activatedMethod = sinon.spy(contentControl, "onActivated");
-          ContentViewManager.refreshActiveContent(contentSet[0]);
+          UiFramework.content.refreshActiveContent(contentSet[0]);
           expect(activatedMethod.calledOnce).to.be.true;
         }
       }

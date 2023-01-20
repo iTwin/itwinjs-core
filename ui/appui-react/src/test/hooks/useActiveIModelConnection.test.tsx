@@ -12,7 +12,7 @@ import { initialize as initializePresentationTesting, terminate as terminatePres
 import { IModelConnection, MockRender, SelectionSet } from "@itwin/core-frontend";
 import { render } from "@testing-library/react";
 import { IModelRpcProps } from "@itwin/core-common";
-import { SyncUiEventDispatcher, UiFramework, useActiveIModelConnection } from "../../appui-react";
+import { UiFramework, useActiveIModelConnection } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("useActiveIModelConnection", () => {
@@ -66,8 +66,8 @@ describe("useActiveIModelConnection", () => {
       const initialLabel = result.getByTestId("mylabel");
       expect(initialLabel.innerHTML).to.be.eq("NoConnection");
 
-      const initEventStub = sinon.stub(SyncUiEventDispatcher, "initializeConnectionEvents");
-      const clearEventStub = sinon.stub(SyncUiEventDispatcher, "clearConnectionEvents");
+      const initEventStub = sinon.stub(UiFramework.events, "initializeConnectionEvents");
+      const clearEventStub = sinon.stub(UiFramework.events, "clearConnectionEvents");
 
       // should trigger dispatch action
       UiFramework.setIModelConnection(imodelMock.object, true);

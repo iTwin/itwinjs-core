@@ -7,14 +7,14 @@
  */
 
 import { ContentLayoutProps } from "@itwin/appui-abstract";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { UiFramework } from "../UiFramework";
 import { ContentGroup, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutDef } from "./ContentLayout";
 
 /** ContentLayout Manager class.
- * @public
+ * @internal
  */
-export class ContentLayoutManager {
+export class InternalContentLayoutManager {
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();
 
   /** build a layout key that is unique for group layout combination */
@@ -29,8 +29,8 @@ export class ContentLayoutManager {
     const layoutId = overrideContentLayout?.id ?? contentGroupProps.layout.id;
     const layoutKey = this.getLayoutKey({ contentGroupId: contentGroupProps.id, layoutId });
 
-    if (!overrideContentLayout && ContentLayoutManager._layoutDefs.has(layoutKey)) {
-      return ContentLayoutManager._layoutDefs.get(layoutKey)!;
+    if (!overrideContentLayout && InternalContentLayoutManager._layoutDefs.has(layoutKey)) {
+      return InternalContentLayoutManager._layoutDefs.get(layoutKey)!;
     }
 
     const newContentLayoutProps = { ...contentGroupProps.layout, ...overrideContentLayout };
@@ -44,7 +44,7 @@ export class ContentLayoutManager {
    * @returns the [[ContentLayoutDef]] if found, or undefined otherwise
    */
   public static findLayout(layoutKey: string): ContentLayoutDef | undefined {
-    return ContentLayoutManager._layoutDefs.get(layoutKey)!;
+    return InternalContentLayoutManager._layoutDefs.get(layoutKey)!;
   }
 
   /** Adds a Content Layout.
@@ -52,13 +52,13 @@ export class ContentLayoutManager {
    * @param layoutDef  the Content Layout definition to add
    */
   public static addLayout(layoutId: string, layoutDef: ContentLayoutDef): void {
-    ContentLayoutManager._layoutDefs.set(layoutId, layoutDef);
+    InternalContentLayoutManager._layoutDefs.set(layoutId, layoutDef);
   }
 
   /** Gets the active Content Layout */
   public static get activeLayout(): ContentLayoutDef | undefined {
     let layoutDef: ContentLayoutDef | undefined;
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
 
     if (activeFrontstageDef)
       layoutDef = activeFrontstageDef.contentLayoutDef;
@@ -69,7 +69,7 @@ export class ContentLayoutManager {
   /** Gets the active Content Group */
   public static get activeContentGroup(): ContentGroup | undefined {
     let contentGroup: ContentGroup | undefined;
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
 
     if (activeFrontstageDef)
       contentGroup = activeFrontstageDef.contentGroup;
@@ -82,23 +82,23 @@ export class ContentLayoutManager {
    * @param contentGroup  Content Group to make active
    */
   public static async setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void> {
-    await FrontstageManager.setActiveLayout(contentLayoutDef, contentGroup);
+    await UiFramework.frontstages.setActiveLayout(contentLayoutDef, contentGroup);
   }
 
   /** Sets the active Content Group.
    * @param contentGroup  Content Group to make active
    */
   public static async setActiveContentGroup(contentGroup: ContentGroup): Promise<void> {
-    await FrontstageManager.setActiveContentGroup(contentGroup);
+    await UiFramework.frontstages.setActiveContentGroup(contentGroup);
   }
 
   /** Refreshes the active layout and content group.
    */
   public static refreshActiveLayout(): void {
     // istanbul ignore else
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
     if (activeFrontstageDef && activeFrontstageDef.contentLayoutDef && activeFrontstageDef.contentGroup) {
-      FrontstageManager.onContentLayoutActivatedEvent.emit({
+      UiFramework.frontstages.onContentLayoutActivatedEvent.emit({
         contentLayout: activeFrontstageDef.contentLayoutDef,
         contentGroup: activeFrontstageDef.contentGroup,
       });
@@ -107,3 +107,9 @@ export class ContentLayoutManager {
     }
   }
 }
+
+/** ContentLayout Manager class.
+ * @public
+ * @deprecated in 3.6. Use `UiFramework.content.layouts` property.
+ */
+export class ContentLayoutManager extends InternalContentLayoutManager {}

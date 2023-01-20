@@ -8,7 +8,7 @@ import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriorit
 import { DEFAULT_PROPERTY_GRID_RULESET, PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
 import { Table, TableCellContextMenuArgs } from "@itwin/components-react";
 import { ContextMenuItem, GlobalContextMenu } from "@itwin/core-react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, UiFramework, WidgetControl } from "@itwin/appui-react";
 import { ContextMenuItemInfo } from "./UnifiedSelectionPropertyGridWidget";
 
 // create a HOC property grid component that supports unified selection
@@ -137,4 +137,4 @@ class UnifiedSelectionTableWidget extends React.PureComponent<UnifiedSelectionTa
 const createDataProviderFromProps = (props: UnifiedSelectionTableWidgetProps) =>
   new PresentationTableDataProvider({ imodel: props.iModelConnection!, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
 
-ConfigurableUiManager.registerControl("UnifiedSelectionTableDemoWidget", UnifiedSelectionTableWidgetControl);
+UiFramework.controls.register("UnifiedSelectionTableDemoWidget", UnifiedSelectionTableWidgetControl);
