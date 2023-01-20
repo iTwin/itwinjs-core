@@ -336,7 +336,7 @@ describe("IModelTransformerHub", () => {
   });
 
   // you can print additional debug info from this test by setting in your env TRANSFORMER_BRANCH_TEST_DEBUG=1
-  it.only("should merge changes made on a branch back to master", async () => {
+  it("should merge changes made on a branch back to master", async () => {
     interface IModelState {
       state: Record<number, number>;
       id: string;
