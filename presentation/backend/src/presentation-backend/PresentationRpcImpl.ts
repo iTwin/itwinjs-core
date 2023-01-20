@@ -13,11 +13,11 @@ import {
   ClientDiagnostics, ComputeSelectionRpcRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions,
   ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, DescriptorJSON, Diagnostics, DisplayLabelRpcRequestOptions,
   DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties,
-  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
-  isComputeSelectionRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, Node, NodeJSON, NodeKey, NodeKeyJSON,
-  NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse,
-  PresentationRpcResponseData, PresentationStatus, RpcDiagnosticsOptions, Ruleset, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
-  SelectionScope, SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
+  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyLevelDescriptorRpcRequestOptions,
+  HierarchyLevelJSON, HierarchyRpcRequestOptions, InstanceKey, isComputeSelectionRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition,
+  LabelDefinitionJSON, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError,
+  PresentationRpcInterface, PresentationRpcResponse, PresentationRpcResponseData, PresentationStatus, RpcDiagnosticsOptions, Ruleset, RulesetVariable,
+  RulesetVariableJSON, SelectClassInfo, SelectionScope, SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
 } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
@@ -227,11 +227,25 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         ...options,
         parentKey: nodeKeyFromJson(options.parentKey),
       });
-      const [nodes, count] = await Promise.all([
+      const [serializedNodesJson, count] = await Promise.all([
         this.getManager(requestOptions.clientId).getDetail().getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
-      return { total: count, items: nodes.map(Node.toJSON) };
+      const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
+      return {
+        total: count,
+        items: nodesJson.nodes,
+      };
+    });
+  }
+
+  public override async getNodesDescriptor(token: IModelRpcProps, requestOptions: HierarchyLevelDescriptorRpcRequestOptions): PresentationRpcResponse<string | DescriptorJSON | undefined> {
+    return this.makeRequest(token, "getNodesDescriptor", requestOptions, async (options) => {
+      options = {
+        ...options,
+        parentKey: nodeKeyFromJson(options.parentKey),
+      };
+      return this.getManager().getDetail().getNodesDescriptor(options);
     });
   }
 

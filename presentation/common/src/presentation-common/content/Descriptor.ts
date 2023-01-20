@@ -103,7 +103,7 @@ export enum ContentFlags {
 
   /**
    * Each content record additionally has an image id
-   * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 3.x. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   ShowImages = 1 << 1,
 
@@ -165,6 +165,7 @@ export interface DescriptorJSON {
   classesMap: { [id: string]: CompressedClassInfoJSON };
   connectionId: string;
   inputKeysHash: string;
+  /** @deprecated since 3.6. The attribute is not used anymore. */
   contentOptions: any;
   selectionInfo?: SelectionInfo;
   displayType: string;
@@ -174,7 +175,7 @@ export interface DescriptorJSON {
   sortingFieldName?: string;
   sortDirection?: SortDirection;
   contentFlags: number;
-  /** @deprecated The attribute was replaced with [[fieldsFilterExpression]]. */
+  /** @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]]. */
   filterExpression?: string;
   fieldsFilterExpression?: string;
   /** @alpha */
@@ -213,7 +214,7 @@ export interface DescriptorOverrides {
 
   /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
-   * @deprecated The attribute was replaced with [[fieldsFilterExpression]].
+   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
    */
   filterExpression?: string;
   /** [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content */
@@ -252,7 +253,7 @@ export interface DescriptorSource {
   readonly sortDirection?: SortDirection;
   /**
    * Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions)
-   * @deprecated The attribute was replaced with [[fieldsFilterExpression]].
+   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
    */
   readonly filterExpression?: string;
   /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
@@ -275,7 +276,10 @@ export class Descriptor implements DescriptorSource {
   public readonly connectionId?: string;
   /** Hash of the input keys used to create the descriptor */
   public readonly inputKeysHash?: string;
-  /** Extended options used to create the descriptor */
+  /**
+   * Extended options used to create the descriptor.
+   * @deprecated since 3.6. The attribute is not used anymore.
+   */
   public readonly contentOptions: any;
   /** Selection info used to create the descriptor */
   public readonly selectionInfo?: SelectionInfo;
@@ -295,7 +299,7 @@ export class Descriptor implements DescriptorSource {
   public sortDirection?: SortDirection;
   /**
    * Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions)
-   * @deprecated The attribute was replaced with [[fieldsFilterExpression]].
+   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
    */
   public filterExpression?: string;
   /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
@@ -330,9 +334,6 @@ export class Descriptor implements DescriptorSource {
     const fields: FieldJSON<string>[] = this.fields.map((field) => field.toCompressedJSON(classesMap));
     return Object.assign(
       {
-        connectionId: this.connectionId,
-        inputKeysHash: this.inputKeysHash,
-        contentOptions: this.contentOptions,
         displayType: this.displayType,
         contentFlags: this.contentFlags,
         categories: this.categories.map(CategoryDescription.toJSON),
@@ -340,6 +341,10 @@ export class Descriptor implements DescriptorSource {
         selectClasses,
         classesMap,
       },
+      this.connectionId !== undefined && { connectionId: this.connectionId },
+      this.inputKeysHash !== undefined && { inputKeysHash: this.inputKeysHash },
+      // istanbul ignore next
+      this.contentOptions !== undefined && { contentOptions: this.contentOptions }, // eslint-disable-line deprecation/deprecation
       this.sortingField !== undefined && { sortingFieldName: this.sortingField.name },
       this.sortDirection !== undefined && { sortDirection: this.sortDirection },
       this.filterExpression !== undefined && { filterExpression: this.filterExpression }, // eslint-disable-line deprecation/deprecation

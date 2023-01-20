@@ -38,7 +38,7 @@
     "@types/mocha": "^8.2.2",
     "@types/fs-extra": "^4.0.7",
     "@types/node": "18.11.5",
-    "@types/yargs": "^17.0.10",
+    "@types/yargs": "17.0.19",
     "cross-env": "^5.1.4",
     "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
