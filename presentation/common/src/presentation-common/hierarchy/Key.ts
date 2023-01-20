@@ -159,7 +159,9 @@ export interface BaseNodeKey {
   /** Node hash path from root to the node whose key this is */
   pathFromRoot: string[];
 
-  /** Query that returns all selected instance keys */
+  /** Query that returns all selected instance keys
+   * @alpha
+   */
   instanceKeysSelectQuery?: PresentationQuery;
 }
 /**
@@ -170,6 +172,7 @@ export interface BaseNodeKeyJSON {
   type: string;
   version?: number;
   pathFromRoot: string[];
+  /** @alpha */
   instanceKeysSelectQuery?: PresentationQuery;
 }
 
@@ -323,6 +326,6 @@ export interface ECValueSetBinding extends BasePresentationQueryBinding {
 
 /**
  * One of the presentation query binding types
- * @public
+ * @alpha
  */
 export type PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding;
