@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyDataFiltererBase, PropertyDataFilterResult } from "@itwin/components-react";
 /** @packageDocumentation
  * @module PropertyGrid
  */
 import { IModelConnection } from "@itwin/core-frontend";
 import { Field } from "@itwin/presentation-common";
 import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyDataFiltererBase, PropertyDataFilterResult } from "@itwin/components-react";
 import { IPresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 
 /**
  * Props for [[FavoritePropertiesDataFilterer]].
- * @beta
+ * @public
  */
 export interface FavoritePropertiesDataFiltererProps {
   /** Source properties data provider */
@@ -26,13 +26,13 @@ export interface FavoritePropertiesDataFiltererProps {
   /** Should the filterer become active when created. */
   isActive?: boolean;
 
-  /** Callback to check whether a property is favorite or not */
+  /** Callback to check whether a property is favorite or not. Defaults to calling `Presentation.favoriteProperties` to get this information. */
   isFavorite?: (field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope) => boolean;
 }
 
 /**
  * [[IPropertyDataFilterer]] implementation which filters favorite properties
- * @beta
+ * @public
  */
 export class FavoritePropertiesDataFilterer extends PropertyDataFiltererBase {
   private _source: IPresentationPropertyDataProvider;

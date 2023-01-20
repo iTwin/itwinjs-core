@@ -307,7 +307,7 @@ export class PresentationManager implements IDisposable {
 
   /**
    * Retrieves hierarchy level descriptor.
-   * @alpha
+   * @beta
    */
   public async getNodesDescriptor(requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined> {
     await this.onConnection(requestOptions.imodel);
@@ -338,8 +338,9 @@ export class PresentationManager implements IDisposable {
   }
 
   /**
-   * Get all content sources for a given list of classes.
-   * @beta
+   * Get information about the sources of content when building it for specific ECClasses. Sources involve classes of the primary select instance,
+   * its related instances for loading related and navigation properties.
+   * @public
    */
   public async getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]> {
     await this.onConnection(requestOptions.imodel);
@@ -425,7 +426,7 @@ export class PresentationManager implements IDisposable {
 
   /**
    * Retrieves property data in a simplified format for a single element specified by ID.
-   * @beta
+   * @public
    */
   public async getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined> {
     await this.onConnection(requestOptions.imodel);
@@ -438,7 +439,7 @@ export class PresentationManager implements IDisposable {
 
   /**
    * Retrieves content item instance keys.
-   * @beta
+   * @public
    */
   public async getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<{ total: number, items: () => AsyncGenerator<InstanceKey> }> {
     await this.onConnection(requestOptions.imodel);

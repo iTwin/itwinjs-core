@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="react" />
-
 import { AbstractTreeNodeLoaderWithProvider } from '@itwin/components-react';
 import { ActiveMatchInfo } from '@itwin/components-react';
 import { CategoryDescription } from '@itwin/presentation-common';
@@ -175,7 +173,7 @@ export function convertToInstanceFilterDefinition(filter: PresentationInstanceFi
 export function createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined;
 
 // @internal (undocumented)
-export function createFieldInfo(field: Field, namePrefix?: string): {
+export function createFieldInfo(field: Field, parentFieldName?: string): {
     type: TypeDescription;
     name: string;
     label: string;
@@ -227,7 +225,7 @@ export interface DiagnosticsProps {
     };
 }
 
-// @beta
+// @public
 export class FavoritePropertiesDataFilterer extends PropertyDataFiltererBase {
     constructor(props: FavoritePropertiesDataFiltererProps);
     // (undocumented)
@@ -238,7 +236,7 @@ export class FavoritePropertiesDataFilterer extends PropertyDataFiltererBase {
     recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
 }
 
-// @beta
+// @public
 export interface FavoritePropertiesDataFiltererProps {
     favoritesScope: FavoritePropertiesScope;
     isActive?: boolean;
@@ -604,7 +602,6 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     getData(): Promise<PropertyData>;
     protected getDescriptorOverrides(): Promise<DescriptorOverrides>;
     protected getMemoizedData: MicroMemoize.Memoized<() => Promise<PropertyData>>;
-    // @beta
     getPropertyRecordInstanceKeys(record: PropertyRecord): Promise<InstanceKey[]>;
     get includeFieldsWithCompositeValues(): boolean;
     set includeFieldsWithCompositeValues(value: boolean);
@@ -623,7 +620,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
 
 // @public
 export interface PresentationPropertyDataProviderProps extends DiagnosticsProps {
-    // @alpha
+    // @beta
     disableFavoritesCategory?: boolean;
     // @alpha
     enableContentAutoUpdate?: boolean;
@@ -695,7 +692,6 @@ export interface PresentationTreeDataProviderDataSourceEntryPoints {
 // @public
 export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
     appendChildrenCountForGroupingNodes?: boolean;
-    // @beta
     customizeTreeNodeItem?: (item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node_2>) => void;
     // @beta
     dataSourceOverrides?: Partial<PresentationTreeDataProviderDataSourceEntryPoints>;
@@ -709,7 +705,6 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
     pagingSize: number;
-    // @beta
     seedTreeModel?: TreeModel;
 }
 

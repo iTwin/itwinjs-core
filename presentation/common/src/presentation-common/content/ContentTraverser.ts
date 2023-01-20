@@ -15,104 +15,257 @@ import { Item } from "./Item";
 import { PropertyValueFormat, TypeDescription } from "./TypeDescription";
 import { DisplayValue, DisplayValuesArray, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "./Value";
 
-/** @alpha */
+/**
+ * A data structure to define a hierarchy of [[Field]] objects.
+ * @public
+ */
 export interface FieldHierarchy {
+  /** Parent field. */
   field: Field;
+  /** Nested fields. */
   childFields: FieldHierarchy[];
 }
 
-/** @alpha */
+/**
+ * Props for the [[IContentVisitor.startContent]] call.
+ * @public
+ */
 export interface StartContentProps {
+  /** Descriptor of the visited content. */
   descriptor: Descriptor;
 }
 
-/** @alpha */
+/**
+ * Props for the [[IContentVisitor.processFieldHierarchies]] call.
+ * @public
+ */
 export interface ProcessFieldHierarchiesProps {
+  /**
+   * The root list of fields, which may be mutated by the visitor to change order or the fields,
+   * add new fields, etc.
+   */
   hierarchies: FieldHierarchy[];
 }
 
-/** @alpha */
+/**
+ * Props for the [[IContentVisitor.startItem]] call.
+ * @public
+ */
 export interface StartItemProps {
+  /** The content item that's about to be visited. */
   item: Item;
 }
 
-/** @alpha */
+/**
+ * Props for the [[IContentVisitor.startCategory]] call.
+ * @public
+ */
 export interface StartCategoryProps {
+  /** The content category that's about to be visited. */
   category: CategoryDescription;
 }
 
-/** @alpha */
+/**
+ * Props for the [[IContentVisitor.startField]] call.
+ * @public
+ */
 export interface StartFieldProps {
+  /** The field that's about to be visited. */
   hierarchy: FieldHierarchy;
 }
 
-/** @alpha */
+/**
+ * Props for the [[IContentVisitor.startStruct]] call.
+ * @public
+ */
 export interface StartStructProps {
+  /** Field that describes the struct. */
   hierarchy: FieldHierarchy;
+  /** Type of the struct. */
   valueType: TypeDescription;
-  namePrefix?: string;
+  /** Name of the parent field (if there is one). */
+  parentFieldName?: string;
+  /** Member raw values. */
   rawValues: ValuesMap;
+  /** Member display values. */
   displayValues: DisplayValuesMap;
 }
 
-/** @alpha */
+/**
+ * Props for the [[IContentVisitor.startArray]] call.
+ * @public
+ */
 export interface StartArrayProps {
+  /** Field that describes the array. */
   hierarchy: FieldHierarchy;
+  /** Type of the array. */
   valueType: TypeDescription;
-  namePrefix?: string;
+  /** Name of the parent field (if there is one). */
+  parentFieldName?: string;
+  /** Item raw values. */
   rawValues: ValuesArray;
+  /** Item display values. */
   displayValues: DisplayValuesArray;
 }
 
-/** @alpha */
+/**
+ * Props for the [[IContentVisitor.processMergedValue]] call.
+ * @public
+ */
 export interface ProcessMergedValueProps {
+  /** The field whose values are merged. */
   mergedField: Field;
+  /**
+   * Generally this matches the [[mergedField]], but there are situations when a nested field is propagated
+   * up to display it as if it wasn't nested its parent fields. In those cases, if one of the parent fields
+   * is merged, the merged parent is going to be represented by [[mergedField]] and the field we wanted to
+   * process is going to be represented by [[requestedField]].
+   */
   requestedField: Field;
-  namePrefix?: string;
+  /** Name of the parent field (if there is one). */
+  parentFieldName?: string;
 }
 
-/** @alpha */
+/**
+ * Props for the [[IContentVisitor.processPrimitiveValue]] call.
+ * @public
+ */
 export interface ProcessPrimitiveValueProps {
+  /** Field whose value is being processed. */
   field: Field;
+  /** Type of the value. */
   valueType: TypeDescription;
-  namePrefix?: string;
+  /** Name of the parent field (if there is one). */
+  parentFieldName?: string;
+  /** Raw value. */
   rawValue: Value;
+  /** Display value. */
   displayValue: DisplayValue;
 }
 
-/** @alpha */
+/**
+ * An interface for a visitor that can be passed to the [[traverseContent]] function
+ * to be called on each piece of content.
+ *
+ * The order of calls when using the visitor with [[traverseContent]] or [[traverseContentItem]]:
+ *
+ * ```
+ * startContent
+ *   processFieldHierarchies
+ *   for each content item:
+ *     startItem
+ *     for each field in root level:
+ *       for each category in field's category stack from root to field's category:
+ *         startCategory
+ *       startField
+ *         valueProcessing:
+ *           if item's value for this field is merged:
+ *             processMergedValue
+ *           else if the field is struct:
+ *             startStruct
+ *             for each struct member:
+ *               recurse into the valueProcessing step
+ *             finishStruct
+ *           else if the field is array:
+ *             startArray
+ *             for each array item:
+ *               recurse into the valueProcessing step
+ *             finishArray
+ *           else if the field is primitive:
+ *             processPrimitiveValue
+ *       finishField
+ *     finishItem
+ * finishContent
+ * ```
+ * @public
+ */
 export interface IContentVisitor {
+  /**
+   * Called before starting [[Content]] processing. This is a good place to initialize various caches and prepare
+   * for parsing content.
+   *
+   * Processing is skipped if the function returns `false` and [[finishContent]] is not called in that case.
+   */
   startContent(props: StartContentProps): boolean;
+  /** Called after processing of [[Content]] is complete. */
   finishContent(): void;
 
+  /** Called to post-process field hierarchies after they're extracted from [[Descriptor]] in processed [[Content]]. */
   processFieldHierarchies(props: ProcessFieldHierarchiesProps): void;
 
+  /**
+   * Called before starting each [[Item]] processing. This is a good place to initialize for a new content item, e.g.
+   * set up a new row in table.
+   *
+   * Processing is skipped if the function returns `false` and [[finishItem]] is not called in that case.
+   */
   startItem(props: StartItemProps): boolean;
+  /**
+   * Called after processing of [[Item]] is complete. May be used to do any kind of post-processing after all
+   * values for one content item have been processed.
+   */
   finishItem(): void;
 
+  /**
+   * Called before processing a content item field ([[startField]] call) for each category in the field's
+   * category stack, starting from the root and finishing with the field's category.
+   *
+   * Processing is skipped if the function returns `false` and [[finishCategory]] is not called in that case.
+   */
   startCategory(props: StartCategoryProps): boolean;
+  /** Called after processing of field is complete for every category in the field's category stack. */
   finishCategory(): void;
 
+  /**
+   * Called before starting [[Field]] processing for each individual [[Item]]. This is a good callback
+   * to skip a field if it doesn't need to be handled.
+   *
+   * Processing is skipped if the function returns `false` and [[finishField]] is not called in that case.
+   */
   startField(props: StartFieldProps): boolean;
+  /** Called after processing of [[Field]] for individual [[Item]] is complete. */
   finishField(): void;
 
+  /**
+   * Called before processing a struct value. This is a good callback to skip handling the value or set up
+   * for struct member values handling.
+   *
+   * Processing is skipped if the function returns `false` and [[finishStruct]] is not called in that case.
+   */
   startStruct(props: StartStructProps): boolean;
+  /** Called after processing of struct value is complete. */
   finishStruct(): void;
 
+  /**
+   * Called before processing an array value. This is a good callback to skip handling the value or set up
+   * for array items handling.
+   *
+   * Processing is skipped if the function returns `false` and [[finishArray]] is not called in that case.
+   */
   startArray(props: StartArrayProps): boolean;
+  /** Called after processing of array value is complete. */
   finishArray(): void;
 
+  /** Called to process a [merged value]($docs/presentation/content/Terminology.md#value-merging). */
   processMergedValue(props: ProcessMergedValueProps): void;
+  /** Called to process a primitive value. */
   processPrimitiveValue(props: ProcessPrimitiveValueProps): void;
 }
 
-/** @internal */
+/**
+ * An utility for traversing field hierarchy. Stops traversal as soon as `cb` returns `false`.
+ * @public
+ */
 export function traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldHierarchy) => boolean) {
   if (cb(hierarchy))
     hierarchy.childFields.forEach((childHierarchy) => traverseFieldHierarchy(childHierarchy, cb));
 }
 
-/** @alpha */
+/**
+ * An utility to traverse content using provided visitor. Provides means to parse content into different formats,
+ * for different components.
+ * @public
+ */
 export function traverseContent(visitor: IContentVisitor, content: Content) {
   if (!visitor.startContent({ descriptor: content.descriptor }))
     return;
@@ -128,18 +281,12 @@ export function traverseContent(visitor: IContentVisitor, content: Content) {
   }
 }
 
-/** @alpha */
+/**
+ * An utility for calling [[traverseContent]] when there's only one content item.
+ * @public
+ */
 export function traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item) {
-  if (!visitor.startContent({ descriptor }))
-    return;
-
-  try {
-    const fieldHierarchies = createFieldHierarchies(descriptor.fields);
-    visitor.processFieldHierarchies({ hierarchies: fieldHierarchies });
-    traverseContentItemFields(visitor, fieldHierarchies, item);
-  } finally {
-    visitor.finishContent();
-  }
+  traverseContent(visitor, new Content(descriptor, [item]));
 }
 
 class VisitedCategories implements IDisposable {
@@ -194,14 +341,14 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
 
   try {
     const rootToThisField = createFieldPath(fieldHierarchy.field);
-    let namePrefix: string | undefined;
+    let parentFieldName: string | undefined;
     const pathUpToField = rootToThisField.slice(undefined, -1);
     for (let i = 0; i < pathUpToField.length; ++i) {
       const parentField = pathUpToField[i] as NestedContentField;
       const nextField = rootToThisField[i + 1];
 
       if (item.isFieldMerged(parentField.name)) {
-        visitor.processMergedValue({ requestedField: fieldHierarchy.field, mergedField: parentField, namePrefix });
+        visitor.processMergedValue({ requestedField: fieldHierarchy.field, mergedField: parentField, parentFieldName });
         return;
       }
 
@@ -210,16 +357,16 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
         return;
 
       item = convertedItem;
-      namePrefix = applyOptionalPrefix(parentField.name, namePrefix);
+      parentFieldName = combineFieldNames(parentField.name, parentFieldName);
     }
 
     if (item.isFieldMerged(fieldHierarchy.field.name)) {
-      visitor.processMergedValue({ requestedField: fieldHierarchy.field, mergedField: fieldHierarchy.field, namePrefix });
+      visitor.processMergedValue({ requestedField: fieldHierarchy.field, mergedField: fieldHierarchy.field, parentFieldName });
       return;
     }
 
     if (fieldHierarchy.field.isNestedContentField()) {
-      fieldHierarchy = convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy, namePrefix);
+      fieldHierarchy = convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy, parentFieldName);
       const { emptyNestedItem, convertedItem } = convertNestedContentFieldHierarchyItemToStructArrayItem(item, fieldHierarchy);
       if (emptyNestedItem)
         return;
@@ -237,53 +384,53 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
       };
     }
 
-    traverseContentItemFieldValue(visitor, fieldHierarchy, item.mergedFieldNames, fieldHierarchy.field.type, namePrefix, item.values[fieldHierarchy.field.name], item.displayValues[fieldHierarchy.field.name]);
+    traverseContentItemFieldValue(visitor, fieldHierarchy, item.mergedFieldNames, fieldHierarchy.field.type, parentFieldName, item.values[fieldHierarchy.field.name], item.displayValues[fieldHierarchy.field.name]);
 
   } finally {
     visitor.finishField();
   }
 }
 
-function traverseContentItemFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, namePrefix: string | undefined, rawValue: Value, displayValue: DisplayValue) {
+function traverseContentItemFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, parentFieldName: string | undefined, rawValue: Value, displayValue: DisplayValue) {
   if (rawValue !== undefined) {
     if (valueType.valueFormat === PropertyValueFormat.Array) {
       assert(Value.isArray(rawValue));
       assert(DisplayValue.isArray(displayValue));
-      return traverseContentItemArrayFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, namePrefix, rawValue, displayValue);
+      return traverseContentItemArrayFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, displayValue);
     }
     if (valueType.valueFormat === PropertyValueFormat.Struct) {
       assert(Value.isMap(rawValue));
       assert(DisplayValue.isMap(displayValue));
-      return traverseContentItemStructFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, namePrefix, rawValue, displayValue);
+      return traverseContentItemStructFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, displayValue);
     }
   }
-  traverseContentItemPrimitiveFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, namePrefix, rawValue, displayValue);
+  traverseContentItemPrimitiveFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, displayValue);
 }
 
-function traverseContentItemArrayFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, namePrefix: string | undefined, rawValues: ValuesArray, displayValues: DisplayValuesArray) {
+function traverseContentItemArrayFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, parentFieldName: string | undefined, rawValues: ValuesArray, displayValues: DisplayValuesArray) {
   assert(rawValues.length === displayValues.length);
   assert(valueType.valueFormat === PropertyValueFormat.Array);
-  if (!visitor.startArray({ hierarchy: fieldHierarchy, valueType, namePrefix, rawValues, displayValues }))
+  if (!visitor.startArray({ hierarchy: fieldHierarchy, valueType, parentFieldName, rawValues, displayValues }))
     return;
 
   try {
     const itemType = valueType.memberType;
     rawValues.forEach((_, i) => {
-      traverseContentItemFieldValue(visitor, fieldHierarchy, mergedFieldNames, itemType, namePrefix, rawValues[i], displayValues[i]);
+      traverseContentItemFieldValue(visitor, fieldHierarchy, mergedFieldNames, itemType, parentFieldName, rawValues[i], displayValues[i]);
     });
   } finally {
     visitor.finishArray();
   }
 }
 
-function traverseContentItemStructFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, namePrefix: string | undefined, rawValues: ValuesMap, displayValues: DisplayValuesMap) {
+function traverseContentItemStructFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, parentFieldName: string | undefined, rawValues: ValuesMap, displayValues: DisplayValuesMap) {
   assert(valueType.valueFormat === PropertyValueFormat.Struct);
-  if (!visitor.startStruct({ hierarchy: fieldHierarchy, valueType, namePrefix, rawValues, displayValues }))
+  if (!visitor.startStruct({ hierarchy: fieldHierarchy, valueType, parentFieldName, rawValues, displayValues }))
     return;
 
   try {
     if (fieldHierarchy.field.isNestedContentField())
-      namePrefix = applyOptionalPrefix(fieldHierarchy.field.name, namePrefix);
+      parentFieldName = combineFieldNames(fieldHierarchy.field.name, parentFieldName);
 
     valueType.members.forEach((memberDescription) => {
       let memberField = fieldHierarchy.childFields.find((f) => f.field.name === memberDescription.name);
@@ -295,26 +442,29 @@ function traverseContentItemStructFieldValue(visitor: IContentVisitor, fieldHier
           childFields: [],
         };
       }
-      traverseContentItemFieldValue(visitor, memberField, mergedFieldNames, memberDescription.type, namePrefix, rawValues[memberDescription.name], displayValues[memberDescription.name]);
+      traverseContentItemFieldValue(visitor, memberField, mergedFieldNames, memberDescription.type, parentFieldName, rawValues[memberDescription.name], displayValues[memberDescription.name]);
     });
   } finally {
     visitor.finishStruct();
   }
 }
 
-function traverseContentItemPrimitiveFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, namePrefix: string | undefined, rawValue: Value, displayValue: DisplayValue) {
+function traverseContentItemPrimitiveFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, parentFieldName: string | undefined, rawValue: Value, displayValue: DisplayValue) {
   if (-1 !== mergedFieldNames.indexOf(fieldHierarchy.field.name)) {
-    visitor.processMergedValue({ mergedField: fieldHierarchy.field, requestedField: fieldHierarchy.field, namePrefix });
+    visitor.processMergedValue({ mergedField: fieldHierarchy.field, requestedField: fieldHierarchy.field, parentFieldName });
     return;
   }
 
-  visitor.processPrimitiveValue({ field: fieldHierarchy.field, valueType, namePrefix, rawValue, displayValue });
+  visitor.processPrimitiveValue({ field: fieldHierarchy.field, valueType, parentFieldName, rawValue, displayValue });
 }
 
 /**
-  * `ignoreCategories` parameter enables adding all of the `nestedFields` to parent field's `childFields`
-  *  without considering categories.
-  *  @internal
+ * Parses a list of [[Field]] objects into a list of [[FieldHierarchy]].
+ *
+ * @param ignoreCategories Enables adding all of the `nestedFields` to parent field's `childFields`
+ * without considering categories.
+ *
+ * @public
  */
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean) {
   const hierarchies = new Array<FieldHierarchy>();
@@ -413,7 +563,10 @@ function mergeHierarchies(lhs: FieldHierarchy, rhs: FieldHierarchy) {
   return result;
 }
 
-/** @alpha */
+/**
+ * Adds a field hierarchy into root field hierarchies list. *
+ * @public
+ */
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void {
   const match = findRelatedFields(rootHierarchies, hierarchy);
   if (!match) {
@@ -442,9 +595,19 @@ function createFieldPath(field: Field): Field[] {
 
 /** @internal */
 export const FIELD_NAMES_SEPARATOR = "$";
-/** @internal */
-export function applyOptionalPrefix(str: string, prefix?: string) {
-  return prefix ? `${prefix}${FIELD_NAMES_SEPARATOR}${str}` : str;
+/**
+ * Combines given field names in a way that allows them to be parsed back into a list of individual names using the [[parseCombinedFieldNames]] function.
+ * @public
+ */
+export function combineFieldNames(fieldName: string, parentFieldName?: string) {
+  return parentFieldName ? `${parentFieldName}${FIELD_NAMES_SEPARATOR}${fieldName}` : fieldName;
+}
+/**
+ * Parses given combined field names string, constructed using [[combineFieldNames]], into a list of individual field names.
+ * @public
+ */
+export function parseCombinedFieldNames(combinedName: string) {
+  return combinedName.split(FIELD_NAMES_SEPARATOR);
 }
 
 interface NestedItemConversionResult {
@@ -476,11 +639,11 @@ function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: 
   return { emptyNestedItem: false, convertedItem };
 }
 
-function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy: FieldHierarchy, namePrefix: string | undefined) {
+function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy: FieldHierarchy, parentFieldName: string | undefined) {
   const fieldName = fieldHierarchy.field.name;
   const convertedChildFieldHierarchies = fieldHierarchy.childFields.map((child) => {
     if (child.field.isNestedContentField())
-      return convertNestedContentFieldHierarchyToStructArrayHierarchy(child, applyOptionalPrefix(fieldName, namePrefix));
+      return convertNestedContentFieldHierarchyToStructArrayHierarchy(child, combineFieldNames(fieldName, parentFieldName));
     return child;
   });
   const convertedFieldHierarchy: FieldHierarchy = {

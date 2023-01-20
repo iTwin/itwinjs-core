@@ -66,7 +66,7 @@ export interface Node {
   /**
    * Identifies whether the hierarchy level below this node supports filtering. If not, requesting either a hierarchy level descriptor or
    * a hierarchy level with [[HierarchyRequestOptions.instanceFilter]] will throw an error with [[PresentationStatus.InvalidArgument]] status.
-   * @alpha
+   * @beta
    */
   supportsFiltering?: boolean;
   /** Extended data injected into this node */
@@ -101,7 +101,7 @@ export interface NodeJSON {
   isChecked?: boolean;
   /** @deprecated in 3.x. */
   isCheckboxEnabled?: boolean;
-  /** @alpha */
+  /** @beta */
   supportsFiltering?: boolean;
   extendedData?: {
     [key: string]: any;

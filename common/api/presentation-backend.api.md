@@ -75,11 +75,10 @@ export function combineDiagnosticsOptions(...options: Array<BackendDiagnosticsOp
 
 // @public
 export interface ContentCacheConfig {
-    // @beta
     size?: number;
 }
 
-// @beta
+// @public
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
     memoryCacheSize?: number;
@@ -93,36 +92,36 @@ export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | u
 // @internal (undocumented)
 export function getLocalizedStringEN(key: string): any;
 
-// @beta
+// @public
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
 
-// @beta
+// @public
 export interface HierarchyCacheConfigBase {
     // (undocumented)
     mode: HierarchyCacheMode;
 }
 
-// @beta
+// @public
 export enum HierarchyCacheMode {
     Disk = "disk",
     Hybrid = "hybrid",
     Memory = "memory"
 }
 
-// @beta
+// @public
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
     disk?: DiskHierarchyCacheConfig;
     // (undocumented)
     mode: HierarchyCacheMode.Hybrid;
 }
 
-// @beta
+// @public
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
     // (undocumented)
     mode: HierarchyCacheMode.Memory;
 }
 
-// @alpha
+// @public
 export interface MultiElementPropertiesResponse {
     // (undocumented)
     iterator: () => AsyncGenerator<ElementProperties[]>;
@@ -207,25 +206,22 @@ export class PresentationManager {
     get activeUnitSystem(): UnitSystemKey | undefined;
     set activeUnitSystem(value: UnitSystemKey | undefined);
     compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
+    computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
+    // @deprecated
     computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & {
         ids: Id64String[];
         scopeId: string;
     } & BackendDiagnosticsAttribute): Promise<KeySet>;
-    // @alpha (undocumented)
-    computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
     dispose(): void;
     getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined>;
     getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
-    // @beta (undocumented)
     getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]>;
     // @internal (undocumented)
     getDetail(): PresentationManagerDetail;
     getDisplayLabelDefinition(requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition>;
     getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]>;
-    // @beta
     getElementProperties(requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined>;
-    // @alpha
     getElementProperties(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse>;
     getFilteredNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
     // @internal (undocumented)
@@ -233,7 +229,7 @@ export class PresentationManager {
     getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
     getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node_2[]>;
     getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
-    // @alpha
+    // @beta
     getNodesDescriptor(requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
@@ -249,9 +245,7 @@ export class PresentationManager {
 // @public
 export interface PresentationManagerCachingConfig {
     content?: ContentCacheConfig;
-    // @beta
     hierarchies?: HierarchyCacheConfig;
-    // @beta
     workerConnectionCacheSize?: number;
 }
 
@@ -287,9 +281,9 @@ export interface PresentationManagerProps {
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
-    // @alpha
+    // @beta
     updatesPollInterval?: number;
-    // @alpha
+    // @beta
     useMmap?: boolean | number;
     workerThreadsCount?: number;
 }
@@ -306,7 +300,7 @@ export interface PresentationPropsBase extends PresentationManagerProps {
 // @internal (undocumented)
 export function reportDiagnostics<TContext>(diagnostics: Diagnostics, options: BackendDiagnosticsOptions<TContext>, context?: TContext): void;
 
-// @beta
+// @public
 export class RulesetEmbedder {
     constructor(props: RulesetEmbedderProps);
     getRulesets(): Promise<Ruleset[]>;
@@ -318,7 +312,7 @@ export interface RulesetEmbedderProps {
     imodel: IModelDb;
 }
 
-// @beta
+// @public
 export interface RulesetInsertOptions {
     onEntityInsert?: InsertCallbacks;
     onEntityUpdate?: UpdateCallbacks;

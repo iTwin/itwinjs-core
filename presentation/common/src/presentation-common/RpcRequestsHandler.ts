@@ -210,6 +210,7 @@ export class RpcRequestsHandler implements IDisposable {
   }
   public async computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<KeySetJSON> {
     return this.request<KeySetJSON, typeof options>(
+      // eslint-disable-next-line deprecation/deprecation
       this.rpcClient.computeSelection.bind(this.rpcClient), options);
   }
 }

@@ -8,8 +8,8 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import {
-  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, NavigationPropertyInfo, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
-  StrippedRelationshipPath,
+  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, NavigationPropertyInfo, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath,
+  RelationshipPathJSON, StrippedRelationshipPath,
 } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
 import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";
@@ -49,9 +49,8 @@ export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends Bas
 export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
   contentClassInfo: TClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
-  /** @alpha */
   relationshipMeaning?: RelationshipMeaning;
-  /** @alpha */
+  /** @beta */
   actualPrimaryClassIds?: Id64String[];
   autoExpand?: boolean;
   nestedFields: FieldJSON<TClassInfoJSON>[];
@@ -368,9 +367,26 @@ export class NestedContentField extends Field {
   public contentClassInfo: ClassInfo;
   /** Relationship path to [Primary class]($docs/presentation/content/Terminology#primary-class) */
   public pathToPrimaryClass: RelationshipPath;
-  /** @alpha */
+  /**
+   * Meaning of the relationship between the [primary class]($docs/presentation/content/Terminology#primary-class)
+   * and content class of this field.
+   *
+   * The value is set up through [[RelatedPropertiesSpecification.relationshipMeaning]] attribute when setting up
+   * presentation rules for creating the content.
+   */
   public relationshipMeaning: RelationshipMeaning;
-  /** @alpha */
+  /**
+   * When content descriptor is requested in a polymorphic fashion, fields get created if at least one of the concrete classes
+   * has it. In certain situations it's necessary to know which concrete classes caused that and this attribute is
+   * here to help.
+   *
+   * **Example:** There's a base class `A` and it has two derived classes `B` and `C` and class `B` has a relationship to class `D`.
+   * When content descriptor is requested for class `A` polymorphically, it's going to contain fields for all properties of class `B`,
+   * class `C` and a nested content field for the `B -> D` relationship. The nested content field's `actualPrimaryClassIds` attribute
+   * will contain ID of class `B`, identifying that only this specific class has the relationship.
+   *
+   * @beta
+   */
   public actualPrimaryClassIds: Id64String[];
   /** Contained nested fields */
   public nestedFields: Field[];

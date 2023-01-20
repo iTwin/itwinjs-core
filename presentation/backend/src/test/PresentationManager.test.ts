@@ -2518,10 +2518,11 @@ describe("PresentationManager", () => {
       manager.dispose();
     });
 
-    it("computes selection using `SelectionScopesHelper`", async () => {
+    it("[deprecated] computes selection using `SelectionScopesHelper`", async () => {
       const ids = [createRandomId()];
       const resultKeys = new KeySet();
       const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
+      // eslint-disable-next-line deprecation/deprecation
       const result = await manager.computeSelection({ imodel: imodel.object, ids, scopeId: "test scope" });
       expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds: ids, scope: { id: "test scope" } });
       expect(result).to.eq(resultKeys);

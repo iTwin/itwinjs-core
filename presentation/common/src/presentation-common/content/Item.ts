@@ -16,7 +16,6 @@ import { DisplayValue, DisplayValueJSON, DisplayValuesMapJSON, Value, ValueJSON,
  * @public
  */
 export interface ItemJSON {
-  /** @beta */
   inputKeys?: InstanceKeyJSON[];
   primaryKeys: InstanceKeyJSON[];
   labelDefinition: LabelDefinitionJSON;
@@ -35,8 +34,8 @@ export interface ItemJSON {
  */
 export class Item {
   /**
-   * Keys of input instances that caused this item to be included in content.
-   * @beta
+   * Keys of input instances that caused this item to be included in content. Only set if the content is
+   * created with [[ContentFlags.IncludeInputKeys]] flag.
    */
   public inputKeys?: InstanceKey[];
   /** Keys of instances whose data is contained in this item */

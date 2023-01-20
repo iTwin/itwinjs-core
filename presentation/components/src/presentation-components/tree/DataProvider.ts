@@ -56,7 +56,6 @@ export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
 
   /**
    * Callback which provides a way to customize how data is mapped between [Node]($presentation-common) and [TreeNodeItem]($components-react).
-   * @beta
    */
   customizeTreeNodeItem?: (item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) => void;
 

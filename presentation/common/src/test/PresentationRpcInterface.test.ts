@@ -245,6 +245,7 @@ describe("PresentationRpcInterface", () => {
       };
       const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
+      // eslint-disable-next-line deprecation/deprecation
       await rpcInterface.computeSelection(token, options, ids, scopeId);
       expect(spy).to.be.calledOnceWith(toArguments(token, options, ids, scopeId));
     });

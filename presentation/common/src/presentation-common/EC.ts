@@ -152,7 +152,7 @@ export interface KindOfQuantityInfo {
 }
 
 /**
- * Navigation property information
+ * A data structure for storing navigation property information.
  * @beta
  */
 export interface NavigationPropertyInfo {
@@ -166,7 +166,10 @@ export interface NavigationPropertyInfo {
   isTargetPolymorphic: boolean;
 }
 
-/** @beta */
+/**
+ * Contains utilities for working with objects of [[NavigationPropertyInfo]] type.
+ * @beta
+ */
 export namespace NavigationPropertyInfo {
   /** Serialize [[NavigationPropertyInfo]] to JSON */
   export function toJSON(info: NavigationPropertyInfo): NavigationPropertyInfoJSON {
@@ -176,7 +179,7 @@ export namespace NavigationPropertyInfo {
   /** Serialize [[NavigationPropertyInfo]] to compressed JSON */
   export function toCompressedJSON(navigationPropertyInfo: NavigationPropertyInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): NavigationPropertyInfoJSON<string> {
     const { id: relationshipId, ...relationshipLeftOverInfo } = navigationPropertyInfo.classInfo;
-    const { id: targetId, ...targetLeftOverInfo} = navigationPropertyInfo.targetClassInfo;
+    const { id: targetId, ...targetLeftOverInfo } = navigationPropertyInfo.targetClassInfo;
     classesMap[relationshipId] = relationshipLeftOverInfo;
     classesMap[targetId] = targetLeftOverInfo;
 

@@ -10,7 +10,7 @@ import { Node, NodeJSON } from "./Node";
 
 /**
  * Defines a hierarchy level that consists of an array of nodes and possibly other information.
- * @alpha
+ * @beta
  */
 export interface HierarchyLevel {
   /** A list of nodes in a hierarchy level. */
@@ -24,14 +24,17 @@ export interface HierarchyLevel {
 
 /**
  * JSON representation of [[HierarchyLevel]].
- * @alpha
+ * @beta
  */
 export interface HierarchyLevelJSON {
   nodes: NodeJSON[];
   supportsFiltering?: boolean;
 }
 
-/** @alpha */
+/**
+ * Contains helper functions for working with objects of [[HierarchyLevel]] type.
+ * @beta
+ */
 export namespace HierarchyLevel {
   /** Deserialize [[HierarchyLevel]] from JSON */
   export function fromJSON(json: HierarchyLevelJSON): HierarchyLevel {

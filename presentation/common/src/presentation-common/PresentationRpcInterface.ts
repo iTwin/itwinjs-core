@@ -82,7 +82,7 @@ export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<Hierarchy
 
 /**
  * Data structure for hierarchy level descriptor RPC request options.
- * @alpha
+ * @beta
  */
 export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions<HierarchyLevelDescriptorRequestOptions<never, NodeKeyJSON, RulesetVariableJSON>>;
 
@@ -100,12 +100,12 @@ export type FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptio
 
 /**
  * Data structure for content sources RPC request options.
- * @beta
+ * @public
  */
 export type ContentSourcesRpcRequestOptions = PresentationRpcRequestOptions<ContentSourcesRequestOptions<never>>;
 /**
  * Data structure for content sources RPC response.
- * @beta
+ * @public
  */
 export interface ContentSourcesRpcResult {
   /** A list of objects containing content source information. */
@@ -128,7 +128,7 @@ export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequ
 
 /**
  * Data structure for single element properties RPC request options.
- * @beta
+ * @public
  */
 export type SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<SingleElementPropertiesRequestOptions<never>>;
 
@@ -140,7 +140,7 @@ export type DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions<Dist
 
 /**
  * Data structure for content instance keys' request options.
- * @beta
+ * @public
  */
 export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions<ContentInstanceKeysRequestOptions<never, KeySetJSON, RulesetVariableJSON>>;
 
@@ -163,7 +163,8 @@ export type DisplayLabelsRpcRequestOptions = PresentationRpcRequestOptions<Displ
 export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>>;
 
 /**
- * @alpha
+ * Request options data structure for computing selection based on given selection scope and element IDs.
+ * @public
  */
 export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
 
@@ -188,7 +189,7 @@ export class PresentationRpcInterface extends RpcInterface {
   @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedNodes(_token: IModelRpcProps, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<NodeJSON>> { return this.forward(arguments); }
 
-  /** @alpha */
+  /** @beta */
   @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getNodesDescriptor(_token: IModelRpcProps, _options: HierarchyLevelDescriptorRpcRequestOptions): PresentationRpcResponse<string | DescriptorJSON | undefined> { return this.forward(arguments); }
 
@@ -200,7 +201,6 @@ export class PresentationRpcInterface extends RpcInterface {
   @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
 
-  /** @beta */
   @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult> { return this.forward(arguments); }
 
@@ -222,14 +222,12 @@ export class PresentationRpcInterface extends RpcInterface {
   @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedContentSet(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> { return this.forward(arguments); }
 
-  /** @beta */
   @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getElementProperties(_token: IModelRpcProps, _options: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> { return this.forward(arguments); }
 
   @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> { return this.forward(arguments); }
 
-  /** @beta */
   public async getContentInstanceKeys(_token: IModelRpcProps, _options: ContentInstanceKeysRpcRequestOptions): PresentationRpcResponse<{ total: number, items: KeySetJSON }> { return this.forward(arguments); }
 
   public async getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON> { return this.forward(arguments); }
@@ -239,15 +237,14 @@ export class PresentationRpcInterface extends RpcInterface {
 
   public async getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
 
-  // TODO: need to enforce paging on this
+  /** @deprecated in 3.x. Use the override with [[ComputeSelectionRpcRequestOptions]]. */
   public async computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
-  /** @alpha */
   public async computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON>;
   @RpcOperation.setPolicy({ allowResponseCompression: true })
   public async computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions | SelectionScopeRpcRequestOptions, _ids?: Id64String[], _scopeId?: string): PresentationRpcResponse<KeySetJSON> { return this.forward(arguments); }
 }
 
-/** @alpha */
+/** @internal */
 export enum PresentationIpcEvents {
   /**
    * ID of an event that's emitted when backend detects changes in presented data.

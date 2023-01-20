@@ -93,9 +93,8 @@ export interface InstanceLabelOverridePropertyValueSpecification extends Instanc
   propertyName: string;
 
   /**
-   * [Specification of the relationship path]($docs/presentation/RelationshipPathSpecification.md) from `InstanceLabelOverride.class`
-   * to class of the property. If omitted, `InstanceLabelOverride.class` is used as property class.
-   * @beta
+   * [Specification of the relationship path]($docs/presentation/RelationshipPathSpecification.md) from [[InstanceLabelOverride.class]]
+   * to class of the property. If omitted, [[InstanceLabelOverride.class]] is used as property class.
    */
   propertySource?: RelationshipPathSpecification;
 }

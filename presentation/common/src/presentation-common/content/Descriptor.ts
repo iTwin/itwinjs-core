@@ -122,8 +122,6 @@ export enum ContentFlags {
   /**
    * Set related input keys on [[Item]] objects when creating content. This helps identify which [[Item]] is associated to which
    * given input key at the cost of performance creating those items.
-   *
-   * @beta
    */
   IncludeInputKeys = 1 << 8,
 
@@ -165,7 +163,7 @@ export interface DescriptorJSON {
   classesMap: { [id: string]: CompressedClassInfoJSON };
   connectionId: string;
   inputKeysHash: string;
-  /** @deprecated since 3.6. The attribute is not used anymore. */
+  /** @deprecated in 3.x. The attribute is not used anymore. */
   contentOptions: any;
   selectionInfo?: SelectionInfo;
   displayType: string;
@@ -178,7 +176,7 @@ export interface DescriptorJSON {
   /** @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]]. */
   filterExpression?: string;
   fieldsFilterExpression?: string;
-  /** @alpha */
+  /** @beta */
   instanceFilter?: InstanceFilterDefinition;
 }
 
@@ -217,11 +215,28 @@ export interface DescriptorOverrides {
    * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
    */
   filterExpression?: string;
-  /** [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content */
+  /**
+   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
+   * select fields.
+   *
+   * This is different from [[instanceFilter]] as filtering is applied on the union of all selects,
+   * which removes access to content instance property values. Instead of referencing properties
+   * through `this.PropertyName` alias, the expression should reference them by field names. In cases
+   * when properties field merges multiple properties, this allows applying the filter on all of them
+   * at once. This is useful for filtering table rows by column value, when content is displayed in
+   * table format.
+   */
   fieldsFilterExpression?: string;
   /**
-   * Content instances filter
-   * @alpha
+   * Instances filter that allows filtering content by class, properties of specific class
+   * or properties of instances related to the content instance.
+   *
+   * This is different from [[fieldsFilterExpression]] as filter is applied at a lower level - on
+   * specific select class rather than a union of multiple select classes. This means the filter has
+   * access to properties of that class and they can be referenced using symbols like `this.Property`.
+   * This is useful for filtering instances of specific class.
+   *
+   * @beta
    */
   instanceFilter?: InstanceFilterDefinition;
 }
@@ -252,17 +267,34 @@ export interface DescriptorSource {
   /** Sorting direction */
   readonly sortDirection?: SortDirection;
   /**
-   * Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions)
+   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
    * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
    */
-  readonly filterExpression?: string;
-  /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
-  readonly fieldsFilterExpression?: string;
+  filterExpression?: string;
   /**
-   * Content instances filter
-   * @alpha
+   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
+   * select fields.
+   *
+   * This is different from [[instanceFilter]] as filtering is applied on the union of all selects,
+   * which removes access to content instance property values. Instead of referencing properties
+   * through `this.PropertyName` alias, the expression should reference them by field names. In cases
+   * when properties field merges multiple properties, this allows applying the filter on all of them
+   * at once. This is useful for filtering table rows by column value, when content is displayed in
+   * table format.
    */
-  readonly instanceFilter?: InstanceFilterDefinition;
+  fieldsFilterExpression?: string;
+  /**
+   * Instances filter that allows filtering content by class, properties of specific class
+   * or properties of instances related to the content instance.
+   *
+   * This is different from [[fieldsFilterExpression]] as filter is applied at a lower level - on
+   * specific select class rather than a union of multiple select classes. This means the filter has
+   * access to properties of that class and they can be referenced using symbols like `this.Property`.
+   * This is useful for filtering instances of specific class.
+   *
+   * @beta
+   */
+  instanceFilter?: InstanceFilterDefinition;
 }
 
 /**
@@ -298,15 +330,32 @@ export class Descriptor implements DescriptorSource {
   /** Sorting direction */
   public sortDirection?: SortDirection;
   /**
-   * Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions)
+   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
    * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
    */
   public filterExpression?: string;
-  /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
+  /**
+   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
+   * select fields.
+   *
+   * This is different from [[instanceFilter]] as filtering is applied on the union of all selects,
+   * which removes access to content instance property values. Instead of referencing properties
+   * through `this.PropertyName` alias, the expression should reference them by field names. In cases
+   * when properties field merges multiple properties, this allows applying the filter on all of them
+   * at once. This is useful for filtering table rows by column value, when content is displayed in
+   * table format.
+   */
   public fieldsFilterExpression?: string;
   /**
-   * Content instances filter
-   * @alpha
+   * Instances filter that allows filtering content by class, properties of specific class
+   * or properties of instances related to the content instance.
+   *
+   * This is different from [[fieldsFilterExpression]] as filter is applied at a lower level - on
+   * specific select class rather than a union of multiple select classes. This means the filter has
+   * access to properties of that class and they can be referenced using symbols like `this.Property`.
+   * This is useful for filtering instances of specific class.
+   *
+   * @beta
    */
   public instanceFilter?: InstanceFilterDefinition;
 

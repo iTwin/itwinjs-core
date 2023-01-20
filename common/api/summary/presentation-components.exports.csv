@@ -9,7 +9,7 @@ public;ControlledPresentationTreeFilteringProps
 alpha;convertPresentationFilterToPropertyFilter(descriptor: Descriptor, filter: PresentationInstanceFilter): PropertyFilter | undefined
 alpha;convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise
 alpha;createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined
-internal;createFieldInfo(field: Field, namePrefix?: string):
+internal;createFieldInfo(field: Field, parentFieldName?: string):
 alpha;createInstanceFilterPropertyInfos(descriptor: Descriptor): InstanceFilterPropertyInfo[]
 internal;createPresentationInstanceFilter(descriptor: Descriptor, filter: PropertyFilter): PresentationInstanceFilter | undefined
 internal;createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription
@@ -19,8 +19,8 @@ public;DataProvidersFactoryProps
 deprecated;DataProvidersFactoryProps
 public;DEFAULT_PROPERTY_GRID_RULESET: Ruleset
 public;DiagnosticsProps
-beta;FavoritePropertiesDataFilterer 
-beta;FavoritePropertiesDataFiltererProps
+public;FavoritePropertiesDataFilterer 
+public;FavoritePropertiesDataFiltererProps
 public;FavoritePropertiesDataProvider 
 public;FavoritePropertiesDataProviderProps
 internal;FAVORITES_CATEGORY_NAME = "Favorite"

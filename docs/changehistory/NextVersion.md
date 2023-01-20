@@ -113,6 +113,59 @@ The following APIs have been promoted to `@public`, indicating they are now part
 - [Viewport.queryVisibleFeatures]($frontend)
 - [ViewState3d.lookAt]($frontend)
 
+### @itwin/presentation-common
+
+- Presentation rules:
+  - [InstanceLabelOverridePropertyValueSpecification.propertySource]($presentation-common)
+  - [ChildNodeSpecificationBase.suppressSimilarAncestorsCheck]($presentation-common)
+  - [RequiredSchemaSpecification]($presentation-common) and its usages:
+    - [SubCondition.requiredSchemas]($presentation-common)
+    - [RuleBase.requiredSchemas]($presentation-common)
+    - [Ruleset.requiredSchemas]($presentation-common)
+- Content traversal - related APIs:
+  - [traverseContent]($presentation-common)
+  - [IContentVisitor]($presentation-common)
+- Selection scope computation - related APIs:
+  - [SelectionScopeProps]($presentation-common)
+  - [ComputeSelectionRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getElementProperties]($presentation-common)
+- Element properties request - related APIs:
+  - [ElementProperties]($presentation-common)
+  - [ElementPropertiesRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.computeSelection]($presentation-common)
+- Content sources request - related APIs:
+  - [ContentSourcesRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getContentSources]($presentation-common)
+- Content instance keys request - related APIs:
+  - [ContentInstanceKeysRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getContentInstanceKeys]($presentation-common)
+- [NestedContentField.relationshipMeaning]($presentation-common)
+- [ContentFlags.IncludeInputKeys]($presentation-common) and [Item.inputKeys]($presentation-common)
+
+### @itwin/presentation-backend
+
+- Presentation manager's caching related APIs:
+  - [HierarchyCacheMode]($presentation-backend)
+  - [HierarchyCacheConfig]($presentation-backend)
+  - [PresentationManagerCachingConfig.hierarchies]($presentation-backend) and [PresentationManagerCachingConfig.workerConnectionCacheSize]($presentation-backend)
+- [PresentationManager.getElementProperties]($presentation-backend) and [MultiElementPropertiesResponse]($presentation-backend)
+- [PresentationManager.getContentSources]($presentation-backend)
+- [PresentationManager.computeSelection]($presentation-backend)
+- [RulesetEmbedder]($presentation-backend) and related APIs
+
+### @itwin/presentation-frontend
+
+- [PresentationManager.getContentSources]($presentation-frontend)
+- [PresentationManager.getElementProperties]($presentation-frontend)
+- [PresentationManager.getContentInstanceKeys]($presentation-frontend)
+
+### @itwin/presentation-components
+
+- [FavoritePropertiesDataFilterer]($presentation-components)
+- [PresentationPropertyDataProvider.getPropertyRecordInstanceKeys]($presentation-components)
+- [PresentationTreeDataProviderProps.customizeTreeNodeItem]($presentation-components)
+- [PresentationTreeNodeLoaderProps.seedTreeModel]($presentation-components)
+
 ## API deprecations
 
 ### @itwin/core-bentley
