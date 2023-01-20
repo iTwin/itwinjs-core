@@ -19,6 +19,7 @@ Array [
       "rawValue": "Definition Model",
       "typeName": "string",
     },
+    "supportsFiltering": true,
   },
   Object {
     "description": "The singleton container for repository-specific definition elements.",
@@ -37,6 +38,7 @@ Array [
       "rawValue": "Dictionary Model",
       "typeName": "string",
     },
+    "supportsFiltering": true,
   },
   Object {
     "description": "Contains a list of document elements.",
@@ -55,6 +57,7 @@ Array [
       "rawValue": "Document List",
       "typeName": "string",
     },
+    "supportsFiltering": true,
   },
   Object {
     "hasChildren": true,
@@ -72,6 +75,7 @@ Array [
       "rawValue": "Group Model",
       "typeName": "string",
     },
+    "supportsFiltering": true,
   },
   Object {
     "description": "A container for persisting link elements.",
@@ -90,6 +94,7 @@ Array [
       "rawValue": "Link Model",
       "typeName": "string",
     },
+    "supportsFiltering": true,
   },
   Object {
     "description": "A container for persisting physical elements that model physical space.",
@@ -108,6 +113,7 @@ Array [
       "rawValue": "Physical Model",
       "typeName": "string",
     },
+    "supportsFiltering": true,
   },
   Object {
     "description": "The singleton container of repository-related information elements.",
@@ -126,6 +132,7 @@ Array [
       "rawValue": "Repository Model",
       "typeName": "string",
     },
+    "supportsFiltering": true,
   },
 ]
 `;
@@ -156,6 +163,7 @@ Array [
             "rawValue": "filter ch1",
             "typeName": "string",
           },
+          "supportsFiltering": true,
         },
       },
       Object {
@@ -183,6 +191,7 @@ Array [
                 "rawValue": "filter ch4",
                 "typeName": "string",
               },
+              "supportsFiltering": true,
             },
           },
         ],
@@ -207,6 +216,7 @@ Array [
             "rawValue": "other ch3",
             "typeName": "string",
           },
+          "supportsFiltering": true,
         },
       },
     ],
@@ -230,6 +240,7 @@ Array [
         "rawValue": "filter r1",
         "typeName": "string",
       },
+      "supportsFiltering": true,
     },
   },
   Object {
@@ -256,6 +267,7 @@ Array [
             "rawValue": "filter ch6",
             "typeName": "string",
           },
+          "supportsFiltering": true,
         },
       },
     ],
@@ -279,6 +291,7 @@ Array [
         "rawValue": "other r3",
         "typeName": "string",
       },
+      "supportsFiltering": true,
     },
   },
 ]
@@ -323,6 +336,7 @@ Array [
                     "rawValue": "BisCore.DictionaryModel",
                     "typeName": "string",
                   },
+                  "supportsFiltering": true,
                 },
               },
             ],
@@ -352,6 +366,7 @@ Array [
                 "rawValue": "Definition Partition",
                 "typeName": "string",
               },
+              "supportsFiltering": true,
             },
           },
           Object {
@@ -387,6 +402,7 @@ Array [
                     "rawValue": "BisCore.RealityDataSources",
                     "typeName": "string",
                   },
+                  "supportsFiltering": true,
                 },
               },
             ],
@@ -416,6 +432,7 @@ Array [
                 "rawValue": "Link Partition",
                 "typeName": "string",
               },
+              "supportsFiltering": true,
             },
           },
         ],
@@ -447,6 +464,7 @@ Array [
             "rawValue": "DgnV8Bridge",
             "typeName": "string",
           },
+          "supportsFiltering": true,
         },
       },
     ],
@@ -477,6 +495,7 @@ Array [
         "rawValue": "DgnV8Bridge",
         "typeName": "string",
       },
+      "supportsFiltering": true,
     },
   },
 ]
