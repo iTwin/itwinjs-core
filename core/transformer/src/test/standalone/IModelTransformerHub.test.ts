@@ -336,7 +336,6 @@ describe("IModelTransformerHub", () => {
     }
   });
 
-  // you can print additional debug info from this test by setting in your env TRANSFORMER_BRANCH_TEST_DEBUG=1
   it("should merge changes made on a branch back to master", async () => {
     const masterIModelName = "Master";
     const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
@@ -922,7 +921,10 @@ describe("IModelTransformerHub", () => {
                          | TimelineStateChange;
   }>;
 
-  /** run the branching and synchronization events in a @see Timeline object */
+  /**
+   * Run the branching and synchronization events in a @see Timeline object
+   * you can print additional debug info from this by setting in your env TRANSFORMER_BRANCH_TEST_DEBUG=1
+   */
   async function runTimeline(timeline: Timeline) {
     const trackedIModels = new Map<string, TimelineIModelState>();
     const masterOfBranch = new Map<string, string>();
