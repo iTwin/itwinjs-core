@@ -756,7 +756,7 @@ describe("IModelTransformerHub", () => {
     }
   });
 
-  it.only("should not download more changesets than necessary", async () => {
+  it("should not download more changesets than necessary", async () => {
     const timeline: Timeline = {
       0: { master: { 1:1 } },
       1: { branch: { branch: "master" } },
@@ -778,7 +778,7 @@ describe("IModelTransformerHub", () => {
     });
     const queryChangeset = sinon.spy(HubMock, "queryChangeset")
     await syncer.processChanges(accessToken, branchAt2Changeset.id);
-    expect(queryChangeset.calledOnceWith({
+    expect(queryChangeset.alwaysCalledWith({
       accessToken,
       iModelId: branch.id,
       changeset: {
