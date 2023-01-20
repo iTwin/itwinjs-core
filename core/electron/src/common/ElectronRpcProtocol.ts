@@ -12,8 +12,11 @@ import { ElectronIpcTransport, initializeIpc, IpcTransportMessage } from "./Elec
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
 
+/* eslint-disable deprecation/deprecation */
+
 /** RPC interface protocol for an Electron-based application.
  * @beta
+ * @deprecated
  */
 export class ElectronRpcProtocol extends RpcProtocol {
   public static instances: Map<string, ElectronRpcProtocol> = new Map();

@@ -9,7 +9,9 @@
 import { RpcRequest, RpcRequestFulfillment, RpcSerializedValue } from "@itwin/core-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
-/** @beta */
+/* eslint-disable deprecation/deprecation */
+
+/** @beta @deprecated */
 export class MobileRpcRequest extends RpcRequest {
   private _res: (value: number) => void = () => undefined;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;

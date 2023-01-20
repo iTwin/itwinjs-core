@@ -6,7 +6,9 @@
  * @module RpcInterface
  */
 
-/** @internal */
+/* eslint-disable deprecation/deprecation */
+
+/** @internal @deprecated */
 export class RpcRoutingToken {
   private static _next = -1;
 

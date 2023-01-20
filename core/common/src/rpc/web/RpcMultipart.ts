@@ -13,18 +13,19 @@ import { HttpServerRequest } from "../web/WebAppRpcProtocol";
 
 /* eslint-disable deprecation/deprecation */
 
-/** @internal */
+/** @internal @deprecated */
 export interface FormDataCommon {
   append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
 }
 
-/** @internal */
+/** @internal @deprecated */
 export interface ReadableFormData extends BackendReadable {
   getHeaders(): { [key: string]: any };
 }
 
 /** Support for transporting RPC values using the HTTP multipart content type.
  * @internal
+ * @deprecated
  */
 export class RpcMultipart {
   /** Creates a multipart form object for an RPC value. */

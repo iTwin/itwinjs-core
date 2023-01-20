@@ -35,6 +35,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 import { RpcSerializedValue } from "../../core/RpcMarshaling";
 
+/* eslint-disable deprecation/deprecation */
+
 const START = 0;
 const START_BOUNDARY = 1;
 const HEADER_FIELD_START = 2;
@@ -59,7 +61,7 @@ const Z = 122;
 const CONTENT_TYPE_RE = /^multipart\/(?:form-data|related)(?:;|$)/i;
 const CONTENT_TYPE_PARAM_RE = /;\s*([^=]+)=(?:"([^"]+)"|([^;]+))/gi;
 
-/** @internal */
+/** @internal @deprecated */
 export class RpcMultipartParser {
   private _headerFieldMark: number | null;
   private _headerValueMark: number | null;

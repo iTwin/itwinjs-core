@@ -6,8 +6,11 @@
  * @module RpcInterface
  */
 
+/* eslint-disable deprecation/deprecation */
+
 /** Describes available options for RPC response caching.
  * @public
+ * @deprecated
  */
 export enum RpcResponseCacheControl {
   None,
@@ -16,6 +19,7 @@ export enum RpcResponseCacheControl {
 
 /** RPC protocol event types.
  * @public
+ * @deprecated
  */
 export enum RpcProtocolEvent {
   RequestCreated,
@@ -35,6 +39,7 @@ export enum RpcProtocolEvent {
 
 /** The status of an RPC operation request.
  * @public
+ * @deprecated
  */
 export enum RpcRequestStatus {
   Unknown,
@@ -54,16 +59,17 @@ export enum RpcRequestStatus {
   TooManyRequests
 }
 
-/** @public */
+/** @public @deprecated */
 export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no-redeclare
   export function isTransientError(status: RpcRequestStatus) {
     return status === RpcRequestStatus.BadGateway || status === RpcRequestStatus.ServiceUnavailable || status === RpcRequestStatus.GatewayTimeout
-       || status === RpcRequestStatus.RequestTimeout || status === RpcRequestStatus.TooManyRequests;
+      || status === RpcRequestStatus.RequestTimeout || status === RpcRequestStatus.TooManyRequests;
   }
 }
 
 /** RPC request event types.
  * @public
+ * @deprecated
  */
 export enum RpcRequestEvent {
   StatusChanged,
@@ -73,6 +79,7 @@ export enum RpcRequestEvent {
 
 /** RPC content types.
  * @public
+ * @deprecated
  */
 export enum RpcContentType {
   Unknown,
@@ -84,6 +91,7 @@ export enum RpcContentType {
 
 /** Endpoints for RPC protocols.
  * @public
+ * @deprecated
  */
 export enum RpcEndpoint {
   Frontend,
@@ -92,7 +100,7 @@ export enum RpcEndpoint {
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-/** @internal */
+/** @internal @deprecated */
 export const WEB_RPC_CONSTANTS = {
   CONTENT: "Content-Type",
   TEXT: "text/plain",

@@ -15,8 +15,11 @@ import { RpcInvocation } from "./RpcInvocation";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry } from "./RpcRegistry";
 
+/* eslint-disable deprecation/deprecation */
+
 /** An RPC operation control response.
  * @public
+ * @deprecated
  */
 export abstract class RpcControlResponse {
   public message = "RpcControlResponse";
@@ -24,6 +27,7 @@ export abstract class RpcControlResponse {
 
 /** A pending RPC operation response.
  * @public
+ * @deprecated
  */
 export class RpcPendingResponse extends RpcControlResponse {
   /** Extended status regarding the pending operation. */
@@ -38,6 +42,7 @@ export class RpcPendingResponse extends RpcControlResponse {
 
 /** A RPC operation response.
  * @public
+ * @deprecated
  */
 export class RpcNotFoundResponse extends RpcControlResponse {
   public override message = "Not found";
@@ -45,6 +50,7 @@ export class RpcNotFoundResponse extends RpcControlResponse {
 
 /** Manages requests and responses for an RPC configuration.
  * @internal
+ * @deprecated
  */
 export class RpcControlChannel {
   /** @internal */

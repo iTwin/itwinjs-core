@@ -6,8 +6,11 @@
 import { RpcConfiguration, RpcEndpoint, RpcInterfaceDefinition } from "@itwin/core-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
+/* eslint-disable deprecation/deprecation */
+
 /** RPC supported mobile platforms.
  * @beta
+ * @deprecated
  */
 export enum RpcMobilePlatform {
   Unknown,
@@ -17,6 +20,7 @@ export enum RpcMobilePlatform {
 
 /** Holds configuration for the RpcInterfaces used by the application.
  * @beta
+ * @deprecated
  */
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
   /** @internal */
@@ -76,6 +80,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
 
 /** Coordinates usage of RPC interfaces for an Mobile-based application.
  * @beta
+ * @deprecated
  */
 export class MobileRpcManager {
   /** @internal */

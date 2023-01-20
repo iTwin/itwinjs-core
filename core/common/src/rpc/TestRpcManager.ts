@@ -9,6 +9,8 @@
 import { RpcInterfaceDefinition } from "../RpcInterface";
 import { RpcConfiguration, RpcDefaultConfiguration } from "./core/RpcConfiguration";
 
+/* eslint-disable deprecation/deprecation */
+
 /** An RpcManager that uses RpcDefaultConfiguration/RpcDirectProtocol to make client stubs invoke
  * registered server impls as direct method calls within the same JavaScript context. In other words,
  * TestRpcManager sets up a protocol that uses our remoting mechanism but cuts out the communication
@@ -21,6 +23,7 @@ import { RpcConfiguration, RpcDefaultConfiguration } from "./core/RpcConfigurati
  * That means that you must actually program the backend to know when it is running in direct test
  * mode and to employ TestRpcManager in that case.
  * @internal
+ * @deprecated
  */
 export class TestRpcManager {
   public static initialize(interfaces: RpcInterfaceDefinition[]) {

@@ -9,8 +9,11 @@
 import { RpcRequestEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcRequest } from "./RpcRequest";
 
+/* eslint-disable deprecation/deprecation */
+
 /** Manages pending RPC requests and responses.
  * @internal
+ * @deprecated
  */
 export class RpcPendingQueue {
   public static instance: RpcPendingQueue;

@@ -17,12 +17,15 @@ import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 import { SerializedRpcActivity } from "../core/RpcInvocation";
 
+/* eslint-disable deprecation/deprecation */
+
 enum AppMode {
   MilestoneReview = "1",
 }
 
 /** An http protocol for Bentley cloud RPC interface deployments.
  * @internal
+ * @deprecated
  */
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public override checkToken = true;

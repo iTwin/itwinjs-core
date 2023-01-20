@@ -10,6 +10,8 @@ import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
 import { ProcessDetector } from "@itwin/core-bentley";
 
+/* eslint-disable deprecation/deprecation */
+
 interface MobileAddon {
   notifyListening: (port: number) => void;
   registerDeviceImpl: () => void;
@@ -17,7 +19,7 @@ interface MobileAddon {
 
 let addon: MobileAddon | undefined;
 
-/** @beta */
+/** @beta @deprecated */
 export class MobileRpcServer {
   private static _nextId = -1;
 
@@ -132,6 +134,7 @@ export class MobileRpcServer {
 let mobileReady = false;
 let hasSuspended = false;
 
+/** @deprecated */
 export function setupMobileRpc() {
   if (mobileReady) {
     return;

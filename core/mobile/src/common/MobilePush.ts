@@ -10,9 +10,11 @@ import { RpcMarshaling, RpcPushChannel, RpcPushConnection, RpcPushTransport, Rpc
 import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
+/* eslint-disable deprecation/deprecation */
+
 const PUSH = "__push__";
 
-/** @internal */
+/** @internal @deprecated */
 export class MobilePushTransport extends RpcPushTransport {
   private _protocol: MobileRpcProtocol;
   private _last: number = -1;
@@ -40,7 +42,7 @@ export class MobilePushTransport extends RpcPushTransport {
   }
 }
 
-/** @internal */
+/** @internal @deprecated */
 export class MobilePushConnection<T> extends RpcPushConnection<T> {
   private _protocol: MobileRpcProtocol;
   private _next: number = -1;

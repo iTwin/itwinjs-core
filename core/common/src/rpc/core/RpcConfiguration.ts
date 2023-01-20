@@ -15,13 +15,15 @@ import { RpcRequest } from "./RpcRequest";
 import { RpcRequestContext } from "./RpcRequestContext";
 import { RpcRoutingToken } from "./RpcRoutingToken";
 
-/** @internal */
+/* eslint-disable deprecation/deprecation */
+
+/** @internal @deprecated */
 export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => { new(): RpcConfiguration }; // eslint-disable-line @typescript-eslint/prefer-function-type
 
-/** @internal */
+/** @internal @deprecated */
 export interface RpcRoutingMap extends RpcConfigurationSupplier { configurations: Map<number, RpcConfigurationSupplier> }
 
-/** @internal */
+/** @internal @deprecated */
 export namespace RpcRoutingMap {
   export function create(): RpcRoutingMap {
     const configurations = new Map();
@@ -32,6 +34,7 @@ export namespace RpcRoutingMap {
 /** A RpcConfiguration specifies how calls on an RPC interface will be marshalled, plus other operating parameters.
  * RpcConfiguration is the base class for specific configurations.
  * @internal
+ * @deprecated
  */
 export abstract class RpcConfiguration {
   /** Whether development mode is enabled.
@@ -183,6 +186,7 @@ export abstract class RpcConfiguration {
 
 /** A default configuration that can be used for basic testing within a library.
  * @internal
+ * @deprecated
  */
 export class RpcDefaultConfiguration extends RpcConfiguration {
   public interfaces = () => [];
@@ -191,6 +195,7 @@ export class RpcDefaultConfiguration extends RpcConfiguration {
 
 /** A default protocol that can be used for basic testing within a library.
  * @internal
+ * @deprecated
  */
 export class RpcDirectProtocol extends RpcProtocol {
   public readonly requestType = RpcDirectRequest;
@@ -198,6 +203,7 @@ export class RpcDirectProtocol extends RpcProtocol {
 
 /** A default request type that can be used for basic testing within a library.
  * @internal
+ * @deprecated
  */
 export class RpcDirectRequest extends RpcRequest {
   public headers: Map<string, string> = new Map();

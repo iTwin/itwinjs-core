@@ -9,9 +9,11 @@
 import { RpcMarshaling, RpcPushChannel, RpcPushConnection, RpcPushTransport, RpcRequestFulfillment } from "@itwin/core-common";
 import { BackendIpcTransport, FrontendIpcTransport } from "./ElectronIpcTransport";
 
+/* eslint-disable deprecation/deprecation */
+
 const PUSH = "__push__";
 
-/** @internal */
+/** @internal @deprecated */
 export class ElectronPushTransport extends RpcPushTransport {
   private _ipc: FrontendIpcTransport;
   private _last: number = -1;
@@ -39,7 +41,7 @@ export class ElectronPushTransport extends RpcPushTransport {
   }
 }
 
-/** @internal */
+/** @internal @deprecated */
 export class ElectronPushConnection<T> extends RpcPushConnection<T> {
   private _ipc: BackendIpcTransport;
   private _next: number = -1;

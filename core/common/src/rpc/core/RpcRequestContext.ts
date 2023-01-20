@@ -8,8 +8,11 @@
 import { SerializedRpcActivity } from "./RpcInvocation";
 import { RpcRequest } from "./RpcRequest";
 
+/* eslint-disable deprecation/deprecation */
+
 /** Interface to enable passing application-specific context with each RPC request.
  * @internal
+ * @deprecated
  */
 export interface RpcRequestContext {
   /** Used to get the id of the request at the frontend */

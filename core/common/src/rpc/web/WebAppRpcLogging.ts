@@ -17,11 +17,13 @@ import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtoco
 import { RpcRequest } from "../core/RpcRequest";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
+/* eslint-disable deprecation/deprecation */
+
 /** @internal */
 const BACKEND = Symbol.for("@itwin.WebAppRpcLogging.Backend");
 const FRONTEND = Symbol.for("@itwin.WebAppRpcLogging.Frontend");
 
-/** @internal */
+/** @internal @deprecated */
 export abstract class WebAppRpcLogging {
   public static initializeBackend(instance: WebAppRpcLogging) {
     (globalThis as any)[BACKEND] = instance;

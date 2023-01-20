@@ -21,6 +21,7 @@ import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
 /** An HTTP server request object.
  * @public
+ * @deprecated
  */
 export interface HttpServerRequest extends BackendReadable {
   aborted: boolean;
@@ -49,6 +50,7 @@ export interface HttpServerRequest extends BackendReadable {
 
 /** An HTTP server response object.
  * @public
+ * @deprecated
  */
 export interface HttpServerResponse extends BackendWritable {
   send(body?: any): HttpServerResponse;
@@ -58,6 +60,7 @@ export interface HttpServerResponse extends BackendWritable {
 
 /** The HTTP application protocol.
  * @internal
+ * @deprecated
  */
 export abstract class WebAppRpcProtocol extends RpcProtocol {
   public override preserveStreams = true;

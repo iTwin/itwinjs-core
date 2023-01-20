@@ -17,11 +17,14 @@ import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { RpcMultipart } from "./RpcMultipart";
 import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
-/** @internal */
+/* eslint-disable deprecation/deprecation */
+
+/** @internal @deprecated */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"; // eslint-disable-line @typescript-eslint/naming-convention
 
 /** A web application RPC request.
  * @internal
+ * @deprecated
  */
 export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;

@@ -14,6 +14,8 @@ import { RpcSerializedValue } from "./RpcMarshaling";
 import { RpcProtocol, SerializedRpcRequest } from "./RpcProtocol";
 import { RpcRequest } from "./RpcRequest";
 
+/* eslint-disable deprecation/deprecation */
+
 class SessionConfiguration extends RpcConfiguration {
   public interfaces = () => [];
   public get protocol() { return SessionProtocol.instance; }
@@ -26,7 +28,7 @@ class SessionProtocol extends RpcProtocol {
   constructor() { super(new SessionConfiguration()); }
 }
 
-/** @internal */
+/** @internal @deprecated */
 export class RpcSessionInvocation extends RpcInvocation {
   public static create(request: InterceptedRpcRequest): RpcSessionInvocation {
     const serializedRequest: SerializedRpcRequest = {

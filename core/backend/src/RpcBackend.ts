@@ -13,8 +13,10 @@ import { WebAppRpcLoggingBackend } from "./rpc/web/logging";
 import { parseRequest } from "./rpc/web/request";
 import { sendResponse } from "./rpc/web/response";
 
+/* eslint-disable deprecation/deprecation */
+
 let initialized = false;
-/** @internal */
+/** @internal @deprecated */
 export function initializeRpcBackend(enableOpenTelemetry: boolean = false) {
   if (initialized)
     return;

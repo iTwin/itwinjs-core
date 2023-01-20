@@ -20,7 +20,7 @@ function isBuffer(val: any): boolean {
 let marshalingTarget: RpcSerializedValue;
 let chunkThreshold = 0;
 
-/** @internal */
+/** @internal @deprecated */
 export interface MarshalingBinaryMarker {
   isBinary: true;
   index: number;
@@ -28,14 +28,14 @@ export interface MarshalingBinaryMarker {
   chunks: number;
 }
 
-/** @internal */
+/** @internal @deprecated */
 export namespace MarshalingBinaryMarker {
   export function createDefault(): MarshalingBinaryMarker {
     return { isBinary: true, index: 0, size: -1, chunks: 1 };
   }
 }
 
-/** @internal */
+/** @internal @deprecated */
 export interface RpcSerializedValue {
   objects: string;
   data: Uint8Array[];
@@ -43,14 +43,14 @@ export interface RpcSerializedValue {
   stream?: BackendReadable;
 }
 
-/** @internal */
+/** @internal @deprecated */
 export namespace RpcSerializedValue {
   export function create(objects = "", data: Uint8Array[] = []): RpcSerializedValue {
     return { objects, data };
   }
 }
 
-/** @internal */
+/** @internal @deprecated */
 export class RpcMarshaling {
   private constructor() { }
 

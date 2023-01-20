@@ -17,25 +17,27 @@ import { RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
 import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 
-/** @internal */
+/* eslint-disable deprecation/deprecation */
+
+/** @internal @deprecated */
 export const REGISTRY = Symbol.for("@itwin/core-common/RpcRegistry");
 
-/** @internal */
+/** @internal @deprecated */
 export const OPERATION = Symbol.for("@itwin/core-common/RpcOperation");
 
-/** @internal */
+/** @internal @deprecated */
 export const POLICY = Symbol.for("@itwin/core-common/RpcOperationPolicy");
 
-/** @internal */
+/** @internal @deprecated */
 export const INSTANCE = Symbol.for("@itwin/core-common/RpcInterface/__instance__");
 
-/** @internal */
+/** @internal @deprecated */
 export const CURRENT_REQUEST = Symbol.for("@itwin/core-common/RpcRequest/__current__");
 
-/** @internal */
+/** @internal @deprecated */
 export const CURRENT_INVOCATION = Symbol.for("@itwin/core-common/RpcInvocation/__current__");
 
-/** @internal */
+/** @internal @deprecated */
 export class RpcRegistry {
   private static _instance: RpcRegistry;
 

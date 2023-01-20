@@ -20,9 +20,12 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
+/* eslint-disable deprecation/deprecation */
+
 /** The properties of an RpcActivity.
  * @public
  * @extensions
+ * @deprecated
  */
 export interface RpcActivity extends SessionProps {
   /** Used for logging to correlate an Rpc activity between frontend and backend */
@@ -37,6 +40,7 @@ export interface RpcActivity extends SessionProps {
 
 /** Serialized format for sending the request across the RPC layer
  * @public
+ * @deprecated
  */
 export interface SerializedRpcActivity {
   id: string;
@@ -47,11 +51,12 @@ export interface SerializedRpcActivity {
   csrfToken?: { headerName: string, headerValue: string };
 }
 
-/** @internal */
+/** @internal @deprecated */
 export type RpcActivityRun = (activity: RpcActivity, fn: () => Promise<any>) => Promise<any>;
 
 /** An RPC operation invocation in response to a request.
  * @internal
+ * @deprecated
  */
 export class RpcInvocation {
   public static runActivity: RpcActivityRun = async (_activity, fn) => fn();
