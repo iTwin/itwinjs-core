@@ -40,7 +40,7 @@
     "@itwin/core-common": "workspace:^3.6.0-dev.53",
     "@itwin/core-frontend": "workspace:^3.6.0-dev.53",
     "@itwin/presentation-common": "workspace:^3.6.0-dev.53",
-    "electron": ">=14.0.0 <18.0.0 || >=22.0.0 <23.0.0"
+    "electron": "^22.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
