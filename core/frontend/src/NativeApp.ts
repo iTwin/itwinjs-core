@@ -64,7 +64,7 @@ export interface NativeAppOpts extends IpcAppOptions {
 export class NativeApp {
   private static _removeAppNotify?: RemoveFunction;
 
-  /** @deprecated use nativeAppIpc */
+  /** @deprecated in 3.x. use nativeAppIpc */
   public static async callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
     return IpcApp.callIpcChannel(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
   }

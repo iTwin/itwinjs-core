@@ -71,11 +71,14 @@ export class ClassRegistry {
     const [classSchema, className] = ecTypeQualifier.split(".");
     const schemaItemJson = iModel.nativeDb.getSchemaItem(classSchema, className);
     if (schemaItemJson.error)
-      throw new IModelError(schemaItemJson.error, `failed to get schema item '${ecTypeQualifier}'`);
-    const schemaItem = JSON.parse(schemaItemJson.result as string);
+      throw new IModelError(schemaItemJson.error.status, `failed to get schema item '${ecTypeQualifier}'`);
+
+    assert(undefined !== schemaItemJson.result);
+    const schemaItem = JSON.parse(schemaItemJson.result);
     if (!("appliesTo" in schemaItem) && schemaItem.baseClass === undefined) {
       return ecTypeQualifier;
     }
+
     // typescript doesn't understand that the inverse of the above condition is
     // ("appliesTo" in rootclassMetaData || rootClassMetaData.baseClass !== undefined)
     const parentItemQualifier = schemaItem.appliesTo ?? schemaItem.baseClass as string;

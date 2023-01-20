@@ -35,7 +35,6 @@ Object {
   },
   "connectionId": "",
   "contentFlags": 0,
-  "contentOptions": undefined,
   "displayType": "",
   "fields": Array [
     Object {
@@ -243,7 +242,6 @@ Object {
   },
   "connectionId": "",
   "contentFlags": 0,
-  "contentOptions": undefined,
   "displayType": "",
   "fields": Array [
     Object {
@@ -336,7 +334,6 @@ Object {
   ],
   "fieldsFilterExpression": "testFilterExpression",
   "filterExpression": "testFilterExpression",
-  "inputKeysHash": undefined,
   "instanceFilter": Object {
     "expression": "testExpression",
     "relatedInstances": Array [
