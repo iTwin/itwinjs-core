@@ -19,7 +19,7 @@ describe("reloadTree", () => {
     dataProvider = {
       imodel: moq.Mock.ofType<IModelConnection>().object,
       rulesetId: "",
-      getNodeKey: () => ({ type: "", version: 0, pathFromRoot: [], instanceKeysSelectQuery: { query: "", bindings: [] } }),
+      getNodeKey: () => ({ type: "", version: 0, pathFromRoot: [] }),
       getFilteredNodePaths: async () => [],
       getNodesCount: async () => 3,
       getNodes: async (parent, page) => [createDelayLoadedTreeNodeItem(`${parent?.id ?? "root"}-${page?.start}`)],

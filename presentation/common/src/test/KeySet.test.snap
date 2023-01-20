@@ -33,10 +33,6 @@ Set {
         "id": "0x1557800000006dd",
       },
     ],
-    "instanceKeysSelectQuery": Object {
-      "bindings": Array [],
-      "query": "",
-    },
     "pathFromRoot": Array [
       "5577f68e-2c14-4f39-8950-ff7cebede29d",
       "348b5ba4-62a4-4023-864a-f832237f8ccf",
@@ -55,10 +51,6 @@ Set {
         "id": "0x2fd90000000252",
       },
     ],
-    "instanceKeysSelectQuery": Object {
-      "bindings": Array [],
-      "query": "",
-    },
     "pathFromRoot": Array [
       "9c442562-918f-4d77-819c-bbec4a097228",
       "ac0c65ca-46e1-4671-8cf3-8c69b58ee31f",
@@ -93,10 +85,6 @@ Object {
           "id": "0xf42000000018a3",
         },
       ],
-      "instanceKeysSelectQuery": Object {
-        "bindings": Array [],
-        "query": "",
-      },
       "pathFromRoot": Array [
         "32384e61-5990-4ce4-ba5f-28a7241922d2",
         "ad4ded7f-5845-4031-9c41-8df8374fbaed",

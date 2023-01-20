@@ -11,7 +11,6 @@ export const createTestNodeKey = (props?: Partial<NodeKey>) => ({
   type: "test-node",
   version: 0,
   pathFromRoot: [],
-  instanceKeysSelectQuery: { query: "", bindings: [] },
   ...props,
 });
 

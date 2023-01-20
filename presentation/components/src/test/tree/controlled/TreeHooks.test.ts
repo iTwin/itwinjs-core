@@ -350,7 +350,7 @@ describe("usePresentationNodeLoader", () => {
 
 function createNode(label: string): Node {
   return Node.fromJSON({
-    key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [], pathFromRoot: [label], instanceKeysSelectQuery: { query: "", bindings: [] } },
+    key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [], pathFromRoot: [label] },
     labelDefinition: { displayValue: label, rawValue: label, typeName: "string" },
   });
 }

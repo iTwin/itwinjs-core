@@ -6,7 +6,7 @@
  * @module Hierarchies
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { InstanceKey, InstanceKeyJSON } from "../EC";
 
 /**
@@ -160,7 +160,7 @@ export interface BaseNodeKey {
   pathFromRoot: string[];
 
   /** Query that returns all selected instance keys */
-  instanceKeysSelectQuery: InstanceKeysSelectQuery;
+  instanceKeysSelectQuery?: PresentationQuery;
 }
 /**
  * Serialized [[BaseNodeKey]] JSON representation.
@@ -170,7 +170,7 @@ export interface BaseNodeKeyJSON {
   type: string;
   version?: number;
   pathFromRoot: string[];
-  instanceKeysSelectQuery: InstanceKeysSelectQuery;
+  instanceKeysSelectQuery?: PresentationQuery;
 }
 
 /**
@@ -280,21 +280,49 @@ export interface LabelGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
 export type NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON;
 
 /**
- * Data structure that describes an instance keys select query
- * @beta
+ * Data structure that describes a presentation query
+ * @alpha
  */
-export interface InstanceKeysSelectQuery {
-  /** The query to select instance keys */
+export interface PresentationQuery {
+  /** ECSQL query */
   query: string;
-  /** The query parameters */
-  bindings: string[];
+  /** The query bindings */
+  bindings?: PresentationQueryBinding[];
+}
+
+/** @alpha */
+export interface BasePresentationQueryBinding {
+  type: "Id" | "IdSet" | "ECValue" | "ValueSet";
+}
+
+/** @alpha */
+export interface IdBinding extends BasePresentationQueryBinding {
+  type: "Id";
+  value: Id64String;
+}
+
+/** @alpha */
+export interface IdSetBinding extends BasePresentationQueryBinding {
+  type: "IdSet";
+  value: Id64String[];
+}
+
+/** @alpha */
+export interface ECValueBinding extends BasePresentationQueryBinding {
+  type: "ECValue";
+  valueType: string;
+  value: any;
+}
+
+/** @alpha */
+export interface ECValueSetBinding extends BasePresentationQueryBinding {
+  type: "ValueSet";
+  valueType: string;
+  value: any[];
 }
 
 /**
- * Serialized [[InstanceKeysSelectQuery]] JSON representation.
- * @beta
+ * One of the presentation query binding types
+ * @public
  */
-export interface InstanceKeysSelectQueryJSON {
-  query: string;
-  bindings: string[];
-}
+export type PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding;

@@ -90,7 +90,6 @@ describe("CategoryTree", () => {
         version: 0,
         instanceKeys: [{ className: "MyDomain:SpatialCategory", id }],
         pathFromRoot: [],
-        instanceKeysSelectQuery: { query: "", bindings: [] },
       };
     };
 
@@ -495,7 +494,7 @@ describe("CategoryTree", () => {
 
     it("does not show private 3d categories with RULESET_CATEGORIES", async () => {
       const iModel: IModelConnection = await buildTestIModel("CategoriesTree3d", (builder) => {
-        const physicalPartitionId = addPartition("BisCore:PhysicalPartition", builder, "TestDrawingModel");
+        const physicalPartitionId = addPartition("BisCore:PhysicalPartition", builder, "TestPhysicalModel");
         const definitionPartitionId = addPartition("BisCore:DefinitionPartition", builder, "TestDefinitionModel");
         const physicalModelId = addModel("BisCore:PhysicalModel", builder, physicalPartitionId);
         const definitionModelId = addModel("BisCore:DefinitionModel", builder, definitionPartitionId);
