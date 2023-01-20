@@ -215,7 +215,6 @@ function mapId64<R>(
 export interface InitFromExternalSourceAspectsArgs {
   accessToken?: AccessToken;
   startChangesetId?: string;
-  endChangesetId?: string;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -473,27 +472,18 @@ export class IModelTransformer extends IModelExportHandler {
 
     try {
       const startChangesetId = args.startChangesetId ?? this.sourceDb.changeset.id;
-      const endChangesetId = args.endChangesetId;
-
-      const [firstChangesetIndex, endChangesetIndex] = await Promise.all(
-        [startChangesetId, endChangesetId]
-          .map(async (id) =>
-            id && IModelHost.hubAccess
-              .queryChangeset({
-                iModelId: this.sourceDb.iModelId,
-                changeset: { id },
-                accessToken: args.accessToken,
-              })
-              .then((changeset) => changeset.index)
-          )
-      ) as [number, number?];
-
+      const firstChangesetIndex = (
+        await IModelHost.hubAccess.queryChangeset({
+          iModelId: this.sourceDb.iModelId,
+          changeset: { id: startChangesetId },
+          accessToken: args.accessToken,
+        })
+      ).index;
       const changesetIds = await ChangeSummaryManager.createChangeSummaries({
         accessToken: args.accessToken,
         iModelId: this.sourceDb.iModelId,
         iTwinId: this.sourceDb.iTwinId,
-        // if endChangesetId/endChangesetIndex is undefined, it gets the latest changeset
-        range: { first: firstChangesetIndex, end: endChangesetIndex },
+        range: { first: firstChangesetIndex },
       });
 
       ChangeSummaryManager.attachChangeCache(this.sourceDb);
