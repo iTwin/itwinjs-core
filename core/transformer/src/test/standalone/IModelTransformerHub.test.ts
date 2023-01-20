@@ -371,10 +371,9 @@ describe("IModelTransformerHub", () => {
       | { seed: IModelState }
       // create a branch from an existing iModel with a given name
       | { branch: string }
-      // FIXME: remove endpoint
       // synchronize with the changes in an iModel of a given name from a starting timeline point
       // to the given ending point, inclusive. (end defaults to current point in time)
-      | { sync: [string, number, number?] };
+      | { sync: [string, number] };
 
 
     // For each step in timeline, an object of iModels mapping to the event that occurs for them:
@@ -489,7 +488,7 @@ describe("IModelTransformerHub", () => {
           // "branch" and "seed" event has already been handled in the new imodels loop above
           continue;
         } else if ("sync" in event) {
-          const [syncSource, startIndex, endIndex] = event.sync; // FIXME: remove endIndex
+          const [syncSource, startIndex] = event.sync;
           // if the synchronization source is master, it's a normal sync
           const isForwardSync = masterOfBranch.get(iModelName) === syncSource;
           const target = trackedIModels.get(iModelName)!;
@@ -497,21 +496,20 @@ describe("IModelTransformerHub", () => {
           const targetStateBefore = getPhysicalObjects(target.db);
           const syncer = new IModelTransformer(source.db, target.db, { isReverseSynchronization: !isForwardSync });
           const startChangesetId = timelineStates.get(startIndex)?.changesetIds[syncSource];
-          const endChangesetId = endIndex ? timelineStates.get(endIndex)?.changesetIds[syncSource] : undefined;
-          await syncer.processChanges(accessToken, startChangesetId, endChangesetId);
+          await syncer.processChanges(accessToken, startChangesetId);
           syncer.dispose();
 
-          const sourceRangeState = endIndex ? timelineStates.get(endIndex)!.states[syncSource] : source.state;
-          const stateMsg = `synced changes ${endIndex ? `through ${endIndex} ` : ""}from ${syncSource} to ${iModelName} at ${i}`;
+          const stateMsg = `synced changes from ${syncSource} to ${iModelName} at ${i}`;
           if (process.env.TRANSFORMER_BRANCH_TEST_DEBUG) {
             console.log(stateMsg);
-            console.log(` source range state: ${JSON.stringify(sourceRangeState)}`);
+            console.log(` source range state: ${JSON.stringify(source.state)}`);
             const targetState = getPhysicalObjects(target.db);
             console.log(`target before state: ${JSON.stringify(targetStateBefore)}`);
             console.log(` target after state: ${JSON.stringify(targetState)}`);
           }
-          assertPhysicalObjects(target.db, sourceRangeState, { subset: true });
-          target.state = sourceRangeState; // update the tracking state
+          // subset because we don't care about elements that the target added itself
+          assertPhysicalObjects(target.db, source.state, { subset: true });
+          target.state = source.state; // update the tracking state
 
           await saveAndPushChanges(target.db, stateMsg);
         } else {
