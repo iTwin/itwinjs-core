@@ -15,7 +15,8 @@ import {
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
   ComputeSelectionRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
-  FilterByTextHierarchyRpcRequestOptions, PresentationRpcResponseData, SingleElementPropertiesRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions, HierarchyLevelDescriptorRpcRequestOptions, PresentationRpcResponseData,
+  SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
@@ -91,6 +92,15 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
+    it("forwards getNodesDescriptor call", async () => {
+      const options: HierarchyLevelDescriptorRpcRequestOptions = {
+        rulesetOrId: "test-ruleset",
+        parentKey: createRandomECInstancesNodeKeyJSON(),
+      };
+      await rpcInterface.getNodesDescriptor(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
+    });
+
     it("forwards getFilteredNodePaths call", async () => {
       const options: FilterByTextHierarchyRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
@@ -133,10 +143,7 @@ describe("PresentationRpcInterface", () => {
       });
 
       it("parses string response into DescriptorJSON", async () => {
-        const descriptorJson = createTestContentDescriptor({ inputKeysHash: "", fields: [] }).toJSON();
-        // Undefined properties won't be serialized to JSON string and will be missing once we deserialize the string
-        // back to object representation. Delete contentOptions property so that we can use deep equality comparison.
-        delete descriptorJson.contentOptions;
+        const descriptorJson = createTestContentDescriptor({ fields: [] }).toJSON();
         const presentationResponse: PresentationRpcResponseData<string> = {
           statusCode: PresentationStatus.Success,
           result: JSON.stringify(descriptorJson),

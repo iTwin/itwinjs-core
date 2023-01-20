@@ -5,7 +5,9 @@
 
 import * as path from "path";
 import { assert } from "chai";
+import { exec } from "child_process";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
+import { BeDuration } from "@itwin/core-bentley";
 import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterface, RpcRegistry, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { ElectronHost, ElectronHostOptions } from "../../ElectronBackend";
@@ -42,14 +44,10 @@ export const electronHostTestSuite: TestSuite = {
       title: "Should open provided URL in main window.",
       func: testMainWindowUrl,
     },
-    /*
-      Test fails if run with xvfb on Linux (works fine in other cases).
-      Such case shouldn't affect real world applications so skipping test until solution is found.
-    */
-    // {
-    //   title: "Should save main window size, position and maximized flag.",
-    //   func: testWindowSizeSettings,
-    // },
+    {
+      title: "Should save main window size, position and maximized flag.",
+      func: testWindowSizeSettings,
+    },
   ],
 };
 
@@ -157,33 +155,45 @@ async function testMainWindowUrl() {
   assert(url === window.webContents.getURL());
 }
 
-async function _testWindowSizeSettings() {
+async function testWindowSizeSettings() {
   const storeWindowName = "settingsTestWindow";
+  const isXvfbRunning = await isXvfbProcessRunning();
 
   await ElectronHost.startup();
+
+  NativeHost.settingsStore.removeData(`windowMaximized-${storeWindowName}`);
+  NativeHost.settingsStore.removeData(`windowPos-${storeWindowName}`);
+
   await ElectronHost.openMainWindow({ storeWindowName });
 
   const window = ElectronHost.mainWindow;
   assert(window);
 
   let size = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
-  const expectedSize = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
-  assert(size?.width === expectedSize?.width);
-  assert(size?.height === expectedSize?.height);
-  assert(size?.x === expectedSize?.x);
-  assert(size?.y === expectedSize?.y);
+  const expectedSize = window.getSize();
+  const expectedPos = window.getPosition();
+  assert(size?.width === expectedSize?.[0]);
+  assert(size?.height === expectedSize?.[1]);
+  assert(size?.x === expectedPos?.[0]);
+  assert(size?.y === expectedPos?.[1]);
 
   let isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized === window.isMaximized());
 
   window.maximize();
-  await new Promise((resolve) => setTimeout(resolve, 100)); // "maximize" event is not always emitted immediately
+  if (isXvfbRunning)
+    window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
+  else
+    await BeDuration.wait(100); // "maximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized);
 
   window.unmaximize();
-  await new Promise((resolve) => setTimeout(resolve, 100)); // "unmaximize" event is not always emitted immediately
+  if (isXvfbRunning)
+    window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb (linux)
+  else
+    await BeDuration.wait(100); // "unmaximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(!isMaximized);
@@ -191,6 +201,7 @@ async function _testWindowSizeSettings() {
   const width = 250;
   const height = 251;
   window.setSize(width, height);
+  window.emit("resized"); // "resized" event is only emitted during manual resize and only on Windows and Macos
   size = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
   assert(size?.width === width);
   assert(size?.height === height);
@@ -198,6 +209,7 @@ async function _testWindowSizeSettings() {
   const x = 15;
   const y = 16;
   window.setPosition(x, y);
+  window.emit("moved"); // "moved" event is only emitted during manual move and only on Windows and Macos
   size = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
   assert(size?.x === x);
   assert(size?.y === y);
@@ -227,4 +239,22 @@ function assertElectronHostIsInitialized() {
   assert(typeof ElectronHost.webResourcesPath === "string");
   assert(typeof ElectronHost.appIconPath === "string");
   assert(typeof ElectronHost.frontendURL === "string");
+}
+
+/**
+ * Checks if `xvfb` is running on the machine.
+ * @note `true` doesn't necessary mean that tests are using `xvfb`.
+ */
+async function isXvfbProcessRunning(): Promise<boolean> {
+  if (process.platform !== "linux")
+    return false;
+
+  let doesXvfbProcessExists = false;
+  const bashProcess = exec("pgrep xvfb", (_, stdout) => {
+    const processNumber = Number(stdout);
+    doesXvfbProcessExists = !isNaN(processNumber);
+  });
+
+  await new Promise((resolve) => bashProcess.on("close", resolve));
+  return doesXvfbProcessExists;
 }
