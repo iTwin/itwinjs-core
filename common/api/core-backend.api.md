@@ -688,7 +688,7 @@ export class CheckpointManager {
     static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
     // (undocumented)
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
-    static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb): void;
+    static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb): void;
     // (undocumented)
     static verifyCheckpoint(checkpoint: CheckpointProps, fileName: LocalFileName): boolean;
 }
@@ -1084,6 +1084,7 @@ export class CodeSpecs {
     insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
+    updateProperties(codeSpec: CodeSpec): void;
 }
 
 // @public

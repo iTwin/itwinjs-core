@@ -944,7 +944,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties);
+    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties as any); // TODO: Remove "as any" when NativeLibrary.ts is updated so "spec" isn't marked as required
   }
 
   /** Prepare an ECSQL statement.
@@ -2628,7 +2628,7 @@ export class SnapshotDb extends IModelDb {
     const snapshot = SnapshotDb.openFile(dbName, { key, tempFileBase, container });
     snapshot._iTwinId = checkpoint.iTwinId;
     try {
-      CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
+      CheckpointManager.validateCheckpointGuids(checkpoint, snapshot);
     } catch (err: any) {
       snapshot.close();
       throw err;
