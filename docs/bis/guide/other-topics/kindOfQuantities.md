@@ -16,11 +16,11 @@ As an example, the aecu:LENGTH `KindOfQuantity` can be referenced by properties 
 
 When the coordination about grouping of properties and default-formatting is only expected among properties in a subset of schemas, it is recommended that a separate schema is introduced to define them.
 
-The [RoadRailUnits](../../domains/RoadRailUnits.ecschema.md) schema is an example of this kind of coordination. For instance, it defines a rru:LENGTH KindOfQuantity that is referenced by properties in Road & Rail schemas whose display-formatting is expected to change together, separate from the common aecu:LENGTH KindOfQuantity mentioned earlier.
+The [RoadRailUnits](../../domains/RoadRailUnits.ecschema.md) schema is an example of this kind of coordination. For instance, it defines a rru:LENGTH KindOfQuantity that is referenced by properties in Road & Rail schemas whose display-formatting is expected to change together and differs from the settings specified in the common aecu:LENGTH KindOfQuantity mentioned earlier. That is, aecu:LENGTH lists four possible display units: meters, millimeters, feet-inches and feet-only, but the list of display units that are typically used in Road & Rail domains is different - meters, feet and survey-feet.
 
 ## Specific to an iModel Connector or Application
 
-When an iModel Connector or Application faces the need of a special `KindOfQuantity` not covered by existing lower-level schemas, such special `KindOfQuantity` shall be defined in a Connector or Application-specific schema. It is still recommended to introduce these special KindOfQuantities into a separate schema in order to achieve better control over schema upgrades.
+When an iModel Connector or Application faces the need of a special `KindOfQuantity` not covered by existing lower-level schemas, such special `KindOfQuantity` shall be defined in a Connector or Application-specific schema. It is still recommended to introduce these special KindOfQuantities into a separate schema in order to achieve better scoping and control over schema upgrades. That way display-format settings captured in a separate KindOfQuantity-oriented schema can be tweaked without forcing a change on an actual domain schema.
 
 ---
 | Next: [BIS Schema Validation](./bis-schema-validation.md)
