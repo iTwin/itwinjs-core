@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/itwinui-css/scss/style/theme";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
 
-.presentation-components-muted-node{
+.presentation-components-info-node {
   @include themed {
     color: t(iui-text-color-muted);
   }
 }
 
 .presentation-components-node {
-
-  .presentation-components-filter-action-button {
+  .presentation-components-node-action-buttons {
     visibility: hidden;
     position: sticky;
-    background-color: inherit;
+    background-color: $buic-background-control;
     right: 0;
     display: flex;
 
@@ -25,7 +25,12 @@
       }
     }
 
-  &:hover > .presentation-components-filter-action-button {
+  &:hover > .presentation-components-node-action-buttons {
+    visibility: visible;
+    background-color: inherit;
+  }
+
+  .presentation-components-node-action-buttons.filtered {
     visibility: visible;
   }
 }

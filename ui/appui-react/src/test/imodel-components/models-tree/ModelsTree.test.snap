@@ -14,6 +14,9 @@ Array [
                   "categoryId": "0x13",
                   "modelId": "0x11",
                 },
+                "filtering": Object {
+                  "descriptor": [Function],
+                },
                 "icon": "icon-item",
                 "label": PropertyRecord {
                   "property": Object {
@@ -32,6 +35,9 @@ Array [
             "extendedData": Object {
               "isCategory": true,
               "modelId": "0x11",
+            },
+            "filtering": Object {
+              "descriptor": [Function],
             },
             "hasChildren": true,
             "icon": "icon-layers",
@@ -52,6 +58,9 @@ Array [
         "extendedData": Object {
           "isModel": true,
         },
+        "filtering": Object {
+          "descriptor": [Function],
+        },
         "hasChildren": true,
         "icon": "icon-model",
         "label": PropertyRecord {
@@ -70,6 +79,9 @@ Array [
     ],
     "extendedData": Object {
       "isSubject": true,
+    },
+    "filtering": Object {
+      "descriptor": [Function],
     },
     "hasChildren": true,
     "icon": "icon-imodel-hollow-2",
@@ -105,6 +117,9 @@ Array [
                       "categoryId": "0x13",
                       "modelId": "0x11",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "icon": "icon-item",
                     "label": PropertyRecord {
                       "property": Object {
@@ -121,6 +136,9 @@ Array [
                   },
                 ],
                 "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
+                "filtering": Object {
+                  "descriptor": [Function],
+                },
                 "hasChildren": true,
                 "icon": "icon-ec-class",
                 "label": PropertyRecord {
@@ -141,6 +159,9 @@ Array [
               "isCategory": true,
               "modelId": "0x11",
             },
+            "filtering": Object {
+              "descriptor": [Function],
+            },
             "hasChildren": true,
             "icon": "icon-layers",
             "label": PropertyRecord {
@@ -160,6 +181,9 @@ Array [
         "extendedData": Object {
           "isModel": true,
         },
+        "filtering": Object {
+          "descriptor": [Function],
+        },
         "hasChildren": true,
         "icon": "icon-model",
         "label": PropertyRecord {
@@ -178,6 +202,9 @@ Array [
     ],
     "extendedData": Object {
       "isSubject": true,
+    },
+    "filtering": Object {
+      "descriptor": [Function],
     },
     "hasChildren": true,
     "icon": "icon-imodel-hollow-2",
@@ -331,6 +358,9 @@ Array [
                           "categoryId": "0x32",
                           "modelId": "0x45",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -350,6 +380,9 @@ Array [
                       "isCategory": true,
                       "modelId": "0x45",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -368,6 +401,9 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
+                },
+                "filtering": Object {
+                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -393,6 +429,9 @@ Array [
                           "categoryId": "0x34",
                           "modelId": "0x47",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -411,6 +450,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x34",
                           "modelId": "0x47",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -431,6 +473,9 @@ Array [
                           "categoryId": "0x34",
                           "modelId": "0x47",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -449,6 +494,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x34",
                           "modelId": "0x47",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -469,6 +517,9 @@ Array [
                       "isCategory": true,
                       "modelId": "0x47",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -487,6 +538,9 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
+                },
+                "filtering": Object {
+                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -512,6 +566,9 @@ Array [
                           "categoryId": "0x36",
                           "modelId": "0x49",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -530,6 +587,9 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x49",
+                    },
+                    "filtering": Object {
+                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -553,6 +613,9 @@ Array [
                           "categoryId": "0x34",
                           "modelId": "0x49",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -571,6 +634,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x34",
                           "modelId": "0x49",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -591,6 +657,9 @@ Array [
                       "isCategory": true,
                       "modelId": "0x49",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -610,6 +679,9 @@ Array [
                 "extendedData": Object {
                   "isSubject": true,
                 },
+                "filtering": Object {
+                  "descriptor": [Function],
+                },
                 "hasChildren": true,
                 "icon": "icon-folder",
                 "label": PropertyRecord {
@@ -628,6 +700,9 @@ Array [
             ],
             "extendedData": Object {
               "isSubject": true,
+            },
+            "filtering": Object {
+              "descriptor": [Function],
             },
             "hasChildren": true,
             "icon": "icon-folder",
@@ -655,6 +730,9 @@ Array [
                           "categoryId": "0x38",
                           "modelId": "0x4d",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -673,6 +751,9 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x4d",
+                    },
+                    "filtering": Object {
+                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -696,6 +777,9 @@ Array [
                           "categoryId": "0x3a",
                           "modelId": "0x4d",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -714,6 +798,9 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x4d",
+                    },
+                    "filtering": Object {
+                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -734,6 +821,9 @@ Array [
                 "extendedData": Object {
                   "isSubject": true,
                 },
+                "filtering": Object {
+                  "descriptor": [Function],
+                },
                 "hasChildren": true,
                 "icon": "icon-folder",
                 "label": PropertyRecord {
@@ -752,6 +842,9 @@ Array [
             ],
             "extendedData": Object {
               "isSubject": true,
+            },
+            "filtering": Object {
+              "descriptor": [Function],
             },
             "hasChildren": true,
             "icon": "icon-folder",
@@ -779,6 +872,9 @@ Array [
                           "categoryId": "0x32",
                           "modelId": "0x41",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -798,6 +894,9 @@ Array [
                       "isCategory": true,
                       "modelId": "0x41",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -816,6 +915,9 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
+                },
+                "filtering": Object {
+                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -841,6 +943,9 @@ Array [
                           "categoryId": "0x30",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -859,6 +964,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x30",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -879,6 +987,9 @@ Array [
                           "categoryId": "0x30",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -897,6 +1008,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x30",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -917,6 +1031,9 @@ Array [
                           "categoryId": "0x30",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -936,6 +1053,9 @@ Array [
                           "categoryId": "0x30",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -954,6 +1074,9 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x3f",
+                    },
+                    "filtering": Object {
+                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -977,6 +1100,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -995,6 +1121,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1015,6 +1144,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1033,6 +1165,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1053,6 +1188,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1071,6 +1209,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1091,6 +1232,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1109,6 +1253,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1129,6 +1276,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1147,6 +1297,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1167,6 +1320,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1185,6 +1341,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1205,6 +1364,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1223,6 +1385,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1243,6 +1408,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1261,6 +1429,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1281,6 +1452,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1299,6 +1473,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1319,6 +1496,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1337,6 +1517,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1357,6 +1540,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1375,6 +1561,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1395,6 +1584,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1413,6 +1605,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1433,6 +1628,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1451,6 +1649,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1471,6 +1672,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1489,6 +1693,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1509,6 +1716,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1527,6 +1737,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1547,6 +1760,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1565,6 +1781,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1585,6 +1804,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1603,6 +1825,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1623,6 +1848,9 @@ Array [
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
                         },
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "icon": "icon-item",
                         "label": PropertyRecord {
                           "property": Object {
@@ -1641,6 +1869,9 @@ Array [
                         "extendedData": Object {
                           "categoryId": "0x2e",
                           "modelId": "0x3f",
+                        },
+                        "filtering": Object {
+                          "descriptor": [Function],
                         },
                         "icon": "icon-item",
                         "label": PropertyRecord {
@@ -1661,6 +1892,9 @@ Array [
                       "isCategory": true,
                       "modelId": "0x3f",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -1679,6 +1913,9 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
+                },
+                "filtering": Object {
+                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -1699,6 +1936,9 @@ Array [
             "extendedData": Object {
               "isSubject": true,
             },
+            "filtering": Object {
+              "descriptor": [Function],
+            },
             "hasChildren": true,
             "icon": "icon-folder",
             "label": PropertyRecord {
@@ -1718,6 +1958,9 @@ Array [
         "extendedData": Object {
           "isSubject": true,
         },
+        "filtering": Object {
+          "descriptor": [Function],
+        },
         "hasChildren": true,
         "icon": "icon-folder",
         "label": PropertyRecord {
@@ -1736,6 +1979,9 @@ Array [
     ],
     "extendedData": Object {
       "isSubject": true,
+    },
+    "filtering": Object {
+      "descriptor": [Function],
     },
     "hasChildren": true,
     "icon": "icon-imodel-hollow-2",
@@ -1775,6 +2021,9 @@ Array [
                               "categoryId": "0x32",
                               "modelId": "0x45",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -1791,6 +2040,9 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -1811,6 +2063,9 @@ Array [
                       "isCategory": true,
                       "modelId": "0x45",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -1829,6 +2084,9 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
+                },
+                "filtering": Object {
+                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -1856,6 +2114,9 @@ Array [
                               "categoryId": "0x34",
                               "modelId": "0x47",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -1874,6 +2135,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x34",
                               "modelId": "0x47",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -1894,6 +2158,9 @@ Array [
                               "categoryId": "0x34",
                               "modelId": "0x47",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -1913,6 +2180,9 @@ Array [
                               "categoryId": "0x34",
                               "modelId": "0x47",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -1929,6 +2199,9 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -1949,6 +2222,9 @@ Array [
                       "isCategory": true,
                       "modelId": "0x47",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -1967,6 +2243,9 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
+                },
+                "filtering": Object {
+                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -1994,6 +2273,9 @@ Array [
                               "categoryId": "0x36",
                               "modelId": "0x49",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2010,6 +2292,9 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2029,6 +2314,9 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x49",
+                    },
+                    "filtering": Object {
+                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -2054,6 +2342,9 @@ Array [
                               "categoryId": "0x34",
                               "modelId": "0x49",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2073,6 +2364,9 @@ Array [
                               "categoryId": "0x34",
                               "modelId": "0x49",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2089,6 +2383,9 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2109,6 +2406,9 @@ Array [
                       "isCategory": true,
                       "modelId": "0x49",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -2128,6 +2428,9 @@ Array [
                 "extendedData": Object {
                   "isSubject": true,
                 },
+                "filtering": Object {
+                  "descriptor": [Function],
+                },
                 "hasChildren": true,
                 "icon": "icon-folder",
                 "label": PropertyRecord {
@@ -2146,6 +2449,9 @@ Array [
             ],
             "extendedData": Object {
               "isSubject": true,
+            },
+            "filtering": Object {
+              "descriptor": [Function],
             },
             "hasChildren": true,
             "icon": "icon-folder",
@@ -2175,6 +2481,9 @@ Array [
                               "categoryId": "0x38",
                               "modelId": "0x4d",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2191,6 +2500,9 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2210,6 +2522,9 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x4d",
+                    },
+                    "filtering": Object {
+                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -2235,6 +2550,9 @@ Array [
                               "categoryId": "0x3a",
                               "modelId": "0x4d",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2251,6 +2569,9 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2271,6 +2592,9 @@ Array [
                       "isCategory": true,
                       "modelId": "0x4d",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -2290,6 +2614,9 @@ Array [
                 "extendedData": Object {
                   "isSubject": true,
                 },
+                "filtering": Object {
+                  "descriptor": [Function],
+                },
                 "hasChildren": true,
                 "icon": "icon-folder",
                 "label": PropertyRecord {
@@ -2308,6 +2635,9 @@ Array [
             ],
             "extendedData": Object {
               "isSubject": true,
+            },
+            "filtering": Object {
+              "descriptor": [Function],
             },
             "hasChildren": true,
             "icon": "icon-folder",
@@ -2337,6 +2667,9 @@ Array [
                               "categoryId": "0x32",
                               "modelId": "0x41",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2353,6 +2686,9 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2373,6 +2709,9 @@ Array [
                       "isCategory": true,
                       "modelId": "0x41",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -2391,6 +2730,9 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
+                },
+                "filtering": Object {
+                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -2418,6 +2760,9 @@ Array [
                               "categoryId": "0x30",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2436,6 +2781,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x30",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2456,6 +2804,9 @@ Array [
                               "categoryId": "0x30",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2474,6 +2825,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x30",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2494,6 +2848,9 @@ Array [
                               "categoryId": "0x30",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2513,6 +2870,9 @@ Array [
                               "categoryId": "0x30",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2529,6 +2889,9 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2548,6 +2911,9 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x3f",
+                    },
+                    "filtering": Object {
+                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -2573,6 +2939,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2591,6 +2960,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2611,6 +2983,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2629,6 +3004,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2649,6 +3027,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2667,6 +3048,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2687,6 +3071,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2705,6 +3092,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2725,6 +3115,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2743,6 +3136,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2763,6 +3159,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2781,6 +3180,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2801,6 +3203,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2819,6 +3224,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2839,6 +3247,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2857,6 +3268,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2877,6 +3291,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2895,6 +3312,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2915,6 +3335,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2933,6 +3356,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2953,6 +3379,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -2971,6 +3400,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -2991,6 +3423,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -3009,6 +3444,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -3029,6 +3467,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -3047,6 +3488,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -3067,6 +3511,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -3085,6 +3532,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -3105,6 +3555,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -3123,6 +3576,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -3143,6 +3599,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -3161,6 +3620,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -3181,6 +3643,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -3199,6 +3664,9 @@ Array [
                             "extendedData": Object {
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
+                            },
+                            "filtering": Object {
+                              "descriptor": [Function],
                             },
                             "icon": "icon-item",
                             "label": PropertyRecord {
@@ -3219,6 +3687,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -3238,6 +3709,9 @@ Array [
                               "categoryId": "0x2e",
                               "modelId": "0x3f",
                             },
+                            "filtering": Object {
+                              "descriptor": [Function],
+                            },
                             "icon": "icon-item",
                             "label": PropertyRecord {
                               "property": Object {
@@ -3254,6 +3728,9 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
+                        "filtering": Object {
+                          "descriptor": [Function],
+                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -3274,6 +3751,9 @@ Array [
                       "isCategory": true,
                       "modelId": "0x3f",
                     },
+                    "filtering": Object {
+                      "descriptor": [Function],
+                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -3292,6 +3772,9 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
+                },
+                "filtering": Object {
+                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -3312,6 +3795,9 @@ Array [
             "extendedData": Object {
               "isSubject": true,
             },
+            "filtering": Object {
+              "descriptor": [Function],
+            },
             "hasChildren": true,
             "icon": "icon-folder",
             "label": PropertyRecord {
@@ -3331,6 +3817,9 @@ Array [
         "extendedData": Object {
           "isSubject": true,
         },
+        "filtering": Object {
+          "descriptor": [Function],
+        },
         "hasChildren": true,
         "icon": "icon-folder",
         "label": PropertyRecord {
@@ -3349,6 +3838,9 @@ Array [
     ],
     "extendedData": Object {
       "isSubject": true,
+    },
+    "filtering": Object {
+      "descriptor": [Function],
     },
     "hasChildren": true,
     "icon": "icon-imodel-hollow-2",
