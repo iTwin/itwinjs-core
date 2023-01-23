@@ -162,20 +162,19 @@ async function testWindowSizeSettings() {
   await ElectronHost.startup();
 
   NativeHost.settingsStore.removeData(`windowMaximized-${storeWindowName}`);
-  NativeHost.settingsStore.removeData(`windowPos-${storeWindowName}`);
+  NativeHost.settingsStore.removeData(`windowSizeAndPos-${storeWindowName}`);
 
   await ElectronHost.openMainWindow({ storeWindowName });
 
   const window = ElectronHost.mainWindow;
   assert(window);
 
-  let size = ElectronHost.getWindowSizeSetting(storeWindowName);
-  const expectedSize = window.getSize();
-  const expectedPos = window.getPosition();
-  assert(size?.width === expectedSize?.[0]);
-  assert(size?.height === expectedSize?.[1]);
-  assert(size?.x === expectedPos?.[0]);
-  assert(size?.y === expectedPos?.[1]);
+  let sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  const expectedBounds = window.getBounds();
+  assert(sizeAndPos?.width === expectedBounds.width);
+  assert(sizeAndPos?.height === expectedBounds.height);
+  assert(sizeAndPos?.x === expectedBounds.x);
+  assert(sizeAndPos?.y === expectedBounds.y);
 
   let isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized === window.isMaximized());
@@ -201,18 +200,18 @@ async function testWindowSizeSettings() {
   const width = 250;
   const height = 251;
   window.setSize(width, height);
-  window.emit("resized"); // "resized" event is only emitted during manual resize and only on Windows and Macos
-  size = ElectronHost.getWindowSizeSetting(storeWindowName);
-  assert(size?.width === width);
-  assert(size?.height === height);
+  await BeDuration.wait(250); // wait for new size to be saved to settings file
+  sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  assert(sizeAndPos?.width === width);
+  assert(sizeAndPos?.height === height);
 
   const x = 15;
   const y = 16;
   window.setPosition(x, y);
-  window.emit("moved"); // "moved" event is only emitted during manual move and only on Windows and Macos
-  size = ElectronHost.getWindowSizeSetting(storeWindowName);
-  assert(size?.x === x);
-  assert(size?.y === y);
+  await BeDuration.wait(250); // wait for new position to be saved to settings file
+  sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  assert(sizeAndPos?.x === x);
+  assert(sizeAndPos?.y === y);
 }
 
 function assertElectronHostNotInitialized() {
