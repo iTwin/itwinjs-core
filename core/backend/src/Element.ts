@@ -330,7 +330,7 @@ export class Element extends Entity {
       val.code = this.code;
 
     val.model = this.model;
-    if (undefined === this.userLabel) // NOTE: blank string should be included in JSON
+    if (undefined !== this.userLabel) // NOTE: blank string should be included in JSON
       val.userLabel = this.userLabel;
     if (this.federationGuid)
       val.federationGuid = this.federationGuid;
