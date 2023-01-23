@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import { Descriptor, Field, FIELD_NAMES_SEPARATOR, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
-import { Presentation } from "@itwin/presentation-frontend";
 import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
 import { IPropertyValueRenderer, PropertyValueRendererManager } from "@itwin/components-react";
+import { Descriptor, Field, LabelCompositeValue, LabelDefinition, parseCombinedFieldNames } from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
 import { InstanceKeyValueRenderer } from "../properties/InstanceKeyValueRenderer";
 
 const localizationNamespaceName = "PresentationComponents";
@@ -75,7 +75,7 @@ export const getDisplayName = <P>(component: React.ComponentType<P>): string => 
  */
 export const findField = (descriptor: Descriptor, recordPropertyName: string): Field | undefined => {
   let fieldsSource: { getFieldByName: (name: string) => Field | undefined } | undefined = descriptor;
-  const fieldNames = recordPropertyName.split(FIELD_NAMES_SEPARATOR);
+  const fieldNames = parseCombinedFieldNames(recordPropertyName);
   while (fieldsSource && fieldNames.length) {
     const field: Field | undefined = fieldsSource.getFieldByName(fieldNames.shift()!);
     fieldsSource = (field && field.isNestedContentField()) ? field : undefined;

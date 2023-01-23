@@ -145,7 +145,7 @@ export class PresentationManagerDetail implements IDisposable {
       requestId: NativePlatformRequestTypes.GetNodePaths,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
-      paths: instancePaths.map((p) => p.map((s) => InstanceKey.toJSON(s))),
+      paths: instancePaths,
     };
     return JSON.parse(await this.request(params), NodePathElement.listReviver);
   }
@@ -221,6 +221,7 @@ export class PresentationManagerDetail implements IDisposable {
     const reviver = (key: string, value: any) => {
       return key === "" ? {
         total: value.total,
+        // eslint-disable-next-line deprecation/deprecation
         items: value.items.map(DisplayValueGroup.fromJSON),
       } : value;
     };
@@ -231,9 +232,8 @@ export class PresentationManagerDetail implements IDisposable {
     const params = {
       requestId: NativePlatformRequestTypes.GetDisplayLabel,
       ...requestOptions,
-      key: InstanceKey.toJSON(requestOptions.key),
     };
-    return JSON.parse(await this.request(params), LabelDefinition.reviver);
+    return JSON.parse(await this.request(params));
   }
 
   public async getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]> {
