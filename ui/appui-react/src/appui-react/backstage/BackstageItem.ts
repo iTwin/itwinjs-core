@@ -35,7 +35,6 @@ export type CommonBackstageItem = UIA_CommonBackstageItem; // eslint-disable-lin
  * @beta
  */
 export interface BackstageActionItem extends UIA_BackstageActionItem { // eslint-disable-line deprecation/deprecation
-  /** @deprecated */
   readonly type: BackstageItemType.ActionItem; // eslint-disable-line deprecation/deprecation
 }
 
@@ -43,7 +42,6 @@ export interface BackstageActionItem extends UIA_BackstageActionItem { // eslint
  * @beta
  */
 export interface BackstageStageLauncher extends UIA_BackstageStageLauncher { // eslint-disable-line deprecation/deprecation
-  /** @deprecated */
   readonly type: BackstageItemType.StageLauncher; // eslint-disable-line deprecation/deprecation
 }
 
