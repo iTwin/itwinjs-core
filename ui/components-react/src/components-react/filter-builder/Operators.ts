@@ -5,13 +5,19 @@
 import { PropertyDescription, StandardTypeNames } from "@itwin/appui-abstract";
 import { UiComponents } from "../UiComponents";
 
-/** @alpha */
+/**
+ * Logical operator for joining rules.
+ * @beta
+ */
 export enum PropertyFilterRuleGroupOperator {
   And,
   Or,
 }
 
-/** @alpha */
+/**
+ * Operators for comparing property value in rule.
+ * @beta
+ */
 export enum PropertyFilterRuleOperator {
   IsTrue,
   IsFalse,
@@ -30,7 +36,10 @@ export enum PropertyFilterRuleOperator {
   IsNotNull,
 }
 
-/** @alpha */
+/**
+ * Function that returns set of available operator based on property type.
+ * @beta
+ */
 export function getPropertyFilterOperators(property: PropertyDescription) {
   const typename = property.typename;
 
@@ -77,9 +86,12 @@ export function getPropertyFilterOperators(property: PropertyDescription) {
 }
 
 /* istanbul ignore next */
-/** @alpha */
+/**
+ * Function that returns display label for rule operator.
+ * @beta
+ */
 export function getPropertyFilterOperatorLabel(operator: PropertyFilterRuleOperator) {
-  switch(operator) {
+  switch (operator) {
     case PropertyFilterRuleOperator.IsTrue:
       return UiComponents.translate("filterBuilder.operators.isTrue");
     case PropertyFilterRuleOperator.IsFalse:
@@ -105,7 +117,10 @@ export function getPropertyFilterOperatorLabel(operator: PropertyFilterRuleOpera
   }
 }
 
-/** @alpha */
+/**
+ * Function that checks if supplied operator is unary.
+ * @beta
+ */
 export function isUnaryPropertyFilterOperator(operator: PropertyFilterRuleOperator) {
   switch (operator) {
     case PropertyFilterRuleOperator.IsTrue:

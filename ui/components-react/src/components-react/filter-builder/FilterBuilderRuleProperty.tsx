@@ -7,16 +7,27 @@ import { PropertyDescription } from "@itwin/appui-abstract";
 import { ComboBox, MenuItem, SelectOption } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
 
-/** @alpha */
+/**
+ * Props for [[PropertyFilterBuilderRuleProperty]] component.
+ * @beta
+ */
 export interface PropertyFilterBuilderRulePropertyProps {
+  /** List of available properties. */
   properties: PropertyDescription[];
+  /** Currently selected property. */
   selectedProperty?: PropertyDescription;
+  /** Callback that is invoked when selected property changes. */
   onSelectedPropertyChanged: (property?: PropertyDescription) => void;
+  /** Custom renderer for property item inside selector. */
   propertyRenderer?: (name: string) => React.ReactNode;
+  /** Specifies whether selector should be disabled or not. */
   isDisabled?: boolean;
 }
 
-/** @alpha */
+/**
+ * Component that renders [[PropertyFilterBuilderRuleRenderer]] property selector.
+ * @beta
+ */
 export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps) {
   const { selectedProperty, properties, onSelectedPropertyChanged, propertyRenderer, isDisabled } = props;
 

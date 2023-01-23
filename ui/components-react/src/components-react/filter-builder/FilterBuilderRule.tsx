@@ -14,13 +14,21 @@ import { PropertyFilterBuilderRule } from "./FilterBuilderState";
 import { isUnaryPropertyFilterOperator, PropertyFilterRuleOperator } from "./Operators";
 import "./FilterBuilderRule.scss";
 
-/** @alpha */
+/**
+ * Props for [[PropertyFilterBuilderRuleRenderer]] component.
+ * @beta
+ */
 export interface PropertyFilterBuilderRuleRendererProps {
+  /** Path from [[PropertyFilterBuilder]] root to this rule. */
   path: string[];
+  /** Rule to render. */
   rule: PropertyFilterBuilderRule;
 }
 
-/** @alpha */
+/**
+ * Component that renders single rule in [[PropertyFilterBuilder]] component.
+ * @beta
+ */
 export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps) {
   const { path, rule } = props;
   const { properties, actions, onRulePropertySelected } = React.useContext(PropertyFilterBuilderContext);

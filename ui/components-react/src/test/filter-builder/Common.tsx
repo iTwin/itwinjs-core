@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import * as React from "react";
 import sinon from "sinon";
 import { render } from "@testing-library/react";
 import {
-  PropertyFilterBuilderContext, PropertyFilterBuilderContextProps, PropertyFilterBuilderRuleRenderingContext,
-  PropertyFilterBuilderRuleRenderingContextProps,
+  ActiveRuleGroupContext, ActiveRuleGroupContextProps, PropertyFilterBuilderContext, PropertyFilterBuilderContextProps,
+  PropertyFilterBuilderRuleRenderingContext, PropertyFilterBuilderRuleRenderingContextProps,
 } from "../../components-react/filter-builder/FilterBuilder";
 import { PropertyFilterBuilderActions } from "../../components-react/filter-builder/FilterBuilderState";
-import { ActiveRuleGroupContext, ActiveRuleGroupContextProps } from "../../components-react/filter-builder/FilterBuilderRuleGroup";
 
 /** @internal */
 export function renderWithContext(

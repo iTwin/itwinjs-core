@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
-import { ActiveRuleGroupContext, PropertyFilterBuilderRuleGroupRenderer } from "./FilterBuilderRuleGroup";
+import { PropertyFilterBuilderRuleGroupRenderer } from "./FilterBuilderRuleGroup";
 import { PropertyFilterBuilderRuleOperatorProps } from "./FilterBuilderRuleOperator";
 import { PropertyFilterBuilderRuleValueProps } from "./FilterBuilderRuleValue";
 import {
@@ -14,44 +14,103 @@ import {
 import { isUnaryPropertyFilterOperator } from "./Operators";
 import { PropertyFilter } from "./Types";
 
-/** @alpha */
+/**
+ * Props for [[PropertyFilterBuilder]] component,
+ * @beta
+ */
 export interface PropertyFilterBuilderProps {
+  /** List of properties to use in filter rules. */
   properties: PropertyDescription[];
+  /** Callback that is invoked when filter changes. */
   onFilterChanged: (filter?: PropertyFilter) => void;
+  /** Callback that is invoked when property is selected in any rule. */
   onRulePropertySelected?: (property: PropertyDescription) => void;
+  /** Custom renderer for rule operator selector. */
   ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
+  /** Custom renderer for rule value input. */
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
+  /** Specifies how deep rule groups can be nested. */
   ruleGroupDepthLimit?: number;
+  /** Custom renderer for property selector in rule. */
   propertyRenderer?: (name: string) => React.ReactNode;
+  /** Specifies that properties selection is disabled. */
   disablePropertySelection?: boolean;
+  /** Initial filter to show when component is mounted. */
   initialFilter?: PropertyFilter;
 }
 
-/** @alpha */
+/**
+ * Data structure that describes [[PropertyFilterBuilderContext]] value.
+ * @beta
+ */
 export interface PropertyFilterBuilderContextProps {
+  /** Actions for modifying filter. */
   actions: PropertyFilterBuilderActions;
+  /** List of available properties. */
   properties: PropertyDescription[];
+  /** Callback to invoke when property is selected in any rule. */
   onRulePropertySelected?: (property: PropertyDescription) => void;
+  /** Limit for how deep rule groups can be nested. */
   ruleGroupDepthLimit?: number;
 }
 
-/** @alpha */
+/**
+ * Context used to store data for rules and rule groups inside [[PropertyFilterBuilder]] component.
+ * @beta
+ */
 export const PropertyFilterBuilderContext = React.createContext<PropertyFilterBuilderContextProps>(null!);
 
-/** @alpha */
+/**
+ * Data structure that describes [[PropertyFilterBuilderRuleRenderingContext]] value.
+ * @beta
+ */
 export interface PropertyFilterBuilderRuleRenderingContextProps {
+  /** Custom renderer for operator selector in rule. */
   ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
+  /** Custom renderer for value input in rule. */
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
+  /** Custom renderer for property selector in rule. */
   propertyRenderer?: (name: string) => React.ReactNode;
+  /** Specifies that properties selection is disabled. */
   disablePropertySelection?: boolean;
 }
 
-/** @alpha */
+/**
+ * Context for rendering rules and rule groups inside [[PropertyFilterBuilder]] component.
+ * @beta
+ */
 export const PropertyFilterBuilderRuleRenderingContext = React.createContext<PropertyFilterBuilderRuleRenderingContextProps>({});
+
+/**
+ * Data structure that describes value of [[ActiveRuleGroupContext]].
+ * @beta
+ */
+export interface ActiveRuleGroupContextProps {
+  /** Element of currently active rule group. */
+  activeElement: HTMLElement | undefined;
+  /** Callback to handle rule group element 'onFocus; event */
+  onFocus: React.FocusEventHandler<HTMLElement>;
+  /** Callback to handle rule group element 'onBlur; event */
+  onBlur: React.FocusEventHandler<HTMLElement>;
+  /** Callback to handle rule group element 'onMouseOver; event */
+  onMouseOver: React.MouseEventHandler<HTMLElement>;
+  /** Callback to handle rule group element 'onMouseOut; event */
+  onMouseOut: React.MouseEventHandler<HTMLElement>;
+}
+
+/**
+ * Context for tracking and storing active rule group in [[PropertyFilterBuilder]].
+ * Group is considered active if it is focused or hovered.
+ * @beta
+ */
+export const ActiveRuleGroupContext = React.createContext<ActiveRuleGroupContextProps>(null!);
 
 const ROOT_GROUP_PATH: string[] = [];
 
-/** @alpha */
+/**
+ * Component for building complex filters. It allows to defines filter rules or rule groups based on provided list of properties.
+ * @beta
+ */
 export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
   const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer, disablePropertySelection, initialFilter } = props;
   const { state, actions } = usePropertyFilterBuilderState(initialFilter);

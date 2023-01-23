@@ -6,14 +6,23 @@ import * as React from "react";
 import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "../editors/EditorContainer";
 
-/** @alpha */
+/**
+ * Props for [[PropertyFilterBuilderRuleValue]] component.
+ * @beta
+ */
 export interface PropertyFilterBuilderRuleValueProps {
+  /** Currently entered value. */
   value?: PropertyValue;
+  /** Property used in rule to which this value will be compared to. */
   property: PropertyDescription;
+  /** Callback that is invoked when value changes. */
   onChange: (value: PropertyValue) => void;
 }
 
-/** @alpha */
+/**
+ * Component that renders [[PropertyFilterBuilderRuleRenderer]] value input.
+ * @beta
+ */
 export function PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps) {
   const { value, property, onChange } = props;
 

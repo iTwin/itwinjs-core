@@ -9,32 +9,57 @@ import { Guid } from "@itwin/core-bentley";
 import { isUnaryPropertyFilterOperator, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "./Operators";
 import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule } from "./Types";
 
-/** @alpha */
+/**
+ * Data structure that describes [[PropertyFilterBuilder]] component state.
+ * @beta
+ */
 export interface PropertyFilterBuilderState {
+  /** Root group of rules in [[PropertyFilterBuilder]] component. */
   rootGroup: PropertyFilterBuilderRuleGroup;
 }
 
-/** @alpha */
+/**
+ * Type that describes [[PropertyFilterBuilder]] component group item.
+ * @beta
+ */
 export type PropertyFilterBuilderRuleGroupItem = PropertyFilterBuilderRuleGroup | PropertyFilterBuilderRule;
 
-/** @alpha */
+/**
+ * Data structure that describes [[PropertyFilterBuilder]] component rule group.
+ * @beta
+ */
 export interface PropertyFilterBuilderRuleGroup {
+  /** Id of this rule group. */
   id: string;
+  /** Id of rule group that this group is nested in. */
   groupId?: string;
+  /** Operator that should join items in this group. */
   operator: PropertyFilterRuleGroupOperator;
+  /** Items in this group. */
   items: PropertyFilterBuilderRuleGroupItem[];
 }
 
-/** @alpha */
+/**
+ * Data structure that describes [[PropertyFilterBuilder]] component single rule.
+ * @beta
+ */
 export interface PropertyFilterBuilderRule {
+  /** Id of this rule. */
   id: string;
+  /** Id of rule group that this rule is nested in. */
   groupId: string;
+  /** Property used in this rule. */
   property?: PropertyDescription;
+  /** Operator that should be used to evaluate property value. */
   operator?: PropertyFilterRuleOperator;
+  /** Value that property should be compared to. */
   value?: PropertyValue;
 }
 
-/** @alpha */
+/**
+ * Actions for controlling [[PropertyFilterBuilder]] component state.
+ * @beta
+ */
 export class PropertyFilterBuilderActions {
   constructor(private setState: (setter: (prevState: PropertyFilterBuilderState) => PropertyFilterBuilderState) => void) { }
 
@@ -42,6 +67,7 @@ export class PropertyFilterBuilderActions {
     this.setState(produce(updater));
   }
 
+  /** Adds new rule or group of rules to the group specified by path. */
   public addItem(path: string[], itemType: "RULE_GROUP" | "RULE") {
     this.updateState((state) => {
       const parentGroup = findRuleGroup(state.rootGroup, path);
@@ -52,6 +78,7 @@ export class PropertyFilterBuilderActions {
     });
   }
 
+  /** Removes item specified by path. */
   public removeItem(path: string[]) {
     function removeItemFromGroup(state: Draft<PropertyFilterBuilderState>, pathToItem: string[]) {
       const pathToParent = pathToItem.slice(0, -1);
@@ -72,6 +99,7 @@ export class PropertyFilterBuilderActions {
     });
   }
 
+  /** Sets operator of rule group specified by the path. */
   public setRuleGroupOperator(path: string[], operator: PropertyFilterRuleGroupOperator) {
     this.updateState((state) => {
       const group = findRuleGroup(state.rootGroup, path);
@@ -81,6 +109,7 @@ export class PropertyFilterBuilderActions {
     });
   }
 
+  /** Sets property of rule specified by the path. */
   public setRuleProperty(path: string[], property?: PropertyDescription) {
     this.updateState((state) => {
       const rule = findRule(state.rootGroup, path);
@@ -91,6 +120,7 @@ export class PropertyFilterBuilderActions {
     });
   }
 
+  /** Sets operator of rule specified by the path. */
   public setRuleOperator(path: string[], operator: PropertyFilterRuleOperator) {
     this.updateState((state) => {
       const rule = findRule(state.rootGroup, path);
@@ -102,6 +132,7 @@ export class PropertyFilterBuilderActions {
     });
   }
 
+  /** Sets value of rule specified by the path. */
   public setRuleValue(path: string[], value: PropertyValue) {
     this.updateState((state) => {
       const rule = findRule(state.rootGroup, path);
@@ -112,12 +143,19 @@ export class PropertyFilterBuilderActions {
   }
 }
 
-/** @alpha */
+/**
+ * Function to check if supplied item is rule group.
+ * @beta
+ */
 export function isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRuleGroupItem): item is PropertyFilterBuilderRuleGroup {
   return (item as any).items !== undefined;
 }
 
-/** @alpha */
+/**
+ * Custom hook to create state for [[PropertyFilterBuilder]] component. It creates empty state or initializes
+ * state from supplied initial filter.
+ * @beta
+ */
 export function usePropertyFilterBuilderState(initialFilter?: PropertyFilter) {
   const [state, setState] = React.useState<PropertyFilterBuilderState>(
     () => initialFilter ? convertFilterToState(initialFilter) : { rootGroup: createEmptyRuleGroup() }
