@@ -358,6 +358,7 @@ describe("IModelTransformerHub", () => {
     assert.equal(masterDb.iModelId, masterIModelId);
     assertPhysicalObjects(masterDb, state0);
     const changesetMasterState0 = masterDb.changeset.id;
+    masterDb.performCheckpoint();
 
     // create Branch1 iModel using Master as a template
     const branchIModelName1 = "Branch1";
@@ -598,6 +599,8 @@ describe("IModelTransformerHub", () => {
 
       // create target branch
       const targetIModelName = "ModelSelectorTarget";
+      sourceDb.performCheckpoint();
+
       targetIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true, version0: sourceDb.pathName });
       assert.isTrue(Guid.isGuid(targetIModelId));
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
@@ -721,7 +724,7 @@ describe("IModelTransformerHub", () => {
       const modelInChildSubjectId = PhysicalModel.insert(masterDb, childSubjectId, "model-in-child-subject");
       const childSubjectChildId = Subject.insert(masterDb, childSubjectId, "child-subject-child");
       const modelInChildSubjectChildId = PhysicalModel.insert(masterDb, childSubjectChildId, "model-in-child-subject-child");
-      masterDb.saveChanges();
+      masterDb.performCheckpoint();
       await masterDb.pushChanges({ accessToken, description: "setup master" });
 
       // create and initialize branch from master

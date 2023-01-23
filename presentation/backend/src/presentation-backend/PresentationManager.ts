@@ -13,10 +13,11 @@ import {
   ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions,
   DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, LocalizationHelper,
-  MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized,
-  Ruleset, RulesetVariable, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, WithCancelEvent,
+  FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON,
+  HierarchyRequestOptions, InstanceKey, isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition,
+  LocalizationHelper, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError,
+  PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
 import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
@@ -29,7 +30,7 @@ import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStr
 /**
  * Presentation manager working mode.
  * @public
- * @deprecated The attribute is not used by [[PresentationManager]] anymore
+ * @deprecated in 3.x. The attribute is not used by [[PresentationManager]] anymore
  */
 export enum PresentationManagerMode {
   /**
@@ -211,7 +212,7 @@ export interface PresentationAssetsRootConfig {
   /**
    * Path to `presentation-common` assets.
    *
-   * @deprecated This path is not used anymore
+   * @deprecated in 3.x. This path is not used anymore
    */
   common: string;
 }
@@ -254,7 +255,7 @@ export interface PresentationManagerProps {
    * A list of directories containing application's locale-specific localized
    * string files (in simplified i18next v3 format)
    *
-   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   localeDirectories?: string[];
 
@@ -262,7 +263,7 @@ export interface PresentationManagerProps {
    * Sets the active locale to use when localizing presentation-related
    * strings. It can later be changed through [[PresentationManager.activeLocale]].
    *
-   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   defaultLocale?: string;
 
@@ -286,7 +287,7 @@ export interface PresentationManagerProps {
    * Should schemas preloading be enabled. If true, presentation manager listens
    * for `BriefcaseDb.onOpened` event and force pre-loads all ECSchemas.
    *
-   * @deprecated Use [[PresentationPropsBase.enableSchemasPreload]] instead.
+   * @deprecated in 3.x. Use [[PresentationPropsBase.enableSchemasPreload]] instead.
    */
   enableSchemasPreload?: boolean;
 
@@ -301,7 +302,7 @@ export interface PresentationManagerProps {
    *
    * Defaults to [[PresentationManagerMode.ReadWrite]].
    *
-   * @deprecated The attribute is not used by [[PresentationManager]] anymore
+   * @deprecated in 3.x. The attribute is not used by [[PresentationManager]] anymore
    */
   mode?: PresentationManagerMode; // eslint-disable-line deprecation/deprecation
 
@@ -368,7 +369,7 @@ export class PresentationManager {
 
   /**
    * Get / set active locale used for localizing presentation data
-   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   public activeLocale: string | undefined;
 
@@ -434,7 +435,9 @@ export class PresentationManager {
    * @public
    */
   public async getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node[]> {
-    const nodes = await this._detail.getNodes(requestOptions);
+    const serializedNodesJson = await this._detail.getNodes(requestOptions);
+    const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
+    const nodes = Node.listFromJSON(nodesJson.nodes);
     return this._localizationHelper.getLocalizedNodes(nodes);
   }
 
@@ -444,6 +447,16 @@ export class PresentationManager {
    */
   public async getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
     return this._detail.getNodesCount(requestOptions);
+  }
+
+  /**
+   * Retrieves hierarchy level descriptor
+   * @alpha
+   */
+  public async getNodesDescriptor(requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined> {
+    const response = await this._detail.getNodesDescriptor(requestOptions);
+    const reviver = (key: string, value: any) => key === "" ? Descriptor.fromJSON(value) : value;
+    return JSON.parse(response, reviver);
   }
 
   /**

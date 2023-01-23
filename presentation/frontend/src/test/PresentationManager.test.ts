@@ -15,7 +15,7 @@ import {
   Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions,
   ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition,
+  FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition,
   Node, NodeKey, NodePathElement, Paged, PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo,
   SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
@@ -455,7 +455,7 @@ describe("PresentationManager", () => {
 
     it("requests localized root nodes from proxy", async () => {
       i18nMock.reset();
-      i18nMock.setup((x) => x.getLocalizedString("EN:LocalizableString", moq.It.isAny())).returns(() =>  "LocalizedString");
+      i18nMock.setup((x) => x.getLocalizedString("EN:LocalizableString", moq.It.isAny())).returns(() => "LocalizedString");
       const prelocalizedNode = [createRandomECInstancesNode({ label: { rawValue: "@EN:LocalizableString@", displayValue: "@EN:LocalizableString@", typeName: "string" } })];
       const options: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>> = {
         imodel: testData.imodelMock.object,
@@ -551,6 +551,27 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getNodesCount(options);
       expect(actualResult).to.eq(result);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+  });
+
+  describe("getNodesDescriptor", () => {
+
+    it("requests child nodes descriptor from proxy", async () => {
+      const parentNodeKey = createRandomECInstancesNodeKey();
+      const result = createTestContentDescriptor({ fields: [] });
+      const options: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        parentKey: parentNodeKey,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getNodesDescriptor(prepareOptions({ ...options, parentKey: NodeKey.toJSON(parentNodeKey) })))
+        .returns(async () => result.toJSON())
+        .verifiable();
+      const actualResult = await manager.getNodesDescriptor(options);
+      expect(actualResult!.toJSON()).to.deep.eq(result.toJSON());
       rpcRequestsHandlerMock.verifyAll();
     });
 

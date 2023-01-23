@@ -12,7 +12,7 @@ import { BackgroundMapProps } from "./BackgroundMapSettings";
  * @see [[TerrainSettings.providerName]] and [[TerrainProps.providerName]].
  * @public
  * @extensions
- * @deprecated Use string instead.
+ * @deprecated in 3.x. Use string instead.
  */
 export type TerrainProviderName = string;
 
