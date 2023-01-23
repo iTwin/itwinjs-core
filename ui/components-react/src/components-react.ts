@@ -240,3 +240,7 @@ export * from "./components-react/tree/controlled/internal/SparseTree";
  * @docs-group-description TypeConverters
  * Classes for working with Type Converters.
  */
+/**
+ * @docs-group-description PropertyFilterBuilder
+ * Classes and components for working with PropertyFilterBuilder.
+ */

@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module PropertyFilterBuilder
+ */
+
 import * as React from "react";
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
 import { SvgDelete } from "@itwin/itwinui-icons-react";

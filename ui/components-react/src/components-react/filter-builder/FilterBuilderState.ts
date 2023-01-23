@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module PropertyFilterBuilder
+ */
+
 import { Draft, produce } from "immer";
 import * as React from "react";
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
@@ -50,7 +54,7 @@ export interface PropertyFilterBuilderRule {
   groupId: string;
   /** Property used in this rule. */
   property?: PropertyDescription;
-  /** Operator that should be used to evaluate property value. */
+  /** Operator that should be used to compare property value. */
   operator?: PropertyFilterRuleOperator;
   /** Value that property should be compared to. */
   value?: PropertyValue;
@@ -144,7 +148,7 @@ export class PropertyFilterBuilderActions {
 }
 
 /**
- * Function to check if supplied item is rule group.
+ * Function to check if supplied [[PropertyFilterBuilderRuleGroupItem]] is [[PropertyFilterBuilderRuleGroup]].
  * @beta
  */
 export function isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRuleGroupItem): item is PropertyFilterBuilderRuleGroup {
@@ -152,7 +156,7 @@ export function isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRule
 }
 
 /**
- * Custom hook to create state for [[PropertyFilterBuilder]] component. It creates empty state or initializes
+ * Custom hook that creates state for [[PropertyFilterBuilder]] component. It creates empty state or initializes
  * state from supplied initial filter.
  * @beta
  */

@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module PropertyFilterBuilder
+ */
+
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
 import { PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "./Operators";
 
@@ -29,7 +33,7 @@ export interface PropertyFilterRuleGroup {
 export interface PropertyFilterRule {
   /** Property used in this rule. */
   property: PropertyDescription;
-  /** Operator that should be used to evaluate property value. */
+  /** Operator that should be used to compare property value. */
   operator: PropertyFilterRuleOperator;
   /** Value that property should be compared to. */
   value?: PropertyValue;
