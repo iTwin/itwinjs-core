@@ -165,7 +165,7 @@ export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<Co
  * Interface used for communication between Presentation backend and frontend.
  * @public
  */
-export class PresentationRpcInterface extends RpcInterface {
+export class PresentationRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** The immutable name of the interface. */
   public static readonly interfaceName = "PresentationRpcInterface"; // eslint-disable-line @typescript-eslint/naming-convention
 

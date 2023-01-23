@@ -95,7 +95,7 @@ describe("TileUpload", () => {
 
   after(async () => {
     // Delete cached tile
-    if(objectReference)
+    if (objectReference)
       await IModelHost.tileStorage!.storage.deleteObject(objectReference);
     // Restart backend with default config
     await IModelHost.shutdown();
@@ -103,13 +103,13 @@ describe("TileUpload", () => {
   });
 
   it("should upload tile to external cache with metadata", async () => {
-    const iModel = await HubWrappers.downloadAndOpenCheckpoint({accessToken, iTwinId, iModelId});
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId, iModelId });
     assert.isDefined(iModel);
 
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
-    const tile = await RpcTrace.run({
+    const tile = await RpcTrace.run({ // eslint-disable-line deprecation/deprecation
       accessToken,
       activityId: "",
       applicationId: "",

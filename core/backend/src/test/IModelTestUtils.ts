@@ -170,7 +170,7 @@ export class HubWrappers {
       try {
         return (await RpcBriefcaseUtility.open(openArgs)) as BriefcaseDb;
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse))
+        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line deprecation/deprecation
           throw error;
       }
     }
@@ -212,7 +212,7 @@ export class HubWrappers {
       try {
         return (await RpcBriefcaseUtility.open(openArgs));
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse))
+        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line deprecation/deprecation
           throw error;
       }
     }
