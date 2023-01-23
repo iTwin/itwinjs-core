@@ -242,7 +242,7 @@ export interface CodeSpecProperties {
     /** the type of CodeSpec */
     type: CodeScopeSpec.Type;
     /** If true, the federationGuid of the scope element identifies the scope, for Codes that are globally unique.
-     * Otherwise, the ElementId of the scopeElement is used (for Codes that are scoped only within a single iModel).
+     * Otherwise, the ElementId of the scopeElement is used, for Codes that are scoped only within a single iModel.
      */
     fGuidRequired?: boolean;
     /** The relationship className, when `type` is `CodeScopeSpec.Type.RelatedElement` */
