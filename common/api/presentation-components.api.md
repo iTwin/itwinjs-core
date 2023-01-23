@@ -4,6 +4,8 @@
 
 ```ts
 
+/// <reference types="react" />
+
 import { AbstractTreeNodeLoaderWithProvider } from '@itwin/components-react';
 import { ActiveMatchInfo } from '@itwin/components-react';
 import { CategoryDescription } from '@itwin/presentation-common';
