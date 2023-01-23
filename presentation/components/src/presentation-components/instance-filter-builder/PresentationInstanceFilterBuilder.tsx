@@ -30,7 +30,6 @@ export interface PresentationInstanceFilterBuilderProps {
   imodel: IModelConnection;
   descriptor: Descriptor;
   onInstanceFilterChanged: (filter?: PresentationInstanceFilterInfo) => void;
-  enableClassFilteringByProperties?: boolean;
   ruleGroupDepthLimit?: number;
   initialFilter?: PresentationInstanceFilterInfo;
 }
