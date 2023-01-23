@@ -9,6 +9,7 @@ import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerE
 import { IModelApp } from "../../../IModelApp";
 import {
   ArcGisErrorCode, ArcGISImageryProvider, ArcGISTileMap,
+  ArcGisUtilities,
   ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerFeatureInfo,
   MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
@@ -26,6 +27,8 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   private _copyrightText = "Copyright";
   private _querySupported = false;
   private _tileMapSupported = false;
+  private _mapSupported = false;
+  private _tilesOnly = false;
   private _tileMap: ArcGISTileMap|undefined;
 
   public serviceJson: any;
@@ -106,14 +109,6 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     }
   }
 
-  private isEpsg3857Compatible(tileInfo: any) {
-    if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods))
-      return false;
-
-    const zeroLod = tileInfo.lods[0];
-    return zeroLod.level === 0 && Math.abs(zeroLod.resolution - 156543.03392800014) < .001;
-  }
-
   public override async initialize(): Promise<void> {
 
     const metadata = await this.getServiceJson();
@@ -133,23 +128,41 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     this.serviceJson = json;
 
     if (json.capabilities) {
+      const capabilities = json.capabilities.split(",");
 
-      this._querySupported = json.capabilities.indexOf("Query") >= 0;
-      this._tileMapSupported = json.capabilities.indexOf("Tilemap") >= 0;
+      this._querySupported = capabilities.includes("Query");
+      this._tileMapSupported = capabilities.includes("Tilemap");
+      this._mapSupported = capabilities.includes("Map");
+      this._tilesOnly = capabilities.includes("TilesOnly");
     }
+
     if (json.copyrightText)
       this._copyrightText = json.copyrightText;
 
-    if (false !== (this._usesCachedTiles = json.tileInfo !== undefined && this.isEpsg3857Compatible(json.tileInfo))) {
+    this._usesCachedTiles = !!json.tileInfo;
+
+    if (this._usesCachedTiles) {
+      // Only EPSG:3857 is supported with pre-rendered tiles.  Fall back to 'Export' queries if possible otherwise throw.
+      if (!ArcGisUtilities.isEpsg3857Compatible(json.tileInfo)) {
+        if (this._mapSupported && !this._tilesOnly) {
+          this._usesCachedTiles = false;
+        } else {
+          throw new ServerError(IModelStatus.ValidationFailed, "Invalid coordinate system");
+        }
+      }
+    }
+
+    if (this._usesCachedTiles) {
+      // Read max LOD
       if (json.maxScale !== undefined && json.maxScale !== 0 && Array.isArray(json.tileInfo.lods)) {
         for (; this._maxDepthFromLod < json.tileInfo.lods.length && json.tileInfo.lods[this._maxDepthFromLod].scale > json.maxScale; this._maxDepthFromLod++)
           ;
       }
-    }
 
-    // Create tile map object only if we are going to request tiles from this server and it support tilemap requests.
-    if (this._usesCachedTiles && this._tileMapSupported) {
-      this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, json.tileInfo?.lods?.length, this._accessClient);
+      // Create tile map object only if we are going to request tiles from this server and it support tilemap requests.
+      if (this._tileMapSupported) {
+        this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, json.tileInfo?.lods?.length, this._accessClient);
+      }
     }
 
     // Read range using fullextent from service metadata

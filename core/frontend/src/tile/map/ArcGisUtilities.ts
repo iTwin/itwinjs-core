@@ -145,16 +145,21 @@ export class ArcGisUtilities {
 
     // Check this service support the expected queries
     let hasCapabilities = false;
-    try {
-      if (json.capabilities && typeof json.capabilities === "string" ) {
-        const capabilities: string = json.capabilities;
-        const capsArray: string[] = capabilities.split(",").map((entry) => entry.toLowerCase());
-        const filtered = capsArray.filter((element, _index, _array) => capabilitiesFilter.includes(element));
-        hasCapabilities = (filtered.length === capabilitiesFilter.length);
-      }
-    }catch { }
+    let capsArray: string[] = [];
+    if (json.capabilities && typeof json.capabilities === "string" ) {
+      const capabilities: string = json.capabilities;
+      capsArray = capabilities.split(",").map((entry) => entry.toLowerCase());
+
+      const filtered = capsArray.filter((element, _index, _array) => capabilitiesFilter.includes(element));
+      hasCapabilities = (filtered.length === capabilitiesFilter.length);
+    }
     if (!hasCapabilities) {
       return { status: MapLayerSourceStatus.InvalidFormat};
+    }
+
+    // Only EPSG:3857 is supported with pre-rendered tiles.
+    if (json.tileInfo && capsArray.includes("tilesonly") && !ArcGisUtilities.isEpsg3857Compatible(json.tileInfo)) {
+      return { status: MapLayerSourceStatus.InvalidCoordinateSystem};
     }
 
     let subLayers;
@@ -169,6 +174,17 @@ export class ArcGisUtilities {
       }
     }
     return { status: MapLayerSourceStatus.Valid, subLayers };
+  }
+
+  /**
+   * Validate MapService tiling metadata and checks if the tile tree is 'Google Maps' compatible.
+  */
+  public static isEpsg3857Compatible(tileInfo: any) {
+    if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods))
+      return false;
+
+    const zeroLod = tileInfo.lods[0];
+    return zeroLod.level === 0 && Math.abs(zeroLod.resolution - 156543.03392800014) < .001;
   }
 
   private static _serviceCache = new Map<string, ArcGISServiceMetadata|undefined>();
