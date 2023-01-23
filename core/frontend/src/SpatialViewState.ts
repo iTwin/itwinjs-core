@@ -114,7 +114,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** Get world-space viewed extents based on the iModel's project extents.
-   * @deprecated in 3.6. These extents are based on [[IModelConnection.displayedExtents]], which is deprecated.
+   * @deprecated in 3.6. These extents are based on [[IModelConnection.displayedExtents]], which is deprecated. Consider using [[computeFitRange]] or [[getViewedExtents]] instead.
    */
   protected getDisplayedExtents(): AxisAlignedBox3d {
     /* eslint-disable-next-line deprecation/deprecation */
