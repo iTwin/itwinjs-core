@@ -2089,13 +2089,15 @@ export abstract class GltfReader {
 
     let nMap;
     if (normalMap) {
+      const greenUp = true;
       if (texture) {
         nMap = {
           normalMap,
+          greenUp,
         };
       } else {
         texture = normalMap;
-        nMap = {};
+        nMap = { greenUp };
       }
     }
 

@@ -95,6 +95,7 @@ export const createRandomGroupingNodeKey = (groupedInstancesCount?: number): Gro
  */
 export const createRandomECInstancesNode = (props?: Partial<Node>): Node => {
   return {
+    ...props,
     key: props?.key ?? createRandomECInstancesNodeKey(),
     label: props?.label ?? createRandomLabelDefinition(),
     description: props?.description ?? nullable<string>(() => faker.lorem.sentence()),

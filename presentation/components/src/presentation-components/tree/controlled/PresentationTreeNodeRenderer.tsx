@@ -6,70 +6,101 @@
  * @module Tree
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { TreeNodeItem, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps } from "@itwin/components-react";
-import { TreeNode } from "@itwin/core-react";
-import { SvgFilterHollow } from "@itwin/itwinui-icons-react";
-import { IconButton } from "@itwin/itwinui-react";
-import { translate } from "../../common/Utils";
 import "./PresentationTreeNodeRenderer.scss";
-/**
- * @alpha
- */
-export function PresentationTreeRenderer(props: TreeRendererProps) {
-  return <TreeRenderer
-    {...props}
-    nodeRenderer={PresentationTreeNodeRenderer}
-  />;
-}
+import classnames from "classnames";
+import * as React from "react";
+import { TreeNodeRenderer, TreeNodeRendererProps } from "@itwin/components-react";
+import { TreeNode } from "@itwin/core-react";
+import { SvgCloseSmall, SvgFilter, SvgFilterHollow } from "@itwin/itwinui-icons-react";
+import { ButtonGroup, IconButton } from "@itwin/itwinui-react";
+import { isPresentationInfoTreeNodeItem, isPresentationTreeNodeItem, PresentationTreeNodeItem } from "../PresentationTreeNodeItem";
 
 /**
  * @alpha
  */
 export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
-  onFilter?: (item: TreeNodeItem) => void;
+  onFilterClick: (node: PresentationTreeNodeItem) => void;
+  onClearFilterClick: (node: PresentationTreeNodeItem) => void;
 }
 
 /**
  * @alpha
  */
 export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps) {
-  const { onFilter, className, ...restProps } = props;
-  if (restProps.node.item.extendedData !== undefined && restProps.node.item.extendedData.tooManyChildren === true)
-    return <TooManyChildNodeRenderer
-      nodeDepth={restProps.node.depth}
-    />;
-  return <TreeNodeRenderer
-    {...restProps }
-    className={classnames("presentation-components-node", className)}
-  >
-    {onFilter && <div className="presentation-components-filter-action-button">
-      <IconButton
-        styleType="borderless"
-        size="small"
-        onClick={(e) => {
-          onFilter(restProps.node.item);
-          e.stopPropagation();
-        }} >
-        <SvgFilterHollow/>
-      </IconButton>
-    </div>}
-  </TreeNodeRenderer>;
+  const { onFilterClick, onClearFilterClick, ...restProps } = props;
+  const nodeItem = props.node.item;
+
+  if (isPresentationInfoTreeNodeItem(nodeItem)) {
+    return (
+      <TreeNode
+        className="presentation-components-info-node"
+        isLeaf={true}
+        label={nodeItem.message}
+        level={props.node.depth}
+        isHoverDisabled={true}
+      />
+    );
+  }
+
+  if (isPresentationTreeNodeItem(nodeItem)) {
+    // hide filtering buttons if filtering is disabled explicitly or node is not filtered and has no children
+    const filteringDisabled = nodeItem.filtering === undefined || (nodeItem.filtering.active === undefined && props.node.numChildren === 0);
+    return (
+      <TreeNodeRenderer
+        {...restProps}
+        className={classnames("presentation-components-node", restProps.className)}
+      >
+        <PresentationTreeNodeActions
+          isFiltered={nodeItem.filtering?.active !== undefined}
+          filteringDisabled={filteringDisabled}
+          onClearFilterClick={() => { onClearFilterClick(nodeItem); }}
+          onFilterClick={() => { onFilterClick(nodeItem); }}
+        />
+      </TreeNodeRenderer>
+    );
+  }
+
+  return <TreeNodeRenderer {...restProps} />;
 }
 
-interface TooManyChildNodeRendererProps {
-  nodeDepth: number;
+interface PresentationTreeNodeActionsProps {
+  onFilterClick: () => void;
+  onClearFilterClick: () => void;
+  filteringDisabled?: boolean;
+  isFiltered?: boolean;
 }
 
-function TooManyChildNodeRenderer(props: TooManyChildNodeRendererProps) {
+function PresentationTreeNodeActions(props: PresentationTreeNodeActionsProps) {
+  const { onFilterClick, onClearFilterClick, filteringDisabled, isFiltered } = props;
+  if (filteringDisabled)
+    return null;
+
   return (
-    <TreeNode
-      className="presentation-components-muted-node"
-      isLeaf={true}
-      label={translate("tree.presentation-components-muted-node-label")}
-      level={props.nodeDepth}
-      isHoverDisabled={true}
-    />
+    <div className={classnames("presentation-components-node-action-buttons", isFiltered && "filtered")}>
+      <ButtonGroup>
+        {isFiltered
+          ? <IconButton
+            styleType="borderless"
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClearFilterClick();
+            }}
+          >
+            <SvgCloseSmall />
+          </IconButton>
+          : null}
+        <IconButton
+          styleType="borderless"
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            onFilterClick();
+          }}
+        >
+          {isFiltered ? <SvgFilter /> : <SvgFilterHollow />}
+        </IconButton>
+      </ButtonGroup>
+    </div>
   );
 }
