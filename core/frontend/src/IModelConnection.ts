@@ -91,6 +91,8 @@ export abstract class IModelConnection extends IModel {
   /** The displayed extents of this iModel, initialized to [IModel.projectExtents]($common). The displayed extents can be made larger via
    * [[expandDisplayedExtents]], but never smaller, to accommodate data sources like reality models that may exceed the project extents.
    * @note Do not modify these extents directly - use [[expandDisplayedExtents]] only.
+   * @deprecated in 3.6. These extents are still computed, but no longer used to determine the viewed extents of a [[SpatialViewState]]. It is not useful to
+   * perpetually expand the iModel's extents.
    */
   public readonly displayedExtents: AxisAlignedBox3d;
   private readonly _extentsExpansion = Range3d.createNull();
@@ -156,12 +158,6 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
-
-  /** Event called immediately after *this* IModelConnection has its displayed extents expanded.
-   * @note This event is called only for this IModelConnection.
-   * @internal
-   */
-  public readonly onDisplayedExtentsExpansion = new BeEvent<() => void>();
 
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
   public fontMap?: FontMap;
@@ -231,10 +227,12 @@ export abstract class IModelConnection extends IModel {
 
     this.tiles = new Tiles(this);
     this.geoServices = new GeoServices(this);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
+      /* eslint-disable-next-line deprecation/deprecation */
       this.expandDisplayedExtents(this._extentsExpansion);
     });
 
@@ -502,12 +500,16 @@ export abstract class IModelConnection extends IModel {
   /** Expand this iModel's [[displayedExtents]] to include the specified range.
    * This is done automatically when reality models are added to a spatial view. In some cases a [[TiledGraphicsProvider]] may wish to expand
    * the extents explicitly to include its geometry.
+   * @deprecated in 3.6. See [[displayedExtents]].
    */
   public expandDisplayedExtents(range: Range3d): void {
     this._extentsExpansion.extendRange(range);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents.setFrom(this.projectExtents);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents.extendRange(this._extentsExpansion);
 
+    /* eslint-disable-next-line deprecation/deprecation */
     this.onDisplayedExtentsExpansion.raiseEvent();
   }
 

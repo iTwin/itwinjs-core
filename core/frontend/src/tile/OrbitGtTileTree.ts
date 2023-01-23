@@ -219,6 +219,7 @@ export class OrbitGtTileTree extends TileTree {
     super(treeParams);
 
     const worldContentRange = this.iModelTransform.multiplyRange(cloudRange);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.iModel.expandDisplayedExtents(worldContentRange);
     this._tileParams = { contentId: "0", range: cloudRange, maximumSize: 256 };
     this.rootTile = new OrbitGtRootTile(this._tileParams, this);
