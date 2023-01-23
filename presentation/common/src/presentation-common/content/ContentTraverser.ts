@@ -607,7 +607,7 @@ export function combineFieldNames(fieldName: string, parentFieldName?: string) {
  * @public
  */
 export function parseCombinedFieldNames(combinedName: string) {
-  return combinedName.split(FIELD_NAMES_SEPARATOR);
+  return combinedName ? combinedName.split(FIELD_NAMES_SEPARATOR) : [];
 }
 
 interface NestedItemConversionResult {

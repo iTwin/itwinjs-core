@@ -206,12 +206,12 @@ export class PresentationManager {
     get activeUnitSystem(): UnitSystemKey | undefined;
     set activeUnitSystem(value: UnitSystemKey | undefined);
     compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
-    computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
     // @deprecated
     computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & {
         ids: Id64String[];
         scopeId: string;
     } & BackendDiagnosticsAttribute): Promise<KeySet>;
+    computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
     dispose(): void;
     getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined>;
     getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
