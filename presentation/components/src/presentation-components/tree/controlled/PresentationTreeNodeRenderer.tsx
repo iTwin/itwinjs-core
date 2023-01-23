@@ -26,7 +26,7 @@ export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps
 
 /**
  * Component for rendering tree nodes produced by [[PresentationTreeDataProvider]]. Additionally to the default
- * tree node renderer it renders actions buttons for filterable hierarchy levels and also correctly renders
+ * tree node renderer, it renders action buttons for filterable hierarchy levels and also correctly renders
  * nodes that carry info messages.
  * @beta
  */
