@@ -7,6 +7,7 @@
  */
 
 import { TypeConverter } from "./TypeConverter";
+import { StringTypeConverter } from "../converters/StringTypeConverter";
 
 /**
  * Manages Type Converters. Type Converters are registered with and obtained from the manager.
@@ -51,7 +52,6 @@ export class TypeConverterManager {
       return TypeConverterManager._converters[fullConverterName];
 
     if (!TypeConverterManager._defaultTypeConverter) {
-      const { StringTypeConverter } = require("../converters/StringTypeConverter"); // eslint-disable-line @typescript-eslint/no-var-requires
       TypeConverterManager._defaultTypeConverter = new StringTypeConverter();
     }
     return TypeConverterManager._defaultTypeConverter;
