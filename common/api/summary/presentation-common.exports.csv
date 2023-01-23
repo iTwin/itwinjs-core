@@ -6,9 +6,11 @@ internal;AsyncTasksTracker
 public;BaseFieldJSON
 public;BaseNodeKey
 public;BaseNodeKeyJSON
+deprecated;BaseNodeKeyJSON
 public;BaseTypeDescription
 public;BooleanRulesetVariable 
 public;BooleanRulesetVariableJSON 
+deprecated;BooleanRulesetVariableJSON 
 public;CalculatedPropertiesSpecification
 public;CategoryDescription
 public;CategoryDescription
@@ -25,6 +27,7 @@ public;ClassId = Id64String
 public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
+deprecated;ClassInfoJSON
 beta;ClientDiagnostics 
 public;ClientDiagnosticsAttribute
 beta;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
@@ -89,19 +92,26 @@ public;DisplayValue
 public;DisplayValueGroup
 public;DisplayValueGroup
 public;DisplayValueGroupJSON
+deprecated;DisplayValueGroupJSON
 public;DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON
+deprecated;DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON
 public;DisplayValuesArray 
 public;DisplayValuesArrayJSON 
+deprecated;DisplayValuesArrayJSON 
 public;DisplayValuesMap 
 public;DisplayValuesMapJSON 
+deprecated;DisplayValuesMapJSON 
 public;DistinctValuesRequestOptions
 public;DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions
 public;ECClassGroupingNodeKey 
 public;ECClassGroupingNodeKeyJSON 
+deprecated;ECClassGroupingNodeKeyJSON 
 public;ECInstancesNodeKey 
 public;ECInstancesNodeKeyJSON 
+deprecated;ECInstancesNodeKeyJSON 
 public;ECPropertyGroupingNodeKey 
 public;ECPropertyGroupingNodeKeyJSON 
+deprecated;ECPropertyGroupingNodeKeyJSON 
 public;ECPropertyValueQuerySpecification 
 public;EditorDescription
 public;ElementProperties
@@ -141,6 +151,7 @@ internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: b
 public;getInstancesCount: (keys: Readonly
 public;GroupingNodeKey 
 public;GroupingNodeKeyJSON 
+deprecated;GroupingNodeKeyJSON 
 public;GroupingRule 
 public;GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup
 public;GroupingSpecificationBase
@@ -148,12 +159,14 @@ public;GroupingSpecificationTypes
 public;HierarchyCompareInfo
 public;HierarchyCompareInfo
 public;HierarchyCompareInfoJSON
+deprecated;HierarchyCompareInfoJSON
 public;HierarchyCompareOptions
 beta;HierarchyLevel
 beta;HierarchyLevel
 beta;HierarchyLevelDescriptorRequestOptions
 beta;HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions
 beta;HierarchyLevelJSON
+deprecated;HierarchyLevelJSON
 public;HierarchyRequestOptions
 public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
 alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | HierarchyUpdateRecord[]
@@ -165,6 +178,7 @@ alpha;HierarchyUpdateRecordJSON
 public;IContentVisitor
 public;Id64RulesetVariable 
 public;Id64RulesetVariableJSON 
+deprecated;Id64RulesetVariableJSON 
 public;Id64sRulesetVariable 
 public;Id64sRulesetVariableJSON 
 public;IdCategoryIdentifier
@@ -179,6 +193,7 @@ public;InstanceId = Id64String
 public;InstanceKey
 public;InstanceKey
 public;InstanceKeyJSON
+deprecated;InstanceKeyJSON
 public;InstanceLabelOverride 
 public;InstanceLabelOverrideBriefcaseIdSpecification 
 public;InstanceLabelOverrideClassLabelSpecification 
@@ -194,8 +209,10 @@ public;InstanceLabelOverrideValueSpecificationType
 public;InstanceNodesOfSpecificClassesSpecification 
 public;IntRulesetVariable 
 public;IntRulesetVariableJSON 
+deprecated;IntRulesetVariableJSON 
 public;IntsRulesetVariable 
 public;IntsRulesetVariableJSON 
+deprecated;IntsRulesetVariableJSON 
 internal;isComputeSelectionRequestOptions
 internal;isSingleElementPropertiesRequestOptions
 public;Item
@@ -209,18 +226,21 @@ public;KindOfQuantityInfo
 public;LabelCompositeValue
 public;LabelCompositeValue
 public;LabelCompositeValueJSON
+deprecated;LabelCompositeValueJSON
 public;LabelDefinition
 public;LabelDefinition
-internal;fromLabelString(label: string): LabelDefinitionJSON
+internal;fromLabelString(label: string): LabelDefinition
 internal;isCompositeDefinition(def: LabelDefinition): def is LabelDefinition &
-internal;reviver(key: string, value: any): any
 public;LabelDefinitionJSON
+deprecated;LabelDefinitionJSON
 public;LabelGroupingNodeKey 
 public;LabelGroupingNodeKeyJSON 
+deprecated;LabelGroupingNodeKeyJSON 
 public;LabelOverride 
 deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
-public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
+public;LabelRawValueJSON = LabelRawValue
+deprecated;LabelRawValueJSON = LabelRawValue
 internal;LocalizationHelper
 internal;LocalizationHelperProps
 public;MultiElementPropertiesRequestOptions
@@ -236,16 +256,21 @@ public;NestedContentFieldJSON
 public;NestedContentValue
 public;NestedContentValue
 public;NestedContentValueJSON
+deprecated;NestedContentValueJSON
 public;NoCategoryIdentifier
 public;NodeArtifactsRule 
 public;NodeDeletionInfo
 public;NodeDeletionInfoJSON
+deprecated;NodeDeletionInfoJSON
 public;NodeInsertionInfo
 public;NodeInsertionInfoJSON
+deprecated;NodeInsertionInfoJSON
 public;NodeJSON
+deprecated;NodeJSON
 public;NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKey
 public;NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON
+deprecated;NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON
 public;NodeKeyPath = NodeKey[]
 public;NodePathElement
 public;NodePathElement
@@ -253,11 +278,14 @@ internal;listFromJSON(json: NodePathElementJSON[] | string): NodePathElement[]
 internal;listReviver(key: string, value: any): any
 internal;reviver(key: string, value: any): any
 public;NodePathElementJSON
+deprecated;NodePathElementJSON
 public;NodePathFilteringData
 public;NodePathFilteringData
 public;NodePathFilteringDataJSON
+deprecated;NodePathFilteringDataJSON
 public;NodeUpdateInfo
 public;NodeUpdateInfoJSON
+deprecated;NodeUpdateInfoJSON
 public;Paged
 public;PagedResponse
 public;PageOptions
@@ -267,8 +295,10 @@ public;PartialBy
 public;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
 public;PartialHierarchyModification
 public;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
+deprecated;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
 public;PartialNode = AllOrNone
 public;PartialNodeJSON = AllOrNone
+deprecated;PartialNodeJSON = AllOrNone
 internal;PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface"
 public;PresentationError 
 internal;PresentationIpcEvents
@@ -384,6 +414,7 @@ public;StartStructProps
 public;StringQuerySpecification 
 public;StringRulesetVariable 
 public;StringRulesetVariableJSON 
+deprecated;StringRulesetVariableJSON 
 public;StrippedRelatedClassInfo
 public;StrippedRelationshipPath = StrippedRelatedClassInfo[]
 public;StructFieldMemberDescription
@@ -406,11 +437,14 @@ alpha;UpdateInfoJSON
 public;Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[]
 public;Value
 public;ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NestedContentValueJSON[]
+deprecated;ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NestedContentValueJSON[]
 public;ValuesArray 
 public;ValuesArrayJSON 
+deprecated;ValuesArrayJSON 
 public;ValuesDictionary
 public;ValuesMap 
 public;ValuesMapJSON 
+deprecated;ValuesMapJSON 
 public;Variable
 public;VariablesGroup
 public;VariableValue = boolean | string | number | number[] | Id64String | Id64String[]

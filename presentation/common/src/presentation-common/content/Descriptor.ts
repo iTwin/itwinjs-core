@@ -43,6 +43,7 @@ export interface SelectClassInfo {
  * Serialized [[SelectClassInfo]] JSON representation
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   selectClassInfo: TClassInfoJSON;
   isSelectPolymorphic: boolean;

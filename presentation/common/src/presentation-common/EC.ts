@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { assert, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import { PartialBy } from "./Utils";
 
@@ -43,20 +43,31 @@ export namespace InstanceKey {
     return lhs.id.localeCompare(rhs.id);
   }
 
-  /** Serialize [[InstanceKey]] to JSON */
-  export function toJSON(json: InstanceKey): InstanceKeyJSON {
-    return { ...json, id: json.id.toString() };
+  /**
+   * Serialize [[InstanceKey]] to JSON
+   * @deprecated in 3.x. Use [[InstanceKey]].
+   */
+  // istanbul ignore next
+  // eslint-disable-next-line deprecation/deprecation
+  export function toJSON(key: InstanceKey): InstanceKeyJSON {
+    return { ...key };
   }
 
-  /** Deserialize [[InstanceKey]] from JSON */
+  /**
+   * Deserialize [[InstanceKey]] from JSON
+   * @deprecated in 3.x. Use [[InstanceKey]].
+   */
+  // istanbul ignore next
+  // eslint-disable-next-line deprecation/deprecation
   export function fromJSON(json: InstanceKeyJSON) {
-    return { ...json, id: Id64.fromJSON(json.id) };
+    return { ...json };
   }
 }
 
 /**
  * A serialized version of [[InstanceKey]]
  * @public
+ * @deprecated in 3.x. Use [[InstanceKey]].
  */
 export interface InstanceKeyJSON {
   className: string;
@@ -78,20 +89,31 @@ export interface ClassInfo {
 
 /** @public */
 export namespace ClassInfo {
-  /** Serialize [[ClassInfo]] to JSON */
+  /**
+   * Serialize [[ClassInfo]] to JSON
+   * @deprecated in 3.x. Use [[ClassInfo]].
+  */
+  // istanbul ignore next
+  // eslint-disable-next-line deprecation/deprecation
   export function toJSON(info: ClassInfo): ClassInfoJSON {
-    return { ...info, id: info.id.toString() };
+    return { ...info };
   }
 
-  /** Deserialize [[ClassInfo]] from JSON */
+  /**
+   * Deserialize [[ClassInfo]] from JSON
+   * @deprecated in 3.x. Use [[ClassInfo]].
+   */
+  // istanbul ignore next
+  // eslint-disable-next-line deprecation/deprecation
   export function fromJSON(json: ClassInfoJSON): ClassInfo {
-    return { ...json, id: Id64.fromJSON(json.id) };
+    return { ...json };
   }
 }
 
 /**
  * A serialized version of [[ClassInfo]]
  * @public
+ * @deprecated in 3.x. Use [[ClassInfo]].
  */
 export interface ClassInfoJSON {
   id: string;
@@ -171,9 +193,13 @@ export interface NavigationPropertyInfo {
  * @beta
  */
 export namespace NavigationPropertyInfo {
-  /** Serialize [[NavigationPropertyInfo]] to JSON */
+  /**
+   * Serialize [[NavigationPropertyInfo]] to JSON
+   * @deprecated in 3.x. Use [[toCompressedJSON]].
+  */
+  // istanbul ignore next
   export function toJSON(info: NavigationPropertyInfo): NavigationPropertyInfoJSON {
-    return { ...info, classInfo: ClassInfo.toJSON(info.classInfo), targetClassInfo: ClassInfo.toJSON(info.classInfo) };
+    return { ...info };
   }
 
   /** Serialize [[NavigationPropertyInfo]] to compressed JSON */
@@ -190,9 +216,13 @@ export namespace NavigationPropertyInfo {
     };
   }
 
-  /** Deserialize [[NavigationPropertyInfo]] from JSON */
-  export function fromJSON(json: NavigationPropertyInfo): NavigationPropertyInfo {
-    return { ...json, classInfo: ClassInfo.fromJSON(json.classInfo), targetClassInfo: ClassInfo.fromJSON(json.targetClassInfo) };
+  /**
+   * Deserialize [[NavigationPropertyInfo]] from JSON
+   * @deprecated in 3.x. Use [[fromCompressedJSON]].
+   */
+  // istanbul ignore next
+  export function fromJSON(json: NavigationPropertyInfoJSON): NavigationPropertyInfo {
+    return { ...json };
   }
 
   /** Deserialize [[NavigationPropertyInfo]] from compressed JSON */
@@ -209,6 +239,7 @@ export namespace NavigationPropertyInfo {
  * A serialized version of [[NavigationPropertyInfo]]
  * @beta
  */
+// eslint-disable-next-line deprecation/deprecation
 export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   classInfo: TClassInfoJSON;
   isForwardRelationship: boolean;
@@ -245,13 +276,13 @@ export interface PropertyInfo {
 
 /** @public */
 export namespace PropertyInfo {
-  /** Serialize [[PropertyInfo]] to JSON */
+  /**
+   * Serialize [[PropertyInfo]] to JSON
+   * @deprecated in 3.x. Use [[PropertyInfo]].
+  */
+  // istanbul ignore next
   export function toJSON(info: PropertyInfo): PropertyInfoJSON {
-    return {
-      ...info,
-      classInfo: ClassInfo.toJSON(info.classInfo),
-      ...(info.navigationPropertyInfo ? { navigationPropertyInfo: NavigationPropertyInfo.toJSON(info.navigationPropertyInfo) } : undefined),
-    };
+    return { ...info };
   }
 
   /** Serialize [[PropertyInfo]] to compressed JSON */
@@ -267,13 +298,13 @@ export namespace PropertyInfo {
     };
   }
 
-  /** Deserialize [[PropertyInfo]] from JSON */
+  /**
+   * Deserialize [[PropertyInfo]] from JSON
+   * @deprecated in 3.x. Use [[PropertyInfo]].
+   */
+  // istanbul ignore next
   export function fromJSON(json: PropertyInfoJSON): PropertyInfo {
-    return {
-      ...json,
-      classInfo: ClassInfo.fromJSON(json.classInfo),
-      ...(json.navigationPropertyInfo ? { navigationPropertyInfo: NavigationPropertyInfo.fromJSON(json.navigationPropertyInfo) } : undefined),
-    };
+    return { ...json };
   }
 }
 
@@ -281,6 +312,7 @@ export namespace PropertyInfo {
  * A serialized version of [[PropertyInfo]]
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   classInfo: TClassInfoJSON;
   name: string;
@@ -303,7 +335,7 @@ export interface RelatedClassInfo {
   targetClassInfo: ClassInfo;
 
   /** Is target class handled polymorphically */
-  isPolymorphicTargetClass: boolean;
+  isPolymorphicTargetClass?: boolean;
 
   /** Information about the ECRelationship */
   relationshipInfo: ClassInfo;
@@ -312,19 +344,17 @@ export interface RelatedClassInfo {
   isForwardRelationship: boolean;
 
   /** Is relationship handled polymorphically */
-  isPolymorphicRelationship: boolean;
+  isPolymorphicRelationship?: boolean;
 }
 
 /** @public */
 export namespace RelatedClassInfo {
-  /** Serialize [[RelatedClassInfo]] to JSON */
+  /**
+   * Serialize [[RelatedClassInfo]] to JSON
+   * @deprecated in 3.x. Use [[RelatedClassInfo]].
+   */
   export function toJSON(info: RelatedClassInfo): RelatedClassInfoJSON {
-    return {
-      ...info,
-      sourceClassInfo: ClassInfo.toJSON(info.sourceClassInfo),
-      targetClassInfo: ClassInfo.toJSON(info.targetClassInfo),
-      relationshipInfo: ClassInfo.toJSON(info.relationshipInfo),
-    };
+    return { ...info };
   }
 
   /** Serialize [[RelatedClassInfo]] to compressed JSON */
@@ -345,16 +375,12 @@ export namespace RelatedClassInfo {
     };
   }
 
-  /** Deserialize [[RelatedClassInfo]] from JSON */
+  /**
+   * Deserialize [[RelatedClassInfo]] from JSON
+   * @deprecated in 3.x. Use [[RelatedClassInfo]].
+   */
   export function fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo {
-    return {
-      ...json,
-      sourceClassInfo: ClassInfo.fromJSON(json.sourceClassInfo),
-      targetClassInfo: ClassInfo.fromJSON(json.targetClassInfo),
-      isPolymorphicTargetClass: json.isPolymorphicTargetClass ?? false,
-      relationshipInfo: ClassInfo.fromJSON(json.relationshipInfo),
-      isPolymorphicRelationship: json.isPolymorphicRelationship ?? false,
-    };
+    return { ...json };
   }
 
   /** Deserialize [[RelatedClassInfo]] from compressed JSON */
@@ -364,11 +390,9 @@ export namespace RelatedClassInfo {
     assert(classesMap.hasOwnProperty(json.relationshipInfo));
     return {
       ...json,
-      sourceClassInfo: ClassInfo.fromJSON({ id: json.sourceClassInfo, ...classesMap[json.sourceClassInfo] }),
-      targetClassInfo: ClassInfo.fromJSON({ id: json.targetClassInfo, ...classesMap[json.targetClassInfo] }),
-      isPolymorphicTargetClass: json.isPolymorphicTargetClass ?? false,
-      relationshipInfo: ClassInfo.fromJSON({ id: json.relationshipInfo, ...classesMap[json.relationshipInfo] }),
-      isPolymorphicRelationship: json.isPolymorphicRelationship ?? false,
+      sourceClassInfo: { id: json.sourceClassInfo, ...classesMap[json.sourceClassInfo] },
+      targetClassInfo: { id: json.targetClassInfo, ...classesMap[json.targetClassInfo] },
+      relationshipInfo: { id: json.relationshipInfo, ...classesMap[json.relationshipInfo] },
     };
   }
 
@@ -408,6 +432,7 @@ export namespace RelatedClassInfo {
  * A serialized version of [[RelatedClassInfo]]
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   sourceClassInfo: TClassInfoJSON;
   targetClassInfo: TClassInfoJSON;
@@ -425,10 +450,12 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
 export type RelatedClassInfoWithOptionalRelationship = PartialBy<RelatedClassInfo, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
 
 /** @public */
+// eslint-disable-next-line deprecation/deprecation
 export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<RelatedClassInfoJSON<TClassInfoJSON>, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
 
 /** @public */
-export namespace RelatedClassInfoWithOptionalRelationship { // eslint-disable-line @typescript-eslint/no-redeclare
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export namespace RelatedClassInfoWithOptionalRelationship {
   /** Serialize [[RelatedClassInfoWithOptionalRelationship]] to compressed JSON */
   export function toCompressedJSON(classInfo: RelatedClassInfoWithOptionalRelationship, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoWithOptionalRelationshipJSON<string> {
     const { sourceClassInfo, targetClassInfo, relationshipInfo, ...otherProps } = classInfo;
@@ -460,10 +487,9 @@ export namespace RelatedClassInfoWithOptionalRelationship { // eslint-disable-li
       assert(classesMap.hasOwnProperty(relationshipInfo));
     return {
       ...otherProps,
-      sourceClassInfo: ClassInfo.fromJSON({ id: sourceClassInfo, ...classesMap[sourceClassInfo] }),
-      targetClassInfo: ClassInfo.fromJSON({ id: targetClassInfo, ...classesMap[targetClassInfo] }),
-      isPolymorphicTargetClass: json.isPolymorphicTargetClass ?? false,
-      ...(relationshipInfo ? { relationshipInfo: ClassInfo.fromJSON({ id: relationshipInfo, ...classesMap[relationshipInfo] }) } : undefined),
+      sourceClassInfo: { id: sourceClassInfo, ...classesMap[sourceClassInfo] },
+      targetClassInfo: { id: targetClassInfo, ...classesMap[targetClassInfo] },
+      ...(relationshipInfo ? { relationshipInfo: { id: relationshipInfo, ...classesMap[relationshipInfo] } } : undefined),
     };
   }
 }
@@ -478,6 +504,7 @@ export type RelationshipPath = RelatedClassInfo[];
  * Serialized [[RelationshipPath]]
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export type RelationshipPathJSON<TClassInfoJSON = ClassInfoJSON> = RelatedClassInfoJSON<TClassInfoJSON>[];
 
 /** @public */

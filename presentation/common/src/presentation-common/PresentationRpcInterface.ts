@@ -12,14 +12,14 @@ import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./cont
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
 import { ClientDiagnostics, ClientDiagnosticsOptions } from "./Diagnostics";
-import { CompressedClassInfoJSON, InstanceKeyJSON } from "./EC";
+import { CompressedClassInfoJSON, InstanceKey } from "./EC";
 import { ElementProperties } from "./ElementProperties";
 import { PresentationStatus } from "./Error";
-import { NodeKeyJSON } from "./hierarchy/Key";
+import { NodeKey } from "./hierarchy/Key";
 import { NodeJSON } from "./hierarchy/Node";
 import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { KeySetJSON } from "./KeySet";
-import { LabelDefinitionJSON } from "./LabelDefinition";
+import { LabelDefinition } from "./LabelDefinition";
 import {
   ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
   ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
@@ -78,13 +78,13 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationR
  * Data structure for hierarchy request options.
  * @public
  */
-export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<never, NodeKeyJSON, RulesetVariableJSON>>;
+export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<never, NodeKey, RulesetVariableJSON>>;
 
 /**
  * Data structure for hierarchy level descriptor RPC request options.
  * @beta
  */
-export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions<HierarchyLevelDescriptorRequestOptions<never, NodeKeyJSON, RulesetVariableJSON>>;
+export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions<HierarchyLevelDescriptorRequestOptions<never, NodeKey, RulesetVariableJSON>>;
 
 /**
  * Data structure for filtering hierarchy by ECInstance paths request options.
@@ -148,13 +148,13 @@ export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
  * Data structure for label request options.
  * @public
  */
-export type DisplayLabelRpcRequestOptions = PresentationRpcRequestOptions<DisplayLabelRequestOptions<never, InstanceKeyJSON>>;
+export type DisplayLabelRpcRequestOptions = PresentationRpcRequestOptions<DisplayLabelRequestOptions<never, InstanceKey>>;
 
 /**
  * Data structure for labels request options.
  * @public
  */
-export type DisplayLabelsRpcRequestOptions = PresentationRpcRequestOptions<DisplayLabelsRequestOptions<never, InstanceKeyJSON>>;
+export type DisplayLabelsRpcRequestOptions = PresentationRpcRequestOptions<DisplayLabelsRequestOptions<never, InstanceKey>>;
 
 /**
  * Data structure for selection scope request options.
@@ -187,6 +187,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getNodesCount(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<number> { return this.forward(arguments); }
 
   @RpcOperation.setPolicy({ allowResponseCompression: true })
+  // eslint-disable-next-line deprecation/deprecation
   public async getPagedNodes(_token: IModelRpcProps, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<NodeJSON>> { return this.forward(arguments); }
 
   /** @beta */
@@ -195,10 +196,12 @@ export class PresentationRpcInterface extends RpcInterface {
 
   // TODO: add paged version of this (#387280)
   @RpcOperation.setPolicy({ allowResponseCompression: true })
+  // eslint-disable-next-line deprecation/deprecation
   public async getNodePaths(_token: IModelRpcProps, _options: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
 
   // TODO: add paged version of this (#387280)
   @RpcOperation.setPolicy({ allowResponseCompression: true })
+  // eslint-disable-next-line deprecation/deprecation
   public async getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
 
   @RpcOperation.setPolicy({ allowResponseCompression: true })
@@ -226,14 +229,15 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getElementProperties(_token: IModelRpcProps, _options: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> { return this.forward(arguments); }
 
   @RpcOperation.setPolicy({ allowResponseCompression: true })
+  // eslint-disable-next-line deprecation/deprecation
   public async getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> { return this.forward(arguments); }
 
   public async getContentInstanceKeys(_token: IModelRpcProps, _options: ContentInstanceKeysRpcRequestOptions): PresentationRpcResponse<{ total: number, items: KeySetJSON }> { return this.forward(arguments); }
 
-  public async getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON> { return this.forward(arguments); }
+  public async getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinition> { return this.forward(arguments); }
 
   @RpcOperation.setPolicy({ allowResponseCompression: true })
-  public async getPagedDisplayLabelDefinitions(_token: IModelRpcProps, _options: DisplayLabelsRpcRequestOptions): PresentationRpcResponse<PagedResponse<LabelDefinitionJSON>> { return this.forward(arguments); }
+  public async getPagedDisplayLabelDefinitions(_token: IModelRpcProps, _options: DisplayLabelsRpcRequestOptions): PresentationRpcResponse<PagedResponse<LabelDefinition>> { return this.forward(arguments); }
 
   public async getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
 

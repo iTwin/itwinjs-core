@@ -432,6 +432,7 @@ export class PresentationManager {
    */
   public async getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node[]> {
     const serializedNodesJson = await this._detail.getNodes(requestOptions);
+    // eslint-disable-next-line deprecation/deprecation
     const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
     const nodes = Node.listFromJSON(nodesJson.nodes);
     return this._localizationHelper.getLocalizedNodes(nodes);
@@ -653,6 +654,7 @@ export class PresentationManager {
       expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
     };
 
+    // eslint-disable-next-line deprecation/deprecation
     const reviver = (key: string, value: any) => (key === "") ? HierarchyCompareInfo.fromJSON(value) : value;
     return JSON.parse(await this._detail.request(params), reviver);
   }

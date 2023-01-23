@@ -19,7 +19,7 @@ import {
   SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
-import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
+import { createRandomECInstanceKey, createRandomECInstancesNodeKey } from "./_helpers/random";
 
 describe("PresentationRpcInterface", () => {
   class TestRpcRequest extends RpcRequest {
@@ -86,7 +86,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getPagedNodes call", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         rulesetOrId: faker.random.word(),
-        parentKey: createRandomECInstancesNodeKeyJSON(),
+        parentKey: createRandomECInstancesNodeKey(),
       };
       await rpcInterface.getPagedNodes(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
@@ -95,7 +95,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getNodesDescriptor call", async () => {
       const options: HierarchyLevelDescriptorRpcRequestOptions = {
         rulesetOrId: "test-ruleset",
-        parentKey: createRandomECInstancesNodeKeyJSON(),
+        parentKey: createRandomECInstancesNodeKey(),
       };
       await rpcInterface.getNodesDescriptor(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));

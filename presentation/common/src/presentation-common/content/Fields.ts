@@ -38,6 +38,7 @@ export interface BaseFieldJSON {
  * Data structure for a [[PropertiesField]] serialized to JSON.
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
   properties: PropertyJSON<TClassInfoJSON>[];
 }
@@ -46,6 +47,7 @@ export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends Bas
  * Data structure for a [[NestedContentField]] serialized to JSON.
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
   contentClassInfo: TClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
@@ -60,6 +62,7 @@ export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends 
  * JSON representation of a [[Field]]
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
 
 /** Is supplied field a properties field. */
@@ -194,6 +197,7 @@ export class Field {
     if (isPropertiesField(json))
       return PropertiesField.fromJSON(json, categories);
     if (isNestedContentField(json))
+      // eslint-disable-next-line deprecation/deprecation
       return NestedContentField.fromJSON(json, categories);
     const field = Object.create(Field.prototype);
     return Object.assign(field, json, {
@@ -307,7 +311,7 @@ export class PropertiesField extends Field {
   public override toJSON(): PropertiesFieldJSON {
     return {
       ...super.toJSON(),
-      properties: this.properties.map((p) => Property.toJSON(p)),
+      properties: this.properties,
     };
   }
 
@@ -319,7 +323,6 @@ export class PropertiesField extends Field {
     const field = Object.create(PropertiesField.prototype);
     return Object.assign(field, json, {
       category: this.getCategoryFromFieldJson(json, categories),
-      properties: json.properties.map(Property.fromJSON),
     });
   }
 
@@ -475,17 +478,19 @@ export class NestedContentField extends Field {
     };
   }
 
-  /** Deserialize [[NestedContentField]] from JSON */
+  /**
+   * Deserialize [[NestedContentField]] from JSON
+   * @deprecated in 3.x. Use [[NestedContentField.fromCompressedJSON]]
+   */
   public static override fromJSON(json: NestedContentFieldJSON | undefined, categories: CategoryDescription[]): NestedContentField | undefined {
     if (!json)
       return undefined;
 
     const field = Object.create(NestedContentField.prototype);
     return Object.assign(field, json, this.fromCommonJSON(json, categories), {
-      nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson, categories))
+      nestedFields: json.nestedFields
+        .map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson, categories))
         .filter((nestedField): nestedField is Field => !!nestedField),
-      contentClassInfo: ClassInfo.fromJSON(json.contentClassInfo),
-      pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
     });
   }
 
@@ -500,11 +505,12 @@ export class NestedContentField extends Field {
       category: this.getCategoryFromFieldJson(json, categories),
       nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromCompressedJSON(nestedFieldJson, classesMap, categories))
         .filter((nestedField): nestedField is Field => !!nestedField),
-      contentClassInfo: ClassInfo.fromJSON({ id: json.contentClassInfo, ...classesMap[json.contentClassInfo] }),
+      contentClassInfo: { id: json.contentClassInfo, ...classesMap[json.contentClassInfo] },
       pathToPrimaryClass: json.pathToPrimaryClass.map((stepJson) => RelatedClassInfo.fromCompressedJSON(stepJson, classesMap)),
     });
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   private static fromCommonJSON(json: NestedContentFieldJSON<ClassInfoJSON | string>, categories: CategoryDescription[]): Partial<NestedContentField> {
     return {
       category: this.getCategoryFromFieldJson(json, categories),
