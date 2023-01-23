@@ -234,12 +234,19 @@ export namespace CodeScopeSpec {
 }
 
 /**
- * The properties of a CodeSpec
- * @public */
+ * The JSON properties of a CodeSpec
+ * @public
+ */
 export interface CodeSpecProperties {
   scopeSpec: {
+    /** the type of CodeSpec */
     type: CodeScopeSpec.Type;
+    /** If true, the federationGuid of the scope element identifies the scope, for Codes that are globally unique.
+     * Otherwise, the ElementId of the scopeElement is used (for Codes that are scoped only within a single iModel).
+     */
     fGuidRequired?: boolean;
+    /** The relationship className, when `type` is `CodeScopeSpec.Type.RelatedElement` */
+    relationship?: string;
   };
   spec?: {
     isManagedWithDgnDb?: boolean;
