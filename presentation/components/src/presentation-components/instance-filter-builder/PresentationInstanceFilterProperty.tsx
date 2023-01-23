@@ -19,7 +19,7 @@ import { translate } from "../common/Utils";
 export interface PresentationInstanceFilterPropertyProps {
   /** Description of property. */
   propertyDescription: PropertyDescription;
-  /** Full name of property class. Format: <schema-name>:<class-name>. */
+  /** Full name of property class. Format: `<schema-name>:<class-name>`. */
   fullClassName: string;
   /** Label of property category */
   categoryLabel?: string;
