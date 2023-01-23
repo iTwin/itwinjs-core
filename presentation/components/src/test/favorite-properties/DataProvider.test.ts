@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
@@ -16,6 +17,8 @@ import {
 } from "@itwin/presentation-frontend";
 import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("FavoritePropertiesDataProvider", () => {
 

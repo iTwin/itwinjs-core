@@ -187,3 +187,7 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 [ModelsTree]($appui-react) and [CategoryTree]($appui-react) were moved to [@itwin/tree-widget-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/tree-widget) package and deprecated in `@itwin/appui-react` packages. They will be removed from `@itwin/appui-react` in future major version.
 
 [SpatialContainmentTree]($appui-react) were deprecated in favor of `SpatialContainmentTree` from [@itwin/breakdown-trees-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/breakdown-trees) package. [SpatialContainmentTree]($appui-react) will be removed in future major version.
+
+### @itwin/presentation-components
+
+- [FavoritePropertiesDataProvider]($presentation-components) has been replaced with [FavoritePropertiesDataFilterer]($presentation-components) which has been promoted to `@public` and is a more flexible approach to filtering properties.

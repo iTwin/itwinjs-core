@@ -22,7 +22,9 @@ public;DiagnosticsProps
 public;FavoritePropertiesDataFilterer 
 public;FavoritePropertiesDataFiltererProps
 public;FavoritePropertiesDataProvider 
+deprecated;FavoritePropertiesDataProvider 
 public;FavoritePropertiesDataProviderProps
+deprecated;FavoritePropertiesDataProviderProps
 internal;FAVORITES_CATEGORY_NAME = "Favorite"
 internal;FieldHierarchyRecord
 internal;FieldInfo
@@ -33,6 +35,7 @@ internal;getFavoritesCategory: () => CategoryDescription
 internal;getInstanceFilterFieldName(property: PropertyDescription): string
 public;IContentDataProvider 
 public;IFavoritePropertiesDataProvider
+deprecated;IFavoritePropertiesDataProvider
 public;IFilteredPresentationTreeDataProvider 
 alpha;INSTANCE_FILTER_FIELD_SEPARATOR = "#"
 alpha;InstanceFilterBuilder(props: InstanceFilterBuilderProps): JSX.Element
