@@ -431,7 +431,11 @@ export class Element extends Entity {
 
   /**
    * Insert this Element into the iModel.
-   * @see [[IModelDb.insertElement]]
+   * @see [[IModelDb.Elements.insertElement]]
+   * @note For convenience, the value of `this.id` is updated to reflect the resultant element's id.
+   * However when `this.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
+   * the value of `this.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[IModelDb.Elements.getElement]])
+   * if you intend to continue working with it. That will ensure its values reflect the persistent state.
    */
   public insert() {
     return this.id = this.iModel.elements.insertElement(this.toJSON());
