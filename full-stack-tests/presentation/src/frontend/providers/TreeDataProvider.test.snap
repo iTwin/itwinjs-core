@@ -3,7 +3,13 @@
 exports[`TreeDataProvider returns child nodes 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "description": "child description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "icon": "child image id",
+    "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
+    "key": Object {
       "pathFromRoot": Array [
         "d40a267dc8ff557a9c69ad79d652e39f",
         "45a35284023f06495cb8802368089dd5",
@@ -11,9 +17,6 @@ Array [
       "type": "child",
       "version": 2,
     },
-    "description": "child description",
-    "icon": "child image id",
-    "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -34,7 +37,13 @@ Array [
 exports[`TreeDataProvider returns child nodes with paging 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "description": "child description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "icon": "child image id",
+    "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
+    "key": Object {
       "pathFromRoot": Array [
         "d40a267dc8ff557a9c69ad79d652e39f",
         "45a35284023f06495cb8802368089dd5",
@@ -42,9 +51,6 @@ Array [
       "type": "child",
       "version": 2,
     },
-    "description": "child description",
-    "icon": "child image id",
-    "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -65,20 +71,23 @@ Array [
 exports[`TreeDataProvider returns root nodes 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "checkBoxState": 1,
+    "description": "root description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "icon": "root image id",
+    "id": "d40a267dc8ff557a9c69ad79d652e39f",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "key": Object {
       "pathFromRoot": Array [
         "d40a267dc8ff557a9c69ad79d652e39f",
       ],
       "type": "root",
       "version": 2,
     },
-    "checkBoxState": 1,
-    "description": "root description",
-    "hasChildren": true,
-    "icon": "root image id",
-    "id": "d40a267dc8ff557a9c69ad79d652e39f",
-    "isCheckboxDisabled": true,
-    "isCheckboxVisible": true,
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -106,20 +115,23 @@ Array [
 exports[`TreeDataProvider returns root nodes with paging 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "checkBoxState": 1,
+    "description": "root description",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "icon": "root image id",
+    "id": "d40a267dc8ff557a9c69ad79d652e39f",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "key": Object {
       "pathFromRoot": Array [
         "d40a267dc8ff557a9c69ad79d652e39f",
       ],
       "type": "root",
       "version": 2,
     },
-    "checkBoxState": 1,
-    "description": "root description",
-    "hasChildren": true,
-    "icon": "root image id",
-    "id": "d40a267dc8ff557a9c69ad79d652e39f",
-    "isCheckboxDisabled": true,
-    "isCheckboxVisible": true,
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -147,7 +159,13 @@ Array [
 exports[`TreeDataProvider shows grouping node children counts 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "description": "A container for persisting definition elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "80c7ed6b188503c857ac50041bf4b6d0",
+    "key": Object {
       "className": "BisCore:DefinitionModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
@@ -156,9 +174,6 @@ Array [
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "A container for persisting definition elements.",
-    "hasChildren": true,
-    "id": "80c7ed6b188503c857ac50041bf4b6d0",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -187,7 +202,13 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "description": "The singleton container for repository-specific definition elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "20780ee9a09d76aeba732a9a1e483a49",
+    "key": Object {
       "className": "BisCore:DictionaryModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
@@ -196,9 +217,6 @@ Array [
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "The singleton container for repository-specific definition elements.",
-    "hasChildren": true,
-    "id": "20780ee9a09d76aeba732a9a1e483a49",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -227,7 +245,13 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "description": "Contains a list of document elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "b3334e28acbad8431c46ca61e7f8e5e3",
+    "key": Object {
       "className": "BisCore:DocumentListModel",
       "groupedInstancesCount": 2,
       "pathFromRoot": Array [
@@ -236,9 +260,6 @@ Array [
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "Contains a list of document elements.",
-    "hasChildren": true,
-    "id": "b3334e28acbad8431c46ca61e7f8e5e3",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -267,7 +288,12 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "b35e9d24b15bc9912c6abb46cb27ca7f",
+    "key": Object {
       "className": "Generic:GroupModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
@@ -276,8 +302,6 @@ Array [
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "hasChildren": true,
-    "id": "b35e9d24b15bc9912c6abb46cb27ca7f",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -306,7 +330,13 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "description": "A container for persisting link elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "7f40f83df83799f79d13cfb7446d677f",
+    "key": Object {
       "className": "BisCore:LinkModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
@@ -315,9 +345,6 @@ Array [
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "A container for persisting link elements.",
-    "hasChildren": true,
-    "id": "7f40f83df83799f79d13cfb7446d677f",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -346,7 +373,13 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "description": "A container for persisting physical elements that model physical space.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "685c4d0e7d0c2f8d0b6279cfb4a5f03a",
+    "key": Object {
       "className": "BisCore:PhysicalModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
@@ -355,9 +388,6 @@ Array [
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "A container for persisting physical elements that model physical space.",
-    "hasChildren": true,
-    "id": "685c4d0e7d0c2f8d0b6279cfb4a5f03a",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -386,7 +416,13 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "description": "The singleton container of repository-related information elements.",
+    "filtering": Object {
+      "descriptor": [Function],
+    },
+    "hasChildren": true,
+    "id": "72283c5c8ebd68e345d166c40f0b5101",
+    "key": Object {
       "className": "BisCore:RepositoryModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
@@ -395,9 +431,6 @@ Array [
       "type": "ECClassGroupingNode",
       "version": 2,
     },
-    "description": "The singleton container of repository-related information elements.",
-    "hasChildren": true,
-    "id": "72283c5c8ebd68e345d166c40f0b5101",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",

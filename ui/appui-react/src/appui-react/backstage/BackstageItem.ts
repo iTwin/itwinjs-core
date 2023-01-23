@@ -16,7 +16,7 @@ import {
 } from "@itwin/appui-abstract";
 
 /** Used to specify the item type added to the backstage menu.
- * @deprecated Use type guards instead.
+ * @deprecated in 3.0. Use type guards instead.
  * @beta
  */
 export enum BackstageItemType {

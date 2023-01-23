@@ -13,7 +13,7 @@ import { TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
 
 /** BreadcrumbChangeEvent Event Args class.
  * @beta
- * @deprecated
+ * @deprecated in 3.0.
  */
 export interface BreadcrumbUpdateEventArgs {
   dataProvider: TreeDataProvider;
@@ -23,13 +23,13 @@ export interface BreadcrumbUpdateEventArgs {
 
 /** BreadcrumbChangeEvent Event class.
  * @beta
- * @deprecated
+ * @deprecated in 3.0.
  */
 export class BreadcrumbUpdateEvent extends UiEvent<BreadcrumbUpdateEventArgs> { }
 
 /** Breadcrumb Path class.
  * @beta
- * @deprecated
+ * @deprecated in 3.0.
  */
 export class BreadcrumbPath {
   private _dataProvider: TreeDataProvider;

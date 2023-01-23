@@ -3,7 +3,11 @@
 exports[`FilteredTreeDataProvider getNodes returns child nodes 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "checkBoxState": 1,
+    "description": "Dignissimos rerum ea et veniam deleniti.",
+    "id": "3ce91f5f-fb53-47e3-9057-25bcde8fc52b/35e054ff-4af4-4b90-9f05-cf569876c4ad",
+    "isCheckboxVisible": true,
+    "key": Object {
       "instanceKeys": Array [
         Object {
           "className": "matrices",
@@ -21,10 +25,6 @@ Array [
       "type": "ECInstancesNode",
       "version": 2,
     },
-    "checkBoxState": 1,
-    "description": "Dignissimos rerum ea et veniam deleniti.",
-    "id": "3ce91f5f-fb53-47e3-9057-25bcde8fc52b/35e054ff-4af4-4b90-9f05-cf569876c4ad",
-    "isCheckboxVisible": true,
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -46,7 +46,13 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "autoExpand": true,
+    "checkBoxState": 1,
+    "description": "Pariatur qui recusandae veritatis facilis culpa culpa quia.",
+    "hasChildren": true,
+    "id": "cfa9ea2f-5601-44bf-9a7b-68f59066147e/26358d29-4465-4538-87ce-4ea9fecefae2",
+    "isCheckboxVisible": true,
+    "key": Object {
       "instanceKeys": Array [
         Object {
           "className": "secondary",
@@ -64,12 +70,6 @@ Array [
       "type": "ECInstancesNode",
       "version": 2,
     },
-    "autoExpand": true,
-    "checkBoxState": 1,
-    "description": "Pariatur qui recusandae veritatis facilis culpa culpa quia.",
-    "hasChildren": true,
-    "id": "cfa9ea2f-5601-44bf-9a7b-68f59066147e/26358d29-4465-4538-87ce-4ea9fecefae2",
-    "isCheckboxVisible": true,
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -95,7 +95,10 @@ Array [
 exports[`FilteredTreeDataProvider getNodes returns root nodes 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "autoExpand": true,
+    "hasChildren": true,
+    "id": "d6f3ce25-3131-4958-9608-de24d3697e80/29cff0ad-814a-46e1-9924-d1c3285c70fc",
+    "key": Object {
       "instanceKeys": Array [
         Object {
           "className": "capacitor",
@@ -113,9 +116,6 @@ Array [
       "type": "ECInstancesNode",
       "version": 2,
     },
-    "autoExpand": true,
-    "hasChildren": true,
-    "id": "d6f3ce25-3131-4958-9608-de24d3697e80/29cff0ad-814a-46e1-9924-d1c3285c70fc",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -135,7 +135,13 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "autoExpand": true,
+    "checkBoxState": 1,
+    "hasChildren": true,
+    "icon": "Practical Fresh Bacon",
+    "id": "b5f84a08-8011-4207-a45e-b578ebc67f7a/05407b9a-87b2-4839-836b-820ec1b15ca0",
+    "isCheckboxVisible": true,
+    "key": Object {
       "instanceKeys": Array [
         Object {
           "className": "utilize",
@@ -153,12 +159,6 @@ Array [
       "type": "ECInstancesNode",
       "version": 2,
     },
-    "autoExpand": true,
-    "checkBoxState": 1,
-    "hasChildren": true,
-    "icon": "Practical Fresh Bacon",
-    "id": "b5f84a08-8011-4207-a45e-b578ebc67f7a/05407b9a-87b2-4839-836b-820ec1b15ca0",
-    "isCheckboxVisible": true,
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",

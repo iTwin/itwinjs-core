@@ -47,6 +47,8 @@ export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuil
   const allowToAddGroup = ruleGroupDepthLimit === undefined || path.length < ruleGroupDepthLimit;
   const { activeElement, ...eventHandlers } = React.useContext(ActiveRuleGroupContext);
 
+  const showOperator = group.items.length > 1;
+
   return <div
     ref={groupRef}
     className="rule-group"
@@ -57,7 +59,7 @@ export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuil
       {group.groupId !== undefined && <IconButton data-testid="rule-group-remove" onClick={removeGroup} styleType="borderless" size="small"><SvgDelete /></IconButton>}
     </div>
     <div className="rule-group-content">
-      <PropertyFilterBuilderRuleGroupOperator operator={group.operator} onChange={onOperatorChange}/>
+      {showOperator ? <PropertyFilterBuilderRuleGroupOperator operator={group.operator} onChange={onOperatorChange} /> : null}
       <div className="rule-group-items">
         {group.items.map((item) => <PropertyFilterBuilderGroupOrRule key={item.id} path={path} item={item} />)}
       </div>
@@ -98,7 +100,7 @@ interface PropertyFilterBuilderGroupOrRuleProps {
 }
 
 const PropertyFilterBuilderGroupOrRule = React.memo(
-  function PropertyFilterBuilderGroupOrRule({path, item}: PropertyFilterBuilderGroupOrRuleProps) {
+  function PropertyFilterBuilderGroupOrRule({ path, item }: PropertyFilterBuilderGroupOrRuleProps) {
     const itemPath = [...path, item.id];
 
     if (isPropertyFilterBuilderRuleGroup(item))

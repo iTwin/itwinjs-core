@@ -11,7 +11,7 @@ import { DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTarg
 
 /** React properties for withDragSource Higher-Order Component
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 export interface WithDragSourceProps<DragDropObject = any> {
   /** Properties and callbacks for DragSource. */
@@ -58,7 +58,7 @@ function getEmptyImage(): HTMLImageElement {
  * HOC (Higher-Order Component) that transforms wrapped component into a DragSource.
  * @param Component component to wrap.
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 // istanbul ignore next
 export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(

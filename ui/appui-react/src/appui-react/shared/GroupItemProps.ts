@@ -18,7 +18,7 @@ export interface GroupItemProps extends ItemProps {
   defaultActiveItemId?: string;
   groupId?: string;
   items: AnyItemDef[];
-  /** @deprecated Used in UI1.0 only. */
+  /** @deprecated in 3.6. Used in UI1.0 only. */
   direction?: Direction; // eslint-disable-line deprecation/deprecation
   itemsInColumn?: number;
   /** if set, it is used to explicitly set a label at top of open group component. */
