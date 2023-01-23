@@ -59,6 +59,8 @@ export interface BaseFieldJSON {
 
 // @public
 export interface BaseNodeKey {
+    // @alpha
+    instanceKeysSelectQuery?: PresentationQuery;
     pathFromRoot: string[];
     type: string;
     version: number;
@@ -66,12 +68,20 @@ export interface BaseNodeKey {
 
 // @public
 export interface BaseNodeKeyJSON {
+    // @alpha (undocumented)
+    instanceKeysSelectQuery?: PresentationQuery;
     // (undocumented)
     pathFromRoot: string[];
     // (undocumented)
     type: string;
     // (undocumented)
     version?: number;
+}
+
+// @alpha (undocumented)
+export interface BasePresentationQueryBinding {
+    // (undocumented)
+    type: "Id" | "IdSet" | "ECValue" | "ValueSet";
 }
 
 // @public
@@ -778,6 +788,26 @@ export interface ECPropertyValueQuerySpecification extends QuerySpecificationBas
     specType: QuerySpecificationTypes.ECPropertyValue;
 }
 
+// @alpha (undocumented)
+export interface ECValueBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "ECValue";
+    // (undocumented)
+    value: any;
+    // (undocumented)
+    valueType: string;
+}
+
+// @alpha (undocumented)
+export interface ECValueSetBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "ValueSet";
+    // (undocumented)
+    value: any[];
+    // (undocumented)
+    valueType: string;
+}
+
 // @public
 export interface EditorDescription {
     name: string;
@@ -1231,10 +1261,26 @@ export interface Id64sRulesetVariableJSON extends RulesetVariableBaseJSON {
     value: Id64String[] | CompressedId64Set;
 }
 
+// @alpha (undocumented)
+export interface IdBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "Id";
+    // (undocumented)
+    value: Id64String;
+}
+
 // @public
 export interface IdCategoryIdentifier {
     categoryId: string;
     type: "Id";
+}
+
+// @alpha (undocumented)
+export interface IdSetBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "IdSet";
+    // (undocumented)
+    value: Id64String[];
 }
 
 // @public @deprecated
@@ -2080,6 +2126,15 @@ export interface PresentationIpcInterface {
     unsetRulesetVariable(params: UnsetRulesetVariableParams): Promise<void>;
     updateHierarchyState(params: UpdateHierarchyStateParams<NodeKeyJSON>): Promise<void>;
 }
+
+// @alpha
+export interface PresentationQuery {
+    bindings?: PresentationQueryBinding[];
+    query: string;
+}
+
+// @alpha
+export type PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding;
 
 // @public
 export class PresentationRpcInterface extends RpcInterface {
