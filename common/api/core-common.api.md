@@ -115,7 +115,7 @@ export interface AffineTransformProps {
     translationY: number;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export const aggregateLoad: {
     lastRequest: number;
     lastResponse: number;
@@ -549,7 +549,7 @@ export enum BatchType {
     VolumeClassifier = 1
 }
 
-// @internal @deprecated
+// @internal
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
     static readonly accessControl: {
         allowOrigin: string;
@@ -559,13 +559,13 @@ export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
     abstract readonly protocol: BentleyCloudRpcProtocol;
 }
 
-// @internal @deprecated
+// @internal
 export class BentleyCloudRpcManager extends RpcManager {
     static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[], routing?: RpcRoutingToken): BentleyCloudRpcConfiguration;
     static initializeImpl(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration;
 }
 
-// @internal @deprecated
+// @internal
 export interface BentleyCloudRpcParams {
     info: OpenAPIInfo;
     pendingRequestListener?: RpcRequestEventHandler;
@@ -573,7 +573,7 @@ export interface BentleyCloudRpcParams {
     uriPrefix?: string;
 }
 
-// @internal @deprecated
+// @internal
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     // (undocumented)
     checkToken: boolean;
@@ -1744,10 +1744,10 @@ export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
     readonly allowEdit?: string;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export const CURRENT_INVOCATION: unique symbol;
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export const CURRENT_REQUEST: unique symbol;
 
 // @internal
@@ -3299,7 +3299,7 @@ export enum FontType {
     TrueType = 1
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export interface FormDataCommon {
     // (undocumented)
     append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
@@ -4280,7 +4280,7 @@ export enum HSVConstants {
     VISIBILITY_GOAL = 40
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
 // @public @deprecated
@@ -4870,10 +4870,10 @@ export interface InformationPartitionElementProps extends ElementProps {
     description?: string;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export const initializeRpcRequest: () => void;
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export const INSTANCE: unique symbol;
 
 // @internal (undocumented)
@@ -5416,7 +5416,7 @@ export class MapSubLayerSettings {
 // @public
 export function mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus;
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export interface MarshalingBinaryMarker {
     // (undocumented)
     chunks: number;
@@ -5428,7 +5428,7 @@ export interface MarshalingBinaryMarker {
     size: number;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export namespace MarshalingBinaryMarker {
     // (undocumented)
     export function createDefault(): MarshalingBinaryMarker;
@@ -5812,13 +5812,13 @@ export class OctEncodedNormalPair {
     second: OctEncodedNormal;
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPIContentMap {
     // (undocumented)
     [index: string]: OpenAPIMediaType;
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPIDocument {
     // (undocumented)
     info: OpenAPIInfo;
@@ -5828,7 +5828,7 @@ export interface OpenAPIDocument {
     paths: OpenAPIPaths;
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPIEncoding {
     // (undocumented)
     allowReserved?: boolean;
@@ -5848,13 +5848,13 @@ export interface OpenAPIInfo {
     version: string;
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPIMediaType {
     // (undocumented)
     schema?: OpenAPISchema;
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPIOperation {
     // (undocumented)
     operationId?: string;
@@ -5868,7 +5868,7 @@ export interface OpenAPIOperation {
     summary?: string;
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPIParameter {
     // (undocumented)
     allowEmptyValue?: boolean;
@@ -5892,7 +5892,7 @@ export interface OpenAPIParameter {
     style?: "matrix" | "label" | "form" | "simple" | "spaceDelimited" | "pipeDelimited" | "deepObject";
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPIPathItem {
     // (undocumented)
     delete?: OpenAPIOperation;
@@ -5916,13 +5916,13 @@ export interface OpenAPIPathItem {
     trace?: OpenAPIOperation;
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPIPaths {
     // (undocumented)
     [index: string]: OpenAPIPathItem;
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPIRequestBody {
     // (undocumented)
     content: OpenAPIContentMap;
@@ -5932,7 +5932,7 @@ export interface OpenAPIRequestBody {
     required?: boolean;
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPIResponse {
     // (undocumented)
     content?: {
@@ -5942,7 +5942,7 @@ export interface OpenAPIResponse {
     description: string;
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPIResponses {
     // (undocumented)
     "200"?: OpenAPIResponse;
@@ -5960,7 +5960,7 @@ export interface OpenAPIResponses {
     default?: OpenAPIResponse;
 }
 
-// @internal @deprecated
+// @internal
 export interface OpenAPISchema {
     // (undocumented)
     description?: string;
@@ -5987,7 +5987,7 @@ export interface OpenDbKey {
     readonly key?: string;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export const OPERATION: unique symbol;
 
 // @alpha
@@ -6359,7 +6359,7 @@ export interface PointWithStatus {
     s: GeoCoordStatus;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export const POLICY: unique symbol;
 
 // @internal (undocumented)
@@ -6975,7 +6975,7 @@ export enum Rank {
     User = 3
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export interface ReadableFormData extends BackendReadable {
     // (undocumented)
     getHeaders(): {
@@ -7064,7 +7064,7 @@ export class RealityModelDisplaySettings {
     toJSON(): RealityModelDisplayProps | undefined;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export const REGISTRY: unique symbol;
 
 // @public
@@ -7567,7 +7567,7 @@ export interface RequestNewBriefcaseProps {
     readonly iTwinId: GuidString;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export class ResponseLike implements Response {
     constructor(data: any);
     // (undocumented)
@@ -7648,10 +7648,10 @@ export interface RpcActivity extends SessionProps {
     readonly rpcMethod?: string;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export type RpcActivityRun = (activity: RpcActivity, fn: () => Promise<any>) => Promise<any>;
 
-// @internal @deprecated
+// @internal
 export abstract class RpcConfiguration {
     // (undocumented)
     allowAttachedInterfaces: boolean;
@@ -7689,7 +7689,7 @@ export abstract class RpcConfiguration {
     transientFaultLimit: number;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => {
     new (): RpcConfiguration;
 };
@@ -7708,7 +7708,7 @@ export enum RpcContentType {
     Unknown = 0
 }
 
-// @internal @deprecated
+// @internal
 export class RpcControlChannel {
     // (undocumented)
     static channels: RpcControlChannel[];
@@ -7730,7 +7730,7 @@ export abstract class RpcControlResponse {
     message: string;
 }
 
-// @internal @deprecated
+// @internal
 export class RpcDefaultConfiguration extends RpcConfiguration {
     // (undocumented)
     interfaces: () => never[];
@@ -7738,13 +7738,13 @@ export class RpcDefaultConfiguration extends RpcConfiguration {
     protocol: RpcProtocol;
 }
 
-// @internal @deprecated
+// @internal
 export class RpcDirectProtocol extends RpcProtocol {
     // (undocumented)
     readonly requestType: typeof RpcDirectRequest;
 }
 
-// @internal @deprecated
+// @internal
 export class RpcDirectRequest extends RpcRequest {
     // (undocumented)
     fulfillment: RpcRequestFulfillment | undefined;
@@ -7780,7 +7780,7 @@ export abstract class RpcInterface {
     readonly routing: RpcRoutingToken;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> {
     // (undocumented)
     interfaceName: string;
@@ -7790,7 +7790,7 @@ export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> {
     prototype: T;
 }
 
-// @internal @deprecated
+// @internal
 export interface RpcInterfaceEndpoints {
     // (undocumented)
     compatible: boolean;
@@ -7802,10 +7802,10 @@ export interface RpcInterfaceEndpoints {
     operationNames: string[];
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
-// @internal @deprecated
+// @internal
 export class RpcInvocation {
     constructor(protocol: RpcProtocol, request: SerializedRpcRequest);
     static current(rpcImpl: RpcInterface): RpcInvocation;
@@ -7828,7 +7828,7 @@ export class RpcInvocation {
     get status(): RpcRequestStatus;
 }
 
-// @internal @deprecated
+// @internal
 export interface RpcManagedStatus {
     // (undocumented)
     iTwinRpcCoreResponse: true;
@@ -7840,7 +7840,7 @@ export interface RpcManagedStatus {
     } | RpcNotFoundResponse;
 }
 
-// @internal @deprecated
+// @internal
 export class RpcManager {
     static describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]>;
     static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing?: RpcRoutingToken): T;
@@ -7852,13 +7852,13 @@ export class RpcManager {
     static unregisterImpl<TDefinition extends RpcInterface>(definition: RpcInterfaceDefinition<TDefinition>): void;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export class RpcMarshaling {
     static deserialize(protocol: RpcProtocol | undefined, value: RpcSerializedValue): any;
     static serialize(protocol: RpcProtocol | undefined, value: any): Promise<RpcSerializedValue>;
 }
 
-// @internal @deprecated
+// @internal
 export class RpcMultipart {
     static createForm(value: RpcSerializedValue): FormData;
     static createStream(value: RpcSerializedValue): ReadableFormData;
@@ -7879,7 +7879,7 @@ export class RpcNotFoundResponse extends RpcControlResponse {
     message: string;
 }
 
-// @internal @deprecated
+// @internal
 export class RpcOpenAPIDescription {
     constructor(protocol: WebAppRpcProtocol);
     get document(): OpenAPIDocument;
@@ -7888,7 +7888,7 @@ export class RpcOpenAPIDescription {
     toJSON(): OpenAPIDocument;
 }
 
-// @internal @deprecated
+// @internal
 export class RpcOperation {
     constructor(definition: RpcInterfaceDefinition, operation: string, policy: RpcOperationPolicy);
     // (undocumented)
@@ -7902,19 +7902,15 @@ export class RpcOperation {
     policy: RpcOperationPolicy;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export namespace RpcOperation {
-    // @deprecated
     export function allowResponseCaching(control?: RpcResponseCacheControl): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
-    // @deprecated
     export function setDefaultPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps): <T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) => void;
-    // @deprecated
     export function setPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
-    // @deprecated
     export function setRoutingProps(handler: RpcRequestTokenSupplier_T): <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => void;
 }
 
-// @internal @deprecated
+// @internal
 export class RpcOperationPolicy {
     allowResponseCaching: RpcResponseCachingCallback_T;
     allowResponseCompression: boolean;
@@ -7926,10 +7922,10 @@ export class RpcOperationPolicy {
     token: RpcRequestTokenSupplier_T;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export type RpcOperationPolicyProps = Partial<RpcOperationPolicy>;
 
-// @internal @deprecated
+// @internal
 export interface RpcOperationsProfile {
     // (undocumented)
     readonly lastRequest: number;
@@ -7937,7 +7933,7 @@ export interface RpcOperationsProfile {
     readonly lastResponse: number;
 }
 
-// @internal @deprecated
+// @internal
 export class RpcPendingQueue {
     // (undocumented)
     static initialize(): void;
@@ -7951,7 +7947,7 @@ export class RpcPendingResponse extends RpcControlResponse {
     message: string;
 }
 
-// @internal @deprecated
+// @internal
 export abstract class RpcProtocol {
     constructor(configuration: RpcConfiguration);
     checkToken: boolean;
@@ -8014,10 +8010,10 @@ export enum RpcProtocolEvent {
     UnknownErrorReceived = 4
 }
 
-// @internal @deprecated
+// @internal
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
 
-// @internal @deprecated
+// @internal
 export enum RpcProtocolVersion {
     // (undocumented)
     IntroducedNoContent = 1,
@@ -8027,7 +8023,7 @@ export enum RpcProtocolVersion {
     None = 0
 }
 
-// @internal @deprecated
+// @internal
 export class RpcPushChannel<T> {
     static create<T>(name: string, service?: RpcPushService): RpcPushChannel<T>;
     // (undocumented)
@@ -8051,7 +8047,7 @@ export class RpcPushChannel<T> {
     subscribe(): RpcPushSubscription<T>;
 }
 
-// @internal @deprecated
+// @internal
 export abstract class RpcPushConnection<T> {
     protected constructor(channel: RpcPushChannel<T>, client: unknown);
     // (undocumented)
@@ -8064,10 +8060,10 @@ export abstract class RpcPushConnection<T> {
     abstract send(messageData: T): Promise<void>;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export type RpcPushMessageListener<T> = (message: T) => void;
 
-// @internal @deprecated
+// @internal
 export class RpcPushService {
     constructor(name: string);
     static dedicated: RpcPushService;
@@ -8075,7 +8071,7 @@ export class RpcPushService {
     readonly name: string;
 }
 
-// @internal @deprecated
+// @internal
 export class RpcPushSubscription<T> {
     constructor(channel: RpcPushChannel<T>);
     // (undocumented)
@@ -8084,13 +8080,13 @@ export class RpcPushSubscription<T> {
     readonly onMessage: BeEvent<RpcPushMessageListener<T>>;
 }
 
-// @internal @deprecated
+// @internal
 export abstract class RpcPushTransport {
     // (undocumented)
     onMessage?: (channelId: string, messageData: any) => void;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export class RpcRegistry {
     // (undocumented)
     definitionClasses: Map<string, RpcInterfaceDefinition>;
@@ -8130,7 +8126,7 @@ export class RpcRegistry {
     unregisterImpl<TDefinition extends RpcInterface>(definition: RpcInterfaceDefinition<TDefinition>): void;
 }
 
-// @internal @deprecated
+// @internal
 export abstract class RpcRequest<TResponse = any> {
     constructor(client: RpcInterface, operation: string, parameters: any[]);
     static get activeRequests(): ReadonlyMap<string, RpcRequest>;
@@ -8198,10 +8194,10 @@ export abstract class RpcRequest<TResponse = any> {
     protected supportsStatusCategory(): boolean;
 }
 
-// @internal @deprecated
+// @internal
 export type RpcRequestCallback_T = (request: RpcRequest) => void;
 
-// @internal @deprecated
+// @internal
 export interface RpcRequestContext {
     getId: (request: RpcRequest) => string;
     serialize: (request: RpcRequest) => Promise<SerializedRpcActivity>;
@@ -8217,10 +8213,10 @@ export enum RpcRequestEvent {
     TransientErrorReceived = 2
 }
 
-// @internal @deprecated
+// @internal
 export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void;
 
-// @internal @deprecated
+// @internal
 export interface RpcRequestFulfillment {
     allowCompression?: boolean;
     id: string;
@@ -8232,16 +8228,16 @@ export interface RpcRequestFulfillment {
     status: number;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export namespace RpcRequestFulfillment {
     // (undocumented)
     export function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment>;
 }
 
-// @internal @deprecated
+// @internal
 export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number;
 
-// @internal @deprecated
+// @internal
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
 // @public @deprecated
@@ -8284,7 +8280,7 @@ export namespace RpcRequestStatus {
     export function isTransientError(status: RpcRequestStatus): boolean;
 }
 
-// @internal @deprecated
+// @internal
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined;
 
 // @public @deprecated
@@ -8295,22 +8291,22 @@ export enum RpcResponseCacheControl {
     None = 0
 }
 
-// @internal @deprecated
+// @internal
 export type RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl;
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export interface RpcRoutingMap extends RpcConfigurationSupplier {
     // (undocumented)
     configurations: Map<number, RpcConfigurationSupplier>;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export namespace RpcRoutingMap {
     // (undocumented)
     export function create(): RpcRoutingMap;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export class RpcRoutingToken {
     // (undocumented)
     readonly debugLabel: string;
@@ -8322,7 +8318,7 @@ export class RpcRoutingToken {
     readonly id: number;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export interface RpcSerializedValue {
     // (undocumented)
     chunks?: number;
@@ -8334,13 +8330,13 @@ export interface RpcSerializedValue {
     stream?: BackendReadable;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export namespace RpcSerializedValue {
     // (undocumented)
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export class RpcSessionInvocation extends RpcInvocation {
     // (undocumented)
     static create(request: InterceptedRpcRequest): RpcSessionInvocation;
@@ -8413,7 +8409,7 @@ export interface SerializedRpcActivity {
     sessionId: string;
 }
 
-// @internal @deprecated
+// @internal
 export interface SerializedRpcOperation {
     // (undocumented)
     encodedRequest?: string;
@@ -8425,7 +8421,7 @@ export interface SerializedRpcOperation {
     operationName: string;
 }
 
-// @internal @deprecated
+// @internal
 export interface SerializedRpcRequest extends SerializedRpcActivity {
     // (undocumented)
     caching: RpcResponseCacheControl;
@@ -9014,7 +9010,7 @@ export class TerrainSettings {
     toJSON(): TerrainProps;
 }
 
-// @internal @deprecated
+// @internal
 export class TestRpcManager {
     // (undocumented)
     static initialize(interfaces: RpcInterfaceDefinition[]): void;
@@ -9947,7 +9943,7 @@ export interface ViewStateProps {
     viewDefinitionProps: ViewDefinitionProps;
 }
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export const WEB_RPC_CONSTANTS: {
     CONTENT: string;
     TEXT: string;
@@ -9956,7 +9952,7 @@ export const WEB_RPC_CONSTANTS: {
     MULTIPART: string;
 };
 
-// @internal @deprecated (undocumented)
+// @internal (undocumented)
 export abstract class WebAppRpcLogging {
     // (undocumented)
     protected buildOperationDescriptor(operation: RpcOperation | SerializedRpcOperation): string;
@@ -9983,7 +9979,7 @@ export abstract class WebAppRpcLogging {
     protected logResponse(loggerCategory: string, message: string, object: WebAppRpcRequest | SerializedRpcRequest, status: number, elapsed: number): void;
 }
 
-// @internal @deprecated
+// @internal
 export abstract class WebAppRpcProtocol extends RpcProtocol {
     constructor(configuration: RpcConfiguration);
     static computeContentType(httpType: string | null | undefined): RpcContentType;
@@ -10004,7 +10000,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     supportsStatusCategory: boolean;
 }
 
-// @internal @deprecated
+// @internal
 export class WebAppRpcRequest extends RpcRequest {
     constructor(client: RpcInterface, operation: string, parameters: any[]);
     // (undocumented)

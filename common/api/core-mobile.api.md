@@ -225,23 +225,23 @@ export interface MobileNotifications {
 // @beta (undocumented)
 export type MobileProgressCallback = (bytesWritten: number, totalBytesWritten: number, totalBytesExpectedToWrite: number) => void;
 
-// @beta @deprecated (undocumented)
+// @internal (undocumented)
 export type MobileRpcChunks = Array<string | Uint8Array>;
 
-// @beta @deprecated
+// @internal
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
     static get args(): any;
     static get platform(): RpcMobilePlatform;
     // (undocumented)
     abstract protocol: MobileRpcProtocol;
-    // @internal (undocumented)
+    // (undocumented)
     static setup: {
         obtainPort: () => number;
         checkPlatform: () => boolean;
     };
 }
 
-// @beta @deprecated (undocumented)
+// @internal (undocumented)
 export interface MobileRpcGateway {
     // (undocumented)
     connectionId: number;
@@ -255,15 +255,15 @@ export interface MobileRpcGateway {
     sendString: (message: string, connectionId: number) => void;
 }
 
-// @beta @deprecated
+// @internal
 export class MobileRpcManager {
     static initializeClient(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
     static initializeImpl(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
-    // @internal (undocumented)
+    // (undocumented)
     static ready(): Promise<void>;
 }
 
-// @beta @deprecated
+// @internal
 export class MobileRpcProtocol extends RpcProtocol {
     constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint);
     // (undocumented)
@@ -284,10 +284,10 @@ export class MobileRpcProtocol extends RpcProtocol {
     socket: WebSocket;
 }
 
-// @beta @deprecated (undocumented)
+// @internal (undocumented)
 export class MobileRpcRequest extends RpcRequest {
     protected load(): Promise<RpcSerializedValue>;
-    // @internal (undocumented)
+    // (undocumented)
     notifyResponse(fulfillment: RpcRequestFulfillment): void;
     readonly protocol: MobileRpcProtocol;
     protected send(): Promise<number>;
@@ -312,7 +312,7 @@ export enum Orientation {
     Unknown = 0
 }
 
-// @beta @deprecated
+// @internal
 export enum RpcMobilePlatform {
     // (undocumented)
     Android = 1,
