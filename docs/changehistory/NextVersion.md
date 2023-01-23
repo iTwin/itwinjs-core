@@ -107,7 +107,7 @@ Ability to filter individual hierarchy levels was added for tree components that
 ```ts
 return <ControlledTree
   // other props
-  treeRenderer={(treeProps) => <PresentationTreeRenderer {...treeProps} imodel={props.imodel} modelSource={filteredModelSource} />}
+  treeRenderer={(treeProps) => <PresentationTreeRenderer {...treeProps} imodel={imodel} modelSource={modelSource} />}
 />;
 ```
 
