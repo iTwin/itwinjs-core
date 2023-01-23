@@ -2622,7 +2622,6 @@ describe("iModel", () => {
     const s5post = imodel1.elements.getElement<Subject>(s5Id);
     expect(s5pre.federationGuid).equal(s5post.federationGuid);
     expect(s5post.description).equal(subject5.description);
-
   });
 
   it("should support partial update", () => {
