@@ -11,7 +11,7 @@ import { DragSourceArguments, DropTargetArguments, DropTargetProps } from "./Dra
 
 /** React properties for withDropTarget Higher-Order Component
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 export interface WithDropTargetProps<DragDropObject = any> {
   /** Properties and callbacks for DropTarget */
@@ -37,7 +37,7 @@ export interface WithDropTargetProps<DragDropObject = any> {
  * HOC (Higher-Order Component) that transforms wrapped component into a DropTarget.
  * @param Component component to wrap.
  * @beta
- * @deprecated
+ * @deprecated in 2.x.
  */
 // istanbul ignore next
 export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(

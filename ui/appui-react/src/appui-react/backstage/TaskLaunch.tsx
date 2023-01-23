@@ -27,7 +27,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[TaskLaunchBackstageItem]] component
  * @internal
- * @deprecated
+ * @deprecated in 3.0.
  */
 export interface TaskLaunchBackstageItemProps extends BackstageItemProps { // eslint-disable-line deprecation/deprecation
   /** Workflow Id */
@@ -38,7 +38,7 @@ export interface TaskLaunchBackstageItemProps extends BackstageItemProps { // es
 
 /** Backstage item that activates a Task
  * @internal
- * @deprecated
+ * @deprecated in 3.0.
  */
 export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> { // eslint-disable-line deprecation/deprecation
 
