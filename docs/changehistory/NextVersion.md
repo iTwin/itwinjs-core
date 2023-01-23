@@ -100,7 +100,7 @@ Previously, iTwin.js used [DELETE](https://www.sqlite.org/pragma.html#pragma_jou
 
 ## Presentation
 
-### Tree hierarchy levels filtering
+### Hierarchy levels filtering
 
 Ability to filter individual hierarchy level in tree was added for the trees that uses [PresentationTreeDataProvider]($presentation-components). To enable this [PresentationTreeRenderer]($presentation-components) should be passed to [ControlledTree]($components-react) through [ControlledTreeProps.treeRenderer]($components-react):
 
