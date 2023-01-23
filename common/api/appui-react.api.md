@@ -640,7 +640,7 @@ export class Backstage extends React_2.Component<BackstageProps, BackstageState>
 
 // @beta
 export interface BackstageActionItem extends BackstageActionItem_2 {
-    // @deprecated (undocumented)
+    // (undocumented)
     readonly type: BackstageItemType.ActionItem;
 }
 
@@ -778,7 +778,7 @@ export interface BackstageProps extends CommonProps {
 
 // @beta
 export interface BackstageStageLauncher extends BackstageStageLauncher_2 {
-    // @deprecated (undocumented)
+    // (undocumented)
     readonly type: BackstageItemType.StageLauncher;
 }
 
