@@ -26,7 +26,7 @@ export interface SchemasSpecification {
  * presentation rules.
  *
  * @see [Required schema specification reference documentation page]($docs/presentation/RequiredSchemaSpecification.md)
- * @beta
+ * @public
  */
 export interface RequiredSchemaSpecification {
   /** Specifies the schema to whom the requirement is being set. */
