@@ -31,7 +31,6 @@ export const getFavoritesCategory = (): CategoryDescription => {
 /**
  * An data provider interface for returning favorite properties for the given elements
  * @public
- * @deprecated in 3.x. Use [[FavoritePropertiesDataFilterer]].
  */
 export interface IFavoritePropertiesDataProvider {
   /** Returns property data for an element. */
@@ -41,7 +40,6 @@ export interface IFavoritePropertiesDataProvider {
 /**
  * Props for [[FavoritePropertiesDataProvider]]
  * @public
- * @deprecated in 3.x. Use [[FavoritePropertiesDataFilterer]].
  */
 export interface FavoritePropertiesDataProviderProps {
   /**
@@ -57,9 +55,7 @@ export interface FavoritePropertiesDataProviderProps {
 /**
  * Presentation Rules-driven element favorite properties data provider implementation.
  * @public
- * @deprecated in 3.x. Use [[FavoritePropertiesDataFilterer]].
  */
-// eslint-disable-next-line deprecation/deprecation
 export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataProvider {
 
   private _customRuleset?: Ruleset | string;
@@ -82,7 +78,6 @@ export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataPr
   public includeFieldsWithCompositeValues: boolean;
 
   /** Constructor. */
-  // eslint-disable-next-line deprecation/deprecation
   constructor(props?: FavoritePropertiesDataProviderProps) {
     this.includeFieldsWithNoValues = true;
     this.includeFieldsWithCompositeValues = true;

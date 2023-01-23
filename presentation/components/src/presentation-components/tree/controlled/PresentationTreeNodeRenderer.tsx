@@ -14,7 +14,6 @@ import { SvgFilterHollow } from "@itwin/itwinui-icons-react";
 import { IconButton } from "@itwin/itwinui-react";
 import { translate } from "../../common/Utils";
 import "./PresentationTreeNodeRenderer.scss";
-
 /**
  * @alpha
  */

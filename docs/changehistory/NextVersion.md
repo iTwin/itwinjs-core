@@ -191,7 +191,3 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 ### @itwin/presentation-common
 
 A bunch of `{api_name}JSON` interfaces, completely matching their sibling `{api_name}` definition, thus having no real benefit, have been forcing us to map back and forth between `{api_name}` and `{api_name}JSON` with `{api_name}.toJSON` and `{api_name}.fromJSON` helper functions. Majority of them are marked public as they're part of public RPC interface, but are generally not expected to be directly used by consumer code. They have been deprecated with the recommendation to use `{api_name}`.
-
-### @itwin/presentation-components
-
-- [FavoritePropertiesDataProvider]($presentation-components) has been replaced with [FavoritePropertiesDataFilterer]($presentation-components) which has been promoted to `@public` and is a more flexible approach to filtering properties.

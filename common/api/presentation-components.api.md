@@ -246,7 +246,7 @@ export interface FavoritePropertiesDataFiltererProps {
     source: IPresentationPropertyDataProvider;
 }
 
-// @public @deprecated
+// @public
 export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataProvider {
     constructor(props?: FavoritePropertiesDataProviderProps);
     getData(imodel: IModelConnection, elementIds: Id64Arg | KeySet): Promise<PropertyData>;
@@ -254,7 +254,7 @@ export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataPr
     includeFieldsWithNoValues: boolean;
 }
 
-// @public @deprecated
+// @public
 export interface FavoritePropertiesDataProviderProps {
     // @internal (undocumented)
     propertyDataProviderFactory?: (imodel: IModelConnection, ruleset?: Ruleset | string) => PresentationPropertyDataProvider;
@@ -352,7 +352,7 @@ export interface IContentDataProvider extends IPresentationDataProvider {
     selectionInfo: SelectionInfo | undefined;
 }
 
-// @public @deprecated
+// @public
 export interface IFavoritePropertiesDataProvider {
     getData: (imodel: IModelConnection, elementIds: Id64Arg | KeySet) => Promise<PropertyData>;
 }
