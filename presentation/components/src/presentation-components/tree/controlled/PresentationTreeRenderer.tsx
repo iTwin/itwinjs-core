@@ -26,7 +26,7 @@ export interface PresentationTreeRendererProps extends TreeRendererProps {
 
 /**
  * Tree renderer component that enables hierarchy level filtering in trees using [[PresentationTreeDataProvider]].
- * It renders tree nodes with actions buttons for setting and clearing filters. [[PresentationInstanceFilterBuilderDialog]] is opened
+ * It renders tree nodes with action buttons for setting and clearing filters. [[PresentationInstanceFilterBuilderDialog]] is opened
  * for creating filters for hierarchy levels.
  * @beta
  */
