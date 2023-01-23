@@ -26,7 +26,7 @@ export interface PresentationInstanceFilterPropertyProps {
 }
 
 /**
- * Component for rendering property in [FilterBuilder]($component-react) property selector. Property category and
+ * Component for rendering property in [FilterBuilder]($components-react) property selector. Property category and
  * class info is rendered in addition to property label.
  * @beta
  */
