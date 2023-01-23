@@ -15,11 +15,11 @@ import {
   ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsLoggerSeverity,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
   FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
-  HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
-  LabelDefinitionJSON, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError,
-  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo,
-  SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription,
-  VariableValueTypes,
+  HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, InstanceKey, IntRulesetVariable,
+  ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelDefinitionJSON, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeKey,
+  Paged, PageOptions, PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset,
+  RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions,
+  StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
@@ -30,9 +30,7 @@ import {
 } from "@itwin/presentation-common/lib/cjs/test";
 import { PRESENTATION_BACKEND_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
-import {
-  HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps,
-} from "../presentation-backend/PresentationManager";
+import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps } from "../presentation-backend/PresentationManager";
 import { getKeysForContentRequest } from "../presentation-backend/PresentationManagerDetail";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
@@ -423,7 +421,7 @@ describe("PresentationManager", () => {
       const managerUsedSpy = sinon.spy();
 
       addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
-        .returns(async () => ({ result: "[]" }));
+        .returns(async () => ({ result: `{"nodes":[]}` }));
 
       addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
         .returns(async () => ({ result: "{}" }));
@@ -737,50 +735,53 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: NodeJSON[] = [{
-          key: {
-            type: "type1",
-            pathFromRoot: ["p1", "p2", "p3"],
-          },
-          labelDefinition: LabelDefinition.fromLabelString("test1"),
-          description: "description1",
-          imageId: "img_1",
-          foreColor: "foreColor1",
-          backColor: "backColor1",
-          fontStyle: "fontStyle1",
-          hasChildren: true,
-          isSelectionDisabled: true,
-          isEditable: true,
-          isChecked: true,
-          isCheckboxVisible: true,
-          isCheckboxEnabled: true,
-          isExpanded: true,
-        }, {
-          key: {
-            type: StandardNodeTypes.ECInstancesNode,
-            pathFromRoot: ["p1"],
-            instanceKeys: [createRandomECInstanceKeyJSON()],
-          },
-          labelDefinition: LabelDefinition.fromLabelString("test2"),
-          description: "description2",
-          imageId: "",
-          foreColor: "",
-          backColor: "",
-          fontStyle: "",
-          hasChildren: false,
-          isSelectionDisabled: false,
-          isEditable: false,
-          isChecked: false,
-          isCheckboxVisible: false,
-          isCheckboxEnabled: false,
-          isExpanded: false,
-        }, {
-          key: {
-            type: "some node",
-            pathFromRoot: ["p1", "p3"],
-          },
-          labelDefinition: LabelDefinition.fromLabelString("test2"),
-        }];
+        const addonResponse: HierarchyLevelJSON = {
+          nodes: [{
+            key: {
+              type: "type1",
+              pathFromRoot: ["p1", "p2", "p3"],
+            },
+            labelDefinition: LabelDefinition.fromLabelString("test1"),
+            description: "description1",
+            imageId: "img_1",
+            foreColor: "foreColor1",
+            backColor: "backColor1",
+            fontStyle: "fontStyle1",
+            hasChildren: true,
+            isSelectionDisabled: true,
+            isEditable: true,
+            isChecked: true,
+            isCheckboxVisible: true,
+            isCheckboxEnabled: true,
+            isExpanded: true,
+          }, {
+            key: {
+              type: StandardNodeTypes.ECInstancesNode,
+              pathFromRoot: ["p1"],
+              instanceKeys: [createRandomECInstanceKeyJSON()],
+            },
+            labelDefinition: LabelDefinition.fromLabelString("test2"),
+            description: "description2",
+            imageId: "",
+            foreColor: "",
+            backColor: "",
+            fontStyle: "",
+            hasChildren: false,
+            isSelectionDisabled: false,
+            isEditable: false,
+            isChecked: false,
+            isCheckboxVisible: false,
+            isCheckboxEnabled: false,
+            isExpanded: false,
+          }, {
+            key: {
+              type: "some node",
+              pathFromRoot: ["p1", "p3"],
+            },
+            labelDefinition: LabelDefinition.fromLabelString("test2"),
+          }],
+          supportsFiltering: true,
+        };
         setup(addonResponse);
 
         // test
@@ -806,20 +807,23 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: NodeJSON[] = [{
-          key: {
-            type: StandardNodeTypes.ECInstancesNode,
-            pathFromRoot: ["p1"],
-            instanceKeys: [createRandomECInstanceKeyJSON()],
-          },
-          labelDefinition: LabelDefinition.fromLabelString("test2"),
-        }, {
-          key: {
-            type: "type 2",
-            pathFromRoot: ["p1", "p3"],
-          },
-          labelDefinition: LabelDefinition.fromLabelString("test3"),
-        }];
+        const addonResponse: HierarchyLevelJSON = {
+          nodes: [{
+            key: {
+              type: StandardNodeTypes.ECInstancesNode,
+              pathFromRoot: ["p1"],
+              instanceKeys: [createRandomECInstanceKeyJSON()],
+            },
+            labelDefinition: LabelDefinition.fromLabelString("test2"),
+          }, {
+            key: {
+              type: "type 2",
+              pathFromRoot: ["p1", "p3"],
+            },
+            labelDefinition: LabelDefinition.fromLabelString("test3"),
+          }],
+          supportsFiltering: true,
+        };
         setup(addonResponse);
 
         // test
@@ -844,25 +848,28 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: NodeJSON[] = [{
-          key: {
-            type: "type1",
-            pathFromRoot: ["p1", "p2", "p3"],
-          },
-          labelDefinition: LabelDefinition.fromLabelString("@RulesEngine:LABEL_General_NotSpecified@"),
-          description: "description1",
-          imageId: "img_1",
-          foreColor: "foreColor1",
-          backColor: "backColor1",
-          fontStyle: "fontStyle1",
-          hasChildren: true,
-          isSelectionDisabled: true,
-          isEditable: true,
-          isChecked: true,
-          isCheckboxVisible: true,
-          isCheckboxEnabled: true,
-          isExpanded: true,
-        }];
+        const addonResponse: HierarchyLevelJSON = {
+          nodes: [{
+            key: {
+              type: "type1",
+              pathFromRoot: ["p1", "p2", "p3"],
+            },
+            labelDefinition: LabelDefinition.fromLabelString("@RulesEngine:LABEL_General_NotSpecified@"),
+            description: "description1",
+            imageId: "img_1",
+            foreColor: "foreColor1",
+            backColor: "backColor1",
+            fontStyle: "fontStyle1",
+            hasChildren: true,
+            isSelectionDisabled: true,
+            isEditable: true,
+            isChecked: true,
+            isCheckboxVisible: true,
+            isCheckboxEnabled: true,
+            isExpanded: true,
+          }],
+          supportsFiltering: true,
+        };
         setup(addonResponse);
 
         // test
@@ -924,6 +931,35 @@ describe("PresentationManager", () => {
         };
         const result = await manager.getNodesCount(options);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
+      });
+
+    });
+
+    describe("getNodesDescriptor", () => {
+
+      it("returns hierarchy level descriptor", async () => {
+        // what the addon receives
+        const parentNodeKey = createRandomECInstancesNodeKey();
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetNodesDescriptor,
+          params: {
+            nodeKey: NodeKey.toJSON(parentNodeKey),
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+          },
+        };
+
+        // what the addon returns
+        const addonResponse = createTestContentDescriptor({ fields: [] });
+        setup(addonResponse);
+
+        // test
+        const options: HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          parentKey: parentNodeKey,
+        };
+        const result = await manager.getNodesDescriptor(options);
+        verifyWithSnapshot(result, expectedParams);
       });
 
     });
@@ -2415,13 +2451,16 @@ describe("PresentationManager", () => {
           add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
         }));
         // what the addon returns
-        const addonResponse: NodeJSON[] = [{
-          key: {
-            type: "type1",
-            pathFromRoot: ["p1", "p2", "p3"],
-          },
-          labelDefinition: LabelDefinition.fromLabelString("@RulesEngine:LABEL_General_NotSpecified@"),
-        }];
+        const addonResponse: HierarchyLevelJSON = {
+          nodes: [{
+            key: {
+              type: "type1",
+              pathFromRoot: ["p1", "p2", "p3"],
+            },
+            labelDefinition: LabelDefinition.fromLabelString("@RulesEngine:LABEL_General_NotSpecified@"),
+          }],
+          supportsFiltering: true,
+        };
         setup(addonResponse);
 
         // test

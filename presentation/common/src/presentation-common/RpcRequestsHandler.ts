@@ -24,8 +24,8 @@ import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
   ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Paged, RequestOptions,
-  RequestOptionsWithRuleset, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyLevelDescriptorRequestOptions, HierarchyRequestOptions,
+  Paged, RequestOptions, RequestOptionsWithRuleset, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import {
   ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
@@ -140,6 +140,14 @@ export class RpcRequestsHandler implements IDisposable {
   public async getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>> & ClientDiagnosticsAttribute): Promise<PagedResponse<NodeJSON>> {
     return this.request<PagedResponse<NodeJSON>, typeof options>(
       this.rpcClient.getPagedNodes.bind(this.rpcClient), options);
+  }
+
+  public async getNodesDescriptor(options: HierarchyLevelDescriptorRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<DescriptorJSON | undefined> {
+    const response = await this.request<string | DescriptorJSON | undefined, typeof options>(
+      this.rpcClient.getNodesDescriptor.bind(this.rpcClient), options);
+    if (typeof response === "string")
+      return JSON.parse(response);
+    return response;
   }
 
   public async getNodePaths(options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<NodePathElementJSON[]> {

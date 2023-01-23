@@ -489,7 +489,9 @@ public;nextHighestPowerOfTwo(num: number): number
 internal;nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d
 public;NoContentError 
 internal;NonUniformColor
+public;NormalMapFlags
 beta;NormalMapParams
+public;NormalMapProps 
 public;Npc
 public;NpcCenter: Point3d
 public;NpcCorners: Point3d[]
@@ -615,6 +617,7 @@ internal;RelTypeInfo
 public;RemoveFunction = () => void
 public;class RenderMaterial
 public;RenderMaterial
+public;RenderMaterialAssetMapsProps
 public;RenderMaterialAssetProps
 public;RenderMaterialProps 
 public;RenderMode

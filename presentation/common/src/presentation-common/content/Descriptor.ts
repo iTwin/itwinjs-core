@@ -165,6 +165,7 @@ export interface DescriptorJSON {
   classesMap: { [id: string]: CompressedClassInfoJSON };
   connectionId: string;
   inputKeysHash: string;
+  /** @deprecated since 3.6. The attribute is not used anymore. */
   contentOptions: any;
   selectionInfo?: SelectionInfo;
   displayType: string;
@@ -275,7 +276,10 @@ export class Descriptor implements DescriptorSource {
   public readonly connectionId?: string;
   /** Hash of the input keys used to create the descriptor */
   public readonly inputKeysHash?: string;
-  /** Extended options used to create the descriptor */
+  /**
+   * Extended options used to create the descriptor.
+   * @deprecated since 3.6. The attribute is not used anymore.
+   */
   public readonly contentOptions: any;
   /** Selection info used to create the descriptor */
   public readonly selectionInfo?: SelectionInfo;
@@ -330,9 +334,6 @@ export class Descriptor implements DescriptorSource {
     const fields: FieldJSON<string>[] = this.fields.map((field) => field.toCompressedJSON(classesMap));
     return Object.assign(
       {
-        connectionId: this.connectionId,
-        inputKeysHash: this.inputKeysHash,
-        contentOptions: this.contentOptions,
         displayType: this.displayType,
         contentFlags: this.contentFlags,
         categories: this.categories.map(CategoryDescription.toJSON),
@@ -340,6 +341,10 @@ export class Descriptor implements DescriptorSource {
         selectClasses,
         classesMap,
       },
+      this.connectionId !== undefined && { connectionId: this.connectionId },
+      this.inputKeysHash !== undefined && { inputKeysHash: this.inputKeysHash },
+      // istanbul ignore next
+      this.contentOptions !== undefined && { contentOptions: this.contentOptions }, // eslint-disable-line deprecation/deprecation
       this.sortingField !== undefined && { sortingFieldName: this.sortingField.name },
       this.sortDirection !== undefined && { sortDirection: this.sortDirection },
       this.filterExpression !== undefined && { filterExpression: this.filterExpression }, // eslint-disable-line deprecation/deprecation
