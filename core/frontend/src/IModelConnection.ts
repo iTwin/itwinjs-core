@@ -508,9 +508,6 @@ export abstract class IModelConnection extends IModel {
     this.displayedExtents.setFrom(this.projectExtents);
     /* eslint-disable-next-line deprecation/deprecation */
     this.displayedExtents.extendRange(this._extentsExpansion);
-
-    /* eslint-disable-next-line deprecation/deprecation */
-    this.onDisplayedExtentsExpansion.raiseEvent();
   }
 
   /** @internal */

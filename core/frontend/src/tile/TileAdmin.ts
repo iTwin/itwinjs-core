@@ -297,7 +297,7 @@ export class TileAdmin {
       }),
     ];
 
-    this._cleanup = removals.forEach((removal) => removal());
+    this._cleanup = () => { removals.forEach((removal) => removal()); };
   }
 
   private _tileStorage?: TileStorage;
