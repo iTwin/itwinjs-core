@@ -330,8 +330,10 @@ export class Element extends Entity {
       val.code = this.code;
 
     val.model = this.model;
-    val.userLabel = this.userLabel;
-    val.federationGuid = this.federationGuid;
+    if (undefined === this.userLabel) // NOTE: blank string should be included in JSON
+      val.userLabel = this.userLabel;
+    if (this.federationGuid)
+      val.federationGuid = this.federationGuid;
     if (this.parent)
       val.parent = this.parent;
 
@@ -427,8 +429,13 @@ export class Element extends Entity {
     return msg;
   }
 
-  /** Insert this Element into the iModel. */
-  public insert() { return this.id = this.iModel.elements.insertElement(this.toJSON()); }
+  /**
+   * Insert this Element into the iModel.
+   * @see [[IModelDb.insertElement]]
+   */
+  public insert() {
+    return this.id = this.iModel.elements.insertElement(this.toJSON());
+  }
   /** Update this Element in the iModel. */
   public update() { this.iModel.elements.updateElement(this.toJSON()); }
   /** Delete this Element from the iModel. */

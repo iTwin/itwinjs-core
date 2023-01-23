@@ -1701,6 +1701,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
      * @throws [[IModelError]] if unable to insert the element.
+     * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
+     * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element, but
+     * the value of `elProps.federationGuid` is *not* updated.
      */
     public insertElement(elProps: ElementProps): Id64String {
       try {
