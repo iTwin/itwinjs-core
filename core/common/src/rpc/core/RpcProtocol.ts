@@ -21,7 +21,6 @@ import { RpcRequest } from "./RpcRequest";
 
 /** A serialized RPC operation descriptor.
  * @internal
- * @deprecated
  */
 export interface SerializedRpcOperation {
   interfaceDefinition: string;
@@ -32,7 +31,6 @@ export interface SerializedRpcOperation {
 
 /** A serialized RPC operation request.
  * @internal
- * @deprecated
  */
 export interface SerializedRpcRequest extends SerializedRpcActivity {
   operation: SerializedRpcOperation;
@@ -47,7 +45,6 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
 
 /** An RPC operation request fulfillment.
  * @internal
- * @deprecated
  */
 export interface RpcRequestFulfillment {
   /** The RPC interface for the request. */
@@ -72,7 +69,7 @@ export interface RpcRequestFulfillment {
   allowCompression?: boolean;
 }
 
-/** @internal @deprecated */
+/** @internal */
 export namespace RpcRequestFulfillment {
   export async function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment> {
     const result = await RpcMarshaling.serialize(undefined, error);
@@ -89,13 +86,11 @@ export namespace RpcRequestFulfillment {
 
 /** Handles RPC protocol events.
  * @internal
- * @deprecated
  */
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
 
 /** Documents changes to the RPC protocol version.
  * @internal
- * @deprecated
  */
 export enum RpcProtocolVersion {
   None = 0,
@@ -106,7 +101,6 @@ export enum RpcProtocolVersion {
 /**
  * A backend response that is handled internally by the RPC system.
  * @internal
- * @deprecated
  */
 export interface RpcManagedStatus {
   iTwinRpcCoreResponse: true;
@@ -116,7 +110,6 @@ export interface RpcManagedStatus {
 
 /** An application protocol for an RPC interface.
  * @internal
- * @deprecated
  */
 export abstract class RpcProtocol {
   /** Events raised by all protocols. See [[RpcProtocolEvent]] */

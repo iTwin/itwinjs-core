@@ -13,7 +13,6 @@ import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
 /** An OpenAPI 3.0 root document object.
  * @internal
- * @deprecated
  */
 export interface OpenAPIDocument {
   openapi: "3.0.0";
@@ -23,7 +22,7 @@ export interface OpenAPIDocument {
 
 /** An OpenAPI 3.0 info object.
  * @public
- * @deprecated
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export interface OpenAPIInfo {
   title: string;
@@ -32,7 +31,6 @@ export interface OpenAPIInfo {
 
 /** An OpenAPI 3.0 paths object.
  * @internal
- * @deprecated
  */
 export interface OpenAPIPaths {
   [index: string]: OpenAPIPathItem;
@@ -40,7 +38,6 @@ export interface OpenAPIPaths {
 
 /** An OpenAPI 3.0 path item object.
  * @internal
- * @deprecated
  */
 export interface OpenAPIPathItem {
   summary?: string;
@@ -57,7 +54,6 @@ export interface OpenAPIPathItem {
 
 /** An OpenAPI 3.0 operation object.
  * @internal
- * @deprecated
  */
 export interface OpenAPIOperation {
   summary?: string;
@@ -69,7 +65,6 @@ export interface OpenAPIOperation {
 
 /** An OpenAPI 3.0 content map.
  * @internal
- * @deprecated
  */
 export interface OpenAPIContentMap {
   [index: string]: OpenAPIMediaType;
@@ -77,7 +72,6 @@ export interface OpenAPIContentMap {
 
 /** An OpenAPI 3.0 parameter object.
  * @internal
- * @deprecated
  */
 export interface OpenAPIParameter {
   name: string;
@@ -94,7 +88,6 @@ export interface OpenAPIParameter {
 
 /** An OpenAPI 3.0 media type object.
  * @internal
- * @deprecated
  */
 export interface OpenAPIMediaType {
   schema?: OpenAPISchema;
@@ -102,7 +95,6 @@ export interface OpenAPIMediaType {
 
 /** An OpenAPI 3.0 schema object.
  * @internal
- * @deprecated
  */
 export interface OpenAPISchema {
   type?: "boolean" | "object" | "array" | "number" | "string";
@@ -112,7 +104,6 @@ export interface OpenAPISchema {
 
 /** An OpenAPI 3.0 encoding object.
  * @internal
- * @deprecated
  */
 export interface OpenAPIEncoding {
   contentType?: string;
@@ -123,7 +114,6 @@ export interface OpenAPIEncoding {
 
 /** An OpenAPI 3.0 parameter object.
  * @internal
- * @deprecated
  */
 export interface OpenAPIRequestBody {
   description?: string;
@@ -133,7 +123,6 @@ export interface OpenAPIRequestBody {
 
 /** An OpenAPI 3.0 responses object.
  * @internal
- * @deprecated
  */
 export interface OpenAPIResponses {
   default?: OpenAPIResponse;
@@ -147,7 +136,6 @@ export interface OpenAPIResponses {
 
 /** An OpenAPI 3.0 response object.
  * @internal
- * @deprecated
  */
 export interface OpenAPIResponse {
   description: string;
@@ -156,7 +144,6 @@ export interface OpenAPIResponse {
 
 /** An OpenAPI-compatible description of an RPC protocol.
  * @internal
- * @deprecated
  */
 export class RpcOpenAPIDescription {
   /** The protocol for this description. */

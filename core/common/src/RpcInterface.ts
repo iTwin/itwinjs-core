@@ -21,16 +21,16 @@ import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
 
 /* eslint-disable deprecation/deprecation */
 
-/** @internal @deprecated */
+/** @internal */
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T, interfaceName: string, interfaceVersion: string }
 
-/** @internal @deprecated */
+/** @internal */
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
 
 /** An RPC interface is a set of operations exposed by a service that a client can call, using configurable protocols,
  * in a platform-independent way. TheRpcInterface class is the base class for RPC interface definitions and implementations.
  * @public
- * @deprecated
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export abstract class RpcInterface {
   /** Determines whether the backend version of an RPC interface is compatible (according to semantic versioning) with the frontend version of the interface. */

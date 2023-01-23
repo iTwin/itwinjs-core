@@ -22,10 +22,10 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 // cspell:ignore csrf
 /* eslint-disable deprecation/deprecation */
 
-/** @internal @deprecated */
+/** @internal */
 export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
-/** @internal @deprecated */
+/** @internal */
 export class ResponseLike implements Response {
   private _data: Promise<any>;
   public get body() { return null; }
@@ -52,31 +52,26 @@ export class ResponseLike implements Response {
 
 /** Supplies an IModelRpcProps for an RPC request.
  * @internal
- * @deprecated
  */
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined;
 
 /** Supplies the initial retry interval for an RPC request.
  * @internal
- * @deprecated
  */
 export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number;
 
 /** Notification callback for an RPC request.
  * @internal
- * @deprecated
  */
 export type RpcRequestCallback_T = (request: RpcRequest) => void;
 
 /** Determines if caching is permitted for a RPC response.
  * @internal
- * @deprecated
  */
 export type RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl;
 
 /** Runtime information related to the operation load of one or more RPC interfaces.
  * @internal
- * @deprecated
  */
 export interface RpcOperationsProfile {
   readonly lastRequest: number;
@@ -85,13 +80,11 @@ export interface RpcOperationsProfile {
 
 /** Handles RPC request events.
  * @internal
- * @deprecated
  */
 export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void;
 
 /** Resolves "not found" responses for RPC requests.
  * @internal
- * @deprecated
  */
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
@@ -110,7 +103,6 @@ class Cancellable<T> {
 
 /** A RPC operation request.
  * @internal
- * @deprecated
  */
 export abstract class RpcRequest<TResponse = any> {
   private static _activeRequests: Map<string, RpcRequest> = new Map();
@@ -615,7 +607,7 @@ export abstract class RpcRequest<TResponse = any> {
   }
 }
 
-/** @internal @deprecated */
+/** @internal */
 export const initializeRpcRequest = (() => {
   let initialized = false;
 

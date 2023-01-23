@@ -14,7 +14,7 @@ import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
 const PUSH = "__push__";
 
-/** @internal @deprecated */
+/** @internal */
 export class MobilePushTransport extends RpcPushTransport {
   private _protocol: MobileRpcProtocol;
   private _last: number = -1;
@@ -42,7 +42,7 @@ export class MobilePushTransport extends RpcPushTransport {
   }
 }
 
-/** @internal @deprecated */
+/** @internal */
 export class MobilePushConnection<T> extends RpcPushConnection<T> {
   private _protocol: MobileRpcProtocol;
   private _next: number = -1;

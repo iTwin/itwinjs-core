@@ -9,8 +9,7 @@ import { MobileRpcProtocol } from "./MobileRpcProtocol";
 /* eslint-disable deprecation/deprecation */
 
 /** RPC supported mobile platforms.
- * @beta
- * @deprecated
+ * @internal
  */
 export enum RpcMobilePlatform {
   Unknown,
@@ -19,8 +18,7 @@ export enum RpcMobilePlatform {
 }
 
 /** Holds configuration for the RpcInterfaces used by the application.
- * @beta
- * @deprecated
+ * @internal
  */
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
   /** @internal */
@@ -79,8 +77,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
 }
 
 /** Coordinates usage of RPC interfaces for an Mobile-based application.
- * @beta
- * @deprecated
+ * @internal
  */
 export class MobileRpcManager {
   /** @internal */

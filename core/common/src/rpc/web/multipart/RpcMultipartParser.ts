@@ -61,7 +61,7 @@ const Z = 122;
 const CONTENT_TYPE_RE = /^multipart\/(?:form-data|related)(?:;|$)/i;
 const CONTENT_TYPE_PARAM_RE = /;\s*([^=]+)=(?:"([^"]+)"|([^;]+))/gi;
 
-/** @internal @deprecated */
+/** @internal */
 export class RpcMultipartParser {
   private _headerFieldMark: number | null;
   private _headerValueMark: number | null;

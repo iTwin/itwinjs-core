@@ -14,12 +14,11 @@ import { IModelError } from "../../IModelError";
 
 /* eslint-disable deprecation/deprecation */
 
-/** @internal @deprecated */
+/** @internal */
 export type RpcPushMessageListener<T> = (message: T) => void;
 
 /** Defines a transport for push messages.
  *  @internal
- *  @deprecated
  */
 export abstract class RpcPushTransport {
   public onMessage?: (channelId: string, messageData: any) => void;
@@ -27,7 +26,6 @@ export abstract class RpcPushTransport {
 
 /** Defines a source of push messages.
  *  @internal
- *  @deprecated
  */
 export class RpcPushService {
   /** The push service for the dedicated backend (for example, an electron or mobile app). */
@@ -42,7 +40,6 @@ export class RpcPushService {
 
 /** Defines a named stream of push messages.
  *  @internal
- *  @deprecated
  */
 export class RpcPushChannel<T> {
   /** @internal */
@@ -132,7 +129,6 @@ export class RpcPushChannel<T> {
 
 /** Receives push messages from the backend.
  *  @internal
- *  @deprecated
  */
 export class RpcPushSubscription<T> {
   public readonly channel: RpcPushChannel<T>;
@@ -146,7 +142,6 @@ export class RpcPushSubscription<T> {
 
 /** Sends push messages to the frontend.
  *  @internal
- *  @deprecated
  */
 export abstract class RpcPushConnection<T> {
   public static for<T>(_channel: RpcPushChannel<T>, _client: unknown = undefined): RpcPushConnection<T> {

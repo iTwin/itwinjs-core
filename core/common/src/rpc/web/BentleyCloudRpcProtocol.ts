@@ -25,7 +25,6 @@ enum AppMode {
 
 /** An http protocol for Bentley cloud RPC interface deployments.
  * @internal
- * @deprecated
  */
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public override checkToken = true;

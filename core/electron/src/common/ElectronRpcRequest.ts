@@ -8,7 +8,7 @@ import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
 /* eslint-disable deprecation/deprecation */
 
-/** @beta @deprecated */
+/** @internal */
 export class ElectronRpcRequest extends RpcRequest {
   private _res: (value: number) => void = () => undefined;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;

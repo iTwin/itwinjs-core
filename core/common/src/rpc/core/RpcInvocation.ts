@@ -25,7 +25,7 @@ import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 /** The properties of an RpcActivity.
  * @public
  * @extensions
- * @deprecated
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export interface RpcActivity extends SessionProps {
   /** Used for logging to correlate an Rpc activity between frontend and backend */
@@ -40,7 +40,7 @@ export interface RpcActivity extends SessionProps {
 
 /** Serialized format for sending the request across the RPC layer
  * @public
- * @deprecated
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export interface SerializedRpcActivity {
   id: string;
@@ -51,12 +51,11 @@ export interface SerializedRpcActivity {
   csrfToken?: { headerName: string, headerValue: string };
 }
 
-/** @internal @deprecated */
+/** @internal */
 export type RpcActivityRun = (activity: RpcActivity, fn: () => Promise<any>) => Promise<any>;
 
 /** An RPC operation invocation in response to a request.
  * @internal
- * @deprecated
  */
 export class RpcInvocation {
   public static runActivity: RpcActivityRun = async (_activity, fn) => fn();

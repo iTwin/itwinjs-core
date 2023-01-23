@@ -16,7 +16,7 @@ import { sendResponse } from "./rpc/web/response";
 /* eslint-disable deprecation/deprecation */
 
 let initialized = false;
-/** @internal @deprecated */
+/** @internal */
 export function initializeRpcBackend(enableOpenTelemetry: boolean = false) {
   if (initialized)
     return;

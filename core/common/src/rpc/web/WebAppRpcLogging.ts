@@ -23,7 +23,7 @@ import { WebAppRpcRequest } from "./WebAppRpcRequest";
 const BACKEND = Symbol.for("@itwin.WebAppRpcLogging.Backend");
 const FRONTEND = Symbol.for("@itwin.WebAppRpcLogging.Frontend");
 
-/** @internal @deprecated */
+/** @internal */
 export abstract class WebAppRpcLogging {
   public static initializeBackend(instance: WebAppRpcLogging) {
     (globalThis as any)[BACKEND] = instance;

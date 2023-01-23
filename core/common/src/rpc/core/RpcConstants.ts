@@ -10,7 +10,7 @@
 
 /** Describes available options for RPC response caching.
  * @public
- * @deprecated
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export enum RpcResponseCacheControl {
   None,
@@ -19,7 +19,7 @@ export enum RpcResponseCacheControl {
 
 /** RPC protocol event types.
  * @public
- * @deprecated
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export enum RpcProtocolEvent {
   RequestCreated,
@@ -39,7 +39,7 @@ export enum RpcProtocolEvent {
 
 /** The status of an RPC operation request.
  * @public
- * @deprecated
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export enum RpcRequestStatus {
   Unknown,
@@ -59,7 +59,7 @@ export enum RpcRequestStatus {
   TooManyRequests
 }
 
-/** @public @deprecated */
+/** @public @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0. */
 export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no-redeclare
   export function isTransientError(status: RpcRequestStatus) {
     return status === RpcRequestStatus.BadGateway || status === RpcRequestStatus.ServiceUnavailable || status === RpcRequestStatus.GatewayTimeout
@@ -69,7 +69,7 @@ export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no
 
 /** RPC request event types.
  * @public
- * @deprecated
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export enum RpcRequestEvent {
   StatusChanged,
@@ -79,7 +79,7 @@ export enum RpcRequestEvent {
 
 /** RPC content types.
  * @public
- * @deprecated
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export enum RpcContentType {
   Unknown,
@@ -91,7 +91,7 @@ export enum RpcContentType {
 
 /** Endpoints for RPC protocols.
  * @public
- * @deprecated
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export enum RpcEndpoint {
   Frontend,
@@ -100,7 +100,7 @@ export enum RpcEndpoint {
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-/** @internal @deprecated */
+/** @internal */
 export const WEB_RPC_CONSTANTS = {
   CONTENT: "Content-Type",
   TEXT: "text/plain",

@@ -19,25 +19,25 @@ import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 
 /* eslint-disable deprecation/deprecation */
 
-/** @internal @deprecated */
+/** @internal */
 export const REGISTRY = Symbol.for("@itwin/core-common/RpcRegistry");
 
-/** @internal @deprecated */
+/** @internal */
 export const OPERATION = Symbol.for("@itwin/core-common/RpcOperation");
 
-/** @internal @deprecated */
+/** @internal */
 export const POLICY = Symbol.for("@itwin/core-common/RpcOperationPolicy");
 
-/** @internal @deprecated */
+/** @internal */
 export const INSTANCE = Symbol.for("@itwin/core-common/RpcInterface/__instance__");
 
-/** @internal @deprecated */
+/** @internal */
 export const CURRENT_REQUEST = Symbol.for("@itwin/core-common/RpcRequest/__current__");
 
-/** @internal @deprecated */
+/** @internal */
 export const CURRENT_INVOCATION = Symbol.for("@itwin/core-common/RpcInvocation/__current__");
 
-/** @internal @deprecated */
+/** @internal */
 export class RpcRegistry {
   private static _instance: RpcRegistry;
 

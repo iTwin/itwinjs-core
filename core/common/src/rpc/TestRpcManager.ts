@@ -23,7 +23,6 @@ import { RpcConfiguration, RpcDefaultConfiguration } from "./core/RpcConfigurati
  * That means that you must actually program the backend to know when it is running in direct test
  * mode and to employ TestRpcManager in that case.
  * @internal
- * @deprecated
  */
 export class TestRpcManager {
   public static initialize(interfaces: RpcInterfaceDefinition[]) {

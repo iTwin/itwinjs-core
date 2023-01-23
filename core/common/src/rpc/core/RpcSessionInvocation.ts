@@ -28,7 +28,7 @@ class SessionProtocol extends RpcProtocol {
   constructor() { super(new SessionConfiguration()); }
 }
 
-/** @internal @deprecated */
+/** @internal */
 export class RpcSessionInvocation extends RpcInvocation {
   public static create(request: InterceptedRpcRequest): RpcSessionInvocation {
     const serializedRequest: SerializedRpcRequest = {

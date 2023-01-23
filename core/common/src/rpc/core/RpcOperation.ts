@@ -20,7 +20,6 @@ import {
 
 /** The policy for an RPC operation.
  * @internal
- * @deprecated
  */
 export class RpcOperationPolicy {
   /** Supplies the IModelRpcProps for an operation request. */
@@ -53,7 +52,6 @@ export class RpcOperationPolicy {
 
 /** An RPC operation descriptor.
  * @internal
- * @deprecated
  */
 export class RpcOperation {
   /** A fallback token to use for RPC requests that do not semantically depend on an iModel. */
@@ -111,10 +109,10 @@ export class RpcOperation {
   }
 }
 
-/** @internal @deprecated */
+/** @internal */
 export type RpcOperationPolicyProps = Partial<RpcOperationPolicy>;
 
-/** @internal @deprecated */
+/** @internal */
 export namespace RpcOperation { // eslint-disable-line no-redeclare
   function obtainInstance(obj: RpcOperationPolicy | RpcOperationPolicyProps) {
     if (obj instanceof RpcOperationPolicy) {
@@ -126,14 +124,14 @@ export namespace RpcOperation { // eslint-disable-line no-redeclare
     }
   }
 
-  /** Decorator for setting the policy for an RPC operation function. @deprecated */
+  /** Decorator for setting the policy for an RPC operation function. */
   export function setPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps) {
     return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
       descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, obtainInstance(policy));
     };
   }
 
-  /** Convenience decorator for setting an RPC operation policy that allows response caching. @deprecated */
+  /** Convenience decorator for setting an RPC operation policy that allows response caching. */
   export function allowResponseCaching(control: RpcResponseCacheControl = RpcResponseCacheControl.Immutable) {
     return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
       descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, new class extends RpcOperationPolicy {
@@ -142,7 +140,7 @@ export namespace RpcOperation { // eslint-disable-line no-redeclare
     };
   }
 
-  /** Convenience decorator for setting an RPC operation policy that supplies the IModelRpcProps for an operation. @deprecated */
+  /** Convenience decorator for setting an RPC operation policy that supplies the IModelRpcProps for an operation. */
   export function setRoutingProps(handler: RpcRequestTokenSupplier_T) {
     return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
       descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, new class extends RpcOperationPolicy {
@@ -151,7 +149,7 @@ export namespace RpcOperation { // eslint-disable-line no-redeclare
     };
   }
 
-  /** Decorator for setting the default policy for an RPC interface definition class. @deprecated */
+  /** Decorator for setting the default policy for an RPC interface definition class. */
   export function setDefaultPolicy(policy: RpcOperationPolicy | RpcOperationPolicyProps) {
     return <T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) => {
       (definition as any)[POLICY] = obtainInstance(policy);

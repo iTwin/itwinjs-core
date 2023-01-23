@@ -13,7 +13,7 @@ import { BackendIpcTransport, FrontendIpcTransport } from "./ElectronIpcTranspor
 
 const PUSH = "__push__";
 
-/** @internal @deprecated */
+/** @internal */
 export class ElectronPushTransport extends RpcPushTransport {
   private _ipc: FrontendIpcTransport;
   private _last: number = -1;
@@ -41,7 +41,7 @@ export class ElectronPushTransport extends RpcPushTransport {
   }
 }
 
-/** @internal @deprecated */
+/** @internal */
 export class ElectronPushConnection<T> extends RpcPushConnection<T> {
   private _ipc: BackendIpcTransport;
   private _next: number = -1;

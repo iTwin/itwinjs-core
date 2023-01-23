@@ -14,7 +14,6 @@ import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
 /** RPC interface configuration for an Electron-based application.
  * @internal
- * @deprecated
  */
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
 
@@ -26,7 +25,6 @@ export abstract class ElectronRpcConfiguration extends RpcConfiguration {
 
 /** Coordinates usage of RPC interfaces for an Electron-based application.
  * @internal
- * @deprecated
  */
 export class ElectronRpcManager extends RpcManager {
   /** Initializes ElectronRpcManager for the frontend of an application. */

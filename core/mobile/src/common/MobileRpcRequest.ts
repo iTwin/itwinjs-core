@@ -11,7 +11,7 @@ import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
 /* eslint-disable deprecation/deprecation */
 
-/** @beta @deprecated */
+/** @internal */
 export class MobileRpcRequest extends RpcRequest {
   private _res: (value: number) => void = () => undefined;
   private _fulfillment: RpcRequestFulfillment | undefined = undefined;

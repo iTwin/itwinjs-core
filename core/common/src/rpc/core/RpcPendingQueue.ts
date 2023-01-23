@@ -13,7 +13,6 @@ import { RpcRequest } from "./RpcRequest";
 
 /** Manages pending RPC requests and responses.
  * @internal
- * @deprecated
  */
 export class RpcPendingQueue {
   public static instance: RpcPendingQueue;

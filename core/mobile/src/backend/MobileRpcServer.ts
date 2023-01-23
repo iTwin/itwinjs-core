@@ -19,7 +19,7 @@ interface MobileAddon {
 
 let addon: MobileAddon | undefined;
 
-/** @beta @deprecated */
+/** @internal */
 export class MobileRpcServer {
   private static _nextId = -1;
 
@@ -134,7 +134,6 @@ export class MobileRpcServer {
 let mobileReady = false;
 let hasSuspended = false;
 
-/** @deprecated */
 export function setupMobileRpc() {
   if (mobileReady) {
     return;
