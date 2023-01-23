@@ -17,6 +17,9 @@ Table of contents:
 - [Geometry](#geometry)
   - [Query mesh convexity](#query-mesh-convexity)
 - [Write-ahead logging](#write-ahead-logging)
+- [Presentation](#presentation)
+  - [Tree hierarchy levels filtering](#tree-hierarchy-levels-filtering)
+  - [Grouping nodes HiliteSet](#grouping-nodes-hiliteset)
 - [API promotions](#api-promotions)
 - [API deprecations](#api-deprecations)
 
@@ -94,6 +97,31 @@ Previously, iTwin.js used [DELETE](https://www.sqlite.org/pragma.html#pragma_jou
 - Attempting to open more than one simultaneous writeable connections to the same briefcase will now fail on open. Previously, both opens would succeed, followed by a failure on the first attempted write by one or the other connection.
 - Failure to close a writeable briefcase may leave a "-wal" file. Previously, if a program crashed or exited with an open briefcase, it would leave the briefcase file as-of its last call to `IModelDb.saveChanges`. Now, there will be another file with the name of the briefcase with "-wal" appended. This is not a problem and the briefcase is completely intact, except that the briefcase file itself is not sufficient for copying (it will not include recent changes.) The "-wal" file will be used by future connections and will be deleted the next time the briefcase is successfully closed.
 - Attempting to copy an open-for-write briefcase file may not include recent changes. This scenario generally only arises for tests. If you wish to copy an open-for-write briefcase file, you must now call [IModelDb.performCheckpoint]($backend) first.
+
+## Presentation
+
+### Tree hierarchy levels filtering
+
+Ability to filter individual hierarchy level in tree was added for the trees that uses [PresentationTreeDataProvider]($presentation-components). To enable this [PresentationTreeRenderer]($presentation-components) should be passed to [ControlledTree]($components-react) through [ControlledTreeProps.treeRenderer]($components-react):
+
+```ts
+return <ControlledTree
+  // other props
+  treeRenderer={(treeProps) => <PresentationTreeRenderer {...treeProps} imodel={props.imodel} modelSource={filteredModelSource} />}
+/>;
+```
+
+[PresentationTreeRenderer]($presentation-components) renders nodes with actions buttons for applying and clearing filters. Based on ruleset used in the tree some hierarchy level might not be filterable. In that case actions buttons for those hierarchy levels are not rendered. If applied filter does not produce any nodes `There are no child nodes matching current filter` message is renderer in that hierarchy level.
+
+![Filtered Tree](./assets/filtered-tree.jpg)
+
+Dialog component for creating hierarchy level filter is opened when node's `Filter` button is clicked. This dialog allows to create complex filters with multiple conditions based on properties from instances that are represented by the nodes in that hierarchy level.
+
+![Filter Builder Dialog](./assets/filter-builder-dialog.jpg)
+
+### Grouping nodes HiliteSet
+
+[HiliteSetProvider.getHiliteSet]($presentation-frontend) now supports getting [HiliteSet]($presentation-frontend) for grouping nodes. Previously, [HiliteSetProvider.getHiliteSet]($presentation-frontend) used to return empty [HiliteSet]($presentation-frontend) if called with key of the grouping node. Now it returns [HiliteSet]($presentation-frontend) for all the instances that are grouped under grouping node. This also means that now elements will be hilited in viewport using [Unified Selection](../presentation/unified-selection/index.md) when grouping node is selected in the tree.
 
 ## API promotions
 
