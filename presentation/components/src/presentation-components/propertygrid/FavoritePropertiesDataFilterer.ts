@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyDataFiltererBase, PropertyDataFilterResult } from "@itwin/components-react";
 /** @packageDocumentation
  * @module PropertyGrid
  */
+
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyDataFiltererBase, PropertyDataFilterResult } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Field } from "@itwin/presentation-common";
 import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
