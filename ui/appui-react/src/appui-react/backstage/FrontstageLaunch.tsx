@@ -26,7 +26,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[FrontstageLaunchBackstageItem]] component
  * @public
- * @deprecated Use [BackstageStageLauncher]($appui-abstract) instead.
+ * @deprecated in 3.0. Use [BackstageStageLauncher]($appui-abstract) instead.
  */
 export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps { // eslint-disable-line deprecation/deprecation
   /** id of the frontstage */
@@ -35,7 +35,7 @@ export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
 
 /** Backstage item that activates a Frontstage
  * @public
- * @deprecated Use [BackstageStageLauncher]($appui-abstract) instead.
+ * @deprecated in 3.0. Use [BackstageStageLauncher]($appui-abstract) instead.
  */
 export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> { // eslint-disable-line deprecation/deprecation
   /** @internal */

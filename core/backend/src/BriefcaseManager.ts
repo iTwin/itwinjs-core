@@ -241,6 +241,7 @@ export class BriefcaseManager {
       throw new IModelError(err.errorNumber, `Could not open downloaded briefcase for write access: ${fileName}, err=${err.message}`);
     }
     try {
+      nativeDb.enableWalMode(); // local briefcases should use WAL journal mode
       nativeDb.resetBriefcaseId(briefcaseId);
       if (nativeDb.getCurrentChangeset().id !== checkpoint.changeset.id)
         throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changesetId: ${fileName}`);

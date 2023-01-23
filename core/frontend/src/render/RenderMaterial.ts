@@ -106,6 +106,6 @@ export interface CreateRenderMaterialArgs {
   /** The [specular](https://en.wikipedia.org/wiki/Specular_highlight) properties of the material. */
   specular?: MaterialSpecularProps;
 
-  /** Maps a [RenderTexture]($common) image to the surfaces to which the material is applied. */
+  /** Maps [RenderTexture]($common) images to the surfaces to which the material is applied to customize their appearance. */
   textureMapping?: MaterialTextureMappingProps;
 }

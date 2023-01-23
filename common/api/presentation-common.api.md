@@ -485,6 +485,7 @@ export class Descriptor implements DescriptorSource {
     readonly categories: CategoryDescription[];
     readonly connectionId?: string;
     readonly contentFlags: number;
+    // @deprecated
     readonly contentOptions: any;
     createDescriptorOverrides(): DescriptorOverrides;
     readonly displayType: string;
@@ -516,7 +517,7 @@ export interface DescriptorJSON {
     connectionId: string;
     // (undocumented)
     contentFlags: number;
-    // (undocumented)
+    // @deprecated (undocumented)
     contentOptions: any;
     // (undocumented)
     displayType: string;
@@ -1085,10 +1086,37 @@ export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = R
     resultSetSize?: number;
 }
 
+// @alpha
+export interface HierarchyLevel {
+    nodes: Node_2[];
+    supportsFiltering?: boolean;
+}
+
+// @alpha (undocumented)
+export namespace HierarchyLevel {
+    export function fromJSON(json: HierarchyLevelJSON): HierarchyLevel;
+}
+
+// @alpha
+export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+    parentKey?: TNodeKey;
+}
+
+// @alpha
+export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions<HierarchyLevelDescriptorRequestOptions<never, NodeKeyJSON, RulesetVariableJSON>>;
+
+// @alpha
+export interface HierarchyLevelJSON {
+    // (undocumented)
+    nodes: NodeJSON[];
+    // (undocumented)
+    supportsFiltering?: boolean;
+}
+
 // @public
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
     // @alpha
-    instanceFilter?: string;
+    instanceFilter?: InstanceFilterDefinition;
     parentKey?: TNodeKey;
 }
 
@@ -1781,6 +1809,8 @@ interface Node_2 {
     isSelectionDisabled?: boolean;
     key: NodeKey;
     label: LabelDefinition;
+    // @alpha
+    supportsFiltering?: boolean;
 }
 
 // @public (undocumented)
@@ -1880,6 +1910,8 @@ export interface NodeJSON {
     key: NodeKeyJSON;
     // (undocumented)
     labelDefinition: LabelDefinitionJSON;
+    // @alpha (undocumented)
+    supportsFiltering?: boolean;
 }
 
 // @public
@@ -2076,6 +2108,8 @@ export class PresentationRpcInterface extends RpcInterface {
     getNodePaths(_token: IModelRpcProps, _options: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)
     getNodesCount(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<number>;
+    // @alpha (undocumented)
+    getNodesDescriptor(_token: IModelRpcProps, _options: HierarchyLevelDescriptorRpcRequestOptions): PresentationRpcResponse<string | DescriptorJSON | undefined>;
     // (undocumented)
     getPagedContent(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<{
         descriptor: DescriptorJSON;
@@ -2629,6 +2663,8 @@ export class RpcRequestsHandler implements IDisposable {
     getNodePaths(options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<NodePathElementJSON[]>;
     // (undocumented)
     getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number>;
+    // (undocumented)
+    getNodesDescriptor(options: HierarchyLevelDescriptorRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<DescriptorJSON | undefined>;
     // (undocumented)
     getPagedContent(options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>): Promise<{
         descriptor: DescriptorJSON;
