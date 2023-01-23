@@ -62,7 +62,7 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
 /** @alpha */
 export function usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection, initialClasses?: ClassInfo[]) {
   const propertyInfos = React.useMemo(() => createInstanceFilterPropertyInfos(descriptor), [descriptor]);
-  const classes = React.useMemo(() => {
+  const classes = React.useMemo((): ClassInfo[] => {
     const uniqueClasses = new Map();
     descriptor.selectClasses.forEach((selectClass) => uniqueClasses.set(selectClass.selectClassInfo.id, selectClass.selectClassInfo));
     return [...uniqueClasses.values()];
