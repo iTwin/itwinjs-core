@@ -127,6 +127,10 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 
 [NativeApp.requestDownloadBriefcase]($frontend) parameter `progress` is deprecated in favor of `progressCallback` in [DownloadBriefcaseOptions]($frontend). Similarly, `progressCallback` in [PullChangesOptions]($frontend) is now deprecated and should be replaced with `downloadProgressCallback` in [PullChangesOptions]($frontend). Both new variables are of type [OnDownloadProgress]($frontend), which more accurately represents information reported during downloads.
 
+[IModelConnection.displayedExtents]($frontend) and [IModelConnection.expandDisplayedExtents]($frontend) are deprecated. The displayed extents are expanded every time a [ContextRealityModel]($common) is added to any view in the iModel, and never shrink. They were previously used to compute the viewed extents of every [SpatialViewState]($frontend), which could produce an unnecessarily large frustum resulting in graphical artifacts. Now each spatial view computes its extents based on the extents of the models it is currently displaying. `displayedExtents` is still computed as before to support existing users of the API, but its use is not recommended.
+
+### @itwin/core-backend
+
 [RenderMaterialElement.Params]($backend) is defined as a class, which makes it unwieldy to use. You can now use the interface [RenderMaterialElementParams]($backend) instead.
 
 ### @itwin/appui-react
