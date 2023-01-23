@@ -169,7 +169,9 @@ describe("Tiles", () => {
     expect(nbItems).to.equals(2);
 
     // Make sure the right tree is removed
+    expect(tree1.isDisposed).to.be.false;
     imodel.tiles.resetTileTreeOwner(tree1, supplier);
+    expect(tree1.isDisposed).to.be.true;
     nbItems = 0;
     for ( const item of imodel.tiles) {
       expect(item.id.id).to.equals(tree2.id);
