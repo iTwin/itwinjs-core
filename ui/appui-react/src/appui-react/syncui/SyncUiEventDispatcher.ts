@@ -38,7 +38,7 @@ export enum SyncUiEventId {
   /** The active view maintained by the ViewManager has changed. */
   ActiveViewportChanged = "activeviewportchanged",
   /** Backstage has been closed.
-   * @deprecated Use BackstageEvent instead
+   * @deprecated in 1.x. Use BackstageEvent instead
    */
   BackstageCloseEvent = "backstagecloseevent",
   /** Backstage has been closed. */
@@ -60,12 +60,12 @@ export enum SyncUiEventId {
   /** An InteractiveTool has been activated via the ToolAdmin. */
   ToolActivated = "toolactivated",
   /** A Task has been activated.
-   * @deprecated */
+   * @deprecated in 3.0. */
   TaskActivated = "taskactivated",
   /** The state of a Widget has changed. */
   WidgetStateChanged = "widgetstatechanged",
   /** A Workflow has been activated.
-   * @deprecated */
+   * @deprecated in 3.0. */
   WorkflowActivated = "workflowactivated",
   /** The SelectionSet for the active IModelConnection has changed. */
   SelectionSetChanged = "selectionsetchanged",
@@ -83,12 +83,12 @@ export enum SyncUiEventId {
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
- * @public @deprecated use UiSyncEventArgs in appui-abstract instead
+ * @public @deprecated in 3.0. Use UiSyncEventArgs in appui-abstract instead
  */
 export type SyncUiEventArgs = UiSyncEventArgs;
 
 /** SyncUi Event class.
- * @public @deprecated use UiSyncEvent in appui-abstract instead
+ * @public @deprecated in 3.0. Use UiSyncEvent in appui-abstract instead
  */
 export type SyncUiEvent = UiSyncEvent;
 
