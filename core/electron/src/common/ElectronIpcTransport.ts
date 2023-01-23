@@ -12,8 +12,6 @@ import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
 
-/* eslint-disable deprecation/deprecation */
-
 const OBJECTS_CHANNEL = iTwinChannel("rpc.objects");
 const DATA_CHANNEL = iTwinChannel("rpc.data");
 

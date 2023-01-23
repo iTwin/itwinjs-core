@@ -22,8 +22,6 @@ import {
   WebAppRpcProtocol,
 } from "@itwin/core-common";
 
-/* eslint-disable deprecation/deprecation */
-
 function parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedRpcActivity {
   const headerNames: SerializedRpcActivity = protocol.serializedClientRequestContextHeaderNames;
   const parsedHeaders: SerializedRpcActivity = {
@@ -54,7 +52,7 @@ async function parseFromBody(req: HttpServerRequest): Promise<RpcSerializedValue
   }
 }
 
-/** @internal @deprecated */
+/** @internal */
 export async function parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest> {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const operation = protocol.getOperationFromPath(req.url!);

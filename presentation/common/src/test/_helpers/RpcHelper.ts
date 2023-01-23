@@ -9,10 +9,10 @@ import { RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
  * MUST be called to use Presentation RPC interface but AFTER Presentation.initialize(),
  * otherwise does nothing
  */
-export const initializeRpcInterface = (rpcInterface: RpcInterfaceDefinition) => { // eslint-disable-line deprecation/deprecation
+export const initializeRpcInterface = (rpcInterface: RpcInterfaceDefinition) => {
   // calling it more than once throws, so we have to wrap it with try/catch.
   try {
-    RpcManager.initializeInterface(rpcInterface); // eslint-disable-line deprecation/deprecation
+    RpcManager.initializeInterface(rpcInterface);
   } catch (_e) {
   }
 };

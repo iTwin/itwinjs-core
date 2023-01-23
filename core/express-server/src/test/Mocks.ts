@@ -7,13 +7,13 @@ import * as http from "http";
 import * as sinon from "sinon";
 import { IModelJsExpressServer } from "../ExpressServer";
 
-export class FakeBentleyCloudRpcConfiguration extends BentleyCloudRpcConfiguration { // eslint-disable-line deprecation/deprecation
+export class FakeBentleyCloudRpcConfiguration extends BentleyCloudRpcConfiguration {
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private static info: OpenAPIInfo = { title: "randomTitle", version: "randomVersion" }; // eslint-disable-line deprecation/deprecation
+  private static info: OpenAPIInfo = { title: "randomTitle", version: "randomVersion" };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private protocolClass = class extends BentleyCloudRpcProtocol { // eslint-disable-line deprecation/deprecation
+  private protocolClass = class extends BentleyCloudRpcProtocol {
     public override pathPrefix = "randomPathPrefix";
     public info = FakeBentleyCloudRpcConfiguration.info;
   };
@@ -22,7 +22,7 @@ export class FakeBentleyCloudRpcConfiguration extends BentleyCloudRpcConfigurati
   public interfaces = () => [];
 
   /** @implements */
-  public protocol: BentleyCloudRpcProtocol = new this.protocolClass(this); // eslint-disable-line deprecation/deprecation
+  public protocol: BentleyCloudRpcProtocol = new this.protocolClass(this);
 }
 
 const fakeHttpServer = {

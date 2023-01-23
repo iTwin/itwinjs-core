@@ -26,7 +26,7 @@ import rpcs from "../common/Rpcs";
   Logger.setLevel(PresentationBackendLoggerCategory.Package, LogLevel.Info);
 
   // get platform-specific initialization function
-  let init: (_rpcs: RpcInterfaceDefinition[]) => void; // eslint-disable-line deprecation/deprecation
+  let init: (_rpcs: RpcInterfaceDefinition[]) => void;
   if (electron) {
     init = (await import("./electron/ElectronMain")).default;
   } else {

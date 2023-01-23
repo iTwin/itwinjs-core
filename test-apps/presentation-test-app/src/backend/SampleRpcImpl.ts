@@ -37,4 +37,4 @@ export default class SampleRpcImpl extends SampleRpcInterface {
 }
 
 /** Auto-register the impl when this file is included. */
-RpcManager.registerImpl(SampleRpcInterface, SampleRpcImpl); // eslint-disable-line deprecation/deprecation
+RpcManager.registerImpl(SampleRpcInterface, SampleRpcImpl);

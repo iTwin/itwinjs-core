@@ -15,9 +15,9 @@ import { BriefcaseDb } from "../IModelDb";
 /** The backend implementation of WipRpcInterface.
  * @internal
  */
-export class WipRpcImpl extends RpcInterface implements WipRpcInterface { // eslint-disable-line deprecation/deprecation
+export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
 
-  public static register() { RpcManager.registerImpl(WipRpcInterface, WipRpcImpl); } // eslint-disable-line deprecation/deprecation
+  public static register() { RpcManager.registerImpl(WipRpcInterface, WipRpcImpl); }
   public async placeholder(_tokenProps: IModelRpcProps): Promise<string> { return "placeholder"; }
 
   public async isChangeCacheAttached(tokenProps: IModelRpcProps): Promise<boolean> {

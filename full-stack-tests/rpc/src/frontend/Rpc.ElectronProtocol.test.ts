@@ -14,15 +14,15 @@ if (ProcessDetector.isElectronAppFrontend) {
   describe("Rpc.ElectronProtocol", () => {
     it("should generate one response per request", async () => {
       let received = 0;
-      let request: RpcRequest; // eslint-disable-line deprecation/deprecation
+      let request: RpcRequest;
       const client = TestRpcInterface3.getClient();
 
       const removeListener = client.configuration.protocol.events.addListener((type, object) => {
-        if (type !== RpcProtocolEvent.ResponseLoaded) // eslint-disable-line deprecation/deprecation
+        if (type !== RpcProtocolEvent.ResponseLoaded)
           return;
 
         if (!request)
-          request = object as RpcRequest; // eslint-disable-line deprecation/deprecation
+          request = object as RpcRequest;
         else if (object !== request)
           return;
 

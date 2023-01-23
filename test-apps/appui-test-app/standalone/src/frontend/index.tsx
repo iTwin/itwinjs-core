@@ -49,7 +49,7 @@ import { useHandleURLParams } from "./UrlParams";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
 
 // Initialize my application gateway configuration for the frontend
-RpcConfiguration.developmentMode = true; // eslint-disable-line deprecation/deprecation
+RpcConfiguration.developmentMode = true;
 
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
@@ -151,8 +151,8 @@ export class SampleAppIModelApp {
       ...opts.iModelApp,
     };
 
-    const rpcParams: BentleyCloudRpcParams = { info: { title: "appui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }; // eslint-disable-line deprecation/deprecation
-    BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!); // eslint-disable-line deprecation/deprecation
+    const rpcParams: BentleyCloudRpcParams = { info: { title: "appui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
+    BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();

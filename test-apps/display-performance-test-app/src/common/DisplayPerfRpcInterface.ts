@@ -7,10 +7,10 @@ import * as http from "http";
 import * as https from "https";
 import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } from "@itwin/core-common";
 
-const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" }); // eslint-disable-line deprecation/deprecation
+const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" });
 
 /** Display Performance RPC interface. */
-export default class DisplayPerfRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export default class DisplayPerfRpcInterface extends RpcInterface {
   /** The immutable name of the interface. */
   public static readonly interfaceName = "DisplayPerfRpcInterface";
 
@@ -27,18 +27,18 @@ export default class DisplayPerfRpcInterface extends RpcInterface { // eslint-di
   /** A chrome browser window, when testing with chrome */
   public static chrome?: chromeLauncher.LaunchedChrome;
 
-  public static getClient(): DisplayPerfRpcInterface { return RpcManager.getClientForInterface(DisplayPerfRpcInterface); } // eslint-disable-line deprecation/deprecation
+  public static getClient(): DisplayPerfRpcInterface { return RpcManager.getClientForInterface(DisplayPerfRpcInterface); }
 
-  @RpcOperation.setRoutingProps(localDeploymentOnly) // eslint-disable-line deprecation/deprecation
+  @RpcOperation.setRoutingProps(localDeploymentOnly)
   public async getDefaultConfigs(): Promise<string> { return this.forward(arguments); }
 
   public async saveCsv(_outputPath: string, _outputName: string, _rowDataJson: string, _csvFormat?: string): Promise<void> { return this.forward(arguments); }
   public async savePng(_fileName: string, _png: string): Promise<void> { return this.forward(arguments); }
 
-  @RpcOperation.setRoutingProps(localDeploymentOnly) // eslint-disable-line deprecation/deprecation
+  @RpcOperation.setRoutingProps(localDeploymentOnly)
   public async writeExternalFile(_outputPath: string, _outputName: string, _append: boolean, _content: string): Promise<void> { return this.forward(arguments); }
 
-  @RpcOperation.setRoutingProps(localDeploymentOnly) // eslint-disable-line deprecation/deprecation
+  @RpcOperation.setRoutingProps(localDeploymentOnly)
   public async consoleLog(_content: string): Promise<void> { return this.forward(arguments); }
 
   public async finishCsv(_output: string, _outputPath?: string, _outputName?: string, _csvFormat?: string): Promise<void> { return this.forward(arguments); }

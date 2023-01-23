@@ -22,12 +22,12 @@ interface SchemaNameRow {
  * Implementation of the SchemaRpcInterface.
  * @internal
  */
-export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterface { // eslint-disable-line deprecation/deprecation
+export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterface {
   /**
    * Registers the RPC interface with its corresponding implementation class.
    */
   public static register() {
-    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl); // eslint-disable-line deprecation/deprecation
+    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
   }
 
   /**

@@ -8,8 +8,6 @@ import { TestRpcInterface, WebRoutingInterface } from "../common/TestRpcInterfac
 import { BentleyCloudRpcProtocol, RpcProtocol, RpcProtocolVersion, WebAppRpcProtocol, WebAppRpcRequest } from "@itwin/core-common";
 import { currentEnvironment } from "./_Setup.test";
 
-/* eslint-disable deprecation/deprecation */
-
 if (!ProcessDetector.isElectronAppFrontend) {
   describe("Web Routing", () => {
 

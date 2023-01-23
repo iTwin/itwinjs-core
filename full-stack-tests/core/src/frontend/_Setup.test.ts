@@ -8,8 +8,8 @@ import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { Geometry } from "@itwin/core-geometry";
 
-RpcConfiguration.developmentMode = true; // eslint-disable-line deprecation/deprecation
-RpcConfiguration.disableRoutingValidation = true; // eslint-disable-line deprecation/deprecation
+RpcConfiguration.developmentMode = true;
+RpcConfiguration.disableRoutingValidation = true;
 interface DeepEqualWithFpToleranceOpts {
   /**
    * Tolerance for fields, if not defined will be 1e-10
@@ -95,9 +95,11 @@ Assertion.addMethod(
       isDeep
         ? deepEqualWithFpTolerance(expected, actual, options)
         : isAlmostEqualNumber(expected, actual, options.tolerance),
-      `expected ${isDeep ? "deep equality of " : " "
+      `expected ${
+        isDeep ? "deep equality of " : " "
       }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      `expected ${isDeep ? "deep inequality of " : " "
+      `expected ${
+        isDeep ? "deep inequality of " : " "
       }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
       expected,
       actual
@@ -106,7 +108,7 @@ Assertion.addMethod(
 );
 
 if (!ProcessDetector.isElectronAppFrontend) {
-  const config = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces); // eslint-disable-line deprecation/deprecation
+  const config = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
   config.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;
 
   // This is a web-only test

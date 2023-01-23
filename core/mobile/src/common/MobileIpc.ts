@@ -16,7 +16,7 @@ import { MobileRpcRequest } from "./MobileRpcRequest";
 
 const IPC = "__ipc__";
 
-class IpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+class IpcInterface extends RpcInterface {
   public static interfaceName = IPC;
   public static interfaceVersion = "0.0.0";
   public async send() { }
@@ -24,15 +24,15 @@ class IpcInterface extends RpcInterface { // eslint-disable-line deprecation/dep
 
 /** @internal */
 export class MobileIpcTransport extends IpcWebSocketTransport {
-  private _protocol: MobileRpcProtocol; // eslint-disable-line deprecation/deprecation
+  private _protocol: MobileRpcProtocol;
   private _client: IpcInterface;
 
-  public constructor(protocol: MobileRpcProtocol) { // eslint-disable-line deprecation/deprecation
+  public constructor(protocol: MobileRpcProtocol) {
     super();
     this._protocol = protocol;
 
-    RpcManager.initializeInterface(IpcInterface); // eslint-disable-line deprecation/deprecation
-    this._client = RpcManager.getClientForInterface(IpcInterface); // eslint-disable-line deprecation/deprecation
+    RpcManager.initializeInterface(IpcInterface);
+    this._client = RpcManager.getClientForInterface(IpcInterface);
   }
 
   public send(message: IpcWebSocketMessage): void {
@@ -43,38 +43,38 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
     }
   }
 
-  public consumeRequest(request: SerializedRpcRequest): boolean { // eslint-disable-line deprecation/deprecation
+  public consumeRequest(request: SerializedRpcRequest): boolean {
     if (request.operation.interfaceDefinition !== IPC)
       return false;
 
-    const message = RpcMarshaling.deserialize(this._protocol, request.parameters)[0] as IpcWebSocketMessage; // eslint-disable-line deprecation/deprecation
+    const message = RpcMarshaling.deserialize(this._protocol, request.parameters)[0] as IpcWebSocketMessage;
     this.broadcast({} as Event, message);
     return true;
   }
 
-  public consumeResponse(response: RpcRequestFulfillment): boolean { // eslint-disable-line deprecation/deprecation
+  public consumeResponse(response: RpcRequestFulfillment): boolean {
     if (response.interfaceName !== IPC)
       return false;
 
-    const message = RpcMarshaling.deserialize(this._protocol, response.result) as IpcWebSocketMessage; // eslint-disable-line deprecation/deprecation
+    const message = RpcMarshaling.deserialize(this._protocol, response.result) as IpcWebSocketMessage;
     this.broadcast({} as Event, message);
     return true;
   }
 
   private async sendToBackend(message: IpcWebSocketMessage) {
-    const request = new MobileRpcRequest(this._client, "send", [message]); // eslint-disable-line deprecation/deprecation
-    const encoded = await MobileRpcProtocol.encodeRequest(request); // eslint-disable-line deprecation/deprecation
+    const request = new MobileRpcRequest(this._client, "send", [message]);
+    const encoded = await MobileRpcProtocol.encodeRequest(request);
     this._protocol.sendToBackend(encoded);
     request.dispose();
   }
 
   private async sendToFrontend(message: IpcWebSocketMessage) {
     MobileEventLoop.addTask();
-    const result = await RpcMarshaling.serialize(this._protocol, message); // eslint-disable-line deprecation/deprecation
+    const result = await RpcMarshaling.serialize(this._protocol, message);
     MobileEventLoop.removeTask();
 
-    const fulfillment: RpcRequestFulfillment = { result, rawResult: message, interfaceName: IPC, id: message.channel, status: 0 }; // eslint-disable-line deprecation/deprecation
-    const encoded = MobileRpcProtocol.encodeResponse(fulfillment); // eslint-disable-line deprecation/deprecation
+    const fulfillment: RpcRequestFulfillment = { result, rawResult: message, interfaceName: IPC, id: message.channel, status: 0 };
+    const encoded = MobileRpcProtocol.encodeResponse(fulfillment);
     this._protocol.sendToFrontend(encoded);
   }
 

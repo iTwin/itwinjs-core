@@ -44,7 +44,7 @@ export class DisplayPerfTestApp {
     /* eslint-enable @typescript-eslint/naming-convention */
 
     iModelApp.hubAccess = process.env.IMJS_URL_PREFIX
-      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
+      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl:`https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` }}))
       : new FrontendIModelsAccess();
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
@@ -69,10 +69,10 @@ export class DisplayPerfTestApp {
 }
 
 async function signIn(): Promise<void> {
-  if (process.env.IMJS_OIDC_HEADLESS)
+  if(process.env.IMJS_OIDC_HEADLESS)
     return;
   let authorizationClient;
-  if (ProcessDetector.isElectronAppFrontend)
+  if(ProcessDetector.isElectronAppFrontend)
     authorizationClient = new ElectronRendererAuthorization();
   else
     authorizationClient = new BrowserAuthorizationClient({
@@ -89,7 +89,7 @@ async function main() {
     const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
 
-    if (props.signIn)
+    if(props.signIn)
       await signIn();
 
     const runner = new TestRunner(props);
@@ -105,12 +105,12 @@ async function main() {
 
 window.onload = async () => {
   // Choose RpcConfiguration based on whether we are in electron or browser
-  RpcConfiguration.developmentMode = true; // eslint-disable-line deprecation/deprecation
-  RpcConfiguration.disableRoutingValidation = true; // eslint-disable-line deprecation/deprecation
+  RpcConfiguration.developmentMode = true;
+  RpcConfiguration.disableRoutingValidation = true;
 
   if (!ProcessDetector.isElectronAppFrontend && !ProcessDetector.isMobileAppFrontend) {
     const uriPrefix = "http://localhost:3001";
-    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]); // eslint-disable-line deprecation/deprecation
+    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   }
 
   await DisplayPerfTestApp.startup();

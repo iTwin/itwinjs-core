@@ -486,7 +486,7 @@ export class BriefcaseManager {
   }
 
   /** @internal */
-  public static logUsage(imodel: IModelDb, activity?: RpcActivity) {  // eslint-disable-line deprecation/deprecation
+  public static logUsage(imodel: IModelDb, activity?: RpcActivity) {
 
     const telemetryEvent = new TelemetryEvent(
       "core-backend - Open iModel",

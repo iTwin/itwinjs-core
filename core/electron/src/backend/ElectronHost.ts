@@ -52,7 +52,7 @@ export interface ElectronHostOptions {
   /** port number for development server. Default is 3000 */
   frontendPort?: number;
   /** list of RPC interface definitions to register */
-  rpcInterfaces?: RpcInterfaceDefinition[]; // eslint-disable-line deprecation/deprecation
+  rpcInterfaces?: RpcInterfaceDefinition[];
   /** list of [IpcHandler]($common) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
 }
@@ -92,7 +92,7 @@ export class ElectronHost {
   public static webResourcesPath: string;
   public static appIconPath: string;
   public static frontendURL: string;
-  public static rpcConfig: RpcConfiguration; // eslint-disable-line deprecation/deprecation
+  public static rpcConfig: RpcConfiguration;
   public static get ipcMain() { return this._electron?.ipcMain; }
   public static get app() { return this._electron?.app; }
   public static get electron() { return this._electron; }
@@ -148,7 +148,7 @@ export class ElectronHost {
     };
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);
-    ElectronRpcConfiguration.targetWindowId = this._mainWindow.id; // eslint-disable-line deprecation/deprecation
+    ElectronRpcConfiguration.targetWindowId = this._mainWindow.id;
     this._mainWindow.on("closed", () => this._mainWindow = undefined);
     this._mainWindow.loadURL(this.frontendURL); // eslint-disable-line @typescript-eslint/no-floating-promises
 
@@ -270,7 +270,7 @@ export class ElectronHost {
       this.webResourcesPath = eopt?.webResourcesPath ?? "";
       this.frontendURL = eopt?.frontendURL ?? (this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`);
       this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
-      this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces); // eslint-disable-line deprecation/deprecation
+      this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
     }
 
     opts = opts ?? {};

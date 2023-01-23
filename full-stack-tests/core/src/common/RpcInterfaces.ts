@@ -9,12 +9,12 @@ import {
 } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
-export abstract class TestRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class TestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "TestRpcInterface";
   public static interfaceVersion = "1.1.1";
 
   public static getClient(): TestRpcInterface {
-    return RpcManager.getClientForInterface(TestRpcInterface); // eslint-disable-line deprecation/deprecation
+    return RpcManager.getClientForInterface(TestRpcInterface);
   }
   public async restartIModelHost(): Promise<void> {
     return this.forward(arguments);
@@ -36,12 +36,12 @@ export abstract class TestRpcInterface extends RpcInterface { // eslint-disable-
   }
 }
 
-export abstract class EventsTestRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class EventsTestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "EventsTestRpcInterface";
   public static interfaceVersion = "0.1.0";
 
   public static getClient(): EventsTestRpcInterface {
-    return RpcManager.getClientForInterface(EventsTestRpcInterface); // eslint-disable-line deprecation/deprecation
+    return RpcManager.getClientForInterface(EventsTestRpcInterface);
   }
 
   // Set a event that would be fired from backend and received on frontend.

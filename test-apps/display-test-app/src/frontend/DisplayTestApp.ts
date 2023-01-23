@@ -140,9 +140,8 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
 
 // main entry point.
 const dtaFrontendMain = async () => {
-  // eslint-disable-next-line deprecation/deprecation
   RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
-  RpcConfiguration.disableRoutingValidation = true; // eslint-disable-line deprecation/deprecation
+  RpcConfiguration.disableRoutingValidation = true;
 
   // retrieve, set, and output the global configuration variable
   await getFrontendConfig();

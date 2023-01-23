@@ -627,7 +627,7 @@ export class UiFramework {
       return;
 
     try {
-      const activity: RpcActivity = { // eslint-disable-line deprecation/deprecation
+      const activity: RpcActivity = {
         sessionId: IModelApp.sessionId,
         activityId: "",
         applicationId: IModelApp.applicationId,

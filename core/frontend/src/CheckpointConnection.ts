@@ -54,9 +54,9 @@ export class CheckpointConnection extends IModelConnection {
     const openResponse = await this.callOpen(iModelRpcProps, routingContext);
 
     const connection = new this(openResponse);
-    RpcManager.setIModel(connection); // eslint-disable-line deprecation/deprecation
+    RpcManager.setIModel(connection);
     connection.routingContext = routingContext;
-    RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler); // eslint-disable-line deprecation/deprecation
+    RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
 
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -68,7 +68,7 @@ export class CheckpointConnection extends IModelConnection {
     const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
     let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection.connectionTimeout);
 
-    const openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "getConnectionProps"); // eslint-disable-line deprecation/deprecation
+    const openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "getConnectionProps");
     if (!openForReadOperation)
       throw new IModelError(BentleyStatus.ERROR, "IModelReadRpcInterface.getConnectionProps() is not available");
     openForReadOperation.policy.retryInterval = () => connectionRetryInterval;
@@ -76,8 +76,8 @@ export class CheckpointConnection extends IModelConnection {
     Logger.logTrace(loggerCategory, `IModelConnection.open`, iModelToken);
     const startTime = Date.now();
 
-    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => { // eslint-disable-line deprecation/deprecation
-      if (type !== RpcRequestEvent.PendingUpdateReceived) // eslint-disable-line deprecation/deprecation
+    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => {
+      if (type !== RpcRequestEvent.PendingUpdateReceived)
         return;
       if (!(openForReadOperation && request.operation === openForReadOperation))
         return;
@@ -109,7 +109,7 @@ export class CheckpointConnection extends IModelConnection {
     return openResponse;
   }
 
-  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason: any) => void) => { // eslint-disable-line deprecation/deprecation
+  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason: any) => void) => {
     if (!response.hasOwnProperty("isIModelNotFoundResponse"))
       return;
 
@@ -141,7 +141,7 @@ export class CheckpointConnection extends IModelConnection {
       return;
 
     this.beforeClose();
-    RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler); // eslint-disable-line deprecation/deprecation
+    RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     this._isClosed = true;
   }
 }

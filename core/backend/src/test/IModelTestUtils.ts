@@ -40,10 +40,10 @@ chai.use(chaiAsPromised);
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 
-RpcConfiguration.developmentMode = true; // eslint-disable-line deprecation/deprecation
+RpcConfiguration.developmentMode = true;
 
 // Initialize the RPC interface classes used by tests
-RpcManager.initializeInterface(IModelReadRpcInterface); // eslint-disable-line deprecation/deprecation
+RpcManager.initializeInterface(IModelReadRpcInterface);
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
@@ -170,7 +170,7 @@ export class HubWrappers {
       try {
         return (await RpcBriefcaseUtility.open(openArgs)) as BriefcaseDb;
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line deprecation/deprecation
+        if (!(error instanceof RpcPendingResponse))
           throw error;
       }
     }
@@ -212,7 +212,7 @@ export class HubWrappers {
       try {
         return (await RpcBriefcaseUtility.open(openArgs));
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line deprecation/deprecation
+        if (!(error instanceof RpcPendingResponse))
           throw error;
       }
     }

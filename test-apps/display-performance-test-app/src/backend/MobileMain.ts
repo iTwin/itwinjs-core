@@ -17,5 +17,5 @@ export function getRpcInterfaces() {
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   // Initialize the backend
   await initializeBackend();
-  MobileRpcManager.initializeImpl(getRpcInterfaces()); // eslint-disable-line deprecation/deprecation
+  MobileRpcManager.initializeImpl(getRpcInterfaces());
 })();

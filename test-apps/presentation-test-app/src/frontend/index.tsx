@@ -35,7 +35,7 @@ export class SampleApp {
     } else if (ProcessDetector.isBrowserProcess) {
       const rpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       await IModelApp.startup(iModelAppOpts);
-      BentleyCloudRpcManager.initializeClient(rpcParams, iModelAppOpts.rpcInterfaces ?? []); // eslint-disable-line deprecation/deprecation
+      BentleyCloudRpcManager.initializeClient(rpcParams, iModelAppOpts.rpcInterfaces ?? []);
     }
     const readyPromises = new Array<Promise<void>>();
 

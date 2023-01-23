@@ -9,8 +9,8 @@ import { BentleyCloudRpcManager, RpcConfiguration, RpcInterfaceDefinition } from
 /**
  * Initializes Web Server backend
  */
-export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]) { // eslint-disable-line deprecation/deprecation
-  RpcConfiguration.developmentMode = true; // eslint-disable-line deprecation/deprecation
+export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]) {
+  RpcConfiguration.developmentMode = true;
 
   // __PUBLISH_EXTRACT_START__ Presentation.Backend.WebApp.RpcInterface
 
@@ -18,7 +18,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
   await IModelHost.startup();
 
   // tell BentleyCloudRpcManager which RPC interfaces to handle
-  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "presentation-test-app", version: "v1.0" } }, rpcInterfaces); // eslint-disable-line deprecation/deprecation
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "presentation-test-app", version: "v1.0" } }, rpcInterfaces);
 
   // create a basic express web server
   const port = Number(process.env.PORT || 3001);

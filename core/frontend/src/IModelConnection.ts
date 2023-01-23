@@ -642,7 +642,7 @@ export class SnapshotConnection extends IModelConnection {
    */
   public static async openFile(filePath: string): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-    RpcManager.setIModel({ iModelId: "undefined", key: filePath }); // eslint-disable-line deprecation/deprecation
+    RpcManager.setIModel({ iModelId: "undefined", key: filePath });
 
     const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openFile(filePath);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
@@ -657,7 +657,7 @@ export class SnapshotConnection extends IModelConnection {
    */
   public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-    RpcManager.setIModel({ iModelId: "undefined", key: fileKey }); // eslint-disable-line deprecation/deprecation
+    RpcManager.setIModel({ iModelId: "undefined", key: fileKey });
 
     const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));

@@ -22,8 +22,6 @@ import {
   WebAppRpcRequest,
 } from "@itwin/core-common";
 
-/* eslint-disable deprecation/deprecation */
-
 function configureResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
   const success = protocol.getStatus(fulfillment.status) === RpcRequestStatus.Resolved;
   // TODO: Use stale-while-revalidate in cache headers. This needs to be tested, and does not currently have support in the router/caching-service.
@@ -81,7 +79,7 @@ function configureStream(fulfillment: RpcRequestFulfillment) {
   return fulfillment.result.stream!;
 }
 
-/** @internal @deprecated */
+/** @internal */
 export async function sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, req: HttpServerRequest, res: HttpServerResponse) {
   const versionHeader = protocol.protocolVersionHeaderName;
   if (versionHeader && RpcProtocol.protocolVersion) {

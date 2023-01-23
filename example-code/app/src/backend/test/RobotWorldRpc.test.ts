@@ -122,22 +122,22 @@ if (ProcessDetector.isElectronAppFrontend) {
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudApp
 
-export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]) { // eslint-disable-line deprecation/deprecation
-  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } }; // eslint-disable-line deprecation/deprecation
-  BentleyCloudRpcManager.initializeClient(cloudParams, interfaces); // eslint-disable-line deprecation/deprecation
+export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]) {
+  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };
+  BentleyCloudRpcManager.initializeClient(cloudParams, interfaces);
 }
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudRemote
-export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefinition[], serviceUrl?: string) { // eslint-disable-line deprecation/deprecation
-  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix: serviceUrl }; // eslint-disable-line deprecation/deprecation
-  BentleyCloudRpcManager.initializeClient(cloudParams, interfaces); // eslint-disable-line deprecation/deprecation
+export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefinition[], serviceUrl?: string) {
+  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" }, uriPrefix: serviceUrl };
+  BentleyCloudRpcManager.initializeClient(cloudParams, interfaces);
 }
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeFrontendForElectron
 
-export async function initializeElectron(rpcInterfaces: RpcInterfaceDefinition[]) { // eslint-disable-line deprecation/deprecation
+export async function initializeElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
   await ElectronApp.startup({
     iModelApp: {
       rpcInterfaces,

@@ -14,7 +14,7 @@ import { loggerCategory } from "../../common/TestAppConfiguration";
  */
 export async function initializeWeb(opts?: IModelHostOptions) {
   // tell BentleyCloudRpcManager which RPC interfaces to handle
-  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "ui-test-app", version: "v1.0" } }, getSupportedRpcs()); // eslint-disable-line deprecation/deprecation
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "ui-test-app", version: "v1.0" } }, getSupportedRpcs());
 
   // create a basic express web server
   const port = Number(process.env.PORT || 3001);

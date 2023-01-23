@@ -178,8 +178,8 @@ class DisplayTestAppRpc extends DtaRpcInterface {
   }
 }
 
-export const getRpcInterfaces = (): RpcInterfaceDefinition[] => { // eslint-disable-line deprecation/deprecation
-  const rpcs: RpcInterfaceDefinition[] = [ // eslint-disable-line deprecation/deprecation
+export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
+  const rpcs: RpcInterfaceDefinition[] = [
     DtaRpcInterface,
     IModelReadRpcInterface,
     IModelTileRpcInterface,
@@ -232,7 +232,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   };
 
   /** register the implementation of our RPCs. */
-  RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc); // eslint-disable-line deprecation/deprecation
+  RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   const authClient = await initializeAuthorizationClient();
   if (ProcessDetector.isElectronAppBackend) {
     opts.iModelHost.authorizationClient = authClient;
@@ -247,7 +247,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   }
 };
 
-async function initializeAuthorizationClient(): Promise<ElectronMainAuthorization | undefined> {
+async function initializeAuthorizationClient(): Promise<ElectronMainAuthorization  | undefined> {
   if (
     ProcessDetector.isElectronAppBackend &&
     checkEnvVars(

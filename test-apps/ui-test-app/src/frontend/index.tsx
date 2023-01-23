@@ -74,7 +74,7 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { InspectUiItemInfoTool } from "./tools/InspectTool";
 
 // Initialize my application gateway configuration for the frontend
-RpcConfiguration.developmentMode = true; // eslint-disable-line deprecation/deprecation
+RpcConfiguration.developmentMode = true;
 
 // cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise hypermodeling testapp urlps
 // cSpell:ignore toggledraginteraction toggleframeworkversion set-drag-interaction set-framework-version
@@ -230,11 +230,11 @@ export class SampleAppIModelApp {
         await auth.signInSilent();
       } catch (err) { }
 
-      const rpcParams: BentleyCloudRpcParams = // eslint-disable-line deprecation/deprecation
+      const rpcParams: BentleyCloudRpcParams =
         undefined !== process.env.IMJS_UITESTAPP_GP_BACKEND ?
           { info: { title: "imodel/rpc", version: "" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
           : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
-      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!); // eslint-disable-line deprecation/deprecation
+      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
 
       await IModelApp.startup({
         ...iModelAppOpts,

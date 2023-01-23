@@ -26,9 +26,9 @@ export const resetOp8Initializer = () => {
   op8Initializer = 0;
 };
 
-export class TestZeroMajorRpcImpl extends RpcInterface implements ZeroMajorRpcInterface { // eslint-disable-line deprecation/deprecation
+export class TestZeroMajorRpcImpl extends RpcInterface implements ZeroMajorRpcInterface {
   public static register() {
-    RpcManager.registerImpl(ZeroMajorRpcInterface, TestZeroMajorRpcImpl); // eslint-disable-line deprecation/deprecation
+    RpcManager.registerImpl(ZeroMajorRpcInterface, TestZeroMajorRpcImpl);
   }
 
   public async op1(params: TestOp1Params): Promise<number> {
@@ -36,9 +36,9 @@ export class TestZeroMajorRpcImpl extends RpcInterface implements ZeroMajorRpcIn
   }
 }
 
-export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // eslint-disable-line deprecation/deprecation
+export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public static register() {
-    RpcManager.registerImpl(TestRpcInterface, TestRpcImpl); // eslint-disable-line deprecation/deprecation
+    RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
   }
 
   public async interceptSendUnknownStatus(): Promise<void> {
@@ -63,15 +63,15 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // e
     return val;
   }
 
-  public async op7(): Promise<RpcOperationsProfile> { // eslint-disable-line deprecation/deprecation
-    const val = RpcRequest.aggregateLoad; // eslint-disable-line deprecation/deprecation
+  public async op7(): Promise<RpcOperationsProfile> {
+    const val = RpcRequest.aggregateLoad;
     return val;
   }
 
   public async op8(x: number, y: number): Promise<{ initializer: number, sum: number }> {
     if (!op8Initializer) {
       op8Initializer = TestRpcInterface.OP8_INITIALIZER;
-      throw new RpcPendingResponse(TestRpcInterface.OP8_PENDING_MESSAGE); // eslint-disable-line deprecation/deprecation
+      throw new RpcPendingResponse(TestRpcInterface.OP8_PENDING_MESSAGE);
     } else {
       const val = { initializer: op8Initializer, sum: x + y };
       return val;
@@ -79,7 +79,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // e
   }
 
   public async op9(requestId: string): Promise<string> {
-    const invocation = RpcInvocation.current(this); // eslint-disable-line deprecation/deprecation
+    const invocation = RpcInvocation.current(this);
     if (!invocation || invocation.request.id !== requestId)
       throw new Error();
 
@@ -155,23 +155,23 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // e
   }
 
   public async getRequestedProtocolVersion() {
-    return RpcInvocation.current(this).request.protocolVersion; // eslint-disable-line deprecation/deprecation
+    return RpcInvocation.current(this).request.protocolVersion;
   }
 }
 
-export class TestRpcImpl2 extends RpcInterface implements TestRpcInterface2 { // eslint-disable-line deprecation/deprecation
+export class TestRpcImpl2 extends RpcInterface implements TestRpcInterface2 {
   public static register() {
-    RpcManager.registerImpl(TestRpcInterface2, TestRpcImpl2); // eslint-disable-line deprecation/deprecation
+    RpcManager.registerImpl(TestRpcInterface2, TestRpcImpl2);
   }
 
   public static unregister() {
-    RpcManager.unregisterImpl(TestRpcInterface2); // eslint-disable-line deprecation/deprecation
+    RpcManager.unregisterImpl(TestRpcInterface2);
   }
 
   public static instantiate() {
     // Demonstrates how a consumer can create and supply an instance of the RPC implementation class if necessary.
     const instance = new TestRpcImpl2();
-    RpcManager.supplyImplInstance(TestRpcInterface2, instance); // eslint-disable-line deprecation/deprecation
+    RpcManager.supplyImplInstance(TestRpcInterface2, instance);
   }
 
   public async op1(input: number): Promise<number> {
@@ -180,9 +180,9 @@ export class TestRpcImpl2 extends RpcInterface implements TestRpcInterface2 { //
   }
 }
 
-export class TestRpcImpl3 extends RpcInterface implements TestRpcInterface3 { // eslint-disable-line deprecation/deprecation
+export class TestRpcImpl3 extends RpcInterface implements TestRpcInterface3 {
   public static register() {
-    RpcManager.registerImpl(TestRpcInterface3, TestRpcImpl3); // eslint-disable-line deprecation/deprecation
+    RpcManager.registerImpl(TestRpcInterface3, TestRpcImpl3);
   }
 
   public async op1(input: number): Promise<number> {
@@ -203,20 +203,20 @@ export class TestRpcImpl3 extends RpcInterface implements TestRpcInterface3 { //
   }
 }
 
-export class MultipleClientsImpl extends RpcInterface implements MultipleClientsInterface { // eslint-disable-line deprecation/deprecation
+export class MultipleClientsImpl extends RpcInterface implements MultipleClientsInterface {
   public static register() {
-    RpcManager.registerImpl(MultipleClientsInterface, MultipleClientsImpl); // eslint-disable-line deprecation/deprecation
+    RpcManager.registerImpl(MultipleClientsInterface, MultipleClientsImpl);
   }
 
   public async check(id: number): Promise<boolean> {
-    const request = RpcInvocation.current(this).request; // eslint-disable-line deprecation/deprecation
+    const request = RpcInvocation.current(this).request;
     return request.path.indexOf(`rpc-full-stack-test-config${id}`) !== -1;
   }
 }
 
-export class AttachedInterfaceImpl extends RpcInterface implements AttachedInterface { // eslint-disable-line deprecation/deprecation
+export class AttachedInterfaceImpl extends RpcInterface implements AttachedInterface {
   public static register() {
-    RpcManager.registerImpl(AttachedInterface, AttachedInterfaceImpl); // eslint-disable-line deprecation/deprecation
+    RpcManager.registerImpl(AttachedInterface, AttachedInterfaceImpl);
   }
 
   public async ping(): Promise<boolean> {
@@ -224,9 +224,9 @@ export class AttachedInterfaceImpl extends RpcInterface implements AttachedInter
   }
 }
 
-export class WebRoutingInterfaceImpl extends RpcInterface implements WebRoutingInterface { // eslint-disable-line deprecation/deprecation
+export class WebRoutingInterfaceImpl extends RpcInterface implements WebRoutingInterface {
   public static register() {
-    RpcManager.registerImpl(WebRoutingInterface, WebRoutingInterfaceImpl); // eslint-disable-line deprecation/deprecation
+    RpcManager.registerImpl(WebRoutingInterface, WebRoutingInterfaceImpl);
   }
 
   public async ping502(sent: number): Promise<boolean> {
@@ -242,9 +242,9 @@ export class WebRoutingInterfaceImpl extends RpcInterface implements WebRoutingI
   }
 }
 
-export class MobileTestInterfaceImpl extends RpcInterface implements MobileTestInterface { // eslint-disable-line deprecation/deprecation
+export class MobileTestInterfaceImpl extends RpcInterface implements MobileTestInterface {
   public static register() {
-    RpcManager.registerImpl(MobileTestInterface, MobileTestInterfaceImpl); // eslint-disable-line deprecation/deprecation
+    RpcManager.registerImpl(MobileTestInterface, MobileTestInterfaceImpl);
   }
 
   public async multipart(a: number, b: Uint8Array): Promise<number> {

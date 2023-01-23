@@ -940,11 +940,11 @@ export class TileAdmin {
 
     this._rpcInitialized = true;
     const retryInterval = this._retryInterval;
-    RpcOperation.lookup(IModelTileRpcInterface, "requestTileTreeProps").policy.retryInterval = () => retryInterval; // eslint-disable-line deprecation/deprecation
+    RpcOperation.lookup(IModelTileRpcInterface, "requestTileTreeProps").policy.retryInterval = () => retryInterval;
 
-    const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy; // eslint-disable-line deprecation/deprecation
+    const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
-    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable; // eslint-disable-line deprecation/deprecation
+    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
   }
 }
 

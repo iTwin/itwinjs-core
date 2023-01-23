@@ -10,9 +10,6 @@ import { Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory, RpcInvocation, RpcProtocolEvent, WebAppRpcLogging } from "@itwin/core-common";
 import * as os from "os";
 
-/* eslint-disable deprecation/deprecation */
-
-/** @deprecated */
 export class WebAppRpcLoggingBackend extends WebAppRpcLogging {
   protected override async logProtocolEvent(event: RpcProtocolEvent, object: RpcInvocation): Promise<void> {
     switch (event) {

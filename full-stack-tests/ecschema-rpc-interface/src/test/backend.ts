@@ -33,15 +33,15 @@ function loadEnv(envFile: string) {
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 void (async () => {
-  RpcConfiguration.developmentMode = true; // eslint-disable-line deprecation/deprecation
+  RpcConfiguration.developmentMode = true;
 
   // Start the backend
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   const hubAccess = new BackendIModelsAccess(iModelClient);
   await IModelHost.startup({ hubAccess, cacheDir: path.join(__dirname, ".cache") });
 
-  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "schema-rpc-test", version: "v1.0" } }, getRpcInterfaces()); // eslint-disable-line deprecation/deprecation
-  RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl); // eslint-disable-line deprecation/deprecation
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "schema-rpc-test", version: "v1.0" } }, getRpcInterfaces());
+  RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
 
   // create a basic express web server
   const port = 5011;

@@ -98,7 +98,7 @@ async function testRegisterIpcHandler() {
 }
 
 async function testInitializeProvidedRpcInterface() {
-  abstract class TestRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+  abstract class TestRpcInterface extends RpcInterface {
     public static readonly interfaceName = "TestRpcInterface";
     public static interfaceVersion = "0.0.0";
   }
@@ -109,7 +109,7 @@ async function testInitializeProvidedRpcInterface() {
     },
   });
 
-  assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName)); // eslint-disable-line deprecation/deprecation
+  assert(RpcRegistry.instance.definitionClasses.has(TestRpcInterface.interfaceName));
 }
 
 async function testInitializeDefaultRpcInterface() {
@@ -123,7 +123,7 @@ async function testInitializeDefaultRpcInterface() {
   await ElectronHost.startup();
 
   for (const interfaceDef of defaultInterfaces)
-    assert(RpcRegistry.instance.definitionClasses.has(interfaceDef.interfaceName)); // eslint-disable-line deprecation/deprecation
+    assert(RpcRegistry.instance.definitionClasses.has(interfaceDef.interfaceName));
 }
 
 async function testOpenMainWindow() {

@@ -92,7 +92,7 @@ export interface MobileHostOpts extends NativeHostOpts {
   mobileHost?: {
     device?: MobileDevice;
     /** list of RPC interface definitions to register */
-    rpcInterfaces?: RpcInterfaceDefinition[]; // eslint-disable-line deprecation/deprecation
+    rpcInterfaces?: RpcInterfaceDefinition[];
   };
 }
 
@@ -197,7 +197,7 @@ export class MobileHost {
       });
 
       // following will provide impl for device specific api.
-      setupMobileRpc(); // eslint-disable-line deprecation/deprecation
+      setupMobileRpc();
     }
 
     const socket = opt?.ipcHost?.socket ?? new IpcWebSocketBackend();
@@ -217,6 +217,6 @@ export class MobileHost {
       PresentationRpcInterface,
     ];
 
-    MobileRpcManager.initializeImpl(rpcInterfaces); // eslint-disable-line deprecation/deprecation
+    MobileRpcManager.initializeImpl(rpcInterfaces);
   }
 }

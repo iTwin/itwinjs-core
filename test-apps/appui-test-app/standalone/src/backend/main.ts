@@ -28,7 +28,7 @@ import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
     initializeLogging();
 
     // ECSchemaRpcInterface allows schema retrieval for the UnitProvider implementation.
-    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl); // eslint-disable-line deprecation/deprecation
+    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
 
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {

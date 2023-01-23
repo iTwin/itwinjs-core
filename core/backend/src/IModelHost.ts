@@ -421,7 +421,7 @@ export class IModelHost {
     this.logStartup();
 
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
-    initializeRpcBackend(options.enableOpenTelemetry); // eslint-disable-line deprecation/deprecation
+    initializeRpcBackend(options.enableOpenTelemetry);
 
     if (this._platform === undefined) {
       try {
