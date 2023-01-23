@@ -18,25 +18,31 @@ export interface LabelCompositeValue {
 /**
  * JSON representation of [[LabelCompositeValue]]
  * @public
+ * @deprecated in 3.x. Use [[LabelCompositeValue]].
  */
 export interface LabelCompositeValueJSON {
   separator: string;
-  values: LabelDefinitionJSON[];
+  values: LabelDefinition[];
 }
 
 /** @public */
 export namespace LabelCompositeValue {
-  /** Serialize given [[LabelCompositeValue]] to JSON */
+  /**
+   * Serialize given [[LabelCompositeValue]] to JSON
+   * @deprecated in 3.x. Use [[LabelCompositeValue]].
+   */
+  // eslint-disable-next-line deprecation/deprecation
   export function toJSON(compositeValue: LabelCompositeValue): LabelCompositeValueJSON {
-    return { ...compositeValue, values: compositeValue.values.map(LabelDefinition.toJSON) };
+    return { ...compositeValue };
   }
 
-  /** Deserialize [[LabelCompositeValue]] from JSON */
+  /**
+   * Deserialize [[LabelCompositeValue]] from JSON
+   * @deprecated in 3.x. Use [[LabelCompositeValue]].
+   */
+  // eslint-disable-next-line deprecation/deprecation
   export function fromJSON(json: LabelCompositeValueJSON): LabelCompositeValue {
-    return {
-      ...json,
-      values: json.values.map(LabelDefinition.fromJSON),
-    };
+    return { ...json };
   }
 }
 
@@ -47,10 +53,11 @@ export namespace LabelCompositeValue {
 export type LabelRawValue = string | number | boolean | LabelCompositeValue;
 
 /**
- * JSON representation of  [[LabelRawValue]]
+ * JSON representation of [[LabelRawValue]]
  * @public
+ * @deprecated in 3.x. Use [[LabelRawValue]].
  */
-export type LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON;
+export type LabelRawValueJSON = LabelRawValue;
 
 /**
  * Data structure that describes label definition.
@@ -68,54 +75,47 @@ export interface LabelDefinition {
 /**
  * JSON representation of [[LabelDefinition]]
  * @public
+ * @deprecated in 3.x. Use [[LabelDefinition]].
  */
 export interface LabelDefinitionJSON {
   displayValue: string;
-  rawValue: LabelRawValueJSON;
+  rawValue: LabelRawValue;
   typeName: string;
 }
 
 /** @public */
 export namespace LabelDefinition {
-  /** Serialize given [[LabelDefinition]] to JSON */
+  /**
+   * Serialize given [[LabelDefinition]] to JSON
+   * @deprecated in 3.x. Use [[LabelDefinition]].
+   */
+  // eslint-disable-next-line deprecation/deprecation
   export function toJSON(labelDefinition: LabelDefinition): LabelDefinitionJSON {
-    return {
-      displayValue: labelDefinition.displayValue,
-      typeName: labelDefinition.typeName,
-      rawValue: isCompositeDefinition(labelDefinition) ? LabelCompositeValue.toJSON(labelDefinition.rawValue) : labelDefinition.rawValue,
-    };
+    return { ...labelDefinition };
   }
 
-  /** Deserialize [[LabelDefinition]] from JSON */
+  /**
+   * Deserialize [[LabelDefinition]] from JSON
+   * @deprecated in 3.x. Use [[LabelDefinition]].
+   */
+  // eslint-disable-next-line deprecation/deprecation
   export function fromJSON(json: LabelDefinitionJSON | string): LabelDefinition {
     if (typeof json === "string")
-      return JSON.parse(json, reviver);
-    return {
-      ...json,
-      rawValue: isCompositeDefinition(json) ? LabelCompositeValue.fromJSON(json.rawValue) : json.rawValue,
-    };
+      return JSON.parse(json);
+    return { ...json };
   }
 
   /** @internal */
   export const COMPOSITE_DEFINITION_TYPENAME = "composite";
 
-  /**
-   * Reviver function that can be used as a second argument for
-   * `JSON.parse` method when parsing [[LabelDefinition]] objects.
-   *
-   * @internal
-   */
-  export function reviver(key: string, value: any): any {
-    return key === "" ? fromJSON(value) : value;
-  }
-
   /** @internal */
+  // istanbul ignore next
   export function isCompositeDefinition(def: LabelDefinition): def is LabelDefinition & { rawValue: LabelCompositeValue } {
     return def.typeName === COMPOSITE_DEFINITION_TYPENAME;
   }
 
   /** @internal */
-  export function fromLabelString(label: string): LabelDefinitionJSON {
+  export function fromLabelString(label: string): LabelDefinition {
     return {
       displayValue: label,
       rawValue: label,

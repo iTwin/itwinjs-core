@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { ClassInfo, ClassInfoJSON, InstanceKey, InstanceKeyJSON } from "../EC";
+import { ClassInfo, InstanceKey } from "../EC";
 import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
 import { ValuesDictionary } from "../Utils";
 import { DisplayValue, DisplayValueJSON, DisplayValuesMapJSON, Value, ValueJSON, ValuesMapJSON } from "./Value";
@@ -16,14 +16,17 @@ import { DisplayValue, DisplayValueJSON, DisplayValuesMapJSON, Value, ValueJSON,
  * @public
  */
 export interface ItemJSON {
-  /** @beta */
-  inputKeys?: InstanceKeyJSON[];
-  primaryKeys: InstanceKeyJSON[];
+  inputKeys?: InstanceKey[];
+  primaryKeys: InstanceKey[];
+  // TODO: rename to `label`
+  // eslint-disable-next-line deprecation/deprecation
   labelDefinition: LabelDefinitionJSON;
   /** @deprecated in 3.x. */
   imageId: string;
-  classInfo?: ClassInfoJSON;
+  classInfo?: ClassInfo;
+  // eslint-disable-next-line deprecation/deprecation
   values: ValuesDictionary<ValueJSON>;
+  // eslint-disable-next-line deprecation/deprecation
   displayValues: ValuesDictionary<DisplayValueJSON>;
   mergedFieldNames: string[];
   extendedData?: { [key: string]: any };
@@ -35,8 +38,8 @@ export interface ItemJSON {
  */
 export class Item {
   /**
-   * Keys of input instances that caused this item to be included in content.
-   * @beta
+   * Keys of input instances that caused this item to be included in content. Only set if the content is
+   * created with [[ContentFlags.IncludeInputKeys]] flag.
    */
   public inputKeys?: InstanceKey[];
   /** Keys of instances whose data is contained in this item */
@@ -94,11 +97,11 @@ export class Item {
     const { label, ...baseItem } = this;
     return {
       ...baseItem,
-      ...(this.inputKeys ? { inputKeys: this.inputKeys.map(InstanceKey.toJSON) } : {}),
-      primaryKeys: this.primaryKeys.map(InstanceKey.toJSON),
-      classInfo: this.classInfo ? ClassInfo.toJSON(this.classInfo) : undefined,
+      // eslint-disable-next-line deprecation/deprecation
       values: Value.toJSON(this.values) as ValuesMapJSON,
+      // eslint-disable-next-line deprecation/deprecation
       displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
+      // eslint-disable-next-line deprecation/deprecation
       labelDefinition: LabelDefinition.toJSON(label),
     };
   }
@@ -112,11 +115,11 @@ export class Item {
     const item = Object.create(Item.prototype);
     const { labelDefinition, ...baseJson } = json;
     return Object.assign(item, baseJson, {
-      ...(json.inputKeys ? { inputKeys: json.inputKeys.map((ik) => InstanceKey.fromJSON(ik)) } : {}),
-      primaryKeys: json.primaryKeys.map((pk) => InstanceKey.fromJSON(pk)),
-      classInfo: json.classInfo ? ClassInfo.fromJSON(json.classInfo) : undefined,
+      // eslint-disable-next-line deprecation/deprecation
       values: Value.fromJSON(json.values),
+      // eslint-disable-next-line deprecation/deprecation
       displayValues: DisplayValue.fromJSON(json.displayValues),
+      // eslint-disable-next-line deprecation/deprecation
       label: LabelDefinition.fromJSON(labelDefinition),
     } as Partial<Item>);
   }
@@ -124,7 +127,6 @@ export class Item {
   /**
    * Reviver function that can be used as a second argument for
    * `JSON.parse` method when parsing Item objects.
-   *
    * @internal
    */
   public static reviver(key: string, value: any): any {

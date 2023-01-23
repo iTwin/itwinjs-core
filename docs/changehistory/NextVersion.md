@@ -113,6 +113,59 @@ The following APIs have been promoted to `@public`, indicating they are now part
 - [Viewport.queryVisibleFeatures]($frontend)
 - [ViewState3d.lookAt]($frontend)
 
+### @itwin/presentation-common
+
+- Presentation rules:
+  - [InstanceLabelOverridePropertyValueSpecification.propertySource]($presentation-common)
+  - [ChildNodeSpecificationBase.suppressSimilarAncestorsCheck]($presentation-common)
+  - [RequiredSchemaSpecification]($presentation-common) and its usages:
+    - [SubCondition.requiredSchemas]($presentation-common)
+    - [RuleBase.requiredSchemas]($presentation-common)
+    - [Ruleset.requiredSchemas]($presentation-common)
+- Content traversal - related APIs:
+  - [traverseContent]($presentation-common)
+  - [IContentVisitor]($presentation-common)
+- Selection scope computation - related APIs:
+  - [SelectionScopeProps]($presentation-common)
+  - [ComputeSelectionRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getElementProperties]($presentation-common)
+- Element properties request - related APIs:
+  - [ElementProperties]($presentation-common)
+  - [ElementPropertiesRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.computeSelection]($presentation-common)
+- Content sources request - related APIs:
+  - [ContentSourcesRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getContentSources]($presentation-common)
+- Content instance keys request - related APIs:
+  - [ContentInstanceKeysRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getContentInstanceKeys]($presentation-common)
+- [NestedContentField.relationshipMeaning]($presentation-common)
+- [ContentFlags.IncludeInputKeys]($presentation-common) and [Item.inputKeys]($presentation-common)
+
+### @itwin/presentation-backend
+
+- Presentation manager's caching related APIs:
+  - [HierarchyCacheMode]($presentation-backend)
+  - [HierarchyCacheConfig]($presentation-backend)
+  - [PresentationManagerCachingConfig.hierarchies]($presentation-backend) and [PresentationManagerCachingConfig.workerConnectionCacheSize]($presentation-backend)
+- [PresentationManager.getElementProperties]($presentation-backend) and [MultiElementPropertiesResponse]($presentation-backend)
+- [PresentationManager.getContentSources]($presentation-backend)
+- [PresentationManager.computeSelection]($presentation-backend)
+- [RulesetEmbedder]($presentation-backend) and related APIs
+
+### @itwin/presentation-frontend
+
+- [PresentationManager.getContentSources]($presentation-frontend)
+- [PresentationManager.getElementProperties]($presentation-frontend)
+- [PresentationManager.getContentInstanceKeys]($presentation-frontend)
+
+### @itwin/presentation-components
+
+- [FavoritePropertiesDataFilterer]($presentation-components)
+- [PresentationPropertyDataProvider.getPropertyRecordInstanceKeys]($presentation-components)
+- [PresentationTreeDataProviderProps.customizeTreeNodeItem]($presentation-components)
+- [PresentationTreeNodeLoaderProps.seedTreeModel]($presentation-components)
+
 ## API deprecations
 
 ### @itwin/core-bentley
@@ -138,3 +191,7 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 [ModelsTree]($appui-react) and [CategoryTree]($appui-react) were moved to [@itwin/tree-widget-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/tree-widget) package and deprecated in `@itwin/appui-react` packages. They will be removed from `@itwin/appui-react` in future major version.
 
 [SpatialContainmentTree]($appui-react) were deprecated in favor of `SpatialContainmentTree` from [@itwin/breakdown-trees-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/breakdown-trees) package. [SpatialContainmentTree]($appui-react) will be removed in future major version.
+
+### @itwin/presentation-common
+
+A bunch of `{api_name}JSON` interfaces, completely matching their sibling `{api_name}` definition, thus having no real benefit, have been forcing us to map back and forth between `{api_name}` and `{api_name}JSON` with `{api_name}.toJSON` and `{api_name}.fromJSON` helper functions. Majority of them are marked public as they're part of public RPC interface, but are generally not expected to be directly used by consumer code. They have been deprecated with the recommendation to use `{api_name}`.

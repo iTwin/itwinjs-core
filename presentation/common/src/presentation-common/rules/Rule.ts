@@ -37,7 +37,6 @@ export interface RuleBase {
 
   /**
    * A list of [ECSchema requirements]($docs/presentation/RequiredSchemaSpecification.md) that need to be met for the rule to be used.
-   * @beta
    */
   requiredSchemas?: RequiredSchemaSpecification[];
 }
