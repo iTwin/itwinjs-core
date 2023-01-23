@@ -18,7 +18,7 @@ Table of contents:
   - [Query mesh convexity](#query-mesh-convexity)
 - [Write-ahead logging](#write-ahead-logging)
 - [Presentation](#presentation)
-  - [Tree hierarchy levels filtering](#tree-hierarchy-levels-filtering)
+  - [Hierarchy levels filtering](#hierarchy-levels-filtering)
   - [Grouping nodes HiliteSet](#grouping-nodes-hiliteset)
 - [API promotions](#api-promotions)
 - [API deprecations](#api-deprecations)
