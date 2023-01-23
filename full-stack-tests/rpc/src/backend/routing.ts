@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyCloudRpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "@itwin/core-common";
 
-export function initializeWebRoutingTest(protocol: BentleyCloudRpcProtocol) {
+export function initializeWebRoutingTest(protocol: BentleyCloudRpcProtocol) { // eslint-disable-line deprecation/deprecation
   const realFulfill = protocol.fulfill; // eslint-disable-line @typescript-eslint/unbound-method
   const interceptions = new Map<number, number>();
 
-  protocol.fulfill = async (request: SerializedRpcRequest) => {
+  protocol.fulfill = async (request: SerializedRpcRequest) => { // eslint-disable-line deprecation/deprecation
     if (request.operation.interfaceDefinition === "WebRoutingInterface") {
-      const fulfillment = await RpcRequestFulfillment.forUnknownError(request, "");
+      const fulfillment = await RpcRequestFulfillment.forUnknownError(request, ""); // eslint-disable-line deprecation/deprecation
       fulfillment.status = Number(request.operation.operationName.substr(4));
 
       let intercepted = interceptions.get(fulfillment.status) ?? 0;

@@ -119,10 +119,11 @@ export class RobotWorldEngine {
   public static async initialize(): Promise<void> {
     await IModelHost.startup({ appAssetsDir: path.join(__dirname, "assets") });
 
+    // eslint-disable-next-line deprecation/deprecation
     RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl); // register impls that we don't want in the doc example
     this.registerImpls();
     const interfaces = this.chooseInterfacesToExpose();
-    TestRpcManager.initialize(interfaces);
+    TestRpcManager.initialize(interfaces); // eslint-disable-line deprecation/deprecation
 
     // __PUBLISH_EXTRACT_START__ Schema.registerSchema
     // Register the TypeScript schema classes that I intend to use.
@@ -139,13 +140,13 @@ export class RobotWorldEngine {
 
   private static registerImpls() {
     // __PUBLISH_EXTRACT_START__ RpcInterface.registerImpls
-    RpcManager.registerImpl(RobotWorldReadRpcInterface, RobotWorldReadRpcImpl);
+    RpcManager.registerImpl(RobotWorldReadRpcInterface, RobotWorldReadRpcImpl); // eslint-disable-line deprecation/deprecation
     // __PUBLISH_EXTRACT_END__
   }
 
   // __PUBLISH_EXTRACT_START__ RpcInterface.selectInterfacesToExpose
-  private static chooseInterfacesToExpose(): RpcInterfaceDefinition[] {
-    const interfaces: RpcInterfaceDefinition[] = [IModelReadRpcInterface, RobotWorldReadRpcInterface];
+  private static chooseInterfacesToExpose(): RpcInterfaceDefinition[] { // eslint-disable-line deprecation/deprecation
+    const interfaces: RpcInterfaceDefinition[] = [IModelReadRpcInterface, RobotWorldReadRpcInterface]; // eslint-disable-line deprecation/deprecation
 
     if (this._exposeWriteInterface)
       interfaces.push(RobotWorldWriteRpcInterface);

@@ -79,8 +79,8 @@ describe("TileUpload", () => {
     assert.isTrue(IModelHost.usingExternalTileCache);
     IModelHost.applicationId = "TestApplication";
 
-    RpcManager.initializeInterface(IModelTileRpcInterface);
-    tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
+    RpcManager.initializeInterface(IModelTileRpcInterface); // eslint-disable-line deprecation/deprecation
+    tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface); // eslint-disable-line deprecation/deprecation
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
     iTwinId = await HubUtility.getTestITwinId(accessToken);
     iModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
@@ -95,7 +95,7 @@ describe("TileUpload", () => {
 
   after(async () => {
     // Delete cached tile
-    if(objectReference)
+    if (objectReference)
       await IModelHost.tileStorage!.storage.deleteObject(objectReference);
     // Restart backend with default config
     await IModelHost.shutdown();
@@ -103,7 +103,7 @@ describe("TileUpload", () => {
   });
 
   it("should upload tile to external cache with metadata", async () => {
-    const iModel = await HubWrappers.downloadAndOpenCheckpoint({accessToken, iTwinId, iModelId});
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId, iModelId });
     assert.isDefined(iModel);
 
     // Generate tile

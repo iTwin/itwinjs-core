@@ -6,6 +6,8 @@ import { assert } from "chai";
 import { RpcOperation, RpcRequest, RpcRequestEvent, ServerError, ServerTimeoutError } from "@itwin/core-common";
 import { TestOp1Params, TestRpcInterface } from "../common/TestRpcInterface";
 
+/* eslint-disable deprecation/deprecation */
+
 if (false) {
   describe("Rpc.HttpProtocol", () => {
     it("should send pending request updates.", async () => {

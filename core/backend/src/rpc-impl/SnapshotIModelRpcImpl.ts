@@ -15,8 +15,8 @@ import { IModelHost } from "../IModelHost";
 /** The backend implementation of SnapshotIModelRpcInterface.
  * @internal
  */
-export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIModelRpcInterface {
-  public static register() { RpcManager.registerImpl(SnapshotIModelRpcInterface, SnapshotIModelRpcImpl); }
+export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIModelRpcInterface { // eslint-disable-line deprecation/deprecation
+  public static register() { RpcManager.registerImpl(SnapshotIModelRpcInterface, SnapshotIModelRpcImpl); } // eslint-disable-line deprecation/deprecation
 
   /** Ask the backend to open a snapshot iModel from a file name that is resolved by the backend. */
   public async openFile(filePath: string, opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {

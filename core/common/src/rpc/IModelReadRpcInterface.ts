@@ -36,7 +36,7 @@ import { RpcRoutingToken } from "./core/RpcRoutingToken";
  * (if the service has moved)
  * @public
  */
-export class IModelNotFoundResponse extends RpcNotFoundResponse {
+export class IModelNotFoundResponse extends RpcNotFoundResponse { // eslint-disable-line deprecation/deprecation
   public isIModelNotFoundResponse: boolean = true;
   public override message = "iModel not found";
 }
@@ -68,12 +68,12 @@ export interface ModelExtentsProps {
  * This interface is not normally used directly. See IModelConnection for higher-level and more convenient API for accessing iModels from a frontend.
  * @internal
  */
-export abstract class IModelReadRpcInterface extends RpcInterface {
+export abstract class IModelReadRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** Returns the IModelReadRpcInterface instance for the frontend. */
-  public static getClient(): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface); }
+  public static getClient(): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface); } // eslint-disable-line deprecation/deprecation
 
   /** Returns the IModelReadRpcInterface instance for a custom RPC routing configuration. */
-  public static getClientForRouting(token: RpcRoutingToken): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface, token); }
+  public static getClientForRouting(token: RpcRoutingToken): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface, token); } // eslint-disable-line deprecation/deprecation
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "IModelReadRpcInterface";
@@ -85,36 +85,36 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async getConnectionProps(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
   public async queryRows(_iModelToken: IModelRpcProps, _request: DbQueryRequest): Promise<DbQueryResponse> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async querySubCategories(_iModelToken: IModelRpcProps, _categoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> { return this.forward(arguments); }
   public async queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async queryModelExtents(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelExtentsProps[]> { return this.forward(arguments); }
   public async queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }
   public async getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]> { return this.forward(arguments); }
   public async queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward(arguments); }
   public async queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
   public async getAllCodeSpecs(_iModelToken: IModelRpcProps): Promise<any[]> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps> { return this.forward(arguments); }
   public async readFontJson(_iModelToken: IModelRpcProps): Promise<FontMapProps> { return this.forward(arguments); }
   public async getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
   /** @deprecated */
   public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async getCustomViewState3dData(_iModelToken: IModelRpcProps, _options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async hydrateViewState(_iModelToken: IModelRpcProps, _options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> { return this.forward(arguments); }
   public async requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
   public async cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void> { return this.forward(arguments); }
@@ -122,7 +122,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return this.forward(arguments); }
   public async getMassPropertiesPerCandidate(_iModelToken: IModelRpcProps, _props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> { return this.forward(arguments); }
   public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
   public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
   public async getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
   public async queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> { return this.forward(arguments); }

@@ -19,9 +19,9 @@ import { RpcManager } from "../RpcManager";
  * Apps/services should understand the *flux* implied by registering this RpcInterface and should be in control of both the client and server before even considering using it.
  * @internal
  */
-export abstract class WipRpcInterface extends RpcInterface {
+export abstract class WipRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** Returns the IModelReadRpcInterface instance for the frontend. */
-  public static getClient(): WipRpcInterface { return RpcManager.getClientForInterface(WipRpcInterface); }
+  public static getClient(): WipRpcInterface { return RpcManager.getClientForInterface(WipRpcInterface); } // eslint-disable-line deprecation/deprecation
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "WipRpcInterface";

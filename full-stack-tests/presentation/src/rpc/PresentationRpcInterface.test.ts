@@ -29,7 +29,7 @@ describe("PresentationRpcInterface", () => {
     let rpcInterface: PresentationRpcInterface;
 
     beforeEach(() => {
-      rpcInterface = RpcManager.getClientForInterface(PresentationRpcInterface);
+      rpcInterface = RpcManager.getClientForInterface(PresentationRpcInterface); // eslint-disable-line deprecation/deprecation
     });
 
     it("returns properties for requested element", async () => {

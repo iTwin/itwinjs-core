@@ -22,9 +22,9 @@ function startWebServer() {
   const appExp = express();
   // Enable CORS for all apis
   appExp.all("/*", (_req, res, next) => {
-    res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin);
-    res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods);
-    res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders);
+    res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin); // eslint-disable-line deprecation/deprecation
+    res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods); // eslint-disable-line deprecation/deprecation
+    res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders); // eslint-disable-line deprecation/deprecation
     next();
   });
   // All we do is serve out static files, so We have only the simple public path route.
@@ -67,16 +67,16 @@ function startWebServer() {
   }
 
   // Set up the ability to serve the supported rpcInterfaces via web requests
-  const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-performance-test-app", version: "v1.0" } }, getRpcInterfaces());
+  const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-performance-test-app", version: "v1.0" } }, getRpcInterfaces()); // eslint-disable-line deprecation/deprecation
 
   const app = express();
   app.use(express.text({ limit: "50mb" }));
 
   // Enable CORS for all apis
   app.all("/*", (_req, res, next) => {
-    res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin);
-    res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods);
-    res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders);
+    res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin); // eslint-disable-line deprecation/deprecation
+    res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods); // eslint-disable-line deprecation/deprecation
+    res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders); // eslint-disable-line deprecation/deprecation
     next();
   });
 

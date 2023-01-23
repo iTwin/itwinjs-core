@@ -128,7 +128,7 @@ export interface IModelAppOptions {
    *  @internal
    */
   noRender?: boolean;
-  rpcInterfaces?: RpcInterfaceDefinition[];
+  rpcInterfaces?: RpcInterfaceDefinition[]; // eslint-disable-line deprecation/deprecation
   /** @beta */
   realityDataAccess?: RealityDataAccess;
   /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
@@ -556,13 +556,13 @@ export class IModelApp {
   public static createRenderSys(opts?: RenderSystem.Options): RenderSystem { return System.create(opts); }
 
   private static _setupRpcRequestContext() {
-    RpcConfiguration.requestContext.getId = (_request: RpcRequest): string => {
+    RpcConfiguration.requestContext.getId = (_request: RpcRequest): string => { // eslint-disable-line deprecation/deprecation
       return Guid.createValue();
     };
 
-    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => { // eslint-disable-line deprecation/deprecation
       const id = _request.id;
-      const serialized: SerializedRpcActivity = {
+      const serialized: SerializedRpcActivity = { // eslint-disable-line deprecation/deprecation
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,

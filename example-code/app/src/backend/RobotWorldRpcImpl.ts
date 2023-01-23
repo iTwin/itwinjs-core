@@ -10,7 +10,7 @@ import { RobotWorldEngine } from "./RobotWorldEngine";
 import { RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
 
 // Implement RobotWorldReadRpcInterface
-export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInterface {
+export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInterface { // eslint-disable-line deprecation/deprecation
   public async countRobotsInArray(tokenProps: IModelRpcProps, elemIds: Id64String[]): Promise<number> {
     const iModelDb: IModelDb = IModelDb.findByKey(tokenProps.key);
     return RobotWorldEngine.countRobotsInArray(iModelDb, elemIds);
@@ -33,7 +33,7 @@ import { Angle, AngleProps, Point3d, XYZProps } from "@itwin/core-geometry";
 import { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 
 // Implement RobotWorldWriteRpcInterface
-export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface {
+export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface { // eslint-disable-line deprecation/deprecation
   public async insertRobot(tokenProps: IModelRpcProps, modelId: Id64String, name: string, location: XYZProps): Promise<Id64String> {
     return RobotWorldEngine.insertRobot(IModelDb.findByKey(tokenProps.key), modelId, name, Point3d.fromJSON(location));
   }
@@ -50,16 +50,16 @@ export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWr
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeForCloud
 import { BentleyCloudRpcManager, BentleyCloudRpcParams } from "@itwin/core-common";
 
-export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition[]) {
-  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };
-  BentleyCloudRpcManager.initializeImpl(cloudParams, interfaces);
+export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition[]) { // eslint-disable-line deprecation/deprecation
+  const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } }; // eslint-disable-line deprecation/deprecation
+  BentleyCloudRpcManager.initializeImpl(cloudParams, interfaces); // eslint-disable-line deprecation/deprecation
 }
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeBackendForElectron
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 
-export async function initializeForElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
+export async function initializeForElectron(rpcInterfaces: RpcInterfaceDefinition[]) { // eslint-disable-line deprecation/deprecation
   await ElectronHost.startup({ electronHost: { rpcInterfaces } });
 }
 

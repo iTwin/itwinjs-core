@@ -21,7 +21,7 @@ async function init() {
   await commonSetup();
   registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "http");
 
-  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces); // eslint-disable-line deprecation/deprecation
 
   // create a basic express web server
   const testServer = new TestServer(rpcConfig.protocol);
@@ -43,7 +43,7 @@ async function init() {
   };
 }
 
-function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {
+function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) { // eslint-disable-line deprecation/deprecation
   AttachedInterfaceImpl.register();
   config.attach(AttachedInterface);
 }

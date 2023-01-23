@@ -8,7 +8,7 @@ import * as https from "https";
 import { DtaConfiguration } from "./DtaConfiguration";
 
 /** Display Test App RPC interface. */
-export class DtaRpcInterface extends RpcInterface {
+export class DtaRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** The immutable name of the interface. */
   public static readonly interfaceName = "SVTRpcInterface";
 
@@ -21,7 +21,7 @@ export class DtaRpcInterface extends RpcInterface {
   /** The backend server, when running on a browser */
   public static backendServer: http.Server | https.Server | undefined;
 
-  public static getClient(): DtaRpcInterface { return RpcManager.getClientForInterface(DtaRpcInterface); }
+  public static getClient(): DtaRpcInterface { return RpcManager.getClientForInterface(DtaRpcInterface); } // eslint-disable-line deprecation/deprecation
   public async readExternalSavedViews(_filename: string): Promise<string> { return this.forward(arguments); }
   public async writeExternalSavedViews(_filename: string, _namedViews: string): Promise<void> { return this.forward(arguments); }
   public async readExternalCameraPaths(_filename: string): Promise<string> { return this.forward(arguments); }

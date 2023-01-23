@@ -12,7 +12,7 @@ import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 /**
  * Returns a list of RPCs supported by this application
  */
-export function getSupportedRpcs(): RpcInterfaceDefinition[] {
+export function getSupportedRpcs(): RpcInterfaceDefinition[] { // eslint-disable-line deprecation/deprecation
 
   return [
     IModelReadRpcInterface,

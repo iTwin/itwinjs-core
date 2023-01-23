@@ -14,13 +14,13 @@ import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcIn
 
 Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Warning);
-RpcConfiguration.disableRoutingValidation = true;
+RpcConfiguration.disableRoutingValidation = true; // eslint-disable-line deprecation/deprecation
 
 function initializeCloud(protocol: string) {
   const port = Number(window.location.port) + 2000;
   const mobilePort = port + 2000;
 
-  const config = BentleyCloudRpcManager.initializeClient({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
+  const config = BentleyCloudRpcManager.initializeClient({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces); // eslint-disable-line deprecation/deprecation
   config.protocol.pathPrefix = `${protocol}://${window.location.hostname}:${port}`;
 
   initializeMultipleClientsTest(config.protocol.pathPrefix);
@@ -30,11 +30,11 @@ function initializeCloud(protocol: string) {
 
 function setupMockMobileFrontend(port: number) {
   window.location.hash = `port=${port}`;
-  MobileRpcManager.initializeClient([MobileTestInterface]);
+  MobileRpcManager.initializeClient([MobileTestInterface]); // eslint-disable-line deprecation/deprecation
 }
 
 function initializeMultipleClientsTest(path: string) {
-  const config1 = BentleyCloudRpcManager.initializeClient(
+  const config1 = BentleyCloudRpcManager.initializeClient( // eslint-disable-line deprecation/deprecation
     { info: { title: `rpc-full-stack-test-config${MultipleClientsInterface.config1.id}`, version: "v1.0" } },
     [MultipleClientsInterface],
     MultipleClientsInterface.config1,
@@ -42,7 +42,7 @@ function initializeMultipleClientsTest(path: string) {
 
   config1.protocol.pathPrefix = path;
 
-  const config2 = BentleyCloudRpcManager.initializeClient(
+  const config2 = BentleyCloudRpcManager.initializeClient( // eslint-disable-line deprecation/deprecation
     { info: { title: `rpc-full-stack-test-config${MultipleClientsInterface.config2.id}`, version: "v1.0" } },
     [MultipleClientsInterface],
     MultipleClientsInterface.config2,
@@ -51,7 +51,7 @@ function initializeMultipleClientsTest(path: string) {
   config2.protocol.pathPrefix = path;
 }
 
-function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {
+function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) { // eslint-disable-line deprecation/deprecation
   config.attach(AttachedInterface);
 }
 
@@ -74,10 +74,11 @@ before(async () => {
       socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
       socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
 
-      BentleyCloudRpcManager.initializeClient({ info: { title: "", version: "" } }, rpcInterfaces);
+      BentleyCloudRpcManager.initializeClient({ info: { title: "", version: "" } }, rpcInterfaces); // eslint-disable-line deprecation/deprecation
       return LocalhostIpcApp.startup({
         localhostIpcApp: { socketUrl },
-        iModelApp: { localization: new EmptyLocalization() } });
+        iModelApp: { localization: new EmptyLocalization() },
+      });
   }
 });
 

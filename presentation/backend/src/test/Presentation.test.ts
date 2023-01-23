@@ -27,7 +27,7 @@ describe("Presentation", () => {
   describe("initialize", () => {
 
     it("registers rpc implementation", () => {
-      const registerSpy = sinon.spy(RpcManager, "registerImpl");
+      const registerSpy = sinon.spy(RpcManager, "registerImpl"); // eslint-disable-line deprecation/deprecation
       Presentation.initialize();
       expect(registerSpy).to.be.calledOnce;
     });
@@ -68,7 +68,7 @@ describe("Presentation", () => {
       });
 
       it("sets request timeout to `PresentationRpcImpl`", () => {
-        const supplyImplSpy = sinon.spy(RpcManager, "supplyImplInstance");
+        const supplyImplSpy = sinon.spy(RpcManager, "supplyImplInstance"); // eslint-disable-line deprecation/deprecation
         Presentation.initialize({ requestTimeout: 123 });
         const impl = supplyImplSpy.args[0][1];
         assert(impl instanceof PresentationRpcImpl);
@@ -113,7 +113,7 @@ describe("Presentation", () => {
 
     it("unregisters PresentationRpcInterface impl", () => {
       Presentation.initialize();
-      const unregisterSpy = sinon.stub(RpcManager, "unregisterImpl");
+      const unregisterSpy = sinon.stub(RpcManager, "unregisterImpl"); // eslint-disable-line deprecation/deprecation
       Presentation.terminate();
       expect(unregisterSpy).to.be.calledOnce;
     });

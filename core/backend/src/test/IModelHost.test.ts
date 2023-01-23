@@ -36,12 +36,12 @@ describe("IModelHost", () => {
     await IModelHost.startup(opts);
 
     // Valid registered implemented RPCs
-    expect(RpcRegistry.instance.implementationClasses.size).to.equal(5);
-    expect(RpcRegistry.instance.implementationClasses.get("IModelReadRpcInterface")).to.exist;
-    expect(RpcRegistry.instance.implementationClasses.get("IModelTileRpcInterface")).to.exist;
-    expect(RpcRegistry.instance.implementationClasses.get("SnapshotIModelRpcInterface")).to.exist;
-    expect(RpcRegistry.instance.implementationClasses.get("WipRpcInterface")).to.exist;
-    expect(RpcRegistry.instance.implementationClasses.get("DevToolsRpcInterface")).to.exist;
+    expect(RpcRegistry.instance.implementationClasses.size).to.equal(5); // eslint-disable-line deprecation/deprecation
+    expect(RpcRegistry.instance.implementationClasses.get("IModelReadRpcInterface")).to.exist; // eslint-disable-line deprecation/deprecation
+    expect(RpcRegistry.instance.implementationClasses.get("IModelTileRpcInterface")).to.exist; // eslint-disable-line deprecation/deprecation
+    expect(RpcRegistry.instance.implementationClasses.get("SnapshotIModelRpcInterface")).to.exist; // eslint-disable-line deprecation/deprecation
+    expect(RpcRegistry.instance.implementationClasses.get("WipRpcInterface")).to.exist; // eslint-disable-line deprecation/deprecation
+    expect(RpcRegistry.instance.implementationClasses.get("DevToolsRpcInterface")).to.exist; // eslint-disable-line deprecation/deprecation
 
     expect(Schemas.getRegisteredSchema("BisCore")).to.exist;
     expect(Schemas.getRegisteredSchema("Generic")).to.exist;

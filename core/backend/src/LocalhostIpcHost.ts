@@ -64,7 +64,7 @@ class RpcHandler extends IpcHandler {
   public channelName = "RPC";
 
   public async request(info: InterceptedRpcRequest) {
-    const invocation = RpcSessionInvocation.create(info);
+    const invocation = RpcSessionInvocation.create(info); // eslint-disable-line deprecation/deprecation
     const fulfillment = await invocation.fulfillment;
     return invocation.rejected ? Promise.reject(fulfillment.rawResult) : fulfillment.rawResult;
   }

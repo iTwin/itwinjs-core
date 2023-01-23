@@ -22,18 +22,18 @@ import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { tmpdir } from "os";
 
-function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
-  const config = class extends RpcDefaultConfiguration {
+function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) { // eslint-disable-line deprecation/deprecation
+  const config = class extends RpcDefaultConfiguration { // eslint-disable-line deprecation/deprecation
     public override interfaces: any = () => interfaces;
   };
 
   for (const definition of interfaces)
-    RpcConfiguration.assign(definition, () => config);
+    RpcConfiguration.assign(definition, () => config); // eslint-disable-line deprecation/deprecation
 
-  const instance = RpcConfiguration.obtain(config);
+  const instance = RpcConfiguration.obtain(config); // eslint-disable-line deprecation/deprecation
 
   try {
-    RpcConfiguration.initializeInterfaces(instance);
+    RpcConfiguration.initializeInterfaces(instance); // eslint-disable-line deprecation/deprecation
   } catch {
     // this may fail with "Error: RPC interface "xxx" is already initialized." because
     // multiple different tests want to set up rpc interfaces

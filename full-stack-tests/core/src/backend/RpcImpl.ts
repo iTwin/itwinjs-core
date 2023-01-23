@@ -10,9 +10,9 @@ import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManag
 import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { TestRpcInterface } from "../common/RpcInterfaces";
 
-export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
+export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // eslint-disable-line deprecation/deprecation
   public static register() {
-    RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
+    RpcManager.registerImpl(TestRpcInterface, TestRpcImpl); // eslint-disable-line deprecation/deprecation
   }
 
   public async restartIModelHost(): Promise<void> {

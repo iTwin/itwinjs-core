@@ -14,12 +14,15 @@ import { AsyncLocalStorage } from "async_hooks";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost } from "../IModelHost";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Utility for tracing Rpc activity processing. When multiple Rpc requests are being processed asynchronously, this
  * class can be used to correlate the current calltrace with the originating RpcActivity. This is used for automatic appending
  * of RpcActivity to log messages emitted during Rpc processing. It may also be used to retrieve the user accessToken
  * from the RpcActivity.
  * @public
+ * @deprecated
  */
 export class RpcTrace {
   private static _storage = new AsyncLocalStorage();
@@ -53,7 +56,7 @@ export class RpcTrace {
   }
 }
 
-/** @internal */
+/** @internal @deprecated */
 export function initializeTracing(enableOpenTelemetry: boolean = false) {
   RpcInvocation.runActivity = RpcTrace.run; // redirect the invocation processing to the tracer
 

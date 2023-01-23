@@ -182,16 +182,16 @@ describe("RpcRequestsHandler", () => {
 
     let handler: RpcRequestsHandler;
     let rpcInterfaceMock: moq.IMock<PresentationRpcInterface>;
-    let defaultGetClientForInterfaceImpl: <T extends RpcInterface>(def: RpcInterfaceDefinition<T>) => T;
+    let defaultGetClientForInterfaceImpl: <T extends RpcInterface>(def: RpcInterfaceDefinition<T>) => T; // eslint-disable-line deprecation/deprecation
 
     before(() => {
       rpcInterfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
-      defaultGetClientForInterfaceImpl = RpcManager.getClientForInterface;
-      RpcManager.getClientForInterface = (() => rpcInterfaceMock.object) as any;
+      defaultGetClientForInterfaceImpl = RpcManager.getClientForInterface; // eslint-disable-line deprecation/deprecation
+      RpcManager.getClientForInterface = (() => rpcInterfaceMock.object) as any; // eslint-disable-line deprecation/deprecation
     });
 
     after(() => {
-      RpcManager.getClientForInterface = defaultGetClientForInterfaceImpl;
+      RpcManager.getClientForInterface = defaultGetClientForInterfaceImpl; // eslint-disable-line deprecation/deprecation
     });
 
     beforeEach(() => {

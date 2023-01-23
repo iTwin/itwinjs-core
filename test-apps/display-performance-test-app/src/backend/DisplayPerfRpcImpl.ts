@@ -238,4 +238,4 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
 }
 
 /** Auto-register the impl when this file is included. */
-RpcManager.registerImpl(DisplayPerfRpcInterface, DisplayPerfRpcImpl);
+RpcManager.registerImpl(DisplayPerfRpcInterface, DisplayPerfRpcImpl); // eslint-disable-line deprecation/deprecation

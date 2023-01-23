@@ -75,7 +75,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
 
 async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
-  RpcConfiguration.developmentMode = true;
+  RpcConfiguration.developmentMode = true; // eslint-disable-line deprecation/deprecation
 
   const iModelHost: IModelHostOptions = {};
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
@@ -100,7 +100,7 @@ async function init() {
     EditCommandAdmin.register(BasicManipulationCommand);
     FullStackTestIpcHandler.register();
   } else {
-    const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
+    const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces); // eslint-disable-line deprecation/deprecation
 
     // create a basic express web server
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;

@@ -21,9 +21,9 @@ import { createTestContentDescriptor } from "./_helpers/Content";
 import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
 
 describe("PresentationRpcInterface", () => {
-  class TestRpcRequest extends RpcRequest {
+  class TestRpcRequest extends RpcRequest { // eslint-disable-line deprecation/deprecation
     protected async send(): Promise<number> { throw new Error("Not implemented."); }
-    protected async load(): Promise<RpcSerializedValue> { throw new Error("Not implemented."); }
+    protected async load(): Promise<RpcSerializedValue> { throw new Error("Not implemented."); } // eslint-disable-line deprecation/deprecation
     protected setHeader(_name: string, _value: string): void { throw new Error("Not implemented."); }
   }
 
@@ -33,9 +33,9 @@ describe("PresentationRpcInterface", () => {
       token,
       { rulesetOrId: faker.random.word() },
     ];
-    RpcRegistry.instance.initializeRpcInterface(PresentationRpcInterface);
-    const client = RpcRegistry.instance.getClientForInterface(PresentationRpcInterface);
-    const operation = RpcOperation.lookup(PresentationRpcInterface, "getNodesCount");
+    RpcRegistry.instance.initializeRpcInterface(PresentationRpcInterface); // eslint-disable-line deprecation/deprecation
+    const client = RpcRegistry.instance.getClientForInterface(PresentationRpcInterface); // eslint-disable-line deprecation/deprecation
+    const operation = RpcOperation.lookup(PresentationRpcInterface, "getNodesCount"); // eslint-disable-line deprecation/deprecation
     const disposableRequest = {
       request: new TestRpcRequest(client, "getNodesCount", parameters),
       dispose: () => {
@@ -47,7 +47,7 @@ describe("PresentationRpcInterface", () => {
       const result = operation.policy.token(dr.request);
       expect(result).to.eq(token);
     });
-    RpcRegistry.instance.terminateRpcInterface(PresentationRpcInterface);
+    RpcRegistry.instance.terminateRpcInterface(PresentationRpcInterface); // eslint-disable-line deprecation/deprecation
   });
 
   function toArguments(..._arguments: any[]) {

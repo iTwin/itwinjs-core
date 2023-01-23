@@ -13,7 +13,7 @@ import { resetOp8Initializer, TestRpcImpl2 } from "./TestRpcImpl";
 import { join } from "path";
 
 export async function commonSetup(): Promise<void> {
-  RpcConfiguration.developmentMode = true;
+  RpcConfiguration.developmentMode = true; // eslint-disable-line deprecation/deprecation
 
   const cacheDir = join(__dirname, ".cache");
   // Start the backend

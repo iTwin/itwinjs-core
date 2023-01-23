@@ -62,7 +62,7 @@ export class MobileApp {
       });
 
       const rpcInterfaces = opts?.iModelApp?.rpcInterfaces ?? [IModelReadRpcInterface, IModelTileRpcInterface];
-      MobileRpcManager.initializeClient(rpcInterfaces);
+      MobileRpcManager.initializeClient(rpcInterfaces); // eslint-disable-line deprecation/deprecation
       this._isValid = true;
     }
 

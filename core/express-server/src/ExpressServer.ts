@@ -29,14 +29,14 @@ export class IModelJsExpressServer {
     uploadLimit: "5mb",
   };
 
-  private _protocol: WebAppRpcProtocol;
+  private _protocol: WebAppRpcProtocol; // eslint-disable-line deprecation/deprecation
   private _config: IModelJsExpressServerConfig;
   protected _app: import("express").Application = express();
 
   /** @alpha */
-  public get rpcConfiguration(): RpcConfiguration { return this._protocol.configuration; }
+  public get rpcConfiguration(): RpcConfiguration { return this._protocol.configuration; } // eslint-disable-line deprecation/deprecation
 
-  constructor(protocol: WebAppRpcProtocol, config = IModelJsExpressServer.defaults) {
+  constructor(protocol: WebAppRpcProtocol, config = IModelJsExpressServer.defaults) { // eslint-disable-line deprecation/deprecation
     this._protocol = protocol;
     this._config = config;
   }
@@ -49,9 +49,9 @@ export class IModelJsExpressServer {
   protected _configureHeaders() {
     // enable CORS for all apis
     this._app.all("/**", (_req, res, next) => {
-      res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin);
-      res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods);
-      res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders);
+      res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin); // eslint-disable-line deprecation/deprecation
+      res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods); // eslint-disable-line deprecation/deprecation
+      res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders); // eslint-disable-line deprecation/deprecation
       next();
     });
   }
@@ -92,7 +92,7 @@ export class WebEditServer extends IModelJsExpressServer {
     super._configureRoutes();
   }
 
-  constructor(protocol: WebAppRpcProtocol, config = IModelJsExpressServer.defaults) {
+  constructor(protocol: WebAppRpcProtocol, config = IModelJsExpressServer.defaults) { // eslint-disable-line deprecation/deprecation
     super(protocol, config);
     enableWs(this._app);
   }

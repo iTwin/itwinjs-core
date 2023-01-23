@@ -12,7 +12,7 @@ import { IModelHostOptions } from "@itwin/core-backend";
 /**
  * Initializes Electron backend
  */
-export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]) {
+export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]) { // eslint-disable-line deprecation/deprecation
   // __PUBLISH_EXTRACT_START__ Presentation.Backend.Electron.RpcInterface
 
   const electronHost: ElectronHostOptions = {

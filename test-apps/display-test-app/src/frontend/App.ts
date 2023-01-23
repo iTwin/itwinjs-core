@@ -258,7 +258,7 @@ export class DisplayTestApp {
         },
         /* eslint-enable @typescript-eslint/naming-convention */
         hubAccess: createHubAccess(configuration),
-        localization: new ITwinLocalization({ detectorOptions: { order: ["htmlTag"]}}),
+        localization: new ITwinLocalization({ detectorOptions: { order: ["htmlTag"] } }),
       },
       localhostIpcApp: {
         socketUrl,
@@ -279,9 +279,9 @@ export class DisplayTestApp {
         await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
       }
 
-      const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
+      const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" }; // eslint-disable-line deprecation/deprecation
       if (opts.iModelApp?.rpcInterfaces)
-        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces);
+        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line deprecation/deprecation
       await LocalhostIpcApp.startup(opts);
     }
 

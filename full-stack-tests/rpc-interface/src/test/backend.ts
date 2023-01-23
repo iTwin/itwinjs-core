@@ -35,7 +35,7 @@ const settings = new Settings(process.env);
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
-  RpcConfiguration.developmentMode = true;
+  RpcConfiguration.developmentMode = true; // eslint-disable-line deprecation/deprecation
 
   // Start the backend
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
@@ -44,7 +44,7 @@ const settings = new Settings(process.env);
 
   PresentationBackend.initialize();
 
-  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, getRpcInterfaces(settings));
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, getRpcInterfaces(settings)); // eslint-disable-line deprecation/deprecation
 
   // create a basic express web server
   const port = 5011;

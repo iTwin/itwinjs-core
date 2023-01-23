@@ -8,17 +8,17 @@ import { RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } fro
  * @internal Used for testing only.
  */
 export class TestRpcManager {
-  public static initializeClient(interfaces: RpcInterfaceDefinition[]) {
-    const config = class extends RpcDefaultConfiguration {
+  public static initializeClient(interfaces: RpcInterfaceDefinition[]) { // eslint-disable-line deprecation/deprecation
+    const config = class extends RpcDefaultConfiguration { // eslint-disable-line deprecation/deprecation
       public override interfaces: any = () => interfaces;
     };
 
     for (const def of interfaces)
-      RpcConfiguration.assign(def, () => config);
+      RpcConfiguration.assign(def, () => config); // eslint-disable-line deprecation/deprecation
 
-    const instance = RpcConfiguration.obtain(config);
+    const instance = RpcConfiguration.obtain(config); // eslint-disable-line deprecation/deprecation
     try {
-      RpcConfiguration.initializeInterfaces(instance);
+      RpcConfiguration.initializeInterfaces(instance); // eslint-disable-line deprecation/deprecation
     } catch (_e) {
       // this may fail with "Error: RPC interface "xxx" is already initialized." because
       // multiple different tests want to set up rpc interfaces

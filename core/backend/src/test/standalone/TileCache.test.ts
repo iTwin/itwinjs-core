@@ -17,7 +17,7 @@ import { RpcTrace } from "../../rpc/tracing";
 import { TestUtils } from "../TestUtils";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-const fakeRpc: RpcActivity = {
+const fakeRpc: RpcActivity = { // eslint-disable-line deprecation/deprecation
   accessToken: "dummy",
   activityId: "activity123",
   applicationId: "rpc test app",
@@ -73,15 +73,15 @@ describe("TileCache open v1", () => {
   let tileRpcInterface: IModelTileRpcInterface;
 
   const verifyTileCache = async (dbPath: string) => {
-    RpcManager.initializeInterface(IModelTileRpcInterface);
-    tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
+    RpcManager.initializeInterface(IModelTileRpcInterface); // eslint-disable-line deprecation/deprecation
+    tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface); // eslint-disable-line deprecation/deprecation
 
     const iModel = SnapshotDb.openFile(dbPath);
     expect(iModel);
     // Generate tile
     const tileProps = await getTileProps(iModel);
     expect(tileProps);
-    await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
+    await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid)); // eslint-disable-line deprecation/deprecation
 
     const tilesCache = `${iModel.pathName}.Tiles`;
     expect(IModelJsFs.existsSync(tilesCache)).true;
@@ -127,9 +127,9 @@ describe("TileCache, open v2", async () => {
     snapshot.saveChanges();
     snapshot.close();
 
-    RpcManager.initializeInterface(IModelTileRpcInterface);
+    RpcManager.initializeInterface(IModelTileRpcInterface); // eslint-disable-line deprecation/deprecation
     const key = `${iModelId}\$${changeset.id}`;
-    const tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
+    const tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface); // eslint-disable-line deprecation/deprecation
     const tempFileBase = path.join(IModelHost.cacheDir, key);
     const checkpoint = SnapshotDb.openFile(dbPath, { key, tempFileBase });
     expect(checkpoint.nativeDb.getTempFileBaseName()).equals(tempFileBase);
@@ -140,7 +140,7 @@ describe("TileCache, open v2", async () => {
     sinon.stub(Logger, "logError").callsFake(() => Logger.stringifyMetaData());
     const errorStringify = sinon.spy(Logger, "stringifyMetaData");
 
-    await RpcTrace.run(fakeRpc, async () => {
+    await RpcTrace.run(fakeRpc, async () => { // eslint-disable-line deprecation/deprecation
       Logger.logError("fake", "fake message");
       return tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
     });

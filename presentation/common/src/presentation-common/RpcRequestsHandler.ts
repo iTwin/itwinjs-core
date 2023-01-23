@@ -70,7 +70,7 @@ export class RpcRequestsHandler implements IDisposable {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private get rpcClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); }
+  private get rpcClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); } // eslint-disable-line deprecation/deprecation
 
   private async requestRepeatedly<TResult>(func: () => PresentationRpcResponse<TResult>, diagnosticsHandler?: ClientDiagnosticsHandler, repeatCount: number = 1): Promise<TResult> {
     let diagnostics: ClientDiagnostics | undefined;

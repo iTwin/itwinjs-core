@@ -15,21 +15,21 @@ import { BentleyStatus, IModelError, RpcRoutingToken } from "@itwin/core-common"
 export class IModelRoutingContext {
   private static _current: IModelRoutingContext | undefined;
 
-  public static for(token: RpcRoutingToken) {
+  public static for(token: RpcRoutingToken) { // eslint-disable-line deprecation/deprecation
     return new IModelRoutingContext(token);
   }
 
-  public static readonly default = new IModelRoutingContext(RpcRoutingToken.default);
+  public static readonly default = new IModelRoutingContext(RpcRoutingToken.default); // eslint-disable-line deprecation/deprecation
 
   public static get current(): IModelRoutingContext | undefined {
     return this._current;
   }
 
-  public readonly token: RpcRoutingToken;
+  public readonly token: RpcRoutingToken; // eslint-disable-line deprecation/deprecation
 
   public get active(): boolean { return IModelRoutingContext.current === this; }
 
-  private constructor(token: RpcRoutingToken) {
+  private constructor(token: RpcRoutingToken) { // eslint-disable-line deprecation/deprecation
     this.token = token;
   }
 

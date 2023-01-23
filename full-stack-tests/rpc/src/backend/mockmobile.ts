@@ -8,7 +8,7 @@ import { MobileTestInterface } from "../common/TestRpcInterface";
 import { setupIpcTest } from "./ipc";
 
 export async function setupMockMobileTest(port: number) {
-  MobileRpcConfiguration.setup = {
+  MobileRpcConfiguration.setup = { // eslint-disable-line deprecation/deprecation
     obtainPort: () => port,
     checkPlatform: () => true,
   };
@@ -16,7 +16,7 @@ export async function setupMockMobileTest(port: number) {
 
 export async function initializeMockMobileTest() {
   await MobileHost.startup();
-  MobileRpcManager.initializeImpl([MobileTestInterface]);
+  MobileRpcManager.initializeImpl([MobileTestInterface]); // eslint-disable-line deprecation/deprecation
 
-  await setupIpcTest(async () => MobileRpcManager.ready());
+  await setupIpcTest(async () => MobileRpcManager.ready()); // eslint-disable-line deprecation/deprecation
 }

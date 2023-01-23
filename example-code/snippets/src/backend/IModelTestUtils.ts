@@ -9,7 +9,7 @@ import { ProjectsAccessClient } from "@itwin/projects-client";
 import { IModelHost, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
 
-RpcManager.initializeInterface(IModelReadRpcInterface);
+RpcManager.initializeInterface(IModelReadRpcInterface); // eslint-disable-line deprecation/deprecation
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;

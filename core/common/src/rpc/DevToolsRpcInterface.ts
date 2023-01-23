@@ -25,9 +25,9 @@ export enum DevToolsStatsOptions {
  * Note that this should NOT be used in production environments.
  * @internal
  */
-export abstract class DevToolsRpcInterface extends RpcInterface {
+export abstract class DevToolsRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** Returns the IModelReadRpcInterface instance for the frontend. */
-  public static getClient(): DevToolsRpcInterface { return RpcManager.getClientForInterface(DevToolsRpcInterface); }
+  public static getClient(): DevToolsRpcInterface { return RpcManager.getClientForInterface(DevToolsRpcInterface); } // eslint-disable-line deprecation/deprecation
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "DevToolsRpcInterface";

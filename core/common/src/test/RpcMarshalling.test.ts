@@ -6,6 +6,8 @@
 import { expect } from "chai";
 import { RpcMarshaling, RpcSerializedValue } from "../rpc/core/RpcMarshaling";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("RpcMarshaling.deserialize", () => {
   it("should deserialize valid JSON", () => {
     const a = RpcMarshaling.deserialize(undefined, RpcSerializedValue.create(`{ "foo": "bar" }`));

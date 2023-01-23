@@ -122,8 +122,8 @@ export class Presentation {
     this._rpcImpl = new PresentationRpcImpl({
       requestTimeout: this._initProps.requestTimeout ?? defaultRequestTimeout,
     });
-    RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl);
-    RpcManager.supplyImplInstance(PresentationRpcInterface, this._rpcImpl);
+    RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl); // eslint-disable-line deprecation/deprecation
+    RpcManager.supplyImplInstance(PresentationRpcInterface, this._rpcImpl); // eslint-disable-line deprecation/deprecation
 
     if (IpcHost.isValid) {
       this._disposeIpcHandler = PresentationIpcHandler.register();
@@ -170,7 +170,7 @@ export class Presentation {
       this._manager.dispose();
       this._manager = undefined;
     }
-    RpcManager.unregisterImpl(PresentationRpcInterface);
+    RpcManager.unregisterImpl(PresentationRpcInterface); // eslint-disable-line deprecation/deprecation
     if (this._rpcImpl) {
       this._rpcImpl.dispose();
       this._rpcImpl = undefined;

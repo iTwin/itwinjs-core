@@ -40,7 +40,7 @@ const dtaWebMain = (async () => {
   Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 
   // Set up the ability to serve the supported rpcInterfaces via web requests
-  const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-test-app", version: "v1.0" } }, getRpcInterfaces());
+  const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-test-app", version: "v1.0" } }, getRpcInterfaces()); // eslint-disable-line deprecation/deprecation
 
   const app = express();
   enableWs(app);
@@ -48,9 +48,9 @@ const dtaWebMain = (async () => {
 
   // Enable CORS for all apis
   app.all("/*", (_req: any, res: any, next: any) => {
-    res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin);
-    res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods);
-    res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders);
+    res.header("Access-Control-Allow-Origin", BentleyCloudRpcConfiguration.accessControl.allowOrigin); // eslint-disable-line deprecation/deprecation
+    res.header("Access-Control-Allow-Methods", BentleyCloudRpcConfiguration.accessControl.allowMethods); // eslint-disable-line deprecation/deprecation
+    res.header("Access-Control-Allow-Headers", BentleyCloudRpcConfiguration.accessControl.allowHeaders); // eslint-disable-line deprecation/deprecation
     next();
   });
 

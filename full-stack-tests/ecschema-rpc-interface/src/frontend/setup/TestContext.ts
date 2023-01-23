@@ -38,10 +38,10 @@ export class TestContext {
   }
 
   /** Initialize configuration for the rpc interfaces used by the application. */
-  private initializeRpcInterfaces(info: OpenAPIInfo) {
+  private initializeRpcInterfaces(info: OpenAPIInfo) { // eslint-disable-line deprecation/deprecation
     // Url without trailing slash
     const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
-    BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces());
+    BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces()); // eslint-disable-line deprecation/deprecation
   }
 
   private async initialize() {
@@ -73,7 +73,7 @@ export class TestContext {
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
-    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
 
     await NoRenderApp.startup({
       applicationId: this.settings.gprid,
