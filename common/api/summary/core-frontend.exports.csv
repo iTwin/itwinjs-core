@@ -39,6 +39,7 @@ public;Animator
 internal;ArcGisErrorCode
 internal;class ArcGISImageryProvider 
 internal;ArcGISMapLayerImageryProvider 
+internal;ArcGISServiceMetadata
 internal;ArcGISTileMap
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number

@@ -1154,9 +1154,12 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean);
     // (undocumented)
     protected _accessClient: MapLayerAccessClient | undefined;
+    protected _accessTokenRequired: boolean;
     protected fetch(url: URL, options?: RequestInit): Promise<Response>;
+    protected getServiceJson(): Promise<ArcGISServiceMetadata | undefined>;
     // (undocumented)
     protected _lastAccessToken: MapLayerAccessToken | undefined;
+    protected onStatusUpdated(status: MapLayerImageryProviderStatus): void;
 }
 
 // @internal (undocumented)
@@ -1191,6 +1194,12 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
         type: "Buffer";
         data: number[];
     };
+}
+
+// @internal
+export interface ArcGISServiceMetadata {
+    accessTokenRequired: boolean;
+    content: any;
 }
 
 // @internal (undocumented)
@@ -1229,7 +1238,7 @@ export class ArcGisUtilities {
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
-    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<any>;
+    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
     // (undocumented)
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
@@ -5868,12 +5877,12 @@ export abstract class MapLayerImageryProvider {
     get mutualExclusiveSubLayer(): boolean;
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
+    protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus): void;
     // (undocumented)
     resetStatus(): void;
     // (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
-    // (undocumented)
-    protected setStatus(status: MapLayerImageryProviderStatus): void;
+    setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
     // (undocumented)

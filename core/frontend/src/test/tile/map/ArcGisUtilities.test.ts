@@ -81,7 +81,7 @@ describe("ArcGisUtilities", () => {
   it("should validate proper source ", async () => {
 
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return ArcGISMapLayerDataset.UsaTopoMaps;
+      return {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false};
     });
     const  result = ArcGisUtilities.validateSource("https:/localhost/Mapserver", "ArcGIS", []);
     expect((await result).status).to.equals(MapLayerSourceStatus.Valid);
@@ -90,7 +90,7 @@ describe("ArcGisUtilities", () => {
   it("validate should detect invalid coordinate system ", async () => {
 
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return ArcGISMapLayerDataset.TilesOnlyDataset26918;
+      return {content: ArcGISMapLayerDataset.TilesOnlyDataset26918, accessTokenRequired:false};
     });
     const  result = ArcGisUtilities.validateSource("https:/localhost/Mapserver", "ArcGIS",[]);
     expect((await result).status).to.equals(MapLayerSourceStatus.InvalidCoordinateSystem);
