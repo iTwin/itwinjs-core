@@ -14,27 +14,46 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
 import { navigationPropertyEditorContext, NavigationPropertyEditorContext } from "../properties/NavigationPropertyEditor";
 import { getIModelMetadataProvider } from "./ECMetadataProvider";
-import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
+import { InstanceFilterBuilder, InstanceFilterBuilderProps } from "./InstanceFilterBuilder";
 import { PresentationInstanceFilterProperty } from "./PresentationInstanceFilterProperty";
-import { InstanceFilterPropertyInfo, PresentationInstanceFilter } from "./Types";
-import { convertPresentationFilterToPropertyFilter, createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName } from "./Utils";
+import { PresentationInstanceFilter } from "./Types";
+import {
+  convertPresentationFilterToPropertyFilter, createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName,
+  InstanceFilterPropertyInfo,
+} from "./Utils";
 
-/** @alpha */
+/**
+ * Data structure that stores information about filter built by [[PresentationInstanceFilterBuilder]].
+ * @beta
+ */
 export interface PresentationInstanceFilterInfo {
+  /** Instance filter. */
   filter: PresentationInstanceFilter;
+  /** Classes of the properties used in filter. */
   usedClasses: ClassInfo[];
 }
 
-/** @alpha */
+/**
+ * Props for [[PresentationInstanceFilterBuilder]] component.
+ * @beta
+ */
 export interface PresentationInstanceFilterBuilderProps {
+  /** iModel connection to pull data from. */
   imodel: IModelConnection;
+  /** Descriptor containing properties and classes that should be available for building filter. */
   descriptor: Descriptor;
+  /** Callback that is invoked when filter changes. */
   onInstanceFilterChanged: (filter?: PresentationInstanceFilterInfo) => void;
+  /** Specifies how deep rule groups can be nested. */
   ruleGroupDepthLimit?: number;
+  /** Initial filter that will be show when component is mounted. */
   initialFilter?: PresentationInstanceFilterInfo;
 }
 
-/** @alpha */
+/**
+ * Component for building complex instance filters for filtering Content and Nodes produced by [PresentationManager]($presentation-frontend).
+ * @beta
+ */
 export function PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilderProps) {
   const { imodel, descriptor, onInstanceFilterChanged, ruleGroupDepthLimit, initialFilter } = props;
   const filteringProps = usePresentationInstanceFilteringProps(descriptor, imodel, initialFilter?.usedClasses);
@@ -57,8 +76,18 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
   </navigationPropertyEditorContext.Provider>;
 }
 
-/** @alpha */
-export function usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection, initialClasses?: ClassInfo[]) {
+/**
+ * Custom hook that extracts properties and classes from [Descriptor]($presentation-common) and creates props that can be used by [[InstanceFilterBuilder]] component.
+ *
+ * This hook also makes sure that when classes are selected available properties list is updated to contain only properties found on selected classes and vice versa -
+ * when property is selected in one of the rules selected classes list is updated to contain only classes that has access to that property.
+ * @beta
+ */
+export function usePresentationInstanceFilteringProps(
+  descriptor: Descriptor,
+  imodel: IModelConnection,
+  initialClasses?: ClassInfo[]
+): Required<Pick<InstanceFilterBuilderProps, "properties" | "classes" | "selectedClasses" | "onClassSelected" | "onClassDeselected" | "onClearClasses" | "propertyRenderer" | "onRulePropertySelected" | "isDisabled">> {
   const propertyInfos = React.useMemo(() => createInstanceFilterPropertyInfos(descriptor), [descriptor]);
   const classes = React.useMemo(() => descriptor.selectClasses.map((selectClass) => selectClass.selectClassInfo), [descriptor]);
 
@@ -67,7 +96,7 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, im
   } = useSelectedClasses(classes, imodel, initialClasses);
   const { properties, isFilteringProperties } = useProperties(propertyInfos, selectedClasses, imodel);
 
-  const onPropertySelected = React.useCallback((property: PropertyDescription) => {
+  const onRulePropertySelected = React.useCallback((property: PropertyDescription) => {
     const propertyInfo = propertyInfos.find((info) => info.propertyDescription.name === property.name);
     if (propertyInfo)
       filterClassesByProperty(propertyInfo);
@@ -76,11 +105,17 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, im
   const propertyRenderer = React.useCallback((name: string) => {
     const instanceFilterPropertyInfo = propertyInfos.find((info) => info.propertyDescription.name === name);
     assert(instanceFilterPropertyInfo !== undefined);
-    return <PresentationInstanceFilterProperty instanceFilterPropertyInfo={instanceFilterPropertyInfo} />;
+    return (
+      <PresentationInstanceFilterProperty
+        propertyDescription={instanceFilterPropertyInfo.propertyDescription}
+        fullClassName={instanceFilterPropertyInfo.className}
+        categoryLabel={instanceFilterPropertyInfo.categoryLabel}
+      />
+    );
   }, [propertyInfos]);
 
   return {
-    onPropertySelected,
+    onRulePropertySelected,
     onClearClasses,
     onClassDeselected,
     onClassSelected,

@@ -18,7 +18,10 @@ import {
 } from "./NavigationPropertyTargetSelector";
 
 /**
- * @alpha
+ * Editor for navigation properties.
+ *
+ * **Note:** Should be used inside [[navigationPropertyEditorContext]].
+ * @beta
  */
 export class NavigationPropertyEditor extends PropertyEditorBase {
   // istanbul ignore next
@@ -36,16 +39,27 @@ export class NavigationPropertyEditor extends PropertyEditorBase {
 
 PropertyEditorManager.registerEditor(StandardTypeNames.Navigation, NavigationPropertyEditor);
 
-/** @alpha */
+/**
+ * Data structure that describes [[navigationPropertyEditorContext]] value.
+ * @beta
+ */
 export interface NavigationPropertyEditorContext {
+  /** iModel connection to pull data from. */
   imodel: IModelConnection;
+  /** Getter to get [NavigationPropertyInfo]($presentation-common) for specific property. */
   getNavigationPropertyInfo: (property: PropertyDescription) => Promise<NavigationPropertyInfo | undefined>;
 }
 
-/** @alpha */
+/**
+ * Context used to store data for [[NavigationPropertyEditor]].
+ * @beta
+ */
 export const navigationPropertyEditorContext = React.createContext<NavigationPropertyEditorContext | undefined>(undefined);
 
-/** @alpha */
+/**
+ * Custom hook that creates value for [[navigationPropertyEditorContext]].
+ * @beta
+ */
 export function useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext {
   return React.useMemo<NavigationPropertyEditorContext>(() => ({
     imodel,
@@ -58,7 +72,12 @@ export function useNavigationPropertyEditingContext(imodel: IModelConnection, da
   }), [imodel, dataProvider]);
 }
 
-/** @alpha */
+/**
+ * Component that renders navigation property target selector for navigation property value editing.
+ *
+ * **Note:** Should be used inside [[navigationPropertyEditorContext]].
+ * @beta
+ */
 export class NavigationPropertyTargetEditor extends React.PureComponent<PropertyEditorProps> implements TypeEditor {
   private _ref = React.createRef<NavigationPropertyTargetSelectorAttributes>();
 
