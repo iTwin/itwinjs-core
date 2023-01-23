@@ -327,6 +327,7 @@ export {
 	FillDisplay,
 	FillFlags,
 	FontType,
+	FrustumPlanes,
 	GeoCoordStatus,
 	GeometryClass,
 	GeometryStreamFlags,

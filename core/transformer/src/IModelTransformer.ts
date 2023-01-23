@@ -124,7 +124,7 @@ export interface IModelTransformOptions {
    *       reference depending on your use case.
    * @default "reject"
    * @beta
-   * @deprecated use [[danglingReferencesBehavior]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
+   * @deprecated in 3.x. use [[danglingReferencesBehavior]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
    */
   danglingPredecessorsBehavior?: "reject" | "ignore";
 
@@ -448,7 +448,7 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel.
    * @note This method is called from all `process*` functions and should never need to be called directly.
-   * @deprecated call [[initialize]] instead, it does the same thing among other initialization
+   * @deprecated in 3.x. call [[initialize]] instead, it does the same thing among other initialization
    * @note Passing an [[InitFromExternalSourceAspectsArgs]] is required when processing changes, to remap any elements that may have been deleted.
    *       You must await the returned promise as well in this case. The synchronous behavior has not changed but is deprecated and won't process everything.
    */
@@ -554,7 +554,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** This no longer has any effect except emitting a warning
-   * @deprecated
+   * @deprecated in 3.x.
    */
   protected skipElement(_sourceElement: Element): void {
     Logger.logWarning(loggerCategory, `Tried to defer/skip an element, which is no longer necessary`);
@@ -946,7 +946,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Import elements that were deferred in a prior pass.
-   * @deprecated This method is no longer necessary since the transformer no longer needs to defer elements
+   * @deprecated in 3.x. This method is no longer necessary since the transformer no longer needs to defer elements
    */
   public async processDeferredElements(_numRetries: number = 3): Promise<void> {}
 

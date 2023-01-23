@@ -73,6 +73,7 @@ export class ClassRegistry {
     if (schemaItemJson.error)
       throw new IModelError(schemaItemJson.error.status, `failed to get schema item '${ecTypeQualifier}'`);
 
+    assert(undefined !== schemaItemJson.result);
     const schemaItem = JSON.parse(schemaItemJson.result);
     if (!("appliesTo" in schemaItem) && schemaItem.baseClass === undefined) {
       return ecTypeQualifier;

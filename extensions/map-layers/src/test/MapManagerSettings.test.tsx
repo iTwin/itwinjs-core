@@ -10,7 +10,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import {
-  BackgroundMapSettings, DisplayStyle3dSettings, EmptyLocalization, PlanarClipMaskMode,
+  BackgroundMapSettings, DisplayStyle3dSettings, PlanarClipMaskMode,
   PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings,
 } from "@itwin/core-common";
 import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
@@ -66,7 +66,7 @@ describe("MapManagerSettings", () => {
   };
 
   before(async () => {
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup();
     await TestUtils.initialize();
   });
 
@@ -335,7 +335,7 @@ describe("MapManagerSettings", () => {
     toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
 
     const select = component.find(Select);
-    select.props().onChange!("geoid");
+    select.props().onChange!("geoid", "added");
     viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }), moq.Times.once());
     component.unmount();
   });
@@ -350,7 +350,7 @@ describe("MapManagerSettings", () => {
     toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
 
     const select = component.find(Select);
-    select.props().onChange!("geodetic");
+    select.props().onChange!("geodetic", "added");
     viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geodetic } }), moq.Times.once());
     component.unmount();
   });
@@ -365,7 +365,7 @@ describe("MapManagerSettings", () => {
     toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
 
     const select = component.find(Select);
-    select.props().onChange!("ground");
+    select.props().onChange!("ground", "added");
     viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }), moq.Times.once());
     component.unmount();
   });

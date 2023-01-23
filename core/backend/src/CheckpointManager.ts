@@ -9,7 +9,6 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
@@ -297,14 +296,16 @@ export class CheckpointManager {
       // first see if there's a V2 checkpoint available.
       const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
       if (changesetId !== request.checkpoint.changeset.id)
-        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because checkpoint for ${request.checkpoint.changeset.id} not found.  Downloaded: IModel=${request.checkpoint.iModelId}, changeset=${changesetId}`);
+        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because requested checkpoint not found.`, {requestedChangesetId: request.checkpoint.changeset.id, iModelId: request.checkpoint.iModelId, changesetId, iTwinId: request.checkpoint.iTwinId });
       else
-        Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
+        Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint.`, { iModelId: request.checkpoint.iModelId, changesetId: request.checkpoint.changeset.id, iTwinId: request.checkpoint.iTwinId });
       return changesetId;
     } catch (error: any) {
-      if (error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
-        return V1CheckpointManager.downloadCheckpoint(request);
-
+      if (error.errorNumber === IModelStatus.NotFound) { // No V2 checkpoint available, try a v1 checkpoint
+        const changeset = await V1CheckpointManager.downloadCheckpoint(request);
+        Logger.logWarning(loggerCategory, `Got an error downloading v2 checkpoint, but downloaded v1 checkpoint successfully!`, { error, iModelId: request.checkpoint.iModelId, iTwinId: request.checkpoint.iTwinId, requestedChangesetId: request.checkpoint.changeset.id, changesetId: changeset });
+        return changeset;
+      }
       throw error; // most likely, was aborted
     }
   }
@@ -327,7 +328,7 @@ export class CheckpointManager {
         if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned)
           nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
-        CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
+        CheckpointManager.validateCheckpointGuids(checkpoint, db);
         // Apply change sets if necessary
         const currentChangeset: Mutable<ChangesetIndexAndId> = nativeDb.getCurrentChangeset();
         if (currentChangeset.id !== checkpoint.changeset.id) {
@@ -376,9 +377,10 @@ export class CheckpointManager {
   }
 
   /** checks a file's dbGuid & iTwinId for consistency, and updates the dbGuid when possible */
-  public static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb) {
+  public static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb) {
     const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId };
 
+    const nativeDb = snapshotDb.nativeDb;
     const dbChangeset = nativeDb.getCurrentChangeset();
     const iModelId = Guid.normalize(nativeDb.getIModelId());
     if (iModelId !== Guid.normalize(checkpoint.iModelId)) {
@@ -386,7 +388,9 @@ export class CheckpointManager {
         throw new IModelError(IModelStatus.ValidationFailed, "iModelId is not properly set up in the checkpoint");
 
       Logger.logWarning(loggerCategory, "iModelId is not properly set up in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, dbGuid: iModelId }));
-      nativeDb.setIModelId(Guid.normalize(checkpoint.iModelId));
+      const iModelIdNormalized = Guid.normalize(checkpoint.iModelId);
+      nativeDb.setIModelId(iModelIdNormalized);
+      (snapshotDb as any)._iModelId = iModelIdNormalized;
       // Required to reset the ChangeSetId because setDbGuid clears the value.
       nativeDb.saveLocalValue("ParentChangeSetId", dbChangeset.id);
       if (undefined !== dbChangeset.index)

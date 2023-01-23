@@ -65,7 +65,7 @@ export interface Localization {
    * @param key - the key that matches a property in the JSON localization file.
    * @returns The string corresponding to the first key that resolves.
    * @throws Error if no keys resolve to a string.
-   * @deprecated Use `getLocalizedString` instead; providing either a key with a namespace `<namespace>:<key>` or
+   * @deprecated in 3.x. Use `getLocalizedString` instead; providing either a key with a namespace `<namespace>:<key>` or
    * including `{ ns: <namespace> }` in the options.
    */
   getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
@@ -110,7 +110,14 @@ export interface Localization {
  */
 export class EmptyLocalization implements Localization {
   public async initialize(): Promise<void> { }
-  public getLocalizedString(key: string | string[]): string { return typeof (key) == "string" ? key : key[0]; }
+  public getLocalizedString(key: string | string[]): string {
+    if (typeof (key) !== "string") {
+      key = key[0];
+    }
+    // Simulate correct and simple usage of i18next's translation function
+    // Namely, remove the leading namespace substring if there is one
+    return key.split(":", 2).pop()!;
+  }
   public getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
   public getEnglishString(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
   public getLocalizedKeys(inputString: string): string { return inputString; }

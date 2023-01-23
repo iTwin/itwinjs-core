@@ -6,7 +6,7 @@
  * @module Hierarchies
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { InstanceKey, InstanceKeyJSON } from "../EC";
 
 /**
@@ -158,6 +158,11 @@ export interface BaseNodeKey {
 
   /** Node hash path from root to the node whose key this is */
   pathFromRoot: string[];
+
+  /** Query that returns all selected instance keys
+   * @alpha
+   */
+  instanceKeysSelectQuery?: PresentationQuery;
 }
 /**
  * Serialized [[BaseNodeKey]] JSON representation.
@@ -167,6 +172,8 @@ export interface BaseNodeKeyJSON {
   type: string;
   version?: number;
   pathFromRoot: string[];
+  /** @alpha */
+  instanceKeysSelectQuery?: PresentationQuery;
 }
 
 /**
@@ -274,3 +281,51 @@ export interface LabelGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
  * @public
  */
 export type NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON;
+
+/**
+ * Data structure that describes a presentation query
+ * @alpha
+ */
+export interface PresentationQuery {
+  /** ECSQL query */
+  query: string;
+  /** The query bindings */
+  bindings?: PresentationQueryBinding[];
+}
+
+/** @alpha */
+export interface BasePresentationQueryBinding {
+  type: "Id" | "IdSet" | "ECValue" | "ValueSet";
+}
+
+/** @alpha */
+export interface IdBinding extends BasePresentationQueryBinding {
+  type: "Id";
+  value: Id64String;
+}
+
+/** @alpha */
+export interface IdSetBinding extends BasePresentationQueryBinding {
+  type: "IdSet";
+  value: Id64String[];
+}
+
+/** @alpha */
+export interface ECValueBinding extends BasePresentationQueryBinding {
+  type: "ECValue";
+  valueType: string;
+  value: any;
+}
+
+/** @alpha */
+export interface ECValueSetBinding extends BasePresentationQueryBinding {
+  type: "ValueSet";
+  valueType: string;
+  value: any[];
+}
+
+/**
+ * One of the presentation query binding types
+ * @alpha
+ */
+export type PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding;

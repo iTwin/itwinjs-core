@@ -150,6 +150,10 @@ Array [
     "__presentation-components/key": Object {
       "className": "BisCore:DefinitionModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:DefinitionModel))",
+      },
       "pathFromRoot": Array [
         "80c7ed6b188503c857ac50041bf4b6d0",
       ],
@@ -190,6 +194,10 @@ Array [
     "__presentation-components/key": Object {
       "className": "BisCore:DictionaryModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:DictionaryModel))",
+      },
       "pathFromRoot": Array [
         "20780ee9a09d76aeba732a9a1e483a49",
       ],
@@ -230,6 +238,10 @@ Array [
     "__presentation-components/key": Object {
       "className": "BisCore:DocumentListModel",
       "groupedInstancesCount": 2,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:DocumentListModel))",
+      },
       "pathFromRoot": Array [
         "b3334e28acbad8431c46ca61e7f8e5e3",
       ],
@@ -270,6 +282,10 @@ Array [
     "__presentation-components/key": Object {
       "className": "Generic:GroupModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY Generic:GroupModel))",
+      },
       "pathFromRoot": Array [
         "b35e9d24b15bc9912c6abb46cb27ca7f",
       ],
@@ -309,6 +325,10 @@ Array [
     "__presentation-components/key": Object {
       "className": "BisCore:LinkModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:LinkModel))",
+      },
       "pathFromRoot": Array [
         "7f40f83df83799f79d13cfb7446d677f",
       ],
@@ -349,6 +369,10 @@ Array [
     "__presentation-components/key": Object {
       "className": "BisCore:PhysicalModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:PhysicalModel))",
+      },
       "pathFromRoot": Array [
         "685c4d0e7d0c2f8d0b6279cfb4a5f03a",
       ],
@@ -389,6 +413,10 @@ Array [
     "__presentation-components/key": Object {
       "className": "BisCore:RepositoryModel",
       "groupedInstancesCount": 1,
+      "instanceKeysSelectQuery": Object {
+        "bindings": Array [],
+        "query": "SELECT * FROM (SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM (SELECT * FROM [bis].[Model] [this] WHERE ([this].[ECClassId] IS NOT ([bis].[RepositoryModel]))) [this] UNION ALL SELECT [this].[ECClassId] AS [ECClassId], [this].[ECInstanceId] AS [ECInstanceId] FROM [bis].[RepositoryModel] [this]) WHERE (ECClassId IS (ONLY BisCore:RepositoryModel))",
+      },
       "pathFromRoot": Array [
         "72283c5c8ebd68e345d166c40f0b5101",
       ],

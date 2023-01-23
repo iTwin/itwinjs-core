@@ -5,7 +5,6 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
 import { Guid, GuidString } from "@itwin/core-bentley";
-import { EmptyLocalization } from "@itwin/core-common";
 import { MapLayerSource, MockRender } from "@itwin/core-frontend";
 
 import { MapLayerPreferences } from "../MapLayerPreferences";
@@ -18,7 +17,7 @@ describe("MapLayerPreferences", () => {
   const testName: string = `test${Guid.createValue()}`;
 
   beforeEach(async () => {
-    await MockRender.App.startup({localization: new EmptyLocalization()});
+    await MockRender.App.startup();
     setup();
   });
   afterEach(async () => {
