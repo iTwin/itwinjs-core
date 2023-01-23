@@ -111,7 +111,7 @@ return <ControlledTree
 />;
 ```
 
-[PresentationTreeRenderer]($presentation-components) renders nodes with actions buttons for applying and clearing filters. Based on ruleset used in the tree some hierarchy level might not be filterable. In that case actions buttons for those hierarchy levels are not rendered. If applied filter does not produce any nodes `There are no child nodes matching current filter` message is renderer in that hierarchy level.
+[PresentationTreeRenderer]($presentation-components) renders nodes with action buttons for applying and clearing filters. Some hierarchy levels might not be filterable depending on the presentation rules used to build them. In that case, action buttons for those hierarchy levels are not rendered. If applied filter does not produce any nodes, `There are no child nodes matching current filter` message is rendered in that hierarchy level.
 
 ![Filtered Tree](./assets/filtered-tree.jpg)
 
