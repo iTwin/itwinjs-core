@@ -131,7 +131,7 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
       const { container, queryByText } = renderWithContext(
         <PropertyFilterBuilderRuleRenderer {...defaultProps} />,
         { actions, properties: [defaultProperty] },
-        { disablePropertySelection: true }
+        { isDisabled: true }
       );
 
       // attempt to open property selector

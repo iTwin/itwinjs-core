@@ -32,7 +32,7 @@ export interface PropertyFilterBuilderRuleRendererProps {
 export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps) {
   const { path, rule } = props;
   const { properties, actions, onRulePropertySelected } = React.useContext(PropertyFilterBuilderContext);
-  const { ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, disablePropertySelection } = React.useContext(PropertyFilterBuilderRuleRenderingContext);
+  const { ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, isDisabled } = React.useContext(PropertyFilterBuilderRuleRenderingContext);
   const { property, operator, value } = rule;
 
   const onSelectedPropertyChanged = React.useCallback((newProperty?: PropertyDescription) => {
@@ -77,7 +77,7 @@ export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRu
         selectedProperty={rule.property}
         onSelectedPropertyChanged={onSelectedPropertyChanged}
         propertyRenderer={propertyRenderer}
-        isDisabled={disablePropertySelection}
+        isDisabled={isDisabled}
       />
       {property && operatorRenderer(property)}
       {property && operator && !isUnaryPropertyFilterOperator(operator) && valueRenderer(property)}

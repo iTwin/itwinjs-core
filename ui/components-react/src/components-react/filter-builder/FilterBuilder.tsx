@@ -33,8 +33,8 @@ export interface PropertyFilterBuilderProps {
   ruleGroupDepthLimit?: number;
   /** Custom renderer for property selector in rule. */
   propertyRenderer?: (name: string) => React.ReactNode;
-  /** Specifies that properties selection is disabled. */
-  disablePropertySelection?: boolean;
+  /** Specifies whether component is disables or not. */
+  isDisabled?: boolean;
   /** Initial filter to show when component is mounted. */
   initialFilter?: PropertyFilter;
 }
@@ -72,7 +72,7 @@ export interface PropertyFilterBuilderRuleRenderingContextProps {
   /** Custom renderer for property selector in rule. */
   propertyRenderer?: (name: string) => React.ReactNode;
   /** Specifies that properties selection is disabled. */
-  disablePropertySelection?: boolean;
+  isDisabled?: boolean;
 }
 
 /**
@@ -112,7 +112,7 @@ const ROOT_GROUP_PATH: string[] = [];
  * @beta
  */
 export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
-  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer, disablePropertySelection, initialFilter } = props;
+  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer, isDisabled, initialFilter } = props;
   const { state, actions } = usePropertyFilterBuilderState(initialFilter);
   const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -129,8 +129,8 @@ export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
     [actions, properties, onRulePropertySelected, ruleGroupDepthLimit]
   );
   const renderingContextValue = React.useMemo<PropertyFilterBuilderRuleRenderingContextProps>(
-    () => ({ ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, disablePropertySelection }),
-    [ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, disablePropertySelection]
+    () => ({ ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, isDisabled }),
+    [ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, isDisabled]
   );
   return (
     <PropertyFilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>
