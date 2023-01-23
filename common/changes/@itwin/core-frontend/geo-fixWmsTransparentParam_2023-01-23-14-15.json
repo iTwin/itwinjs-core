@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Fix map-layers WMS request failure on some servers requiring 'Transparent' parameter value to bo upper-case (as specified in the WMS specfication)",
+      "comment": "Fix map-layers WMS request failure on some servers requiring 'Transparent' parameter value to bo upper-case (as specified in the WMS specification)",
       "type": "none"
     }
   ],
