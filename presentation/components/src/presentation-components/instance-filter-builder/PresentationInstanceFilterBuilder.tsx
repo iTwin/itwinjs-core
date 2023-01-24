@@ -18,8 +18,7 @@ import { InstanceFilterBuilder, InstanceFilterBuilderProps } from "./InstanceFil
 import { PresentationInstanceFilterProperty } from "./PresentationInstanceFilterProperty";
 import { PresentationInstanceFilter } from "./Types";
 import {
-  convertPresentationFilterToPropertyFilter, createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName,
-  InstanceFilterPropertyInfo,
+  convertPresentationFilterToPropertyFilter, createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName, InstanceFilterPropertyInfo,
 } from "./Utils";
 
 /**
@@ -89,7 +88,11 @@ export function usePresentationInstanceFilteringProps(
   initialClasses?: ClassInfo[]
 ): Required<Pick<InstanceFilterBuilderProps, "properties" | "classes" | "selectedClasses" | "onClassSelected" | "onClassDeselected" | "onClearClasses" | "propertyRenderer" | "onRulePropertySelected" | "isDisabled">> {
   const propertyInfos = React.useMemo(() => createInstanceFilterPropertyInfos(descriptor), [descriptor]);
-  const classes = React.useMemo(() => descriptor.selectClasses.map((selectClass) => selectClass.selectClassInfo), [descriptor]);
+  const classes = React.useMemo((): ClassInfo[] => {
+    const uniqueClasses = new Map();
+    descriptor.selectClasses.forEach((selectClass) => uniqueClasses.set(selectClass.selectClassInfo.id, selectClass.selectClassInfo));
+    return [...uniqueClasses.values()];
+  }, [descriptor]);
 
   const {
     selectedClasses, onClassSelected, onClassDeselected, onClearClasses, isFilteringClasses, filterClassesByProperty,

@@ -207,14 +207,15 @@ describe("usePresentationInstanceFilteringProps", () => {
 
   const onCloseEvent = new BeEvent<() => void>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const initialProps: HookProps = {
-    descriptor,
-    imodel: imodelMock.object,
-  };
+  let initialProps: HookProps;
 
   beforeEach(() => {
     imodelMock.setup((x) => x.key).returns(() => "test_imodel");
     imodelMock.setup((x) => x.onClose).returns(() => onCloseEvent);
+    initialProps = {
+      descriptor,
+      imodel: imodelMock.object,
+    };
   });
 
   afterEach(() => {
@@ -229,6 +230,24 @@ describe("usePresentationInstanceFilteringProps", () => {
     expect(result.current.classes).to.have.lengthOf(2).and.to.containSubset([
       concreteClass1,
       concreteClass2,
+    ]);
+  });
+
+  it("does not duplicate classes when descriptor contains multiple similar select classes", () => {
+    initialProps.descriptor = createTestContentDescriptor({
+      selectClasses: [
+        // in practice these would be different by additional attributes like path to input class
+        { selectClassInfo: concreteClass1, isSelectPolymorphic: false },
+        { selectClassInfo: concreteClass1, isSelectPolymorphic: false },
+      ],
+      categories: [category],
+      fields: [basePropertiesField],
+    });
+    const { result } = renderHook(
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
+      { initialProps });
+    expect(result.current.classes).to.have.lengthOf(1).and.to.containSubset([
+      concreteClass1,
     ]);
   });
 
