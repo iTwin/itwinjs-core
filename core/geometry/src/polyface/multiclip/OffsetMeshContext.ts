@@ -82,6 +82,14 @@ class AverageNormalData {
   /** Return the max deviation as computed on prior calls to recordDeviation */
   public get maxDeviationRadians(): number { return this.maxDeviationRadiansFromAverage; }
 }
+function emitSector(sector: SectorOffsetProperties) {
+  if (OffsetMeshContext.stringDebugFunction !== undefined) {
+    OffsetMeshContext.stringDebugFunction(`    Sector xyz    ${sector.xyz.x},${sector.xyz.y},${sector.xyz.z} `);
+    OffsetMeshContext.stringDebugFunction(`           normal ${sector.normal.x},${sector.normal.y},${sector.normal.z} `);
+  }
+
+}
+
 // facet properties used during offset.
 //
 export class FacetOffsetProperties {
@@ -219,7 +227,7 @@ export class OffsetMeshContext {
 
     this._insideOfChamferFace = baseGraph.grabMask();
     this._outsideOfChamferFace = baseGraph.grabMask();
-    this._insideEndOfChamferFace = baseGraph.grabMask();
+    this._insideChamferSling = baseGraph.grabMask();
     this._outsideEndOfChamferFace = baseGraph.grabMask();
     this._exteriorMask = HalfEdgeMask.EXTERIOR;
     this._offsetCoordinatesAssigned = baseGraph.grabMask();
@@ -253,13 +261,19 @@ export class OffsetMeshContext {
   private _outsideOfChamferFace: HalfEdgeMask;
 
   /** This edge is on a chamfered face, and at the end -- other side may be a sling */
-  public get insideEndOfChamferFace(): HalfEdgeMask { return this._insideEndOfChamferFace; }
-  private _insideEndOfChamferFace: HalfEdgeMask;
+  public get insideChamferSling(): HalfEdgeMask { return this._insideChamferSling; }
+  private _insideChamferSling: HalfEdgeMask;
 
   /** This is the outside of the end of a chamfer face -- i.e. the inside of a new face-at-vertex */
   public get outsideEndOfChamferFace(): HalfEdgeMask { return this._outsideEndOfChamferFace; }
   private _outsideEndOfChamferFace: HalfEdgeMask;
 
+  // On a CCW vertex loop, the mask sequence at a chamfered edge (which was expanded to a chamfer face) is
+  // * the INBOUND edge of the original edge (at its far node !!) _outsideOfChamferFace
+  // * the OUTBOUND edge inside the chamfer face has _insideOfChamferFace
+  // * the inside of the sling face has _insideChamferSling
+  // * the "outside" of the sling face - i.e. inside the chamfer face and at this vertex - has _outsideEndOfChamferFace
+  // * the "outside" of the outgoing edge has _outsideOfChamferFace.
   private _smoothSingleDihedralAngleRadians: number;
   private _smoothAccumulatedDihedralAngleRadians: number;
   private _chamferTurnRadians: number;
@@ -398,7 +412,7 @@ export class OffsetMeshContext {
       | this._outsideEndOfChamferFace
       | this._outsideOfChamferFace
       | this._insideOfChamferFace
-      | this._insideEndOfChamferFace;
+      | this._insideChamferSling;
     this._baseGraph.announceEdges(
       (_graph: HalfEdgeGraph, nodeA: HalfEdge): boolean => {
         // This starts by looking for EXTERIOR on both sides ...
@@ -449,7 +463,7 @@ export class OffsetMeshContext {
       node.isMaskSet(this._exteriorMask) ? "X" : "",
       node.isMaskSet(this.breakMaskA) ? "A" : "",
       node.isMaskSet(this.breakMaskB) ? "B" : "",
-      node.isMaskSet(this.insideEndOfChamferFace) ? "(sling)" : "",
+      node.isMaskSet(this.insideChamferSling) ? "(sling)" : "",
       node.isMaskSet(this.insideOfChamferFace) ? "(in chamfer)" : "",
       node.isMaskSet(this.outsideEndOfChamferFace) ? "(@sling)" : "",
       node.isMaskSet(this.outsideOfChamferFace) ? "(@chamfer)" : "",
@@ -471,7 +485,7 @@ export class OffsetMeshContext {
           xyzLoop.length = 0;
           seed.sumAroundVertex((node: HalfEdge) => {
             this.inspectMasks(node);
-            if (!node.isMaskSet(this._insideEndOfChamferFace))
+            if (!node.isMaskSet(this._insideChamferSling))
               SectorOffsetProperties.getSectorPointAtHalfEdge(node, undefined, xyzLoop);
             return 0.0;
           });
@@ -522,11 +536,16 @@ export class OffsetMeshContext {
     }
     return graphBuilder.graph;
   }
-  private setOffsetAtDistanceAroundVertex(vertexSeed: HalfEdge, distance: number) {
+  private setOffsetAtDistanceAroundVertex(vertexSeed: HalfEdge, distance: number, ignoreChamfers: boolean = false) {
     vertexSeed.sumAroundVertex((nodeAroundVertex: HalfEdge) => {
       const props = nodeAroundVertex.edgeTag as SectorOffsetProperties;
-      if (props !== undefined)
-        props.setOffsetPointAtDistanceAtHalfEdge(nodeAroundVertex, distance);
+      if (props !== undefined) {
+        if (ignoreChamfers && this.isInsideChamferOrSling(vertexSeed)) {
+          // SKIP !!
+        } else {
+          props.setOffsetPointAtDistanceAtHalfEdge(nodeAroundVertex, distance);
+        }
+      }
       return 0.0;
     }
     );
@@ -573,7 +592,7 @@ export class OffsetMeshContext {
 
   private computeAverageNormalAndMaxDeviationAroundVertex(vertexSeed: HalfEdge, data: AverageNormalData): number | undefined {
     data.clear();
-    const inactiveNodeMask = this._exteriorMask | this._insideEndOfChamferFace;
+    const inactiveNodeMask = this._exteriorMask | this._insideChamferSling;
     vertexSeed.sumAroundVertex((node: HalfEdge) => {
       const sectorData = node.edgeTag as SectorOffsetProperties;
       if (sectorData)
@@ -641,7 +660,7 @@ export class OffsetMeshContext {
         } else if (nodeA.isMaskSet(this._outsideEndOfChamferFace)) {
           nodeA.setMask(this._breakMaskA);
           nodeA.setMask(this._breakMaskB);
-        } else if (nodeA.isMaskSet(this._insideEndOfChamferFace)) {
+        } else if (nodeA.isMaskSet(this._insideChamferSling)) {
           // This is the sling.   It's normal is along edge -- not really a break.
         } else if (nodeA.isMaskSet(this._insideOfChamferFace)) {
           nodeA.setMask(this._breakMaskA);
@@ -707,6 +726,7 @@ export class OffsetMeshContext {
       do {
         if (nodeA.isMaskSet(this._breakMaskA) && !nodeA.isMaskSet(this._breakMaskB)) {
           let nodeQ = nodeA;
+          averageNormal.setZero();
           for (; ;) {
             nodeQ.vectorToFaceSuccessor(edgeVectorU);
             nodeQ.vectorToFacePredecessor(edgeVectorV);
@@ -748,15 +768,26 @@ export class OffsetMeshContext {
   }
   /** Compute the point of intersection of the planes in the sectors of 3 half edges */
   private compute3SectorIntersectionDebug(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge, result?: Vector3d): Vector3d | undefined {
-    if (OffsetMeshContext.stringDebugFunction !== undefined)
+    const sectorA = nodeA.edgeTag as SectorOffsetProperties;
+    const sectorB = nodeB.edgeTag as SectorOffsetProperties;
+    const sectorC = nodeC.edgeTag as SectorOffsetProperties;
+    if (OffsetMeshContext.stringDebugFunction !== undefined) {
       OffsetMeshContext.stringDebugFunction(`compute3${this.inspectMasks(nodeA)}${this.inspectMasks(nodeB)}${this.inspectMasks(nodeC)} `);
-    const vector = this.compute3SectorIntersection(nodeA, nodeB, nodeC, result);
+      for (const sector of [sectorA, sectorB, sectorC])
+        emitSector(sector);
+    }
+
+    const vector = SmallSystem.intersect3Planes(
+      sectorA.xyz, sectorA.normal,
+      sectorB.xyz, sectorB.normal,
+      sectorC.xyz, sectorC.normal,
+      result);
 
     if (OffsetMeshContext.stringDebugFunction !== undefined) {
       if (vector === undefined)
         OffsetMeshContext.stringDebugFunction(" NO INTERSECTION");
       else
-        OffsetMeshContext.stringDebugFunction(` ComputedVector ${vector} `);
+        OffsetMeshContext.stringDebugFunction(` ComputedVector ${vector.x},${vector.y},${vector.z} `);
     }
     return vector;
   }
@@ -839,15 +870,15 @@ export class OffsetMeshContext {
           const insideOfSling = outsideOfSling.edgeMate;
           outsideOfSling.setMask(this._outsideEndOfChamferFace);
           outsideOfSling.faceTag = facetProperties;
-          insideOfSling.setMask(this._insideEndOfChamferFace);
+          insideOfSling.setMask(this._insideChamferSling);
           HalfEdge.pinch(nodeE, outsideOfSling);
           const endNormal = Ray3d.create(vertexXYZ, outwardEdgeVector);  // clones the inputs
           const slingFaceProperties = new FacetOffsetProperties(-1, endNormal);
           insideOfSling.faceTag = slingFaceProperties;
           outsideOfSling.faceTag = facetProperties;
           // initialize sectors with existing vertex point.
-          nodeE.edgeTag = new SectorOffsetProperties(averageNormal.clone(), vertexXYZ.clone());
-          outsideOfSling.edgeTag = new SectorOffsetProperties(averageNormal.clone(), vertexXYZ.clone());
+          nodeE.edgeTag = new SectorOffsetProperties(averageNormal.clone(), offsetPoint.clone());
+          outsideOfSling.edgeTag = new SectorOffsetProperties(averageNormal.clone(), offsetPoint.clone());
           insideOfSling.edgeTag = new SectorOffsetProperties(outwardEdgeVector.clone(), vertexXYZ.clone());
           // OffsetMeshContext.stringDebugFunction("Chamfer Setup");
           const chamferPointE = this.compute3SectorIntersection(nodeE, nodeE.edgeMate, insideOfSling);
@@ -950,7 +981,7 @@ export class OffsetMeshContext {
         return true;
 
       this.markBreakEdgesAndSaveAverageNormalsAroundVertex(vertexSeed);
-      this.setOffsetAtDistanceAroundVertex(vertexSeed, distance);
+      this.setOffsetAtDistanceAroundVertex(vertexSeed, distance, true);
       vertexSeed.collectMaskedEdgesAroundVertex(this._breakMaskA, true, breakEdges);
       if (OffsetMeshContext.stringDebugFunction !== undefined) {
         OffsetMeshContext.stringDebugFunction(` BREAK EDGES from ${this.inspectMasks(vertexSeed, true, false)}`);
@@ -984,23 +1015,25 @@ export class OffsetMeshContext {
           const i0 = i;
           const i1 = (i0 + 1) % breakEdges.length;
           const i2 = (i1 + 1) % breakEdges.length;
+
           if (breakEdges[i0].isMaskSet(this._outsideEndOfChamferFace)
             && breakEdges[i1].isMaskSet(this._outsideOfChamferFace)
-            && breakEdges[i2].isMaskSet(this._insideOfChamferFace))
+            && breakEdges[i2].isMaskSet(this._insideOfChamferFace)) {
             if (OffsetMeshContext.stringDebugFunction !== undefined)
               OffsetMeshContext.stringDebugFunction(`    ChamferChamfer Fixup ${this.inspectMasks(breakEdges[i0])} ${this.inspectMasks(breakEdges[i1])} ${this.inspectMasks(breakEdges[i2])} `);
-          const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
-          if (vectorFromOrigin !== undefined) {
-            // Treat all 3 spots as possibly compound sequences
-            for (const iOutput of [i0, i1, i2]) {
-              this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[iOutput],
-                (node: HalfEdge, properties: SectorOffsetProperties) => {
-                  properties.setXYAndZ(vectorFromOrigin);
-                  node.setMask(this._offsetCoordinatesAssigned);
-                });
+            const vectorFromOrigin = this.compute3SectorIntersectionDebug(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
+            if (vectorFromOrigin !== undefined) {
+              // Treat all 3 spots as possibly compound sequences
+              for (const iOutput of [i0, i1, i2]) {
+                this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[iOutput],
+                  (node: HalfEdge, properties: SectorOffsetProperties) => {
+                    properties.setXYAndZ(vectorFromOrigin);
+                    node.setMask(this._offsetCoordinatesAssigned);
+                  });
+              }
+              // Since all three were reset, skip past.  This is done on the acyclic integer that controls the loop.
+              i += 2;
             }
-            // Since all three were reset, skip past.  This is done on the acyclic integer that controls the loop.
-            i += 2;
           }
         }
 
@@ -1057,9 +1090,15 @@ export class OffsetMeshContext {
   private isInsideSling(node0: HalfEdge,
     node1?: HalfEdge,
     node2?: HalfEdge): boolean {
-    return node0.isMaskSet(this._insideEndOfChamferFace)
-      || (node1 !== undefined && node1.isMaskSet(this._insideEndOfChamferFace))
-      || (node2 !== undefined && node2.isMaskSet(this._insideEndOfChamferFace));
+    return node0.isMaskSet(this._insideChamferSling)
+      || (node1 !== undefined && node1.isMaskSet(this._insideChamferSling))
+      || (node2 !== undefined && node2.isMaskSet(this._insideChamferSling));
+  }
+  // return true if any of these nodes is "inside" the sling at the end of a chamfer.
+  private isInsideChamferOrSling(node0: HalfEdge): boolean {
+    return node0.isMaskSet(this._insideChamferSling)
+      || node0.isMaskSet(this._insideOfChamferFace)
+      || node0.isMaskSet(this._outsideEndOfChamferFace);
   }
   private isOffsetAssigned(node0: HalfEdge,
     node1?: HalfEdge,
