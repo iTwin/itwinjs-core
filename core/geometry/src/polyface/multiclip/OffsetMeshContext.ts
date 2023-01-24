@@ -36,27 +36,27 @@ type FacetOffsetDebugString = (message: string) => void;
 class AverageNormalData {
   constructor() {
     this.numActiveSectors = 0;
-    this.numInactiveSectorsSectors = 0; // exterior and sling.
+    this.numInactiveSectors = 0; // exterior and sling.
     this.averageNormal = Vector3d.create();
     this.radiansSum = 0.0;
     this.maxDeviationRadiansFromAverage = 0.0;
   }
   public clear() {
     this.numActiveSectors = 0;
-    this.numInactiveSectorsSectors = 0; // exterior and sling.
+    this.numInactiveSectors = 0; // exterior and sling.
     this.averageNormal.setZero();
     this.radiansSum = 0.0;
     this.maxDeviationRadiansFromAverage = 0.0;
   }
   public numActiveSectors: number;
-  public numInactiveSectorsSectors: number;
+  public numInactiveSectors: number;
   public averageNormal: Vector3d;
   public maxDeviationRadiansFromAverage: number;
   public radiansSum;
   /** Add a normal to the evolving sum, scaled by radians in the corner */
   public accumulateNormal(node: HalfEdge, normal: Vector3d, inactiveMask: HalfEdgeMask) {
     if (node.isMaskSet(inactiveMask)) {
-      this.numInactiveSectorsSectors++;
+      this.numInactiveSectors++;
     } else {
       const sectorSweepRadians = HalfEdge.sectorSweepRadiansXYZ(node, normal);
       this.averageNormal.addScaledInPlace(normal, sectorSweepRadians);
@@ -124,7 +124,7 @@ export class SectorOffsetProperties {
    * @param edgeNodeA node on one side of the edge
    * @param edgeVector pre-allocated vector to receive vector along edge.
    * @param averageNormal pre-allocated vector to receive the average normal for a chamfer of the offset edge.
-   * @param
+   * @param offsetDistance distance of offset being constructed.  The sign of this resolves angle ambiguity.
    * @param radiansTolerance tolerance for large angle between normals.
    * @returns true if this edge has SectorOffsetProperties on both sides and the dihedral angle exceeds radiansTolerance.
    */
@@ -230,7 +230,7 @@ export class OffsetMeshContext {
     this._insideChamferSling = baseGraph.grabMask();
     this._outsideEndOfChamferFace = baseGraph.grabMask();
     this._exteriorMask = HalfEdgeMask.EXTERIOR;
-    this._offsetCoordinatesAssigned = baseGraph.grabMask();
+    this._offsetCoordinatesReassigned = baseGraph.grabMask();
     this._smoothSingleDihedralAngleRadians = options.smoothSingleDihedralAngle.radians;
     this._chamferTurnRadians = options.chamferTurnAngle.radians;
     this._smoothAccumulatedDihedralAngleRadians = options.smoothAccumulatedDihedralAngle.radians;
@@ -242,7 +242,7 @@ export class OffsetMeshContext {
   private _exteriorMask: HalfEdgeMask;
 
   /** Mask indicating a a sector's coordinates have been reassigned at offset distance. */
-  private _offsetCoordinatesAssigned: HalfEdgeMask;
+  private _offsetCoordinatesReassigned: HalfEdgeMask;
 
   /** "First" sector of a smooth sequence. */
   public get breakMaskA(): HalfEdgeMask { return this._breakMaskA; }
@@ -484,7 +484,6 @@ export class OffsetMeshContext {
         if (!seed.findMaskAroundVertex(this._exteriorMask)) {
           xyzLoop.length = 0;
           seed.sumAroundVertex((node: HalfEdge) => {
-            this.inspectMasks(node);
             if (!node.isMaskSet(this._insideChamferSling))
               SectorOffsetProperties.getSectorPointAtHalfEdge(node, undefined, xyzLoop);
             return 0.0;
@@ -556,7 +555,7 @@ export class OffsetMeshContext {
       const props = nodeAroundVertex.edgeTag as SectorOffsetProperties;
       if (props !== undefined) {
         props.setXYAndZ(xyz);
-        nodeAroundVertex.setMask(this._offsetCoordinatesAssigned);
+        nodeAroundVertex.setMask(this._offsetCoordinatesReassigned);
       }
       return 0.0;
     }
@@ -575,7 +574,6 @@ export class OffsetMeshContext {
     let n = 0;
     for (let currentNode = vertexSeed; ; currentNode = currentNode.vertexSuccessor) {
       const props = currentNode.edgeTag as SectorOffsetProperties;
-      n++;
       if (props !== undefined) {
         f(currentNode, props);
         n++;
@@ -692,31 +690,33 @@ export class OffsetMeshContext {
     }
     // Step 2: At each single break, sweep forward to its closing breakB.  Insert breaks at accumulated angles.
     // (minor TODO: for the insertion case, try to split more equally.)
-    nodeA = vertexSeed;
     const nodeAStart = nodeA.findMaskAroundVertex(this._breakMaskA);
-    do {
-      if (nodeA.isMaskSet(this._breakMaskA) && !nodeA.isMaskSet(this._breakMaskB)) {
-        let accumulatedRadians = 0.0;
-        do {
-          const nodeB = nodeA.vertexSuccessor;
-          accumulatedRadians += SectorOffsetProperties.radiansBetweenNormals(
-            nodeA.edgeTag as SectorOffsetProperties,
-            nodeB.edgeTag as SectorOffsetProperties,
-          );
-          if (accumulatedRadians > smoothAccumulatedDihedralAngleRadians) {
-            nodeA.setMask(this._breakMaskB);
-            nodeB.setMask(this._breakMaskA);
-            numBreaks++;
-            accumulatedRadians = 0.0;
-          }
-          nodeA = nodeB;
-        } while (!nodeA.isMaskSet(this._breakMaskB));
-      } else {
-        nodeA = nodeA.vertexSuccessor;
-      }
-    } while (nodeA !== nodeAStart);
+    if (nodeAStart !== undefined) {
+      nodeA = nodeAStart;
+      do {
+        if (nodeA.isMaskSet(this._breakMaskA) && !nodeA.isMaskSet(this._breakMaskB)) {
+          let accumulatedRadians = 0.0;
+          do {
+            const nodeB = nodeA.vertexSuccessor;
+            accumulatedRadians += SectorOffsetProperties.radiansBetweenNormals(
+              nodeA.edgeTag as SectorOffsetProperties,
+              nodeB.edgeTag as SectorOffsetProperties,
+            );
+            if (accumulatedRadians > smoothAccumulatedDihedralAngleRadians) {
+              nodeA.setMask(this._breakMaskB);
+              nodeB.setMask(this._breakMaskA);
+              numBreaks++;
+              accumulatedRadians = 0.0;
+            }
+            nodeA = nodeB;
+          } while (!nodeA.isMaskSet(this._breakMaskB));
+        } else {
+          nodeA = nodeA.vertexSuccessor;
+        }
+      } while (nodeA !== nodeAStart);
+    }
 
-    if (numBreaks > 0) {
+    if (numBreaks > 0 && nodeAStart !== undefined) {
       // In each compound sector, accumulate and install average normal.
       nodeA = nodeAStart;
       const averageNormal = Vector3d.create();
@@ -875,7 +875,6 @@ export class OffsetMeshContext {
           const endNormal = Ray3d.create(vertexXYZ, outwardEdgeVector);  // clones the inputs
           const slingFaceProperties = new FacetOffsetProperties(-1, endNormal);
           insideOfSling.faceTag = slingFaceProperties;
-          outsideOfSling.faceTag = facetProperties;
           // initialize sectors with existing vertex point.
           nodeE.edgeTag = new SectorOffsetProperties(averageNormal.clone(), offsetPoint.clone());
           outsideOfSling.edgeTag = new SectorOffsetProperties(averageNormal.clone(), offsetPoint.clone());
@@ -890,57 +889,6 @@ export class OffsetMeshContext {
         }
       }
     }
-  }
-  /**
-   * * at input:
-   *   * Each node points to sectorOffsetProperties with appropriate unit normal
-   * * at exit:
-   *    * Each sectorOffsetProperties has an offset point computed with consideration of offset planes in the neighborhood.
-   * @param distance distance to offset.
-   */
-  private computeSectorOffsetPoints(distance: number) {
-    const breakEdges: HalfEdge[] = [];
-    this._baseGraph.clearMask(this._offsetCoordinatesAssigned);
-    this._baseGraph.announceVertexLoops((_graph: HalfEdgeGraph, vertexSeed: HalfEdge) => {
-      this.markBreakEdgesAndSaveAverageNormalsAroundVertex(vertexSeed);
-      this.setOffsetAtDistanceAroundVertex(vertexSeed, distance);
-      vertexSeed.collectMaskedEdgesAroundVertex(this._breakMaskA, true, breakEdges);
-      if (breakEdges.length <= 1) {
-        // just one smooth sequence.
-        // everything is set already.
-      } else if (breakEdges.length === 2) {
-        // exterior vertex with two incident smooth
-        const vectorFromOrigin = this.compute2SectorIntersection(breakEdges[0], breakEdges[1]);
-        if (vectorFromOrigin !== undefined) {
-          this.setOffsetXYAndZAroundVertex(vertexSeed, vectorFromOrigin);
-          vertexSeed.setMaskAroundVertex(this._offsetCoordinatesAssigned);
-        }
-      } else if (breakEdges.length === 3) {
-        const vectorFromOrigin = this.compute3SectorIntersectionDebug(breakEdges[0], breakEdges[1], breakEdges[2]);
-        if (vectorFromOrigin !== undefined) {
-          this.setOffsetXYAndZAroundVertex(vertexSeed, vectorFromOrigin);
-          vertexSeed.setMaskAroundVertex(this._offsetCoordinatesAssigned);
-        }
-        // simple 3-face corner . . .
-      } else {
-        // Lots and Lots of edges
-        // each set of 3 sectors independently generates an offset for its central sector.
-        // make the array wrap 2 nodes.
-        breakEdges.push(breakEdges[0]);
-        breakEdges.push(breakEdges[1]);
-        for (let i = 0; i + 2 < breakEdges.length; i++) {
-          const vectorFromOrigin = this.compute3SectorIntersectionDebug(breakEdges[i], breakEdges[i + 1], breakEdges[i + 2]);
-          if (vectorFromOrigin !== undefined) {
-            this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[i],
-              (node: HalfEdge, properties: SectorOffsetProperties) => {
-                properties.setXYAndZ(vectorFromOrigin);
-                node.setMask(this._offsetCoordinatesAssigned);
-              });
-          }
-        }
-      }
-      return true;
-    });
   }
 
   /**
@@ -1021,14 +969,14 @@ export class OffsetMeshContext {
             && breakEdges[i2].isMaskSet(this._insideOfChamferFace)) {
             if (OffsetMeshContext.stringDebugFunction !== undefined)
               OffsetMeshContext.stringDebugFunction(`    ChamferChamfer Fixup ${this.inspectMasks(breakEdges[i0])} ${this.inspectMasks(breakEdges[i1])} ${this.inspectMasks(breakEdges[i2])} `);
-            const vectorFromOrigin = this.compute3SectorIntersectionDebug(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
+            const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
             if (vectorFromOrigin !== undefined) {
               // Treat all 3 spots as possibly compound sequences
               for (const iOutput of [i0, i1, i2]) {
                 this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[iOutput],
                   (node: HalfEdge, properties: SectorOffsetProperties) => {
                     properties.setXYAndZ(vectorFromOrigin);
-                    node.setMask(this._offsetCoordinatesAssigned);
+                    node.setMask(this._offsetCoordinatesReassigned);
                   });
               }
               // Since all three were reset, skip past.  This is done on the acyclic integer that controls the loop.
@@ -1065,21 +1013,21 @@ export class OffsetMeshContext {
             continue;
           if (OffsetMeshContext.stringDebugFunction !== undefined)
             OffsetMeshContext.stringDebugFunction(`    Intersection Fixup ${this.inspectMasks(breakEdges[i0])} ${this.inspectMasks(breakEdges[i1])} ${this.inspectMasks(breakEdges[i2])} `);
-          const vectorFromOrigin = this.compute3SectorIntersectionDebug(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
+          const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[i0], breakEdges[i1], breakEdges[i2]);
           if (vectorFromOrigin !== undefined) {
             if (vertexXYZ.distance(vectorFromOrigin) < maxVertexMove) {
               this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[i1],
                 (node: HalfEdge, properties: SectorOffsetProperties) => {
                   properties.setXYAndZ(vectorFromOrigin);
-                  node.setMask(this._offsetCoordinatesAssigned);
+                  node.setMask(this._offsetCoordinatesReassigned);
                 });
             }
           }
         }
       }
       if (OffsetMeshContext.stringDebugFunction !== undefined) {
-        const n0 = vertexSeed.countMaskAroundVertex(this._offsetCoordinatesAssigned, false);
-        const n1 = vertexSeed.countMaskAroundVertex(this._offsetCoordinatesAssigned, true);
+        const n0 = vertexSeed.countMaskAroundVertex(this._offsetCoordinatesReassigned, false);
+        const n1 = vertexSeed.countMaskAroundVertex(this._offsetCoordinatesReassigned, true);
         const message = `   **** Vertex offset mask counts(TRUE ${n1})(FALSE ${n0})`;
         OffsetMeshContext.stringDebugFunction(message);
       }
@@ -1103,57 +1051,9 @@ export class OffsetMeshContext {
   private isOffsetAssigned(node0: HalfEdge,
     node1?: HalfEdge,
     node2?: HalfEdge): boolean {
-    return node0.isMaskSet(this._offsetCoordinatesAssigned)
-      || (node1 !== undefined && node1.isMaskSet(this._offsetCoordinatesAssigned))
-      || (node2 !== undefined && node2.isMaskSet(this._offsetCoordinatesAssigned));
-  }
-
-  /**
-   * * at input:
-   *   * Each node points to sectorOffsetProperties with appropriate unit normal
-   * * at exit:
-   *    * Each sectorOffsetProperties has an offset point computed with consideration of offset planes in the neighborhood.
-   * @param distance distance to offset.
-   */
-  private computeSectorOffsetPointAfterFaceAndChamferOffsets(distance: number) {
-    const breakEdges: HalfEdge[] = [];
-    this._baseGraph.announceVertexLoops((_graph: HalfEdgeGraph, vertexSeed: HalfEdge) => {
-      this.markBreakEdgesAndSaveAverageNormalsAroundVertex(vertexSeed);
-      this.setOffsetAtDistanceAroundVertex(vertexSeed, distance);
-      vertexSeed.collectMaskedEdgesAroundVertex(this._breakMaskA, true, breakEdges);
-      if (breakEdges.length <= 1) {
-        // just one smooth sequence.
-        // everything is set already.
-      } else if (breakEdges.length === 2) {
-        // exterior vertex with two incident smooth
-        const vectorFromOrigin = this.compute2SectorIntersection(breakEdges[0], breakEdges[1]);
-        if (vectorFromOrigin !== undefined) {
-          this.setOffsetXYAndZAroundVertex(vertexSeed, vectorFromOrigin);
-        }
-      } else if (breakEdges.length === 3) {
-        const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[0], breakEdges[1], breakEdges[2]);
-        if (vectorFromOrigin !== undefined) {
-          this.setOffsetXYAndZAroundVertex(vertexSeed, vectorFromOrigin);
-        }
-        // simple 3-face corner . . .
-      } else {
-        // Lots and Lots of edges
-        // each set of 3 sectors independently generates an offset for its central sector.
-        // make the array wrap 2 nodes.
-        breakEdges.push(breakEdges[0]);
-        breakEdges.push(breakEdges[1]);
-        for (let i = 0; i + 2 < breakEdges.length; i++) {
-          const vectorFromOrigin = this.compute3SectorIntersection(breakEdges[i], breakEdges[i + 1], breakEdges[i + 2]);
-          if (vectorFromOrigin !== undefined) {
-            this.announceNodeAndSectorPropertiesInSmoothSector(breakEdges[i + 1],
-              (_node: HalfEdge, properties: SectorOffsetProperties) => {
-                properties.setXYAndZ(vectorFromOrigin);
-              });
-          }
-        }
-      }
-      return true;
-    });
+    return node0.isMaskSet(this._offsetCoordinatesReassigned)
+      || (node1 !== undefined && node1.isMaskSet(this._offsetCoordinatesReassigned))
+      || (node2 !== undefined && node2.isMaskSet(this._offsetCoordinatesReassigned));
   }
 
   /**
@@ -1175,7 +1075,7 @@ export class OffsetMeshContext {
     this.announceNodeAndSectorPropertiesInSmoothSector(destinationStartNode,
       (node: HalfEdge, properties: SectorOffsetProperties) => {
         properties.setXYAndZ(workPoint);
-        node.setMask(this._offsetCoordinatesAssigned);
+        node.setMask(this._offsetCoordinatesReassigned);
       });
   }
 }

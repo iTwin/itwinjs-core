@@ -263,25 +263,21 @@ function testOffsets(_ck: Checker, allGeometry: GeometryQuery[], polyface: Index
   const yStepB = separateFaceEdgeAndVertexOutputs ? 10 * yStepA : 3.0 * yStepA;
   const yStepC = yStepA;
   const offsetOptions = OffsetMeshOptions.create();
-  offsetOptions.method = 1;
 
   for (const offsetSign of signs) {
     x0 = xStart;
     for (const offset of offsets) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
       /*
-            offsetOptions.method = undefined;
             const offsetMesh = PolyfaceQuery.cloneOffset(polyface, offsetSign * offset, offsetOptions);
             y0 += yStepC;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetMesh, x0, y0);
       */
-      offsetOptions.method = 1;
       const offsetMeshB = PolyfaceQuery.cloneOffset(polyface, offsetSign * offset, offsetOptions);
       // y0 += 2 * yStepC;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetMeshB, x0, y0);
       // y0 += yStepC;
       if (separateFaceEdgeAndVertexOutputs) {
-        offsetOptions.method = 1;
         for (const outputSelect of
           [
             { outputOffsetsFromFacesBeforeChamfers: true },

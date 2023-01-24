@@ -496,7 +496,7 @@ export class Angle implements BeJSONFunctions {
    * @param upVectorX x component of vector to positive side of plane.
    * @param upVectorY y component of vector to positive side of plane.
    * @param upVectorZ z component of vector to positive side of plane.
-   * @param adjustToAllPositive if true, return strictly non-negative sweep (0 <= radians < 2*PI).  If negative, return signed (-PI < radians <= PI)
+   * @param adjustToAllPositive if true, return strictly non-negative sweep (0 <= radians < 2*PI).  If false, return signed (-PI < radians <= PI)
    */
   public static orientedRadiansBetweenVectorsXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
     upVectorX: number, upVectorY: number, upVectorZ: number,
