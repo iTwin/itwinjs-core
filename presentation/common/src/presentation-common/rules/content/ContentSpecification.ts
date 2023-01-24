@@ -29,7 +29,10 @@ export enum ContentSpecificationTypes {
  * @public
  */
 export interface ContentSpecificationBase extends ContentModifiersList {
-  /** Used for serializing to JSON. */
+  /**
+   * Used for serializing to JSON.
+   * @see [[ContentSpecificationTypes]]
+   */
   specType: `${ContentSpecificationTypes}`;
 
   /**

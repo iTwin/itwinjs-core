@@ -18,7 +18,10 @@ import { RequiredSchemaSpecification } from "./SchemasSpecification";
  * @public
  */
 export interface RuleBase {
-  /** Used for serializing to JSON. */
+  /**
+   * Used for serializing to JSON.
+   * @see RuleTypes
+   */
   ruleType: `${RuleTypes}`;
 
   /**

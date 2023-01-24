@@ -19,7 +19,10 @@ export interface RelationshipStepSpecification {
   /** This attribute specifies the ECRelationship that should be used to traverse to target class. */
   relationship: SingleSchemaClassSpecification;
 
-  /** This attribute specifies the direction in which the [[relationship]] should be followed. */
+  /**
+   * This attribute specifies the direction in which the [[relationship]] should be followed.
+   * @see RelationshipDirection
+   */
   direction: `${RelationshipDirection}`;
 
   /**

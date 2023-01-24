@@ -89,6 +89,7 @@ export interface RelatedPropertiesSpecification {
   /**
    * The attribute describes what the related properties mean to the [primary instance]($docs/presentation/content/Terminology.md#primary-instance)
    * whose properties are displayed.
+   * @see RelationshipMeaning
    */
   relationshipMeaning?: `${RelationshipMeaning}`;
 
@@ -97,11 +98,13 @@ export interface RelatedPropertiesSpecification {
 
   /**
    * List of names or definitions of related class properties that should be included in the content.
+   * @see RelatedPropertiesSpecialValues
    */
   properties?: Array<string | PropertySpecification> | `${RelatedPropertiesSpecialValues}`;
 
   /**
    * List of names or definitions of relationship class properties that should be included in the content.
+   * @see RelatedPropertiesSpecialValues
    */
   relationshipProperties?: Array<string | PropertySpecification> | `${RelatedPropertiesSpecialValues}`;
 

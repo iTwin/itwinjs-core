@@ -51,7 +51,10 @@ export enum PropertyEditorParameterTypes {
  * @public
  */
 export interface PropertyEditorParametersBase {
-  /** Used for serializing to JSON. */
+  /**
+   * Used for serializing to JSON.
+   * @see PropertyEditorParameterTypes
+   */
   paramsType: `${PropertyEditorParameterTypes}`;
 }
 

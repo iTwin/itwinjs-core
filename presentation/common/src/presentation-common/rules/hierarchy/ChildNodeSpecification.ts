@@ -31,7 +31,10 @@ export enum ChildNodeSpecificationTypes {
  * @public
  */
 export interface ChildNodeSpecificationBase {
-  /** Used for serializing to JSON. */
+  /**
+   * Used for serializing to JSON.
+   * @see ChildNodeSpecificationTypes
+   */
   specType: `${ChildNodeSpecificationTypes}`;
 
   /**

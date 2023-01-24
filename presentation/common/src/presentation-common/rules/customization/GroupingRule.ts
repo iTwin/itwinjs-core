@@ -59,7 +59,10 @@ export enum GroupingSpecificationTypes {
  * @public
  */
 export interface GroupingSpecificationBase {
-  /** Type of the subclass */
+  /**
+   * Type of the subclass
+   * @see GroupingSpecificationTypes
+   */
   specType: `${GroupingSpecificationTypes}`;
 }
 
@@ -105,6 +108,8 @@ export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
    *
    * - `"PostProcess"` groups instances after the whole hierarchy level is built. It incurs a large performance penalty, but it will
    *   produce the expected result in all cases.
+   *
+   * @see SameLabelInstanceGroupApplicationStage
    */
   applicationStage?: `${SameLabelInstanceGroupApplicationStage}`;
 }
@@ -164,6 +169,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
   /**
    * Specifies whether instances should be grouped using property's display or raw value.
    *
+   * @see PropertyGroupingValue
    * @deprecated in 3.x. Display value should always be used for grouping.
    */
   groupingValue?: `${PropertyGroupingValue}`; // eslint-disable-line deprecation/deprecation
@@ -172,6 +178,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
    * Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result
    * is the same, unless a [label override rule]($docs/presentation/customization/LabelOverride.md) is used to change node's display label.
    *
+   * @see PropertyGroupingValue
    * @deprecated in 3.x. Property grouping nodes should always be sorted by display label.
    */
   sortingValue?: `${PropertyGroupingValue}`; // eslint-disable-line deprecation/deprecation

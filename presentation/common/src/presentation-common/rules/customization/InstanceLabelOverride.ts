@@ -52,7 +52,10 @@ export enum InstanceLabelOverrideValueSpecificationType {
  * @public
  */
 export interface InstanceLabelOverrideValueSpecificationBase {
-  /** Type of the specification */
+  /**
+   * Type of the specification
+   * @see InstanceLabelOverrideValueSpecificationType
+   */
   specType: `${InstanceLabelOverrideValueSpecificationType}`;
 }
 

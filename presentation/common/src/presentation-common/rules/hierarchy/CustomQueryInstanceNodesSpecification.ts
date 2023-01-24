@@ -48,7 +48,10 @@ export enum QuerySpecificationTypes {
  * @public
  */
 export interface QuerySpecificationBase {
-  /** Used for serializing to JSON. */
+  /**
+   * Used for serializing to JSON.
+   * @see QuerySpecificationTypes
+   */
   specType: `${QuerySpecificationTypes}`;
 
   /**
