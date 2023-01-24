@@ -15,7 +15,7 @@ import { scheduleSubscription, SubscriptionScheduler } from "./SubscriptionSched
  * The first promise will always be executed.
  * Any promises following the first while it is executing will be scheduled (and unscheduled), leaving only the last promise to be resolved.
  * Once the first promise finishes resolving, the last passed promise starts resolving.
- * @alpha
+ * @beta
  */
 export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (() => Promise<TReturn>)) {
   const scheduler = useMemo(() => new SubscriptionScheduler<TReturn>(), []); // eslint-disable-line react-hooks/exhaustive-deps
