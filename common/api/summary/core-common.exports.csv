@@ -362,7 +362,9 @@ public;HSVColor
 public;HSVConstants
 internal;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
 public;HttpServerRequest 
+deprecated;HttpServerRequest 
 public;HttpServerResponse 
+deprecated;HttpServerResponse 
 internal;HydrateViewStateRequestProps
 internal;HydrateViewStateResponseProps
 internal;I3dmHeader 
@@ -499,6 +501,7 @@ internal;OpenAPIContentMap
 internal;OpenAPIDocument
 internal;OpenAPIEncoding
 public;OpenAPIInfo
+deprecated;OpenAPIInfo
 internal;OpenAPIMediaType
 internal;OpenAPIOperation
 internal;OpenAPIParameter
@@ -632,17 +635,22 @@ public;RgbColorProps
 public;RgbFactorProps = number[]
 public;RootSubjectProps
 public;RpcActivity 
+deprecated;RpcActivity 
 internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
 internal;class RpcConfiguration
 internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
+deprecated;RpcContentType
 internal;RpcControlChannel
 public;class RpcControlResponse
+deprecated;class RpcControlResponse
 internal;RpcDefaultConfiguration 
 internal;RpcDirectProtocol 
 internal;RpcDirectRequest 
 public;RpcEndpoint
+deprecated;RpcEndpoint
 public;class RpcInterface
+deprecated;class RpcInterface
 internal;RpcInterfaceDefinition
 internal;RpcInterfaceEndpoints
 internal;RpcInterfaceImplementation
@@ -652,6 +660,7 @@ internal;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
 public;RpcNotFoundResponse 
+deprecated;RpcNotFoundResponse 
 internal;RpcOpenAPIDescription
 internal;RpcOperation
 internal;RpcOperation
@@ -660,8 +669,10 @@ internal;RpcOperationPolicyProps = Partial
 internal;RpcOperationsProfile
 internal;RpcPendingQueue
 public;RpcPendingResponse 
+deprecated;RpcPendingResponse 
 internal;class RpcProtocol
 public;RpcProtocolEvent
+deprecated;RpcProtocolEvent
 internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
 internal;RpcProtocolVersion
 internal;RpcPushChannel
@@ -675,15 +686,19 @@ internal;class RpcRequest
 internal;RpcRequestCallback_T = (request: RpcRequest) => void
 internal;RpcRequestContext
 public;RpcRequestEvent
+deprecated;RpcRequestEvent
 internal;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void
 internal;RpcRequestFulfillment
 internal;RpcRequestFulfillment
 internal;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
 internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
 public;RpcRequestStatus
+deprecated;RpcRequestStatus
 public;RpcRequestStatus
+deprecated;RpcRequestStatus
 internal;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
 public;RpcResponseCacheControl
+deprecated;RpcResponseCacheControl
 internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 internal;RpcRoutingMap 
 internal;RpcRoutingMap
@@ -697,6 +712,7 @@ public;SectionDrawingProps
 public;SectionDrawingViewProps
 public;SectionType
 public;SerializedRpcActivity
+deprecated;SerializedRpcActivity
 internal;SerializedRpcOperation
 internal;SerializedRpcRequest 
 public;ServerError 
