@@ -17,7 +17,9 @@ import { getIModelMetadataProvider } from "./ECMetadataProvider";
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
 import { PresentationInstanceFilterProperty } from "./PresentationInstanceFilterProperty";
 import { InstanceFilterPropertyInfo, PresentationInstanceFilter } from "./Types";
-import { convertPresentationFilterToPropertyFilter, createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName } from "./Utils";
+import {
+  convertPresentationFilterToPropertyFilter, createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName,
+} from "./Utils";
 
 /** @alpha */
 export interface PresentationInstanceFilterInfo {
@@ -60,7 +62,11 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
 /** @alpha */
 export function usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection, initialClasses?: ClassInfo[]) {
   const propertyInfos = React.useMemo(() => createInstanceFilterPropertyInfos(descriptor), [descriptor]);
-  const classes = React.useMemo(() => descriptor.selectClasses.map((selectClass) => selectClass.selectClassInfo), [descriptor]);
+  const classes = React.useMemo((): ClassInfo[] => {
+    const uniqueClasses = new Map();
+    descriptor.selectClasses.forEach((selectClass) => uniqueClasses.set(selectClass.selectClassInfo.id, selectClass.selectClassInfo));
+    return [...uniqueClasses.values()];
+  }, [descriptor]);
 
   const {
     selectedClasses, onClassSelected, onClassDeselected, onClearClasses, isFilteringClasses, filterClassesByProperty,
