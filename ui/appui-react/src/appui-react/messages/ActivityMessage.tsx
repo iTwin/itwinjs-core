@@ -24,7 +24,7 @@ import { HollowIcon } from "./HollowIcon";
 import { ToasterSettings } from "@itwin/itwinui-react/cjs/core/Toast/Toaster";
 
 /** Properties for a [[ActivityMessage]]
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.5. Props of a deprecated component.
  * @public
  */
 export interface ActivityMessageProps {
@@ -35,7 +35,7 @@ export interface ActivityMessageProps {
 
 /** Activity Message React component
  * @public
- * @deprecated
+ * @deprecated in 3.3.
  */
 export function ActivityMessage(props: ActivityMessageProps) { // eslint-disable-line deprecation/deprecation
   const messageDetails = props.activityMessageInfo.details;

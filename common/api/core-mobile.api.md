@@ -211,10 +211,6 @@ export interface MobileNotifications {
     // (undocumented)
     notifyAuthAccessTokenChanged: (accessToken: string | undefined, expirationDate: string | undefined) => void;
     // (undocumented)
-    notifyEnterBackground: () => void;
-    // (undocumented)
-    notifyEnterForeground: () => void;
-    // (undocumented)
     notifyMemoryWarning: () => void;
     // (undocumented)
     notifyOrientationChanged: () => void;

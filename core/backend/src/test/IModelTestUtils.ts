@@ -771,7 +771,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(auxCoordSystemId));
     const textureId = IModelTestUtils.insertTextureElement(sourceDb, definitionModelId, "Texture");
     assert.isTrue(Id64.isValidId64(textureId));
-    const renderMaterialId = RenderMaterialElement.insert(sourceDb, definitionModelId, "RenderMaterial", new RenderMaterialElement.Params("PaletteName"));
+    const renderMaterialId = RenderMaterialElement.insert(sourceDb, definitionModelId, "RenderMaterial", { paletteName: "PaletteName" });
     assert.isTrue(Id64.isValidId64(renderMaterialId));
     const geometryPartProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,

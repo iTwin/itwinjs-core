@@ -48,7 +48,6 @@ Object {
     },
     "connectionId": "",
     "contentFlags": 0,
-    "contentOptions": undefined,
     "displayType": "",
     "fields": Array [
       Object {
@@ -65,7 +64,6 @@ Object {
         },
       },
     ],
-    "inputKeysHash": undefined,
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -124,7 +122,6 @@ Object {
     },
     "connectionId": "",
     "contentFlags": 0,
-    "contentOptions": undefined,
     "displayType": "",
     "fields": Array [
       Object {
@@ -141,7 +138,6 @@ Object {
         },
       },
     ],
-    "inputKeysHash": undefined,
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -200,7 +196,6 @@ Object {
     },
     "connectionId": "",
     "contentFlags": 0,
-    "contentOptions": undefined,
     "displayType": "",
     "fields": Array [
       Object {
@@ -217,7 +212,6 @@ Object {
         },
       },
     ],
-    "inputKeysHash": undefined,
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -276,10 +270,8 @@ Object {
     },
     "connectionId": "",
     "contentFlags": 0,
-    "contentOptions": undefined,
     "displayType": "test",
     "fields": Array [],
-    "inputKeysHash": undefined,
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -338,7 +330,6 @@ Object {
     },
     "connectionId": "",
     "contentFlags": 0,
-    "contentOptions": undefined,
     "displayType": "",
     "fields": Array [
       Object {
@@ -355,7 +346,6 @@ Object {
         },
       },
     ],
-    "inputKeysHash": undefined,
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -405,7 +395,6 @@ Object {
   },
   "connectionId": "d61dcbd0-3355-426a-9ebf-3eadccd4b8be",
   "contentFlags": 0,
-  "contentOptions": undefined,
   "displayType": "withdrawal",
   "fields": Array [
     Object {
@@ -962,4 +951,34 @@ Array [
     },
   },
 ]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getNodesDescriptor returns hierarchy level descriptor 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "description": "Test category description",
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+      "priority": 0,
+    },
+  ],
+  "classesMap": Object {
+    "0x1": Object {
+      "label": "Class Label",
+      "name": "SchemaName:ClassName",
+    },
+  },
+  "connectionId": "",
+  "contentFlags": 0,
+  "displayType": "",
+  "fields": Array [],
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": false,
+      "selectClassInfo": "0x1",
+    },
+  ],
+}
 `;

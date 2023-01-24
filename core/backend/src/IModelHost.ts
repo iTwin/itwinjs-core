@@ -116,7 +116,7 @@ export interface IModelHostOptions {
 
   /**
    * @beta
-   * @deprecated use tileCacheStorage
+   * @deprecated in 3.x. use tileCacheStorage
    */
   tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
 
@@ -198,7 +198,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public hubAccess?: BackendHubAccess;
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public authorizationClient?: AuthorizationClient;
-  /** @beta @deprecated */
+  /** @beta @deprecated in 3.x. */
   public tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
   /** @beta */
   public restrictTileUrlsByClientIp?: boolean;
@@ -354,7 +354,7 @@ export class IModelHost {
 
   /**
    * @internal
-   * @deprecated
+   * @deprecated in 3.x.
    * @note Use [[IModelHostOptions.tileCacheService]] to set the service provider.
    */
   public static tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
@@ -364,7 +364,7 @@ export class IModelHost {
 
   /**
    * @internal
-   * @deprecated
+   * @deprecated in 3.x.
    */
   public static tileUploader?: CloudStorageTileUploader; // eslint-disable-line deprecation/deprecation
 

@@ -17,7 +17,7 @@ export abstract class FrontstageProvider {
   /** Get the Frontstage React based definition */
   public abstract get id(): string;
   /** Return an element that describes a frontstage.
-   * @deprecated Implement using `frontstageConfig` instead.
+   * @deprecated in 3.5. Implement using `frontstageConfig` instead.
    */
   public abstract get frontstage(): React.ReactElement<FrontstageProps>; // eslint-disable-line deprecation/deprecation
   /** Return the frontstage configuration.

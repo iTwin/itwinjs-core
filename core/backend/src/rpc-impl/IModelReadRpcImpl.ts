@@ -313,7 +313,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header.
-   * @deprecated
+   * @deprecated in 3.x.
    */
   public async getViewThumbnail(_tokenProps: IModelRpcProps, _viewId: string): Promise<Uint8Array> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity().accessToken, _tokenProps);
