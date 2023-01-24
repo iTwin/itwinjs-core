@@ -141,6 +141,8 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    * - For *primitive* fields: null, undefined, "" (empty string)
    * - For *array* fields: [] (empty array)
    * - For *struct* fields: {} (object with no members)
+   *
+   * @deprecated in 3.x. Use [FilteringPropertyDataProvider]($components-react) and [IPropertyDataFilterer]($components-react) APIs for filtering-out properties.
    */
   public get includeFieldsWithNoValues(): boolean { return this._includeFieldsWithNoValues; }
   public set includeFieldsWithNoValues(value: boolean) {
@@ -155,6 +157,8 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    * Fields with composite values:
    * - *array* fields.
    * - *struct* fields.
+   *
+   * @deprecated in 3.x. Use [FilteringPropertyDataProvider]($components-react) and [IPropertyDataFilterer]($components-react) APIs for filtering-out properties.
    */
   public get includeFieldsWithCompositeValues(): boolean { return this._includeFieldsWithCompositeValues; }
   public set includeFieldsWithCompositeValues(value: boolean) {
@@ -164,7 +168,9 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     this.invalidateCache({ content: true });
   }
 
-  /** Is nested property categories enabled */
+  /**
+   * Is nested property categories enabled. Defaults to `true`.
+   */
   public get isNestedPropertyCategoryGroupingEnabled(): boolean { return this._isNestedPropertyCategoryGroupingEnabled; }
   public set isNestedPropertyCategoryGroupingEnabled(value: boolean) {
     if (this._isNestedPropertyCategoryGroupingEnabled === value)
@@ -221,7 +227,9 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
       sortFields: this.sortFields,
     };
     const builder = new PropertyDataBuilder({
+      // eslint-disable-next-line deprecation/deprecation
       includeWithNoValues: this.includeFieldsWithNoValues,
+      // eslint-disable-next-line deprecation/deprecation
       includeWithCompositeValues: this.includeFieldsWithCompositeValues,
       wantNestedCategories: this._isNestedPropertyCategoryGroupingEnabled,
       callbacks,
