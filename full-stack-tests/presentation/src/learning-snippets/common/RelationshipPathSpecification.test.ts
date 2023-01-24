@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { printRuleset } from "../Utils";
@@ -33,14 +33,14 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.Content,
+          ruleType: "Content",
           condition: `SelectedNode.IsOfClass("Model", "BisCore")`,
           specifications: [
             {
-              specType: ContentSpecificationTypes.ContentRelatedInstances,
+              specType: "ContentRelatedInstances",
               relationshipPaths: [{
                 relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
                 targetClass: { schemaName: "BisCore", className: "PhysicalElement" },
               }],
             },
@@ -77,17 +77,17 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.Content,
+          ruleType: "Content",
           condition: `SelectedNode.IsOfClass("GeometricModel3d", "BisCore")`,
           specifications: [
             {
-              specType: ContentSpecificationTypes.ContentRelatedInstances,
+              specType: "ContentRelatedInstances",
               relationshipPaths: [[{
                 relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
               }, {
                 relationship: { schemaName: "BisCore", className: "GeometricElement3dIsInCategory" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
               }]],
             },
           ],
