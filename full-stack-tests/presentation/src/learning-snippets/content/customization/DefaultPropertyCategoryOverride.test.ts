@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -36,19 +36,19 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
             }],
           }, {
-            ruleType: RuleTypes.DefaultPropertyCategoryOverride,
+            ruleType: "DefaultPropertyCategoryOverride",
             requiredSchemas: [{ name: "BisCore", maxVersion: "1.0.2" }],
             specification: {
               id: "default",
               label: "Custom Category OLD",
             },
           }, {
-            ruleType: RuleTypes.DefaultPropertyCategoryOverride,
+            ruleType: "DefaultPropertyCategoryOverride",
             requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
             specification: {
               id: "default",
@@ -79,19 +79,19 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
             }],
           }, {
-            ruleType: RuleTypes.DefaultPropertyCategoryOverride,
+            ruleType: "DefaultPropertyCategoryOverride",
             priority: 0,
             specification: {
               id: "default",
               label: "Low Priority",
             },
           }, {
-            ruleType: RuleTypes.DefaultPropertyCategoryOverride,
+            ruleType: "DefaultPropertyCategoryOverride",
             priority: 9999,
             specification: {
               id: "default",
@@ -122,12 +122,12 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
             }],
           }, {
-            ruleType: RuleTypes.DefaultPropertyCategoryOverride,
+            ruleType: "DefaultPropertyCategoryOverride",
             specification: {
               id: "default",
               label: "Test Category",
