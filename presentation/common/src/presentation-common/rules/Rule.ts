@@ -19,7 +19,7 @@ import { RequiredSchemaSpecification } from "./SchemasSpecification";
  */
 export interface RuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes;
+  ruleType: `${RuleTypes}`;
 
   /**
    * Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are

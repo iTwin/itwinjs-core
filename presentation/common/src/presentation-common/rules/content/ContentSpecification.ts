@@ -30,7 +30,7 @@ export enum ContentSpecificationTypes {
  */
 export interface ContentSpecificationBase extends ContentModifiersList {
   /** Used for serializing to JSON. */
-  specType: ContentSpecificationTypes;
+  specType: `${ContentSpecificationTypes}`;
 
   /**
    * Controls the order in which specifications are handled — specification with higher priority value is handled

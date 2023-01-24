@@ -8,7 +8,7 @@
 
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
 import { RelationshipPathSpecification } from "../RelationshipPathSpecification";
-import { RuleBase, RuleTypes } from "../Rule";
+import { RuleBase } from "../Rule";
 
 /**
  * Instance label override rule provides a way to set instance label to one of its property values,
@@ -19,7 +19,7 @@ import { RuleBase, RuleTypes } from "../Rule";
  */
 export interface InstanceLabelOverride extends RuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.InstanceLabelOverride;
+  ruleType: "InstanceLabelOverride";
 
   /**
    * Specifies the ECClass to apply this rule to.
@@ -53,7 +53,7 @@ export enum InstanceLabelOverrideValueSpecificationType {
  */
 export interface InstanceLabelOverrideValueSpecificationBase {
   /** Type of the specification */
-  specType: InstanceLabelOverrideValueSpecificationType;
+  specType: `${InstanceLabelOverrideValueSpecificationType}`;
 }
 
 /**
@@ -63,7 +63,7 @@ export interface InstanceLabelOverrideValueSpecificationBase {
  * @public
  */
 export interface InstanceLabelOverrideCompositeValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
-  specType: InstanceLabelOverrideValueSpecificationType.Composite;
+  specType: "Composite";
 
   /**
    * Parts of the value.
@@ -84,7 +84,7 @@ export interface InstanceLabelOverrideCompositeValueSpecification extends Instan
  * @public
  */
 export interface InstanceLabelOverridePropertyValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
-  specType: InstanceLabelOverrideValueSpecificationType.Property;
+  specType: "Property";
 
   /**
    * Name of the property whose value should be used.
@@ -106,7 +106,7 @@ export interface InstanceLabelOverridePropertyValueSpecification extends Instanc
  * @public
  */
 export interface InstanceLabelOverrideClassNameSpecification extends InstanceLabelOverrideValueSpecificationBase {
-  specType: InstanceLabelOverrideValueSpecificationType.ClassName;
+  specType: "ClassName";
 
   /** Should full (`{schemaName}.{className}`) class name be used */
   full?: boolean;
@@ -119,7 +119,7 @@ export interface InstanceLabelOverrideClassNameSpecification extends InstanceLab
  * @public
  */
 export interface InstanceLabelOverrideClassLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
-  specType: InstanceLabelOverrideValueSpecificationType.ClassLabel;
+  specType: "ClassLabel";
 }
 
 /**
@@ -129,7 +129,7 @@ export interface InstanceLabelOverrideClassLabelSpecification extends InstanceLa
  * @public
  */
 export interface InstanceLabelOverrideBriefcaseIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
-  specType: InstanceLabelOverrideValueSpecificationType.BriefcaseId;
+  specType: "BriefcaseId";
 }
 
 /**
@@ -139,7 +139,7 @@ export interface InstanceLabelOverrideBriefcaseIdSpecification extends InstanceL
  * @public
  */
 export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
-  specType: InstanceLabelOverrideValueSpecificationType.LocalId;
+  specType: "LocalId";
 }
 
 /**
@@ -149,7 +149,7 @@ export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabel
  * @public
  */
 export interface InstanceLabelOverrideStringValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
-  specType: InstanceLabelOverrideValueSpecificationType.String;
+  specType: "String";
 
   /** The value to use as the label content. */
   value: string;
@@ -162,7 +162,7 @@ export interface InstanceLabelOverrideStringValueSpecification extends InstanceL
  * @public
  */
 export interface InstanceLabelOverrideRelatedInstanceLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
-  specType: InstanceLabelOverrideValueSpecificationType.RelatedInstanceLabel;
+  specType: "RelatedInstanceLabel";
 
   /**
    * [Specification of the relationship path]($docs/presentation/RelationshipPathSpecification.md) from `InstanceLabelOverride.class`

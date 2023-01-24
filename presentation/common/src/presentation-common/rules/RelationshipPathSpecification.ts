@@ -20,7 +20,7 @@ export interface RelationshipStepSpecification {
   relationship: SingleSchemaClassSpecification;
 
   /** This attribute specifies the direction in which the [[relationship]] should be followed. */
-  direction: RelationshipDirection.Forward | RelationshipDirection.Backward;
+  direction: `${RelationshipDirection}`;
 
   /**
    * This attribute may be used to specialize the target of the relationship.

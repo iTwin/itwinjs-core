@@ -7,7 +7,7 @@
  */
 
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { RuleBase, RuleTypes } from "../Rule";
+import { RuleBase } from "../Rule";
 
 /**
  * Grouping rules provide advanced ways to group instances when creating hierarchies.
@@ -17,7 +17,7 @@ import { RuleBase, RuleTypes } from "../Rule";
  */
 export interface GroupingRule extends RuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.Grouping;
+  ruleType: "Grouping";
 
   /**
    * An [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#rule-condition) that results in
@@ -60,7 +60,7 @@ export enum GroupingSpecificationTypes {
  */
 export interface GroupingSpecificationBase {
   /** Type of the subclass */
-  specType: GroupingSpecificationTypes;
+  specType: `${GroupingSpecificationTypes}`;
 }
 
 /**
@@ -72,7 +72,7 @@ export interface GroupingSpecificationBase {
  */
 export interface ClassGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
-  specType: GroupingSpecificationTypes.Class;
+  specType: "Class";
 
   /** Specifies whether a grouping node should be created if there is only one item in that group. */
   createGroupForSingleItem?: boolean;
@@ -94,7 +94,7 @@ export interface ClassGroup extends GroupingSpecificationBase {
  */
 export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
-  specType: GroupingSpecificationTypes.SameLabelInstance;
+  specType: "SameLabelInstance";
 
   /**
    * Grouping nodes by label is an expensive operation because it requires the whole hierarchy level to be created before even the first
@@ -106,7 +106,7 @@ export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
    * - `"PostProcess"` groups instances after the whole hierarchy level is built. It incurs a large performance penalty, but it will
    *   produce the expected result in all cases.
    */
-  applicationStage?: SameLabelInstanceGroupApplicationStage;
+  applicationStage?: `${SameLabelInstanceGroupApplicationStage}`;
 }
 
 /**
@@ -135,7 +135,7 @@ export enum SameLabelInstanceGroupApplicationStage {
  */
 export interface PropertyGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
-  specType: GroupingSpecificationTypes.Property;
+  specType: "Property";
 
   /**
    * Name of the ECProperty which is used for grouping. The property must exist on the ECClass specified by the
@@ -166,7 +166,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
    *
    * @deprecated in 3.x. Display value should always be used for grouping.
    */
-  groupingValue?: PropertyGroupingValue; // eslint-disable-line deprecation/deprecation
+  groupingValue?: `${PropertyGroupingValue}`; // eslint-disable-line deprecation/deprecation
 
   /**
    * Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result
@@ -174,7 +174,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
    *
    * @deprecated in 3.x. Property grouping nodes should always be sorted by display label.
    */
-  sortingValue?: PropertyGroupingValue; // eslint-disable-line deprecation/deprecation
+  sortingValue?: `${PropertyGroupingValue}`; // eslint-disable-line deprecation/deprecation
 
   /** Ranges into which the grouping values are divided. Instances are grouped by value if no ranges are specified. */
   ranges?: PropertyRangeGroupSpecification[];

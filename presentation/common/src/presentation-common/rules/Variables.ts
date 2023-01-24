@@ -63,7 +63,7 @@ export interface Variable {
   label: string;
 
   /** Defines value type. Defaults to [[VariableValueType.YesNo]]. */
-  type?: VariableValueType;
+  type?: `${VariableValueType}`;
 
   /** Default value. */
   defaultValue?: string;

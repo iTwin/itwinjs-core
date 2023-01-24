@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -33,17 +33,17 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "A",
               label: "A",
             }],
           }, {
-            ruleType: RuleTypes.ChildNodes,
+            ruleType: "ChildNodes",
             condition: `ParentNode.Type = "A"`,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "B",
               label: "B",
             }],
@@ -71,18 +71,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             condition: `GetVariableBoolValue("DISPLAY_A_NODES")`,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "A",
               label: "A",
             }],
           }, {
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             condition: `GetVariableBoolValue("DISPLAY_B_NODES")`,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "B",
               label: "B",
             }],
@@ -120,10 +120,10 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: [{
                 schemaName: "BisCore",
                 classNames: ["ExternalSourceAspect"],
@@ -146,18 +146,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             priority: 1,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "A",
               label: "A",
             }],
           }, {
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             priority: 2,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "B",
               label: "B",
             }],
@@ -185,19 +185,19 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             priority: 1,
             onlyIfNotHandled: true,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "A",
               label: "A",
             }],
           }, {
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             priority: 2,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "B",
               label: "B",
             }],
@@ -221,26 +221,26 @@ describe("Learning Snippets", () => {
           id: "example",
           rules: [{
             // This label override applies to all nodes in the hierarchy
-            ruleType: RuleTypes.LabelOverride,
+            ruleType: "LabelOverride",
             label: `"Global: " & ThisNode.Label`,
           }, {
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "A",
               label: "A",
             }],
           }, {
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "B",
               label: "B",
             }],
             customizationRules: [{
               // This label override applies only to nodes created at its scope and takes
               // precedence over the global rule
-              ruleType: RuleTypes.LabelOverride,
+              ruleType: "LabelOverride",
               label: `"Nested: " & ThisNode.Label`,
             }],
           }],
@@ -264,20 +264,20 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             // the schemas requirement gets applied to both sub-conditions
             requiredSchemas: [{ name: "BisCore", minVersion: "1.0.1" }],
             subConditions: [{
               condition: `TRUE`,
               specifications: [{
-                specType: ChildNodeSpecificationTypes.CustomNode,
+                specType: "CustomNode",
                 type: "A",
                 label: "A",
               }],
             }, {
               condition: `FALSE`,
               specifications: [{
-                specType: ChildNodeSpecificationTypes.CustomNode,
+                specType: "CustomNode",
                 type: "B",
                 label: "B",
               }],
@@ -302,18 +302,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             autoExpand: true,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "A",
               label: "A",
             }],
           }, {
-            ruleType: RuleTypes.ChildNodes,
+            ruleType: "ChildNodes",
             condition: `ParentNode.Type = "A"`,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
+              specType: "CustomNode",
               type: "B",
               label: "B",
             }],
