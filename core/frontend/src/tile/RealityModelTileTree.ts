@@ -41,7 +41,6 @@ interface RealityTreeId {
   maskModelIds?: string;
   deduplicateVertices: boolean;
   produceGeometry?: boolean;
-  toEcefTransform?: Transform;
 }
 
 function compareOrigins(lhs: XYZ, rhs: XYZ): number {
@@ -116,11 +115,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
     if (0 !== cmp)
       return cmp;
 
-    cmp = compareTransforms(lhs.transform, rhs.transform);
-    if (0 !== cmp)
-      return cmp;
-
-    return compareTransforms(lhs.toEcefTransform, rhs.toEcefTransform);
+    return compareTransforms(lhs.transform, rhs.transform);
   }
 }
 
@@ -561,7 +556,6 @@ export namespace RealityModelTileTree {
     rdSourceKey: RealityDataSourceKey;
     modelId?: Id64String;
     tilesetToDbTransform?: TransformProps;
-    tilesetToEcefTransform?: TransformProps;
     name?: string;
     classifiers?: SpatialClassifiers;
     planarClipMask?: PlanarClipMaskSettings;
