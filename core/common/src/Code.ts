@@ -245,7 +245,7 @@ export interface CodeSpecProperties {
      * Otherwise, the ElementId of the scopeElement is used, for Codes that are scoped only within a single iModel.
      */
     fGuidRequired?: boolean;
-    /** The relationship className, when `type` is `CodeScopeSpec.Type.RelatedElement` */
+    /** The relationship className (in the form "schema:class"), when `type` is `CodeScopeSpec.Type.RelatedElement` */
     relationship?: string;
   };
   spec?: {
