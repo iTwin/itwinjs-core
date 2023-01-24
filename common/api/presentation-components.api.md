@@ -526,8 +526,10 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     protected getDescriptorOverrides(): Promise<DescriptorOverrides>;
     protected getMemoizedData: MicroMemoize.Memoized<() => Promise<PropertyData>>;
     getPropertyRecordInstanceKeys(record: PropertyRecord): Promise<InstanceKey[]>;
+    // @deprecated
     get includeFieldsWithCompositeValues(): boolean;
     set includeFieldsWithCompositeValues(value: boolean);
+    // @deprecated
     get includeFieldsWithNoValues(): boolean;
     set includeFieldsWithNoValues(value: boolean);
     protected invalidateCache(props: CacheInvalidationProps): void;
