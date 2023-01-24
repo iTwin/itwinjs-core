@@ -6,21 +6,21 @@
  * @module PropertyFilterBuilder
  */
 
+import "./FilterBuilderRule.scss";
 import * as React from "react";
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
 import { SvgDelete } from "@itwin/itwinui-icons-react";
 import { IconButton } from "@itwin/itwinui-react";
-import { PropertyFilterBuilderContext, PropertyFilterBuilderRuleRenderingContext } from "./FilterBuilder";
+import { PropertyFilterBuilderContext, PropertyFilterBuilderRuleRenderingContext } from "./FilterBuilderContext";
 import { PropertyFilterBuilderRuleOperator } from "./FilterBuilderRuleOperator";
 import { PropertyFilterBuilderRuleProperty } from "./FilterBuilderRuleProperty";
 import { PropertyFilterBuilderRuleValue } from "./FilterBuilderRuleValue";
 import { PropertyFilterBuilderRule } from "./FilterBuilderState";
 import { isUnaryPropertyFilterOperator, PropertyFilterRuleOperator } from "./Operators";
-import "./FilterBuilderRule.scss";
 
 /**
  * Props for [[PropertyFilterBuilderRuleRenderer]] component.
- * @beta
+ * @internal
  */
 export interface PropertyFilterBuilderRuleRendererProps {
   /** Path from [[PropertyFilterBuilder]] root to this rule. */
@@ -31,7 +31,7 @@ export interface PropertyFilterBuilderRuleRendererProps {
 
 /**
  * Component that renders single rule in [[PropertyFilterBuilder]] component.
- * @beta
+ * @internal
  */
 export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps) {
   const { path, rule } = props;

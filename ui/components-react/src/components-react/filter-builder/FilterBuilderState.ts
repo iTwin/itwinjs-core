@@ -8,14 +8,14 @@
 
 import { Draft, produce } from "immer";
 import * as React from "react";
-import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
+import { PropertyDescription, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 import { Guid } from "@itwin/core-bentley";
 import { isUnaryPropertyFilterOperator, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "./Operators";
 import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule } from "./Types";
 
 /**
  * Data structure that describes [[PropertyFilterBuilder]] component state.
- * @beta
+ * @internal
  */
 export interface PropertyFilterBuilderState {
   /** Root group of rules in [[PropertyFilterBuilder]] component. */
@@ -24,13 +24,13 @@ export interface PropertyFilterBuilderState {
 
 /**
  * Type that describes [[PropertyFilterBuilder]] component group item.
- * @beta
+ * @internal
  */
 export type PropertyFilterBuilderRuleGroupItem = PropertyFilterBuilderRuleGroup | PropertyFilterBuilderRule;
 
 /**
  * Data structure that describes [[PropertyFilterBuilder]] component rule group.
- * @beta
+ * @internal
  */
 export interface PropertyFilterBuilderRuleGroup {
   /** Id of this rule group. */
@@ -45,7 +45,7 @@ export interface PropertyFilterBuilderRuleGroup {
 
 /**
  * Data structure that describes [[PropertyFilterBuilder]] component single rule.
- * @beta
+ * @internal
  */
 export interface PropertyFilterBuilderRule {
   /** Id of this rule. */
@@ -62,7 +62,7 @@ export interface PropertyFilterBuilderRule {
 
 /**
  * Actions for controlling [[PropertyFilterBuilder]] component state.
- * @beta
+ * @internal
  */
 export class PropertyFilterBuilderActions {
   constructor(private setState: (setter: (prevState: PropertyFilterBuilderState) => PropertyFilterBuilderState) => void) { }
@@ -149,7 +149,7 @@ export class PropertyFilterBuilderActions {
 
 /**
  * Function to check if supplied [[PropertyFilterBuilderRuleGroupItem]] is [[PropertyFilterBuilderRuleGroup]].
- * @beta
+ * @internal
  */
 export function isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRuleGroupItem): item is PropertyFilterBuilderRuleGroup {
   return (item as any).items !== undefined;
@@ -158,7 +158,7 @@ export function isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRule
 /**
  * Custom hook that creates state for [[PropertyFilterBuilder]] component. It creates empty state or initializes
  * state from supplied initial filter.
- * @beta
+ * @internal
  */
 export function usePropertyFilterBuilderState(initialFilter?: PropertyFilter) {
   const [state, setState] = React.useState<PropertyFilterBuilderState>(
@@ -167,6 +167,45 @@ export function usePropertyFilterBuilderState(initialFilter?: PropertyFilter) {
   const [actions] = React.useState(() => new PropertyFilterBuilderActions(setState));
 
   return { state, actions };
+}
+
+/** @internal */
+export function buildPropertyFilter(groupItem: PropertyFilterBuilderRuleGroupItem): PropertyFilter | undefined {
+  if (isPropertyFilterBuilderRuleGroup(groupItem))
+    return buildPropertyFilterFromRuleGroup(groupItem);
+  return buildPropertyFilterFromRule(groupItem);
+}
+
+function buildPropertyFilterFromRuleGroup(rootGroup: PropertyFilterBuilderRuleGroup): PropertyFilter | undefined {
+  if (rootGroup.items.length === 0)
+    return undefined;
+
+  const rules = new Array<PropertyFilter>();
+  for (const item of rootGroup.items) {
+    const rule = buildPropertyFilter(item);
+    if (!rule)
+      return undefined;
+    rules.push(rule);
+  }
+
+  if (rules.length === 1)
+    return rules[0];
+
+  return {
+    operator: rootGroup.operator,
+    rules,
+  };
+}
+
+function buildPropertyFilterFromRule(rule: PropertyFilterBuilderRule): PropertyFilter | undefined {
+  const { property, operator, value } = rule;
+  if (!property || operator === undefined)
+    return undefined;
+
+  if (!isUnaryPropertyFilterOperator(operator) && (value === undefined || value.valueFormat !== PropertyValueFormat.Primitive || value.value === undefined))
+    return undefined;
+
+  return { property, operator, value };
 }
 
 function createEmptyRule(groupId: string): PropertyFilterBuilderRule {

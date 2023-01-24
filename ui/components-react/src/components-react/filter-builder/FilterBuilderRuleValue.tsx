@@ -12,7 +12,7 @@ import { EditorContainer, PropertyUpdatedArgs } from "../editors/EditorContainer
 
 /**
  * Props for [[PropertyFilterBuilderRuleValue]] component.
- * @beta
+ * @internal
  */
 export interface PropertyFilterBuilderRuleValueProps {
   /** Currently entered value. */
@@ -25,7 +25,7 @@ export interface PropertyFilterBuilderRuleValueProps {
 
 /**
  * Component that renders [[PropertyFilterBuilderRuleRenderer]] value input.
- * @beta
+ * @internal
  */
 export function PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps) {
   const { value, property, onChange } = props;

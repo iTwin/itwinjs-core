@@ -9,7 +9,7 @@ import { render } from "@testing-library/react";
 import {
   ActiveRuleGroupContext, ActiveRuleGroupContextProps, PropertyFilterBuilderContext, PropertyFilterBuilderContextProps,
   PropertyFilterBuilderRuleRenderingContext, PropertyFilterBuilderRuleRenderingContextProps,
-} from "../../components-react/filter-builder/FilterBuilder";
+} from "../../components-react/filter-builder/FilterBuilderContext";
 import { PropertyFilterBuilderActions } from "../../components-react/filter-builder/FilterBuilderState";
 
 /** @internal */

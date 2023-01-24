@@ -14,7 +14,7 @@ import { translate } from "../common/Utils";
 
 /**
  * Props for [[PresentationInstanceFilterProperty]] component.
- * @beta
+ * @internal
  */
 export interface PresentationInstanceFilterPropertyProps {
   /** Description of property. */
@@ -28,7 +28,7 @@ export interface PresentationInstanceFilterPropertyProps {
 /**
  * Component for rendering property in [FilterBuilder]($components-react) property selector. Property category and
  * class info is rendered in addition to property label.
- * @beta
+ * @internal
  */
 export function PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps) {
   const { propertyDescription, categoryLabel, fullClassName } = props;

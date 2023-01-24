@@ -13,7 +13,7 @@ import { UiComponents } from "../UiComponents";
 
 /**
  * Props for [[PropertyFilterBuilderRuleProperty]] component.
- * @beta
+ * @internal
  */
 export interface PropertyFilterBuilderRulePropertyProps {
   /** List of available properties. */
@@ -30,7 +30,7 @@ export interface PropertyFilterBuilderRulePropertyProps {
 
 /**
  * Component that renders [[PropertyFilterBuilderRuleRenderer]] property selector.
- * @beta
+ * @internal
  */
 export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps) {
   const { selectedProperty, properties, onSelectedPropertyChanged, propertyRenderer, isDisabled } = props;

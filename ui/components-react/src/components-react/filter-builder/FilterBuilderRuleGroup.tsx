@@ -6,19 +6,19 @@
  * @module PropertyFilterBuilder
  */
 
+import "./FilterBuilderRuleGroup.scss";
 import * as React from "react";
 import { SvgAdd, SvgDelete } from "@itwin/itwinui-icons-react";
 import { Button, IconButton, Select, SelectOption } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
-import { ActiveRuleGroupContext, PropertyFilterBuilderContext } from "./FilterBuilder";
+import { ActiveRuleGroupContext, PropertyFilterBuilderContext } from "./FilterBuilderContext";
 import { PropertyFilterBuilderRuleRenderer } from "./FilterBuilderRule";
 import { isPropertyFilterBuilderRuleGroup, PropertyFilterBuilderRuleGroup, PropertyFilterBuilderRuleGroupItem } from "./FilterBuilderState";
 import { PropertyFilterRuleGroupOperator } from "./Operators";
-import "./FilterBuilderRuleGroup.scss";
 
 /**
  * Props for [[PropertyFilterBuilderRuleGroupRenderer]] component.
- * @beta
+ * @internal
  */
 export interface PropertyFilterBuilderRuleGroupRendererProps {
   /** Path from [[PropertyFilterBuilder]] root to this rule group. */
@@ -29,7 +29,7 @@ export interface PropertyFilterBuilderRuleGroupRendererProps {
 
 /**
  * Component that renders group of rules in [[PropertyFilterBuilder]] component.
- * @beta
+ * @internal
  */
 export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuilderRuleGroupRendererProps) {
   const { path, group } = props;
@@ -77,7 +77,7 @@ export function PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuil
 
 /**
  * Props for [[PropertyFilterBuilderRuleGroupOperator]] component.
- * @beta
+ * @internal
  */
 export interface PropertyFilterBuilderRuleGroupOperatorProps {
   /** Currently selected operator. */
@@ -88,7 +88,7 @@ export interface PropertyFilterBuilderRuleGroupOperatorProps {
 
 /**
  * Component that renders [[PropertyFilterBuilderRuleGroup]] operator selector.
- * @beta
+ * @internal
  */
 export function PropertyFilterBuilderRuleGroupOperator(props: PropertyFilterBuilderRuleGroupOperatorProps) {
   const { operator, onChange } = props;

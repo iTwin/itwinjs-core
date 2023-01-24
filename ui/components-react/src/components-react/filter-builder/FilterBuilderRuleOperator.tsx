@@ -13,7 +13,7 @@ import { getPropertyFilterOperatorLabel, getPropertyFilterOperators, PropertyFil
 
 /**
  * Props for [[PropertyFilterBuilderRuleOperator]] component.
- * @beta
+ * @internal
  */
 export interface PropertyFilterBuilderRuleOperatorProps {
   /** Currently selected operator. */
@@ -26,7 +26,7 @@ export interface PropertyFilterBuilderRuleOperatorProps {
 
 /**
  * Component that renders [[PropertyFilterBuilderRuleRenderer]] operator selector.
- * @beta
+ * @internal
  */
 export function PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRuleOperatorProps) {
   const { operator, property, onChange } = props;
