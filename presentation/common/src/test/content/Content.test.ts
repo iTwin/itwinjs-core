@@ -7,7 +7,7 @@ import * as faker from "faker";
 import { Content, ContentJSON } from "../../presentation-common/content/Content";
 import { Item } from "../../presentation-common/content/Item";
 import { createTestContentDescriptor } from "../_helpers/Content";
-import { createRandomECClassInfoJSON, createRandomECInstanceKeyJSON, createRandomLabelDefinitionJSON } from "../_helpers/random";
+import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
 
 describe("Content", () => {
 
@@ -40,9 +40,9 @@ describe("Content", () => {
           classesMap: {},
         },
         contentSet: [{
-          classInfo: createRandomECClassInfoJSON(),
-          primaryKeys: [createRandomECInstanceKeyJSON()],
-          labelDefinition: createRandomLabelDefinitionJSON(),
+          classInfo: createRandomECClassInfo(),
+          primaryKeys: [createRandomECInstanceKey()],
+          labelDefinition: createRandomLabelDefinition(),
           imageId: faker.random.uuid(),
           mergedFieldNames: [],
           values: {

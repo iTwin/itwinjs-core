@@ -76,8 +76,6 @@ export interface ChildNodeSpecificationBase {
   /**
    * Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this
    * specification. See more in [infinite hierarchies prevention page]($docs/presentation/hierarchies/InfiniteHierarchiesPrevention.md).
-   *
-   * @beta
    */
   suppressSimilarAncestorsCheck?: boolean;
 

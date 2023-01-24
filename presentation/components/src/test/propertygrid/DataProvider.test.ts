@@ -11,7 +11,7 @@ import { BeEvent, using } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, DisplayValue, Field, Item, Property, PropertyValueFormat,
+  ArrayTypeDescription, CategoryDescription, combineFieldNames, Content, ContentFlags, DisplayValue, Field, Item, Property, PropertyValueFormat,
   RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, Value, ValuesDictionary,
 } from "@itwin/presentation-common";
 import {
@@ -1603,7 +1603,7 @@ describe("PropertyDataProvider", () => {
           }],
         }, {}, []),
       ]);
-      const record = PropertyRecord.fromString("", applyOptionalPrefix("nested-field", "root-field"));
+      const record = PropertyRecord.fromString("", combineFieldNames("nested-field", "root-field"));
       expect(await provider.getPropertyRecordInstanceKeys(record)).to.deep.eq(instanceKeys);
     });
 
