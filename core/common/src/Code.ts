@@ -222,13 +222,14 @@ export namespace CodeScopeSpec {
     RelatedElement = 4,
   }
 
-  /** Requirements for how the CodeScope Element is identified.
+  /**
+   * Requirements for how the CodeScope Element is identified.
    * @public
    */
   export enum ScopeRequirement {
-    /** The Code is required to have a valid ElementId as its scope */
+    /** The ElementId of CodeScope element identifies its scope. Used for Codes that are unique only within a single iModel. */
     ElementId = 1,
-    /** The Code is required to have a valid FederationGuid as its scope */
+    /** The FederationGuid of the CodeScope element identifies its scope. Used for Codes that are globally unique. */
     FederationGuid = 2,
   }
 }
