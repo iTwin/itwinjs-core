@@ -89,21 +89,24 @@ export interface RelatedPropertiesSpecification {
   /**
    * The attribute describes what the related properties mean to the [primary instance]($docs/presentation/content/Terminology.md#primary-instance)
    * whose properties are displayed.
+   * @see RelationshipMeaning
    */
-  relationshipMeaning?: RelationshipMeaning;
+  relationshipMeaning?: `${RelationshipMeaning}`;
 
   /** The attribute allows loading additional related properties that are related to the target instance of this specification. */
   nestedRelatedProperties?: RelatedPropertiesSpecification[];
 
   /**
    * List of names or definitions of related class properties that should be included in the content.
+   * @see RelatedPropertiesSpecialValues
    */
-  properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
+  properties?: Array<string | PropertySpecification> | `${RelatedPropertiesSpecialValues}`;
 
   /**
    * List of names or definitions of relationship class properties that should be included in the content.
+   * @see RelatedPropertiesSpecialValues
    */
-  relationshipProperties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
+  relationshipProperties?: Array<string | PropertySpecification> | `${RelatedPropertiesSpecialValues}`;
 
   /**
    * Specifies whether a relationship category should be created regardless of whether any relationship properties were included.

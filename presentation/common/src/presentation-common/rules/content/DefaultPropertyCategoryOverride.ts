@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleBase, RuleTypes } from "../Rule";
+import { RuleBase } from "../Rule";
 import { PropertyCategorySpecification } from "./modifiers/PropertyCategorySpecification";
 
 /**
@@ -19,7 +19,7 @@ import { PropertyCategorySpecification } from "./modifiers/PropertyCategorySpeci
  */
 export interface DefaultPropertyCategoryOverride extends RuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.DefaultPropertyCategoryOverride;
+  ruleType: "DefaultPropertyCategoryOverride";
 
   /** Specification for the custom property category. */
   specification: PropertyCategorySpecification;
