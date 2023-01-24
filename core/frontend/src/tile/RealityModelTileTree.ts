@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStringsOrUndefined, CompressedId64Set, Id64String,
+  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String,
 } from "@itwin/core-bentley";
 import {
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
@@ -41,6 +41,10 @@ interface RealityTreeId {
   maskModelIds?: string;
   deduplicateVertices: boolean;
   produceGeometry?: boolean;
+
+  // If true, don't compare model Ids. Context reality models are assigned a transient model Id. Before assigning a new Id (and therefore creating a new tree), we
+  // want to search for an existing one that matches and use its model Id (and tree).
+  ignoreModelId?: boolean;
 }
 
 function compareOrigins(lhs: XYZ, rhs: XYZ): number {
@@ -61,6 +65,10 @@ function compareTransforms(lhs: Transform, rhs: Transform) {
   return compareOrigins(lhs.origin, rhs.origin) || compareMatrices(lhs.matrix, rhs.matrix);
 }
 
+function compareRealityDataSourceKeys(lhs: RealityDataSourceKey, rhs: RealityDataSourceKey): number {
+  return compareStringsOrUndefined(lhs.id, rhs.id) || compareStringsOrUndefined(lhs.format, rhs.format) || compareStringsOrUndefined(lhs.iTwinId, rhs.iTwinId);
+}
+
 class RealityTreeSupplier implements TileTreeSupplier {
   public readonly isEcefDependent = true;
 
@@ -77,31 +85,17 @@ class RealityTreeSupplier implements TileTreeSupplier {
   }
 
   public compareTileTreeIds(lhs: RealityTreeId, rhs: RealityTreeId): number {
-    let cmp = compareStringsOrUndefined(lhs.rdSourceKey.id, rhs.rdSourceKey.id);
-    if (0 === cmp) {
-      cmp = compareStringsOrUndefined(lhs.rdSourceKey.format, rhs.rdSourceKey.format);
-      if (0 === cmp) {
-        cmp = compareStringsOrUndefined(lhs.rdSourceKey.iTwinId, rhs.rdSourceKey.iTwinId);
-        if (0 === cmp) {
-          cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
-          if (0 === cmp)
-            cmp = compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices);
-        }
-      }
+    if (!lhs.ignoreModelId) {
+      const cmp = compareStrings(lhs.modelId, rhs.modelId);
+      if (0 !== cmp)
+        return cmp;
     }
 
-    if (0 !== cmp)
-      return cmp;
-
-    cmp = compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds);
-    if (0 !== cmp)
-      return cmp;
-
-    cmp = compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry);
-    if (0 !== cmp)
-      return cmp;
-
-    return comparePossiblyUndefined<Transform>((ltf, rtf) => compareTransforms(ltf, rtf), lhs.transform, rhs.transform);
+    return compareRealityDataSourceKeys(lhs.rdSourceKey, rhs.rdSourceKey)
+      || compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices)
+      || compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry)
+      || compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds)
+      || comparePossiblyUndefined((ltf, rtf) => compareTransforms(ltf, rtf), lhs.transform, rhs.transform);
   }
 }
 
