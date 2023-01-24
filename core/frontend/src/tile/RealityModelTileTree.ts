@@ -41,10 +41,6 @@ interface RealityTreeId {
   maskModelIds?: string;
   deduplicateVertices: boolean;
   produceGeometry?: boolean;
-
-  // If true, don't compare model Ids. Context reality models are assigned a transient model Id. Before assigning a new Id (and therefore creating a new tree), we
-  // want to search for an existing one that matches and use its model Id (and tree).
-  ignoreModelId?: boolean;
 }
 
 function compareOrigins(lhs: XYZ, rhs: XYZ): number {
@@ -85,11 +81,10 @@ class RealityTreeSupplier implements TileTreeSupplier {
   }
 
   public compareTileTreeIds(lhs: RealityTreeId, rhs: RealityTreeId): number {
-    if (!lhs.ignoreModelId) {
-      const cmp = compareStrings(lhs.modelId, rhs.modelId);
-      if (0 !== cmp)
-        return cmp;
-    }
+    // ###TODO special case for context reality model with undetermined modelId
+    const cmp = compareStrings(lhs.modelId, rhs.modelId);
+    if (0 !== cmp)
+      return cmp;
 
     return compareRealityDataSourceKeys(lhs.rdSourceKey, rhs.rdSourceKey)
       || compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices)
@@ -775,8 +770,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       this.collectTileGeometry = (collector) => this._collectTileGeometry(collector);
   }
 
-  public get treeOwner(): TileTreeOwner {
-    const treeId: RealityTreeId = {
+  private createTreeId(): RealityTreeId {
+    return {
       rdSourceKey: this._rdSourceKey,
       transform: this._transform,
       modelId: this.modelId,
@@ -784,8 +779,10 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       deduplicateVertices: this._wantWiremesh,
       produceGeometry: this._produceGeometry,
     };
+  }
 
-    return realityTreeSupplier.getOwner(treeId, this._iModel);
+  public get treeOwner(): TileTreeOwner {
+    return realityTreeSupplier.getOwner(this.createTreeId(), this._iModel);
   }
 
   protected override _createGeometryTreeReference(): GeometryTileTreeReference {
