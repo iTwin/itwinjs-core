@@ -959,7 +959,7 @@ export class OffsetMeshContext {
           OffsetMeshContext.stringDebugFunction(` Vertex Update breakEdges ${breakEdges.length} `);
         vertexSeed.getPoint3d(vertexXYZ);
         // Pass 1 -- look for intersection among multiple chamfers
-        for (let i = 0; i + 2 < breakEdges.length; i++) {
+        for (let i = 0; i < breakEdges.length; i++) {
           const i0 = i;
           const i1 = (i0 + 1) % breakEdges.length;
           const i2 = (i1 + 1) % breakEdges.length;
@@ -987,7 +987,7 @@ export class OffsetMeshContext {
 
         // Pass 2 -- look for unassigned nodes just before or after a chamfer.
         //  The chamfer wins
-        for (let i = 0; i + 1 < breakEdges.length; i++) {
+        for (let i = 0; i < breakEdges.length; i++) {
           const i0 = i;
           const i1 = (i0 + 1) % breakEdges.length;
           if (this.isInsideSling(breakEdges[i0], breakEdges[i1]))
@@ -1003,7 +1003,7 @@ export class OffsetMeshContext {
         }
 
         // Pass 3 -- look for unassigned nodes as middle of 3-face intersections
-        for (let i = 0; i + 2 < breakEdges.length; i++) {
+        for (let i = 0; i < breakEdges.length; i++) {
           const i0 = i;
           const i1 = (i0 + 1) % breakEdges.length;
           const i2 = (i1 + 1) % breakEdges.length;
@@ -1078,12 +1078,4 @@ export class OffsetMeshContext {
         node.setMask(this._offsetCoordinatesReassigned);
       });
   }
-}
-
-function _checkMask(node: HalfEdge, mask: HalfEdgeMask, trueReturn: boolean = true, falseReturn: boolean = true) {
-  const value = node.isMaskSet(mask);
-  if (value)
-    return trueReturn;
-  else
-    return falseReturn;
 }
