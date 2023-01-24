@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, NodeKey, RelationshipDirection, Ruleset, RuleTypes, StandardNodeTypes } from "@itwin/presentation-common";
+import { NodeKey, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -34,16 +34,16 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: true },
             hideNodesInHierarchy: true,
           }],
         }, {
-          ruleType: RuleTypes.ChildNodes,
+          ruleType: "ChildNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.CustomNode,
+            specType: "CustomNode",
             type: "child",
             label: "Child",
           }],
@@ -72,30 +72,30 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.CustomNode,
+            specType: "CustomNode",
             type: "2d",
             label: "2d Elements",
             hideIfNoChildren: true,
           }, {
-            specType: ChildNodeSpecificationTypes.CustomNode,
+            specType: "CustomNode",
             type: "3d",
             label: "3d Elements",
             hideIfNoChildren: true,
           }],
         }, {
-          ruleType: RuleTypes.ChildNodes,
+          ruleType: "ChildNodes",
           condition: `ParentNode.Type = "2d"`,
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["GeometricElement2d"], arePolymorphic: true },
           }],
         }, {
-          ruleType: RuleTypes.ChildNodes,
+          ruleType: "ChildNodes",
           condition: `ParentNode.Type = "3d"`,
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true },
           }],
         }],
@@ -123,30 +123,30 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.CustomNode,
+            specType: "CustomNode",
             type: "2d",
             label: "2d Elements",
             hideExpression: `ThisNode.HasChildren = FALSE`,
           }, {
-            specType: ChildNodeSpecificationTypes.CustomNode,
+            specType: "CustomNode",
             type: "3d",
             label: "3d Elements",
             hideExpression: `ThisNode.HasChildren = FALSE`,
           }],
         }, {
-          ruleType: RuleTypes.ChildNodes,
+          ruleType: "ChildNodes",
           condition: `ParentNode.Type = "2d"`,
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["GeometricElement2d"], arePolymorphic: true },
           }],
         }, {
-          ruleType: RuleTypes.ChildNodes,
+          ruleType: "ChildNodes",
           condition: `ParentNode.Type = "3d"`,
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true },
           }],
         }],
@@ -178,37 +178,37 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: { schemaName: "BisCore", classNames: ["Subject"] },
             instanceFilter: `this.ECInstanceId = 1`,
             groupByClass: false,
             groupByLabel: false,
           }],
         }, {
-          ruleType: RuleTypes.ChildNodes,
+          ruleType: "ChildNodes",
           condition: `ParentNode.IsOfClass("Model", "BisCore")`,
           specifications: [{
-            specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+            specType: "RelatedInstanceNodes",
             relationshipPaths: [{
               relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-              direction: RelationshipDirection.Forward,
+              direction: "Forward",
             }],
             groupByClass: false,
             groupByLabel: false,
           }],
         }, {
-          ruleType: RuleTypes.ChildNodes,
+          ruleType: "ChildNodes",
           condition: `ParentNode.IsOfClass("Element", "BisCore")`,
           specifications: [{
-            specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+            specType: "RelatedInstanceNodes",
             relationshipPaths: [[{
               relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-              direction: RelationshipDirection.Forward,
+              direction: "Forward",
             }, {
               relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-              direction: RelationshipDirection.Backward,
+              direction: "Backward",
             }]],
             suppressSimilarAncestorsCheck: true,
             groupByClass: false,
@@ -269,13 +269,13 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             priority: 1,
             classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: true },
           }, {
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             priority: 2,
             classes: { schemaName: "BisCore", classNames: ["SpatialCategory"], arePolymorphic: true },
           }],
@@ -301,9 +301,9 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: [{ schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true }],
             doNotSort: true,
           }],
@@ -325,9 +325,9 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: [{ schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true }],
             groupByClass: false,
           }],
@@ -349,9 +349,9 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: [{ schemaName: "ECDbMeta", classNames: ["ECPropertyDef"] }],
             groupByLabel: false,
           }],
@@ -379,18 +379,18 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.CustomNode,
+            specType: "CustomNode",
             type: "T_ROOT_NODE",
             label: "My Root Node",
             hasChildren: "Always",
           }],
         }, {
-          ruleType: RuleTypes.ChildNodes,
+          ruleType: "ChildNodes",
           condition: `ParentNode.Type="T_ROOT_NODE"`,
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: [{ schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true }],
           }],
         }],
@@ -437,14 +437,14 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: [{ schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true }],
             relatedInstances: [{
               relationshipPath: [{
                 relationship: { schemaName: "BisCore", className: "GeometricElement3dIsInCategory" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
               }],
               alias: "category",
               isRequired: true,
@@ -476,19 +476,19 @@ describe("Learning Snippets", () => {
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
-          ruleType: RuleTypes.RootNodes,
+          ruleType: "RootNodes",
           specifications: [{
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: [{ schemaName: "BisCore", classNames: ["SpatialCategory"] }],
             groupByClass: false,
           }, {
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: "InstanceNodesOfSpecificClasses",
             classes: [{ schemaName: "BisCore", classNames: ["PhysicalModel"] }],
             groupByClass: false,
             nestedRules: [{
-              ruleType: RuleTypes.ChildNodes,
+              ruleType: "ChildNodes",
               specifications: [{
-                specType: ChildNodeSpecificationTypes.CustomNode,
+                specType: "CustomNode",
                 type: "T_CHILD",
                 label: "child",
               }],

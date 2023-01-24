@@ -99,7 +99,9 @@ export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataPr
     if (elementIds instanceof KeySet) {
       return using(this._propertyDataProviderFactory(imodel, this._customRuleset), async (propertyDataProvider) => {
         propertyDataProvider.keys = elementIds;
+        // eslint-disable-next-line deprecation/deprecation
         propertyDataProvider.includeFieldsWithNoValues = this.includeFieldsWithNoValues;
+        // eslint-disable-next-line deprecation/deprecation
         propertyDataProvider.includeFieldsWithCompositeValues = this.includeFieldsWithCompositeValues;
         const propertyData = await propertyDataProvider.getData();
 

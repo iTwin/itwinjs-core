@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -35,20 +35,20 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
               groupByClass: false,
             }],
           }, {
-            ruleType: RuleTypes.ChildNodes,
+            ruleType: "ChildNodes",
             condition: `ParentNode.IsOfClass("Model", "BisCore")`,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+              specType: "RelatedInstanceNodes",
               relationshipPaths: [{
                 relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
                 targetClass: { schemaName: "BisCore", className: "GeometricElement3d" },
               }],
             }],

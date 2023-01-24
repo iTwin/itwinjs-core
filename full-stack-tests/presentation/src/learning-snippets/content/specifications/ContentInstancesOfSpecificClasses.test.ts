@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { getFieldByLabel } from "../../../Utils";
@@ -32,9 +32,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: false },
             }],
           }],
@@ -59,9 +59,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
               excludedClasses: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
             }],
@@ -88,9 +88,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
               handlePropertiesPolymorphically: true,
             }],
@@ -134,9 +134,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
               instanceFilter: "this.Pitch >= 0",
             }],
