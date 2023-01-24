@@ -36,7 +36,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
       chai.assert.fail("Could not create settings");
 
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return ArcGISMapLayerDataset.TilesOnlyDataset26918;
+      return {content: ArcGISMapLayerDataset.TilesOnlyDataset26918, accessTokenRequired:false};
     });
 
     const provider = new ArcGISMapLayerImageryProvider(settings);
@@ -49,7 +49,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
       chai.assert.fail("Could not create settings");
 
     sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
-      return ArcGISMapLayerDataset.UsaTopoMaps;
+      return {content: ArcGISMapLayerDataset.UsaTopoMaps, accessTokenRequired:false};
     });
 
     const provider = new ArcGISMapLayerImageryProvider(settings);
@@ -71,7 +71,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
 
       // Fake an unknown CS
       dataset.tileInfo.spatialReference.latestWkid = 1234;
-      return dataset;
+      return {content: dataset, accessTokenRequired:false};
     });
 
     const provider = new ArcGISMapLayerImageryProvider(settings);

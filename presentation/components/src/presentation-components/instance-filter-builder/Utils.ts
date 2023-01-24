@@ -9,11 +9,14 @@
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
 import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule, PropertyFilterRuleGroup } from "@itwin/components-react";
 import {
-  CategoryDescription, ClassInfo, Descriptor, Field, FIELD_NAMES_SEPARATOR, NestedContentField, PropertiesField,
+  CategoryDescription, ClassInfo, combineFieldNames, Descriptor, Field, NestedContentField, PropertiesField,
 } from "@itwin/presentation-common";
 import { createPropertyDescriptionFromFieldInfo } from "../common/ContentBuilder";
 import { findField } from "../common/Utils";
-import { InstanceFilterPropertyInfo, isPresentationInstanceFilterConditionGroup, PresentationInstanceFilter, PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup } from "./Types";
+import {
+  InstanceFilterPropertyInfo, isPresentationInstanceFilterConditionGroup, PresentationInstanceFilter, PresentationInstanceFilterCondition,
+  PresentationInstanceFilterConditionGroup,
+} from "./Types";
 
 /** @alpha */
 export function createInstanceFilterPropertyInfos(descriptor: Descriptor): InstanceFilterPropertyInfo[] {
@@ -109,8 +112,8 @@ function getCategoryInfo(category: CategoryDescription, categoryInfo: CategoryIn
 
 function getParentNames(field: Field, name: string): string {
   if (!field.parent)
-    return getPrefixedFieldName(name, field.name);
-  return getParentNames(field.parent, getPrefixedFieldName(name, field.name));
+    return combineFieldNames(name, field.name);
+  return getParentNames(field.parent, combineFieldNames(name, field.name));
 }
 
 function createPropertyInfoFromPropertiesField(field: PropertiesField): InstanceFilterPropertyInfo {
@@ -140,10 +143,6 @@ function createPropertyInfoFromPropertiesField(field: PropertiesField): Instance
 export const INSTANCE_FILTER_FIELD_SEPARATOR = "#";
 function getCategorizedFieldName(fieldName: string, categoryName?: string) {
   return `${categoryName ?? ""}${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`;
-}
-
-function getPrefixedFieldName(str: string, prefix: string) {
-  return `${prefix}${FIELD_NAMES_SEPARATOR}${str}`;
 }
 
 function convertPresentationInstanceFilterCondition(filter: PresentationInstanceFilterCondition, descriptor: Descriptor) {

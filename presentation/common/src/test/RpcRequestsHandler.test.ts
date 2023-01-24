@@ -15,9 +15,9 @@ import {
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import { ItemJSON } from "../presentation-common/content/Item";
 import { ClientDiagnostics } from "../presentation-common/Diagnostics";
-import { InstanceKeyJSON } from "../presentation-common/EC";
+import { InstanceKey } from "../presentation-common/EC";
 import { ElementProperties } from "../presentation-common/ElementProperties";
-import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
+import { NodeKey } from "../presentation-common/hierarchy/Key";
 import {
   ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
   ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
@@ -33,7 +33,7 @@ import {
 import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import {
-  createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKeyJSON, createRandomLabelDefinitionJSON,
+  createRandomECInstanceKey, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomLabelDefinition,
   createRandomNodePathElementJSON, createRandomSelectionScope,
 } from "./_helpers/random";
 
@@ -206,7 +206,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getNodesCount call for root nodes", async () => {
-      const handlerOptions: HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON> = {
+      const handlerOptions: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
       };
@@ -223,10 +223,10 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getNodesCount call for child nodes", async () => {
-      const handlerOptions: HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON> = {
+      const handlerOptions: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
-        parentKey: createRandomECInstancesNodeKeyJSON(),
+        parentKey: createRandomECInstancesNodeKey(),
       };
       const rpcOptions: HierarchyRpcRequestOptions = {
         clientId,
@@ -242,16 +242,17 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getPagedNodes call", async () => {
-      const handlerOptions: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>> = {
+      const handlerOptions: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> = {
         imodel: token,
         rulesetOrId: faker.random.word(),
         paging: { start: 1, size: 2 },
-        parentKey: createRandomECInstancesNodeKeyJSON(),
+        parentKey: createRandomECInstancesNodeKey(),
       };
       const rpcOptions: Paged<HierarchyRpcRequestOptions> = {
         clientId,
         rulesetOrId: handlerOptions.rulesetOrId,
         paging: { start: 1, size: 2 },
+        // eslint-disable-next-line deprecation/deprecation
         parentKey: NodeKey.fromJSON(handlerOptions.parentKey!),
       };
       const result = { items: [createRandomECInstancesNodeJSON()], total: 1 };
@@ -265,14 +266,15 @@ describe("RpcRequestsHandler", () => {
     describe("forwards getNodesDescriptor call", async () => {
 
       function createTestData() {
-        const handlerOptions: HierarchyLevelDescriptorRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON> = {
+        const handlerOptions: HierarchyLevelDescriptorRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> = {
           imodel: token,
           rulesetOrId: "test-ruleset",
-          parentKey: createRandomECInstancesNodeKeyJSON(),
+          parentKey: createRandomECInstancesNodeKey(),
         };
         const rpcOptions: HierarchyLevelDescriptorRpcRequestOptions = {
           clientId,
           rulesetOrId: handlerOptions.rulesetOrId,
+          // eslint-disable-next-line deprecation/deprecation
           parentKey: NodeKey.fromJSON(handlerOptions.parentKey!),
         };
         const result = createTestContentDescriptor({ fields: [] }).toJSON();
@@ -320,7 +322,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getNodePaths call", async () => {
-      const paths = [[createRandomECInstanceKeyJSON()]];
+      const paths = [[createRandomECInstanceKey()]];
       const markedIndex = faker.random.number();
       const handlerOptions: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> = {
         imodel: token,
@@ -556,8 +558,8 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getDisplayLabelDefinition call", async () => {
-      const key = createRandomECInstanceKeyJSON();
-      const handlerOptions: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON> = {
+      const key = createRandomECInstanceKey();
+      const handlerOptions: DisplayLabelRequestOptions<IModelRpcProps, InstanceKey> = {
         imodel: token,
         key,
       };
@@ -565,15 +567,15 @@ describe("RpcRequestsHandler", () => {
         clientId,
         key,
       };
-      const result = createRandomLabelDefinitionJSON();
+      const result = createRandomLabelDefinition();
       rpcInterfaceMock.setup(async (x) => x.getDisplayLabelDefinition(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getDisplayLabelDefinition(handlerOptions)).to.deep.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 
     it("forwards getPagedDisplayLabelDefinitions call", async () => {
-      const keys = [createRandomECInstanceKeyJSON(), createRandomECInstanceKeyJSON()];
-      const handlerOptions: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON> = {
+      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const handlerOptions: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKey> = {
         imodel: token,
         keys,
       };
@@ -583,7 +585,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = {
         total: 2,
-        items: [createRandomLabelDefinitionJSON(), createRandomLabelDefinitionJSON()],
+        items: [createRandomLabelDefinition(), createRandomLabelDefinition()],
       };
       rpcInterfaceMock.setup(async (x) => x.getPagedDisplayLabelDefinitions(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getPagedDisplayLabelDefinitions(handlerOptions)).to.deep.eq(result);

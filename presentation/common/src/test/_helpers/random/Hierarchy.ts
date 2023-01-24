@@ -7,12 +7,11 @@ import {
   BaseNodeKey, ECClassGroupingNodeKey, ECInstancesNodeKey, ECPropertyGroupingNodeKey, GroupingNodeKey, LabelGroupingNodeKey, Node, NodePathElement,
   StandardNodeTypes,
 } from "../../../presentation-common";
-import { InstanceKey, InstanceKeyJSON } from "../../../presentation-common/EC";
-import { ECInstancesNodeKeyJSON } from "../../../presentation-common/hierarchy/Key";
+import { InstanceKey } from "../../../presentation-common/EC";
 import { NodeJSON } from "../../../presentation-common/hierarchy/Node";
 import { NodePathElementJSON } from "../../../presentation-common/hierarchy/NodePathElement";
-import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "./EC";
-import { createRandomLabelDefinition, createRandomLabelDefinitionJSON } from "./LabelDefinition";
+import { createRandomECInstanceKey } from "./EC";
+import { createRandomLabelDefinition } from "./LabelDefinition";
 import { createRandomHexColor, createRandomRgbColor, nullable } from "./Misc";
 
 /**
@@ -36,18 +35,6 @@ export const createRandomECInstancesNodeKey = (instanceKeys?: InstanceKey[]): EC
     version: 2,
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
     instanceKeys,
-  };
-};
-
-/**
- * @internal Used for testing only.
- */
-export const createRandomECInstancesNodeKeyJSON = (instanceKeys?: InstanceKeyJSON[]): ECInstancesNodeKeyJSON => {
-  return {
-    type: StandardNodeTypes.ECInstancesNode,
-    version: 2,
-    pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
-    instanceKeys: instanceKeys ?? [createRandomECInstanceKeyJSON(), createRandomECInstanceKeyJSON()],
   };
 };
 
@@ -128,10 +115,11 @@ export const createRandomECInstancesNode = (props?: Partial<Node>): Node => {
 /**
  * @internal Used for testing only.
  */
+// eslint-disable-next-line deprecation/deprecation
 export const createRandomECInstancesNodeJSON = (): NodeJSON => {
   return {
-    key: createRandomECInstancesNodeKeyJSON(),
-    labelDefinition: createRandomLabelDefinitionJSON(),
+    key: createRandomECInstancesNodeKey(),
+    labelDefinition: createRandomLabelDefinition(),
     description: nullable<string>(() => faker.lorem.sentence()),
     foreColor: nullable<string>(createRandomHexColor),
     backColor: nullable<string>(createRandomRgbColor),
@@ -174,7 +162,9 @@ export const createRandomNodePathElement = (depth: number = 1): NodePathElement 
 /**
  * @internal Used for testing only.
  */
+// eslint-disable-next-line deprecation/deprecation
 export const createRandomNodePathElementJSON = (depth: number = 1): NodePathElementJSON => {
+  // eslint-disable-next-line deprecation/deprecation
   const el: NodePathElementJSON = {
     node: createRandomECInstancesNodeJSON(),
     index: faker.random.number(999),
