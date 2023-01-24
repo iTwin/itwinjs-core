@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
+  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStringsOrUndefined, CompressedId64Set, Id64String,
 } from "@itwin/core-bentley";
 import {
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
@@ -44,14 +44,7 @@ interface RealityTreeId {
 }
 
 function compareOrigins(lhs: XYZ, rhs: XYZ): number {
-  let cmp = compareNumbers(lhs.x, rhs.x);
-  if (0 === cmp) {
-    cmp = compareNumbers(lhs.y, rhs.y);
-    if (0 === cmp)
-      cmp = compareNumbers(lhs.z, rhs.z);
-  }
-
-  return cmp;
+  return compareNumbers(lhs.x, rhs.x) || compareNumbers(lhs.y, rhs.y) || compareNumbers(lhs.z, rhs.z);
 }
 
 function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
@@ -64,15 +57,8 @@ function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
   return 0;
 }
 
-function compareTransforms(lhs?: Transform, rhs?: Transform) {
-  if (undefined === lhs)
-    return undefined !== rhs ? -1 : 0;
-
-  else if (undefined === rhs)
-    return 1;
-
-  const cmp = compareOrigins(lhs.origin, rhs.origin);
-  return 0 !== cmp ? cmp : compareMatrices(lhs.matrix, rhs.matrix);
+function compareTransforms(lhs: Transform, rhs: Transform) {
+  return compareOrigins(lhs.origin, rhs.origin) || compareMatrices(lhs.matrix, rhs.matrix);
 }
 
 class RealityTreeSupplier implements TileTreeSupplier {
@@ -115,7 +101,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
     if (0 !== cmp)
       return cmp;
 
-    return compareTransforms(lhs.transform, rhs.transform);
+    return comparePossiblyUndefined<Transform>((ltf, rtf) => compareTransforms(ltf, rtf), lhs.transform, rhs.transform);
   }
 }
 
