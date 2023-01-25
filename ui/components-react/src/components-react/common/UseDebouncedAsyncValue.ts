@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Common
+ */
 
 import { useEffect, useMemo, useState } from "react";
 import { publish } from "rxjs/internal/operators/publish";
