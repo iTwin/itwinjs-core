@@ -15,17 +15,33 @@ import {
   PresentationInstanceFilterBuilder, PresentationInstanceFilterBuilderProps, PresentationInstanceFilterInfo,
 } from "./PresentationInstanceFilterBuilder";
 
-/** @alpha */
+/**
+ * Props for [[PresentationInstanceFilterDialog]] component.
+ * @beta
+ */
 export interface PresentationInstanceFilterDialogProps extends Omit<PresentationInstanceFilterBuilderProps, "onInstanceFilterChanged" | "descriptor"> {
+  /** Specifies whether dialog is open or not. */
   isOpen: boolean;
+  /** Callback that is invoked when 'Apply' button is clicked. */
   onApply: (filter: PresentationInstanceFilterInfo) => void;
+  /** Callback that is invoked when 'Close' button is clicked or dialog is closed. */
   onClose: () => void;
+  /**
+   * [Descriptor]($presentation-common) that will be used in [[PresentationInstanceFilterBuilder]] component rendered inside this dialog.
+   *
+   * This property can be set to function in order to lazy load [Descriptor]($presentation-common) when dialog is opened.
+   */
   descriptor: (() => Promise<Descriptor>) | Descriptor;
+  /** Renderer that renders count of results for currently built filter. */
   filterResultCountRenderer?: (filter?: PresentationInstanceFilterInfo) => React.ReactNode;
+  /** Dialog title. */
   title?: React.ReactNode;
 }
 
-/** @alpha */
+/**
+ * Dialog component that renders [[PresentationInstanceFilterBuilder]] inside.
+ * @beta
+ */
 export function PresentationInstanceFilterDialog(props: PresentationInstanceFilterDialogProps) {
   const { isOpen, onApply, onClose, filterResultCountRenderer, title, descriptor, ...restProps } = props;
   const [filter, setFilter] = React.useState<PresentationInstanceFilterInfo>();
