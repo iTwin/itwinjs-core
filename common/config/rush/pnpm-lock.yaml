@@ -10,7 +10,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.6.5
+      '@bentley/imodeljs-native': 3.6.6
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ~1.4.0
       '@itwin/core-bentley': workspace:*
@@ -56,7 +56,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.12.0
-      '@bentley/imodeljs-native': 3.6.5
+      '@bentley/imodeljs-native': 3.6.6
       '@itwin/cloud-agnostic-core': 1.4.0
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.4.0
@@ -420,7 +420,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 18.11.5
       chai: 4.3.7
-      electron: 22.0.3
+      electron: 22.1.0
       eslint: 7.32.0
       mocha: 10.2.0
       rimraf: 3.0.2
@@ -1337,11 +1337,11 @@ importers:
       '@itwin/core-electron': link:../../core/electron
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      electron: 22.0.3
+      electron: 22.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.6.0_electron@22.0.3
+      '@itwin/oidc-signin-tool': 3.6.0_electron@22.1.0
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       '@types/node': 18.11.5
@@ -1825,7 +1825,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.3
+      '@itwin/electron-authorization': 0.8.5_electron@22.1.0
       '@itwin/express-server': link:../../core/express-server
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 2.2.1
@@ -1836,7 +1836,7 @@ importers:
       '@itwin/reality-data-client': 0.9.0
       chai: 4.3.7
       chai-as-promised: 7.1.1_chai@4.3.7
-      electron: 22.0.3
+      electron: 22.1.0
       fs-extra: 8.1.0
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.7+sinon@9.2.4
@@ -1844,7 +1844,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.6.0_electron@22.0.3
+      '@itwin/oidc-signin-tool': 3.6.0_electron@22.1.0
       '@itwin/projects-client': 0.6.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
@@ -2147,7 +2147,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/express-server': link:../../core/express-server
-      electron: 22.0.3
+      electron: 22.1.0
       express: 4.18.2
       semver: 7.3.8
       spdy: 4.0.2
@@ -2276,7 +2276,7 @@ importers:
     specifiers:
       '@playwright/test': ^1.24.1
     devDependencies:
-      '@playwright/test': 1.29.2
+      '@playwright/test': 1.30.0
 
   ../../presentation/backend:
     specifiers:
@@ -2936,7 +2936,7 @@ importers:
       '@itwin/editor-backend': link:../../../editor/backend
       '@itwin/editor-common': link:../../../editor/common
       '@itwin/editor-frontend': link:../../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.3
+      '@itwin/electron-authorization': 0.8.5_electron@22.1.0
       '@itwin/express-server': link:../../../core/express-server
       '@itwin/frontend-devtools': link:../../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../../core/hypermodeling
@@ -2989,7 +2989,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.3
+      electron: 22.1.0
       eslint: 7.32.0
       fs-extra: 8.1.0
       internal-tools: link:../../../tools/internal
@@ -3110,7 +3110,7 @@ importers:
       '@itwin/editor-backend': link:../../../editor/backend
       '@itwin/editor-common': link:../../../editor/common
       '@itwin/editor-frontend': link:../../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.3
+      '@itwin/electron-authorization': 0.8.5_electron@22.1.0
       '@itwin/express-server': link:../../../core/express-server
       '@itwin/frontend-devtools': link:../../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../../core/hypermodeling
@@ -3162,7 +3162,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.3
+      electron: 22.1.0
       eslint: 7.32.0
       fs-extra: 8.1.0
       internal-tools: link:../../../tools/internal
@@ -3226,13 +3226,13 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.3
+      '@itwin/electron-authorization': 0.8.5_electron@22.1.0
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 2.2.1
       '@itwin/imodels-access-frontend': 2.2.1
       '@itwin/imodels-client-authoring': 2.2.1
       '@itwin/imodels-client-management': 2.2.1
-      '@itwin/oidc-signin-tool': 3.6.0_electron@22.0.3
+      '@itwin/oidc-signin-tool': 3.6.0_electron@22.1.0
       '@itwin/reality-data-client': 0.9.0
       body-parser: 1.20.1
     devDependencies:
@@ -3249,7 +3249,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.3
+      electron: 22.1.0
       eslint: 7.32.0
       express: 4.18.2
       internal-tools: link:../../tools/internal
@@ -3343,7 +3343,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.3
+      '@itwin/electron-authorization': 0.8.5_electron@22.1.0
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 2.2.1
@@ -3371,7 +3371,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.3
+      electron: 22.1.0
       eslint: 7.32.0
       eslint-plugin-deprecation: 1.2.1_eslint@7.32.0+typescript@4.4.4
       eslint-plugin-import: 2.23.4_eslint@7.32.0
@@ -3676,7 +3676,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.3
+      '@itwin/electron-authorization': 0.8.5_electron@22.1.0
       '@itwin/express-server': link:../../core/express-server
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.63.1
@@ -3701,7 +3701,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.3
+      electron: 22.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       npm-run-all: 4.1.5
@@ -3880,7 +3880,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.8.5_electron@22.0.3
+      '@itwin/electron-authorization': 0.8.5_electron@22.1.0
       '@itwin/express-server': link:../../core/express-server
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
@@ -3931,7 +3931,7 @@ importers:
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 22.0.3
+      electron: 22.1.0
       eslint: 7.32.0
       fs-extra: 8.1.0
       internal-tools: link:../../tools/internal
@@ -4052,7 +4052,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 18.11.5
       '@types/yargs': 17.0.19
-      electron: 22.0.3
+      electron: 22.1.0
       eslint: 7.32.0
       nyc: 15.1.0
       rimraf: 3.0.2
@@ -7061,8 +7061,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.6.5:
-    resolution: {integrity: sha512-uivLfCwr1uzPi/4L7K6rZ2Oxdwb5yEMQNd1Q/V8GpvEXe9aVuzPjZhkbac2vKQgw1T0sUP4o+IuyV4n8oB3vBA==}
+  /@bentley/imodeljs-native/3.6.6:
+    resolution: {integrity: sha512-4KoIjibO7B+qf04MklBEr4dnJtcryqOsgdFH4Hlg9jkp7nj9lwlbb0+AnW1BeyAvIW2jp768MIDjxOhnB8GROg==}
     requiresBuild: true
     dev: false
 
@@ -7782,7 +7782,7 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.5.4_electron@22.0.3:
+  /@itwin/certa/3.5.4_electron@22.1.0:
     resolution: {integrity: sha512-9nQfnUesTEaBc+kvdz4cETKnTj6ZmPgSBXxPlBE5BIO8+RCrOikXp2BPhwpyay4UNHXc6dXhVx2AHtL+QdOKmQ==}
     hasBin: true
     peerDependencies:
@@ -7792,7 +7792,7 @@ packages:
         optional: true
     dependencies:
       detect-port: 1.3.0
-      electron: 22.0.3
+      electron: 22.1.0
       express: 4.18.2
       jsonc-parser: 2.0.3
       lodash: 4.17.21
@@ -7840,14 +7840,14 @@ packages:
       webpack: 5.75.0
     dev: true
 
-  /@itwin/electron-authorization/0.8.5_electron@22.0.3:
+  /@itwin/electron-authorization/0.8.5_electron@22.1.0:
     resolution: {integrity: sha512-ynmZSEpyjrVl+Ro99jYL1GKFsVgb0MlHMrntdTxFjkbVOh9VtocX9gdw8oGrlrVuOYpy1jxd3+0uj36fRmv91w==}
     peerDependencies:
       electron: '>=14.0.0 <18.0.0'
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@openid/appauth': 1.3.1
-      electron: 22.0.3
+      electron: 22.1.0
       keytar: 7.9.0
       open: 8.4.0
       username: 5.1.0
@@ -8048,10 +8048,10 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/oidc-signin-tool/3.6.0_electron@22.0.3:
+  /@itwin/oidc-signin-tool/3.6.0_electron@22.1.0:
     resolution: {integrity: sha512-Zvdmckc+EzSEuY7pFakhhbUFkUM56RaHdce5b5OBOhIKB97Yxier9rMl6g7z1Ariahai2VXgpOrLb62fDk8qLg==}
     dependencies:
-      '@itwin/certa': 3.5.4_electron@22.0.3
+      '@itwin/certa': 3.5.4_electron@22.1.0
       '@itwin/core-bentley': link:../../core/bentley
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -8612,13 +8612,13 @@ packages:
     resolution: {integrity: sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==}
     engines: {node: '>=10.13.0'}
 
-  /@playwright/test/1.29.2:
-    resolution: {integrity: sha512-+3/GPwOgcoF0xLz/opTnahel1/y42PdcgZ4hs+BZGIUjtmEFSXGg+nFoaH3NSmuc7a6GSFwXDJ5L7VXpqzigNg==}
+  /@playwright/test/1.30.0:
+    resolution: {integrity: sha512-SVxkQw1xvn/Wk/EvBnqWIq6NLo1AppwbYOjNLmyU0R1RoQ3rLEBtmjTnElcnz8VEtn11fptj1ECxK0tgURhajw==}
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
       '@types/node': 18.11.5
-      playwright-core: 1.29.2
+      playwright-core: 1.30.0
     dev: true
 
   /@pmmmwh/react-refresh-webpack-plugin/0.5.10_a358053c186fea2b80718c8305c5e43e:
@@ -10798,7 +10798,7 @@ packages:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.21.4
-      caniuse-lite: 1.0.30001447
+      caniuse-lite: 1.0.30001448
       fraction.js: 4.2.0
       normalize-range: 0.1.2
       picocolors: 1.0.0
@@ -10811,7 +10811,7 @@ packages:
     hasBin: true
     dependencies:
       browserslist: 3.2.8
-      caniuse-lite: 1.0.30001447
+      caniuse-lite: 1.0.30001448
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       postcss: 6.0.23
@@ -11369,7 +11369,7 @@ packages:
     resolution: {integrity: sha512-WHVocJYavUwVgVViC0ORikPHQquXwVh939TaelZ4WDqpWgTX/FsGhl/+P4qBUAGcRvtOgDgC+xftNWWp2RUTAQ==}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001447
+      caniuse-lite: 1.0.30001448
       electron-to-chromium: 1.4.284
     dev: true
 
@@ -11378,7 +11378,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001447
+      caniuse-lite: 1.0.30001448
       electron-to-chromium: 1.4.284
       node-releases: 2.0.8
       update-browserslist-db: 1.0.10_browserslist@4.21.4
@@ -11550,13 +11550,13 @@ packages:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
       browserslist: 4.21.4
-      caniuse-lite: 1.0.30001447
+      caniuse-lite: 1.0.30001448
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: true
 
-  /caniuse-lite/1.0.30001447:
-    resolution: {integrity: sha512-bdKU1BQDPeEXe9A39xJnGtY0uRq/z5osrnXUw0TcK+EYno45Y+U7QU9HhHEyzvMDffpYadFXi3idnSNkcwLkTw==}
+  /caniuse-lite/1.0.30001448:
+    resolution: {integrity: sha512-tq2YI+MJnooG96XpbTRYkBxLxklZPOdLmNIOdIhvf7SNJan6u5vCKum8iT7ZfCt70m1GPkuC7P3TtX6UuhupuA==}
 
   /case-sensitive-paths-webpack-plugin/2.4.0:
     resolution: {integrity: sha512-roIFONhcxog0JSSWbvVAh3OocukmSgpqOH6YpMkCvav/ySIV3JKg4Dc8vYtQjYi/UxpNE36r/9v+VqTQqgkYmw==}
@@ -12978,8 +12978,8 @@ packages:
   /electron-to-chromium/1.4.284:
     resolution: {integrity: sha512-M8WEXFuKXMYMVr45fo8mq0wUrrJHheiKZf6BArTKk9ZBYCKJEOU5H8cdWgDT+qCVZf7Na4lVUaZsA+h6uA9+PA==}
 
-  /electron/22.0.3:
-    resolution: {integrity: sha512-eETrJTINTzlXgQrnJSrKiF2Xdt5EHpxZ6Kk+WUjFCE0zUztdVm+hrngUecqhj8TPFlYScTANzPwRwUIjOChl+g==}
+  /electron/22.1.0:
+    resolution: {integrity: sha512-wz5s4N6V7zyKm4YQmXJImFoxO1Doai32ShYm0FzOLPBMwLMdQBV+REY+j1opRx0KJ9xJEIdjYgcA8OSw6vx3pA==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
     requiresBuild: true
@@ -17694,8 +17694,9 @@ packages:
       semver: 7.3.8
     dev: false
 
-  /node-abort-controller/3.0.1:
-    resolution: {integrity: sha512-/ujIVxthRs+7q6hsdjHMaj8hRG9NuWmwrz+JdRwZ14jdFoKSkm+vDsCbF9PLpnSqjaWQJuTmVtcWHNLr+vrOFw==}
+  /node-abort-controller/3.1.0:
+    resolution: {integrity: sha512-rpVgrXyHwHPGufGxZT1ttkXQwQiVDifiqbOHCR4InwFpQ4aItUuc3zX7l/0dKd0hXHaqftdXTh8eSZGzqCI9AA==}
+    engines: {node: <14.7.0}
     dev: false
 
   /node-addon-api/4.3.0:
@@ -18433,8 +18434,8 @@ packages:
     resolution: {integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==}
     dev: true
 
-  /playwright-core/1.29.2:
-    resolution: {integrity: sha512-94QXm4PMgFoHAhlCuoWyaBYKb92yOcGVHdQLoxQ7Wjlc7Flg4aC/jbFW7xMR52OfXMVkWicue4WXE7QEegbIRA==}
+  /playwright-core/1.30.0:
+    resolution: {integrity: sha512-7AnRmTCf+GVYhHbLJsGUtskWTE33SwMZkybJ0v6rqR1boxq2x36U7p1vDRV7HO2IwTZgmycracLxPEJI49wu4g==}
     engines: {node: '>=14'}
     hasBin: true
     dev: true
@@ -21604,7 +21605,7 @@ packages:
       js-md4: 0.3.2
       jsbi: 4.3.0
       native-duplexpair: 1.0.0
-      node-abort-controller: 3.0.1
+      node-abort-controller: 3.1.0
       punycode: 2.3.0
       sprintf-js: 1.1.2
     transitivePeerDependencies:
