@@ -7,7 +7,7 @@
  */
 
 import { UiStateStorage, UiStateStorageStatus } from "@itwin/core-react";
-import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventId } from "../framework/FrameworkEvents";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
 
 /** Class that maintain UiShowHide user settings between sessions
@@ -223,10 +223,3 @@ export class InternalUiShowHideManager {
     InternalUiShowHideManager._snapWidgetOpacity = false;
   }
 }
-
-/** Maintains Ui Show/Hide state. The `Ui` includes widgets, panels and the status bar.
- * @public
- * @deprecated in 3.6. Use `UiFramework.visibility` property.
- */
-export class UiShowHideManager extends InternalUiShowHideManager {}
-

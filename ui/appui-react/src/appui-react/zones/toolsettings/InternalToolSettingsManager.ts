@@ -10,23 +10,7 @@ import { IModelApp, InteractiveTool } from "@itwin/core-frontend";
 import { DialogItem, DialogPropertySyncItem, UiEvent } from "@itwin/appui-abstract";
 import { focusIntoContainer } from "@itwin/core-react";
 import { UiFramework } from "../../UiFramework";
-
-// -----------------------------------------------------------------------------
-// Events
-// -----------------------------------------------------------------------------
-
-/** Sync Tool Settings Properties Event Args interface.
- * @public
- */
-export interface SyncToolSettingsPropertiesEventArgs {
-  toolId: string;
-  syncProperties: DialogPropertySyncItem[];
-}
-
-/** Sync Tool Settings Properties Event class.
- * @public
- */
-export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> { }
+import { SyncToolSettingsPropertiesEvent } from "../../framework/FrameworkToolSettings";
 
 /** Tool Settings Manager class. Used to generate UI components for Tool Settings.
  * @internal
@@ -153,18 +137,5 @@ export class InternalToolSettingsManager {
     }
 
     return false;
-  }
-}
-
-/** Tool Settings Manager class. Used to generate UI components for Tool Settings.
- * @public
- * @deprecated in 3.6. Use `UiFramework.toolSettings` property.
- */
-export class ToolSettingsManager extends InternalToolSettingsManager {
-  /** Initializes the ToolSettingsManager
-   * @deprecated in 3.6. This is called internally.
-   */
-  public static override initialize() {
-    InternalToolSettingsManager.initialize();
   }
 }

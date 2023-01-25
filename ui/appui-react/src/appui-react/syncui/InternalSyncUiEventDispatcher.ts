@@ -6,89 +6,17 @@
  * @module SyncUi
  */
 
-import { UiEventDispatcher, UiSyncEvent, UiSyncEventArgs } from "@itwin/appui-abstract";
+import { UiEventDispatcher, UiSyncEvent } from "@itwin/appui-abstract";
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, SelectedViewportChangedArgs, SelectionSetEvent } from "@itwin/core-frontend";
 import { getInstancesCount, SelectionScope } from "@itwin/presentation-common";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 // cSpell:ignore configurableui
 import { Backstage } from "../backstage/Backstage";
+import { SyncUiEventId } from "../framework/FrameworkEvents";
 import { PresentationSelectionScope, SessionStateActionId } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
 import { WorkflowManager } from "../workflow/Workflow";
-
-// cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, backstageevent, contentlayoutactivated, contentcontrolactivated,
-// cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
-// cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
-// cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged viewstatechanged
-// cSpell:ignore accudrawcompassmodechanged accudrawfieldlockchanged accudrawrotationchanged uisettingschanged
-
-/** Event Id used to sync UI components. Used to refresh visibility or enable state of control.
- * @public
- */
-export enum SyncUiEventId {
-  /** AccuDraw compass mode has changed. */
-  AccuDrawCompassModeChanged = "accudrawcompassmodechanged",
-  /** AccuDraw rotation has changed. */
-  AccuDrawRotationChanged = "accudrawrotationchanged",
-  /** The active content as maintained by the ContentViewManager has changed. */
-  ActiveContentChanged = "activecontentchanged",
-  /** The active view maintained by the ViewManager has changed. */
-  ActiveViewportChanged = "activeviewportchanged",
-  /** Backstage has been closed.
-   * @deprecated Use BackstageEvent instead
-   */
-  BackstageCloseEvent = "backstagecloseevent",
-  /** Backstage has been closed. */
-  BackstageEvent = "backstageevent",
-  /** A Content Layout has been activated.  */
-  ContentLayoutActivated = "contentlayoutactivated",
-  /** A Content Control maintained by UiFramework.frontstages has been activated. */
-  ContentControlActivated = "contentcontrolactivated",
-  /** A Frontstage is activating. */
-  FrontstageActivating = "frontstageactivating",
-  /** A Frontstage has been activated and the content has been assigned. */
-  FrontstageReady = "frontstageready",
-  /** A Modal Frontstage has been opened or closed. */
-  ModalFrontstageChanged = "modalfrontstagechanged",
-  /** A Modal Dialog has been opened or closed. */
-  ModalDialogChanged = "modaldialogchanged",
-  /** A NavigationAid has been activated. */
-  NavigationAidActivated = "navigationaidactivated",
-  /** An InteractiveTool has been activated via the ToolAdmin. */
-  ToolActivated = "toolactivated",
-  /** A Task has been activated.
-   * @deprecated */
-  TaskActivated = "taskactivated",
-  /** The state of a Widget has changed. */
-  WidgetStateChanged = "widgetstatechanged",
-  /** A Workflow has been activated.
-   * @deprecated */
-  WorkflowActivated = "workflowactivated",
-  /** The SelectionSet for the active IModelConnection has changed. */
-  SelectionSetChanged = "selectionsetchanged",
-  /** The list of settings providers registered with SettingsManager has changed. */
-  SettingsProvidersChanged = "settingsproviderschanged",
-  /** The current view state has changed (used by view undo/redo toolbar buttons). */
-  ViewStateChanged = "viewstatechanged",
-  /** The current object the reads and write UI State has changed. */
-  UiStateStorageChanged = "uistatestoragechanged",
-  ShowHideManagerSettingChange = "show-hide-setting-change",
-  /** The list of feature overrides applied has been changed
-   * @alpha
-  */
-  FeatureOverridesChanged = "featureoverrideschanged"
-}
-
-/** SyncUi Event arguments. Contains a set of lower case event Ids.
- * @public @deprecated use UiSyncEventArgs in appui-abstract instead
- */
-export type SyncUiEventArgs = UiSyncEventArgs;
-
-/** SyncUi Event class.
- * @public @deprecated use UiSyncEvent in appui-abstract instead
- */
-export type SyncUiEvent = UiSyncEvent;
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
@@ -98,7 +26,6 @@ export class InternalSyncUiEventDispatcher {
   private static _uiEventDispatcher = new UiEventDispatcher();
   private static _unregisterListenerFunc?: () => void;
   private static _unregisterListenerFuncs: Array<() => void> = [];
-  private static initialized = false;
 
   /** @internal - used for testing only */
   /* istanbul ignore next */
@@ -111,9 +38,8 @@ export class InternalSyncUiEventDispatcher {
     return InternalSyncUiEventDispatcher._uiEventDispatcher.syncEventIds;
   }
 
-  /** Return SyncUiEvent so callers can register an event callback. */
-  // eslint-disable-next-line deprecation/deprecation
-  public static get onSyncUiEvent(): SyncUiEvent {
+  /** Return UiSyncEvent so callers can register an event callback. */
+  public static get onSyncUiEvent(): UiSyncEvent {
     return InternalSyncUiEventDispatcher._uiEventDispatcher.onSyncUiEvent;
   }
 
@@ -296,18 +222,4 @@ export class InternalSyncUiEventDispatcher {
 
   }
 
-}
-
-/** This class is used to send eventIds to interested UI components so the component can determine if it needs
- * to refresh its display by calling setState on itself.
- * @public
- * @deprecated in 3.6. Use `UiFramework.events` property.
- */
-export class SyncUiEventDispatcher extends InternalSyncUiEventDispatcher {
-  /** Initializes the Monitoring of Events that trigger dispatching sync events.
-   * @deprecated in 3.6. This is called internally.
-  */
-  public static override initialize() {
-    InternalSyncUiEventDispatcher.initialize();
-  }
 }

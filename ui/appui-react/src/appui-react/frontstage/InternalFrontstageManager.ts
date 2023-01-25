@@ -7,7 +7,6 @@
  * @module Frontstage
  */
 
-import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, InteractiveTool, SelectedViewportChangedArgs, StartOrResume, Tool } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
@@ -21,158 +20,16 @@ import { PanelSizeChangedEvent, PanelStateChangedEvent } from "../stagepanels/St
 import { UiFramework } from "../UiFramework";
 import { WidgetChangedEventArgs, WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
-import { SyncToolSettingsPropertiesEventArgs } from "../zones/toolsettings/ToolSettingsManager";
+import { SyncToolSettingsPropertiesEventArgs } from "../framework/FrameworkToolSettings";
 import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "./FrontstageDef";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
+import { FrontstageActivatedEvent, FrontstageDeactivatedEvent, FrontstageReadyEvent, ModalFrontstageChangedEvent, ModalFrontstageClosedEvent, ModalFrontstageInfo, ModalFrontstageItem, ModalFrontstageRequestedCloseEvent, ToolActivatedEvent, ToolIconChangedEvent } from "../framework/FrameworkFrontstages";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
 // -----------------------------------------------------------------------------
-
-/** Frontstage Activated Event Args interface.
- * @public
- */
-export interface FrontstageActivatedEventArgs {
-  deactivatedFrontstageDef?: FrontstageDef;
-  activatedFrontstageDef: FrontstageDef;
-}
-
-/** Frontstage Activated Event class.
- * @public
- */
-export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> { }
-
-/** Frontstage Deactivated Event Args interface.
- * @public
- */
-export interface FrontstageDeactivatedEventArgs {
-  /** Frontstage being deactivated */
-  deactivatedFrontstageDef: FrontstageDef;
-  /** Frontstage being activated */
-  activatedFrontstageDef?: FrontstageDef;
-
-  /** Total time spent in frontstage */
-  totalTime: number;
-  /** Engagement time spent in frontstage */
-  engagementTime: number;
-  /** Idle time spent in frontstage */
-  idleTime: number;
-}
-
-/** Frontstage Deactivated Event class.
- * @public
- */
-export class FrontstageDeactivatedEvent extends UiEvent<FrontstageDeactivatedEventArgs> { }
-
-/** Frontstage Ready Event Args interface.
- * @public
- */
-export interface FrontstageReadyEventArgs {
-  frontstageDef: FrontstageDef;
-}
-
-/** Frontstage Ready Event class.
- * @public
- */
-export class FrontstageReadyEvent extends UiEvent<FrontstageReadyEventArgs> { }
-
-/** Modal Frontstage Changed Event Args interface.
- * @public
- */
-export interface ModalFrontstageChangedEventArgs {
-  modalFrontstageCount: number;
-}
-
-/** Modal Frontstage Stack Changed Event class.
- * @public
- */
-export class ModalFrontstageChangedEvent extends UiEvent<ModalFrontstageChangedEventArgs> { }
-
-/** Modal Frontstage Closed Event Args interface.
- * @public
- */
-export interface ModalFrontstageClosedEventArgs {
-  /** Modal Frontstage being closed */
-  modalFrontstage: ModalFrontstageInfo;
-
-  /** Total time spent in frontstage */
-  totalTime: number;
-  /** Engagement time spent in frontstage */
-  engagementTime: number;
-  /** Idle time spent in frontstage */
-  idleTime: number;
-}
-
-/** Modal Frontstage Requested Close Event class. Notifies the modal stage that the close button was
- * pressed and passes the function to actually close the modal stage. This allows stage to do any
- * saving of unsaved data prior to closing the stage. If the ModalFrontstageInfo sets notifyCloseRequest
- * to true it is up to the stage to register for this event and call the stageCloseFunc once it has saved
- * any unsaved data.
- * @alpha
- */
-export class ModalFrontstageRequestedCloseEvent extends UiEvent<ModalFrontstageRequestedCloseEventArgs> { }
-
-/** Modal Frontstage RequestedClose Event Args interface.
- * @alpha
- */
-export interface ModalFrontstageRequestedCloseEventArgs {
-  /** Modal Frontstage that is to be closed */
-  modalFrontstage: ModalFrontstageInfo;
-  /** Function to call to close the stage */
-  stageCloseFunc: () => void;
-}
-
-/** Modal Frontstage Closed Event class.
- * @public
- */
-export class ModalFrontstageClosedEvent extends UiEvent<ModalFrontstageClosedEventArgs> { }
-
-/** Tool Activated Event Args interface.
- * @public
- */
-export interface ToolActivatedEventArgs {
-  toolId: string;
-}
-
-/** Tool Activated Event class.
- * @public
- */
-export class ToolActivatedEvent extends UiEvent<ToolActivatedEventArgs> { }
-
-/** Tool Icon Changed Event Args interface.
- * @public
- */
-export interface ToolIconChangedEventArgs {
-  iconSpec: string;
-}
-
-/** Tool Icon Changed Event class.
- * @public
- */
-export class ToolIconChangedEvent extends UiEvent<ToolIconChangedEventArgs> { }
-
-/** Modal Frontstage information interface.
- * @public
- */
-export interface ModalFrontstageInfo {
-  title: string;
-  content: React.ReactNode;
-  appBarRight?: React.ReactNode;
-  /** Set notifyCloseRequest to true on stages that register to listen for `onCloseModalFrontstageRequestedEvent` so
-   * that the stage can save unsaved data before closing. Used by the ModalSettingsStage.
-   * @alpha */
-  notifyCloseRequest?: boolean;
-}
-
-/** Modal Frontstage array item interface.
- * @internal
- */
-interface ModalFrontstageItem {
-  modalFrontstage: ModalFrontstageInfo;
-  timeTracker: TimeTracker;
-}
 
 /** Frontstage Manager class.
  * @internal
@@ -785,15 +642,3 @@ export class InternalFrontstageManager {
 
 }
 
-/** Frontstage Manager class.
- * @public
- * @deprecated in 3.6. Use `UiFramework.frontstages` property.
- */
-export class FrontstageManager extends InternalFrontstageManager {
-  /** Initializes the InternalFrontstageManager
-   * @deprecated in 3.6. This is called internally.
-  */
-  public static override initialize() {
-    InternalFrontstageManager.initialize();
-  }
-}

@@ -8,24 +8,12 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { CommonProps } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
-import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
+import { DialogManagerBase } from "./DialogManagerBase";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
+import { ModelessDialogChangedEvent, ModelessDialogInfo } from "../framework/FrameworkDialogs";
 
 // cSpell:ignore ZINDEX modeless
-
-/** Modeless Dialog Changed Event class.
- * @public
- */
-export class ModelessDialogChangedEvent extends DialogChangedEvent { }
-
-/** @internal */
-interface ModelessDialogInfo {
-  reactNode: React.ReactNode;
-  zIndex: number;
-  parentDocument: Document;
-}
 
 /** Modeless Dialog Manager class displays and manages multiple modeless dialogs
  * @internal
@@ -144,34 +132,5 @@ export class InternalModelessDialogManager {
 
   public static getDialogInfo(id: string): ModelessDialogInfo | undefined {
     return InternalModelessDialogManager._dialogMap.get(id);
-  }
-}
-
-/** ModelessDialogRenderer React component renders modeless dialogs.
- * @public
- */
-export class ModelessDialogRenderer extends React.PureComponent<CommonProps> {
-
-  constructor(props: CommonProps) {
-    super(props);
-  }
-
-  public override render(): React.ReactNode {
-    return (
-      <DialogRendererBase {...this.props} dialogManager={UiFramework.dialogs.modeless.dialogManager} />
-    );
-  }
-}
-
-/** Modeless Dialog Manager class displays and manages multiple modeless dialogs
- * @public
- * @deprecated in 3.6. Use `UiFramework.dialogs.modeless` property.
- */
-export class ModelessDialogManager extends InternalModelessDialogManager {
-  /** Initialize the modeless dialog manager
-   * @deprecated in 3.6. This is called internally.
-  */
-  public static override initialize(): void {
-    InternalModelessDialogManager.initialize();
   }
 }

@@ -7,7 +7,7 @@
  * @module ChildWindowManager
  */
 
-import "./ChildWindowManager.scss";
+import "./InternalChildWindowManager.scss";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { copyStyles } from "./CopyStyles";
@@ -15,12 +15,13 @@ import { Provider } from "react-redux";
 import { StateManager } from "../redux/StateManager";
 import { UiStateStorageHandler } from "../uistate/useUiStateStorage";
 import { PopupRenderer } from "../popup/PopupManager";
-import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
-import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
+import { ModelessDialogRenderer } from "../dialog/ModelessDialogManagerX";
+import { ModalDialogRenderer } from "../dialog/ModalDialogManagerX";
 import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
 import { FrameworkVersion } from "../hooks/useFrameworkVersion";
 import { ThemeManager } from "../theme/ThemeManager";
 import { UiFramework } from "../UiFramework";
+import { ChildWindowLocationProps, OpenChildWindowInfo } from "../framework/FrameworkChildWindows";
 
 const childHtml = `<!DOCTYPE html>
 <html>
@@ -44,21 +45,6 @@ const childHtml = `<!DOCTYPE html>
   <div id="root"></div>
 </body>
 </html>`;
-
-/** @public */
-export interface OpenChildWindowInfo {
-  childWindowId: string;
-  window: Window;
-  parentWindow: Window;
-}
-
-/** @public */
-export interface ChildWindowLocationProps {
-  width: number;
-  height: number;
-  left: number;
-  top: number;
-}
 
 /** Supports opening a child browser window from the main application window. The child window is managed by the main application
  * and is running in the same security context. The application must deliver the html file iTwinPopup.html along side its index.html.
@@ -237,69 +223,3 @@ export class InternalChildWindowManager {
     return true;
   }
 }
-
-/** Supports opening a child browser window from the main application window. The child window is managed by the main application
- * and is running in the same security context. The application must deliver the html file iTwinPopup.html along side its index.html.
- * See also: [Child Window Manager]($docs/learning/ui/appui-react/ChildWindows.md)
- * @public
- * @deprecated in 3.6. Use `UiFramework.childWindows` property to access.
- * */
-export class ChildWindowManager extends InternalChildWindowManager {
-  // Deprecation plan: Remove this class and only use InternalChildWindowManager
-
-  /**
-   * @deprecated in 3.6. Use `find` method.
-   */
-  public findChildWindow(
-    childWindowId: string | undefined
-  ): OpenChildWindowInfo | undefined {
-    return this.find(childWindowId);
-  }
-
-  /**
-   * @deprecated in 3.6. Use `findId` method.
-   */
-  public findChildWindowId(
-    contentWindow: Window | undefined | null
-  ): string | undefined {
-    return this.findId(contentWindow);
-  }
-
-  /** Close all child/pop-out windows. This typically is called when the frontstage is changed.
-   * @deprecated in 3.6. Use `closeAll` method.
-   */
-  public closeAllChildWindows() {
-    return this.closeAll();
-  }
-
-  /**
-   * @deprecated in 3.6. Use `close` method.
-   */
-  public closeChildWindow = (
-    childWindowId: string,
-    processWindowClose = true
-  ) => {
-    return this.close(childWindowId, processWindowClose);
-  };
-
-  /**
-   * @deprecated in 3.6. Use `open` method.
-   */
-  // istanbul ignore next
-  public openChildWindow(
-    childWindowId: string,
-    title: string,
-    content: React.ReactNode,
-    location: ChildWindowLocationProps,
-    useDefaultPopoutUrl?: boolean
-  ) {
-    return this.open(
-      childWindowId,
-      title,
-      content,
-      location,
-      useDefaultPopoutUrl
-    );
-  }
-}
-

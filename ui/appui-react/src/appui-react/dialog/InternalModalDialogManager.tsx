@@ -7,14 +7,8 @@
  */
 
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
-import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
-import { UiFramework } from "../UiFramework";
-
-/** Modal Dialog Changed Event class.
- * @public
- */
-export class ModalDialogChangedEvent extends DialogChangedEvent { }
+import { DialogManagerBase } from "./DialogManagerBase";
+import { ModalDialogChangedEvent } from "../framework/FrameworkDialogs";
 
 /** Modal Dialog Manager class displays and manages multiple modal dialogs
  * @internal
@@ -65,25 +59,3 @@ export class InternalModalDialogManager {
     return InternalModalDialogManager.dialogManager.dialogCount;
   }
 }
-
-/** ModalDialogRenderer React component renders modal dialogs
- * @public
- */
-export class ModalDialogRenderer extends React.PureComponent<CommonProps> {
-
-  constructor(props: CommonProps) {
-    super(props);
-  }
-
-  public override render(): React.ReactNode {
-    return (
-      <DialogRendererBase {...this.props} dialogManager={UiFramework.dialogs.modal.dialogManager} />
-    );
-  }
-}
-
-/** Modal Dialog Manager class displays and manages multiple modal dialogs
- * @public
- * @deprecated in 3.6. Use `UiFramework.dialogs.modal` property.
- */
-export class ModalDialogManager extends InternalModalDialogManager {}

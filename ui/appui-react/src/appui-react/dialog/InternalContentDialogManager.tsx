@@ -8,24 +8,13 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { CommonProps, getCssVariableAsNumber } from "@itwin/core-react";
+import { getCssVariableAsNumber } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
-import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
+import { DialogManagerBase } from "./DialogManagerBase";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
+import { ContentDialogChangedEvent, ContentDialogInfo } from "../framework/FrameworkContent";
 
 // cSpell:ignore ZINDEX modeless
-
-/** Content Dialog Changed Event class.
- * @public
- */
-export class ContentDialogChangedEvent extends DialogChangedEvent { }
-
-/** @internal */
-interface ContentDialogInfo {
-  reactNode: React.ReactNode;
-  zIndex: number;
-  parentDocument: Document;
-}
 
 /** Used if the 'dialog' z-index CSS variable cannot be read */
 const CONTENT_DIALOG_ZINDEX_DEFAULT = 2000;
@@ -160,34 +149,5 @@ export class InternalContentDialogManager {
 
   public static getDialogInfo(id: string): ContentDialogInfo | undefined {
     return InternalContentDialogManager._dialogMap.get(id);
-  }
-}
-
-/** ContentDialogRenderer React component renders modeless dialogs.
- * @public
- */
-export class ContentDialogRenderer extends React.PureComponent<CommonProps> {
-
-  constructor(props: CommonProps) {
-    super(props);
-  }
-
-  public override render(): React.ReactNode {
-    return (
-      <DialogRendererBase {...this.props} dialogManager={UiFramework.content.dialogs.dialogManager} />
-    );
-  }
-}
-
-/** Content Dialog Manager class displays and manages multiple modeless dialogs
- * @public
- * @deprecated in 3.6. Use `UiFramework.content.dialog` property.
- */
-export class ContentDialogManager extends InternalContentDialogManager {
-  /** Initialize the modeless dialog manager.
-   * @deprecated in 3.6. This is called internally.
-  */
-  public static override initialize(): void {
-    InternalContentDialogManager.initialize();
   }
 }

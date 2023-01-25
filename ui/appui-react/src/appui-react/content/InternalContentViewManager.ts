@@ -10,40 +10,13 @@ import * as React from "react";
 import { UiEvent } from "@itwin/appui-abstract";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentControl } from "./ContentControl";
-import { InternalContentLayoutManager } from "./ContentLayoutManager";
+import { InternalContentLayoutManager } from "./InternalContentLayoutManager";
 import { IModelApp } from "@itwin/core-frontend";
 import { ContentGroup } from "./ContentGroup";
 import { Logger } from "@itwin/core-bentley";
 import { UiFramework } from "../UiFramework";
-import { InternalContentDialogManager } from "../dialog/ContentDialogManager";
-
-/** [[MouseDownChangedEvent]] Args interface.
- * @public
- */
-export interface MouseDownChangedEventArgs {
-  /** Indicates whether the mouse is down */
-  mouseDown: boolean;
-}
-
-/** Mouse Down Changed Event class.
- * @public
- */
-export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> { }
-
-/** [[ActiveContentChangedEvent]] Args interface.
- * @public
- */
-export interface ActiveContentChangedEventArgs {
-  /** React node of the old content */
-  oldContent?: React.ReactNode;
-  /** React node of the newly active content */
-  activeContent?: React.ReactNode;
-}
-
-/** Active Content Changed Event class.
- * @public
- */
-export class ActiveContentChangedEvent extends UiEvent<ActiveContentChangedEventArgs> { }
+import { ActiveContentChangedEvent, MouseDownChangedEvent } from "../framework/FrameworkContent";
+import { InternalContentDialogManager } from "../dialog/InternalContentDialogManager";
 
 /** Content View Manager class.
  * @internal
@@ -267,10 +240,3 @@ export class InternalContentViewManager {
     return InternalContentDialogManager;
   }
 }
-
-/** Content View Manager class.
- * @public
- * @deprecated in 3.6. Use `UiFramework.content` property
- */
-export class ContentViewManager extends InternalContentViewManager {}
-

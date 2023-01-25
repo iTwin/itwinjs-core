@@ -107,9 +107,3 @@ export class InternalContentLayoutManager {
     }
   }
 }
-
-/** ContentLayout Manager class.
- * @public
- * @deprecated in 3.6. Use `UiFramework.content.layouts` property.
- */
-export class ContentLayoutManager extends InternalContentLayoutManager {}
