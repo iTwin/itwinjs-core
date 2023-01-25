@@ -24,14 +24,14 @@ export enum SyncUiEventId {
   /** The active view maintained by the ViewManager has changed. */
   ActiveViewportChanged = "activeviewportchanged",
   /** Backstage has been closed.
-   * @deprecated Use BackstageEvent instead
+   * @deprecated in 1.x. Use BackstageEvent instead
    */
   BackstageCloseEvent = "backstagecloseevent",
   /** Backstage has been closed. */
   BackstageEvent = "backstageevent",
   /** A Content Layout has been activated.  */
   ContentLayoutActivated = "contentlayoutactivated",
-  /** A Content Control maintained by UiFramework.frontstages has been activated. */
+  /** A Content Control maintained by FrontstageManager has been activated. */
   ContentControlActivated = "contentcontrolactivated",
   /** A Frontstage is activating. */
   FrontstageActivating = "frontstageactivating",
@@ -46,12 +46,12 @@ export enum SyncUiEventId {
   /** An InteractiveTool has been activated via the ToolAdmin. */
   ToolActivated = "toolactivated",
   /** A Task has been activated.
-   * @deprecated */
+   * @deprecated in 3.0. */
   TaskActivated = "taskactivated",
   /** The state of a Widget has changed. */
   WidgetStateChanged = "widgetstatechanged",
   /** A Workflow has been activated.
-   * @deprecated */
+   * @deprecated in 3.0. */
   WorkflowActivated = "workflowactivated",
   /** The SelectionSet for the active IModelConnection has changed. */
   SelectionSetChanged = "selectionsetchanged",
