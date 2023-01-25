@@ -43,7 +43,7 @@ PropertyEditorManager.registerEditor(StandardTypeNames.Navigation, NavigationPro
  * Data structure that describes [[navigationPropertyEditorContext]] value.
  * @beta
  */
-export interface NavigationPropertyEditorContext {
+export interface NavigationPropertyEditorContextProps {
   /** iModel connection to pull data from. */
   imodel: IModelConnection;
   /** Getter to get [NavigationPropertyInfo]($presentation-common) for specific property. */
@@ -54,14 +54,14 @@ export interface NavigationPropertyEditorContext {
  * Context used to store data for [[NavigationPropertyEditor]].
  * @beta
  */
-export const navigationPropertyEditorContext = React.createContext<NavigationPropertyEditorContext | undefined>(undefined);
+export const navigationPropertyEditorContext = React.createContext<NavigationPropertyEditorContextProps | undefined>(undefined);
 
 /**
  * Custom hook that creates value for [[navigationPropertyEditorContext]].
  * @beta
  */
-export function useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext {
-  return React.useMemo<NavigationPropertyEditorContext>(() => ({
+export function useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContextProps {
+  return React.useMemo<NavigationPropertyEditorContextProps>(() => ({
     imodel,
     getNavigationPropertyInfo: async (property) => {
       const field = await dataProvider.getFieldByPropertyRecord(new PropertyRecord({ valueFormat: PropertyValueFormat.Primitive }, property));

@@ -422,13 +422,13 @@ export class NavigationPropertyEditor extends PropertyEditorBase {
 }
 
 // @beta
-export interface NavigationPropertyEditorContext {
+export const navigationPropertyEditorContext: React_2.Context<NavigationPropertyEditorContextProps | undefined>;
+
+// @beta
+export interface NavigationPropertyEditorContextProps {
     getNavigationPropertyInfo: (property: PropertyDescription) => Promise<NavigationPropertyInfo | undefined>;
     imodel: IModelConnection;
 }
-
-// @beta
-export const navigationPropertyEditorContext: React_2.Context<NavigationPropertyEditorContext | undefined>;
 
 // @beta
 export class NavigationPropertyTargetEditor extends React_2.PureComponent<PropertyEditorProps> implements TypeEditor {
@@ -837,7 +837,7 @@ export interface UseHierarchyLevelFilteringProps {
 }
 
 // @beta
-export function useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext;
+export function useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContextProps;
 
 // @internal (undocumented)
 export function useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>, activeMatchIndex?: number): HighlightableTreeProps | undefined;

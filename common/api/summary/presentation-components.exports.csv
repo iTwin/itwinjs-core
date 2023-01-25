@@ -43,8 +43,8 @@ beta;isPresentationInstanceFilterConditionGroup(filter: PresentationInstanceFilt
 beta;isPresentationTreeNodeItem(item: TreeNodeItem): item is PresentationTreeNodeItem
 public;IUnifiedSelectionComponent
 beta;NavigationPropertyEditor 
-beta;NavigationPropertyEditorContext
 beta;navigationPropertyEditorContext: React_2.Context
+beta;NavigationPropertyEditorContextProps
 beta;NavigationPropertyTargetEditor 
 public;PresentationComponentsLoggerCategory
 beta;PresentationInfoTreeNodeItem 
@@ -97,7 +97,7 @@ public;useControlledPresentationTreeFiltering(props: ControlledPresentationTreeF
 internal;useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider
 beta;useHierarchyLevelFiltering(props: UseHierarchyLevelFilteringProps):
 beta;UseHierarchyLevelFilteringProps
-beta;useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext
+beta;useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContextProps
 internal;useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider
 public;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult
 public;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): UsePropertyDataProviderWithUnifiedSelectionResult

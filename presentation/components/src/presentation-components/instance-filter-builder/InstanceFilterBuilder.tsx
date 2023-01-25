@@ -15,7 +15,7 @@ import { assert } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
 import { translate } from "../common/Utils";
-import { NavigationPropertyEditorContext } from "../properties/NavigationPropertyEditor";
+import { NavigationPropertyEditorContextProps } from "../properties/NavigationPropertyEditor";
 import { getIModelMetadataProvider } from "./ECMetadataProvider";
 import { MultiTagSelect } from "./MultiTagSelect";
 import { PresentationInstanceFilterProperty } from "./PresentationInstanceFilterProperty";
@@ -227,7 +227,7 @@ function useSelectedClasses(classes: ClassInfo[], imodel: IModelConnection, init
 
 /** @internal */
 export function useFilterBuilderNavigationPropertyEditorContext(imodel: IModelConnection, descriptor: Descriptor) {
-  return React.useMemo<NavigationPropertyEditorContext>(() => ({
+  return React.useMemo<NavigationPropertyEditorContextProps>(() => ({
     imodel,
     getNavigationPropertyInfo: async (property) => {
       const field = descriptor.getFieldByName(getInstanceFilterFieldName(property));
