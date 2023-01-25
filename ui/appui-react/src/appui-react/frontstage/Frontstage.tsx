@@ -28,7 +28,7 @@ import { WidgetsChangedEventArgs } from "../widgets/WidgetManager";
 import { isToolSettingsWidgetManagerProps, Zone, ZoneLocation, ZoneProps, ZoneRuntimeProps } from "../zones/Zone";
 import { ZoneDef } from "../zones/ZoneDef";
 import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
-import { FrontstageActivatedEventArgs } from "./FrontstageManager";
+import { FrontstageActivatedEventArgs } from "../framework/FrameworkFrontstages";
 
 /** Properties for a [[Frontstage]] component.
  * @deprecated Props of a deprecated component.

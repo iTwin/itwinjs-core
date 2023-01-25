@@ -86,7 +86,7 @@ describe("BasicNavigationWidget", () => {
     viewportMock.reset();
     viewportMock.setup((viewport) => viewport.view).returns(() => spatialViewStateMock.object);
 
-    sinon.stub(ContentViewManager, "getActiveContentControl").returns(contentControlMock.object);
+    sinon.stub(ContentViewManager, "getActiveContentControl").returns(contentControlMock.object); // eslint-disable-line deprecation/deprecation
 
     mount(<BasicNavigationWidget />);
   });

@@ -34,7 +34,7 @@ describe("StatusBarComposerControl", () => {
       isStatusBar: true,
     });
     const statusBarControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
-    sinon.stub(FrontstageManager, "activeFrontstageId").returns("TestStage");
+    sinon.stub(FrontstageManager, "activeFrontstageId").returns("TestStage"); // eslint-disable-line deprecation/deprecation
     const node = statusBarControl.getReactNode({} as StatusBarWidgetControlArgs);
     const renderedComponent = render(node as React.ReactElement);
     expect(renderedComponent).not.to.be.undefined;

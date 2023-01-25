@@ -22,7 +22,7 @@ import { WidgetDef } from "../widgets/WidgetDef";
 import { WidgetTab, WidgetTabs } from "../widgets/WidgetStack";
 import { ZoneDef, ZoneState } from "../zones/ZoneDef";
 import { FrontstageDef } from "./FrontstageDef";
-import { FrontstageActivatedEventArgs, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "./FrontstageManager";
+import { FrontstageActivatedEventArgs, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "../framework/FrameworkFrontstages";
 import { ModalFrontstage } from "./ModalFrontstage";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 

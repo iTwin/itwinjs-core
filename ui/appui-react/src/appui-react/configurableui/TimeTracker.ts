@@ -7,7 +7,7 @@
  */
 
 import { UiFramework } from "../UiFramework";
-import { UiActivityEventArgs, UiIntervalEventArgs } from "./ConfigurableUiManager";
+import { UiActivityEventArgs, UiIntervalEventArgs } from "../framework/FrameworkControls";
 
 /** Time Tracker utility class
  * @internal

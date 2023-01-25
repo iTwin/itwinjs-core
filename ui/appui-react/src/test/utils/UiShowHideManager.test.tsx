@@ -7,14 +7,16 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, INACTIVITY_TIME_DEFAULT, UiFramework,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, UiFramework,
   UiShowHideManager,
   UiShowHideSettingsProvider,
 } from "../../appui-react";
 import { TestFrontstage } from "../frontstage/FrontstageTestUtils";
-import TestUtils, { storageMock } from "../TestUtils";
+import TestUtils, { createStaticInternalPassthroughValidators, storageMock } from "../TestUtils";
 import { LocalStateStorage } from "@itwin/core-react";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
+import { INACTIVITY_TIME_DEFAULT, InternalUiShowHideManager } from "../../appui-react/utils/InternalUiShowHideManager";
+/* eslint-disable deprecation/deprecation */
 
 describe("UiShowHideManager localStorage Wrapper", () => {
 
@@ -274,6 +276,27 @@ describe("UiShowHideManager localStorage Wrapper", () => {
 
     });
 
+  });
+
+  it("calls Internal static for everything", () => {
+    const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(UiShowHideManager, InternalUiShowHideManager);
+
+    validateMethod("handleContentMouseMove", {} as any);
+    validateMethod("handleFrontstageReady");
+    validateMethod("handleWidgetMouseEnter", {} as any);
+    validateMethod("setAutoHideUi", true);
+    validateMethod("setSnapWidgetOpacity", true);
+    validateMethod("setUseProximityOpacity", true);
+    validateMethod("showUiAndCancelTimer");
+    validateMethod("showUiAndResetTimer");
+    validateMethod("terminate");
+    validateProp("autoHideUi", true);
+    validateProp("inactivityTime", true);
+    validateProp("isUiVisible", true);
+    validateProp("showHideFooter", true);
+    validateProp("showHidePanels", true);
+    validateProp("snapWidgetOpacity", true);
+    validateProp("useProximityOpacity", true);
   });
 
 });

@@ -18,7 +18,7 @@ import {
   Group as ToolGroupComponent, withDragInteraction,
 } from "@itwin/appui-layout-react";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
-import { ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { ToolActivatedEventArgs } from "../framework/FrameworkFrontstages";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";

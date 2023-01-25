@@ -22,7 +22,7 @@ import { CommandItemDef } from "../shared/CommandItemDef";
 import { CustomItemDef } from "../shared/CustomItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { ToolItemDef } from "../shared/ToolItemDef";
-import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventId } from "../framework/FrameworkEvents";
 import { GroupItemDef } from "../toolbar/GroupItem";
 import { RestoreFrontstageLayoutTool } from "./RestoreLayoutTool";
 import { UiFramework } from "../UiFramework";

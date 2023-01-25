@@ -10,8 +10,10 @@ import {
 } from "../../appui-react";
 import { CursorInformation } from "../../appui-react/cursor/CursorInformation";
 import { KeyboardShortcutMenu } from "../../appui-react/keyboardshortcut/KeyboardShortcutMenu";
-import TestUtils from "../TestUtils";
+import TestUtils, { createStaticInternalPassthroughValidators } from "../TestUtils";
 import { ConditionalBooleanValue, FunctionKey, SpecialKey } from "@itwin/appui-abstract";
+import { InternalKeyboardShortcutManager } from "../../appui-react/keyboardshortcut/InternalKeyboardShortcut";
+/* eslint-disable deprecation/deprecation */
 
 describe("KeyboardShortcut", () => {
 
@@ -323,6 +325,24 @@ describe("KeyboardShortcut", () => {
       expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
       document.body.removeChild(buttonElement);
     });
+
+    it("calls Internal static for everything", () => {
+      const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(KeyboardShortcutManager, InternalKeyboardShortcutManager);
+
+      validateMethod("closeShortcutsMenu");
+      validateMethod("displayShortcutsMenu");
+      validateMethod("getShortcut", "key");
+      validateMethod("initialize");
+      validateMethod("loadKeyboardShortcut", {} as any);
+      validateMethod("loadKeyboardShortcuts", []);
+      validateMethod("processKey", "key", false, true, false);
+      validateMethod("setFocusToHome");
+      validateProp("cursorX");
+      validateProp("cursorY");
+      validateProp("isFocusOnHome");
+      validateProp("shortcutContainer");
+    });
+
   });
 
   it("should support loading the AccuDraw keyboard shortcuts", async () => {

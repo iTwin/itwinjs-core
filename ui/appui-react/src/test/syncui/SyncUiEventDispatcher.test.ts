@@ -11,16 +11,16 @@ import { InstanceKey, RpcRequestsHandler } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@itwin/presentation-frontend";
 import {
-  ContentControlActivatedEventArgs, ContentLayoutActivatedEventArgs, NavigationAidActivatedEventArgs, SyncUiEventArgs, SyncUiEventDispatcher,
+  ActiveContentChangedEventArgs,
+  ContentControlActivatedEventArgs, ContentLayoutActivatedEventArgs, FrontstageActivatedEventArgs, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, NavigationAidActivatedEventArgs, SyncUiEventArgs, SyncUiEventDispatcher,
+  ToolActivatedEventArgs,
   UiFramework, WidgetStateChangedEventArgs,
 } from "../../appui-react";
 import { Backstage, BackstageEventArgs } from "../../appui-react/backstage/Backstage";
-import { ActiveContentChangedEventArgs } from "../../appui-react/content/ContentViewManager";
-import {
-  FrontstageActivatedEventArgs, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, ToolActivatedEventArgs,
-} from "../../appui-react/frontstage/FrontstageManager";
 import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../appui-react/workflow/Workflow";
-import TestUtils from "../TestUtils";
+import TestUtils, { createStaticInternalPassthroughValidators } from "../TestUtils";
+import { InternalSyncUiEventDispatcher } from "../../appui-react/syncui/InternalSyncUiEventDispatcher";
+/* eslint-disable deprecation/deprecation */
 
 const timeToWaitForUiSyncCallback = 60;
 
@@ -332,5 +332,20 @@ describe("SyncUiEventDispatcher", () => {
       IModelApp.viewManager.onSelectedViewportChanged.raiseEvent({ previous: viewportMock.object });
     });
 
+  });
+
+  it("calls Internal static for everything", () => {
+    const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(SyncUiEventDispatcher, InternalSyncUiEventDispatcher);
+
+    validateMethod("clearConnectionEvents", {} as any);
+    validateMethod("dispatchImmediateSyncUiEvent", "id");
+    validateMethod("dispatchSyncUiEvent", "id");
+    validateMethod("dispatchSyncUiEvents", ["id"]);
+    validateMethod("hasEventOfInterest", {} as any, ["id"]);
+    validateMethod("initialize");
+    validateMethod("initializeConnectionEvents", {} as any);
+    validateMethod("setTimeoutPeriod", 6786);
+    validateProp("onSyncUiEvent");
+    validateProp("syncEventIds");
   });
 });

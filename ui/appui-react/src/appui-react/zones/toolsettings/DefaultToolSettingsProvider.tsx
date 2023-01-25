@@ -13,7 +13,7 @@ import { DialogItem, DialogPropertySyncItem, UiLayoutDataProvider } from "@itwin
 import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
 import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
 import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer";
-import { SyncToolSettingsPropertiesEventArgs } from "./ToolSettingsManager";
+import { SyncToolSettingsPropertiesEventArgs } from "../../framework/FrameworkToolSettings";
 import { ToolUiProvider } from "./ToolUiProvider";
 import { UiFramework } from "../../UiFramework";
 

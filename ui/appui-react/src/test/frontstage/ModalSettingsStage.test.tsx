@@ -113,7 +113,7 @@ describe("ModalSettingsStage", () => {
     const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
     const frontstageDef = new FrontstageDef();
     await frontstageDef.initializeFromProps(dummy);
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef); // eslint-disable-line deprecation/deprecation
 
     settingsManager.addSettingsProvider(new TestSettingsProvider());
     // const modalFrontstage = new SettingsModalFrontstage();
@@ -150,7 +150,7 @@ describe("ModalSettingsStage", () => {
     const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
     const frontstageDef = new FrontstageDef();
     await frontstageDef.initializeFromProps(dummy);
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef); // eslint-disable-line deprecation/deprecation
 
     settingsManager.addSettingsProvider(new TestSettingsProvider());
     SettingsModalFrontstage.showSettingsStage("page-3");
@@ -173,7 +173,7 @@ describe("ModalSettingsStage", () => {
     const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 }; // eslint-disable-line deprecation/deprecation
     const frontstageDef = new FrontstageDef();
     await frontstageDef.initializeFromProps(dummy);
-    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef); // eslint-disable-line deprecation/deprecation
 
     settingsManager.addSettingsProvider(new TestSettingsProvider());
     SettingsModalFrontstage.showSettingsStage("page2");

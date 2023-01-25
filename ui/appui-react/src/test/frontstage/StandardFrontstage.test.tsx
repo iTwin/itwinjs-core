@@ -118,7 +118,7 @@ describe("ContentGroupProvider", () => {
   });
 
   beforeEach(() => {
-    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
+    sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined); // eslint-disable-line deprecation/deprecation
     UiFramework.frontstages.clearFrontstageProviders();
   });
 

@@ -7,9 +7,11 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { ContentDialog, ContentDialogManager, ContentDialogRenderer, DialogChangedEventArgs, UiFramework } from "../../appui-react";
-import TestUtils, { userEvent } from "../TestUtils";
+import TestUtils, { createStaticInternalPassthroughValidators, userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
+import { InternalContentDialogManager } from "../../appui-react/dialog/InternalContentDialogManager";
+/* eslint-disable deprecation/deprecation */
 
 describe("ContentDialogManager", () => {
   let theUserTo: ReturnType<typeof userEvent.setup>;
@@ -217,6 +219,24 @@ describe("ContentDialogManager", () => {
     expect(ContentDialogManager.activeDialog).to.eq(reactNode2);
 
     ContentDialogManager.closeDialog(dialogId2);
+  });
+
+  it("calls Internal static for everything", () => {
+    const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(ContentDialogManager, InternalContentDialogManager);
+
+    validateMethod("closeAll");
+    validateMethod("closeDialog", "id");
+    validateMethod("getDialogInfo", "id");
+    validateMethod("getDialogZIndex", "id");
+    validateMethod("handlePointerDownEvent", {} as any, "id", sinon.spy());
+    validateMethod("initialize");
+    validateMethod("openDialog", "", "id", document);
+    validateMethod("update");
+    validateProp("activeDialog");
+    validateProp("dialogCount");
+    validateProp("dialogManager");
+    validateProp("dialogs");
+    validateProp("onContentDialogChangedEvent");
   });
 
 });

@@ -7,8 +7,10 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { MessageBoxIconType, MessageBoxType } from "@itwin/core-frontend";
 import { DialogChangedEventArgs, ModalDialogManager, ModalDialogRenderer, StandardMessageBox } from "../../appui-react";
-import TestUtils from "../TestUtils";
+import TestUtils, { createStaticInternalPassthroughValidators } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
+import { InternalModalDialogManager } from "../../appui-react/dialog/InternalModalDialogManager";
+/* eslint-disable deprecation/deprecation */
 
 describe("ModalDialogManager", () => {
 
@@ -109,6 +111,20 @@ describe("ModalDialogManager", () => {
     ModalDialogManager.closeDialog();
     expect(ModalDialogManager.dialogCount).to.eq(0);
     expect(screen.queryAllByTestId("core-dialog-root")).to.have.lengthOf(0);
+  });
+
+  it("calls Internal static for everything", () => {
+    const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(ModalDialogManager, InternalModalDialogManager);
+
+    validateMethod("closeAll");
+    validateMethod("closeDialog", "id");
+    validateMethod("openDialog", "", "id", document);
+    validateMethod("update");
+    validateProp("activeDialog");
+    validateProp("dialogCount");
+    validateProp("dialogManager");
+    validateProp("dialogs");
+    validateProp("onModalDialogChangedEvent");
   });
 
 });

@@ -10,7 +10,7 @@ import * as React from "react";
 import { UiDataProvider } from "@itwin/appui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { ToolSettingsEntry } from "../../widget-panels/ToolSettings";
-import { SyncToolSettingsPropertiesEventArgs } from "./ToolSettingsManager";
+import { SyncToolSettingsPropertiesEventArgs } from "../../framework/FrameworkToolSettings";
 
 /**
  * ToolUiProvider provides the Tool Settings and/or Tool Assistance UI for a tool.

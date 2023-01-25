@@ -12,7 +12,7 @@ import * as React from "react";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { UiEvent } from "@itwin/appui-abstract";
 import { CommonProps, FlexWrapContainer, ScrollView, SearchBox, UiCore } from "@itwin/core-react";
-import { ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import { ModalFrontstageInfo } from "../framework/FrameworkFrontstages";
 import { UiFramework } from "../UiFramework";
 import { SheetData } from "./SheetNavigationAid";
 

@@ -14,7 +14,7 @@ import { UiComponents } from "@itwin/components-react";
 import { ViewIdChangedEventArgs, ViewportComponentEvents } from "@itwin/imodel-components-react";
 import { CommonProps } from "@itwin/core-react";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import { ModalFrontstageInfo } from "../framework/FrameworkFrontstages";
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { NavigationAidControl } from "./NavigationAidControl";

@@ -14,7 +14,7 @@ import * as React from "react";
 import { SettingsTabEntry } from "@itwin/core-react";
 import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
-import { SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
+import { SyncUiEventId } from "../../framework/FrameworkEvents";
 import { IconSpecUtilities, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react";
 

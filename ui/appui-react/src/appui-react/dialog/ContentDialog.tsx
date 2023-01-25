@@ -9,8 +9,8 @@
 import "./ContentDialog.scss";
 import * as React from "react";
 import { Dialog, DialogProps } from "@itwin/core-react";
-import { ActiveContentChangedEventArgs } from "../content/ContentViewManager";
-import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { ActiveContentChangedEventArgs } from "../framework/FrameworkContent";
+import { SyncUiEventId } from "../framework/FrameworkEvents";
 import { UiFramework } from "../UiFramework";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import classnames from "classnames";

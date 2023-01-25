@@ -15,7 +15,7 @@ import { SplitPane } from "./split-pane/SplitPane";
 import { CommonProps, Orientation } from "@itwin/core-react";
 import { ContentGroup } from "./ContentGroup";
 import { ContentLayoutProps, LayoutFragmentProps, LayoutHorizontalSplitProps, LayoutSplitPropsBase, LayoutVerticalSplitProps, UiEvent } from "@itwin/appui-abstract";
-import { ActiveContentChangedEventArgs } from "./ContentViewManager";
+import { ActiveContentChangedEventArgs } from "../framework/FrameworkContent";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { UiFramework } from "../UiFramework";
 

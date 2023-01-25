@@ -14,7 +14,7 @@ import {
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";
 import { UiStateStorage, UiStateStorageStatus } from "@itwin/core-react";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
-import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventId } from "../framework/FrameworkEvents";
 import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
 
 // cspell:ignore dont

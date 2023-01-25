@@ -12,7 +12,9 @@ import {
   Frontstage, FrontstageProps, FrontstageProvider, MessageManager, PopupManager,
   TaskManager, TaskPropsList, UiFramework, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
 } from "../../appui-react";
-import TestUtils from "../TestUtils";
+import TestUtils, { createStaticInternalPassthroughValidators } from "../TestUtils";
+import { InternalConfigurableUiManager } from "../../appui-react/configurableui/InternalConfigurableUiManager";
+/* eslint-disable deprecation/deprecation */
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -184,4 +186,16 @@ describe("ConfigurableUiManager", () => {
     expect(PopupManager.popupCount).to.eq(0);
   });
 
+  it("calls Internal static for everything", () => {
+    const [validateMethod] = createStaticInternalPassthroughValidators(ConfigurableUiManager, InternalConfigurableUiManager);
+
+    validateMethod("closeUi");
+    validateMethod(["createControl", "create"], "classId", "uniqueId", {}, "controlId");
+    validateMethod("getConstructorClassId", TestWidget);
+    validateMethod("getWrapperElement");
+    validateMethod("initialize");
+    validateMethod(["isControlRegistered", "isRegistered"], "classId");
+    validateMethod(["registerControl", "register"], "classId", TestWidget);
+    validateMethod(["unregisterControl", "unregister"], "classId");
+  });
 });

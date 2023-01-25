@@ -7,8 +7,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@itwin/appui-abstract";
-import { ActionItemButton, BaseItemState, CommandItemDef, UiFramework } from "../../appui-react";
-import { SyncUiEventId } from "../../appui-react/syncui/SyncUiEventDispatcher";
+import { ActionItemButton, BaseItemState, CommandItemDef, SyncUiEventId, UiFramework } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ActionItemButton", () => {

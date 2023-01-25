@@ -19,26 +19,36 @@ import { LocalStateStorage, SettingsManager, UiStateStorage } from "@itwin/core-
 import { UiIModelComponents } from "@itwin/imodel-components-react";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { ChildWindowManager } from "./childwindow/ChildWindowManager";
-import { InternalConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
+import { InternalConfigurableUiManager } from "./configurableui/InternalConfigurableUiManager";
 import { ConfigurableUiActionId } from "./configurableui/state";
 import { FrameworkState } from "./redux/FrameworkState";
 import { CursorMenuData, PresentationSelectionScope, SessionStateActionId } from "./redux/SessionState";
 import { StateManager } from "./redux/StateManager";
 import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
-import { InternalSyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
+import { InternalSyncUiEventDispatcher } from "./syncui/InternalSyncUiEventDispatcher";
 import { SYSTEM_PREFERRED_COLOR_THEME, TOOLBAR_OPACITY_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
-import { InternalUiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
+import { InternalUiShowHideManager, UiShowHideSettingsProvider } from "./utils/InternalUiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
-import { InternalFrontstageManager } from "./frontstage/FrontstageManager";
-import { InternalContentViewManager } from "./content/ContentViewManager";
-import { InternalModalDialogManager } from "./dialog/ModalDialogManager";
-import { InternalModelessDialogManager } from "./dialog/ModelessDialogManager";
-import { InternalKeyboardShortcutManager } from "./keyboardshortcut/KeyboardShortcut";
-import { InternalToolSettingsManager } from "./zones/toolsettings/ToolSettingsManager";
+import { InternalFrontstageManager } from "./frontstage/InternalFrontstageManager";
+import { InternalContentViewManager } from "./content/InternalContentViewManager";
+import { InternalModalDialogManager } from "./dialog/InternalModalDialogManager";
+import { InternalModelessDialogManager } from "./dialog/InternalModelessDialogManager";
+import { InternalKeyboardShortcutManager } from "./keyboardshortcut/InternalKeyboardShortcut";
+import { InternalToolSettingsManager } from "./zones/toolsettings/InternalToolSettingsManager";
+import { FrameworkBackstage } from "./framework/FrameworkBackstage";
+import { FrameworkChildWindows } from "./framework/FrameworkChildWindows";
+import { FrameworkControls } from "./framework/FrameworkControls";
+import { FrameworkFrontstages } from "./framework/FrameworkFrontstages";
+import { FrameworkEvents, SyncUiEventId } from "./framework/FrameworkEvents";
+import { FrameworkToolSettings } from "./framework/FrameworkToolSettings";
+import { FrameworkContent } from "./framework/FrameworkContent";
+import { FrameworkDialogs } from "./framework/FrameworkDialogs";
+import { FrameworkKeyboardShortcuts } from "./framework/FrameworkKeyboardShortcuts";
+import { FrameworkVisibility } from "./framework/FrameworkVisibility";
 
 // cSpell:ignore Mobi
 
@@ -98,9 +108,9 @@ export interface TrackingTime {
 export class UiFramework {
   /**
    * Operation on the backstage component.
-   * @public
+   * @beta
    */
-  public static get backstage() {
+  public static get backstage(): FrameworkBackstage {
     // istanbul ignore next
     if (!UiFramework._backstageManager)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
@@ -111,7 +121,7 @@ export class UiFramework {
    * Manage access to the child windows.
    * @beta
    */
-  public static get childWindows() {
+  public static get childWindows(): FrameworkChildWindows {
     return this._PopupWindowManager;
   }
 
@@ -119,7 +129,7 @@ export class UiFramework {
    * Manage registered controls
    * @beta
    */
-  public static get controls() {
+  public static get controls(): FrameworkControls {
     return InternalConfigurableUiManager;
   }
 
@@ -127,7 +137,7 @@ export class UiFramework {
    * Manage access to frontstages and related helper methods.
    * @beta
    */
-  public static get frontstages() {
+  public static get frontstages(): FrameworkFrontstages {
     return InternalFrontstageManager;
   }
 
@@ -135,7 +145,7 @@ export class UiFramework {
    * Manage events
    * @beta
    */
-  public static get events() {
+  public static get events(): FrameworkEvents {
     return InternalSyncUiEventDispatcher;
   }
 
@@ -143,7 +153,7 @@ export class UiFramework {
    * Manage access and behavior of the tool settings.
    * @beta
    */
-  public static get toolSettings() {
+  public static get toolSettings(): FrameworkToolSettings {
     return InternalToolSettingsManager;
   }
 
@@ -151,21 +161,17 @@ export class UiFramework {
    * Manage content presented by the frontstages.
    * @beta
    */
-  public static get content() {
+  public static get content(): FrameworkContent {
     return InternalContentViewManager;
   }
 
-  public static get dialogs() {
+  /**
+   * Manage displayed dialogs.
+   * @beta
+   */
+  public static get dialogs(): FrameworkDialogs {
     return {
-      /**
-       * Manage modal dialogs.
-       * @beta
-       */
       modal: InternalModalDialogManager,
-      /**
-       * Manage modeless dialogs
-       * @beta
-       */
       modeless: InternalModelessDialogManager,
     };
   }
@@ -174,7 +180,7 @@ export class UiFramework {
    * Manages global keyboard shortcuts
    * @beta
    */
-  public static get keyboardShortcuts() {
+  public static get keyboardShortcuts(): FrameworkKeyboardShortcuts {
     return InternalKeyboardShortcutManager;
   }
 
@@ -182,7 +188,7 @@ export class UiFramework {
    * Manages UI visibility (Show/Hide)
    * @beta
    */
-  public static get visibility() {
+  public static get visibility(): FrameworkVisibility {
     return InternalUiShowHideManager;
   }
 
@@ -205,7 +211,7 @@ export class UiFramework {
    * @deprecated in 3.6. Use `childWindows` property, name realignment.
   */
   public static get childWindowManager(): ChildWindowManager { // eslint-disable-line deprecation/deprecation
-    return UiFramework.childWindows;
+    return UiFramework.childWindows as ChildWindowManager; // eslint-disable-line deprecation/deprecation
   }
 
   /** Registers class that will be informed when the UserSettingsStorage location has been set or changed. This allows
@@ -390,7 +396,7 @@ export class UiFramework {
    * @deprecated in 3.6. Use `backstage` alternate property, name realignment.
   */
   public static get backstageManager(): BackstageManager {
-    return UiFramework.backstage;
+    return UiFramework.backstage as BackstageManager;
   }
 
   /** @alpha */

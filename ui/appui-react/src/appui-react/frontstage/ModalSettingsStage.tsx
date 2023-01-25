@@ -13,9 +13,9 @@ import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { Logger } from "@itwin/core-bentley";
 import { Centered, SettingsContainer } from "@itwin/core-react";
-import { ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "./FrontstageManager";
+import { ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "../framework/FrameworkFrontstages";
 import { UiFramework } from "../UiFramework";
-import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventId } from "../framework/FrameworkEvents";
 
 function ModalSettingsStage({ initialSettingsTabId }: { initialSettingsTabId?: string }) {
   const id = UiFramework.frontstages.activeFrontstageDef?.id ?? "none";

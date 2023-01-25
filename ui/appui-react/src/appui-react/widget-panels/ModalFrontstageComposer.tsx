@@ -6,7 +6,7 @@
  * @module Frontstage
  */
 import * as React from "react";
-import { ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import { ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "../framework/FrameworkFrontstages";
 import { ModalFrontstage } from "../frontstage/ModalFrontstage";
 import { UiFramework } from "../UiFramework";
 

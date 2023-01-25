@@ -26,7 +26,7 @@ import {
 } from "@itwin/appui-layout-react";
 import { HorizontalTabs, IconButton, ToggleSwitch } from "@itwin/itwinui-react";
 import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
-import { ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager";
+import { ToolIconChangedEventArgs } from "../../framework/FrameworkFrontstages";
 import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
 import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";

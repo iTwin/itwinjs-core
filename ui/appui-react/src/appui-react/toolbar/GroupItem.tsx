@@ -16,7 +16,7 @@ import {
   Group as ToolGroupComponent, withDragInteraction,
 } from "@itwin/appui-layout-react";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
-import { ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { ToolActivatedEventArgs } from "../framework/FrameworkFrontstages";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { AnyItemDef } from "../shared/AnyItemDef";
 import { GroupItemProps } from "../shared/GroupItemProps";

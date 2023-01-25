@@ -10,8 +10,9 @@ import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
   DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
 } from "@itwin/appui-abstract";
-import { InternalToolSettingsManager, SyncToolSettingsPropertiesEventArgs, UiFramework } from "../../../appui-react";
-import TestUtils from "../../TestUtils";
+import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager, UiFramework } from "../../../appui-react";
+import TestUtils, { createStaticInternalPassthroughValidators } from "../../TestUtils";
+import { InternalToolSettingsManager } from "../../../appui-react/zones/toolsettings/InternalToolSettingsManager";
 
 // cSpell:Ignore USELENGTH
 
@@ -191,6 +192,23 @@ describe("InternalToolSettingsManager", () => {
     });
 
     // NEEDSWORK - need tests with real Tool Settings for V1 & V2
+  });
+
+  it("calls Internal static for everything", () => {
+    const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(ToolSettingsManager, InternalToolSettingsManager); // eslint-disable-line deprecation/deprecation
+
+    validateMethod("clearToolSettingsData");
+    validateMethod("focusIntoToolSettings");
+    validateMethod("initialize");
+    validateMethod("initializeDataForTool", {} as any);
+    validateMethod("initializeToolSettingsData", {} as any, "id", "label", "description");
+    validateProp("activeToolDescription");
+    validateProp("activeToolLabel", true);
+    validateProp("onReloadToolSettingsProperties");
+    validateProp("onSyncToolSettingsProperties");
+    validateProp("toolIdForToolSettings");
+    validateProp("toolSettingsProperties");
+    validateProp("useDefaultToolSettingsProvider", true);
   });
 
 });

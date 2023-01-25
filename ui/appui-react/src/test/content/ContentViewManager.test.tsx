@@ -8,7 +8,9 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
 import { ContentViewManager, ViewportContentControl } from "../../appui-react";
-import TestUtils from "../TestUtils";
+import TestUtils, { createStaticInternalPassthroughValidators } from "../TestUtils";
+import { InternalContentViewManager } from "../../appui-react/content/InternalContentViewManager";
+/* eslint-disable deprecation/deprecation */
 
 describe("ContentViewManager", () => {
 
@@ -96,4 +98,26 @@ describe("ContentViewManager", () => {
     expect(ContentViewManager.contentSupportsCamera(localContentMock.object)).to.be.false;
   });
 
+  it("calls Internal static for everything", () => {
+    const cc = contentControlMock.object;
+
+    const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(ContentViewManager, InternalContentViewManager);
+    validateMethod("addFloatingContentControl", cc);
+    validateMethod("contentSupportsCamera", cc);
+    validateMethod("dropFloatingContentControl", cc);
+    validateMethod("getActiveContent");
+    validateMethod("getActiveContentControl");
+    validateMethod("isContent3dView", cc);
+    validateMethod("isContentDrawingView", cc);
+    validateMethod("isContentOrthographicView", cc);
+    validateMethod("isContentSheetView", cc);
+    validateMethod("isContentSpatialView", cc);
+    validateMethod("refreshActiveContent", "");
+    validateMethod("setActiveContent", "", true);
+    validateMethod("setMouseDown", true);
+    validateProp("isMouseDown");
+    validateProp("onActiveContentChangedEvent");
+    validateProp("onAvailableContentChangedEvent");
+    validateProp("onMouseDownChangedEvent");
+  });
 });

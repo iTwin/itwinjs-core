@@ -6,35 +6,13 @@
  * @module KeyboardShortcut
  */
 
-import { ConditionalBooleanValue, FunctionKey, SpecialKey, UiError, UiSyncEventArgs } from "@itwin/appui-abstract";
-import { CursorInformation } from "../cursor/CursorInformation";
+import { FunctionKey, SpecialKey, UiError } from "@itwin/appui-abstract";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
-import { ItemProps } from "../shared/ItemProps";
+import { KeyboardShortcutProps } from "../framework/FrameworkKeyboardShortcuts";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
-
-/** Properties for a Keyboard Shortcut
- * @public
- */
-export interface KeyboardShortcutProps extends ItemProps {
-  /** The key that invokes the shortcut.
-   * This is either an alphanumeric key, a function key or a special key.
-   */
-  key: string | FunctionKey | SpecialKey;
-
-  /** The item to execute when this shortcut is invoked. Either 'item' or 'shortcuts' must be specified. */
-  item?: ActionButtonItemDef;
-  /** Nested array of shortcut props. Either 'item' or 'shortcuts' must be specified. */
-  shortcuts?: KeyboardShortcutProps[];
-
-  /** Indicates whether the Alt key required. Default - false */
-  isAltKeyRequired?: boolean;
-  /** Indicates whether the Ctrl key required. Default - false */
-  isCtrlKeyRequired?: boolean;
-  /** Indicates whether the Shift key required. Default - false */
-  isShiftKeyRequired?: boolean;
-}
+import { InternalKeyboardShortcutManager as internal } from "./InternalKeyboardShortcut";
 
 /** Keyboard Shortcut used to execute an action
  * @public
@@ -224,133 +202,66 @@ export class KeyboardShortcutContainer {
   }
 }
 
-type OnShortcutFunc = (shortcut: KeyboardShortcut) => void;
-
-/** Keyboard Shortcut Manager
- * @internal
- */
-export class InternalKeyboardShortcutManager {
-
-  private static _shortcuts: KeyboardShortcutContainer = new KeyboardShortcutContainer();
-
-  /** Initialize the Keyboard Shortcut manager
-   * @internal
-  */
-  public static initialize(): void {
-    UiFramework.events.onSyncUiEvent.addListener(InternalKeyboardShortcutManager._handleSyncUiEvent);
-  }
-
-  /** Loads Keyboard Shortcuts into the managed list */
-  public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]) {
-    shortcutList.forEach((shortcutProps: KeyboardShortcutProps) => {
-      this.loadKeyboardShortcut(shortcutProps);
-    });
-  }
-
-  /** Loads a Keyboard Shortcut into the managed list */
-  public static loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps) {
-    const shortcut = new KeyboardShortcut(shortcutProps);
-    this._shortcuts.registerKey(shortcut.keyMapKey, shortcut);
-  }
-
-  /** Processes a keystroke and invokes a matching Keyboard Shortcut */
-  public static processKey(keyboardKey: string, isAltKeyPressed: boolean = false, isCtrlKeyPressed: boolean = false, isShiftKeyPressed: boolean = false): boolean {
-    const keyMapKey = KeyboardShortcutContainer.generateKeyMapKey(keyboardKey, isAltKeyPressed, isCtrlKeyPressed, isShiftKeyPressed);
-
-    const shortcut = this.getShortcut(keyMapKey);
-    if (shortcut) {
-      shortcut.itemPicked();
-      return true;
-    }
-
-    return false;
-  }
-
-  /** Returns the managed list of Keyboard Shortcuts */
-  public static get shortcutContainer(): KeyboardShortcutContainer {
-    return this._shortcuts;
-  }
-
-  /** Returns a Keyboard Shortcut from the managed lists */
-  public static getShortcut(keyMapKey: string): KeyboardShortcut | undefined {
-    return this._shortcuts.findKey(keyMapKey);
-  }
-
-  /** Determines if focus is set to Home */
-  public static get isFocusOnHome(): boolean {
-    const element = document.activeElement as HTMLElement;
-    return element && element === document.body;
-  }
-
-  /** Sets focus to Home */
-  public static setFocusToHome(): void {
-    const element = document.activeElement as HTMLElement;
-    if (element && element !== document.body) {
-      element.blur();
-      document.body.focus();
-    }
-  }
-
-  /** Displays the Keyboard Shortcuts menu at the cursor */
-  public static displayShortcutsMenu(): void {
-    if (this._shortcuts.areKeyboardShortcutsAvailable()) {
-      this._shortcuts.showShortcutsMenu();
-    }
-  }
-
-  /** Closes the Keyboard Shortcuts menu */
-  public static closeShortcutsMenu(): void {
-    KeyboardShortcutMenu.onKeyboardShortcutMenuEvent.emit({
-      menuVisible: false,
-      menuX: 0,
-      menuY: 0,
-      shortcuts: undefined,
-    });
-  }
-
-  /** Returns the cursor X position, which is mouseEvent.pageX. */
-  public static get cursorX(): number { return CursorInformation.cursorX; }
-  /** Returns the cursor Y position, which is mouseEvent.pageY. */
-  public static get cursorY(): number { return CursorInformation.cursorY; }
-
-  private static _handleSyncUiEvent = (args: UiSyncEventArgs) => {
-    const updateBooleanValue = (booleanValue: ConditionalBooleanValue) => {
-      if (UiFramework.events.hasEventOfInterest(args.eventIds, booleanValue.syncEventIds))
-        booleanValue.refresh();
-    };
-    const handleForSyncIds = (shortcut: KeyboardShortcut) => {
-      if (shortcut.isDisabled instanceof ConditionalBooleanValue)
-        updateBooleanValue(shortcut.isDisabled);
-      if (shortcut.isHidden instanceof ConditionalBooleanValue)
-        updateBooleanValue(shortcut.isHidden);
-    };
-
-    InternalKeyboardShortcutManager._traverseShortcuts(InternalKeyboardShortcutManager._shortcuts.getAvailableKeyboardShortcuts(), handleForSyncIds);
-  };
-
-  private static _traverseShortcuts = (shortcuts: KeyboardShortcut[], callback: OnShortcutFunc) => {
-    shortcuts.forEach((shortcut: KeyboardShortcut) => {
-      callback(shortcut);
-
-      if (shortcut.shortcutContainer.areKeyboardShortcutsAvailable()) {
-        const childShortcuts = shortcut.shortcutContainer.getAvailableKeyboardShortcuts();
-        InternalKeyboardShortcutManager._traverseShortcuts(childShortcuts, callback);
-      }
-    });
-  };
-
-}
-
 /** Keyboard Shortcut Manager
  * @public
  * @deprecated in 3.6. Use `UiFramework.keyboardShortcuts` property.
  */
-export class KeyboardShortcutManager extends InternalKeyboardShortcutManager {
+export class KeyboardShortcutManager {
   /** Initialize the Keyboard Shortcut manager
    * @deprecated in 3.6. This is called internally.
   */
-  public static override initialize(): void {
-    InternalKeyboardShortcutManager.initialize();
+  public static initialize(): void {
+    internal.initialize();
   }
+
+  /** Loads Keyboard Shortcuts into the managed list */
+  public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]) {
+    return internal.loadKeyboardShortcuts(shortcutList);
+  }
+
+  /** Loads a Keyboard Shortcut into the managed list */
+  public static loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps) {
+    return internal.loadKeyboardShortcut(shortcutProps);
+  }
+
+  /** Processes a keystroke and invokes a matching Keyboard Shortcut */
+  public static processKey(keyboardKey: string, isAltKeyPressed: boolean = false, isCtrlKeyPressed: boolean = false, isShiftKeyPressed: boolean = false): boolean {
+    return internal.processKey(keyboardKey, isAltKeyPressed, isCtrlKeyPressed, isShiftKeyPressed);
+  }
+
+  /** Returns the managed list of Keyboard Shortcuts */
+  public static get shortcutContainer(): KeyboardShortcutContainer {
+    return internal.shortcutContainer;
+  }
+
+  /** Returns a Keyboard Shortcut from the managed lists */
+  public static getShortcut(keyMapKey: string): KeyboardShortcut | undefined {
+    return internal.getShortcut(keyMapKey);
+  }
+
+  /** Determines if focus is set to Home */
+  public static get isFocusOnHome(): boolean {
+    return internal.isFocusOnHome;
+  }
+
+  /** Sets focus to Home */
+  public static setFocusToHome(): void {
+    return internal.setFocusToHome();
+  }
+
+  /** Displays the Keyboard Shortcuts menu at the cursor */
+  public static displayShortcutsMenu(): void {
+    return internal.displayShortcutsMenu();
+  }
+
+  /** Closes the Keyboard Shortcuts menu */
+  public static closeShortcutsMenu(): void {
+    return internal.closeShortcutsMenu();
+  }
+
+  /** Returns the cursor X position, which is mouseEvent.pageX. */
+  public static get cursorX(): number { return internal.cursorX; }
+  /** Returns the cursor Y position, which is mouseEvent.pageY. */
+  public static get cursorY(): number { return internal.cursorY; }
 }
 

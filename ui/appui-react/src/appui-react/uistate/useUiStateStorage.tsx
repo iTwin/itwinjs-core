@@ -10,7 +10,7 @@ import * as React from "react";
 import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { LocalStateStorage, UiStateStorage } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
-import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventId } from "../framework/FrameworkEvents";
 
 /** @public */
 export function useUiStateStorageHandler(): UiStateStorage {
