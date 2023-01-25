@@ -507,10 +507,14 @@ export class Angle implements BeJSONFunctions {
     const wz = ux * vy - uy * vx;
     const upDotW = upVectorX * wx + upVectorY * wy + upVectorZ * wz;
     const crossMagnitude = Geometry.hypotenuseXYZ(wx, wy, wz);
-    if (adjustToPositive && upDotW < 0.0) {
-      // The turn is greater than 180 degrees.  Take a peculiarly oriented atan2 to get the excess-180 part as addition to PI.
-      // This gives the smoothest numerical transition passing PI.
-      return Math.PI + Math.atan2(crossMagnitude, -uDotV);
+    if (upDotW < 0.0) {
+      if (adjustToPositive) {
+        // The turn is greater than 180 degrees.  Take a peculiarly oriented atan2 to get the excess-180 part as addition to PI.
+        // This gives the smoothest numerical transition passing PI.
+        return Math.PI + Math.atan2(crossMagnitude, -uDotV);
+      } else {
+        return -Math.atan2(crossMagnitude, uDotV);
+      }
     } else {
       return Math.atan2(crossMagnitude, uDotV);
     }

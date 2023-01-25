@@ -216,7 +216,90 @@ export class SectorOffsetProperties {
       accumulatingVector.addScaledInPlace(sector.normal, scale);
   }
 }
+/*
+About Chamfer Edges ..... as constructed in addChamferTopologyToAllEdges
 
+When edge vertex X to vertex Y has a sharp dihedral angle, a "chamfer face"
+Must be created to "fatten" it.
+
+The original half edges (nodes) for the edge are AX and AY.  These are "mates" in the halfEdge mental model. As always,
+AX is (as needed)
+   (i) the preferred half edge for the left side of the edge moving from X to Y. (i.e. above the edge)
+   (ii) a part of the face loop for the face to the left when proceeding CCW around the face to the above the drawn edge
+   (iii) a part of the vertex loop around X
+Likewise, AY is (as needed)
+   (i) the preferred half edge for the left side of the edge moving from Y to X (i.e. below the edge)
+   (ii) a part of the face loop for the face to the left of the edge when proceeding CCW around the face below the edge.
+   (iii) a part of the vertex loop around Y
+
+      AX------>
+X______________________________________________________________________Y
+                                                      <---AY
+
+When the chamfer face is created, it needs to have a sliver face "inside the edge" -- something in the space here
+
+      AX------>
+  _____________________________________________________________________
+ /                                                                     \
+X                                                                       Y
+ \_____________________________________________________________________/
+                                                      <---AY
+
+The chamfer face will have a plane normal is the average of the two faces' plane normals.
+
+The creation sequence for the chamfer face puts a slit "inside the edge" as above   HalfEdges AX and AY remain as parts
+of their respective face loops.   In addition, at each end a singleton edge "sling" face is inserted at each
+end of the sliver face.
+
+The sequence is:
+
+  STEP 1: splitEdgeCreateSliver creates the sliver face with 2 half edges DX and DY
+  STEP 2: splitEdge (with undefined as the "prior" edge) creates a sling with HalfEdge CX "inside" and BX "outside".
+             (The sling face is not yet attached to X -- briefly floating in space)
+  STEP 3: pinch of HalfEdges BX and DX inserts the sling face "inside" the slit face at the X end.
+
+  Steps 2 and 3 are executed from each end.   Due to the symmetric structure, a 2-pass loop can apply the logic at each end without distinct names in code.
+
+         AX------>
+     _______________________________________________________________
+    /                                              <---DY           \
+   /                                                                 \
+  /    BX--->                                                         \
+ / _______________                                    _______________  \
+| /               \                                  /     <----CY   \ |
+|/                 \                                /                 \|
+X                   |                              |                   Y
+|\   CX--->         /                               \                 /|
+| \_______________/                                  \_______________/ |
+ \                                                         <---BY     /
+  \                                                                   /
+   \      DX--->                                                     /
+    \ ______________________________________________________________/
+                                                    <---AY
+
+During the construction, the letters ABCD are used as above, but with prefixes emphasizing their role
+outsideAX, outsideAY
+slingB, slingC, sliverD
+
+The "inside" sling faces (CX and CY) each have their own FacetOffsetProperties and SectorOffsetProperties.
+The sliver face has its own FacetOffsetProperties which are referenced by DX, BY, DY, BX.
+Each of those 4 has its own SectorOffSetProperties.
+
+Important properties during offset construction:
+1) the original graph always has original topology and coordinates
+2) Each face of the original graph has a FacetOffsetProperties with a representative point and a normal.  These are unchanged during the computation.
+3) Each node has its own SectorOffsetProperties with a coordinate and normal independent of the parent node.
+   3.1 The first offset coordinates in each node are directly offset by face normal.
+   3.2 This creates mismatch across edges and around vertices.
+   3.3 Various sweeps "around each vertex" try to do intersections among appropriate offset planes to find
+        common coordinates in place of the initial mismatches.
+4) The independence of all the sectors allows the offset construction to fix things up in any order it chooses.
+5) During the construction, the xyz in SectorOffsetProperties around a single vertex do NOT have to match.
+6) At output time, there are three sweeps:
+   6.1: By face:  Go around the face and output a facet with the coordinates in the various sectors.
+   6.2: By edge: For each edge, if the sector xyz match across both ends output nothing.  If not, output a triangle or quad
+   6.3: By vertex:  At each vertex, if all vertex coordinates match  output nothing.   Otherwise output a facet with all the coordinates.
+*/
 export class OffsetMeshContext {
   private constructor(basePolyface: IndexedPolyface, baseGraph: HalfEdgeGraph,
     options: OffsetMeshOptions) {
@@ -642,44 +725,44 @@ export class OffsetMeshContext {
 
     // Step 1: Examine the edge between nodeA and the sector on its vertex predecessor side.  This (alone) determines single angle breaks.
     let numBreaks = 0;
-    let nodeA = vertexSeed;
+    let nodeP = vertexSeed;
     let _numSmooth = 0;
     do {
-      const nodeB = nodeA.edgeMate;
-      const nodeC = nodeB.faceSuccessor;    // same as nodeA.vertexPredecessor
-      if (nodeA.isMaskSet(this._exteriorMask)) {
-        if (!nodeB.isMaskSet(this._exteriorMask)) {
-          nodeC.setMask(this._breakMaskB);
+      const nodeQ = nodeP.edgeMate;
+      const nodeR = nodeQ.faceSuccessor;    // same as nodeA.vertexPredecessor
+      if (nodeP.isMaskSet(this._exteriorMask)) {
+        if (!nodeQ.isMaskSet(this._exteriorMask)) {
+          nodeR.setMask(this._breakMaskB);
           numBreaks++;
         }
       } else {
-        if (nodeA.isMaskSet(this._outsideOfChamferFace)) {
-          nodeA.setMask(this._breakMaskA);
-        } else if (nodeA.isMaskSet(this._outsideEndOfChamferFace)) {
-          nodeA.setMask(this._breakMaskA);
-          nodeA.setMask(this._breakMaskB);
-        } else if (nodeA.isMaskSet(this._insideChamferSling)) {
+        if (nodeP.isMaskSet(this._outsideOfChamferFace)) {
+          nodeP.setMask(this._breakMaskA);
+        } else if (nodeP.isMaskSet(this._outsideEndOfChamferFace)) {
+          nodeP.setMask(this._breakMaskA);
+          nodeP.setMask(this._breakMaskB);
+        } else if (nodeP.isMaskSet(this._insideChamferSling)) {
           // This is the sling.   It's normal is along edge -- not really a break.
-        } else if (nodeA.isMaskSet(this._insideOfChamferFace)) {
-          nodeA.setMask(this._breakMaskA);
-          nodeA.setMask(this._breakMaskB);
-          nodeC.setMask(this._breakMaskB);
-        } else if (nodeB.isMaskSet(this._exteriorMask)) {
+        } else if (nodeP.isMaskSet(this._insideOfChamferFace)) {
+          nodeP.setMask(this._breakMaskA);
+          nodeP.setMask(this._breakMaskB);
+          nodeR.setMask(this._breakMaskB);
+        } else if (nodeQ.isMaskSet(this._exteriorMask)) {
           numBreaks++;
-          nodeA.setMask(this._breakMaskA);
+          nodeP.setMask(this._breakMaskA);
         } else if (!SectorOffsetProperties.almostEqualNormals(
-          nodeA.edgeTag as SectorOffsetProperties,
-          nodeC.edgeTag as SectorOffsetProperties,
+          nodeP.edgeTag as SectorOffsetProperties,
+          nodeR.edgeTag as SectorOffsetProperties,
           smoothSingleDihedralAngleRadians)) {
-          nodeA.setMask(this._breakMaskA);
+          nodeP.setMask(this._breakMaskA);
           numBreaks++;
-          nodeC.setMask(this._breakMaskB);
+          nodeR.setMask(this._breakMaskB);
         } else {
           _numSmooth++;
         }
       }
-      nodeA = nodeA.vertexSuccessor;
-    } while (nodeA !== vertexSeed);
+      nodeP = nodeP.vertexSuccessor;
+    } while (nodeP !== vertexSeed);
     if (OffsetMeshContext.stringDebugFunction !== undefined)
       OffsetMeshContext.stringDebugFunction(`   numSkip   ${_numSmooth} `);
     if (numBreaks === 0) {
@@ -690,42 +773,42 @@ export class OffsetMeshContext {
     }
     // Step 2: At each single break, sweep forward to its closing breakB.  Insert breaks at accumulated angles.
     // (minor TODO: for the insertion case, try to split more equally.)
-    const nodeAStart = nodeA.findMaskAroundVertex(this._breakMaskA);
+    const nodeAStart = nodeP.findMaskAroundVertex(this._breakMaskA);
     if (nodeAStart !== undefined) {
-      nodeA = nodeAStart;
+      nodeP = nodeAStart;
       do {
-        if (nodeA.isMaskSet(this._breakMaskA) && !nodeA.isMaskSet(this._breakMaskB)) {
+        if (nodeP.isMaskSet(this._breakMaskA) && !nodeP.isMaskSet(this._breakMaskB)) {
           let accumulatedRadians = 0.0;
           do {
-            const nodeB = nodeA.vertexSuccessor;
+            const nodeB = nodeP.vertexSuccessor;
             accumulatedRadians += SectorOffsetProperties.radiansBetweenNormals(
-              nodeA.edgeTag as SectorOffsetProperties,
+              nodeP.edgeTag as SectorOffsetProperties,
               nodeB.edgeTag as SectorOffsetProperties,
             );
             if (accumulatedRadians > smoothAccumulatedDihedralAngleRadians) {
-              nodeA.setMask(this._breakMaskB);
+              nodeP.setMask(this._breakMaskB);
               nodeB.setMask(this._breakMaskA);
               numBreaks++;
               accumulatedRadians = 0.0;
             }
-            nodeA = nodeB;
-          } while (!nodeA.isMaskSet(this._breakMaskB));
+            nodeP = nodeB;
+          } while (!nodeP.isMaskSet(this._breakMaskB));
         } else {
-          nodeA = nodeA.vertexSuccessor;
+          nodeP = nodeP.vertexSuccessor;
         }
-      } while (nodeA !== nodeAStart);
+      } while (nodeP !== nodeAStart);
     }
 
     if (numBreaks > 0 && nodeAStart !== undefined) {
       // In each compound sector, accumulate and install average normal.
-      nodeA = nodeAStart;
+      nodeP = nodeAStart;
       const averageNormal = Vector3d.create();
       const edgeVectorU = Vector3d.create();
       const edgeVectorV = Vector3d.create();
       averageNormal.setZero();
       do {
-        if (nodeA.isMaskSet(this._breakMaskA) && !nodeA.isMaskSet(this._breakMaskB)) {
-          let nodeQ = nodeA;
+        if (nodeP.isMaskSet(this._breakMaskA) && !nodeP.isMaskSet(this._breakMaskB)) {
+          let nodeQ = nodeP;
           averageNormal.setZero();
           for (; ;) {
             nodeQ.vectorToFaceSuccessor(edgeVectorU);
@@ -739,7 +822,7 @@ export class OffsetMeshContext {
             nodeQ = nodeQ.vertexSuccessor;
           }
           if (averageNormal.normalizeInPlace()) {
-            nodeQ = nodeA;
+            nodeQ = nodeP;
             for (; ;) {
               SectorOffsetProperties.setNormalAtHalfEdge(nodeQ, averageNormal);
               if (nodeQ.isMaskSet(this._breakMaskB))
@@ -748,8 +831,8 @@ export class OffsetMeshContext {
             }
           }
         }
-        nodeA = nodeA.vertexSuccessor;
-      } while (nodeA !== vertexSeed);
+        nodeP = nodeP.vertexSuccessor;
+      } while (nodeP !== vertexSeed);
 
     }
   }
@@ -845,46 +928,49 @@ export class OffsetMeshContext {
       });
     // Create sliver faces.
     // Sliver face gets an average normal from its neighbors.
+    //  outsideA is the HalfEdge labeled A in the diagram.
+    // sliverDX and sliverDY are the edges "inside the sliver" at the respective X and Y ends.
     for (const outsideA of edgesToChamfer) {
       // remark: this recomputes as in collection round.
       if (SectorOffsetProperties.edgeHasLargeExteriorAngleBetweenNormals(outsideA, edgeVector, averageNormal, chamferRadians)) {
-        // This copies coordinates and vertex id .... sectorOffsetProperties are delayed until late in the 2-pass loop below
-        const insideA = this._baseGraph.splitEdgeCreateSliverFace(outsideA);
-        const insideB = insideA.facePredecessor;
-        const offsetPoint = insideA.getPoint3d();
+        // This copies coordinates and vertex id .... sectorOffsetProperties are delayed until late in the 2-pass loop below.
+        // The returned HalfEdge is labeled D in the diagram
+        const sliverDX = this._baseGraph.splitEdgeCreateSliverFace(outsideA);
+        const sliverDY = sliverDX.facePredecessor;
+        const offsetPoint = sliverDX.getPoint3d();
         offsetPoint.addScaledInPlace(averageNormal, distance);
         const ray = Ray3d.createCapture(offsetPoint, averageNormal.clone());
         const facetProperties = new FacetOffsetProperties(-1, ray);
         // for each side (hence end) of the sliver face, set mask and install a sling loop for the anticipated end of the chamfer face
+        // new node names in the loop omit X or Y suffix because that is implied by which pass is running.
         let s = -1.0;
-        for (const nodeE of [insideA, insideB]) {
+        for (const sliverD of [sliverDX, sliverDY]) {
           edgeVector.scale(s, outwardEdgeVector);
-          nodeE.getPoint3d(vertexXYZ);
-          const nodeF = nodeE.edgeMate;
-          nodeE.setMask(this._insideOfChamferFace);
-          nodeF.setMask(this._outsideOfChamferFace);
+          sliverD.getPoint3d(vertexXYZ);
+          sliverD.setMask(this._insideOfChamferFace);
+          sliverD.edgeMate.setMask(this._outsideOfChamferFace);
           // mark and reference the chamfer face.
-          nodeE.faceTag = facetProperties;
+          sliverD.faceTag = facetProperties;
           // sling at this end
-          const outsideOfSling = this._baseGraph.splitEdge(undefined, vertexXYZ.x, vertexXYZ.y, vertexXYZ.z, nodeE.i);
-          const insideOfSling = outsideOfSling.edgeMate;
-          outsideOfSling.setMask(this._outsideEndOfChamferFace);
-          outsideOfSling.faceTag = facetProperties;
-          insideOfSling.setMask(this._insideChamferSling);
-          HalfEdge.pinch(nodeE, outsideOfSling);
+          const slingB = this._baseGraph.splitEdge(undefined, vertexXYZ.x, vertexXYZ.y, vertexXYZ.z, sliverD.i);
+          const slingC = slingB.edgeMate;
+          slingB.setMask(this._outsideEndOfChamferFace);
+          slingB.faceTag = facetProperties;
+          slingC.setMask(this._insideChamferSling);
+          HalfEdge.pinch(sliverD, slingB);
           const endNormal = Ray3d.create(vertexXYZ, outwardEdgeVector);  // clones the inputs
           const slingFaceProperties = new FacetOffsetProperties(-1, endNormal);
-          insideOfSling.faceTag = slingFaceProperties;
+          slingC.faceTag = slingFaceProperties;
           // initialize sectors with existing vertex point.
-          nodeE.edgeTag = new SectorOffsetProperties(averageNormal.clone(), offsetPoint.clone());
-          outsideOfSling.edgeTag = new SectorOffsetProperties(averageNormal.clone(), offsetPoint.clone());
-          insideOfSling.edgeTag = new SectorOffsetProperties(outwardEdgeVector.clone(), vertexXYZ.clone());
+          sliverD.edgeTag = new SectorOffsetProperties(averageNormal.clone(), offsetPoint.clone());
+          slingB.edgeTag = new SectorOffsetProperties(averageNormal.clone(), offsetPoint.clone());
+          slingC.edgeTag = new SectorOffsetProperties(outwardEdgeVector.clone(), vertexXYZ.clone());
           // OffsetMeshContext.stringDebugFunction("Chamfer Setup");
-          const chamferPointE = this.compute3SectorIntersection(nodeE, nodeE.edgeMate, insideOfSling);
-          const chamferPointF = this.compute3SectorIntersection(outsideOfSling, outsideOfSling.vertexSuccessor, insideOfSling);
-          nodeE.edgeTag = new SectorOffsetProperties(averageNormal.clone(), vertexXYZ.clone());
-          SectorOffsetProperties.setXYZAtHalfEdge(nodeE, chamferPointE);
-          SectorOffsetProperties.setXYZAtHalfEdge(outsideOfSling, chamferPointF);
+          const chamferPointE = this.compute3SectorIntersection(sliverD, sliverD.edgeMate, slingC);
+          const chamferPointF = this.compute3SectorIntersection(slingB, slingB.vertexSuccessor, slingC);
+          // sliverD.edgeTag = new SectorOffsetProperties(averageNormal.clone(), vertexXYZ.clone());
+          SectorOffsetProperties.setXYZAtHalfEdge(sliverD, chamferPointE);
+          SectorOffsetProperties.setXYZAtHalfEdge(slingB, chamferPointF);
           s *= -1.0;
         }
       }

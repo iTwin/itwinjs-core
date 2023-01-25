@@ -54,7 +54,7 @@ function _offsetDebugFunction(message: string, graph: HalfEdgeGraph,
   }
 }
 // import { GraphChecker } from "../topology/Graph.test";
-describe.only("OffsetMeshContext", () => {
+describe("OffsetMeshContext", () => {
 
   it("OffsetPyramids", () => {
     const ck = new Checker();

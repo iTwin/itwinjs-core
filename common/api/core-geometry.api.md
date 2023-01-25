@@ -3813,8 +3813,6 @@ export class NumberArray {
 export class OffsetMeshOptions {
     chamferTurnAngle: Angle;
     static create(smoothSingleDihedralAngle?: Angle, smoothAccumulatedDihedralAngle?: Angle, chamferTurnAngle?: Angle): OffsetMeshOptions;
-    // (undocumented)
-    method?: number;
     outputSelector?: OffsetMeshSelectiveOutputOptions;
     smoothAccumulatedDihedralAngle: Angle;
     smoothSingleDihedralAngle: Angle;
