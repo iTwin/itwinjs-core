@@ -34,7 +34,8 @@ function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
 }
 
-interface RealityTreeId {
+/** @internal exported strictly for tests. */
+export interface RealityTreeId {
   rdSourceKey: RealityDataSourceKey;
   transform?: Transform;
   modelId: Id64String;
@@ -43,26 +44,42 @@ interface RealityTreeId {
   produceGeometry?: boolean;
 }
 
-function compareOrigins(lhs: XYZ, rhs: XYZ): number {
-  return compareNumbers(lhs.x, rhs.x) || compareNumbers(lhs.y, rhs.y) || compareNumbers(lhs.z, rhs.z);
-}
-
-function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
-  for (let i = 0; i < 9; i++) {
-    const cmp = compareNumbers(lhs.coffs[i], rhs.coffs[i]);
-    if (0 !== cmp)
-      return cmp;
+/** @internal exported strictly for tests. */
+export namespace RealityTreeId {
+  function compareOrigins(lhs: XYZ, rhs: XYZ): number {
+    return compareNumbers(lhs.x, rhs.x) || compareNumbers(lhs.y, rhs.y) || compareNumbers(lhs.z, rhs.z);
   }
 
-  return 0;
-}
+  function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
+    for (let i = 0; i < 9; i++) {
+      const cmp = compareNumbers(lhs.coffs[i], rhs.coffs[i]);
+      if (0 !== cmp)
+        return cmp;
+    }
 
-function compareTransforms(lhs: Transform, rhs: Transform) {
-  return compareOrigins(lhs.origin, rhs.origin) || compareMatrices(lhs.matrix, rhs.matrix);
-}
+    return 0;
+  }
 
-function compareRealityDataSourceKeys(lhs: RealityDataSourceKey, rhs: RealityDataSourceKey): number {
-  return compareStringsOrUndefined(lhs.id, rhs.id) || compareStringsOrUndefined(lhs.format, rhs.format) || compareStringsOrUndefined(lhs.iTwinId, rhs.iTwinId);
+  function compareTransforms(lhs: Transform, rhs: Transform) {
+    return compareOrigins(lhs.origin, rhs.origin) || compareMatrices(lhs.matrix, rhs.matrix);
+  }
+
+  function compareRealityDataSourceKeys(lhs: RealityDataSourceKey, rhs: RealityDataSourceKey): number {
+    return compareStringsOrUndefined(lhs.id, rhs.id) || compareStringsOrUndefined(lhs.format, rhs.format) || compareStringsOrUndefined(lhs.iTwinId, rhs.iTwinId);
+  }
+
+  export function compare(lhs: RealityTreeId, rhs: RealityTreeId): number {
+    // ###TODO special case for context reality model with undetermined modelId
+    const cmp = compareStrings(lhs.modelId, rhs.modelId);
+    if (0 !== cmp)
+      return cmp;
+
+    return compareRealityDataSourceKeys(lhs.rdSourceKey, rhs.rdSourceKey)
+      || compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices)
+      || compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry)
+      || compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds)
+      || comparePossiblyUndefined((ltf, rtf) => compareTransforms(ltf, rtf), lhs.transform, rhs.transform);
+  }
 }
 
 class RealityTreeSupplier implements TileTreeSupplier {
@@ -81,16 +98,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
   }
 
   public compareTileTreeIds(lhs: RealityTreeId, rhs: RealityTreeId): number {
-    // ###TODO special case for context reality model with undetermined modelId
-    const cmp = compareStrings(lhs.modelId, rhs.modelId);
-    if (0 !== cmp)
-      return cmp;
-
-    return compareRealityDataSourceKeys(lhs.rdSourceKey, rhs.rdSourceKey)
-      || compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices)
-      || compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry)
-      || compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds)
-      || comparePossiblyUndefined((ltf, rtf) => compareTransforms(ltf, rtf), lhs.transform, rhs.transform);
+    return RealityTreeId.compare(lhs, rhs);
   }
 }
 

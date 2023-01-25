@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Id64String } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { RealityDataSourceKey } from "@itwin/core-common";
 import { expect } from "chai";
 
-describe.only("Context reality models", () => {
-  it("is assigned a transient modelId", () => {
+describe.only("ContextRealityModelState", () => {
+  it("has a unique tree within a view", () => {
   });
 
-  it("shares compatible tile trees between views", () => {
+  it("shares compatible trees between views", () => {
   });
 
-  it("does not share compatible tile trees within a single view", () => {
-  });
-
-  it("does not share compatible persistent tile trees", () => {
+  it("does not share trees with persistent reality models", () => {
   });
 });
