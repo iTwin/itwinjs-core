@@ -13,7 +13,7 @@ import { SyncUiEventArgs } from "./SyncUiEventDispatcher";
 
 /**
  * Properties supported by [[BooleanSyncUiListener]] component.
- * @public @deprecated
+ * @public @deprecated in 3.0.
  */
 export interface BooleanListenerProps {
   /** One or more SyncUi event Ids that will trigger the function to be called. */
@@ -39,7 +39,7 @@ interface BooleanListenerState {
 // cSpell:Ignore Unmounting
 /**
  * A component that expect its children to be a function that will be passed the current boolValue state.
- * @public @deprecated
+ * @public @deprecated in 3.0.
  */
 export class BooleanSyncUiListener extends React.Component<BooleanListenerProps, BooleanListenerState> {
   private _componentUnmounting = false;

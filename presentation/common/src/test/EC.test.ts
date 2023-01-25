@@ -6,8 +6,7 @@ import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { InstanceKey, RelationshipPath } from "../presentation-common";
 import {
-  ClassInfo, RelatedClassInfo, RelatedClassInfoJSON, RelatedClassInfoWithOptionalRelationship, RelatedClassInfoWithOptionalRelationshipJSON,
-  StrippedRelatedClassInfo,
+  RelatedClassInfo, RelatedClassInfoWithOptionalRelationship, RelatedClassInfoWithOptionalRelationshipJSON, StrippedRelatedClassInfo,
 } from "../presentation-common/EC";
 import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelatedClassInfoWithOptionalRelationship } from "./_helpers/EC";
 import { createRandomECClassInfo } from "./_helpers/random";
@@ -56,21 +55,11 @@ describe("RelatedClassInfo", () => {
 
     it("passes roundtrip", () => {
       const src = createTestRelatedClassInfo();
+      // eslint-disable-next-line deprecation/deprecation
       const json = RelatedClassInfo.toJSON(src);
+      // eslint-disable-next-line deprecation/deprecation
       const res = RelatedClassInfo.fromJSON(json);
       expect(res).to.deep.eq(src);
-    });
-
-    it("handles optional attributes", () => {
-      const json: RelatedClassInfoJSON = {
-        sourceClassInfo: ClassInfo.toJSON(createTestECClassInfo()),
-        relationshipInfo: ClassInfo.toJSON(createTestECClassInfo()),
-        isForwardRelationship: true,
-        targetClassInfo: ClassInfo.toJSON(createTestECClassInfo()),
-      };
-      const res = RelatedClassInfo.fromJSON(json);
-      expect(res.isPolymorphicRelationship).to.be.false;
-      expect(res.isPolymorphicTargetClass).to.be.false;
     });
 
   });
@@ -83,26 +72,6 @@ describe("RelatedClassInfo", () => {
       const json = RelatedClassInfo.toCompressedJSON(src, classesMap);
       const res = RelatedClassInfo.fromCompressedJSON(json, classesMap);
       expect(res).to.deep.eq(src);
-    });
-
-    it("handles optional attributes", () => {
-      const sourceClassInfo = createTestECClassInfo();
-      const relationshipInfo = createTestECClassInfo();
-      const targetClassInfo = createTestECClassInfo();
-      const classInfos = {
-        [sourceClassInfo.id]: { name: sourceClassInfo.name, label: sourceClassInfo.label },
-        [relationshipInfo.id]: { name: relationshipInfo.name, label: relationshipInfo.label },
-        [targetClassInfo.id]: { name: targetClassInfo.name, label: targetClassInfo.label },
-      };
-      const json: RelatedClassInfoJSON<Id64String> = {
-        sourceClassInfo: sourceClassInfo.id,
-        relationshipInfo: relationshipInfo.id,
-        isForwardRelationship: true,
-        targetClassInfo: targetClassInfo.id,
-      };
-      const res = RelatedClassInfo.fromCompressedJSON(json, classInfos);
-      expect(res.isPolymorphicRelationship).to.be.false;
-      expect(res.isPolymorphicTargetClass).to.be.false;
     });
 
   });
@@ -219,7 +188,6 @@ describe("RelatedClassInfoWithOptionalRelationship", () => {
       const src: RelatedClassInfoWithOptionalRelationship = {
         sourceClassInfo,
         targetClassInfo,
-        isPolymorphicTargetClass: true,
       };
       const json = RelatedClassInfoWithOptionalRelationship.toCompressedJSON(src, classInfos);
       expect(classInfos).to.deep.eq({
@@ -227,8 +195,6 @@ describe("RelatedClassInfoWithOptionalRelationship", () => {
         [targetClassInfo.id]: { name: targetClassInfo.name, label: targetClassInfo.label },
       });
       expect(json.relationshipInfo).to.be.undefined;
-      expect(json.isForwardRelationship).to.be.undefined;
-      expect(json.isPolymorphicRelationship).to.be.undefined;
     });
 
     it("handles optional attributes when deserializing", () => {
@@ -243,10 +209,7 @@ describe("RelatedClassInfoWithOptionalRelationship", () => {
         targetClassInfo: targetClassInfo.id,
       };
       const res = RelatedClassInfoWithOptionalRelationship.fromCompressedJSON(json, classInfos);
-      expect(res.isPolymorphicTargetClass).to.be.false;
       expect(res.relationshipInfo).to.be.undefined;
-      expect(res.isForwardRelationship).to.be.undefined;
-      expect(res.isPolymorphicRelationship).to.be.undefined;
     });
 
   });

@@ -132,7 +132,7 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 
       if (supportedTms.length === 0) {
         // This WMTS server doesn't support either GoogleMaps or WSG84
-        return { status: MapLayerSourceStatus.InvalidTileTree };
+        return { status: MapLayerSourceStatus.InvalidCoordinateSystem };
       }
 
       let subLayerId = 0;
@@ -168,7 +168,8 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "ArcGIS";
   public static override async validateSource(url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    return ArcGisUtilities.validateSource(url, this.formatId, ["map"], userName, password, ignoreCache);
+    // Some Map service supporting only tiles don't include the 'Map' capabilities, thus we can't make it mandatory.
+    return ArcGisUtilities.validateSource(url, this.formatId, [], userName, password, ignoreCache);
   }
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new ArcGISMapLayerImageryProvider(settings);

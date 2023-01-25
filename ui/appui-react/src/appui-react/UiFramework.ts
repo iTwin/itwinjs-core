@@ -53,7 +53,7 @@ import { FrameworkVisibility } from "./framework/FrameworkVisibility";
 // cSpell:ignore Mobi
 
 /** Defined that available UI Versions. It is recommended to always use the latest version available.
- * @deprecated Used to toggle between UI1.0 and UI2.0.
+ * @deprecated in 3.5. Used to toggle between UI1.0 and UI2.0.
  * @public
  */
 export type FrameworkVersionId = "1" | "2";
@@ -241,7 +241,7 @@ export class UiFramework {
   public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
 
   /**
-   * @deprecated UI1.0 is deprecated. Use an overload without a `startInUi1Mode` argument instead.
+   * @deprecated in 3.5. UI1.0 is deprecated. Use an overload without a `startInUi1Mode` argument instead.
    */
 
   public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void>;  // eslint-disable-line @typescript-eslint/unified-signatures
@@ -251,7 +251,7 @@ export class UiFramework {
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    * @param startInUi1Mode Used for legacy applications to start up in the deprecated UI 1 mode. This should not set by newer applications.
-   * @deprecated
+   * @deprecated in 3.6.
    */
   public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void> {
     return this.initializeEx(store, frameworkStateKey, startInUi1Mode);
@@ -636,14 +636,14 @@ export class UiFramework {
   }
 
   /** Returns the Ui Version.
-   * @deprecated UI1.0 is deprecated.
+   * @deprecated in 3.6. UI1.0 is deprecated.
    * @public
    */
   public static get uiVersion(): FrameworkVersionId { // eslint-disable-line deprecation/deprecation
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion; // eslint-disable-line deprecation/deprecation
   }
 
-  /** @deprecated UI1.0 is deprecated. */
+  /** @deprecated in 3.6. UI1.0 is deprecated. */
   public static setUiVersion(version: FrameworkVersionId) { // eslint-disable-line deprecation/deprecation
     if (UiFramework.uiVersion === version) // eslint-disable-line deprecation/deprecation
       return;

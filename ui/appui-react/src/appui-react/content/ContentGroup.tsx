@@ -45,7 +45,7 @@ export interface ContentGroupProps {
  */
 export abstract class ContentGroupProvider {
   /** Return the contentGroup based on the `FrontstageProps`.
-   * @deprecated Implement using `contentGroup` instead.
+   * @deprecated in 3.5. Implement using `contentGroup` instead.
    */
   abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>; // eslint-disable-line deprecation/deprecation
 

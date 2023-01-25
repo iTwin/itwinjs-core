@@ -12,12 +12,12 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { InternalSyncUiEventDispatcher as internal } from "./InternalSyncUiEventDispatcher";
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
- * @public @deprecated use UiSyncEventArgs in appui-abstract instead
+ * @public @deprecated in 3.0. Use UiSyncEventArgs in appui-abstract instead
  */
 export type SyncUiEventArgs = UiSyncEventArgs;
 
 /** SyncUi Event class.
- * @public @deprecated use UiSyncEvent in appui-abstract instead
+ * @public @deprecated in 3.0. Use UiSyncEvent in appui-abstract instead
  */
 export type SyncUiEvent = UiSyncEvent;
 

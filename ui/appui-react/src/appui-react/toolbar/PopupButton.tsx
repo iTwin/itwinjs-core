@@ -28,7 +28,7 @@ const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDiv
 
 /** Arguments of [[PopupButtonChildrenRenderProp]].
  * @public
- * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
+ * @deprecated in 2.x. Use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
  */
 export interface PopupButtonChildrenRenderPropArgs {
   closePanel: () => void;
@@ -36,13 +36,13 @@ export interface PopupButtonChildrenRenderPropArgs {
 
 /** Type of [[PopupButtonProps.children]] when used as render prop.
  * @public
- * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
+ * @deprecated in 2.x. Use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
  */
 export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode;
 
 /** Properties for the [[PopupButton]] React component
  * @public
- * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
+ * @deprecated in 2.x. Use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
  */
 export interface PopupButtonProps extends ItemProps, CommonProps {
   children?: React.ReactNode | PopupButtonChildrenRenderProp;
@@ -60,7 +60,7 @@ const isFunction = <T extends (...args: any) => any>(node: React.ReactNode): nod
 /**
  * Used to provide custom popup button in toolbar.
  * @public
- * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
+ * @deprecated in 2.x. Use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
  */
 export class PopupButton extends React.Component<PopupButtonProps, BaseItemState> {
   private _label: string | StringGetter | ConditionalStringValue = "";

@@ -6,7 +6,6 @@
  * @module PresentationRules
  */
 
-import { RuleTypes } from "../Rule";
 import { NavigationRuleBase } from "./NavigationRule";
 
 /**
@@ -17,7 +16,7 @@ import { NavigationRuleBase } from "./NavigationRule";
  */
 export interface RootNodeRule extends NavigationRuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.RootNodes;
+  ruleType: "RootNodes";
 
   /** Tells the library to assign produced nodes a flag, indicating that they should be automatically expanded. */
   autoExpand?: boolean;

@@ -1281,6 +1281,7 @@ export interface CodeSpecProperties {
     scopeSpec: {
         type: CodeScopeSpec.Type;
         fGuidRequired?: boolean;
+        relationship?: string;
     };
     // (undocumented)
     spec?: {

@@ -31,7 +31,7 @@ import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
 import { FrontstageActivatedEventArgs } from "../framework/FrameworkFrontstages";
 
 /** Properties for a [[Frontstage]] component.
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.5. Props of a deprecated component.
  * @public
  */
 export interface FrontstageProps extends CommonProps {
@@ -46,7 +46,7 @@ export interface FrontstageProps extends CommonProps {
   /** Id of the Content View to be activated initially */
   defaultContentId?: string;
   /** Indicated whether the StatusBar is in footer mode or widget mode. Defaults to true.
-   * @deprecated In upcoming version, widget mode will be removed and footer mode will always be true.
+   * @deprecated in 3.3. In upcoming version, widget mode will be removed and footer mode will always be true.
   */
   isInFooterMode?: boolean;                     // Default - true
   /** Any application data to attach to this Frontstage. */
@@ -62,28 +62,28 @@ export interface FrontstageProps extends CommonProps {
   /** if isIModelIndependent then frontstage is independent from any iModel. */
   isIModelIndependent?: boolean;
   /** The Zone in the top-left corner.
-   * @deprecated Use 'contentManipulationTools' property. */
+   * @deprecated in 3.0. Use 'contentManipulationTools' property. */
   topLeft?: React.ReactElement<ZoneProps>;
   /** The Zone along the top-center edge.
-   * @deprecated Use 'toolSettings' property. */
+   * @deprecated in 3.0. Use 'toolSettings' property. */
   topCenter?: React.ReactElement<ZoneProps>;
   /** The Zone in the top-right corner.
-   * @deprecated Use 'viewNavigationTools' property. */
+   * @deprecated in 3.0. Use 'viewNavigationTools' property. */
   topRight?: React.ReactElement<ZoneProps>;
   /** The Zone along the center-left edge.
-   * @deprecated Place widgets in appropriate stage panel zone. */
+   * @deprecated in 3.0. Place widgets in appropriate stage panel zone. */
   centerLeft?: React.ReactElement<ZoneProps>;
   /** The Zone along the center-right edge.
-   * @deprecated Place widgets in appropriate stage panel zone. */
+   * @deprecated in 3.0. Place widgets in appropriate stage panel zone. */
   centerRight?: React.ReactElement<ZoneProps>;
   /** The Zone in the bottom-left corner.
-   * @deprecated Place widgets in appropriate stage panel zone.  */
+   * @deprecated in 3.0. Place widgets in appropriate stage panel zone.  */
   bottomLeft?: React.ReactElement<ZoneProps>;
   /** The Zone along the bottom-center edge.
-   * @deprecated use statusBar property */
+   * @deprecated in 3.0. use statusBar property */
   bottomCenter?: React.ReactElement<ZoneProps>;
   /** The Zone in the bottom-right corner.
-   * @deprecated Place widgets in appropriate stage panel zone. */
+   * @deprecated in 3.0. Place widgets in appropriate stage panel zone. */
   bottomRight?: React.ReactElement<ZoneProps>;
 
   /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition. */
@@ -98,7 +98,7 @@ export interface FrontstageProps extends CommonProps {
   /** The StagePanel on the top of the AppUi container. */
   topPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the very top across the full width.
-   * @deprecated Only topPanel is supported in UI 2.0 */
+   * @deprecated in 3.0. Only topPanel is supported in UI 2.0 */
   topMostPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the left.  */
   leftPanel?: React.ReactElement<StagePanelProps>;
@@ -107,7 +107,7 @@ export interface FrontstageProps extends CommonProps {
   /** The StagePanel on the bottom of the AppUi container.  */
   bottomPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the very bottom across the full width.
-   * @deprecated Only bottomPanel is supported in UI 2.0  */
+   * @deprecated in 3.0. Only bottomPanel is supported in UI 2.0  */
   bottomMostPanel?: React.ReactElement<StagePanelProps>;
 
   /** @internal */
@@ -121,7 +121,7 @@ interface FrontstageState {
 
 /** Frontstage React component.
  * A Frontstage is a full-screen configuration designed to enable the user to accomplish a task.
- * @deprecated Use [[FrontstageConfig]] instead.
+ * @deprecated in 3.6. Use [[FrontstageConfig]] instead.
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
