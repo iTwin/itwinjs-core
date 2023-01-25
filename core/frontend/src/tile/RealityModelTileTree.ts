@@ -34,8 +34,7 @@ function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
 }
 
-/** @internal exported strictly for tests. */
-export interface RealityTreeId {
+interface RealityTreeId {
   rdSourceKey: RealityDataSourceKey;
   transform?: Transform;
   modelId: Id64String;
@@ -44,8 +43,7 @@ export interface RealityTreeId {
   produceGeometry?: boolean;
 }
 
-/** @internal exported strictly for tests. */
-export namespace RealityTreeId {
+namespace RealityTreeId {
   function compareOrigins(lhs: XYZ, rhs: XYZ): number {
     return compareNumbers(lhs.x, rhs.x) || compareNumbers(lhs.y, rhs.y) || compareNumbers(lhs.z, rhs.z);
   }
