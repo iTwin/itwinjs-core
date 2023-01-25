@@ -8,8 +8,6 @@ public;ActionButtonRenderer = (props: ActionButtonRendererProps) => React_2.Reac
 public;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
 public;ActiveMatchInfo
-alpha;ActiveRuleGroupContext: React_2.Context
-alpha;ActiveRuleGroupContextProps
 public;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
 public;ArrayPropertyValueRenderer 
 public;AsyncErrorMessage
@@ -47,7 +45,6 @@ beta;BreadcrumbUpdateEvent
 deprecated;BreadcrumbUpdateEvent 
 beta;BreadcrumbUpdateEventArgs
 deprecated;BreadcrumbUpdateEventArgs
-internal;buildPropertyFilter(groupItem: PropertyFilterBuilderRuleGroupItem): PropertyFilter | undefined
 public;CategorizedPropertyItem 
 public;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
 public;CategoryRecordsDict
@@ -148,8 +145,8 @@ public;FlatGridItemType
 public;FloatTypeConverter 
 internal;formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined
 public;from
-alpha;getPropertyFilterOperatorLabel(operator: PropertyFilterRuleOperator): string
-alpha;getPropertyFilterOperators(property: PropertyDescription): PropertyFilterRuleOperator[]
+beta;getPropertyFilterOperatorLabel(operator: PropertyFilterRuleOperator): string
+beta;getPropertyFilterOperators(property: PropertyDescription): PropertyFilterRuleOperator[]
 internal;getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord): string
 internal;getPropertyRecordAsString(label: PropertyRecord): string
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
@@ -196,8 +193,7 @@ public;IPropertyGridModel
 public;IPropertyGridModelSource
 public;IPropertyValueRenderer
 internal;isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem
-alpha;isPropertyFilterBuilderRuleGroup(item: PropertyFilterBuilderRuleGroupItem): item is PropertyFilterBuilderRuleGroup
-alpha;isPropertyFilterRuleGroup(filter: PropertyFilter): filter is PropertyFilterRuleGroup
+beta;isPropertyFilterRuleGroup(filter: PropertyFilter): filter is PropertyFilterRuleGroup
 public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
 public;isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod
 public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is TreeDataProviderPromise
@@ -205,7 +201,7 @@ public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is TreeDa
 public;isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode
 public;isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder
 public;isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode
-alpha;isUnaryPropertyFilterOperator(operator: PropertyFilterRuleOperator): boolean
+beta;isUnaryPropertyFilterOperator(operator: PropertyFilterRuleOperator): boolean
 public;ItemColorOverrides
 public;ItemStyle
 public;ItemStyleProvider:
@@ -299,36 +295,15 @@ public;PropertyEditingArgs
 public;class PropertyEditorBase 
 public;PropertyEditorManager
 public;PropertyEditorProps 
-alpha;PropertyFilter = PropertyFilterRule | PropertyFilterRuleGroup
-alpha;PropertyFilterBuilder(props: PropertyFilterBuilderProps): JSX.Element
-alpha;PropertyFilterBuilderActions
-alpha;PropertyFilterBuilderContext: React_2.Context
-alpha;PropertyFilterBuilderContextProps
-alpha;PropertyFilterBuilderProps
-alpha;PropertyFilterBuilderRule
-alpha;PropertyFilterBuilderRuleGroup
-alpha;PropertyFilterBuilderRuleGroupItem = PropertyFilterBuilderRuleGroup | PropertyFilterBuilderRule
-alpha;PropertyFilterBuilderRuleGroupOperator(props: PropertyFilterBuilderRuleGroupOperatorProps): JSX.Element
-alpha;PropertyFilterBuilderRuleGroupOperatorProps
-alpha;PropertyFilterBuilderRuleGroupRenderer(props: PropertyFilterBuilderRuleGroupRendererProps): JSX.Element
-alpha;PropertyFilterBuilderRuleGroupRendererProps
-alpha;PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRuleOperatorProps): JSX.Element
-alpha;PropertyFilterBuilderRuleOperatorProps
-alpha;PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps): JSX.Element
-alpha;PropertyFilterBuilderRulePropertyProps
-alpha;PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps): JSX.Element
-alpha;PropertyFilterBuilderRuleRendererProps
-alpha;PropertyFilterBuilderRuleRenderingContext: React_2.Context
-alpha;PropertyFilterBuilderRuleRenderingContextProps
-alpha;PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps): JSX.Element
-alpha;PropertyFilterBuilderRuleValueProps
-alpha;PropertyFilterBuilderState
+beta;PropertyFilter = PropertyFilterRule | PropertyFilterRuleGroup
+beta;PropertyFilterBuilder(props: PropertyFilterBuilderProps): JSX.Element
+beta;PropertyFilterBuilderProps
 public;PropertyFilterChangeEvent 
 public;PropertyFilterChangesListener = () => void
-alpha;PropertyFilterRule
-alpha;PropertyFilterRuleGroup
-alpha;PropertyFilterRuleGroupOperator
-alpha;PropertyFilterRuleOperator
+beta;PropertyFilterRule
+beta;PropertyFilterRuleGroup
+beta;PropertyFilterRuleGroupOperator
+beta;PropertyFilterRuleOperator
 public;PropertyGrid 
 deprecated;PropertyGrid 
 public;PropertyGridCategory
@@ -532,7 +507,6 @@ public;useAsyncValue:
 beta;useDebouncedAsyncValue
 public;usePagedTreeNodeLoader
 public;usePropertyData(props:
-alpha;usePropertyFilterBuilderState(initialFilter?: PropertyFilter):
 public;usePropertyGridEventHandler(props:
 public;usePropertyGridModel(props:
 public;usePropertyGridModelSource(props:

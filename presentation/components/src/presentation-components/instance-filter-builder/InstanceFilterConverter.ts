@@ -13,7 +13,12 @@ import { ClassInfo, InstanceFilterDefinition, NestedContentField, PropertiesFiel
 import { getIModelMetadataProvider } from "./ECMetadataProvider";
 import { PresentationInstanceFilter, PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup } from "./Types";
 
-/** @alpha */
+/**
+ * Converts [[PresentationInstanceFilter]] built by [[PresentationInstanceFilterBuilder]] component into
+ * [InstanceFilterDefinition]($presentation-common) that can be passed to [PresentationManager]($presentation-frontend) through request options
+ * in order to filter results.
+ * @beta
+ */
 export async function convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise<InstanceFilterDefinition> {
   const context: ConvertContext = { relatedInstances: [], propertyClasses: [] };
   const expression = convertFilter(filter, context);
