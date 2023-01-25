@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as fs from "fs";
+import * as path from "path";
 import { Field } from "@itwin/presentation-common";
 
 /**
@@ -60,4 +62,12 @@ export function getFieldsByLabel(rootFields: Field[], label: string): Field[] {
   };
   handleFields(rootFields);
   return foundFields;
+}
+
+/** Given a file name, returns a path that is safe to use for read-write scenarios when running the tests */
+export function prepareOutputFilePath(fileName: string): string {
+  const outputDirectory = path.join("out", process.pid.toString());
+  fs.existsSync(outputDirectory) && fs.rmSync(outputDirectory, { recursive: true, force: true });
+  fs.mkdirSync(outputDirectory, { recursive: true });
+  return path.join(outputDirectory, fileName);
 }

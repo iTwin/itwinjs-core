@@ -6,20 +6,21 @@ import * as chai from "chai";
 import chaiSubset from "chai-subset";
 import * as cpx from "cpx2";
 import * as fs from "fs";
+import Backend from "i18next-http-backend";
 import * as path from "path";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import { Logger, LogLevel } from "@itwin/core-bentley";
+import { EmptyLocalization, Localization } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { TestBrowserAuthorizationClient, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
 } from "@itwin/presentation-backend";
 import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
-import Backend from "i18next-http-backend";
-import { ITwinLocalization } from "@itwin/core-i18n";
-import { EmptyLocalization, Localization } from "@itwin/core-common";
+import { prepareOutputFilePath } from "./Utils";
 
 const DEFAULT_BACKEND_TIMEOUT: number = 0;
 
@@ -80,25 +81,25 @@ class IntegrationTestsApp extends NoRenderApp {
 const initializeCommon = async (props: { backendTimeout?: number, useClientServices?: boolean, localization?: Localization }) => {
   // init logging
   Logger.initializeToConsole();
+  Logger.turnOffCategories();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("i18n", LogLevel.Error);
   Logger.setLevel("SQLite", LogLevel.Error);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
-  const libDir = path.resolve("lib");
-  const hierarchiesCacheDir = path.join(libDir, "cache");
-  if (!fs.existsSync(hierarchiesCacheDir))
-    fs.mkdirSync(hierarchiesCacheDir);
+  const tempCachesDir = prepareOutputFilePath("caches");
+  if (!fs.existsSync(tempCachesDir))
+    fs.mkdirSync(tempCachesDir);
 
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,
-    rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
+    rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],
     defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
     caching: {
       hierarchies: {
         mode: HierarchyCacheMode.Disk,
-        directory: hierarchiesCacheDir,
+        directory: tempCachesDir,
       },
     },
   };
@@ -120,7 +121,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
 
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,
-    backendHostProps: { cacheDir: path.join(__dirname, ".cache") },
+    backendHostProps: { cacheDir: tempCachesDir },
     frontendProps: frontendInitProps,
     frontendApp: IntegrationTestsApp,
     frontendAppOptions,
