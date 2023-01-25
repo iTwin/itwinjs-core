@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Correctly render 'NavigationPropertyEditor' when it is used in dialog",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}
