@@ -78,8 +78,9 @@ export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPrope
       loadingMessage={() => translate("navigation-property-editor.loading-target-instances")}
       styles={{
         control: () => ({ height: "27px" }),
+        container: () => ({ width: "auto" }),
         valueContainer: () => ({ height: "27px" }),
-        menu: () => ({ position: "absolute", zIndex: 9999 }),
+        menu: () => ({ width: "auto", position: "absolute", zIndex: 9999 }),
         option: () => ({ whiteSpace: "nowrap" }),
       }}
       components={{
