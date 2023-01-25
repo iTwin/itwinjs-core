@@ -8,6 +8,7 @@
 
 import { TypeConverter } from "./TypeConverter";
 import { StringTypeConverter } from "../converters/StringTypeConverter";
+import { StandardTypeNames } from "@itwin/appui-abstract";
 
 /**
  * Manages Type Converters. Type Converters are registered with and obtained from the manager.
@@ -34,6 +35,9 @@ export class TypeConverterManager {
 
     const instance = new converter();
     TypeConverterManager._converters[fullConverterName] = instance;
+    if (instance.constructor.name === "StringTypeConverter" && !TypeConverterManager._defaultTypeConverter) {
+      TypeConverterManager._defaultTypeConverter = instance;
+    }
   }
 
   public static unregisterConverter(typename: string, converterName?: string): void {
@@ -51,9 +55,11 @@ export class TypeConverterManager {
     if (TypeConverterManager._converters.hasOwnProperty(fullConverterName))
       return TypeConverterManager._converters[fullConverterName];
 
-    if (!TypeConverterManager._defaultTypeConverter) {
-      TypeConverterManager._defaultTypeConverter = new StringTypeConverter();
-    }
     return TypeConverterManager._defaultTypeConverter;
   }
 }
+
+// register string type converters here to avoid circular dependency in the StringTypeConverter module
+TypeConverterManager.registerConverter(StandardTypeNames.Text, StringTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.String, StringTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.URL, StringTypeConverter);
