@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Code, ContextRealityModelProps, EmptyLocalization } from "@itwin/core-common";
+import { Code, ContextRealityModelProps, EmptyLocalization, PlanarClipMaskMode } from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -77,6 +77,20 @@ describe.only("ContextRealityModelState", () => {
     const a = imodel.transientIds.peekNext();
     style.attachRealityModel({ tilesetUrl: "a" });
     style.expectTrees([a]);
+
+    const b = imodel.transientIds.peekNext();
+    style.attachRealityModel({ tilesetUrl: "b" });
+    style.expectTrees([a, b]);
+
+    const bMask = imodel.transientIds.peekNext();
+    style.attachRealityModel({
+      tilesetUrl: "b",
+      planarClipMask: {
+        mode: PlanarClipMaskMode.Models,
+        modelIds: "+123",
+      },
+    });
+    style.expectTrees([a, b, bMask]);
   });
 
   it("shares compatible trees between views", () => {
