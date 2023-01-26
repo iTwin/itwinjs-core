@@ -1084,9 +1084,6 @@ Array [
                 },
               },
             ],
-            "filtering": Object {
-              "descriptor": [Function],
-            },
             "hasChildren": true,
             "label": PropertyRecord {
               "property": Object {
@@ -1587,9 +1584,6 @@ Array [
             },
           },
         ],
-        "filtering": Object {
-          "descriptor": [Function],
-        },
         "hasChildren": true,
         "label": PropertyRecord {
           "property": Object {
@@ -1605,9 +1599,6 @@ Array [
         },
       },
     ],
-    "filtering": Object {
-      "descriptor": [Function],
-    },
     "hasChildren": true,
     "label": PropertyRecord {
       "property": Object {

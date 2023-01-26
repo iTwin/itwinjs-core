@@ -12,7 +12,8 @@ import { PresentationInstanceFilterInfo } from "../../instance-filter-builder/Pr
 import { isPresentationTreeNodeItem } from "../PresentationTreeNodeItem";
 
 /**
- * @alpha
+ * Props for [[useHierarchyLevelFiltering]] hook.
+ * @beta
  */
 export interface UseHierarchyLevelFilteringProps {
   nodeLoader: ITreeNodeLoader;
@@ -20,7 +21,9 @@ export interface UseHierarchyLevelFilteringProps {
 }
 
 /**
- * @alpha
+ * Custom hook that creates callbacks for filtering hierarchy levels in the tree. Filtering works only with trees based on
+ * [[PresentationTreeDataProvider]].
+ * @beta
  */
 export function useHierarchyLevelFiltering(props: UseHierarchyLevelFilteringProps) {
   const { nodeLoader, modelSource } = props;
