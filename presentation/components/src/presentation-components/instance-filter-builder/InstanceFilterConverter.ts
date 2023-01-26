@@ -13,7 +13,12 @@ import { ClassInfo, InstanceFilterDefinition, NestedContentField, PropertiesFiel
 import { getIModelMetadataProvider } from "./ECMetadataProvider";
 import { PresentationInstanceFilter, PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup } from "./Types";
 
-/** @alpha */
+/**
+ * Converts [[PresentationInstanceFilter]] built by [[PresentationInstanceFilterBuilder]] component into
+ * [InstanceFilterDefinition]($presentation-common) that can be passed to [PresentationManager]($presentation-frontend) through request options
+ * in order to filter results.
+ * @beta
+ */
 export async function convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise<InstanceFilterDefinition> {
   const context: ConvertContext = { relatedInstances: [], propertyClasses: [] };
   const expression = convertFilter(filter, context);
@@ -145,15 +150,15 @@ function getRuleOperatorString(operator: PropertyFilterRuleOperator) {
     case PropertyFilterRuleOperator.IsEqual:
       return "=";
     case PropertyFilterRuleOperator.IsFalse:
-      return "IS FALSE";
+      return "= FALSE";
     case PropertyFilterRuleOperator.IsNotEqual:
       return "<>";
     case PropertyFilterRuleOperator.IsNotNull:
-      return "IS NOT NULL";
+      return "<> NULL";
     case PropertyFilterRuleOperator.IsNull:
-      return "IS NULL";
+      return "= NULL";
     case PropertyFilterRuleOperator.IsTrue:
-      return "IS TRUE";
+      return "= TRUE";
     case PropertyFilterRuleOperator.Less:
       return "<";
     case PropertyFilterRuleOperator.LessOrEqual:

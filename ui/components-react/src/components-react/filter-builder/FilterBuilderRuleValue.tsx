@@ -2,18 +2,31 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module PropertyFilterBuilder
+ */
+
 import * as React from "react";
 import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "../editors/EditorContainer";
 
-/** @alpha */
+/**
+ * Props for [[PropertyFilterBuilderRuleValue]] component.
+ * @internal
+ */
 export interface PropertyFilterBuilderRuleValueProps {
+  /** Currently entered value. */
   value?: PropertyValue;
+  /** Property used in rule to which this value will be compared to. */
   property: PropertyDescription;
+  /** Callback that is invoked when value changes. */
   onChange: (value: PropertyValue) => void;
 }
 
-/** @alpha */
+/**
+ * Component that renders [[PropertyFilterBuilderRuleRenderer]] value input.
+ * @internal
+ */
 export function PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleValueProps) {
   const { value, property, onChange } = props;
 
