@@ -83,8 +83,16 @@ export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRu
         propertyRenderer={propertyRenderer}
         isDisabled={isDisabled}
       />
-      {property && operatorRenderer(property)}
-      {property && operator && !isUnaryPropertyFilterOperator(operator) && valueRenderer(property)}
+      {
+        property !== undefined
+          ? operatorRenderer(property)
+          : null
+      }
+      {
+        property !== undefined && operator !== undefined && !isUnaryPropertyFilterOperator(operator)
+          ? valueRenderer(property)
+          : null
+      }
     </div>
   </div>;
 }

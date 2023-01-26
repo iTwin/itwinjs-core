@@ -11,7 +11,7 @@ import { FakeBentleyCloudRpcConfiguration, TestIModelJsExpressServer } from "./M
 // Returns fake response for specified mock's method
 function mockRequestHandler(mock: sinon.SinonMock, method: string, status: number, result: string) {
   return mock.expects(method).callsFake(
-    (_req: HttpServerRequest, res: HttpServerResponse) => {
+    (_req: HttpServerRequest, res: HttpServerResponse) => { // eslint-disable-line deprecation/deprecation
       res.status(status).send(result);
     });
 }
