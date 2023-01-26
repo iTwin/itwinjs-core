@@ -2,6 +2,12 @@
   "name": "@itwin/appui-abstract",
   "entries": [
     {
+      "version": "3.5.5",
+      "tag": "@itwin/appui-abstract_v3.5.5",
+      "date": "Thu, 26 Jan 2023 22:53:27 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.5.4",
       "tag": "@itwin/appui-abstract_v3.5.4",
       "date": "Wed, 18 Jan 2023 15:27:15 GMT",
