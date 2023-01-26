@@ -6,8 +6,9 @@
  * @module TypeConverters
  */
 
-import { Primitives } from "@itwin/appui-abstract";
+import { Primitives, StandardTypeNames } from "@itwin/appui-abstract";
 import { TypeConverter } from "./TypeConverter";
+import { TypeConverterManager } from "./TypeConverterManager";
 
 /** Operators for string types
  * @public
@@ -125,3 +126,7 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
     return true;
   }
 }
+
+TypeConverterManager.registerConverter(StandardTypeNames.Text, StringTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.String, StringTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.URL, StringTypeConverter);

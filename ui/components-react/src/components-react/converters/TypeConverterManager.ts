@@ -7,8 +7,6 @@
  */
 
 import { TypeConverter } from "./TypeConverter";
-import { StringTypeConverter } from "../converters/StringTypeConverter";
-import { StandardTypeNames } from "@itwin/appui-abstract";
 
 /**
  * Manages Type Converters. Type Converters are registered with and obtained from the manager.
@@ -58,8 +56,3 @@ export class TypeConverterManager {
     return TypeConverterManager._defaultTypeConverter;
   }
 }
-
-// register string type converters here to avoid circular dependency in the StringTypeConverter module
-TypeConverterManager.registerConverter(StandardTypeNames.Text, StringTypeConverter);
-TypeConverterManager.registerConverter(StandardTypeNames.String, StringTypeConverter);
-TypeConverterManager.registerConverter(StandardTypeNames.URL, StringTypeConverter);
