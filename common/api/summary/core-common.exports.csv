@@ -638,7 +638,6 @@ public;RgbColorProps
 public;RgbFactorProps = number[]
 public;RootSubjectProps
 public;RpcActivity 
-deprecated;RpcActivity 
 internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
 internal;class RpcConfiguration
 internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
@@ -653,7 +652,6 @@ internal;RpcDirectRequest
 public;RpcEndpoint
 deprecated;RpcEndpoint
 public;class RpcInterface
-deprecated;class RpcInterface
 internal;RpcInterfaceDefinition
 internal;RpcInterfaceEndpoints
 internal;RpcInterfaceImplementation
@@ -701,7 +699,6 @@ public;RpcRequestStatus
 deprecated;RpcRequestStatus
 internal;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
 public;RpcResponseCacheControl
-deprecated;RpcResponseCacheControl
 internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 internal;RpcRoutingMap 
 internal;RpcRoutingMap
@@ -715,7 +712,6 @@ public;SectionDrawingProps
 public;SectionDrawingViewProps
 public;SectionType
 public;SerializedRpcActivity
-deprecated;SerializedRpcActivity
 internal;SerializedRpcOperation
 internal;SerializedRpcRequest 
 public;ServerError 

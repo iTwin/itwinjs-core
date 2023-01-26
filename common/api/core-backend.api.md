@@ -4399,7 +4399,7 @@ export class RoleModel extends Model {
     static get className(): string;
 }
 
-// @public @deprecated
+// @public
 export class RpcTrace {
     static get currentActivity(): RpcActivity | undefined;
     static get expectCurrentActivity(): RpcActivity;

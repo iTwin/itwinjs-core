@@ -7658,7 +7658,7 @@ export interface RootSubjectProps {
     readonly name: string;
 }
 
-// @public @deprecated
+// @public
 export interface RpcActivity extends SessionProps {
     readonly accessToken: AccessToken;
     readonly activityId: GuidString;
@@ -7783,7 +7783,7 @@ export enum RpcEndpoint {
     Frontend = 0
 }
 
-// @public @deprecated
+// @public
 export abstract class RpcInterface {
     // @internal
     constructor(routing?: RpcRoutingToken);
@@ -8300,7 +8300,7 @@ export namespace RpcRequestStatus {
 // @internal
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined;
 
-// @public @deprecated
+// @public
 export enum RpcResponseCacheControl {
     // (undocumented)
     Immutable = 1,
@@ -8407,7 +8407,7 @@ export enum SectionType {
     Section = 3
 }
 
-// @public @deprecated
+// @public
 export interface SerializedRpcActivity {
     // (undocumented)
     applicationId: string;
