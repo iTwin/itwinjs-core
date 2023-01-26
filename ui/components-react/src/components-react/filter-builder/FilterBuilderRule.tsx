@@ -89,7 +89,7 @@ export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRu
           : null
       }
       {
-        property && operator && !isUnaryPropertyFilterOperator(operator)
+        property !== undefined && operator !== undefined && !isUnaryPropertyFilterOperator(operator)
           ? valueRenderer(property)
           : null
       }
