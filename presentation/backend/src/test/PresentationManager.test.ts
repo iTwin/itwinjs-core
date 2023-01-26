@@ -16,17 +16,16 @@ import {
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
   FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
   HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON, HierarchyRequestOptions, InstanceKey, IntRulesetVariable,
-  ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelDefinitionJSON, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeKey,
-  Paged, PageOptions, PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset,
-  RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions,
-  StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeKey, Paged, PageOptions,
+  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset,
+  SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes,
+  StructTypeDescription, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
-  createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
-  createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON,
-  createRandomNodePathElementJSON, createRandomRelationshipPath, createRandomRuleset, createTestCategoryDescription, createTestContentDescriptor,
-  createTestContentItem, createTestECClassInfo, createTestRelatedClassInfo, createTestRelationshipPath, createTestSelectClassInfo,
-  createTestSimpleContentField,
+  createRandomECClassInfo, createRandomECInstanceKey, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomId,
+  createRandomLabelDefinition, createRandomNodePathElementJSON, createRandomRelationshipPath, createRandomRuleset, createTestCategoryDescription,
+  createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestRelatedClassInfo, createTestRelationshipPath,
+  createTestSelectClassInfo, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { PRESENTATION_BACKEND_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
@@ -735,6 +734,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
+        // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyLevelJSON = {
           nodes: [{
             key: {
@@ -758,7 +758,7 @@ describe("PresentationManager", () => {
             key: {
               type: StandardNodeTypes.ECInstancesNode,
               pathFromRoot: ["p1"],
-              instanceKeys: [createRandomECInstanceKeyJSON()],
+              instanceKeys: [createRandomECInstanceKey()],
             },
             labelDefinition: LabelDefinition.fromLabelString("test2"),
             description: "description2",
@@ -796,7 +796,7 @@ describe("PresentationManager", () => {
 
       it("returns child nodes", async () => {
         // what the addon receives
-        const parentNodeKeyJSON = createRandomECInstancesNodeKeyJSON();
+        const parentNodeKeyJSON = createRandomECInstancesNodeKey();
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetChildren,
           params: {
@@ -807,12 +807,13 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
+        // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyLevelJSON = {
           nodes: [{
             key: {
               type: StandardNodeTypes.ECInstancesNode,
               pathFromRoot: ["p1"],
-              instanceKeys: [createRandomECInstanceKeyJSON()],
+              instanceKeys: [createRandomECInstanceKey()],
             },
             labelDefinition: LabelDefinition.fromLabelString("test2"),
           }, {
@@ -831,6 +832,7 @@ describe("PresentationManager", () => {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
+          // eslint-disable-next-line deprecation/deprecation
           parentKey: NodeKey.fromJSON(parentNodeKeyJSON),
         };
         const result = await manager.getNodes(options);
@@ -848,6 +850,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
+        // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyLevelJSON = {
           nodes: [{
             key: {
@@ -910,7 +913,7 @@ describe("PresentationManager", () => {
 
       it("returns child nodes count", async () => {
         // what the addon receives
-        const parentNodeKeyJSON = createRandomECInstancesNodeKeyJSON();
+        const parentNodeKeyJSON = createRandomECInstancesNodeKey();
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetChildrenCount,
           params: {
@@ -927,6 +930,7 @@ describe("PresentationManager", () => {
         const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
+          // eslint-disable-next-line deprecation/deprecation
           parentKey: NodeKey.fromJSON(parentNodeKeyJSON),
         };
         const result = await manager.getNodesCount(options);
@@ -943,7 +947,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetNodesDescriptor,
           params: {
-            nodeKey: NodeKey.toJSON(parentNodeKey),
+            nodeKey: parentNodeKey,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
           },
         };
@@ -996,8 +1000,8 @@ describe("PresentationManager", () => {
 
       it("returns node paths", async () => {
         // what the addon receives
-        const keyJsonArray = [[createRandomECInstanceKeyJSON(), createRandomECInstanceKeyJSON()]];
-        const keyArray = [keyJsonArray[0].map((json) => InstanceKey.fromJSON(json))];
+        const keyJsonArray = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
+        const keyArray = [[...keyJsonArray[0]]];
         const markedIndex = faker.random.number();
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetNodePaths,
@@ -1040,11 +1044,12 @@ describe("PresentationManager", () => {
             prevRulesetVariables: JSON.stringify([var1]),
             currRulesetId: "test",
             currRulesetVariables: JSON.stringify([var2]),
-            expandedNodeKeys: JSON.stringify([NodeKey.toJSON(nodeKey)]),
+            expandedNodeKeys: JSON.stringify([nodeKey]),
           },
         };
 
         // what the addon returns
+        // eslint-disable-next-line deprecation/deprecation
         const unprocessedResponse: HierarchyCompareInfoJSON = {
           changes: [{
             type: "Insert",
@@ -1066,6 +1071,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [nodeKey],
         };
         const result = await manager.compareHierarchies(options);
+        // eslint-disable-next-line deprecation/deprecation
         verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
@@ -1083,6 +1089,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
+        // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyCompareInfoJSON = {
           changes: [{
             type: "Delete",
@@ -1101,6 +1108,7 @@ describe("PresentationManager", () => {
           rulesetOrId: "test",
         };
         const result = await manager.compareHierarchies(options);
+        // eslint-disable-next-line deprecation/deprecation
         verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
@@ -1121,6 +1129,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
+        // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyCompareInfoJSON = {
           changes: [{
             type: "Update",
@@ -1140,6 +1149,7 @@ describe("PresentationManager", () => {
           rulesetVariables: [var2],
         };
         const result = await manager.compareHierarchies(options);
+        // eslint-disable-next-line deprecation/deprecation
         verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
@@ -1474,9 +1484,9 @@ describe("PresentationManager", () => {
         const addonResponse = {
           descriptor: descriptor.toJSON(),
           contentSet: [{
-            primaryKeys: [createRandomECInstanceKeyJSON()],
-            classInfo: createRandomECClassInfoJSON(),
-            labelDefinition: createRandomLabelDefinitionJSON(),
+            primaryKeys: [createRandomECInstanceKey()],
+            classInfo: createRandomECClassInfo(),
+            labelDefinition: createRandomLabelDefinition(),
             imageId: faker.random.uuid(),
             values: {
               [fieldName]: faker.random.words(),
@@ -1528,8 +1538,8 @@ describe("PresentationManager", () => {
         const addonResponse = {
           descriptor: descriptor.toJSON(),
           contentSet: [{
-            primaryKeys: [createRandomECInstanceKeyJSON()],
-            classInfo: createRandomECClassInfoJSON(),
+            primaryKeys: [createRandomECInstanceKey()],
+            classInfo: createRandomECClassInfo(),
             labelDefinition: {
               typeName: "string",
               rawValue: "@RulesEngine:LABEL_General_NotSpecified@",
@@ -1586,9 +1596,9 @@ describe("PresentationManager", () => {
             })],
           }).toJSON(),
           contentSet: [{
-            primaryKeys: [createRandomECInstanceKeyJSON()],
-            classInfo: createRandomECClassInfoJSON(),
-            labelDefinition: createRandomLabelDefinitionJSON(),
+            primaryKeys: [createRandomECInstanceKey()],
+            classInfo: createRandomECClassInfo(),
+            labelDefinition: createRandomLabelDefinition(),
             imageId: faker.random.uuid(),
             values: {
               [fieldName]: faker.random.words(),
@@ -1639,9 +1649,9 @@ describe("PresentationManager", () => {
             })],
           }).toJSON(),
           contentSet: [{
-            primaryKeys: [createRandomECInstanceKeyJSON()],
-            classInfo: createRandomECClassInfoJSON(),
-            labelDefinition: createRandomLabelDefinitionJSON(),
+            primaryKeys: [createRandomECInstanceKey()],
+            classInfo: createRandomECClassInfo(),
+            labelDefinition: createRandomLabelDefinition(),
             imageId: faker.random.uuid(),
             values: {
               [fieldName]: faker.random.words(),
@@ -1687,9 +1697,9 @@ describe("PresentationManager", () => {
         const addonResponse = {
           descriptor: descriptor.toJSON(),
           contentSet: [{
-            primaryKeys: [createRandomECInstanceKeyJSON()],
-            classInfo: createRandomECClassInfoJSON(),
-            labelDefinition: createRandomLabelDefinitionJSON(),
+            primaryKeys: [createRandomECInstanceKey()],
+            classInfo: createRandomECClassInfo(),
+            labelDefinition: createRandomLabelDefinition(),
             imageId: faker.random.uuid(),
             values: {
               [fieldName]: faker.random.words(),
@@ -2136,7 +2146,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse = createRandomLabelDefinitionJSON();
+        const addonResponse = createRandomLabelDefinition();
         setup(addonResponse);
 
         // test
@@ -2159,7 +2169,7 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse = (): LabelDefinitionJSON => {
+        const addonResponse = (): LabelDefinition => {
           return {
             displayValue: "@RulesEngine:LABEL_General_NotSpecified@",
             rawValue: "@RulesEngine:LABEL_General_NotSpecified@",
@@ -2169,7 +2179,7 @@ describe("PresentationManager", () => {
         setup(addonResponse());
 
         // what the presentation manager returns
-        const localizedAddonResponse = (): LabelDefinitionJSON => {
+        const localizedAddonResponse = (): LabelDefinition => {
           return {
             displayValue: "Not specified",
             rawValue: "Not specified",
@@ -2191,7 +2201,7 @@ describe("PresentationManager", () => {
 
       it("returns labels from list content and localizes them", async () => {
         // what the addon returns
-        const addonResponse = (): LabelDefinitionJSON => {
+        const addonResponse = (): LabelDefinition => {
           return {
             displayValue: "@RulesEngine:LABEL_General_NotSpecified@",
             rawValue: "@RulesEngine:LABEL_General_NotSpecified@",
@@ -2239,7 +2249,7 @@ describe("PresentationManager", () => {
           // note: return in wrong order to verify the resulting labels are still in the right order
           contentSet: [1, 0].map((index): ItemJSON => ({
             primaryKeys: [keys[index]],
-            classInfo: createRandomECClassInfoJSON(),
+            classInfo: createRandomECClassInfo(),
             labelDefinition: labels[index],
             imageId: faker.random.uuid(),
             values: {},
@@ -2262,7 +2272,7 @@ describe("PresentationManager", () => {
       it("returns labels from list content", async () => {
         // what the addon receives
         const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
-        const labels = [createRandomLabelDefinitionJSON(), createRandomLabelDefinitionJSON()];
+        const labels = [createRandomLabelDefinition(), createRandomLabelDefinition()];
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
@@ -2291,7 +2301,7 @@ describe("PresentationManager", () => {
           // note: return in wrong order to verify the resulting labels are still in the right order
           contentSet: [1, 0].map((index): ItemJSON => ({
             primaryKeys: [keys[index]],
-            classInfo: createRandomECClassInfoJSON(),
+            classInfo: createRandomECClassInfo(),
             labelDefinition: labels[index],
             imageId: faker.random.uuid(),
             values: {},
@@ -2316,7 +2326,7 @@ describe("PresentationManager", () => {
         const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
         const concreteClassKey = { className: faker.random.word(), id: baseClassKey.id };
         setupIModelForElementKey(imodelMock, concreteClassKey);
-        const label = createRandomLabelDefinitionJSON();
+        const label = createRandomLabelDefinition();
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
@@ -2345,7 +2355,7 @@ describe("PresentationManager", () => {
           // note: return in wrong order to verify the resulting labels are still in the right order
           contentSet: [{
             primaryKeys: [concreteClassKey],
-            classInfo: createRandomECClassInfoJSON(),
+            classInfo: createRandomECClassInfo(),
             labelDefinition: label,
             imageId: faker.random.uuid(),
             values: {},
@@ -2383,9 +2393,9 @@ describe("PresentationManager", () => {
         const addonContentResponse = {
           descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
           contentSet: [{
-            primaryKeys: [createRandomECInstanceKeyJSON()], // different than input key
-            classInfo: createRandomECClassInfoJSON(),
-            labelDefinition: createRandomLabelDefinitionJSON(),
+            primaryKeys: [createRandomECInstanceKey()], // different than input key
+            classInfo: createRandomECClassInfo(),
+            labelDefinition: createRandomLabelDefinition(),
             imageId: faker.random.uuid(),
             values: {},
             displayValues: {},
@@ -2451,6 +2461,7 @@ describe("PresentationManager", () => {
           add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
         }));
         // what the addon returns
+        // eslint-disable-next-line deprecation/deprecation
         const addonResponse: HierarchyLevelJSON = {
           nodes: [{
             key: {
@@ -2518,10 +2529,11 @@ describe("PresentationManager", () => {
       manager.dispose();
     });
 
-    it("computes selection using `SelectionScopesHelper`", async () => {
+    it("[deprecated] computes selection using `SelectionScopesHelper`", async () => {
       const ids = [createRandomId()];
       const resultKeys = new KeySet();
       const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
+      // eslint-disable-next-line deprecation/deprecation
       const result = await manager.computeSelection({ imodel: imodel.object, ids, scopeId: "test scope" });
       expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds: ids, scope: { id: "test scope" } });
       expect(result).to.eq(resultKeys);

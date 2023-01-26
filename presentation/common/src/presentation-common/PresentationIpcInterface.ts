@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { NodeKeyJSON } from "./hierarchy/Key";
+import { NodeKey } from "./hierarchy/Key";
 import { RulesetVariableJSON } from "./RulesetVariables";
 
 /** @internal */
@@ -49,5 +49,5 @@ export interface PresentationIpcInterface {
   unsetRulesetVariable(params: UnsetRulesetVariableParams): Promise<void>;
 
   /** Updates hierarchy state saved on the backend. Hierarchy state is used when performing updates after iModel data changes */
-  updateHierarchyState(params: UpdateHierarchyStateParams<NodeKeyJSON>): Promise<void>;
+  updateHierarchyState(params: UpdateHierarchyStateParams<NodeKey>): Promise<void>;
 }

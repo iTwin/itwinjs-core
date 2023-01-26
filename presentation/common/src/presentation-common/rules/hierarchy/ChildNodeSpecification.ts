@@ -18,7 +18,6 @@ import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecifi
  * @public
  */
 export enum ChildNodeSpecificationTypes {
-  // hierarchy specifications
   RelatedInstanceNodes = "RelatedInstanceNodes",
   InstanceNodesOfSpecificClasses = "InstanceNodesOfSpecificClasses",
   CustomQueryInstanceNodes = "CustomQueryInstanceNodes",
@@ -32,8 +31,11 @@ export enum ChildNodeSpecificationTypes {
  * @public
  */
 export interface ChildNodeSpecificationBase {
-  /** Used for serializing to JSON. */
-  specType: ChildNodeSpecificationTypes;
+  /**
+   * Used for serializing to JSON.
+   * @see ChildNodeSpecificationTypes
+   */
+  specType: `${ChildNodeSpecificationTypes}`;
 
   /**
    * Controls the order in which specifications are handled — specification with higher priority value is
@@ -76,8 +78,6 @@ export interface ChildNodeSpecificationBase {
   /**
    * Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this
    * specification. See more in [infinite hierarchies prevention page]($docs/presentation/hierarchies/InfiniteHierarchiesPrevention.md).
-   *
-   * @beta
    */
   suppressSimilarAncestorsCheck?: boolean;
 

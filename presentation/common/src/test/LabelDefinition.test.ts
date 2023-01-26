@@ -2,19 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as faker from "faker";
-import { LabelCompositeValue, LabelDefinition, LabelDefinitionJSON } from "../presentation-common/LabelDefinition";
-import {
-  createRandomLabelCompositeValue, createRandomLabelCompositeValueJSON, createRandomLabelDefinition, createRandomLabelDefinitionJSON,
-} from "./_helpers/random";
+import { LabelCompositeValue, LabelDefinition } from "../presentation-common/LabelDefinition";
+import { createRandomLabelCompositeValue, createRandomLabelDefinition } from "./_helpers/random";
+
+/* eslint-disable deprecation/deprecation */
 
 const createRandomCompositeLabelDefinition = (): LabelDefinition => {
   return { displayValue: faker.random.word(), rawValue: createRandomLabelCompositeValue(), typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME };
-};
-
-const createRandomCompositeLabelDefinitionJSON = (): LabelDefinitionJSON => {
-  return { displayValue: faker.random.word(), rawValue: createRandomLabelCompositeValueJSON(), typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME };
 };
 
 describe("LabelDefinition", () => {
@@ -38,25 +35,25 @@ describe("LabelDefinition", () => {
   describe("fromJSON", () => {
 
     it("creates valid LabelDefinition from JSON", () => {
-      const json = createRandomLabelDefinitionJSON();
+      const json = createRandomLabelDefinition();
       const definition = LabelDefinition.fromJSON(json);
       expect(definition).to.matchSnapshot();
     });
 
     it("creates valid LabelDefinition from serialized JSON", () => {
-      const json = createRandomLabelDefinitionJSON();
+      const json = createRandomLabelDefinition();
       const definition = LabelDefinition.fromJSON(JSON.stringify(json));
       expect(definition).to.matchSnapshot();
     });
 
     it("creates valid LabelDefinition with composite value from JSON", () => {
-      const json = createRandomCompositeLabelDefinitionJSON();
+      const json = createRandomCompositeLabelDefinition();
       const definition = LabelDefinition.fromJSON(json);
       expect(definition).to.matchSnapshot();
     });
 
     it("creates valid LabelDefinition with composite value from serialized JSON", () => {
-      const json = createRandomCompositeLabelDefinitionJSON();
+      const json = createRandomCompositeLabelDefinition();
       const definition = LabelDefinition.fromJSON(JSON.stringify(json));
       expect(definition).to.matchSnapshot();
     });
@@ -90,7 +87,7 @@ describe("LabelCompositeValue", () => {
   describe("fromJSON", () => {
 
     it("creates valid LabelCompositeValue from JSON", () => {
-      const json = createRandomLabelCompositeValueJSON();
+      const json = createRandomLabelCompositeValue();
       const compositeValue = LabelCompositeValue.fromJSON(json);
       expect(compositeValue).to.matchSnapshot();
     });

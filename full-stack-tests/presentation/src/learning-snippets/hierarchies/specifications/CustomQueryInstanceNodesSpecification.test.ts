@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, QuerySpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -33,11 +33,11 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomQueryInstanceNodes,
+              specType: "CustomQueryInstanceNodes",
               queries: [{
-                specType: QuerySpecificationTypes.String,
+                specType: "String",
                 class: { schemaName: "BisCore", className: "Model" },
                 query: `SELECT * FROM bis.Model`,
               }],
@@ -79,19 +79,19 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "MyDomain", classNames: ["MyParentElement"], arePolymorphic: true },
               groupByClass: false,
             }],
           }, {
-            ruleType: RuleTypes.ChildNodes,
+            ruleType: "ChildNodes",
             condition: `ParentNode.IsOfClass("MyParentElement", "MyDomain")`,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomQueryInstanceNodes,
+              specType: "CustomQueryInstanceNodes",
               queries: [{
-                specType: QuerySpecificationTypes.ECPropertyValue,
+                specType: "ECPropertyValue",
                 class: { schemaName: "MyDomain", className: "MyChildElement" },
                 parentPropertyName: "ChildrenQuery",
               }],

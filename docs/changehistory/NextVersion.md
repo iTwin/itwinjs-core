@@ -17,6 +17,9 @@ Table of contents:
 - [Geometry](#geometry)
   - [Query mesh convexity](#query-mesh-convexity)
 - [Write-ahead logging](#write-ahead-logging)
+- [Presentation](#presentation)
+  - [Hierarchy levels filtering](#hierarchy-levels-filtering)
+  - [Grouping nodes HiliteSet](#grouping-nodes-hiliteset)
 - [API promotions](#api-promotions)
 - [API deprecations](#api-deprecations)
 
@@ -95,6 +98,31 @@ Previously, iTwin.js used [DELETE](https://www.sqlite.org/pragma.html#pragma_jou
 - Failure to close a writeable briefcase may leave a "-wal" file. Previously, if a program crashed or exited with an open briefcase, it would leave the briefcase file as-of its last call to `IModelDb.saveChanges`. Now, there will be another file with the name of the briefcase with "-wal" appended. This is not a problem and the briefcase is completely intact, except that the briefcase file itself is not sufficient for copying (it will not include recent changes.) The "-wal" file will be used by future connections and will be deleted the next time the briefcase is successfully closed.
 - Attempting to copy an open-for-write briefcase file may not include recent changes. This scenario generally only arises for tests. If you wish to copy an open-for-write briefcase file, you must now call [IModelDb.performCheckpoint]($backend) first.
 
+## Presentation
+
+### Hierarchy levels filtering
+
+Ability to filter individual hierarchy levels was added for tree components that use [PresentationTreeDataProvider]($presentation-components). To enable this, [PresentationTreeRenderer]($presentation-components) should be passed to [ControlledTree]($components-react) through [ControlledTreeProps.treeRenderer]($components-react):
+
+```ts
+return <ControlledTree
+  // other props
+  treeRenderer={(treeProps) => <PresentationTreeRenderer {...treeProps} imodel={imodel} modelSource={modelSource} />}
+/>;
+```
+
+[PresentationTreeRenderer]($presentation-components) renders nodes with action buttons for applying and clearing filters. Some hierarchy levels might not be filterable depending on the presentation rules used to build them. In that case, action buttons for those hierarchy levels are not rendered. If applied filter does not produce any nodes, `There are no child nodes matching current filter` message is rendered in that hierarchy level.
+
+![Filtered Tree](./assets/filtered-tree.jpg)
+
+Dialog component for creating hierarchy level filter is opened when node's `Filter` button is clicked. This dialog allows to create complex filters with multiple conditions based on properties from instances that are represented by the nodes in that hierarchy level.
+
+![Filter Builder Dialog](./assets/filter-builder-dialog.jpg)
+
+### Grouping nodes HiliteSet
+
+[HiliteSetProvider.getHiliteSet]($presentation-frontend) now supports getting [HiliteSet]($presentation-frontend) for grouping nodes. Previously, [HiliteSetProvider.getHiliteSet]($presentation-frontend) used to return empty [HiliteSet]($presentation-frontend) if called with key of the grouping node. Now it returns [HiliteSet]($presentation-frontend) for all the instances that are grouped under grouping node. This also means that now elements will be hilited in viewport using [Unified Selection](../presentation/unified-selection/index.md) when grouping node is selected in the tree.
+
 ## API promotions
 
 The following APIs have been promoted to `@public`, indicating they are now part of their respective packages' [stability contract](../learning/api-support-policies.md).
@@ -113,6 +141,59 @@ The following APIs have been promoted to `@public`, indicating they are now part
 - [Viewport.queryVisibleFeatures]($frontend)
 - [ViewState3d.lookAt]($frontend)
 
+### @itwin/presentation-common
+
+- Presentation rules:
+  - [InstanceLabelOverridePropertyValueSpecification.propertySource]($presentation-common)
+  - [ChildNodeSpecificationBase.suppressSimilarAncestorsCheck]($presentation-common)
+  - [RequiredSchemaSpecification]($presentation-common) and its usages:
+    - [SubCondition.requiredSchemas]($presentation-common)
+    - [RuleBase.requiredSchemas]($presentation-common)
+    - [Ruleset.requiredSchemas]($presentation-common)
+- Content traversal - related APIs:
+  - [traverseContent]($presentation-common)
+  - [IContentVisitor]($presentation-common)
+- Selection scope computation - related APIs:
+  - [SelectionScopeProps]($presentation-common)
+  - [ComputeSelectionRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getElementProperties]($presentation-common)
+- Element properties request - related APIs:
+  - [ElementProperties]($presentation-common)
+  - [ElementPropertiesRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.computeSelection]($presentation-common)
+- Content sources request - related APIs:
+  - [ContentSourcesRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getContentSources]($presentation-common)
+- Content instance keys request - related APIs:
+  - [ContentInstanceKeysRequestOptions]($presentation-common)
+  - [PresentationRpcInterface.getContentInstanceKeys]($presentation-common)
+- [NestedContentField.relationshipMeaning]($presentation-common)
+- [ContentFlags.IncludeInputKeys]($presentation-common) and [Item.inputKeys]($presentation-common)
+
+### @itwin/presentation-backend
+
+- Presentation manager's caching related APIs:
+  - [HierarchyCacheMode]($presentation-backend)
+  - [HierarchyCacheConfig]($presentation-backend)
+  - [PresentationManagerCachingConfig.hierarchies]($presentation-backend) and [PresentationManagerCachingConfig.workerConnectionCacheSize]($presentation-backend)
+- [PresentationManager.getElementProperties]($presentation-backend) and [MultiElementPropertiesResponse]($presentation-backend)
+- [PresentationManager.getContentSources]($presentation-backend)
+- [PresentationManager.computeSelection]($presentation-backend)
+- [RulesetEmbedder]($presentation-backend) and related APIs
+
+### @itwin/presentation-frontend
+
+- [PresentationManager.getContentSources]($presentation-frontend)
+- [PresentationManager.getElementProperties]($presentation-frontend)
+- [PresentationManager.getContentInstanceKeys]($presentation-frontend)
+
+### @itwin/presentation-components
+
+- [FavoritePropertiesDataFilterer]($presentation-components)
+- [PresentationPropertyDataProvider.getPropertyRecordInstanceKeys]($presentation-components)
+- [PresentationTreeDataProviderProps.customizeTreeNodeItem]($presentation-components)
+- [PresentationTreeNodeLoaderProps.seedTreeModel]($presentation-components)
+
 ## API deprecations
 
 ### @itwin/core-bentley
@@ -127,6 +208,10 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 
 [NativeApp.requestDownloadBriefcase]($frontend) parameter `progress` is deprecated in favor of `progressCallback` in [DownloadBriefcaseOptions]($frontend). Similarly, `progressCallback` in [PullChangesOptions]($frontend) is now deprecated and should be replaced with `downloadProgressCallback` in [PullChangesOptions]($frontend). Both new variables are of type [OnDownloadProgress]($frontend), which more accurately represents information reported during downloads.
 
+[IModelConnection.displayedExtents]($frontend) and [IModelConnection.expandDisplayedExtents]($frontend) are deprecated. The displayed extents are expanded every time a [ContextRealityModel]($common) is added to any view in the iModel, and never shrink. They were previously used to compute the viewed extents of every [SpatialViewState]($frontend), which could produce an unnecessarily large frustum resulting in graphical artifacts. Now each spatial view computes its extents based on the extents of the models it is currently displaying. `displayedExtents` is still computed as before to support existing users of the API, but its use is not recommended.
+
+### @itwin/core-backend
+
 [RenderMaterialElement.Params]($backend) is defined as a class, which makes it unwieldy to use. You can now use the interface [RenderMaterialElementParams]($backend) instead.
 
 ### @itwin/appui-react
@@ -134,3 +219,7 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 [ModelsTree]($appui-react) and [CategoryTree]($appui-react) were moved to [@itwin/tree-widget-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/tree-widget) package and deprecated in `@itwin/appui-react` packages. They will be removed from `@itwin/appui-react` in future major version.
 
 [SpatialContainmentTree]($appui-react) were deprecated in favor of `SpatialContainmentTree` from [@itwin/breakdown-trees-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/breakdown-trees) package. [SpatialContainmentTree]($appui-react) will be removed in future major version.
+
+### @itwin/presentation-common
+
+A bunch of `{api_name}JSON` interfaces, completely matching their sibling `{api_name}` definition, thus having no real benefit, have been forcing us to map back and forth between `{api_name}` and `{api_name}JSON` with `{api_name}.toJSON` and `{api_name}.fromJSON` helper functions. Majority of them are marked public as they're part of public RPC interface, but are generally not expected to be directly used by consumer code. They have been deprecated with the recommendation to use `{api_name}`.
