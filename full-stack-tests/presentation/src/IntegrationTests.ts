@@ -20,7 +20,7 @@ import {
 } from "@itwin/presentation-backend";
 import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
-import { prepareOutputFilePath } from "./Utils";
+import { getOutputRoot } from "./Utils";
 
 const DEFAULT_BACKEND_TIMEOUT: number = 0;
 
@@ -87,7 +87,12 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   Logger.setLevel("SQLite", LogLevel.Error);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
-  const tempCachesDir = prepareOutputFilePath("caches");
+  // prepare an empty, process-unique output directory
+  const outputRoot = getOutputRoot();
+  fs.existsSync(outputRoot) && fs.rmSync(outputRoot, { recursive: true, force: true });
+  fs.mkdirSync(outputRoot, { recursive: true });
+
+  const tempCachesDir = path.join(outputRoot, "caches");
   if (!fs.existsSync(tempCachesDir))
     fs.mkdirSync(tempCachesDir);
 
