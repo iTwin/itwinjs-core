@@ -9,7 +9,7 @@
 import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import { isUnaryPropertyFilterOperator, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ClassInfo, InstanceFilterDefinition, NestedContentField, PropertiesField, PropertyInfo, RelationshipPath } from "@itwin/presentation-common";
+import { ClassInfo, InstanceFilterDefinition, NestedContentField, PropertiesField, RelationshipPath } from "@itwin/presentation-common";
 import { getIModelMetadataProvider } from "./ECMetadataProvider";
 import { PresentationInstanceFilter, PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup } from "./Types";
 
