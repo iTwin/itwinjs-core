@@ -7,7 +7,7 @@
  */
 
 import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
-import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
+import { ContentSpecificationBase } from "./ContentSpecification";
 
 /**
  * Returns content for instances related to the selected (input) instances.
@@ -17,7 +17,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
  */
 export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
-  specType: ContentSpecificationTypes.ContentRelatedInstances;
+  specType: "ContentRelatedInstances";
 
   /**
    * Specifies a chain of [relationship path specifications]($docs/presentation/RepeatableRelationshipPathSpecification.md) that

@@ -78,8 +78,11 @@ export class ArcGisTokenManager {
 
     if (ArcGisTokenManager._oauth2Cache) {
       for (const [key, value] of ArcGisTokenManager._oauth2Cache) {
-        if (value.token === token.token)
-          return ArcGisTokenManager._cache.delete(key);
+        if (value.token === token.token){
+          const deleted = ArcGisTokenManager._oauth2Cache.delete(key);
+          ArcGisTokenManager.saveToBrowserStorage();
+          return deleted;
+        }
       }
     }
 

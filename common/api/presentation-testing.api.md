@@ -36,7 +36,9 @@ export function buildTestIModel(name: string, cb: (builder: TestIModelBuilder) =
 export class ContentBuilder {
     constructor(props: ContentBuilderProps);
     createContent(rulesetOrId: Ruleset | string, instanceKeys: InstanceKey[], displayType?: string): Promise<PropertyRecord[]>;
+    // @deprecated
     createContentForAllInstances(rulesetOrId: Ruleset | string, displayType?: string): Promise<ContentBuilderResult[]>;
+    // @deprecated
     createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType?: string): Promise<ContentBuilderResult[]>;
 }
 

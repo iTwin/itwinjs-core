@@ -22,7 +22,7 @@ import {
   VariableValueTypes, WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
-  createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON, createRandomNodePathElement,
+  createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinition, createRandomNodePathElement,
   createRandomSelectionScope, createTestContentDescriptor, createTestECInstanceKey, createTestNode, createTestSelectClassInfo, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { BackendDiagnosticsAttribute } from "../presentation-backend";
@@ -428,7 +428,7 @@ describe("PresentationRpcImpl", () => {
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: NodeKey.toJSON(parentNodeKey),
+          parentKey: parentNodeKey,
         };
         const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
@@ -448,7 +448,9 @@ describe("PresentationRpcImpl", () => {
     describe("getPagedNodes", () => {
 
       it("calls manager for root nodes", async () => {
+        // eslint-disable-next-line deprecation/deprecation
         const getRootNodesResult: HierarchyLevelJSON = {
+          // eslint-disable-next-line deprecation/deprecation
           nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
           supportsFiltering: true,
         };
@@ -486,7 +488,9 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("calls manager for child nodes", async () => {
+        // eslint-disable-next-line deprecation/deprecation
         const getChildNodesResult: HierarchyLevelJSON = {
+          // eslint-disable-next-line deprecation/deprecation
           nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
           supportsFiltering: true,
         };
@@ -496,7 +500,7 @@ describe("PresentationRpcImpl", () => {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
-          parentKey: NodeKey.toJSON(parentNodeKey),
+          parentKey: parentNodeKey,
         };
         const managerOptions: WithCancelEvent<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>> = {
           imodel: testData.imodelMock.object,
@@ -629,7 +633,7 @@ describe("PresentationRpcImpl", () => {
         const rpcOptions: HierarchyLevelDescriptorRpcRequestOptions = {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: NodeKey.toJSON(parentNodeKey),
+          parentKey: parentNodeKey,
         };
         const managerOptions: WithCancelEvent<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
@@ -669,6 +673,7 @@ describe("PresentationRpcImpl", () => {
           .verifiable();
         const actualResult = await impl.getFilteredNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
+        // eslint-disable-next-line deprecation/deprecation
         expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
       });
 
@@ -697,6 +702,7 @@ describe("PresentationRpcImpl", () => {
           .verifiable();
         const actualResult = await impl.getNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
+        // eslint-disable-next-line deprecation/deprecation
         expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
       });
 
@@ -1720,12 +1726,12 @@ describe("PresentationRpcImpl", () => {
     describe("getDisplayLabelDefinition", () => {
 
       it("calls manager", async () => {
-        const result = createRandomLabelDefinitionJSON();
+        const result = createRandomLabelDefinition();
         const key = createRandomECInstanceKey();
         const rpcOptions: Paged<DisplayLabelRpcRequestOptions> = {
           ...defaultRpcParams,
           paging: testData.pageOptions,
-          key: InstanceKey.toJSON(key),
+          key,
         };
         const managerOptions: WithCancelEvent<Paged<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> = {
           imodel: testData.imodelMock.object,
@@ -1753,11 +1759,11 @@ describe("PresentationRpcImpl", () => {
     describe("getPagedDisplayLabelDefinitions", () => {
 
       it("calls manager", async () => {
-        const result = [createRandomLabelDefinitionJSON(), createRandomLabelDefinitionJSON()];
+        const result = [createRandomLabelDefinition(), createRandomLabelDefinition()];
         const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
         const rpcOptions: DisplayLabelsRpcRequestOptions = {
           ...defaultRpcParams,
-          keys: keys.map(InstanceKey.toJSON),
+          keys,
         };
         const managerOptions: WithCancelEvent<DisplayLabelsRequestOptions<IModelDb, InstanceKey>> = {
           imodel: testData.imodelMock.object,
@@ -1780,11 +1786,11 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("enforces maximum page size when requesting more labels than allowed", async () => {
-        const result = (new Array(MAX_ALLOWED_PAGE_SIZE)).fill(createRandomLabelDefinitionJSON());
+        const result = (new Array(MAX_ALLOWED_PAGE_SIZE)).fill(createRandomLabelDefinition());
         const keys = (new Array(MAX_ALLOWED_PAGE_SIZE + 1)).fill(createRandomECInstanceKey());
         const rpcOptions: DisplayLabelsRpcRequestOptions = {
           ...defaultRpcParams,
-          keys: keys.map(InstanceKey.toJSON),
+          keys,
         };
         const managerOptions: WithCancelEvent<DisplayLabelsRequestOptions<IModelDb, InstanceKey>> = {
           imodel: testData.imodelMock.object,
