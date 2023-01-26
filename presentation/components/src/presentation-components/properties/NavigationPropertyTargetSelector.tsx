@@ -82,6 +82,7 @@ export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPrope
         valueContainer: () => ({ height: "27px" }),
         menu: () => ({ width: "auto", position: "absolute", zIndex: 9999 }),
         option: () => ({ whiteSpace: "nowrap" }),
+        placeholder: (style: any) => ({ ...style, position: "relative", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }),
       }}
       components={{
         Control: TargetSelectControl,
