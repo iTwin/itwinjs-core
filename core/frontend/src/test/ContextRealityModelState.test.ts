@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Code, ContextRealityModelProps, EmptyLocalization, PlanarClipMaskMode } from "@itwin/core-common";
+import { Code, ContextRealityModelProps, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps } from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -70,6 +70,11 @@ describe.only("ContextRealityModelState", () => {
     }
   }
 
+  const planarClipMask: PlanarClipMaskProps = {
+    mode: PlanarClipMaskMode.Models,
+    modelIds: "+123",
+  };
+
   it("has a unique tree within a view", () => {
     const style = new Style();
     style.expectTrees([]);
@@ -83,17 +88,33 @@ describe.only("ContextRealityModelState", () => {
     style.expectTrees([a, b]);
 
     const bMask = imodel.transientIds.peekNext();
-    style.attachRealityModel({
-      tilesetUrl: "b",
-      planarClipMask: {
-        mode: PlanarClipMaskMode.Models,
-        modelIds: "+123",
-      },
-    });
+    style.attachRealityModel({ tilesetUrl: "b", planarClipMask });
     style.expectTrees([a, b, bMask]);
   });
 
   it("shares compatible trees between views", () => {
+    const s1 = new Style();
+    const s2 = new Style();
+
+    const a = imodel.transientIds.peekNext();
+    s1.attachRealityModel({ tilesetUrl: "a" });
+    s1.expectTrees([a]);
+
+    const b = imodel.transientIds.peekNext();
+    s1.attachRealityModel({ tilesetUrl: "b" });
+    s2.attachRealityModel({ tilesetUrl: "b" });
+    s2.expectTrees([b]);
+    s1.expectTrees([a, b]);
+
+    const bMask = imodel.transientIds.peekNext();
+    s2.attachRealityModel({ tilesetUrl: "b", planarClipMask });
+    s2.expectTrees([b, bMask]);
+
+    s1.attachRealityModel({ tilesetUrl: "b", planarClipMask });
+    s1.expectTrees([a, b, bMask]);
+
+    s2.attachRealityModel({ tilesetUrl: "a" });
+    s2.expectTrees([b, bMask, a]);
   });
 
   it("does not share trees with persistent reality models", () => {
