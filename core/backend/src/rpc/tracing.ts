@@ -22,7 +22,6 @@ import { IModelHost } from "../IModelHost";
  * of RpcActivity to log messages emitted during Rpc processing. It may also be used to retrieve the user accessToken
  * from the RpcActivity.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export class RpcTrace {
   private static _storage = new AsyncLocalStorage();

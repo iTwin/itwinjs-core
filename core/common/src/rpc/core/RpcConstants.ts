@@ -10,7 +10,6 @@
 
 /** Describes available options for RPC response caching.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export enum RpcResponseCacheControl {
   None,

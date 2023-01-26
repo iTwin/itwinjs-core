@@ -25,7 +25,6 @@ import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 /** The properties of an RpcActivity.
  * @public
  * @extensions
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export interface RpcActivity extends SessionProps {
   /** Used for logging to correlate an Rpc activity between frontend and backend */
@@ -40,7 +39,6 @@ export interface RpcActivity extends SessionProps {
 
 /** Serialized format for sending the request across the RPC layer
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export interface SerializedRpcActivity {
   id: string;
