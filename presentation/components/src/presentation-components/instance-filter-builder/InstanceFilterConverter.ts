@@ -150,15 +150,15 @@ function getRuleOperatorString(operator: PropertyFilterRuleOperator) {
     case PropertyFilterRuleOperator.IsEqual:
       return "=";
     case PropertyFilterRuleOperator.IsFalse:
-      return "IS FALSE";
+      return "= FALSE";
     case PropertyFilterRuleOperator.IsNotEqual:
       return "<>";
     case PropertyFilterRuleOperator.IsNotNull:
-      return "IS NOT NULL";
+      return "<> NULL";
     case PropertyFilterRuleOperator.IsNull:
-      return "IS NULL";
+      return "= NULL";
     case PropertyFilterRuleOperator.IsTrue:
-      return "IS TRUE";
+      return "= TRUE";
     case PropertyFilterRuleOperator.Less:
       return "<";
     case PropertyFilterRuleOperator.LessOrEqual:
