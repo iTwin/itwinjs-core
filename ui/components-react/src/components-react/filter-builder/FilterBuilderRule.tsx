@@ -2,29 +2,41 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module PropertyFilterBuilder
+ */
+
+import "./FilterBuilderRule.scss";
 import * as React from "react";
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
 import { SvgDelete } from "@itwin/itwinui-icons-react";
 import { IconButton } from "@itwin/itwinui-react";
-import { PropertyFilterBuilderContext, PropertyFilterBuilderRuleRenderingContext } from "./FilterBuilder";
+import { PropertyFilterBuilderContext, PropertyFilterBuilderRuleRenderingContext } from "./FilterBuilderContext";
 import { PropertyFilterBuilderRuleOperator } from "./FilterBuilderRuleOperator";
 import { PropertyFilterBuilderRuleProperty } from "./FilterBuilderRuleProperty";
 import { PropertyFilterBuilderRuleValue } from "./FilterBuilderRuleValue";
 import { PropertyFilterBuilderRule } from "./FilterBuilderState";
 import { isUnaryPropertyFilterOperator, PropertyFilterRuleOperator } from "./Operators";
-import "./FilterBuilderRule.scss";
 
-/** @alpha */
+/**
+ * Props for [[PropertyFilterBuilderRuleRenderer]] component.
+ * @internal
+ */
 export interface PropertyFilterBuilderRuleRendererProps {
+  /** Path from [[PropertyFilterBuilder]] root to this rule. */
   path: string[];
+  /** Rule to render. */
   rule: PropertyFilterBuilderRule;
 }
 
-/** @alpha */
+/**
+ * Component that renders single rule in [[PropertyFilterBuilder]] component.
+ * @internal
+ */
 export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps) {
   const { path, rule } = props;
   const { properties, actions, onRulePropertySelected } = React.useContext(PropertyFilterBuilderContext);
-  const { ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, disablePropertySelection } = React.useContext(PropertyFilterBuilderRuleRenderingContext);
+  const { ruleOperatorRenderer, ruleValueRenderer, propertyRenderer, isDisabled } = React.useContext(PropertyFilterBuilderRuleRenderingContext);
   const { property, operator, value } = rule;
 
   const onSelectedPropertyChanged = React.useCallback((newProperty?: PropertyDescription) => {
@@ -69,10 +81,18 @@ export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRu
         selectedProperty={rule.property}
         onSelectedPropertyChanged={onSelectedPropertyChanged}
         propertyRenderer={propertyRenderer}
-        isDisabled={disablePropertySelection}
+        isDisabled={isDisabled}
       />
-      {property && operatorRenderer(property)}
-      {property && operator && !isUnaryPropertyFilterOperator(operator) && valueRenderer(property)}
+      {
+        property !== undefined
+          ? operatorRenderer(property)
+          : null
+      }
+      {
+        property !== undefined && operator !== undefined && !isUnaryPropertyFilterOperator(operator)
+          ? valueRenderer(property)
+          : null
+      }
     </div>
   </div>;
 }

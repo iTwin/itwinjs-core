@@ -12,7 +12,7 @@ import { GridCategoryItem } from "./internal/flat-items/FlatGridItem";
 
 /**
  * Props that property category renderer receives.
- * @beta
+ * @public
  */
 export interface PropertyCategoryRendererProps {
   /** The category being rendered. */
@@ -25,14 +25,14 @@ export interface PropertyCategoryRendererProps {
 
 /**
  * Factory function that produces custom property category components.
- * @beta
+ * @public
  */
 export type PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React.ComponentType<PropertyCategoryRendererProps> | undefined;
 
 /**
  * Keeps a record of currently registered property category renderers and determines which renderers get invoked for
  * each category.
- * @beta
+ * @public
  */
 export class PropertyCategoryRendererManager {
   private _categoryRenderers = new Map<string, PropertyCategoryRenderer>();

@@ -10,6 +10,8 @@ import { IModelReadRpcInterface, IModelTileRpcInterface, IpcSocket, IpcSocketBac
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
+/* eslint-disable deprecation/deprecation */
+
 /** RPC interface configuration for an Electron-based application.
  * @internal
  */

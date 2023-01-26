@@ -120,6 +120,11 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     return false;
   });
 
+  React.useEffect(() => {
+    const updateBackgroundMapVisible = () => setBackgroundMapVisible(activeViewport.viewFlags.backgroundMap);
+    return activeViewport.onDisplayStyleChanged.addListener(updateBackgroundMapVisible);
+  }, [activeViewport]);
+
   // 'isMounted' is used to prevent any async operation once the hook has been
   // unloaded.  Otherwise we get a 'Can't perform a React state update on an unmounted component.' warning in the console.
   const isMounted = React.useRef(false);

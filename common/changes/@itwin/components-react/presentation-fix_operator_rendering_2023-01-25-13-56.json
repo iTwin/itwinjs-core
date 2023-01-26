@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "Fixed rule rendering in 'PropertyFilterBuilder' component to not render symbol '0' with 'IS TRUE' operator.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react"
+}

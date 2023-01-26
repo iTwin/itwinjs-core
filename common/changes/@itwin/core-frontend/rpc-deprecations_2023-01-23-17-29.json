@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "React to RPC deprecations.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

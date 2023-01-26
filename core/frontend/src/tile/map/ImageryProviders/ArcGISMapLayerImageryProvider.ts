@@ -8,13 +8,17 @@
 import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import {
-  ArcGisErrorCode, ArcGISImageryProvider, ArcGISTileMap, ArcGisUtilities,
+  ArcGisErrorCode, ArcGISImageryProvider, ArcGISTileMap,
+  ArcGisUtilities,
   ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerFeatureInfo,
   MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Range2d } from "@itwin/core-geometry";
 import { isArray } from "lodash";
+import { Logger } from "@itwin/core-bentley";
+
+const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
 
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
@@ -65,6 +69,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       }
       return await this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
+      Logger.logError(loggerCategory, `Error occurred when loading tile(${row},${column},${zoomLevel}) : ${error}`);
       return undefined;
     }
   }
@@ -106,10 +111,12 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
   public override async initialize(): Promise<void> {
 
-    const json = await ArcGisUtilities.getServiceJson(this._settings.url, this._settings.formatId, this._settings.userName, this._settings.password);
-    if (json === undefined)
+    const metadata = await this.getServiceJson();
+
+    if (metadata?.content === undefined)
       throw new ServerError(IModelStatus.ValidationFailed, "");
 
+    const json = metadata.content;
     if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
       // Check again layer status, it might have change during await.
       if (this.status === MapLayerImageryProviderStatus.Valid) {
@@ -118,81 +125,80 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       }
     }
 
-    if (json !== undefined) {
-      this.serviceJson = json;
+    this.serviceJson = json;
 
-      if (json.capabilities) {
-        const capabilities = json.capabilities.split(",");
+    if (json.capabilities) {
+      const capabilities = json.capabilities.split(",");
 
-        this._querySupported = capabilities.includes("Query");
-        this._tileMapSupported = capabilities.includes("Tilemap");
-        this._mapSupported = capabilities.includes("Map");
-        this._tilesOnly = capabilities.includes("TilesOnly");
-      }
+      this._querySupported = capabilities.includes("Query");
+      this._tileMapSupported = capabilities.includes("Tilemap");
+      this._mapSupported = capabilities.includes("Map");
+      this._tilesOnly = capabilities.includes("TilesOnly");
+    }
 
-      if (json.copyrightText)
-        this._copyrightText = json.copyrightText;
+    if (json.copyrightText)
+      this._copyrightText = json.copyrightText;
 
-      this._usesCachedTiles = !!json.tileInfo;
+    this._usesCachedTiles = !!json.tileInfo;
 
-      if (this._usesCachedTiles) {
-        // Only EPSG:3857 is supported with pre-rendered tiles.  Fall back to 'Export' queries if possible otherwise throw.
-        if (!ArcGisUtilities.isEpsg3857Compatible(json.tileInfo)) {
-          if (this._mapSupported && !this._tilesOnly) {
-            this._usesCachedTiles = false;
-          } else {
-            throw new ServerError(IModelStatus.ValidationFailed, "Invalid coordinate system");
-          }
+    if (this._usesCachedTiles) {
+      // Only EPSG:3857 is supported with pre-rendered tiles.  Fall back to 'Export' queries if possible otherwise throw.
+      if (!ArcGisUtilities.isEpsg3857Compatible(json.tileInfo)) {
+        if (this._mapSupported && !this._tilesOnly) {
+          this._usesCachedTiles = false;
+        } else {
+          throw new ServerError(IModelStatus.ValidationFailed, "Invalid coordinate system");
         }
       }
+    }
 
-      if (this._usesCachedTiles) {
-        // Read max LOD
-        if (json.maxScale !== undefined && json.maxScale !== 0 && Array.isArray(json.tileInfo.lods)) {
-          for (; this._maxDepthFromLod < json.tileInfo.lods.length && json.tileInfo.lods[this._maxDepthFromLod].scale > json.maxScale; this._maxDepthFromLod++)
-            ;
-        }
-
-        // Create tile map object only if we are going to request tiles from this server and it support tilemap requests.
-        if (this._tileMapSupported) {
-          this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, json.tileInfo?.lods?.length, this._accessClient);
-        }
+    if (this._usesCachedTiles) {
+      // Read max LOD
+      if (json.maxScale !== undefined && json.maxScale !== 0 && Array.isArray(json.tileInfo.lods)) {
+        for (; this._maxDepthFromLod < json.tileInfo.lods.length && json.tileInfo.lods[this._maxDepthFromLod].scale > json.maxScale; this._maxDepthFromLod++)
+          ;
       }
 
-      // Read range using fullextent from service metadata
-      if (json.fullExtent) {
-        if (json.fullExtent.spatialReference.latestWkid === 3857 || json.fullExtent.spatialReference.wkid === 102100) {
-          const range3857 = Range2d.createFrom({
-            low: {x: json.fullExtent.xmin, y: json.fullExtent.ymin},
-            high: {x: json.fullExtent.xmax, y: json.fullExtent.ymax} });
-
-          const west = this.getEPSG4326Lon(range3857.xLow);
-          const south = this.getEPSG4326Lat(range3857.yLow);
-          const east = this.getEPSG4326Lon(range3857.xHigh);
-          const north = this.getEPSG4326Lat(range3857.yHigh);
-          this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
-        }
+      // Create tile map object only if we are going to request tiles from this server and it support tilemap requests.
+      if (this._tileMapSupported) {
+        this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, json.tileInfo?.lods?.length, this._accessClient);
       }
+    }
 
-      // Read minLOD if available
-      if (json.minLOD !== undefined) {
-        const minLod = parseInt(json.minLOD, 10);
-        if (!Number.isNaN(minLod)) {
-          this._minDepthFromLod = minLod;
-        }
-      } else if (json.minScale) {
-        // Read min LOD using minScale
-        const minScale = json.minScale;
-        if (json.tileInfo?.lods !== undefined && isArray(json.tileInfo.lods)) {
-          for (const lod of json.tileInfo.lods) {
-            if (lod.scale < minScale) {
-              this._minDepthFromLod = lod.level;
-              break;
-            }
+    // Read range using fullextent from service metadata
+    if (json.fullExtent) {
+      if (json.fullExtent.spatialReference.latestWkid === 3857 || json.fullExtent.spatialReference.wkid === 102100) {
+        const range3857 = Range2d.createFrom({
+          low: {x: json.fullExtent.xmin, y: json.fullExtent.ymin},
+          high: {x: json.fullExtent.xmax, y: json.fullExtent.ymax} });
+
+        const west = this.getEPSG4326Lon(range3857.xLow);
+        const south = this.getEPSG4326Lat(range3857.yLow);
+        const east = this.getEPSG4326Lon(range3857.xHigh);
+        const north = this.getEPSG4326Lat(range3857.yHigh);
+        this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
+      }
+    }
+
+    // Read minLOD if available
+    if (json.minLOD !== undefined) {
+      const minLod = parseInt(json.minLOD, 10);
+      if (!Number.isNaN(minLod)) {
+        this._minDepthFromLod = minLod;
+      }
+    } else if (json.minScale) {
+      // Read min LOD using minScale
+      const minScale = json.minScale;
+      if (json.tileInfo?.lods !== undefined && isArray(json.tileInfo.lods)) {
+        for (const lod of json.tileInfo.lods) {
+          if (lod.scale < minScale) {
+            this._minDepthFromLod = lod.level;
+            break;
           }
         }
       }
     }
+
   }
 
   public override addLogoCards(cards: HTMLTableElement): void {
