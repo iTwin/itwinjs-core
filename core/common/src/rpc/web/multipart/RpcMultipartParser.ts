@@ -35,6 +35,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 import { RpcSerializedValue } from "../../core/RpcMarshaling";
 
+/* eslint-disable deprecation/deprecation */
+
 const START = 0;
 const START_BOUNDARY = 1;
 const HEADER_FIELD_START = 2;

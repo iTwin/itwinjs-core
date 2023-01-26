@@ -17,6 +17,8 @@ import { RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
 import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 
+/* eslint-disable deprecation/deprecation */
+
 /** @internal */
 export const REGISTRY = Symbol.for("@itwin/core-common/RpcRegistry");
 
