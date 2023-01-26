@@ -36,9 +36,6 @@ Array [
               "isCategory": true,
               "modelId": "0x11",
             },
-            "filtering": Object {
-              "descriptor": [Function],
-            },
             "hasChildren": true,
             "icon": "icon-layers",
             "label": PropertyRecord {
@@ -79,9 +76,6 @@ Array [
     ],
     "extendedData": Object {
       "isSubject": true,
-    },
-    "filtering": Object {
-      "descriptor": [Function],
     },
     "hasChildren": true,
     "icon": "icon-imodel-hollow-2",
@@ -136,9 +130,6 @@ Array [
                   },
                 ],
                 "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
-                "filtering": Object {
-                  "descriptor": [Function],
-                },
                 "hasChildren": true,
                 "icon": "icon-ec-class",
                 "label": PropertyRecord {
@@ -158,9 +149,6 @@ Array [
             "extendedData": Object {
               "isCategory": true,
               "modelId": "0x11",
-            },
-            "filtering": Object {
-              "descriptor": [Function],
             },
             "hasChildren": true,
             "icon": "icon-layers",
@@ -202,9 +190,6 @@ Array [
     ],
     "extendedData": Object {
       "isSubject": true,
-    },
-    "filtering": Object {
-      "descriptor": [Function],
     },
     "hasChildren": true,
     "icon": "icon-imodel-hollow-2",
@@ -380,9 +365,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x45",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -401,9 +383,6 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
-                },
-                "filtering": Object {
-                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -517,9 +496,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x47",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -538,9 +514,6 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
-                },
-                "filtering": Object {
-                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -587,9 +560,6 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x49",
-                    },
-                    "filtering": Object {
-                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -657,9 +627,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x49",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -679,9 +646,6 @@ Array [
                 "extendedData": Object {
                   "isSubject": true,
                 },
-                "filtering": Object {
-                  "descriptor": [Function],
-                },
                 "hasChildren": true,
                 "icon": "icon-folder",
                 "label": PropertyRecord {
@@ -700,9 +664,6 @@ Array [
             ],
             "extendedData": Object {
               "isSubject": true,
-            },
-            "filtering": Object {
-              "descriptor": [Function],
             },
             "hasChildren": true,
             "icon": "icon-folder",
@@ -752,9 +713,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x4d",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -799,9 +757,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x4d",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -821,9 +776,6 @@ Array [
                 "extendedData": Object {
                   "isSubject": true,
                 },
-                "filtering": Object {
-                  "descriptor": [Function],
-                },
                 "hasChildren": true,
                 "icon": "icon-folder",
                 "label": PropertyRecord {
@@ -842,9 +794,6 @@ Array [
             ],
             "extendedData": Object {
               "isSubject": true,
-            },
-            "filtering": Object {
-              "descriptor": [Function],
             },
             "hasChildren": true,
             "icon": "icon-folder",
@@ -894,9 +843,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x41",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -915,9 +861,6 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
-                },
-                "filtering": Object {
-                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -1074,9 +1017,6 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x3f",
-                    },
-                    "filtering": Object {
-                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -1892,9 +1832,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x3f",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -1913,9 +1850,6 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
-                },
-                "filtering": Object {
-                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -1936,9 +1870,6 @@ Array [
             "extendedData": Object {
               "isSubject": true,
             },
-            "filtering": Object {
-              "descriptor": [Function],
-            },
             "hasChildren": true,
             "icon": "icon-folder",
             "label": PropertyRecord {
@@ -1958,9 +1889,6 @@ Array [
         "extendedData": Object {
           "isSubject": true,
         },
-        "filtering": Object {
-          "descriptor": [Function],
-        },
         "hasChildren": true,
         "icon": "icon-folder",
         "label": PropertyRecord {
@@ -1979,9 +1907,6 @@ Array [
     ],
     "extendedData": Object {
       "isSubject": true,
-    },
-    "filtering": Object {
-      "descriptor": [Function],
     },
     "hasChildren": true,
     "icon": "icon-imodel-hollow-2",
@@ -2040,9 +1965,6 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
-                        "filtering": Object {
-                          "descriptor": [Function],
-                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2063,9 +1985,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x45",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -2084,9 +2003,6 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
-                },
-                "filtering": Object {
-                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -2199,9 +2115,6 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
-                        "filtering": Object {
-                          "descriptor": [Function],
-                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2222,9 +2135,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x47",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -2243,9 +2153,6 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
-                },
-                "filtering": Object {
-                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -2292,9 +2199,6 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
-                        "filtering": Object {
-                          "descriptor": [Function],
-                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2314,9 +2218,6 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x49",
-                    },
-                    "filtering": Object {
-                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -2383,9 +2284,6 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
-                        "filtering": Object {
-                          "descriptor": [Function],
-                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2406,9 +2304,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x49",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -2428,9 +2323,6 @@ Array [
                 "extendedData": Object {
                   "isSubject": true,
                 },
-                "filtering": Object {
-                  "descriptor": [Function],
-                },
                 "hasChildren": true,
                 "icon": "icon-folder",
                 "label": PropertyRecord {
@@ -2449,9 +2341,6 @@ Array [
             ],
             "extendedData": Object {
               "isSubject": true,
-            },
-            "filtering": Object {
-              "descriptor": [Function],
             },
             "hasChildren": true,
             "icon": "icon-folder",
@@ -2500,9 +2389,6 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
-                        "filtering": Object {
-                          "descriptor": [Function],
-                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2522,9 +2408,6 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x4d",
-                    },
-                    "filtering": Object {
-                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -2569,9 +2452,6 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
-                        "filtering": Object {
-                          "descriptor": [Function],
-                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2592,9 +2472,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x4d",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -2614,9 +2491,6 @@ Array [
                 "extendedData": Object {
                   "isSubject": true,
                 },
-                "filtering": Object {
-                  "descriptor": [Function],
-                },
                 "hasChildren": true,
                 "icon": "icon-folder",
                 "label": PropertyRecord {
@@ -2635,9 +2509,6 @@ Array [
             ],
             "extendedData": Object {
               "isSubject": true,
-            },
-            "filtering": Object {
-              "descriptor": [Function],
             },
             "hasChildren": true,
             "icon": "icon-folder",
@@ -2686,9 +2557,6 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
-                        "filtering": Object {
-                          "descriptor": [Function],
-                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2709,9 +2577,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x41",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -2730,9 +2595,6 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
-                },
-                "filtering": Object {
-                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -2889,9 +2751,6 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
-                        "filtering": Object {
-                          "descriptor": [Function],
-                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -2911,9 +2770,6 @@ Array [
                     "extendedData": Object {
                       "isCategory": true,
                       "modelId": "0x3f",
-                    },
-                    "filtering": Object {
-                      "descriptor": [Function],
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
@@ -3728,9 +3584,6 @@ Array [
                           },
                         ],
                         "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
-                        "filtering": Object {
-                          "descriptor": [Function],
-                        },
                         "hasChildren": true,
                         "icon": "icon-ec-class",
                         "label": PropertyRecord {
@@ -3751,9 +3604,6 @@ Array [
                       "isCategory": true,
                       "modelId": "0x3f",
                     },
-                    "filtering": Object {
-                      "descriptor": [Function],
-                    },
                     "hasChildren": true,
                     "icon": "icon-layers",
                     "label": PropertyRecord {
@@ -3772,9 +3622,6 @@ Array [
                 ],
                 "extendedData": Object {
                   "isSubject": true,
-                },
-                "filtering": Object {
-                  "descriptor": [Function],
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
@@ -3795,9 +3642,6 @@ Array [
             "extendedData": Object {
               "isSubject": true,
             },
-            "filtering": Object {
-              "descriptor": [Function],
-            },
             "hasChildren": true,
             "icon": "icon-folder",
             "label": PropertyRecord {
@@ -3817,9 +3661,6 @@ Array [
         "extendedData": Object {
           "isSubject": true,
         },
-        "filtering": Object {
-          "descriptor": [Function],
-        },
         "hasChildren": true,
         "icon": "icon-folder",
         "label": PropertyRecord {
@@ -3838,9 +3679,6 @@ Array [
     ],
     "extendedData": Object {
       "isSubject": true,
-    },
-    "filtering": Object {
-      "descriptor": [Function],
     },
     "hasChildren": true,
     "icon": "icon-imodel-hollow-2",
