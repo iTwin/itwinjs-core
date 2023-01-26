@@ -2,14 +2,14 @@
 
 exports[`Utils createPartialTreeNodeItem uses provided callback to customize tree node 1`] = `
 Object {
-  "__presentation-components/key": Object {
+  "description": "custom-description",
+  "icon": "custom-icon",
+  "id": "",
+  "key": Object {
     "pathFromRoot": Array [],
     "type": "",
     "version": 0,
   },
-  "description": "custom-description",
-  "icon": "custom-icon",
-  "id": "",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -27,7 +27,8 @@ Object {
 
 exports[`Utils createTreeNodeItem appends grouped nodes count if requested 1`] = `
 Object {
-  "__presentation-components/key": Object {
+  "id": "6102db55-652c-4aa1-ba19-db173124462c",
+  "key": Object {
     "className": "CSS",
     "groupedInstancesCount": 999,
     "groupingValues": Array [
@@ -41,7 +42,6 @@ Object {
     "type": "ECPropertyGroupingNode",
     "version": 2,
   },
-  "id": "6102db55-652c-4aa1-ba19-db173124462c",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -73,7 +73,13 @@ Object {
 
 exports[`Utils createTreeNodeItem creates tree node 1`] = `
 Object {
-  "__presentation-components/key": Object {
+  "checkBoxState": 1,
+  "hasChildren": true,
+  "icon": "Knolls",
+  "id": "449df282-09dc-4ff6-9195-5c55e9e31699/6127f623-1285-4848-8bc1-c9d119fb96ab",
+  "isCheckboxDisabled": true,
+  "isCheckboxVisible": true,
+  "key": Object {
     "instanceKeys": Array [
       Object {
         "className": "Indian Rupee Ngultrum",
@@ -91,12 +97,6 @@ Object {
     "type": "ECInstancesNode",
     "version": 2,
   },
-  "checkBoxState": 1,
-  "hasChildren": true,
-  "icon": "Knolls",
-  "id": "449df282-09dc-4ff6-9195-5c55e9e31699/6127f623-1285-4848-8bc1-c9d119fb96ab",
-  "isCheckboxDisabled": true,
-  "isCheckboxVisible": true,
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -120,7 +120,12 @@ Object {
 
 exports[`Utils createTreeNodeItem creates tree node with custom label styles 1`] = `
 Object {
-  "__presentation-components/key": Object {
+  "autoExpand": true,
+  "description": "Consequuntur eum quaerat atque doloribus eum.",
+  "hasChildren": true,
+  "icon": "Cambridgeshire",
+  "id": "a772c3d3-03a4-40a8-8a6a-8c62fda69701/ca2b1044-8007-4ce7-a4f6-d779f7dd0ef0",
+  "key": Object {
     "instanceKeys": Array [
       Object {
         "className": "Mews",
@@ -138,11 +143,6 @@ Object {
     "type": "ECInstancesNode",
     "version": 2,
   },
-  "autoExpand": true,
-  "description": "Consequuntur eum quaerat atque doloribus eum.",
-  "hasChildren": true,
-  "icon": "Cambridgeshire",
-  "id": "a772c3d3-03a4-40a8-8a6a-8c62fda69701/ca2b1044-8007-4ce7-a4f6-d779f7dd0ef0",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -167,7 +167,10 @@ Object {
 
 exports[`Utils createTreeNodeItem creates tree node with parent id 1`] = `
 Object {
-  "__presentation-components/key": Object {
+  "icon": "moderator",
+  "id": "270da1a3-ba31-44ef-8866-c2a100d70bea/a389bc4e-ef0a-45d0-8b8b-62e60b80175c",
+  "isCheckboxVisible": true,
+  "key": Object {
     "instanceKeys": Array [
       Object {
         "className": "JBOD",
@@ -185,9 +188,6 @@ Object {
     "type": "ECInstancesNode",
     "version": 2,
   },
-  "icon": "moderator",
-  "id": "270da1a3-ba31-44ef-8866-c2a100d70bea/a389bc4e-ef0a-45d0-8b8b-62e60b80175c",
-  "isCheckboxVisible": true,
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -211,7 +211,12 @@ Object {
 
 exports[`Utils createTreeNodeItem uses provided callback to customize tree node 1`] = `
 Object {
-  "__presentation-components/key": Object {
+  "autoExpand": true,
+  "description": "custom-description",
+  "hasChildren": true,
+  "icon": "custom-icon",
+  "id": "346ddc01-cc61-4177-aa7e-cf3dfd8b3352/41098202-0113-4061-b4f4-6d7625fa7310",
+  "key": Object {
     "instanceKeys": Array [
       Object {
         "className": "harness",
@@ -229,11 +234,6 @@ Object {
     "type": "ECInstancesNode",
     "version": 2,
   },
-  "autoExpand": true,
-  "description": "custom-description",
-  "hasChildren": true,
-  "icon": "custom-icon",
-  "id": "346ddc01-cc61-4177-aa7e-cf3dfd8b3352/41098202-0113-4061-b4f4-6d7625fa7310",
   "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -252,7 +252,13 @@ Object {
 exports[`Utils createTreeNodeItems creates tree nodes 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "autoExpand": true,
+    "description": "Harum aut sit.",
+    "hasChildren": true,
+    "id": "d0490790-e52c-4185-a841-f2ddecb9648f/32e09daf-f7de-466e-95cc-f6b5e845ce78",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "key": Object {
       "instanceKeys": Array [
         Object {
           "className": "systematic",
@@ -270,12 +276,6 @@ Array [
       "type": "ECInstancesNode",
       "version": 2,
     },
-    "autoExpand": true,
-    "description": "Harum aut sit.",
-    "hasChildren": true,
-    "id": "d0490790-e52c-4185-a841-f2ddecb9648f/32e09daf-f7de-466e-95cc-f6b5e845ce78",
-    "isCheckboxDisabled": true,
-    "isCheckboxVisible": true,
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -295,7 +295,12 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "autoExpand": true,
+    "checkBoxState": 1,
+    "id": "908fcd9c-af25-4d63-bb21-a81337a8ad7e/08153750-f3da-4eab-b142-1892b75ef471",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "key": Object {
       "instanceKeys": Array [
         Object {
           "className": "Assurance",
@@ -313,11 +318,6 @@ Array [
       "type": "ECInstancesNode",
       "version": 2,
     },
-    "autoExpand": true,
-    "checkBoxState": 1,
-    "id": "908fcd9c-af25-4d63-bb21-a81337a8ad7e/08153750-f3da-4eab-b142-1892b75ef471",
-    "isCheckboxDisabled": true,
-    "isCheckboxVisible": true,
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -342,7 +342,11 @@ Array [
 exports[`Utils createTreeNodeItems creates tree nodes with parentId 1`] = `
 Array [
   Object {
-    "__presentation-components/key": Object {
+    "autoExpand": true,
+    "description": "Ratione debitis sequi totam aut est nemo aut.",
+    "hasChildren": true,
+    "id": "c992c8d5-f776-46e2-957c-ff276d241866/9ca8debb-3f29-40e0-b8b0-0330fde07d2e",
+    "key": Object {
       "instanceKeys": Array [
         Object {
           "className": "Harbors",
@@ -360,10 +364,6 @@ Array [
       "type": "ECInstancesNode",
       "version": 2,
     },
-    "autoExpand": true,
-    "description": "Ratione debitis sequi totam aut est nemo aut.",
-    "hasChildren": true,
-    "id": "c992c8d5-f776-46e2-957c-ff276d241866/9ca8debb-3f29-40e0-b8b0-0330fde07d2e",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -385,7 +385,11 @@ Array [
     },
   },
   Object {
-    "__presentation-components/key": Object {
+    "description": "Aliquam rem ab quia consequatur magnam debitis.",
+    "icon": "Unbranded Steel Keyboard",
+    "id": "9e4f2bda-d7ba-42e4-affe-37f852bc8f5d/805abe6e-d9fc-4d7b-9a1c-500d4d5d63c0",
+    "isCheckboxVisible": true,
+    "key": Object {
       "instanceKeys": Array [
         Object {
           "className": "synergies",
@@ -403,10 +407,6 @@ Array [
       "type": "ECInstancesNode",
       "version": 2,
     },
-    "description": "Aliquam rem ab quia consequatur magnam debitis.",
-    "icon": "Unbranded Steel Keyboard",
-    "id": "9e4f2bda-d7ba-42e4-affe-37f852bc8f5d/805abe6e-d9fc-4d7b-9a1c-500d4d5d63c0",
-    "isCheckboxVisible": true,
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",

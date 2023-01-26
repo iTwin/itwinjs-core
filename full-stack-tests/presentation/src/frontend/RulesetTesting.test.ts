@@ -6,6 +6,7 @@
 import { expect } from "chai";
 import * as ChaiJestSnapshot from "chai-jest-snapshot";
 import path from "path";
+import { Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, ContentSpecificationTypes, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { ContentBuilder, HierarchyBuilder } from "@itwin/presentation-testing";
@@ -174,14 +175,11 @@ describe("RulesetTesting", () => {
     const builder = new ContentBuilder({ imodel: iModel, decimalPrecision: 8 });
 
     // generate content using our custom ruleset
-    const instances = await builder.createContentForInstancePerClass(MY_CONTENT_RULESET);
+    const myElementKey = { className: "Generic:PhysicalObject", id: Id64.fromLocalAndBriefcaseIds(116, 0) };
+    const records = await builder.createContent(MY_CONTENT_RULESET, [myElementKey]);
 
-    // verify through snapshot by looping through each instance and creating a separate
-    // snapshot file for each type of instance
-    for (const instance of instances) {
-      const testName = instance.className.replace(":", ".").replace(/__x0020__/g, "_");
-      expect(instance.records).to.matchSnapshot(createSnapshotPath(this.test!, `${MY_CONTENT_RULESET.id}-${testName}`), testName);
-    }
+    // verify the records through snapshot
+    expect(records).to.matchSnapshot(createSnapshotPath(this.test!, MY_CONTENT_RULESET.id), `${myElementKey.className}-${myElementKey.id}`);
   });
   // __PUBLISH_EXTRACT_END__
 

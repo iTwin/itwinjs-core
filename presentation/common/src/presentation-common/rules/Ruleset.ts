@@ -49,7 +49,6 @@ export interface Ruleset {
 
   /**
    * Schema requirements for this ruleset. The ruleset is not used if the requirements are not met.
-   * @beta
    */
   requiredSchemas?: RequiredSchemaSpecification[];
 

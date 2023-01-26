@@ -1,15 +1,17 @@
 sep=;
 Release Tag;API Item
-alpha;addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void
-internal;applyOptionalPrefix(str: string, prefix?: string): string
+public;addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void
 public;ArrayTypeDescription 
 internal;AsyncTasksTracker
 public;BaseFieldJSON
 public;BaseNodeKey
 public;BaseNodeKeyJSON
+deprecated;BaseNodeKeyJSON
+alpha;BasePresentationQueryBinding
 public;BaseTypeDescription
 public;BooleanRulesetVariable 
 public;BooleanRulesetVariableJSON 
+deprecated;BooleanRulesetVariableJSON 
 public;CalculatedPropertiesSpecification
 public;CategoryDescription
 public;CategoryDescription
@@ -26,25 +28,27 @@ public;ClassId = Id64String
 public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
+deprecated;ClassInfoJSON
 beta;ClientDiagnostics 
 public;ClientDiagnosticsAttribute
 beta;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
 beta;ClientDiagnosticsOptions 
 internal;combineDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): DiagnosticsLoggerSeverity | undefined
+public;combineFieldNames(fieldName: string, parentFieldName?: string): string
 internal;CommonIpcParams
 internal;compareDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): 0 | 1 | -1
 public;CompressedClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
-alpha;ComputeSelectionRequestOptions
-alpha;ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions
+public;ComputeSelectionRequestOptions
+public;ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions
 public;ConditionContainer
 deprecated;ConditionContainer
 public;Content
 public;ContentDescriptorRequestOptions
 public;ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentFlags
-beta;ContentInstanceKeysRequestOptions
-beta;ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
+public;ContentInstanceKeysRequestOptions
+public;ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentInstancesOfSpecificClassesSpecification 
 public;ContentJSON
 public;ContentModifier 
@@ -53,14 +57,14 @@ public;ContentRelatedInstancesSpecification
 public;ContentRequestOptions
 public;ContentRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentRule 
-beta;ContentSourcesRequestOptions
-beta;ContentSourcesRpcRequestOptions = PresentationRpcRequestOptions
-beta;ContentSourcesRpcResult
+public;ContentSourcesRequestOptions
+public;ContentSourcesRpcRequestOptions = PresentationRpcRequestOptions
+public;ContentSourcesRpcResult
 public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification
 public;ContentSpecificationBase 
 public;ContentSpecificationTypes
 alpha;ContentUpdateInfo = typeof UPDATE_FULL
-internal;createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[]
+public;createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[]
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
 public;CustomRendererSpecification
@@ -89,36 +93,45 @@ public;DisplayValue
 public;DisplayValueGroup
 public;DisplayValueGroup
 public;DisplayValueGroupJSON
+deprecated;DisplayValueGroupJSON
 public;DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON
+deprecated;DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON
 public;DisplayValuesArray 
 public;DisplayValuesArrayJSON 
+deprecated;DisplayValuesArrayJSON 
 public;DisplayValuesMap 
 public;DisplayValuesMapJSON 
+deprecated;DisplayValuesMapJSON 
 public;DistinctValuesRequestOptions
 public;DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions
 public;ECClassGroupingNodeKey 
 public;ECClassGroupingNodeKeyJSON 
+deprecated;ECClassGroupingNodeKeyJSON 
 public;ECInstancesNodeKey 
 public;ECInstancesNodeKeyJSON 
+deprecated;ECInstancesNodeKeyJSON 
 public;ECPropertyGroupingNodeKey 
 public;ECPropertyGroupingNodeKeyJSON 
+deprecated;ECPropertyGroupingNodeKeyJSON 
 public;ECPropertyValueQuerySpecification 
+alpha;ECValueBinding 
+alpha;ECValueSetBinding 
 public;EditorDescription
-beta;ElementProperties
-beta;ElementPropertiesArrayPropertyItem = ElementPropertiesPrimitiveArrayPropertyItem | ElementPropertiesStructArrayPropertyItem
-beta;ElementPropertiesArrayPropertyItemBase 
-beta;ElementPropertiesCategoryItem 
-beta;ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem
-beta;ElementPropertiesItemBase
-beta;ElementPropertiesPrimitiveArrayPropertyItem 
-beta;ElementPropertiesPrimitivePropertyItem 
-beta;ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | ElementPropertiesArrayPropertyItem | ElementPropertiesStructPropertyItem
-beta;ElementPropertiesPropertyItemBase 
-beta;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
-beta;ElementPropertiesRequestOptions
-beta;ElementPropertiesStructArrayPropertyItem 
-beta;ElementPropertiesStructPropertyItem 
-alpha;ElementSelectionScopeProps
+public;ElementProperties
+public;ElementPropertiesArrayPropertyItem = ElementPropertiesPrimitiveArrayPropertyItem | ElementPropertiesStructArrayPropertyItem
+public;ElementPropertiesArrayPropertyItemBase 
+public;ElementPropertiesCategoryItem 
+public;ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem
+public;ElementPropertiesItemBase
+public;ElementPropertiesPrimitiveArrayPropertyItem 
+public;ElementPropertiesPrimitivePropertyItem 
+public;ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | ElementPropertiesArrayPropertyItem | ElementPropertiesStructPropertyItem
+public;ElementPropertiesPropertyItemBase 
+public;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
+public;ElementPropertiesRequestOptions
+public;ElementPropertiesStructArrayPropertyItem 
+public;ElementPropertiesStructPropertyItem 
+public;ElementSelectionScopeProps
 public;EnumerationChoice
 public;EnumerationInfo
 alpha;ExpandedNodeUpdateRecord
@@ -131,7 +144,7 @@ public;FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor
 public;FieldDescriptor
 public;FieldDescriptorBase
 public;FieldDescriptorType
-alpha;FieldHierarchy
+public;FieldHierarchy
 public;FieldJSON
 public;FilterByInstancePathsHierarchyRequestOptions
 public;FilterByInstancePathsHierarchyRpcRequestOptions = PresentationRpcRequestOptions
@@ -141,6 +154,7 @@ internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: b
 public;getInstancesCount: (keys: Readonly
 public;GroupingNodeKey 
 public;GroupingNodeKeyJSON 
+deprecated;GroupingNodeKeyJSON 
 public;GroupingRule 
 public;GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup
 public;GroupingSpecificationBase
@@ -148,12 +162,14 @@ public;GroupingSpecificationTypes
 public;HierarchyCompareInfo
 public;HierarchyCompareInfo
 public;HierarchyCompareInfoJSON
+deprecated;HierarchyCompareInfoJSON
 public;HierarchyCompareOptions
-alpha;HierarchyLevel
-alpha;HierarchyLevel
-alpha;HierarchyLevelDescriptorRequestOptions
-alpha;HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions
-alpha;HierarchyLevelJSON
+beta;HierarchyLevel
+beta;HierarchyLevel
+beta;HierarchyLevelDescriptorRequestOptions
+beta;HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions
+beta;HierarchyLevelJSON
+deprecated;HierarchyLevelJSON
 public;HierarchyRequestOptions
 public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
 alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | HierarchyUpdateRecord[]
@@ -162,23 +178,27 @@ alpha;HierarchyUpdateInfoJSON = typeof UPDATE_FULL | HierarchyUpdateRecordJSON[]
 alpha;HierarchyUpdateRecord
 alpha;HierarchyUpdateRecord
 alpha;HierarchyUpdateRecordJSON
-alpha;IContentVisitor
+public;IContentVisitor
 public;Id64RulesetVariable 
 public;Id64RulesetVariableJSON 
+deprecated;Id64RulesetVariableJSON 
 public;Id64sRulesetVariable 
 public;Id64sRulesetVariableJSON 
+alpha;IdBinding 
 public;IdCategoryIdentifier
+alpha;IdSetBinding 
 public;ImageIdOverride 
 deprecated;ImageIdOverride 
-alpha;InstanceFilterDefinition
-alpha;InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInstancePath & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias)
-alpha;InstanceFilterRelatedInstancePath
-alpha;InstanceFilterRelatedInstanceRelationshipAlias
-alpha;InstanceFilterRelatedInstanceTargetAlias
+beta;InstanceFilterDefinition
+beta;InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInstancePath & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias)
+beta;InstanceFilterRelatedInstancePath
+beta;InstanceFilterRelatedInstanceRelationshipAlias
+beta;InstanceFilterRelatedInstanceTargetAlias
 public;InstanceId = Id64String
 public;InstanceKey
 public;InstanceKey
 public;InstanceKeyJSON
+deprecated;InstanceKeyJSON
 public;InstanceLabelOverride 
 public;InstanceLabelOverrideBriefcaseIdSpecification 
 public;InstanceLabelOverrideClassLabelSpecification 
@@ -194,10 +214,12 @@ public;InstanceLabelOverrideValueSpecificationType
 public;InstanceNodesOfSpecificClassesSpecification 
 public;IntRulesetVariable 
 public;IntRulesetVariableJSON 
+deprecated;IntRulesetVariableJSON 
 public;IntsRulesetVariable 
 public;IntsRulesetVariableJSON 
+deprecated;IntsRulesetVariableJSON 
 internal;isComputeSelectionRequestOptions
-beta;isSingleElementPropertiesRequestOptions
+internal;isSingleElementPropertiesRequestOptions
 public;Item
 public;ItemJSON
 public;Key = Readonly
@@ -209,21 +231,24 @@ public;KindOfQuantityInfo
 public;LabelCompositeValue
 public;LabelCompositeValue
 public;LabelCompositeValueJSON
+deprecated;LabelCompositeValueJSON
 public;LabelDefinition
 public;LabelDefinition
-internal;fromLabelString(label: string): LabelDefinitionJSON
+internal;fromLabelString(label: string): LabelDefinition
 internal;isCompositeDefinition(def: LabelDefinition): def is LabelDefinition &
-internal;reviver(key: string, value: any): any
 public;LabelDefinitionJSON
+deprecated;LabelDefinitionJSON
 public;LabelGroupingNodeKey 
 public;LabelGroupingNodeKeyJSON 
+deprecated;LabelGroupingNodeKeyJSON 
 public;LabelOverride 
 deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
-public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
+public;LabelRawValueJSON = LabelRawValue
+deprecated;LabelRawValueJSON = LabelRawValue
 internal;LocalizationHelper
 internal;LocalizationHelperProps
-beta;MultiElementPropertiesRequestOptions
+public;MultiElementPropertiesRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 
 beta;NavigationPropertyInfo
@@ -236,16 +261,21 @@ public;NestedContentFieldJSON
 public;NestedContentValue
 public;NestedContentValue
 public;NestedContentValueJSON
+deprecated;NestedContentValueJSON
 public;NoCategoryIdentifier
 public;NodeArtifactsRule 
 public;NodeDeletionInfo
 public;NodeDeletionInfoJSON
+deprecated;NodeDeletionInfoJSON
 public;NodeInsertionInfo
 public;NodeInsertionInfoJSON
+deprecated;NodeInsertionInfoJSON
 public;NodeJSON
+deprecated;NodeJSON
 public;NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKey
 public;NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON
+deprecated;NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON
 public;NodeKeyPath = NodeKey[]
 public;NodePathElement
 public;NodePathElement
@@ -253,25 +283,33 @@ internal;listFromJSON(json: NodePathElementJSON[] | string): NodePathElement[]
 internal;listReviver(key: string, value: any): any
 internal;reviver(key: string, value: any): any
 public;NodePathElementJSON
+deprecated;NodePathElementJSON
 public;NodePathFilteringData
 public;NodePathFilteringData
 public;NodePathFilteringDataJSON
+deprecated;NodePathFilteringDataJSON
 public;NodeUpdateInfo
 public;NodeUpdateInfoJSON
+deprecated;NodeUpdateInfoJSON
 public;Paged
 public;PagedResponse
 public;PageOptions
 public;ParentCategoryIdentifier
+public;parseCombinedFieldNames(combinedName: string): string[]
 public;PartialBy
 public;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
 public;PartialHierarchyModification
 public;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
+deprecated;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
 public;PartialNode = AllOrNone
 public;PartialNodeJSON = AllOrNone
+deprecated;PartialNodeJSON = AllOrNone
 internal;PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface"
 public;PresentationError 
-alpha;PresentationIpcEvents
+internal;PresentationIpcEvents
 internal;PresentationIpcInterface
+alpha;PresentationQuery
+alpha;PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
 public;PresentationRpcResponse
@@ -280,9 +318,9 @@ public;PresentationStatus
 public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 
 public;Prioritized
-alpha;ProcessFieldHierarchiesProps
-alpha;ProcessMergedValueProps
-alpha;ProcessPrimitiveValueProps
+public;ProcessFieldHierarchiesProps
+public;ProcessMergedValueProps
+public;ProcessPrimitiveValueProps
 public;PropertiesField 
 public;PropertiesFieldDescriptor 
 public;PropertiesFieldJSON
@@ -337,7 +375,7 @@ public;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpeci
 public;RepeatableRelationshipStepSpecification 
 public;RequestOptions
 public;RequestOptionsWithRuleset
-beta;RequiredSchemaSpecification
+public;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 
 beta;RpcDiagnosticsOptions = Omit_2
@@ -363,26 +401,27 @@ public;SelectClassInfoJSON
 public;SelectedNodeInstancesSpecification 
 public;SelectionInfo
 public;SelectionScope
-alpha;SelectionScopeProps = ElementSelectionScopeProps |
+public;SelectionScopeProps = ElementSelectionScopeProps |
 public;SelectionScopeRequestOptions
 public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
 internal;SetRulesetVariableParams
-beta;SingleElementPropertiesRequestOptions
-beta;SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
+public;SingleElementPropertiesRequestOptions
+public;SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 public;SingleSchemaClassSpecification
 public;SortDirection
 public;SortingRule = PropertySortingRule | DisabledSortingRule
 public;SortingRuleBase 
 public;StandardNodeTypes
-alpha;StartArrayProps
-alpha;StartCategoryProps
-alpha;StartContentProps
-alpha;StartFieldProps
-alpha;StartItemProps
-alpha;StartStructProps
+public;StartArrayProps
+public;StartCategoryProps
+public;StartContentProps
+public;StartFieldProps
+public;StartItemProps
+public;StartStructProps
 public;StringQuerySpecification 
 public;StringRulesetVariable 
 public;StringRulesetVariableJSON 
+deprecated;StringRulesetVariableJSON 
 public;StrippedRelatedClassInfo
 public;StrippedRelationshipPath = StrippedRelatedClassInfo[]
 public;StructFieldMemberDescription
@@ -392,9 +431,9 @@ deprecated;StyleOverride
 public;SubCondition
 public;Subtract
 public;SupplementationInfo
-alpha;traverseContent(visitor: IContentVisitor, content: Content): void
-alpha;traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item): void
-internal;traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldHierarchy) => boolean): void
+public;traverseContent(visitor: IContentVisitor, content: Content): void
+public;traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item): void
+public;traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldHierarchy) => boolean): void
 public;TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription
 internal;UnsetRulesetVariableParams 
 alpha;UPDATE_FULL = "FULL"
@@ -405,11 +444,14 @@ alpha;UpdateInfoJSON
 public;Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[]
 public;Value
 public;ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NestedContentValueJSON[]
+deprecated;ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NestedContentValueJSON[]
 public;ValuesArray 
 public;ValuesArrayJSON 
+deprecated;ValuesArrayJSON 
 public;ValuesDictionary
 public;ValuesMap 
 public;ValuesMapJSON 
+deprecated;ValuesMapJSON 
 public;Variable
 public;VariablesGroup
 public;VariableValue = boolean | string | number | number[] | Id64String | Id64String[]
