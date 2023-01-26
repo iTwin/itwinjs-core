@@ -80,7 +80,7 @@ export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPrope
         control: () => ({ height: "27px" }),
         container: () => ({ width: "auto" }),
         valueContainer: () => ({ height: "27px" }),
-        menu: () => ({ width: "auto", position: "absolute", zIndex: 9999 }),
+        menu: () => ({ position: "absolute", zIndex: 9999, maxWidth: "300px" }),
         option: () => ({ whiteSpace: "nowrap" }),
         placeholder: (style: any) => ({ ...style, position: "relative", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }),
       }}
