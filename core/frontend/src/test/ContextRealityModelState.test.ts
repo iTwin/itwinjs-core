@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Code, ContextRealityModelProps, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps } from "@itwin/core-common";
+import {
+  Code, ContextRealityModelProps, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings,
+} from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -118,8 +120,23 @@ describe.only("ContextRealityModelState", () => {
   });
 
   it("does not share trees with persistent reality models", () => {
+    // ###TODO need a way to test this...
   });
 
   it("keeps same modelId but gets new TileTreeOwner when settings change", () => {
+    const style = new Style();
+    const id = imodel.transientIds.peekNext();
+    style.attachRealityModel({ tilesetUrl: "a" });
+    style.expectTrees([id]);
+    const a = style.trees[0].owner;
+
+    style.forEachRealityModel((model) => model.planarClipMaskSettings = PlanarClipMaskSettings.fromJSON(planarClipMask));
+    style.expectTrees([id]);
+    const b = style.trees[0].owner;
+    expect(b).not.to.equal(a);
+
+    style.forEachRealityModel((model) => model.planarClipMaskSettings = undefined);
+    style.expectTrees([id]);
+    expect(style.trees[0].owner).to.equal(a);
   });
 });
