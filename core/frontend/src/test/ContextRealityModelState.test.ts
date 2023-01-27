@@ -11,7 +11,9 @@ import { DisplayStyle3dState } from "../DisplayStyleState";
 import { ContextRealityModelState } from "../ContextRealityModelState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
-import { createRealityTileTreeReference, OrbitGtTreeReference, TileTreeOwner } from "../tile/internal";
+import {
+  createOrbitGtTileTreeReference, createRealityTileTreeReference, OrbitGtTreeReference, TileTreeOwner,
+} from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
 
 describe.only("ContextRealityModelState", () => {
@@ -247,7 +249,7 @@ describe.only("ContextRealityModelState", () => {
       };
 
       const getDisplaySettings = () => RealityModelDisplaySettings.defaults;
-      const persistentRef1 = createRealityTileTreeReference({
+      const persistentRef1 = createOrbitGtTileTreeReference({
         source: style,
         iModel: imodel,
         modelId: "0x123",
@@ -256,7 +258,7 @@ describe.only("ContextRealityModelState", () => {
       });
       expect(persistentRef1.modelId).to.equal("0x123");
 
-      const persistentRef2 = createRealityTileTreeReference({
+      const persistentRef2 = createOrbitGtTileTreeReference({
         source: style,
         iModel: imodel,
         modelId: "0x456",
@@ -272,7 +274,7 @@ describe.only("ContextRealityModelState", () => {
       expect(style.trees[0].owner).not.to.equal(persistentRef1.treeOwner);
       expect(style.trees[0].owner).not.to.equal(persistentRef2.treeOwner);
 
-      const transientRef = createRealityTileTreeReference({
+      const transientRef = createOrbitGtTileTreeReference({
         source: style,
         iModel: imodel,
         modelId: transientId,
