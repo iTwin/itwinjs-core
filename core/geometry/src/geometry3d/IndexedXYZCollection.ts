@@ -83,7 +83,51 @@ export abstract class IndexedXYZCollection {
    * @returns undefined if index is out of bounds
    */
   public abstract vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined;
-
+  /**
+   * Return a vector from the point at `indexA` to `target`
+   * @param indexA index of point within the array
+   * @param target target for vector
+   * @param result caller-allocated vector.
+   * @returns undefined if index is out of bounds
+   */
+  public vectorIndexXYAndZ(indexA: number, target: XYAndZ, result?: Vector3d): Vector3d | undefined {
+    const reversed = this.vectorXYAndZIndex(target, indexA, result);
+    return reversed?.negate(reversed);
+  }
+  /**
+   * Return the dot product of the vectors from the point at `origin` to the points at `indexA` and `indexB`.
+   * @param origin index of point within the array; origin of both vectors
+   * @param indexA index of point within the array; target of the first vector
+   * @param indexA index of point within the array; target of the second vector
+   * @returns undefined if index is out of bounds
+   */
+  public dotProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined {
+    if (origin < 0 || origin >= this.length || indexA < 0 || indexA >= this.length || indexB < 0 || indexB >= this.length)
+      return undefined;
+    const x0 = this.getXAtUncheckedPointIndex(origin);
+    const y0 = this.getYAtUncheckedPointIndex(origin);
+    const z0 = this.getZAtUncheckedPointIndex(origin);
+    return (this.getXAtUncheckedPointIndex(indexA) - x0) * (this.getXAtUncheckedPointIndex(indexB) - x0) +
+           (this.getYAtUncheckedPointIndex(indexA) - y0) * (this.getYAtUncheckedPointIndex(indexB) - y0) +
+           (this.getZAtUncheckedPointIndex(indexA) - z0) * (this.getZAtUncheckedPointIndex(indexB) - z0);
+  }
+  /**
+   * Return the dot product of the vectors from the point at `origin` to the point at `indexA` and to `targetB`.
+   * @param origin index of point within the array; origin of both vectors
+   * @param indexA index of point within the array; target of the first vector
+   * @param targetB target for second vector
+   * @returns undefined if index is out of bounds
+   */
+  public dotProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ): number | undefined {
+    if (origin < 0 || origin >= this.length || indexA < 0 || indexA >= this.length)
+      return undefined;
+    const x0 = this.getXAtUncheckedPointIndex(origin);
+    const y0 = this.getYAtUncheckedPointIndex(origin);
+    const z0 = this.getZAtUncheckedPointIndex(origin);
+    return (this.getXAtUncheckedPointIndex(indexA) - x0) * (targetB.x - x0) +
+           (this.getYAtUncheckedPointIndex(indexA) - y0) * (targetB.y - y0) +
+           (this.getZAtUncheckedPointIndex(indexA) - z0) * (targetB.z - z0);
+  }
   /**
    * Return the cross product of the vectors from `origin` to points at `indexA` and `indexB`
    * @param origin origin for vector
@@ -93,6 +137,27 @@ export abstract class IndexedXYZCollection {
    * @returns undefined if either index is out of bounds
    */
   public abstract crossProductXYAndZIndexIndex(origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
+  /**
+   * Return the cross product of the vectors from `origin` to the point at `indexA` and to `targetB`
+   * @param origin index of point within the array; origin of both vectors
+   * @param indexA index of point within the array; target of the first vector
+   * @param targetB target of second vector
+   * @param result optional caller-allocated result to fill and return
+   * @returns undefined if an index is out of bounds
+   */
+  public crossProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ, result?: Vector3d): Vector3d | undefined {
+    if (origin < 0 || origin >= this.length || indexA < 0 || indexA >= this.length)
+      return undefined;
+    const x0 = this.getXAtUncheckedPointIndex(origin);
+    const y0 = this.getYAtUncheckedPointIndex(origin);
+    const z0 = this.getZAtUncheckedPointIndex(origin);
+    return Vector3d.createCrossProduct(this.getXAtUncheckedPointIndex(indexA) - x0,
+                                       this.getYAtUncheckedPointIndex(indexA) - y0,
+                                       this.getZAtUncheckedPointIndex(indexA) - z0,
+                                       targetB.x - x0,
+                                       targetB.y - y0,
+                                       targetB.z - z0, result);
+  }
   /**
    * Return the cross product of vectors from `origin` to points at `indexA` and `indexB`
    * @param origin origin for vector
@@ -122,6 +187,18 @@ export abstract class IndexedXYZCollection {
    * @param index1 second point index
    */
   public abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
+  /**
+   * Return distance squared between the point at index0 and target.
+   * @param index0 first point index
+   * @param target second point
+   */
+  public distanceSquaredIndexXYAndZ(index0: number, target: XYAndZ): number | undefined {
+    if (index0 < 0 || index0 >= this.length)
+      return undefined;
+    return this.getXAtUncheckedPointIndex(index0) * target.x +
+           this.getYAtUncheckedPointIndex(index0) * target.y +
+           this.getZAtUncheckedPointIndex(index0) * target.z;
+  }
   /**
    * Return distance between indicated points.
    * @param index0 first point index
@@ -172,6 +249,22 @@ export abstract class IndexedXYZCollection {
    * * No action if index is out of bounds.
    */
   public abstract accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
+
+  /**
+   * Interpolate the points at the given indices.
+   * @param index0 index of point p0 within the array
+   * @param fraction fraction f such that returned point is p0 + f * (p1 - p0)
+   * @param index1 index of point p1 within the array
+   * @param result optional caller-allocated result to fill and return
+   * @returns undefined if an index is out of bounds
+   */
+  public interpolateIndexIndex(index0: number, fraction: number, index1: number, result?: Point3d): Point3d | undefined {
+    if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length)
+      return undefined;
+    return Point3d.create(Geometry.interpolate(this.getXAtUncheckedPointIndex(index0), fraction, this.getXAtUncheckedPointIndex(index1)),
+                          Geometry.interpolate(this.getYAtUncheckedPointIndex(index0), fraction, this.getYAtUncheckedPointIndex(index1)),
+                          Geometry.interpolate(this.getZAtUncheckedPointIndex(index0), fraction, this.getZAtUncheckedPointIndex(index1)), result);
+  }
 
   /** access x of indexed point */
   public abstract getXAtUncheckedPointIndex(pointIndex: number): number;

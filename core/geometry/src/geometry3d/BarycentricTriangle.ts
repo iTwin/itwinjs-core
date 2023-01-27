@@ -11,9 +11,25 @@ import { Matrix3d } from "./Matrix3d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Ray3d } from "./Ray3d";
 
+/** Enumeration of locations of a point in the plane of a triangle.
+ * @public
+ */
+export enum TriangleLocation {
+  /** No location specified. */
+  Invalid = 0,
+  /** Point is at a vertex. */
+  OnVertex = 1,
+  /** Point is on an edge (but not a vertex). */
+  OnEdgeInterior = 2,
+  /** Point is strictly inside the triangle. */
+  StrictlyInside = 3,
+  /** Point is strictly outside the triangle. */
+  StrictlyOutside = 4,
+}
+
 /**
- * TriangleLocationDetail carries data about a point in the plane of a triangle.
- * * Each instance carries both world and barycentric coordinates for the point, and provides query services on the latter.
+ * Carries data about a point in the plane of a triangle.
+ * Each instance carries both world and barycentric coordinates for the point, and provides query services on the latter.
  *
  * Properties of the barycentric coordinates (b0, b1, b2) of a point p in the plane of a triangle T with vertices p0, p1, p2:
  * * 1 = b0 + b1 + b2
@@ -28,7 +44,7 @@ export class TriangleLocationDetail {
   public world: Point3d;
   /** The barycentric coordinates of the point with respect to the triangle. */
   public local: Point3d;
-  /** Application-specific number, e.g., parameter along intersection ray */
+  /** Application-specific number */
   public a: number;
 
   private constructor() {
@@ -37,9 +53,11 @@ export class TriangleLocationDetail {
     this.a = 0.0;
   }
 
-  /** Create a blank (invalid) detail with all zeros. */
-  public static createInvalid(): TriangleLocationDetail {
-    return new TriangleLocationDetail();
+  /** Create an invalid detail with all zeroes.
+   * @param result optional pre-allocated object to fill and return
+   */
+  public static createInvalid(result?: TriangleLocationDetail): TriangleLocationDetail {
+    return this.create(0, 0, 0, 0, 0, undefined, result);
   }
 
   /**
@@ -65,33 +83,29 @@ export class TriangleLocationDetail {
   }
 
   /** Whether the barycentric coordinates sum to 1.
-   * @param paramTol optional tolerance for comparing barycentric coordinates. Note: this is not a distance.
+   * @param paramTol optional tolerance for comparing barycentric coordinates. Not a distance!
    */
   public isValid(paramTol: number = Geometry.smallFraction): boolean {
     return Math.abs(this.local.x + this.local.y + this.local.z - 1.0) <= Math.abs(paramTol);
   }
 
   /** Queries the barycentric coordinates to determine whether this instance specifies a location inside or on the triangle.
-   * @param paramTol optional tolerance for comparing barycentric coordinates. Note: this is not a distance.
+   * @param paramTol optional tolerance for comparing barycentric coordinates. Not a distance!
    * @see classify
    */
   public isInsideOrOn(paramTol: number = Geometry.smallFraction): boolean {
     const code = this.classify(paramTol);
-    return code > 0;
+    return code === TriangleLocation.OnVertex || code === TriangleLocation.OnEdgeInterior || code === TriangleLocation.StrictlyInside;
   }
 
   /** Queries the barycentric coordinates to classify the location of this instance with respect to the triangle.
-   * @param paramTol optional tolerance for comparing barycentric coordinates. Note: this is not a distance.
-   * @returns -1 : invalid detail,
-   *           0 : strictly outside triangle,
-   *           1 : strictly inside triangle,
-   *           2 : strictly inside triangle edge,
-   *           3 : at triangle vertex
+   * @param paramTol optional tolerance for comparing barycentric coordinates. Not a distance!
+   * @returns classification code, cf. TriangleLocation enum
    * @see isInsideOrOn
    */
   public classify(paramTol: number = Geometry.smallFraction): number {
     if (!this.isValid(paramTol))
-      return -1;
+      return TriangleLocation.Invalid;
     const absTol = Math.abs(paramTol);
     const min = -absTol;
     const max = 1.0 + absTol;
@@ -106,12 +120,12 @@ export class TriangleLocationDetail {
       if (Math.abs(this.local.z) <= absTol)
         ++nZero;
       if (2 === nZero)
-        return 3; // at vertex
+        return TriangleLocation.OnVertex;
       if (1 === nZero)
-        return 2; // on edge interior
-      return 1; // strictly inside triangle
+        return TriangleLocation.OnEdgeInterior;
+      return TriangleLocation.StrictlyInside;
     }
-    return 0; // strictly outside triangle
+    return TriangleLocation.StrictlyOutside;
   }
 }
 
@@ -187,26 +201,27 @@ export class BarycentricTriangle {
   /** Compute the projection of the given point onto the plane of this triangle.
    * @param point point p to project
    * @param result optional pre-allocated object to fill and return
-   * @returns details of the projection point P.
-   *  The returned object's `isValid()` method returns true if and only if `this.normal()` is defined.
-   *  The returned object's `classify()` method can be used to determine where the projection lies with respect to the triangle.
-   *  The returned object's `a` field is set to the signed projection distance: P = p + a * `this.normal()`.
+   * @returns details d of the projection point P = `d.point`:
+   * * `d.isValid()` returns true if and only if `this.normal()` is defined.
+   * * `d.classify()` can be used to determine where P lies with respect to the triangle.
+   * * `d.a` is the signed projection distance: P = p + a * `this.normal()`.
    * @see fractionToPoint
    */
   public pointToFraction(point: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail {
     BarycentricTriangle._workVector0 = this.normal(BarycentricTriangle._workVector0);
     if (undefined === BarycentricTriangle._workVector0)
-      return TriangleLocationDetail.createInvalid();
+      return TriangleLocationDetail.createInvalid(result);
     const ray = Ray3d.create(point, BarycentricTriangle._workVector0);
     return this.intersectRay3d(ray, result);
   }
 
   /** Compute the intersection of a line (parameterized as a ray) with the plane of this triangle.
    * @param ray infinite line to intersect, as a ray
-   * @param result optional pre-allocated object to fill and return.
-   * @returns details of the intersection.
-   *  The returned object's `isValid()` method returns true if and only if the line intersects the plane (with ray intersection parameter `a`).
-   *  The returned object's `classify()` method can be used to determine where the intersection lies with respect to the triangle.
+   * @param result optional pre-allocated object to fill and return
+   * @returns details d of the line-plane intersection `d.point`:
+   * * `d.isValid()` returns true if and only if the line intersects the plane.
+   * * `d.classify()` can be used to determine where the intersection lies with respect to the triangle.
+   * * `d.a` is the intersection parameter. If `d.a` >= 0, the ray intersects the plane of the triangle.
    * @see pointToFraction
   */
   public intersectRay3d(ray: Ray3d, result?: TriangleLocationDetail): TriangleLocationDetail {
@@ -223,7 +238,7 @@ export class BarycentricTriangle {
     const c = Vector3d.createStartEnd(this.points[0], r0, BarycentricTriangle._workVector0);  // reuse workVector0
     const solution = BarycentricTriangle._workVector1;  // reuse workVector1
     if (undefined === M.multiplyInverse(c, solution))
-      return TriangleLocationDetail.createInvalid();
+      return TriangleLocationDetail.createInvalid(result);
     const s = -solution.z;
     const p = BarycentricTriangle._workPoint = ray.fractionToPoint(s, BarycentricTriangle._workPoint);
     return TriangleLocationDetail.create(p.x, p.y, p.z, solution.x, solution.y, s, result);
@@ -232,11 +247,11 @@ export class BarycentricTriangle {
   /** Compute the intersection of a line (parameterized as a line segment) with the plane of this triangle.
    * @param point0 start point of segment on line to intersect
    * @param point1 end point of segment on line to intersect
-   * @param result optional pre-allocated object to fill and return.
-   * @returns details of the intersection.
-   *  The returned object's `isValid()` method returns true if and only if the line intersects the plane (with segment intersection parameter `a`).
-   *  The returned object's `classify()` method can be used to determine where the intersection lies with respect to the triangle.
-   *  If the returned object's `a` field is in [0,1], the line intersects the plane of the triangle _within_ the segment.
+   * @param result optional pre-allocated object to fill and return
+   * @returns details d of the line-plane intersection `d.point`:
+   * * `d.isValid()` returns true if and only if the line intersects the plane.
+   * * `d.classify()` can be used to determine where the intersection lies with respect to the triangle.
+   * * `d.a` is the intersection parameter. If `d.a` is in [0,1], the segment intersects the plane of the triangle.
    * @see intersectRay3d
   */
   public intersectSegment(point0: Point3d, point1: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail {

@@ -434,9 +434,13 @@ export class BarycentricTriangle {
     static create(point0: Point3d, point1: Point3d, point2: Point3d, result?: BarycentricTriangle): BarycentricTriangle;
     static createXYZXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, result?: BarycentricTriangle): BarycentricTriangle;
     dotProductOfCrossProductsFromOrigin(other: BarycentricTriangle): number;
-    fractionToPoint(a0: number, a1: number, a2: number, result?: Point3d): Point3d;
+    fractionToPoint(b0: number, b1: number, b2: number, result?: Point3d): Point3d;
+    intersectRay3d(ray: Ray3d, result?: TriangleLocationDetail): TriangleLocationDetail;
+    intersectSegment(point0: Point3d, point1: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail;
     isAlmostEqual(other: BarycentricTriangle): boolean;
+    normal(result?: Vector3d): Vector3d | undefined;
     points: Point3d[];
+    pointToFraction(point: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail;
     set(point0: Point3d | undefined, point1: Point3d | undefined, point2: Point3d | undefined): void;
     setFrom(other: BarycentricTriangle): void;
 }
@@ -2927,10 +2931,14 @@ export abstract class IndexedXYZCollection {
     abstract accumulateCrossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result: Vector3d): void;
     abstract accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
     abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
+    crossProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ, result?: Vector3d): Vector3d | undefined;
     abstract crossProductXYAndZIndexIndex(origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     cyclicIndex(i: number): number;
     abstract distanceIndexIndex(index0: number, index1: number): number | undefined;
     abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
+    distanceSquaredIndexXYAndZ(index0: number, target: XYAndZ): number | undefined;
+    dotProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined;
+    dotProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ): number | undefined;
     findOrderedDuplicates(tolerance?: number): number[];
     getArray(): Point3d[];
     abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
@@ -2940,9 +2948,11 @@ export abstract class IndexedXYZCollection {
     abstract getXAtUncheckedPointIndex(pointIndex: number): number;
     abstract getYAtUncheckedPointIndex(pointIndex: number): number;
     abstract getZAtUncheckedPointIndex(pointIndex: number): number;
+    interpolateIndexIndex(index0: number, fraction: number, index1: number, result?: Point3d): Point3d | undefined;
     abstract get length(): number;
     get points(): Iterable<Point3d>;
     abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
+    vectorIndexXYAndZ(indexA: number, target: XYAndZ, result?: Vector3d): Vector3d | undefined;
     abstract vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined;
 }
 
@@ -4599,6 +4609,31 @@ export interface PolygonClipper {
 }
 
 // @public
+export enum PolygonLocation {
+    InsidePolygonProjectsToEdgeInterior = 4,
+    InsidePolygonProjectsToVertex = 3,
+    Invalid = 0,
+    OnPolygonEdgeInterior = 2,
+    OnPolygonVertex = 1,
+    OutsidePolygonProjectsToEdgeInterior = 6,
+    OutsidePolygonProjectsToVertex = 5
+}
+
+// @public
+export class PolygonLocationDetail {
+    a: number;
+    code: number;
+    static create(x: number, y: number, z: number, result?: PolygonLocationDetail): PolygonLocationDetail;
+    static createInvalid(result?: PolygonLocationDetail): PolygonLocationDetail;
+    edgeIndex: number;
+    edgeParam: number;
+    get isInsideOrOn(): boolean;
+    get isValid(): boolean;
+    point: Point3d;
+    v: Vector3d;
+}
+
+// @public
 export class PolygonOps {
     static addSecondMomentAreaProducts(points: IndexedXYZCollection, origin: Point3d, moments: Matrix4d): void;
     static addSecondMomentVolumeProducts(points: IndexedXYZCollection, origin: Point3d, moments: Matrix4d): void;
@@ -4610,6 +4645,9 @@ export class PolygonOps {
     static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined;
     static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
+    static closestPoint(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, distTol?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
+    static intersectRay3d(polygon: Point3d[] | IndexedXYZCollection, ray: Ray3d, distTol?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
+    static intersectSegment(polygon: Point3d[] | IndexedXYZCollection, point0: Point3d, point1: Point3d, distTol?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
     static orientLoopsCCWForOutwardNormalInPlace(loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[], outwardNormal: Vector3d): number;
     static sortOuterAndHoleLoops(loops: IndexedReadWriteXYZCollection[], defaultNormal: Vector3d | undefined): IndexedReadWriteXYZCollection[][];
     static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][];
@@ -5761,6 +5799,27 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     // (undocumented)
     get spiralType(): string;
     protected _spiralType: string;
+}
+
+// @public
+export enum TriangleLocation {
+    Invalid = 0,
+    OnEdgeInterior = 2,
+    OnVertex = 1,
+    StrictlyInside = 3,
+    StrictlyOutside = 4
+}
+
+// @public
+export class TriangleLocationDetail {
+    a: number;
+    classify(paramTol?: number): number;
+    static create(x: number, y: number, z: number, b1: number, b2: number, a?: number, result?: TriangleLocationDetail): TriangleLocationDetail;
+    static createInvalid(result?: TriangleLocationDetail): TriangleLocationDetail;
+    isInsideOrOn(paramTol?: number): boolean;
+    isValid(paramTol?: number): boolean;
+    local: Point3d;
+    world: Point3d;
 }
 
 // @internal
