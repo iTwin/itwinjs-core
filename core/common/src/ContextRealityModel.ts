@@ -406,6 +406,10 @@ export class ContextRealityModels {
   }
 
   /** @internal needs to be invoked after DisplayStyleSettings constructor by DisplayStyleState constructor.*/
+  /** Populate the list of [[models]] from the container that was supplied to the constructor.
+   * This should only be invoked once, and only if [[ContextRealityModelsArgs.deferPopulating]] was specified as `true` when calling the constructor.
+   * @public
+   */
   public populate(): void {
     assert(this._models.length === 0, "do not call ContextRealityModels.populate more than once");
     const models = this._container.contextRealityModels;
