@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ContextRealityModelProps, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings,
+  Code, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings,
 } from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { ContextRealityModelState } from "../ContextRealityModelState";
