@@ -11,6 +11,8 @@ import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemId, ToolbarItemUtilities } from "./ToolbarItem";
 
+/* eslint-disable deprecation/deprecation */
+
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 
 const isInstance = <T extends any>(args: InstanceOrArray<T>): args is T => {

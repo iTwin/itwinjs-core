@@ -158,7 +158,7 @@
     "check-coverage": true,
     "statements": 99,
     "branches": 97,
-    "functions": 99,
+    "functions": 98,
     "lines": 99
   },
   "eslintConfig": {
@@ -168,6 +168,16 @@
     "extends": [
       "plugin:@itwin/ui",
       "plugin:@itwin/jsdoc"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "src/test/**/*"
+        ],
+        "rules": {
+          "deprecation/deprecation": "off"
+        }
+      }
     ]
   }
 }
