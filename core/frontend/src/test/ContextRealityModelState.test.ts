@@ -8,9 +8,10 @@ import {
   Code, ContextRealityModelProps, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings,
 } from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
+import { ContextRealityModelState } from "../ContextRealityModelState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
-import { createRealityTileTreeReference, TileTreeOwner } from "../tile/internal";
+import { createRealityTileTreeReference, OrbitGtTreeReference, TileTreeOwner } from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
 
 describe.only("ContextRealityModelState", () => {
@@ -45,6 +46,21 @@ describe.only("ContextRealityModelState", () => {
       }, imodel);
     }
 
+    public attachOrbit(id: string, iTwinId?: string): ContextRealityModelState {
+      const model = this.attachRealityModel({
+        tilesetUrl: "",
+        rdSourceKey: {
+          provider: "ContextShare",
+          format: "OPC",
+          id,
+          iTwinId,
+        },
+      });
+
+      expect(model.treeRef).instanceof(OrbitGtTreeReference);
+      return model;
+    }
+
     public get trees(): Tree[] {
       const trees: Tree[] = [];
       this.forEachRealityModel((model) => {
@@ -70,110 +86,201 @@ describe.only("ContextRealityModelState", () => {
     }
   }
 
-  const planarClipMask: PlanarClipMaskProps = {
-    mode: PlanarClipMaskMode.Models,
-    modelIds: "+123",
-  };
+  describe("for tileset URL", () => {
+    const planarClipMask: PlanarClipMaskProps = {
+      mode: PlanarClipMaskMode.Models,
+      modelIds: "+123",
+    };
 
-  it("has a unique tree within a view", () => {
-    const style = new Style();
-    style.expectTrees([]);
+    it("has a unique tree within a view", () => {
+      const style = new Style();
+      style.expectTrees([]);
 
-    const a = imodel.transientIds.peekNext();
-    style.attachRealityModel({ tilesetUrl: "a" });
-    style.expectTrees([a]);
+      const a = imodel.transientIds.peekNext();
+      style.attachRealityModel({ tilesetUrl: "a" });
+      style.expectTrees([a]);
 
-    const b = imodel.transientIds.peekNext();
-    style.attachRealityModel({ tilesetUrl: "b" });
-    style.expectTrees([a, b]);
+      const b = imodel.transientIds.peekNext();
+      style.attachRealityModel({ tilesetUrl: "b" });
+      style.expectTrees([a, b]);
 
-    const bMask = imodel.transientIds.peekNext();
-    style.attachRealityModel({ tilesetUrl: "b", planarClipMask });
-    style.expectTrees([a, b, bMask]);
+      const bMask = imodel.transientIds.peekNext();
+      style.attachRealityModel({ tilesetUrl: "b", planarClipMask });
+      style.expectTrees([a, b, bMask]);
+    });
+
+    it("shares compatible trees between views", () => {
+      const s1 = new Style();
+      const s2 = new Style();
+
+      const a = imodel.transientIds.peekNext();
+      s1.attachRealityModel({ tilesetUrl: "a" });
+      s1.expectTrees([a]);
+
+      const b = imodel.transientIds.peekNext();
+      s1.attachRealityModel({ tilesetUrl: "b" });
+      s1.expectTrees([a, b]);
+      s2.attachRealityModel({ tilesetUrl: "b" });
+      s2.expectTrees([b]);
+
+      const bMask = imodel.transientIds.peekNext();
+      s2.attachRealityModel({ tilesetUrl: "b", planarClipMask });
+      s2.expectTrees([b, bMask]);
+
+      s1.attachRealityModel({ tilesetUrl: "b", planarClipMask });
+      s1.expectTrees([a, b, bMask]);
+
+      s2.attachRealityModel({ tilesetUrl: "a" });
+      s2.expectTrees([b, bMask, a]);
+    });
+
+    it("does not share trees with persistent reality models", () => {
+      const style = new Style();
+      const rdSourceKey = undefined as any; // API claims required but is not actually...
+      const getDisplaySettings = () => RealityModelDisplaySettings.defaults;
+      const persistentRef1 = createRealityTileTreeReference({
+        source: style,
+        iModel: imodel,
+        modelId: "0x123",
+        url: "a",
+        getDisplaySettings,
+        rdSourceKey,
+      });
+      expect(persistentRef1.modelId).to.equal("0x123");
+
+      const persistentRef2 = createRealityTileTreeReference({
+        source: style,
+        iModel: imodel,
+        modelId: "0x456",
+        url: "a",
+        getDisplaySettings,
+        rdSourceKey,
+      });
+      expect(persistentRef2.modelId).to.equal("0x456");
+      expect(persistentRef2.treeOwner).not.to.equal(persistentRef1.treeOwner);
+
+      const transientId = imodel.transientIds.peekNext();
+      style.attachRealityModel({ tilesetUrl: "a" });
+      style.expectTrees([transientId]);
+      expect(style.trees[0].owner).not.to.equal(persistentRef1.treeOwner);
+      expect(style.trees[0].owner).not.to.equal(persistentRef2.treeOwner);
+
+      const transientRef = createRealityTileTreeReference({
+        source: style,
+        iModel: imodel,
+        modelId: transientId,
+        url: "a",
+        getDisplaySettings,
+        rdSourceKey,
+      });
+      expect(transientRef.modelId).to.equal(transientId);
+      expect(transientRef.treeOwner).to.equal(style.trees[0].owner);
+    });
+
+    it("keeps same modelId but gets new TileTreeOwner when settings change", () => {
+      const style = new Style();
+      const id = imodel.transientIds.peekNext();
+      style.attachRealityModel({ tilesetUrl: "a" });
+      style.expectTrees([id]);
+      const a = style.trees[0].owner;
+
+      style.forEachRealityModel((model) => model.planarClipMaskSettings = PlanarClipMaskSettings.fromJSON(planarClipMask));
+      style.expectTrees([id]);
+      const b = style.trees[0].owner;
+      expect(b).not.to.equal(a);
+
+      style.forEachRealityModel((model) => model.planarClipMaskSettings = undefined);
+      style.expectTrees([id]);
+      expect(style.trees[0].owner).to.equal(a);
+    });
   });
 
-  it("shares compatible trees between views", () => {
-    const s1 = new Style();
-    const s2 = new Style();
+  describe("for Orbit point cloud", () => {
+    it("has a unique tree within a view", () => {
+      const style = new Style();
+      style.expectTrees([]);
 
-    const a = imodel.transientIds.peekNext();
-    s1.attachRealityModel({ tilesetUrl: "a" });
-    s1.expectTrees([a]);
+      const a = imodel.transientIds.peekNext();
+      style.attachOrbit("a");
+      style.expectTrees([a]);
 
-    const b = imodel.transientIds.peekNext();
-    s1.attachRealityModel({ tilesetUrl: "b" });
-    s1.expectTrees([a, b]);
-    s2.attachRealityModel({ tilesetUrl: "b" });
-    s2.expectTrees([b]);
+      const b = imodel.transientIds.peekNext();
+      style.attachOrbit("b");
+      style.expectTrees([a, b]);
 
-    const bMask = imodel.transientIds.peekNext();
-    s2.attachRealityModel({ tilesetUrl: "b", planarClipMask });
-    s2.expectTrees([b, bMask]);
-
-    s1.attachRealityModel({ tilesetUrl: "b", planarClipMask });
-    s1.expectTrees([a, b, bMask]);
-
-    s2.attachRealityModel({ tilesetUrl: "a" });
-    s2.expectTrees([b, bMask, a]);
-  });
-
-  it("does not share trees with persistent reality models", () => {
-    const style = new Style();
-    const rdSourceKey = undefined as any; // API claims required but is not actually...
-    const getDisplaySettings = () => RealityModelDisplaySettings.defaults;
-    const persistentRef1 = createRealityTileTreeReference({
-      source: style,
-      iModel: imodel,
-      modelId: "0x123",
-      url: "a",
-      getDisplaySettings,
-      rdSourceKey,
+      const bMask = imodel.transientIds.peekNext();
+      style.attachOrbit("b", "1");
+      style.expectTrees([a, b, bMask]);
     });
-    expect(persistentRef1.modelId).to.equal("0x123");
 
-    const persistentRef2 = createRealityTileTreeReference({
-      source: style,
-      iModel: imodel,
-      modelId: "0x456",
-      url: "a",
-      getDisplaySettings,
-      rdSourceKey,
+    it("shares compatible trees between views", () => {
+      const s1 = new Style();
+      const s2 = new Style();
+
+      const a = imodel.transientIds.peekNext();
+      s1.attachOrbit("a");
+      s1.expectTrees([a]);
+
+      const b = imodel.transientIds.peekNext();
+      s1.attachOrbit("b");
+      s1.expectTrees([a, b]);
+      s2.attachOrbit("b");
+      s2.expectTrees([b]);
+
+      const bMask = imodel.transientIds.peekNext();
+      s2.attachOrbit("b", "1");
+      s2.expectTrees([b, bMask]);
+
+      s1.attachOrbit("b", "1");
+      s1.expectTrees([a, b, bMask]);
+
+      s2.attachOrbit("a");
+      s2.expectTrees([b, bMask, a]);
     });
-    expect(persistentRef2.modelId).to.equal("0x456");
-    expect(persistentRef2.treeOwner).not.to.equal(persistentRef1.treeOwner);
 
-    const transientId = imodel.transientIds.peekNext();
-    style.attachRealityModel({ tilesetUrl: "a" });
-    style.expectTrees([transientId]);
-    expect(style.trees[0].owner).not.to.equal(persistentRef1.treeOwner);
-    expect(style.trees[0].owner).not.to.equal(persistentRef2.treeOwner);
+    it("does not share trees with persistent reality models", () => {
+      const style = new Style();
+      const rdSourceKey = {
+        provider: "ContextShare",
+        format: "OPC",
+        id: "a",
+      };
 
-    const transientRef = createRealityTileTreeReference({
-      source: style,
-      iModel: imodel,
-      modelId: transientId,
-      url: "a",
-      getDisplaySettings,
-      rdSourceKey,
+      const getDisplaySettings = () => RealityModelDisplaySettings.defaults;
+      const persistentRef1 = createRealityTileTreeReference({
+        source: style,
+        iModel: imodel,
+        modelId: "0x123",
+        getDisplaySettings,
+        rdSourceKey,
+      });
+      expect(persistentRef1.modelId).to.equal("0x123");
+
+      const persistentRef2 = createRealityTileTreeReference({
+        source: style,
+        iModel: imodel,
+        modelId: "0x456",
+        getDisplaySettings,
+        rdSourceKey,
+      });
+      expect(persistentRef2.modelId).to.equal("0x456");
+      expect(persistentRef2.treeOwner).not.to.equal(persistentRef1.treeOwner);
+
+      const transientId = imodel.transientIds.peekNext();
+      style.attachOrbit("a");
+      style.expectTrees([transientId]);
+      expect(style.trees[0].owner).not.to.equal(persistentRef1.treeOwner);
+      expect(style.trees[0].owner).not.to.equal(persistentRef2.treeOwner);
+
+      const transientRef = createRealityTileTreeReference({
+        source: style,
+        iModel: imodel,
+        modelId: transientId,
+        getDisplaySettings,
+        rdSourceKey,
+      });
+      expect(transientRef.modelId).to.equal(transientId);
+      expect(transientRef.treeOwner).to.equal(style.trees[0].owner);
     });
-    expect(transientRef.modelId).to.equal(transientId);
-    expect(transientRef.treeOwner).to.equal(style.trees[0].owner);
-  });
-
-  it("keeps same modelId but gets new TileTreeOwner when settings change", () => {
-    const style = new Style();
-    const id = imodel.transientIds.peekNext();
-    style.attachRealityModel({ tilesetUrl: "a" });
-    style.expectTrees([id]);
-    const a = style.trees[0].owner;
-
-    style.forEachRealityModel((model) => model.planarClipMaskSettings = PlanarClipMaskSettings.fromJSON(planarClipMask));
-    style.expectTrees([id]);
-    const b = style.trees[0].owner;
-    expect(b).not.to.equal(a);
-
-    style.forEachRealityModel((model) => model.planarClipMaskSettings = undefined);
-    style.expectTrees([id]);
-    expect(style.trees[0].owner).to.equal(a);
   });
 });
