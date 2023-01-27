@@ -7,7 +7,8 @@
  */
 
 import {
-  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String,
+  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStrings,
+  compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
@@ -66,17 +67,16 @@ namespace RealityTreeId {
     return compareStringsOrUndefined(lhs.id, rhs.id) || compareStringsOrUndefined(lhs.format, rhs.format) || compareStringsOrUndefined(lhs.iTwinId, rhs.iTwinId);
   }
 
-  export function compare(lhs: RealityTreeId, rhs: RealityTreeId): number {
-    // ###TODO special case for context reality model with undetermined modelId
-    const cmp = compareStrings(lhs.modelId, rhs.modelId);
-    if (0 !== cmp)
-      return cmp;
-
+  export function compareWithoutModelId(lhs: RealityTreeId, rhs: RealityTreeId): number {
     return compareRealityDataSourceKeys(lhs.rdSourceKey, rhs.rdSourceKey)
       || compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices)
       || compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry)
       || compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds)
       || comparePossiblyUndefined((ltf, rtf) => compareTransforms(ltf, rtf), lhs.transform, rhs.transform);
+  }
+
+  export function compare(lhs: RealityTreeId, rhs: RealityTreeId): number {
+    return compareStrings(lhs.modelId, rhs.modelId) || compareWithoutModelId(lhs, rhs);
   }
 }
 
@@ -97,6 +97,23 @@ class RealityTreeSupplier implements TileTreeSupplier {
 
   public compareTileTreeIds(lhs: RealityTreeId, rhs: RealityTreeId): number {
     return RealityTreeId.compare(lhs, rhs);
+  }
+
+  public findCompatibleContextRealityModelId(id: RealityTreeId, style: DisplayStyleState): Id64String | undefined {
+    const owners = style.iModel.tiles.getTreeOwnersForSupplier(this);
+    for (const owner of owners) {
+      // Find an existing tree with the same Id, ignoring its model Id.
+      if (0 === RealityTreeId.compareWithoutModelId(id, owner.id)) {
+        const modelId = owner.id.modelId;
+        assert(undefined !== modelId);
+
+        // If the model Id is unused by any other context reality model in the view and does not identify a persistent reality model, use it.
+        if (Id64.isTransientId64(modelId) && !style.contextRealityModelStates.some((model) => model.modelId === modelId))
+          return modelId;
+      }
+    }
+
+    return undefined;
   }
 }
 
