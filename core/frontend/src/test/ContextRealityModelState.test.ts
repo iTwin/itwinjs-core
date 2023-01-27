@@ -16,7 +16,7 @@ import {
 } from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
 
-describe.only("ContextRealityModelState", () => {
+describe("ContextRealityModelState", () => {
   let imodel: IModelConnection;
 
   before(async () => {
