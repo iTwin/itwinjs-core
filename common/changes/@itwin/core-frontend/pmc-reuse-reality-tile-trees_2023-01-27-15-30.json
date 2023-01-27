@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Prevent creating unnecessary copies of tile trees for context reality models.",
+      "comment": "Avoid creating unnecessary copies of tile trees for context reality models.",
       "type": "none"
     }
   ],
