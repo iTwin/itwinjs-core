@@ -42,6 +42,7 @@ const scratchZNormal = Vector3d.create(0, 0, 1);
 interface MapLayerTreeSetting {
   tree: ImageryMapTileTree;
   settings: MapLayerSettings;
+  baseImageryLayer: boolean;
 }
 
 /** Map tile tree scale range visibility values.
@@ -197,8 +198,8 @@ export class MapTileTree extends RealityTileTree {
   /** Add a new imagery tile tree / map-layer settings pair and initialize the imagery tile tree state.
    * @internal
    */
-  public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number) {
-    this.layerImageryTrees.push({tree, settings});
+  public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean ) {
+    this.layerImageryTrees.push({tree, settings, baseImageryLayer});
     this._layerSettings.set(tree.modelId, settings);
     if (!this._imageryTreeState.has(tree.modelId))
       this._imageryTreeState.set(tree.modelId, new ImageryTileTreeState());
@@ -493,6 +494,15 @@ export class MapTileTree extends RealityTileTree {
         if (selectedTile.hiddenImageryTiles) {
           selectedImageryTiles = selectedImageryTiles ? [...selectedImageryTiles, ...selectedTile.hiddenImageryTiles] : selectedTile.hiddenImageryTiles;
         }
+
+        const leafTiles = selectedTile.replacementLeafTiles;
+        if (leafTiles) {
+          for (const tile of leafTiles) {
+            const treeState = this.getImageryTreeState(tile.tree.id);
+            treeState?.setScaleRangeVisibility(false);
+          }
+        }
+
         if (selectedImageryTiles) {
           for (const selectedImageryTile of selectedImageryTiles) {
             const treeState = this.getImageryTreeState(selectedImageryTile.tree.id);
@@ -962,8 +972,9 @@ export class MapTileTreeReference extends TileTreeReference {
         if (undefined === layerTree)
           return false; // Not loaded yet.
 
+        const baseImageryLayer = this._baseImageryLayerIncluded && (treeIndex == 0);
         if (layerTree instanceof ImageryMapTileTree) {
-          tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex);
+          tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex, baseImageryLayer);
         } else if (layerTreeRef instanceof ModelMapLayerTileTreeReference)
           tree.addModelLayer(layerTreeRef, context);
       }

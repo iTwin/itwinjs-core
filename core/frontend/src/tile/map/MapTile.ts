@@ -132,6 +132,7 @@ export class MapTile extends RealityTile {
   private static _maxParentHeightDepth = 4;
   private _imageryTiles?: ImageryMapTile[];
   private _hiddenTiles?: ImageryMapTile[];
+  private _replacementLeafTiles?: ImageryMapTile[];
   /** @internal */
   public everLoaded = false;                    // If the tile is only required for availability metadata, load it once and then allow it to be unloaded.
   /** @internal */
@@ -164,6 +165,8 @@ export class MapTile extends RealityTile {
    * @internal
    */
   public get hiddenImageryTiles(): ImageryMapTile[] | undefined { return this._hiddenTiles; }
+  public get replacementLeafTiles(): ImageryMapTile[] | undefined { return this._replacementLeafTiles; }
+
   /** The [[MapTileTree]] to which this tile belongs. */
   public readonly mapTree: MapTileTree;
   /** Uniquely identifies this tile within its [[mapTree]]. */
@@ -505,6 +508,9 @@ export class MapTile extends RealityTile {
     if (this._hiddenTiles) {
       this._hiddenTiles = undefined;
     }
+    if (this._replacementLeafTiles) {
+      this._replacementLeafTiles = undefined;
+    }
   }
 
   /** @internal */
@@ -619,11 +625,25 @@ export class MapTile extends RealityTile {
     this.clearImageryTiles();
     this._imageryTiles = new Array<ImageryMapTile>();
     this._hiddenTiles = new Array<ImageryMapTile>();
+    this._replacementLeafTiles = new Array<ImageryMapTile>();
     for (const layerImageryTree of this.mapTree.layerImageryTrees) {
-      const tmpTiles = new Array<ImageryMapTile>();
-      if (TileTreeLoadStatus.Loaded !== layerImageryTree.tree.selectCartoDrapeTiles(tmpTiles, this, args)) {
+      let tmpTiles = new Array<ImageryMapTile>();
+      const tmpLeafTiles = new Array<ImageryMapTile>();
+      if (TileTreeLoadStatus.Loaded !== layerImageryTree.tree.selectCartoDrapeTiles(tmpTiles, tmpLeafTiles, this, args,)) {
         this._imageryTiles = undefined;
         return;
+      }
+
+      // When the base layer is zoomed-in beyond it's max resolution,
+      // we display leaf tiles and stretched them if needed.
+      // We don't want the same behavior non-base layers, in the case,
+      // the layer will simply disappear past its max resolution.
+      // Note: Replacement leaf tiles are kept as a mean to determine which
+      // imagery tree has reached it's maximum zoom level.
+      if (layerImageryTree.baseImageryLayer) {
+        tmpTiles = [...tmpTiles, ...tmpLeafTiles];
+      } else {
+        this._replacementLeafTiles = tmpLeafTiles;
       }
 
       // MapTileTree might include a non-visible imagery tree, we need to check for that.
