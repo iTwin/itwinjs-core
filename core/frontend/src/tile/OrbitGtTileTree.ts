@@ -481,7 +481,10 @@ export namespace OrbitGtTileTree {
 class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;
   protected _rdSourceKey: RealityDataSourceKey;
+  private readonly _modelId: Id64String;
+
   public override get castsShadows() { return false; }
+  public override get modelId() { return this._modelId; }
 
   public constructor(props: OrbitGtTileTree.ReferenceProps) {
     super(props);
@@ -494,6 +497,9 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
       // TODO: Maybe we should throw an exception
       this._rdSourceKey = RealityDataSource.createKeyFromBlobUrl("", RealityDataProvider.OrbitGtBlob, RealityDataFormat.OPC);
     }
+
+    // ###TODO find compatible model Id
+    this._modelId = props.modelId ?? props.iModel.transientIds.getNext();
 
     const ogtTreeId: OrbitGtTreeId = { rdSourceKey: this._rdSourceKey, modelId: this.modelId };
     this.treeOwner = orbitGtTreeSupplier.getOwner(ogtTreeId, props.iModel);

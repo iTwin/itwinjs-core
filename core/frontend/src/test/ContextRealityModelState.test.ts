@@ -61,9 +61,7 @@ describe.only("ContextRealityModelState", () => {
 
     public expectTrees(modelIds: Id64String[]): void {
       const trees = this.trees;
-      expect(trees.length).to.equal(modelIds.length);
-      for (let i = 0; i < trees.length; i++)
-        expect(trees[i].id).to.equal(modelIds[i]);
+      expect(trees.map((tree) => tree.id)).to.deep.equal(modelIds);
 
       // Any context reality models with the same modelId should point to the same TileTreeOwner.
       for (const a of trees)
@@ -104,9 +102,9 @@ describe.only("ContextRealityModelState", () => {
 
     const b = imodel.transientIds.peekNext();
     s1.attachRealityModel({ tilesetUrl: "b" });
+    s1.expectTrees([a, b]);
     s2.attachRealityModel({ tilesetUrl: "b" });
     s2.expectTrees([b]);
-    s1.expectTrees([a, b]);
 
     const bMask = imodel.transientIds.peekNext();
     s2.attachRealityModel({ tilesetUrl: "b", planarClipMask });

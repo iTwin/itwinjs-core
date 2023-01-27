@@ -570,7 +570,6 @@ export namespace RealityModelTileTree {
     protected readonly _name: string;
     protected _transform?: Transform;
     protected _iModel: IModelConnection;
-    private _modelId: Id64String;
     private _isGlobal?: boolean;
     protected readonly _source: RealityModelSource;
     protected _planarClipMask?: PlanarClipMaskState;
@@ -578,7 +577,7 @@ export namespace RealityModelTileTree {
     protected _mapDrapeTree?: TileTreeReference;
     protected _getDisplaySettings: () => RealityModelDisplaySettings;
 
-    public get modelId() { return this._modelId; }
+    public abstract get modelId(): Id64String;
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
 
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
@@ -598,7 +597,6 @@ export namespace RealityModelTileTree {
     public constructor(props: RealityModelTileTree.ReferenceBaseProps) {
       super();
       this._name = undefined !== props.name ? props.name : "";
-      this._modelId = props.modelId ? props.modelId : props.iModel.transientIds.getNext();
       let transform;
       if (undefined !== props.tilesetToDbTransform) {
         const tf = Transform.fromJSON(props.tilesetToDbTransform);
@@ -778,6 +776,7 @@ export namespace RealityModelTileTree {
 export class RealityTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;
   private readonly _produceGeometry?: boolean;
+  private readonly _modelId: Id64String;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
@@ -791,13 +790,23 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
 
     if (this._produceGeometry)
       this.collectTileGeometry = (collector) => this._collectTileGeometry(collector);
+
+    let modelId = props.modelId;
+    if (undefined === modelId && this._source instanceof DisplayStyleState) {
+      const treeId = this.createTreeId(Id64.invalid);
+      modelId = realityTreeSupplier.findCompatibleContextRealityModelId(treeId, this._source);
+    }
+
+    this._modelId = modelId ?? props.iModel.transientIds.getNext();
   }
 
-  private createTreeId(): RealityTreeId {
+  public override get modelId() { return this._modelId; }
+
+  private createTreeId(modelId: Id64String): RealityTreeId {
     return {
       rdSourceKey: this._rdSourceKey,
       transform: this._transform,
-      modelId: this.modelId,
+      modelId,
       maskModelIds: this.maskModelIds,
       deduplicateVertices: this._wantWiremesh,
       produceGeometry: this._produceGeometry,
@@ -805,7 +814,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public get treeOwner(): TileTreeOwner {
-    return realityTreeSupplier.getOwner(this.createTreeId(), this._iModel);
+    return realityTreeSupplier.getOwner(this.createTreeId(this.modelId), this._iModel);
   }
 
   protected override _createGeometryTreeReference(): GeometryTileTreeReference {
