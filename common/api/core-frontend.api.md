@@ -7534,6 +7534,21 @@ export namespace OrbitGtTileTree {
     }
 }
 
+// @internal
+export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
+    constructor(props: OrbitGtTileTree.ReferenceProps);
+    // (undocumented)
+    get castsShadows(): boolean;
+    // (undocumented)
+    getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
+    // (undocumented)
+    get modelId(): string;
+    // (undocumented)
+    protected _rdSourceKey: RealityDataSourceKey;
+    // (undocumented)
+    readonly treeOwner: TileTreeOwner;
+}
+
 // @public
 export class OrthographicViewState extends SpatialViewState {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
@@ -8330,7 +8345,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         protected get maskModelIds(): string | undefined;
         // (undocumented)
-        get modelId(): string;
+        abstract get modelId(): Id64String;
         // (undocumented)
         protected readonly _name: string;
         // (undocumented)
@@ -8369,8 +8384,6 @@ export namespace RealityModelTileTree {
         source: RealityModelSource;
         // (undocumented)
         tilesetToDbTransform?: TransformProps;
-        // (undocumented)
-        tilesetToEcefTransform?: TransformProps;
     }
     // (undocumented)
     export interface ReferenceProps extends ReferenceBaseProps {
@@ -8719,6 +8732,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     // (undocumented)
     protected get _isLoadingComplete(): boolean;
+    // (undocumented)
+    get modelId(): string;
     // (undocumented)
     protected _rdSourceKey: RealityDataSourceKey;
     // (undocumented)

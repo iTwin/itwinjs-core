@@ -412,7 +412,7 @@ export interface DisplayStyleSettingsOptions {
   /** A function that instantiates a [[ContextRealityModel]] to be stored in [[DisplayStyleSettings.contextRealityModels]]. */
   createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
   /** If true, the caller will populate contextRealityModels after construction.
-   * @internal
+   * @internal used by DisplayStyleState constructor.
    */
   deferContextRealityModels?: boolean;
 }
@@ -582,7 +582,11 @@ export class DisplayStyleSettings {
         return settings.isValid ? settings : undefined;
       });
 
-    this._contextRealityModels = new ContextRealityModels(this._json, options?.createContextRealityModel, true !== options?.deferContextRealityModels);
+    this._contextRealityModels = new ContextRealityModels({
+      container: this._json,
+      createContextRealityModel: options?.createContextRealityModel,
+      deferPopulating: options?.deferContextRealityModels,
+    });
   }
 
   /** Flags controlling various aspects of the display style. */
