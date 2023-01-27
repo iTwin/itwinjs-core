@@ -23,13 +23,12 @@ module.exports = {
       }
       for (let tag of tags) {
         if (tag.tagName.escapedText == "deprecated") {
-          console.log(tag);
 
           if (tag.comment == undefined) {
             context.report(node, "Please provide version and info about the depercated API");
           }
-          else if (!(/\d+\.x/.test(String(tag.comment)) || /\d+\.\d/.test(String(tag.comment)))) {
-            context.report(node, "No version info found");
+          else if (!(/\d+\.(\d|x)/.test(String(tag.comment)))) {
+            context.report(node, "@deprecated version not found");
           }
         }
       }

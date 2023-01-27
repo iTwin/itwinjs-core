@@ -3,6 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /**
- * @deprecated in
+ * @deprecated
  */
 export function helloWorld() { }
