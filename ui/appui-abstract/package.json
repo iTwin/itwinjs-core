@@ -104,6 +104,16 @@
     ],
     "rules": {
       "max-statements-per-line": "off"
-    }
+    },
+    "overrides": [
+      {
+        "files": [
+          "src/test/**/*"
+        ],
+        "rules": {
+          "deprecation/deprecation": "off"
+        }
+      }
+    ]
   }
 }

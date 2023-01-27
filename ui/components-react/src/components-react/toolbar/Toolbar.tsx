@@ -23,7 +23,7 @@ import { getToolbarDirection, ToolbarItemComponent, ToolbarItemContext, ToolbarO
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
   /** Describes to which direction the popup panels are expanded. Defaults to: [[Direction.Bottom]] */
   expandsTo?: Direction;
-  /** definitions for items of the toolbar. i.e. [[CommonToolbarItem]]. Items are expected to be already sorted by group and item. */
+  /** Definitions for items of the toolbar. Items are expected to be already sorted by group and item. */
   items: CommonToolbarItem[];
   /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
   panelAlignment?: ToolbarPanelAlignment;

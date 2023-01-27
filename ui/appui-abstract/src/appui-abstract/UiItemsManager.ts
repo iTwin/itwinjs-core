@@ -29,6 +29,7 @@ export enum UiItemsApplicationAction {
 }
 
 /** UIProvider Registered Event Args interface.
+ * @deprecated in 3.6. Use [UiItemsProviderRegisteredEventArgs]($appui-react) instead.
  * @public
  */
 export interface UiItemProviderRegisteredEventArgs {
@@ -36,7 +37,8 @@ export interface UiItemProviderRegisteredEventArgs {
 }
 
 /** UiItemProviderOverrides allows the application that registers a provider to limit when it is allowed to provide items
- *  @public
+ * @deprecated in 3.6. Use [AllowedUiItemsProviderOverrides]($appui-react) instead.
+ * @public
  */
 export interface AllowedUiItemProviderOverrides {
   /** allows providerId to be overridden in the items manager for cases where the same provider needs to provide different content to different stages
@@ -56,7 +58,8 @@ export interface AllowedUiItemProviderOverrides {
 /** Allowed overrides applied to a UiItemsProvider the application that registers a provider to limit when it is allowed to provide items.
  * Note that if an override `providerId` is specified then either `stageIds` or `stageUsages` must be defined to limit when the provider's
  * items are allowed.
- *  @public
+ * @deprecated in 3.6. Use [UiItemsProviderOverrides]($appui-react) instead.
+ * @public
  */
 export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> |
   MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> |                                 // eslint-disable-line @typescript-eslint/indent
@@ -64,16 +67,14 @@ export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverride
   MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> |                                             // eslint-disable-line @typescript-eslint/indent
   MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;                  // eslint-disable-line @typescript-eslint/indent
 
-/** Interface that defines an instance of a UiItemsProvider and its application specified overrides.
- *  @beta
- */
+/** Interface that defines an instance of a UiItemsProvider and its application specified overrides. */
 interface UiItemProviderEntry {
   provider: UiItemsProvider;
   overrides?: UiItemProviderOverrides;
 }
 
-/**
- * Controls registering of UiItemsProviders and calls the provider's methods when populating different parts of the User Interface.
+/** Controls registering of UiItemsProviders and calls the provider's methods when populating different parts of the User Interface.
+ * @deprecated in 3.6. Use [UiItemsManager]($appui-react) instead.
  * @public
  */
 export class UiItemsManager {
