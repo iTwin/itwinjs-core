@@ -28,5 +28,4 @@
 - [ECSQL](./ECSQL.md)
 - [Display system](./display/index.md)
 - [Wire format](./WireFormat.md)
-- [Guidelines and tips](./guidelines/index.md)
 - [Glossary](./Glossary.md)
