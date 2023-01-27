@@ -6,7 +6,7 @@
  * @module TileTreeSupplier
  */
 
-import { BeTimePoint, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
+import { assert, BeTimePoint, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
   Quantization, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, ViewFlagOverrides,
@@ -18,6 +18,7 @@ import {
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@itwin/core-orbitgt";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
+import { DisplayStyleState } from "../DisplayStyleState";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -41,6 +42,10 @@ interface OrbitGtTreeId {
   modelId: Id64String;
 }
 
+function compareSourceKeys(lhs: RealityDataSourceKey, rhs: RealityDataSourceKey): number {
+  return compareStringsOrUndefined(lhs.id, rhs.id) || compareStringsOrUndefined(lhs.format, rhs.format) || compareStringsOrUndefined(lhs.iTwinId, rhs.iTwinId);
+}
+
 class OrbitGtTreeSupplier implements TileTreeSupplier {
   public getOwner(treeId: OrbitGtTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(treeId, this);
@@ -51,15 +56,24 @@ class OrbitGtTreeSupplier implements TileTreeSupplier {
   }
 
   public compareTileTreeIds(lhs: OrbitGtTreeId, rhs: OrbitGtTreeId): number {
-    let cmp = compareStringsOrUndefined(lhs.rdSourceKey.id, rhs.rdSourceKey.id);
-    if (0 === cmp)
-      cmp = compareStringsOrUndefined(lhs.rdSourceKey.format, rhs.rdSourceKey.format);
-    if (0 === cmp)
-      cmp = compareStringsOrUndefined(lhs.rdSourceKey.iTwinId, rhs.rdSourceKey.iTwinId);
-    if (0 === cmp)
-      cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
+    return compareStringsOrUndefined(lhs.modelId, rhs.modelId) || compareSourceKeys(lhs.rdSourceKey, rhs.rdSourceKey);
+  }
 
-    return cmp;
+  public findCompatibleContextRealityModelId(sourceKey: RealityDataSourceKey, style: DisplayStyleState): Id64String | undefined {
+    const owners = style.iModel.tiles.getTreeOwnersForSupplier(this);
+    for (const owner of owners) {
+      // Find an existing tree with the same reality data source key.
+      if (0 === compareSourceKeys(sourceKey, owner.id.rdSourceKey)) {
+        const modelId = owner.id.modelId;
+        assert(undefined !== modelId);
+
+        // If the model Id is unused by any other context reality model in the view and does not identify a persistent reality model, use it.
+        if (Id64.isTransientId64(modelId) && !style.contextRealityModelStates.some((model) => model.modelId === modelId))
+          return modelId;
+      }
+    }
+
+    return undefined;
   }
 }
 
@@ -499,7 +513,11 @@ export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
     }
 
     // ###TODO find compatible model Id
-    this._modelId = props.modelId ?? props.iModel.transientIds.getNext();
+    let modelId = props.modelId;
+    if (undefined === modelId && this._source instanceof DisplayStyleState)
+      modelId = orbitGtTreeSupplier.findCompatibleContextRealityModelId(this._rdSourceKey, this._source);
+
+    this._modelId = modelId ?? props.iModel.transientIds.getNext();
 
     const ogtTreeId: OrbitGtTreeId = { rdSourceKey: this._rdSourceKey, modelId: this.modelId };
     this.treeOwner = orbitGtTreeSupplier.getOwner(ogtTreeId, props.iModel);
