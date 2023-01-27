@@ -15,7 +15,7 @@ import { SpinnerSize } from "../loading/Spinner";
 /**
  * Properties for [[ProgressSpinner]] component
  * @beta
- * @deprecated Use ProgressRadialProps in itwinui-react instead.
+ * @deprecated in 3.0. Use ProgressRadialProps in itwinui-react instead.
  */
 export interface ProgressSpinnerProps extends CommonProps {
   /**
@@ -52,7 +52,7 @@ export interface ProgressSpinnerProps extends CommonProps {
 /**
  * Circular Progress Indicator that supports determinate and indeterminate modes.
  * @beta
- * @deprecated Use ProgressRadial in itwinui-react instead.
+ * @deprecated in 3.0. Use ProgressRadial in itwinui-react instead.
  */
 export function ProgressSpinner(props: ProgressSpinnerProps) {    // eslint-disable-line deprecation/deprecation
   const {

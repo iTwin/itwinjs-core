@@ -6,31 +6,43 @@
  * @module InstancesFilter
  */
 
+import "./PresentationInstanceFilterProperty.scss";
 import * as React from "react";
+import { PropertyDescription } from "@itwin/appui-abstract";
 import { Badge, Tooltip } from "@itwin/itwinui-react";
 import { translate } from "../common/Utils";
-import { InstanceFilterPropertyInfo } from "./Types";
-import "./PresentationInstanceFilterProperty.scss";
 
-/** @alpha */
+/**
+ * Props for [[PresentationInstanceFilterProperty]] component.
+ * @internal
+ */
 export interface PresentationInstanceFilterPropertyProps {
-  instanceFilterPropertyInfo: InstanceFilterPropertyInfo;
+  /** Description of property. */
+  propertyDescription: PropertyDescription;
+  /** Full name of property class. Format: `<schema-name>:<class-name>`. */
+  fullClassName: string;
+  /** Label of property category */
+  categoryLabel?: string;
 }
 
-/** @alpha */
+/**
+ * Component for rendering property in [FilterBuilder]($components-react) property selector. Property category and
+ * class info is rendered in addition to property label.
+ * @internal
+ */
 export function PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps) {
-  const { instanceFilterPropertyInfo } = props;
+  const { propertyDescription, categoryLabel, fullClassName } = props;
   return <div className="property-item-line">
-    <Tooltip content={instanceFilterPropertyInfo.propertyDescription.displayLabel} placement="bottom">
-      <div className="property-display-label" title={instanceFilterPropertyInfo.propertyDescription.displayLabel}>
-        {instanceFilterPropertyInfo.propertyDescription.displayLabel}
+    <Tooltip content={propertyDescription.displayLabel} placement="bottom">
+      <div className="property-display-label" title={propertyDescription.displayLabel}>
+        {propertyDescription.displayLabel}
       </div>
     </Tooltip>
     <div className="property-badge-container">
-      {instanceFilterPropertyInfo.categoryLabel && <Tooltip content={<CategoryTooltipContent instanceFilterPropertyInfo={instanceFilterPropertyInfo} />} placement="bottom" style={{ textAlign: "left" }}>
+      {categoryLabel && <Tooltip content={<CategoryTooltipContent categoryLabel={categoryLabel} fullClassName={fullClassName} />} placement="bottom" style={{ textAlign: "left" }}>
         <div className="badge">
           <Badge className="property-category-badge" backgroundColor={"montecarlo"}>
-            {instanceFilterPropertyInfo.categoryLabel}
+            {categoryLabel}
           </Badge>
         </div>
       </Tooltip>}
@@ -39,17 +51,18 @@ export function PresentationInstanceFilterProperty(props: PresentationInstanceFi
 }
 
 interface CategoryTooltipContentProps {
-  instanceFilterPropertyInfo: InstanceFilterPropertyInfo;
+  fullClassName: string;
+  categoryLabel?: string;
 }
 
 function CategoryTooltipContent(props: CategoryTooltipContentProps) {
-  const { instanceFilterPropertyInfo } = props;
-  const [schemaName, className] = instanceFilterPropertyInfo.className.split(":");
+  const { categoryLabel, fullClassName } = props;
+  const [schemaName, className] = fullClassName.split(":");
   return <table>
     <tbody>
       <tr>
         <th className="tooltip-content-header">{translate("instance-filter-builder.category")}</th>
-        <td className="tooltip-content-data">{instanceFilterPropertyInfo.categoryLabel}</td>
+        <td className="tooltip-content-data">{categoryLabel}</td>
       </tr>
     </tbody>
     <tbody>

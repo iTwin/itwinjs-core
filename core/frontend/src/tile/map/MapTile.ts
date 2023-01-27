@@ -513,7 +513,6 @@ export class MapTile extends RealityTile {
       return this._graphic;
 
     const geometry = this.renderGeometry;
-    assert(undefined !== geometry);
     if (undefined === geometry)
       return undefined;
 

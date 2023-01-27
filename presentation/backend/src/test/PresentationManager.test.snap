@@ -604,8 +604,6 @@ Array [
     "navigationPropertyClasses": Array [
       Object {
         "isForwardRelationship": true,
-        "isPolymorphicRelationship": false,
-        "isPolymorphicTargetClass": false,
         "relationshipInfo": Object {
           "id": "0x456",
           "label": "Class Two",
@@ -626,7 +624,6 @@ Array [
     "pathFromInputToSelectClass": Array [
       Object {
         "isForwardRelationship": true,
-        "isPolymorphicTargetClass": false,
         "relationshipInfo": Object {
           "id": "0x456",
           "label": "Class Two",
@@ -648,8 +645,6 @@ Array [
       Array [
         Object {
           "isForwardRelationship": true,
-          "isPolymorphicRelationship": false,
-          "isPolymorphicTargetClass": false,
           "relationshipInfo": Object {
             "id": "0x456",
             "label": "Class Two",
@@ -672,8 +667,6 @@ Array [
       Array [
         Object {
           "isForwardRelationship": true,
-          "isPolymorphicRelationship": false,
-          "isPolymorphicTargetClass": false,
           "relationshipInfo": Object {
             "id": "0x456",
             "label": "Class Two",
@@ -728,17 +721,17 @@ Array [
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "Ball",
-            "id": "0x104990000004fc4",
+            "className": "Steel",
+            "id": "0x19a5000001511d",
           },
           Object {
-            "className": "Montana",
-            "id": "0x11bf10000002c01",
+            "className": "auxiliary",
+            "id": "0xb4550000004334",
           },
         ],
         "pathFromRoot": Array [
-          "21d1c027-bea3-4416-9fd3-ff8cf9035f83",
-          "30662f47-039f-481e-8693-75ec166aa453",
+          "bea34161-fd3f-4f8c-b903-5f8330662f47",
+          "039f81e0-6937-45ec-966a-a453243a981b",
         ],
         "type": "ECInstancesNode",
         "version": 2,
@@ -775,17 +768,17 @@ Array [
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "Rubber",
-            "id": "0x7fba000000a1c0",
+            "className": "Incredible",
+            "id": "0x12f930000017b44",
           },
           Object {
-            "className": "engineer",
-            "id": "0xc2bd000000e8c9",
+            "className": "Extended",
+            "id": "0xd5a8000000c6af",
           },
         ],
         "pathFromRoot": Array [
-          "15fc4488-4edc-4357-88f0-7d6c4dd68a7b",
-          "1c2ff0f1-6636-4b10-bded-2a66e751f893",
+          "4edc3570-8f07-4d6c-8dd6-8a7b1c2ff0f1",
+          "6636b107-ded2-4a66-a751-f89329656c97",
         ],
         "type": "ECInstancesNode",
         "version": 2,
@@ -806,8 +799,8 @@ Array [
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "Creative",
-          "id": "0xa906000001474f",
+          "className": "enable",
+          "id": "0x13cb90000016d51",
         },
       ],
       "pathFromRoot": Array [

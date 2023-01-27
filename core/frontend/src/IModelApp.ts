@@ -560,9 +560,9 @@ export class IModelApp {
       return Guid.createValue();
     };
 
-    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => { // eslint-disable-line deprecation/deprecation
       const id = _request.id;
-      const serialized: SerializedRpcActivity = {
+      const serialized: SerializedRpcActivity = { // eslint-disable-line deprecation/deprecation
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,

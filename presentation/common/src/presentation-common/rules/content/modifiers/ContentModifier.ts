@@ -7,7 +7,7 @@
  */
 
 import { SingleSchemaClassSpecification } from "../../ClassSpecifications";
-import { RuleBase, RuleTypes } from "../../Rule";
+import { RuleBase } from "../../Rule";
 import { PropertySpecification } from "../PropertySpecification";
 import { CalculatedPropertiesSpecification } from "./CalculatedPropertiesSpecification";
 import { PropertyCategorySpecification } from "./PropertyCategorySpecification";
@@ -58,7 +58,7 @@ export interface ContentModifiersList {
  */
 export interface ContentModifier extends RuleBase, ContentModifiersList {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.ContentModifier;
+  ruleType: "ContentModifier";
 
   /**
    * Specification of ECClass whose content should be modified. The modifier is applied to all content
