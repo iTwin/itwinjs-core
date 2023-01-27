@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Remove dependency on xml-js library in core-frontend.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

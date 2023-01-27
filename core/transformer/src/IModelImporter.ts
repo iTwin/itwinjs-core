@@ -11,8 +11,9 @@ import {
   PropertyMetaData, RelatedElement, SubCategoryProps,
 } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget, SubCategory } from "@itwin/core-backend";
+import { deleteElementTree, ElementAspect, ElementMultiAspect, Entity, IModelDb, Relationship, RelationshipProps, SourceAndTarget, SubCategory } from "@itwin/core-backend";
 import type { IModelTransformOptions } from "./IModelTransformer";
+import * as assert from "assert";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 
@@ -63,7 +64,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * The computed projectExtents will either include or exclude *outliers* depending on the `excludeOutliers` flag that defaults to `false`.
    * @see [[IModelImportOptions.autoExtendProjectExtents]]
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
-   * @deprecated Use [[IModelImporter.options.autoExtendProjectExtents]] instead
+   * @deprecated in 3.x. Use [[IModelImporter.options.autoExtendProjectExtents]] instead
    */
   public get autoExtendProjectExtents(): Required<IModelImportOptions>["autoExtendProjectExtents"] {
     return this.options.autoExtendProjectExtents;
@@ -74,7 +75,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
 
   /**
    * See [IModelTransformOptions.preserveElementIdsForFiltering]($transformer)
-   * @deprecated Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
+   * @deprecated in 3.x. Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
    */
   public get preserveElementIdsForFiltering(): boolean {
     return this.options.preserveElementIdsForFiltering;
@@ -85,7 +86,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
 
   /**
    * See [[IModelImportOptions.simplifyElementGeometry]]
-   * @deprecated Use [[IModelImporter.options.simplifyElementGeometry]] instead
+   * @deprecated in 3.x. Use [[IModelImporter.options.simplifyElementGeometry]] instead
    */
   public get simplifyElementGeometry(): boolean {
     return this.options.simplifyElementGeometry;
@@ -94,16 +95,25 @@ export class IModelImporter implements Required<IModelImportOptions> {
     this.options.simplifyElementGeometry = val;
   }
 
+  private static _realityDataSourceLinkPartitionStaticId: Id64String = "0xe";
+
   /** The set of elements that should not be updated by this IModelImporter.
+   * Defaults to the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
    * @note Adding an element to this set is typically necessary when remapping a source element to one that already exists in the target and already has the desired properties.
    */
-  public readonly doNotUpdateElementIds = new Set<Id64String>();
+  public readonly doNotUpdateElementIds = new Set<Id64String>([
+    IModel.rootSubjectId,
+    IModel.dictionaryId,
+    IModelImporter._realityDataSourceLinkPartitionStaticId,
+  ]);
   /** The number of entity changes before incremental progress should be reported via the [[onProgress]] callback. */
   public progressInterval: number = 1000;
   /** Tracks the current total number of entity changes. */
   private _progressCounter: number = 0;
   /** */
-  private _modelPropertiesToIgnore = new Set<string>();
+  private _modelPropertiesToIgnore = new Set<string>([
+    "geometryGuid", // cannot compare GeometricModel.GeometryGuid values across iModels
+  ]);
 
   /** Construct a new IModelImporter
    * @param targetDb The target IModelDb
@@ -116,11 +126,6 @@ export class IModelImporter implements Required<IModelImportOptions> {
       preserveElementIdsForFiltering: options?.preserveElementIdsForFiltering ?? false,
       simplifyElementGeometry: options?.simplifyElementGeometry ?? false,
     };
-    // Add in the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
-    this.doNotUpdateElementIds.add(IModel.rootSubjectId);
-    this.doNotUpdateElementIds.add(IModel.dictionaryId);
-    this.doNotUpdateElementIds.add("0xe"); // RealityDataSources LinkPartition
-    this._modelPropertiesToIgnore.add("geometryGuid"); // cannot compare GeometricModel.GeometryGuid values across iModels
   }
 
   /** Import the specified ModelProps (either as an insert or an update) into the target iModel. */
@@ -133,13 +138,13 @@ export class IModelImporter implements Required<IModelImportOptions> {
       return;
     }
     try {
-      const model: Model = this.targetDb.models.getModel(modelProps.id); // throws IModelError.NotFound if model does not exist
+      const model = this.targetDb.models.getModel(modelProps.id); // throws IModelError.NotFound if model does not exist
       if (hasEntityChanged(model, modelProps, this._modelPropertiesToIgnore)) {
         this.onUpdateModel(modelProps);
       }
     } catch (error) {
       // catch NotFound error and insertModel
-      if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
+      if (error instanceof IModelError && error.errorNumber === IModelStatus.NotFound) {
         this.onInsertModel(modelProps);
         return;
       }
@@ -254,12 +259,13 @@ export class IModelImporter implements Required<IModelImportOptions> {
     }
   }
 
-  /** Delete the specified Element from the target iModel.
+  /** Delete the specified Element (and all its children) from the target iModel.
+   * Will delete special elements like definition elements and subjects.
    * @note A subclass may override this method to customize delete behavior but should call `super.onDeleteElement`.
    */
   protected onDeleteElement(elementId: Id64String): void {
-    this.targetDb.elements.deleteElement(elementId);
-    Logger.logInfo(loggerCategory, `Deleted element ${elementId}`);
+    deleteElementTree(this.targetDb, elementId);
+    Logger.logInfo(loggerCategory, `Deleted element ${elementId} and its descendants`);
     this.trackProgress();
   }
 
@@ -293,76 +299,97 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 
   /** Import an ElementUniqueAspect into the target iModel. */
-  public importElementUniqueAspect(aspectProps: ElementAspectProps): void {
+  public importElementUniqueAspect(aspectProps: ElementAspectProps): Id64String {
     const aspects: ElementAspect[] = this.targetDb.elements.getAspects(aspectProps.element.id, aspectProps.classFullName);
     if (aspects.length === 0) {
-      this.onInsertElementAspect(aspectProps);
+      return this.onInsertElementAspect(aspectProps);
     } else if (hasEntityChanged(aspects[0], aspectProps)) {
       aspectProps.id = aspects[0].id;
       this.onUpdateElementAspect(aspectProps);
     }
+    return aspects[0].id;
   }
 
   /** Import the collection of ElementMultiAspects into the target iModel.
    * @param aspectPropsArray The ElementMultiAspects to import
    * @param filterFunc Optional filter func that is used to exclude target ElementMultiAspects that were added during iModel transformation from the update detection logic.
    * @note For insert vs. update reasons, it is important to process all ElementMultiAspects owned by an Element at once since we don't have aspect-specific provenance.
+   * @returns the array of ids of the resulting ElementMultiAspects, in the same order of the aspectPropsArray parameter
    */
-  public importElementMultiAspects(aspectPropsArray: ElementAspectProps[], filterFunc?: (a: ElementMultiAspect) => boolean): void {
+  public importElementMultiAspects(
+    aspectPropsArray: ElementAspectProps[],
+    /** caller must use this to enforce any aspects added by IModelTransformer are not considered for update */
+    filterFunc: (a: ElementMultiAspect) => boolean = () => true
+  ): Id64String[] {
+    const result = new Array<Id64String | undefined>(aspectPropsArray.length).fill(undefined);
+
     if (aspectPropsArray.length === 0) {
-      return;
+      return result as Id64String[];
     }
+
     const elementId: Id64String = aspectPropsArray[0].element.id;
     // Determine the set of ElementMultiAspect classes to consider
     const aspectClassFullNames = new Set<string>();
     aspectPropsArray.forEach((aspectsProps: ElementAspectProps): void => {
       aspectClassFullNames.add(aspectsProps.classFullName);
     });
+
     // Handle ElementMultiAspects in groups by class
     aspectClassFullNames.forEach((aspectClassFullName: string) => {
-      const proposedAspects = aspectPropsArray.filter((aspectProps) => aspectClassFullName === aspectProps.classFullName);
-      let currentAspects: ElementMultiAspect[] = this.targetDb.elements.getAspects(elementId, aspectClassFullName);
-      if (filterFunc) {
-        currentAspects = currentAspects.filter((a) => filterFunc(a)); // any aspects added by IModelTransformer must not be considered for update
-      }
+      const proposedAspects = aspectPropsArray
+        .map((props, index) => ({ props, index }))
+        .filter(({props}) => aspectClassFullName === props.classFullName);
+
+      const currentAspects = this.targetDb.elements
+        .getAspects(elementId, aspectClassFullName)
+        .map((props, index) => ({ props, index }) as const)
+        .filter(({props}) => filterFunc(props));
+
       if (proposedAspects.length >= currentAspects.length) {
-        let index = 0;
-        proposedAspects.forEach((aspectProps: ElementAspectProps) => {
+        proposedAspects.forEach(({props, index: resultIndex}, index) => {
+          let id: Id64String;
           if (index < currentAspects.length) {
-            aspectProps.id = currentAspects[index].id;
-            if (hasEntityChanged(currentAspects[index], aspectProps)) {
-              this.onUpdateElementAspect(aspectProps);
+            id = currentAspects[index].props.id;
+            props.id = id;
+            if (hasEntityChanged(currentAspects[index].props, props)) {
+              this.onUpdateElementAspect(props);
             }
+            id = props.id;
           } else {
-            this.onInsertElementAspect(aspectProps);
+            id = this.onInsertElementAspect(props);
           }
-          index++;
+          result[resultIndex] = id;
         });
       } else {
-        let index = 0;
-        currentAspects.forEach((aspect: ElementMultiAspect) => {
+        currentAspects.forEach(({props, index: resultIndex}, index) => {
+          let id: Id64String;
           if (index < proposedAspects.length) {
-            proposedAspects[index].id = aspect.id;
-            if (hasEntityChanged(aspect, proposedAspects[index])) {
-              this.onUpdateElementAspect(proposedAspects[index]);
+            id = props.id;
+            proposedAspects[index].props.id = id;
+            if (hasEntityChanged(props, proposedAspects[index].props)) {
+              this.onUpdateElementAspect(proposedAspects[index].props);
             }
+            result[resultIndex] = id;
           } else {
-            this.onDeleteElementAspect(aspect);
+            this.onDeleteElementAspect(props);
           }
-          index++;
         });
       }
     });
+
+    assert(result.every((r) => typeof r !== undefined));
+    return result as Id64String[];
   }
 
   /** Insert the ElementAspect into the target iModel.
    * @note A subclass may override this method to customize insert behavior but should call `super.onInsertElementAspect`.
    */
-  protected onInsertElementAspect(aspectProps: ElementAspectProps): void {
+  protected onInsertElementAspect(aspectProps: ElementAspectProps): Id64String {
     try {
-      this.targetDb.elements.insertAspect(aspectProps);
+      const id = this.targetDb.elements.insertAspect(aspectProps);
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementAspectForLogger(aspectProps)}`);
       this.trackProgress();
+      return id;
     } catch (error) {
       if (!this.targetDb.containsClass(aspectProps.classFullName)) {
         // replace standard insert error with something more helpful
@@ -594,8 +621,9 @@ export interface IModelImporterState {
  * @param entity The current persistent Entity.
  * @param entityProps The new EntityProps to compare against
  * @note This method should only be called if changeset information is not available.
+ * @internal
  */
-function hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set<string>): boolean {
+export function hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set<string>): boolean {
   let changed: boolean = false;
   entity.forEachProperty((propertyName: string, propertyMeta: PropertyMetaData) => {
     if (!changed) {
@@ -641,7 +669,9 @@ function isSubCategory(props: ElementProps): props is SubCategoryProps {
 
 /** check if element props are a subcategory without loading the element */
 function isDefaultSubCategory(props: SubCategoryProps): boolean {
-  if (props.id === undefined) return false;
+  if (props.id === undefined)
+    return false;
+
   if (!Id64.isId64(props.id))
     throw new IModelError(IModelStatus.BadElement, `subcategory had invalid id`);
   if (props.parent?.id === undefined)

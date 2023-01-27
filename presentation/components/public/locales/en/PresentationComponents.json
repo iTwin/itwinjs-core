@@ -15,9 +15,20 @@
     "select-instance": "Select element"
   },
   "instance-filter-builder": {
-    "classes": "Classes"
+    "select-class": "Select class...",
+    "category": "Category:",
+    "class": "Class:",
+    "schema": "Schema:",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "filter": "Filter"
   },
   "tree": {
-    "presentation-components-muted-node": "Too many child nodes."
+    "too-many-child-nodes": "Too many child nodes",
+    "no-filtered-children": "There are no child nodes matching current filter"
+  },
+  "navigation-property-editor": {
+    "select-target-instance": "Select target instance",
+    "loading-target-instances": "Loading target instances"
   }
 }

@@ -1,6 +1,116 @@
 # Change Log - @itwin/appui-layout-react
 
-This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Jan 2023 22:53:27 GMT and should not be manually modified.
+
+## 3.5.5
+Thu, 26 Jan 2023 22:53:27 GMT
+
+_Version update only_
+
+## 3.5.4
+Wed, 18 Jan 2023 15:27:15 GMT
+
+_Version update only_
+
+## 3.5.3
+Fri, 13 Jan 2023 17:23:07 GMT
+
+_Version update only_
+
+## 3.5.2
+Wed, 11 Jan 2023 16:46:30 GMT
+
+_Version update only_
+
+## 3.5.1
+Thu, 15 Dec 2022 16:38:28 GMT
+
+_Version update only_
+
+## 3.5.0
+Wed, 07 Dec 2022 19:12:36 GMT
+
+### Updates
+
+- Expose onMouseEnter and onMouseLeave events for a FloatingWidget.
+- upgrade to node 18
+- Number sort
+- Close widget overflow popup when panel is collapsed.
+- Bring panel handle on top of panel splitter
+- Unpin classnames package, enable allowSynteticDefaultImports to use latest.
+- Deprecate all components.
+- Use --buic-toolbar-opacity to set the opacity of toolbar items.
+- Update TabState to honor allowedPanelTargets when creating new widgets.
+
+## 3.4.7
+Wed, 30 Nov 2022 14:28:19 GMT
+
+_Version update only_
+
+## 3.4.6
+Tue, 22 Nov 2022 14:24:19 GMT
+
+_Version update only_
+
+## 3.4.5
+Thu, 17 Nov 2022 21:32:49 GMT
+
+_Version update only_
+
+## 3.4.4
+Thu, 10 Nov 2022 19:32:17 GMT
+
+_Version update only_
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:57 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
+
+## 3.4.1
+Mon, 17 Oct 2022 20:06:51 GMT
+
+_Version update only_
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Updated Message Center dialog to have static width between tabs.
+- Fix a floating widget resize issue.
+- Correctly remove floating widgets from NineZoneState.
+- Determine bounds when adding a new floating widget.
+- Updated Node types declaration to support latest v16
+- Fix panel splitters being interactive when the panels are not.
+- New icons from Visual Design team for pin/unpin panel.
+- Fix auto-sized floating widget position when dragging.
+- Fix styling to correctly overflow widget content.
+- Add pulse animation to widget targets.
+- Increase visibility of widget targets.
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+### Updates
+
+- New icons from Visual Design team for pin/unpin panel.
+- Fix styling to correctly overflow widget content.
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+_Version update only_
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+_Version update only_
 
 ## 3.3.2
 Thu, 01 Sep 2022 14:37:22 GMT

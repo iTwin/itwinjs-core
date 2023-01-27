@@ -53,10 +53,10 @@ export class GltfHeader extends TileHeader {
 
   public constructor(stream: ByteStream) {
     super(stream);
-    this.gltfLength = stream.nextUint32;
+    this.gltfLength = stream.readUint32();
 
-    this.sceneStrLength = stream.nextUint32;
-    const value5 = stream.nextUint32;
+    this.sceneStrLength = stream.readUint32();
+    const value5 = stream.readUint32();
 
     // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
     // validating the chunk type.
@@ -76,8 +76,8 @@ export class GltfHeader extends TileHeader {
       const sceneChunkType = value5;
       this.scenePosition = stream.curPos;
       stream.curPos = stream.curPos + this.sceneStrLength;
-      const binaryLength = stream.nextUint32;
-      const binaryChunkType = stream.nextUint32;
+      const binaryLength = stream.readUint32();
+      const binaryChunkType = stream.readUint32();
       if (GltfV2ChunkTypes.JSON !== sceneChunkType || GltfV2ChunkTypes.Binary !== binaryChunkType || 0 === binaryLength) {
         this.invalidate();
         return;
@@ -142,6 +142,12 @@ interface ImdlTextureMapping {
     mode?: TextureMapping.Mode;
     /** @see [TextureMapping.Params.worldMapping]($common). Default: false. */
     worldMapping?: boolean;
+  };
+  /** @see [NormalMapParams]($common). */
+  normalMapParams?: {
+    textureName?: string;
+    greenUp?: boolean;
+    scale?: number;
   };
 }
 
@@ -335,7 +341,7 @@ interface ImdlAreaPattern {
   readonly type: "areaPattern";
   /** The Id of the [[ImdlAreaPatternSymbol]] containing the pattern geometry. */
   readonly symbolName: string;
-  /** A [ClipVector]($geometry-core) used to clip symbols to the pattern region's boundary. */
+  /** A [ClipVector]($core-geometry) used to clip symbols to the pattern region's boundary. */
   readonly clip: ClipVectorProps;
   /** Uniform scale applied to the pattern geometry. */
   readonly scale: number;
@@ -445,6 +451,10 @@ export interface Imdl {
   scene: string;
   /** The collection of ImdlScenes included in the tile. */
   scenes: ImdlDictionary<ImdlScene>;
+  /** Specifies point to which all vertex positions in the tile are relative, as an array of 3 numbers.
+   * Currently only used for requestElementGraphics - see GraphicsRequestProps.useAbsolutePositions.
+   */
+  rtcCenter?: number[];
   /** Maps each node Id to the Id of the corresponding mesh in [[meshes]]. */
   nodes: ImdlDictionary<string>;
   meshes: ImdlDictionary<ImdlMesh>;
@@ -515,6 +525,7 @@ export class ImdlReader {
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
   private readonly _containsTransformNodes: boolean;
   private readonly _timeline?: RenderSchedule.ModelTimeline;
+  private readonly _rtcCenter?: Point3d;
 
   private get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   private get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
@@ -553,6 +564,7 @@ export class ImdlReader {
         renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials),
         namedTextures: JsonUtils.asObject(sceneValue.namedTextures),
         patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols),
+        rtcCenter: JsonUtils.asArray(sceneValue.rtcCenter),
       };
 
       return undefined !== imdl.meshes ? new ImdlReader(imdl, gltfHeader.binaryPosition, args) : undefined;
@@ -573,6 +585,7 @@ export class ImdlReader {
     this._renderMaterials = imdl.renderMaterials ?? { };
     this._namedTextures = imdl.namedTextures ?? { };
     this._patternSymbols = imdl.patternSymbols ?? {};
+    this._rtcCenter = imdl.rtcCenter ? Point3d.fromJSON(imdl.rtcCenter) : undefined;
 
     this._iModel = args.iModel;
     this._modelId = args.modelId;
@@ -719,7 +732,22 @@ export class ImdlReader {
       worldMapping: JsonUtils.asBool(paramsJson.worldMapping),
     };
 
-    return new TextureMapping(texture, new TextureMapping.Params(paramProps));
+    const textureMapping = new TextureMapping(texture, new TextureMapping.Params(paramProps));
+
+    const normalMapJson = json.normalMapParams;
+    if (normalMapJson) {
+      let normalMap;
+      const normalTexName = JsonUtils.asString(normalMapJson.textureName);
+      if (normalTexName.length === 0 || undefined !== (normalMap = this._namedTextures[normalTexName]?.renderTexture)) {
+        textureMapping.normalMapParams = {
+          normalMap,
+          greenUp: JsonUtils.asBool(normalMapJson.greenUp),
+          scale: JsonUtils.asDouble(normalMapJson.scale, 1),
+        };
+      }
+    }
+
+    return textureMapping;
   }
 
   private async loadNamedTextures(): Promise<void> {
@@ -1079,7 +1107,6 @@ export class ImdlReader {
       indices,
       fillFlags: displayParams.fillFlags,
       hasBakedLighting: false,
-      hasFixedNormals: false,
       material,
       textureMapping,
     };
@@ -1437,8 +1464,14 @@ export class ImdlReader {
         break;
     }
 
-    if (undefined !== tileGraphic && false !== this._options)
+    if (tileGraphic && false !== this._options)
       tileGraphic = this._system.createBatch(tileGraphic, featureTable, contentRange, this._options);
+
+    if (tileGraphic && this._rtcCenter) {
+      const rtcBranch = new GraphicBranch(true);
+      rtcBranch.add(tileGraphic);
+      tileGraphic = this._system.createBranch(rtcBranch, Transform.createTranslation(this._rtcCenter));
+    }
 
     return {
       readStatus: TileReadStatus.Success,

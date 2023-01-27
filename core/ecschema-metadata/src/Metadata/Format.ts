@@ -139,14 +139,21 @@ export class Format extends SchemaItem {
     // this._includeZero = true;
 
     // Serialize the minimal amount of information needed so anything that is the same as the default, do not serialize.
-    if (0.0 !== this.roundFactor) schemaJson.roundFactor = this.roundFactor;
-    if (ShowSignOption.OnlyNegative !== this.showSignOption) schemaJson.showSignOption = showSignOptionToString(this.showSignOption);
-    if (FormatTraits.Uninitialized !== this.formatTraits) schemaJson.formatTraits = formatTraitsToArray(this.formatTraits);
-    if ("." !== this.decimalSeparator) schemaJson.decimalSeparator = this.decimalSeparator;
-    if ("," !== this.thousandSeparator) schemaJson.thousandSeparator = this.thousandSeparator;
-    if (" " !== this.uomSeparator) schemaJson.uomSeparator = this.uomSeparator;
+    if (0.0 !== this.roundFactor)
+      schemaJson.roundFactor = this.roundFactor;
+    if (ShowSignOption.OnlyNegative !== this.showSignOption)
+      schemaJson.showSignOption = showSignOptionToString(this.showSignOption);
+    if (FormatTraits.Uninitialized !== this.formatTraits)
+      schemaJson.formatTraits = formatTraitsToArray(this.formatTraits);
+    if ("." !== this.decimalSeparator)
+      schemaJson.decimalSeparator = this.decimalSeparator;
+    if ("," !== this.thousandSeparator)
+      schemaJson.thousandSeparator = this.thousandSeparator;
+    if (" " !== this.uomSeparator)
+      schemaJson.uomSeparator = this.uomSeparator;
 
-    if (undefined !== this.minWidth) schemaJson.minWidth = this.minWidth;
+    if (undefined !== this.minWidth)
+      schemaJson.minWidth = this.minWidth;
 
     if (FormatType.Scientific === this.type && undefined !== this.scientificType)
       schemaJson.scientificType = scientificTypeToString(this.scientificType);
@@ -163,8 +170,11 @@ export class Format extends SchemaItem {
 
     schemaJson.composite = {};
 
-    if (" " !== this.spacer) schemaJson.composite.spacer = this.spacer;
-    if (true !== this.includeZero) schemaJson.composite.includeZero = this.includeZero;
+    if (" " !== this.spacer)
+      schemaJson.composite.spacer = this.spacer;
+
+    if (true !== this.includeZero)
+      schemaJson.composite.includeZero = this.includeZero;
 
     schemaJson.composite.units = [];
     for (const unit of this.units) {

@@ -37,7 +37,9 @@ internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
+internal;class ArcGISImageryProvider 
 internal;ArcGISMapLayerImageryProvider 
+internal;ArcGISServiceMetadata
 internal;ArcGISTileMap
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
@@ -139,6 +141,7 @@ public;class DisplayStyleState
 internal;disposeTileTreesForGeometricModels(modelIds: Set
 public;DownloadBriefcaseId =
 public;DownloadBriefcaseOptions = DownloadBriefcaseId &
+public;DownloadProgressInfo
 internal;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
@@ -192,8 +195,9 @@ public;FrustumAnimator
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
+beta;GenericAbortSignal
 internal;GeoConverter
-internal;GeographicTilingScheme 
+beta;GeographicTilingScheme 
 public;GeometricModel2dState 
 public;GeometricModel3dState 
 public;class GeometricModelState 
@@ -202,7 +206,7 @@ internal;GeoServices
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string | undefined
-internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise
+internal;getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise
 public;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
@@ -274,16 +278,18 @@ public;HitSource
 internal;I3dmReader 
 public;IconSprites
 public;IdleTool 
+public;imageBitmapFromImageSource(source: ImageSource): Promise
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined
 public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
-internal;ImageryMapLayerFormat 
+beta;ImageryMapLayerFormat 
 internal;ImageryMapLayerTreeReference 
 internal;ImageryMapTile 
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
+internal;ImageryTileTreeState
 internal;Imdl
 internal;ImdlReader
 internal;ImdlReaderCreateArgs
@@ -334,16 +340,16 @@ public;LocateOptions
 public;LocateResponse
 internal;LockedStates
 public;LookAndMoveTool 
-beta;LookAtArgs
-beta;LookAtOrthoArgs 
-beta;LookAtPerspectiveArgs 
-beta;LookAtUsingLensAngle 
+public;LookAtArgs
+public;LookAtOrthoArgs 
+public;LookAtPerspectiveArgs 
+public;LookAtUsingLensAngle 
 public;LookViewTool 
 internal;LRUTileList
 internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
-internal;MapCartoRectangle 
+beta;MapCartoRectangle 
 alpha;MapFeatureInfo
 alpha;MapFeatureInfoRecord 
 beta;MapLayerAccessClient
@@ -357,8 +363,10 @@ internal;MapLayerFormatEntry
 beta;MapLayerFormatRegistry
 beta;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
-internal;MapLayerImageryProviderStatus
+beta;MapLayerImageryProviderStatus
+internal;MapLayerIndex
 beta;MapLayerOptions
+beta;MapLayerScaleRangeVisibility
 public;MapLayerSource
 internal;MapLayerSources
 public;MapLayerSourceStatus
@@ -366,13 +374,14 @@ public;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
 alpha;MapSubLayerFeatureInfo
-internal;MapTile 
+beta;MapTile 
 internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 
-internal;class MapTileProjection
-internal;MapTileTree 
+beta;class MapTileProjection
+beta;MapTileTree 
 internal;MapTileTreeReference 
-internal;class MapTilingScheme
+beta;MapTileTreeScaleRangeVisibility
+beta;class MapTilingScheme
 public;MarginOptions
 public;MarginPercent
 public;Marker 
@@ -381,6 +390,9 @@ public;MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | I
 public;class MarkerSet
 public;MarkerTextAlign = "left" | "right" | "center" | "start" | "end"
 public;MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom"
+public;MaterialDiffuseProps
+public;MaterialSpecularProps
+public;MaterialTextureMappingProps
 public;MeasureAreaByPointsTool 
 public;MeasureAreaTool 
 public;MeasureDistanceTool 
@@ -415,6 +427,7 @@ internal;OffScreenTarget
 public;OffScreenViewport 
 public;OffScreenViewportOptions
 internal;OldTextureImage
+public;OnDownloadProgress = (progress: DownloadProgressInfo) => void
 public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
@@ -430,6 +443,7 @@ public;OutputMessagePriority
 public;OutputMessageType
 public;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
+public;PaddingPercent
 public;PanViewTool 
 public;ParseAndRunResult
 public;ParsedKeyin
@@ -458,7 +472,8 @@ beta;PreferenceKeyArg
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
 alpha;PublisherProductInfo
-internal;QuadId
+public;PullChangesOptions
+beta;QuadId
 public;QuantityFormatOverridesChangedArgs
 public;QuantityFormatsChangedArgs
 public;QuantityFormatter 
@@ -466,17 +481,18 @@ public;QuantityType
 public;QuantityTypeArg = QuantityType | string
 public;QuantityTypeDefinition
 public;QuantityTypeKey = string
-beta;QueryScreenFeaturesOptions
+public;QueryScreenFeaturesOptions
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
-beta;QueryTileFeaturesOptions
+public;QueryTileFeaturesOptions
 internal;queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void
-beta;QueryVisibleFeaturesCallback = (features: Iterable
-beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions
+public;QueryVisibleFeaturesCallback = (features: Iterable
+public;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
 public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
+beta;ReadMeshArgs
 internal;ReadonlyTileUserSet 
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise
 alpha;RealityDataError 
@@ -486,19 +502,28 @@ internal;createCesiumIonAssetKey(osmAssetId: number, requestKey: string): Realit
 alpha;createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined
-alpha;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
+alpha;fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
+alpha;RealityDataSourceProvider
+alpha;RealityDataSourceProviderRegistry
+internal;RealityMeshGraphicParams
+beta;RealityMeshParams
+beta;RealityMeshParams
+internal;fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined
+alpha;toPolyface(params: RealityMeshParams, options?:
+beta;RealityMeshParamsBuilder
+beta;RealityMeshParamsBuilderOptions
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileTree 
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
-internal;RealityTile 
+beta;RealityTile 
 internal;RealityTileContent 
 internal;RealityTileDrawArgs 
 alpha;RealityTileGeometry
 internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileRegion
-internal;RealityTileTree 
+beta;RealityTileTree 
 internal;RealityTileTreeParams 
 internal;RealityTreeReference 
 alpha;RemoteExtensionProvider 
@@ -525,6 +550,7 @@ internal;class RenderTarget
 internal;RenderTargetDebugControl
 internal;class RenderTerrainGeometry 
 internal;class RenderTextureDrape 
+beta;RequestMeshDataArgs
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 alpha;ResolveFunc = () => Promise
 alpha;ResolveManifestFunc = () => Promise
@@ -593,7 +619,10 @@ internal;class Target
 internal;TentativeOrAccuSnap
 public;TentativePoint
 internal;TerrainDisplayOverrides
-internal;class TerrainMeshProvider
+beta;class TerrainMeshProvider
+beta;TerrainMeshProviderOptions
+beta;TerrainProvider
+beta;TerrainProviderRegistry
 internal;TerrainTexture
 internal;TerrainTileContent 
 public;TextInputFormatPropEditorSpec 
@@ -602,7 +631,7 @@ public;TextureCacheKey = string | Gradient.Symb
 public;TextureCacheOwnership
 internal;TextureDrapeMap = Map
 public;TextureImage
-public;TextureImageSource = HTMLImageElement | ImageBuffer
+public;TextureImageSource = HTMLImageElement | ImageBuffer | ImageBitmap
 public;TextureOwnership = TextureCacheOwnership | "external"
 internal;ThreeAxes
 internal;ThreeDTileFileInfo
@@ -631,6 +660,7 @@ public;TileRequest
 public;TileRequestChannel
 public;TileRequestChannels
 public;TileRequestChannelStatistics
+beta;TileStorage
 public;class TileTree
 public;TileTreeDiscloser
 public;TileTreeLoadStatus
@@ -716,8 +746,8 @@ public;class Viewport
 public;ViewportDecorator
 public;ViewportGraphicBuilderOptions 
 public;class ViewPose
-internal;ViewPose2d 
-internal;ViewPose3d 
+public;ViewPose2d 
+public;ViewPose3d 
 public;ViewRect
 public;ViewRedoTool 
 public;class ViewState 
@@ -728,10 +758,10 @@ public;ViewToggleCameraTool
 public;class ViewTool 
 public;ViewUndoEvent
 public;ViewUndoTool 
-beta;VisibleFeature
+public;VisibleFeature
 public;WalkViewTool 
-internal;WebMercatorProjection
-internal;WebMercatorTilingScheme 
+alpha;WebMercatorProjection
+beta;WebMercatorTilingScheme 
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities
@@ -741,6 +771,7 @@ internal;WmsMapLayerImageryProvider
 internal;WmsUtilities
 internal;WmtsCapabilities
 internal;WmtsCapability
+internal;WmtsConstants
 internal;WmtsMapLayerImageryProvider 
 public;ZoomToOptions
 public;ZoomViewTool 

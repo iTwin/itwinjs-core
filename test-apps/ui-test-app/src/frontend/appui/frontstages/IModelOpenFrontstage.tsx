@@ -5,9 +5,9 @@
 import * as React from "react";
 import { AccessToken } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
-import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, StageUsage,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../index";
 import { IModelOpen } from "../imodelopen/IModelOpen";
@@ -36,7 +36,7 @@ export class IModelOpenFrontstage extends FrontstageProvider {
     return IModelOpenFrontstage.stageId;
   }
 
-  public get frontstage(): React.ReactElement<FrontstageProps> {
+  public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
     const contentGroup: ContentGroup = new ContentGroup({
       id: "imodelIndexGroup",
       layout: StandardContentLayouts.singleView,
@@ -49,7 +49,7 @@ export class IModelOpenFrontstage extends FrontstageProvider {
     });
 
     return (
-      <Frontstage id={this.id}
+      <Frontstage id={this.id} // eslint-disable-line deprecation/deprecation
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isIModelIndependent={true}

@@ -5,11 +5,13 @@
 /** @packageDocumentation
  * @module Helpers
  */
+/* istanbul ignore file */  // TODO: Remove istanbul ignore file when https://github.com/iTwin/itwinjs-backlog/issues/463 is fixed.
 import { join } from "path";
 import * as rimraf from "rimraf";
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { Guid } from "@itwin/core-bentley";
 import {
+  EmptyLocalization,
   IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
@@ -18,6 +20,7 @@ import {
 } from "@itwin/presentation-backend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import { tmpdir } from "os";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -39,6 +42,15 @@ function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
 
 let isInitialized = false;
 
+const defaultTestOutputDir = tmpdir();
+let testOutputDir: string | undefined;
+
+/** @internal */
+export const getTestOutputDir = (): string => {
+  return testOutputDir ?? defaultTestOutputDir;
+};
+
+// eslint-disable-next-line deprecation/deprecation
 export { HierarchyCacheMode, PresentationManagerMode, PresentationBackendProps };
 
 /** @public */
@@ -53,6 +65,8 @@ export interface PresentationTestingInitProps {
   frontendApp?: { startup: (opts?: IModelAppOptions) => Promise<void> };
   /** `IModelApp` options */
   frontendAppOptions?: IModelAppOptions;
+  /** Custom test output directory. Defaults to temporary directory provided by the OS. */
+  testOutputDir?: string;
 }
 
 /**
@@ -84,6 +98,10 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   // init frontend
   if (!props.frontendApp)
     props.frontendApp = NoRenderApp;
+  props.frontendAppOptions = {
+    localization: new EmptyLocalization(), // Use EmptyLocalization if none is provided
+    ...props.frontendAppOptions,
+  };
   await props.frontendApp.startup(props.frontendAppOptions);
   const defaultFrontendProps: PresentationFrontendProps = {
     presentation: {
@@ -91,6 +109,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
     },
   };
   await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });
+  testOutputDir = props.testOutputDir;
 
   isInitialized = true;
 };

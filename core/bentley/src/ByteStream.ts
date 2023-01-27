@@ -12,7 +12,7 @@ import { Id64, Id64String } from "./Id";
 /** Allows the contents of an [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer)
  * to be consumed sequentially using methods to extract
  * data of a particular type from the bytes beginning at the current read position.
- * Methods and properties beginning with 'next' consume data at the current read position and advance it
+ * Methods and properties beginning with 'read' and taking no arguments consume data at the current read position and advance it
  * by the size of the data read. The read position can also be directly adjusted by the caller.
  * @public
  */
@@ -33,7 +33,7 @@ export class ByteStream {
    * argument is supplied, with correct offset and length.
    *
    * For both of the above reasons, prefer to use [[fromUint8Array]].
-   * @deprecated Use [[fromUint8Array]] or [[fromArrayBuffer]].
+   * @deprecated in 3.x. Use [[fromUint8Array]] or [[fromArrayBuffer]].
    */
   public constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: { byteOffset: number, byteLength: number }) {
     if (undefined !== subView) {
@@ -62,43 +62,87 @@ export class ByteStream {
   }
 
   /** The number of bytes in this stream */
-  public get length(): number { return this._view.byteLength; }
+  public get length(): number {
+    return this._view.byteLength;
+  }
+
+  /** The number of bytes remaining to be read, from [[curPos]] to the end of the stream. */
+  public get remainingLength(): number {
+    return this.length - this.curPos;
+  }
+
   /** Returns true if the current read position has been advanced past the end of the stream. This generally indicates that an attempt was made to read more data than is available.
    * @see [[isAtTheEnd]]
    */
-  public get isPastTheEnd(): boolean { return this.curPos > this.length; }
+  public get isPastTheEnd(): boolean {
+    return this.curPos > this.length;
+  }
+
   /** Returns true if the current read position has advanced precisely to the end of the stream, indicating all of the data has been consumed.
    * @see [[isPastTheEnd]].
    */
-  public get isAtTheEnd(): boolean { return this.curPos === this.length; }
+  public get isAtTheEnd(): boolean {
+    return this.curPos === this.length;
+  }
 
   /** The current read position as an index into the stream of bytes. */
   public get curPos(): number { return this._curPos; }
-  public set curPos(pos: number) { this._curPos = pos; assert(!this.isPastTheEnd); }
+  public set curPos(pos: number) {
+    this._curPos = pos;
+    assert(!this.isPastTheEnd);
+  }
 
   /** Adds the specified number of bytes to the current read position */
-  public advance(numBytes: number): boolean { this.curPos = (this.curPos + numBytes); return !this.isPastTheEnd; }
+  public advance(numBytes: number): boolean {
+    this.curPos = (this.curPos + numBytes);
+    return !this.isPastTheEnd;
+  }
+
   /** Subtracts the specified number of bytes from the current read position */
-  public rewind(numBytes: number): boolean { if (this.curPos - numBytes < 0) return false; this.curPos = this.curPos - numBytes; return true; }
+  public rewind(numBytes: number): boolean {
+    if (this.curPos - numBytes < 0)
+      return false;
+
+    this.curPos = this.curPos - numBytes;
+    return true;
+  }
+
   /** Resets the current read position to the beginning of the stream */
   public reset(): void { this.curPos = 0; }
 
   /** Read a unsigned 8-bit integer from the current read position and advance by 1 byte. */
-  public get nextUint8(): number { return this.read(1, (view) => view.getUint8(this.curPos)); }
+  public readUint8(): number { return this.read(1, (view) => view.getUint8(this.curPos)); }
   /** Read an unsigned 16-bit integer from the current read position and advance by 2 bytes. */
-  public get nextUint16(): number { return this.read(2, (view) => view.getUint16(this.curPos, true)); }
+  public readUint16(): number { return this.read(2, (view) => view.getUint16(this.curPos, true)); }
   /** Read an unsigned 32-bit integer from the current read position and advance by 4 bytes. */
-  public get nextUint32(): number { return this.read(4, (view) => view.getUint32(this.curPos, true)); }
+  public readUint32(): number { return this.read(4, (view) => view.getUint32(this.curPos, true)); }
   /** Read a signed 32-bit integer from the current read position and advance by 4 bytes. */
-  public get nextInt32(): number { return this.read(4, (view) => view.getInt32(this.curPos, true)); }
+  public readInt32(): number { return this.read(4, (view) => view.getInt32(this.curPos, true)); }
   /** Read a 32-bit floating point number from the current read position and advance by 4 bytes. */
-  public get nextFloat32(): number { return this.read(4, (view) => view.getFloat32(this.curPos, true)); }
+  public readFloat32(): number { return this.read(4, (view) => view.getFloat32(this.curPos, true)); }
   /** Read a 64-bit floating point number from the current read position and advance by 8 bytes. */
-  public get nextFloat64(): number { return this.read(8, (view) => view.getFloat64(this.curPos, true)); }
+  public readFloat64(): number { return this.read(8, (view) => view.getFloat64(this.curPos, true)); }
   /** Read an unsigned 64-bit integer from the current read position, advance by 8 bytes, and return the 64-bit value as an Id64String. */
-  public get nextId64(): Id64String { return Id64.fromUint32Pair(this.nextUint32, this.nextUint32); }
+  public readId64(): Id64String { return Id64.fromUint32Pair(this.readUint32(), this.readUint32()); }
   /** Read an unsigned 24-bit integer from the current read position and advance by 3 bytes. */
-  public get nextUint24(): number { return this.nextUint8 | (this.nextUint8 << 8) | (this.nextUint8 << 16); }
+  public readUint24(): number { return this.readUint8() | (this.readUint8() << 8) | (this.readUint8() << 16); }
+
+  /** @deprecated in 3.x. use [[readUint8]]. */
+  public get nextUint8(): number { return this.readUint8(); }
+  /** @deprecated in 3.x. use [[readUint16]]. */
+  public get nextUint16(): number { return this.readUint16(); }
+  /** @deprecated in 3.x. use [[readUint32]]. */
+  public get nextUint32(): number { return this.readUint32(); }
+  /** @deprecated in 3.x. use [[readInt32]]. */
+  public get nextInt32(): number { return this.readInt32(); }
+  /** @deprecated in 3.x. use [[readFloat32]]. */
+  public get nextFloat32(): number { return this.readFloat32(); }
+  /** @deprecated in 3.x. use [[readFloat64]]. */
+  public get nextFloat64(): number { return this.readFloat64(); }
+  /** @deprecated in 3.x. use [[readId64]]. */
+  public get nextId64(): Id64String { return this.readId64(); }
+  /** @deprecated in 3.x. use [[readUint32]]. */
+  public get nextUint24(): number { return this.readUint24(); }
 
   /** Read the specified number of bytes beginning at the current read position into a Uint8Array and advance by the specified number of byte.
    * @param numBytes The number of bytes to read.

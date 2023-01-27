@@ -25,8 +25,8 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
-import { RealityMeshGraphicParams, RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
-import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
+import { RealityMeshGraphicParams } from "./RealityMeshGraphicParams";
+import { RealityMeshParams } from "./RealityMeshParams";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { PointStringParams } from "./primitives/PointStringParams";
 import { PolylineParams } from "./primitives/PolylineParams";
@@ -283,6 +283,9 @@ export abstract class RenderSystem implements IDisposable {
   public get supportsInstancing(): boolean { return true; }
 
   /** @internal */
+  public get supportsCreateImageBitmap(): boolean { return false; }
+
+  /** @internal */
   public get supportsIndexedEdges(): boolean { return true; }
 
   /** @internal */
@@ -317,7 +320,7 @@ export abstract class RenderSystem implements IDisposable {
    * @param _params A description of the material's properties.
    * @param _imodel The IModelConnection associated with the material.
    * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
-   * @deprecated Use [[createRenderMaterial]].
+   * @deprecated in 3.x. Use [[createRenderMaterial]].
    */
   // eslint-disable-next-line deprecation/deprecation
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
@@ -419,11 +422,14 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform, _disableTextureDisposal = false): RenderTerrainGeometry | undefined { return undefined; }
+  public createTerrainMesh(_params: RealityMeshParams, _transform?: Transform, _disableTextureDisposal = false): RenderTerrainGeometry | undefined {
+    return undefined;
+  }
+
   /** @internal */
   public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createRealityMesh(_realityMesh: RealityMeshPrimitive, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
+  public createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public get maxRealityImageryLayers() { return 0; }
   /** @internal */
@@ -518,6 +524,8 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Return a Promise which when resolved indicates that all pending external textures have finished loading from the backend. */
   public async waitForAllExternalTextures(): Promise<void> { return Promise.resolve(); }
+  /** @internal */
+  public get hasExternalTextureRequests(): boolean { return false; }
 
   /** Create a graphic that assumes ownership of another graphic.
    * @param ownedGraphic The RenderGraphic to be owned.
@@ -617,7 +625,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture from an [[ImageBuffer]].
-   * @deprecated Use [[createTexture]].
+   * @deprecated in 3.x. Use [[createTexture]].
    */
   // eslint-disable-next-line deprecation/deprecation
   public createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
@@ -633,7 +641,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]].
-   * @deprecated Use [[createTexture]].
+   * @deprecated in 3.x. Use [[createTexture]].
    */
   // eslint-disable-next-line deprecation/deprecation
   public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
@@ -649,7 +657,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture from an ImageSource.
-   * @deprecated Use RenderSystem.createTextureFromSource.
+   * @deprecated in 3.x. Use RenderSystem.createTextureFromSource.
    */
   // eslint-disable-next-line deprecation/deprecation
   public async createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {

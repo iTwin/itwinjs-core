@@ -24,13 +24,13 @@ export class MeshData implements WebGLDisposable {
   public readonly hasFeatures: boolean;
   public readonly uniformFeatureId?: number; // Used strictly by BatchPrimitiveCommand.computeIsFlashed for flashing volume classification primitives.
   public readonly texture?: Texture;
+  public readonly normalMap?: Texture;
   public readonly materialInfo?: MaterialInfo;
   public readonly type: SurfaceType;
   public readonly fillFlags: FillFlags;
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
   public readonly isPlanar: boolean;
   public readonly hasBakedLighting: boolean;
-  public readonly hasFixedNormals: boolean;   // Fixed normals will not be flipped to face front (Terrain skirts).
   public readonly lut: VertexLUT;
   public readonly viewIndependentOrigin?: Point3d;
   private readonly _textureAlwaysDisplayed: boolean;
@@ -46,6 +46,18 @@ export class MeshData implements WebGLDisposable {
     if (undefined !== params.surface.textureMapping) {
       this.texture = params.surface.textureMapping.texture as Texture;
       this._textureAlwaysDisplayed = params.surface.textureMapping.alwaysDisplayed;
+      if (undefined !== params.surface.material && !params.surface.material.isAtlas) {
+        const matTM = params.surface.material.material.textureMapping;
+        if (undefined !== matTM && undefined !== matTM.normalMapParams) {
+          if (undefined !== matTM.normalMapParams.normalMap) {
+            this.normalMap = matTM.normalMapParams.normalMap as Texture;
+          } else {
+            // If there are normal map params but the normal map is not present, use the texture as a normal map instead of a pattern map.
+            this.normalMap = this.texture;
+            this.texture = undefined;
+          }
+        }
+      }
     } else {
       this.texture = undefined;
       this._textureAlwaysDisplayed = false;
@@ -57,7 +69,6 @@ export class MeshData implements WebGLDisposable {
     this.fillFlags = params.surface.fillFlags;
     this.isPlanar = params.isPlanar;
     this.hasBakedLighting = params.surface.hasBakedLighting;
-    this.hasFixedNormals = params.surface.hasFixedNormals;
     const edges = params.edges;
     this.edgeWidth = undefined !== edges ? edges.weight : 1;
     this.edgeLineCode = LineCode.valueFromLinePixels(undefined !== edges ? edges.linePixels : LinePixels.Solid);

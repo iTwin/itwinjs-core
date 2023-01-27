@@ -25,9 +25,9 @@
 ### Helpful links
 
 - [Tutorials](./tutorials/index.md)
+- [API support policies](./api-support-policies.md)
 - [ECSQL](./ECSQL.md)
 - [Display system](./display/index.md)
 - [Wire format](./WireFormat.md)
-- [Frequently asked questions](./faq.md)
 - [Guidelines and tips](./guidelines/index.md)
 - [Glossary](./Glossary.md)

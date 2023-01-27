@@ -6,9 +6,9 @@
 
 import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 import { ModalDialogManager } from "@itwin/appui-react";
-import { Button, Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
+import { Button, Input, LabeledInput, ProgressLinear, Radio } from "@itwin/itwinui-react";
 import { ImageMapLayerProps } from "@itwin/core-common";
-import { IModelApp, MapLayerAccessClient, MapLayerImageryProviderStatus, MapLayerSource,
+import { IModelApp, MapLayerAccessClient, MapLayerSource,
   MapLayerSourceStatus, MapLayerSourceValidation, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
 import { Dialog, Icon, useCrossOriginPopup } from "@itwin/core-react";
@@ -18,12 +18,14 @@ import { MapLayersUI } from "../../mapLayers";
 import { MapTypesOptions } from "../Interfaces";
 import "./MapUrlDialog.scss";
 import { BeEvent, Guid } from "@itwin/core-bentley";
+import { SelectMapFormat } from "./SelectMapFormat";
 
 export const MAP_TYPES = {
   wms: "WMS",
   arcGis: "ArcGIS",
   wmts: "WMTS",
   tileUrl: "TileURL",
+  arcGisFeature: "ArcGISFeature",
 };
 
 interface MapUrlDialogProps {
@@ -106,7 +108,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [accessClient, setAccessClient] = React.useState<MapLayerAccessClient | undefined>();
   const [isAccessClientInitialized, setAccessClientInitialized] = React.useState(false);
 
-  const [mapType, setMapType] = React.useState(getFormatFromProps() ?? MAP_TYPES.arcGis);
+  const [mapType, setMapType] = React.useState(getFormatFromProps() ?? "ArcGIS");
 
   // 'isMounted' is used to prevent any async operation once the hook has been
   // unloaded.  Otherwise we get a 'Can't perform a React state update on an unmounted component.' warning in the console.
@@ -117,17 +119,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       isMounted.current = false;
     };
   }, []);
-
-  const [mapTypes] = React.useState((): SelectOption<string>[] => {
-    const types = [
-      { value: MAP_TYPES.arcGis, label: MAP_TYPES.arcGis },
-      { value: MAP_TYPES.wms, label: MAP_TYPES.wms },
-      { value: MAP_TYPES.wmts, label: MAP_TYPES.wmts },
-    ];
-    if (mapTypesOptions?.supportTileUrl)
-      types.push({ value: MAP_TYPES.tileUrl, label: MAP_TYPES.tileUrl });
-    return types;
-  });
 
   const [isSettingsStorageAvailable] = React.useState(MapLayersUI.iTwinConfig && props?.activeViewport?.iModel?.iTwinId);
   const [hasImodelContext] = React.useState (
@@ -228,12 +219,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }, layerRequiringCredentialsIdx, isOverlay);
     vp.displayStyle.changeMapLayerCredentials(layerRequiringCredentialsIdx, isOverlay, source.userName, source.password);
 
-    // Reset the provider's status
+    // Either initial attach/initialize failed or the layer failed to load at least one tile
+    // because of an invalid token; in both cases tile tree needs to be fully reset
     const provider = vp.getMapLayerImageryProvider(layerRequiringCredentialsIdx, isOverlay);
-    if (provider && provider.status !== MapLayerImageryProviderStatus.Valid) {
-      provider.status = MapLayerImageryProviderStatus.Valid;
-    }
-
+    provider?.resetStatus();
+    vp.resetMapLayer(layerRequiringCredentialsIdx, isOverlay);
     vp.invalidateRenderPlan();
 
     // This handler will close the layer source handler, and therefore the MapUrl dialog.
@@ -294,6 +284,10 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         } else {
           return await updateAttachedLayer(source, validation);
         }
+      } else if (validation.status === MapLayerSourceStatus.InvalidCoordinateSystem){
+        const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.InvalidCoordinateSystem");
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
+        return true;
       } else {
         const authNeeded = await updateAuthState(source, validation);
         if (authNeeded) {
@@ -590,13 +584,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         <div className="map-layer-url-dialog-content">
           <div className="map-layer-source-url">
             <span className="map-layer-source-label">{typeLabel}</span>
-            <Select
-              className="map-layer-source-select"
-              options={mapTypes}
+            <SelectMapFormat
               value={mapType}
               disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending}
               onChange={setMapType}
-              size="small"/>
+              mapTypesOptions={mapTypesOptions}
+            />
             <span className="map-layer-source-label">{nameLabel}</span>
             <Input className="map-layer-source-input"  placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined || layerAttachPending || layerAuthPending} />
             <span className="map-layer-source-label">{urlLabel}</span>

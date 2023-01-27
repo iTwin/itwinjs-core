@@ -5,17 +5,17 @@
 import * as React from "react";
 import {
   BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider, FrontstageProps,
-  IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  IModelViewportControl, StageUsage, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
   UiFramework,
 } from "@itwin/appui-react";
-import { ContentLayoutProps, StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { ContentLayoutProps, StandardContentLayouts } from "@itwin/appui-abstract";
 import { CustomContentUiProvider } from "../providers/CustomContentUiProvider";
 import { SampleContentControl } from "../content/SampleContentControl";
 
 export class CustomContentGroupProvider extends ContentGroupProvider {
-  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     // copy and then modify standard layout so the content is always shown - note we could have just copied the standard and created a new one in line
     const twoHorizontalSplit: ContentLayoutProps = {...StandardContentLayouts.twoHorizontalSplit, horizontalSplit: {...StandardContentLayouts.twoHorizontalSplit.horizontalSplit!,
       minSizeBottom: 100,
@@ -96,4 +96,3 @@ export class CustomFrontstage {
     CustomContentUiProvider.register();
   }
 }
-

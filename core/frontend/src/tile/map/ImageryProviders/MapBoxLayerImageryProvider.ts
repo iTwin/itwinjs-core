@@ -21,7 +21,8 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
     this._baseUrl = settings.url;
-    this._zoomMin = 1; this._zoomMax = 20;
+    this._zoomMin = 1;
+    this._zoomMax = 20;
   }
 
   public get tileWidth(): number { return 256; }

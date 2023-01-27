@@ -4,22 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  AbstractWidgetProps,
-  BackstageItem,
-  BackstageItemUtilities, CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities,
-  StagePanelLocation, StagePanelSection, StageUsage,
-  ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
-  WidgetState,
+  CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { StateManager, SyncUiEventDispatcher } from "@itwin/appui-react";
+import { BackstageItem, BackstageItemUtilities, CommandItemDef, CommonWidgetProps, ModelessDialogManager, StagePanelLocation, StagePanelSection, StageUsage, StateManager, SyncUiEventDispatcher, ToolbarHelper, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import * as React from "react";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { getTestProviderState, setHideCustomDialogButton } from "../../store";
 import { OpenCustomDialogTool } from "../../tools/OpenCustomDialogTool";
+import { SampleModelessDialog } from "../dialogs/SampleModelessDialog";
 import { CustomContentFrontstage } from "../frontstages/CustomContent";
 import visibilitySemiTransparentSvg from "../icons/visibility-semi-transparent.svg";
 import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDataWidget";
+import { SvgWindowAdd } from "@itwin/itwinui-icons-react";
 
 /**
  * Test UiItemsProvider that provide buttons, and backstage item to stage.
@@ -86,16 +83,30 @@ export class CustomContentStageUiProvider implements UiItemsProvider {
         },
       );
 
-      return [customActionButton, openCustomDialogActionButton, toggleHiddenButton];
+      const dialogId = "sampleModeless";
+      const openSampleModelessItem = new CommandItemDef({
+        iconSpec: <SvgWindowAdd />,
+        labelKey: "SampleApp:buttons.sampleModelessDialog",
+        execute: () => {
+          ModelessDialogManager.openDialog(
+            <SampleModelessDialog
+              opened={true}
+              dialogId={dialogId}
+            />, dialogId);
+        },
+      });
+      const sampleModelessToolButton = ToolbarHelper.createToolbarItemFromItemDef(17, openSampleModelessItem, { groupPriority: 3000 });
+
+      return [customActionButton, openCustomDialogActionButton, toggleHiddenButton, sampleModelessToolButton];
     }
     return [];
   }
 
   public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation,
-    section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
-    const widgets: AbstractWidgetProps[] = [];
+    section?: StagePanelSection): ReadonlyArray<CommonWidgetProps> {
+    const widgets: CommonWidgetProps[] = [];
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
-      const widget: AbstractWidgetProps = {
+      const widget: CommonWidgetProps = {
         id: "appui-test-providers:elementDataListWidget",
         label: "Data",
         icon: "icon-flag-2",

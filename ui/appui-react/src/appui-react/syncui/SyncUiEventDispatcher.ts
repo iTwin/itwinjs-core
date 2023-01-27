@@ -38,7 +38,7 @@ export enum SyncUiEventId {
   /** The active view maintained by the ViewManager has changed. */
   ActiveViewportChanged = "activeviewportchanged",
   /** Backstage has been closed.
-   * @deprecated Use BackstageEvent instead
+   * @deprecated in 1.x. Use BackstageEvent instead
    */
   BackstageCloseEvent = "backstagecloseevent",
   /** Backstage has been closed. */
@@ -60,12 +60,12 @@ export enum SyncUiEventId {
   /** An InteractiveTool has been activated via the ToolAdmin. */
   ToolActivated = "toolactivated",
   /** A Task has been activated.
-   * @deprecated */
+   * @deprecated in 3.0. */
   TaskActivated = "taskactivated",
   /** The state of a Widget has changed. */
   WidgetStateChanged = "widgetstatechanged",
   /** A Workflow has been activated.
-   * @deprecated */
+   * @deprecated in 3.0. */
   WorkflowActivated = "workflowactivated",
   /** The SelectionSet for the active IModelConnection has changed. */
   SelectionSetChanged = "selectionsetchanged",
@@ -76,15 +76,19 @@ export enum SyncUiEventId {
   /** The current object the reads and write UI State has changed. */
   UiStateStorageChanged = "uistatestoragechanged",
   ShowHideManagerSettingChange = "show-hide-setting-change",
+  /** The list of feature overrides applied has been changed
+   * @alpha
+  */
+  FeatureOverridesChanged = "featureoverrideschanged"
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
- * @public @deprecated use UiSyncEventArgs in appui-abstract instead
+ * @public @deprecated in 3.0. Use UiSyncEventArgs in appui-abstract instead
  */
 export type SyncUiEventArgs = UiSyncEventArgs;
 
 /** SyncUi Event class.
- * @public @deprecated use UiSyncEvent in appui-abstract instead
+ * @public @deprecated in 3.0. Use UiSyncEvent in appui-abstract instead
  */
 export type SyncUiEvent = UiSyncEvent;
 
@@ -146,6 +150,11 @@ export class SyncUiEventDispatcher {
   // istanbul ignore next
   private static _dispatchViewChange() {
     SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ViewStateChanged);
+  }
+
+  // istanbul ignore next
+  private static _dispatchFeatureOverridesChange() {
+    SyncUiEventDispatcher._uiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FeatureOverridesChanged);
   }
 
   /** Initializes the Monitoring of Events that trigger dispatching sync events */
@@ -213,11 +222,17 @@ export class SyncUiEventDispatcher {
           // istanbul ignore next
           if (args.previous.onViewChanged && typeof args.previous.onViewChanged.removeListener === "function")  // not set during unit test
             args.previous.onViewChanged.removeListener(SyncUiEventDispatcher._dispatchViewChange);
+          // istanbul ignore next
+          if (args.previous.onFeatureOverridesChanged && typeof args.previous.onFeatureOverridesChanged.removeListener === "function")  // not set during unit test
+            args.previous.onFeatureOverridesChanged.removeListener(SyncUiEventDispatcher._dispatchFeatureOverridesChange);
         }
         // istanbul ignore next
         if (args.current) {
           if (args.current.onViewChanged && typeof args.current.onViewChanged.addListener === "function") // not set during unit test
             args.current.onViewChanged.addListener(SyncUiEventDispatcher._dispatchViewChange);
+          // istanbul ignore next
+          if (args.current.onFeatureOverridesChanged && typeof args.current.onFeatureOverridesChanged.addListener === "function") // not set during unit test
+            args.current.onFeatureOverridesChanged.addListener(SyncUiEventDispatcher._dispatchFeatureOverridesChange);
         }
       }));
     }

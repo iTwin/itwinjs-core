@@ -105,7 +105,7 @@ export class BackgroundMapDrape extends TextureDrape {
     this._debugFrustum = projection.debugFrustum;
     this._projectionMatrix = projection.projectionMatrix;
 
-    const drawArgs = GraphicsCollectorDrawArgs.create(context, this, this._mapTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
+    const drawArgs = GraphicsCollectorDrawArgs.create(context, this, this._mapTree, FrustumPlanes.fromFrustum(this._frustum), projection.worldToViewMap);
     if (undefined !== drawArgs)
       tileTree.draw(drawArgs);
 
@@ -176,7 +176,9 @@ export class BackgroundMapDrape extends TextureDrape {
     system.frameBufferStack.execute(this._fbo, true, false, () => {
       gl.clearColor(0, 0, 0, 0);
       gl.clear(GL.BufferBit.Color);
-      if (!useMRT) target.compositor.currentRenderTargetIndex = 0;
+      if (!useMRT)
+        target.compositor.currentRenderTargetIndex = 0;
+
       target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
     });
 

@@ -9,18 +9,17 @@ import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
-import { getClassName, UiItemsManager } from "@itwin/appui-abstract";
-import { SafeAreaInsets } from "@itwin/appui-layout-react";
+import { getClassName } from "@itwin/appui-abstract";
 import { TargetOptions, TargetOptionsContext } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/target/TargetOptions";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, BackstageComposer, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageManager,
   IModelViewportControl,
   InitialAppUiSettings,
-  ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
-  ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
+  ModalFrontstageClosedEventArgs, SafeAreaContext, SafeAreaInsets, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
+  ToolbarDragInteractionContext, UiFramework, UiItemsManager, UiStateStorageHandler,
 } from "@itwin/appui-react";
-import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
+import { assert, Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
@@ -42,10 +41,12 @@ import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
 // import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import {
-  AbstractUiItemsProvider, AppUiTestProviders, ContentLayoutStage, CustomContentFrontstage,
+  AbstractUiItemsProvider, ApplicationLayoutContext, ApplicationLayoutProvider, AppUiTestProviders, ContentLayoutStage, CustomContentFrontstage,
+  CustomFrontstageProvider,
   FloatingWidgetsUiItemsProvider, InspectUiItemInfoToolProvider, WidgetApiStage,
 } from "@itwin/appui-test-providers";
 import { useHandleURLParams } from "./UrlParams";
+import { MapLayersFormats } from "@itwin/map-layers-formats";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -215,6 +216,7 @@ export class SampleAppIModelApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
+    MapLayersFormats.initialize();
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
@@ -227,6 +229,7 @@ export class SampleAppIModelApp {
       widgetOpacity: 0.8,
       showWidgetIcon: true,
       autoCollapseUnpinnedPanels: false,
+      toolbarOpacity: 0.5,
     };
 
     // initialize any settings providers that may need to have defaults set by iModelApp
@@ -247,6 +250,7 @@ export class SampleAppIModelApp {
     CustomContentFrontstage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
     WidgetApiStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
     ContentLayoutStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
+    CustomFrontstageProvider.register(AppUiTestProviders.localizationNamespace);
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
@@ -338,7 +342,7 @@ export class SampleAppIModelApp {
   }
 
   public static getUiFrameworkProperty(): string {
-    return SampleAppIModelApp.store.getState().frameworkState.configurableUiState.frameworkVersion;
+    return SampleAppIModelApp.store.getState().frameworkState.configurableUiState.frameworkVersion; // eslint-disable-line deprecation/deprecation
   }
 
   public static saveAnimationViewId(value: string, immediateSync = false) {
@@ -379,7 +383,7 @@ function AppDragInteractionComponent(props: { dragInteraction: boolean, children
 
 function AppFrameworkVersionComponent(props: { frameworkVersion: string, children: React.ReactNode }) {
   return (
-    <FrameworkVersion>
+    <FrameworkVersion> {/* eslint-disable-line deprecation/deprecation */}
       {props.children}
     </FrameworkVersion>
   );
@@ -399,7 +403,7 @@ function mapDragInteractionStateToProps(state: RootState) {
 }
 
 function mapFrameworkVersionStateToProps(state: RootState) {
-  return { frameworkVersion: state.frameworkState.configurableUiState.frameworkVersion };
+  return { frameworkVersion: state.frameworkState.configurableUiState.frameworkVersion }; // eslint-disable-line deprecation/deprecation
 }
 
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
@@ -441,9 +445,9 @@ const SampleAppViewer = () => {
             <AppFrameworkVersion>
               <TargetOptionsProvider>
                 <UiStateStorageHandler>
-                  <ConfigurableUiContent
-                    appBackstage={<BackstageComposer />}
-                  />
+                  <ApplicationLayoutProvider>
+                    <AppViewerContent />
+                  </ApplicationLayoutProvider>
                 </UiStateStorageHandler>
               </TargetOptionsProvider>
             </AppFrameworkVersion>
@@ -453,6 +457,24 @@ const SampleAppViewer = () => {
     </Provider >
   );
 };
+
+function AppViewerContent() {
+  const applicationLayout = React.useContext(ApplicationLayoutContext);
+  assert(!!applicationLayout, "ApplicationLayoutProvider is required");
+  const isPortal = applicationLayout.mode === "portal";
+  return (
+    <div style={{
+      display: "grid",
+      height: "100%",
+      gridAutoRows: isPortal ? "80px 1fr" : "0 1fr",
+    }}>
+      <h2>Portal Header</h2>
+      <ConfigurableUiContent
+        appBackstage={<BackstageComposer />}
+      />
+    </div>
+  );
+}
 
 // If we are using a browser, close the current iModel before leaving
 window.addEventListener("beforeunload", async () => { // eslint-disable-line @typescript-eslint/no-misused-promises

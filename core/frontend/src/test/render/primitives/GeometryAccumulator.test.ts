@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, GraphicParams } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, GraphicParams } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { RenderGraphic } from "../../../render/RenderGraphic";
@@ -29,14 +29,16 @@ describe("GeometryAccumulator tests", () => {
   document.body.appendChild(canvas);
 
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new EmptyLocalization() });
     iModel = createBlankConnection();
     spatialView = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (iModel) await iModel.close();
+    if (iModel)
+      await iModel.close();
+
     await IModelApp.shutdown();
   });
 

@@ -29,7 +29,8 @@ const json = (argv.json === undefined) ? paths.appJsonDocs : argv.json;
 const baseUrlOptions = (argv.baseUrl === undefined) ? [] : ["--baseUrl", argv.baseUrl];
 const includeOptions = (argv.includes === undefined) ? [] : ["--includes", argv.includes];
 
-let excludeList = "**/node_modules/**/*,**/*test*/**/*";
+const testExclude = argv.testExcludeGlob ?? "**/*test*/**/*";
+let excludeList = `**/node_modules/**/*,${testExclude}`;
 if (argv.excludes !== undefined)
   excludeList += ",**/" + argv.excludes + "/**/*";
 if (argv.excludeGlob !== undefined)

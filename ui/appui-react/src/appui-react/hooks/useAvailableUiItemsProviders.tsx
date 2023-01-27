@@ -14,15 +14,15 @@ import { UiItemsManager } from "@itwin/appui-abstract";
  * @internal
  */
 export function useAvailableUiItemsProviders(): readonly string[] {
-  const [uiItemsProviderIds, setUiItemsProviderIds] = useState(UiItemsManager.registeredProviderIds);
+  const [uiItemsProviderIds, setUiItemsProviderIds] = useState(UiItemsManager.registeredProviderIds); // eslint-disable-line deprecation/deprecation
   useEffect(() => {
     const handleUiProviderRegisteredEvent = (): void => {
-      setUiItemsProviderIds(UiItemsManager.registeredProviderIds);
+      setUiItemsProviderIds(UiItemsManager.registeredProviderIds); // eslint-disable-line deprecation/deprecation
     };
 
-    UiItemsManager.onUiProviderRegisteredEvent.addListener(handleUiProviderRegisteredEvent);
+    UiItemsManager.onUiProviderRegisteredEvent.addListener(handleUiProviderRegisteredEvent); // eslint-disable-line deprecation/deprecation
     return () => {
-      UiItemsManager.onUiProviderRegisteredEvent.removeListener(handleUiProviderRegisteredEvent);
+      UiItemsManager.onUiProviderRegisteredEvent.removeListener(handleUiProviderRegisteredEvent); // eslint-disable-line deprecation/deprecation
     };
   }, []);
 

@@ -24,6 +24,7 @@ import { ElementProperties } from '@itwin/presentation-common';
 import { Field } from '@itwin/presentation-common';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
+import { HierarchyLevelDescriptorRequestOptions } from '@itwin/presentation-common';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateInfo } from '@itwin/presentation-common';
 import { Id64Arg } from '@itwin/core-bentley';
@@ -237,6 +238,14 @@ export interface NodeIdentifier {
 }
 
 // @internal (undocumented)
+export interface NodeState {
+    // (undocumented)
+    instanceFilter?: string;
+    // (undocumented)
+    isExpanded?: boolean;
+}
+
+// @internal (undocumented)
 export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
     // (undocumented)
     loadProperties(_iTwinId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
@@ -313,17 +322,14 @@ export class PresentationManager implements IDisposable {
         size: number;
     } | undefined>;
     getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
-    // @beta
     getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<{
         total: number;
         items: () => AsyncGenerator<InstanceKey>;
     }>;
     getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number>;
-    // @beta
     getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]>;
     getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition>;
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute): Promise<LabelDefinition[]>;
-    // @beta
     getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
@@ -333,6 +339,8 @@ export class PresentationManager implements IDisposable {
         nodes: Node_2[];
     }>;
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number>;
+    // @beta
+    getNodesDescriptor(requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     get ipcRequestsHandler(): IpcRequestsHandler | undefined;
@@ -378,9 +386,9 @@ export interface RulesetManager {
     add(ruleset: Ruleset): Promise<RegisteredRuleset>;
     clear(): Promise<void>;
     get(id: string): Promise<RegisteredRuleset | undefined>;
-    // @alpha
+    // @beta
     modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
-    // @alpha (undocumented)
+    // @beta
     onRulesetModified: BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>;
     remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
 }
@@ -542,13 +550,16 @@ export interface SelectionScopesManagerProps {
     rpcRequestsHandler: RpcRequestsHandler;
 }
 
-// @internal (undocumented)
+// @internal
 export class StateTracker {
     constructor(ipcRequestsHandler: IpcRequestsHandler);
     // (undocumented)
-    onExpandedNodesChanged(imodel: IModelConnection, rulesetId: string, sourceId: string, expandedNodes: NodeIdentifier[]): Promise<void>;
-    // (undocumented)
     onHierarchyClosed(imodel: IModelConnection, rulesetId: string, sourceId: string): Promise<void>;
+    // (undocumented)
+    onHierarchyStateChanged(imodel: IModelConnection, rulesetId: string, sourceId: string, newHierarchyState: Array<{
+        node: NodeIdentifier | undefined;
+        state: NodeState;
+    }>): Promise<void>;
 }
 
 // @internal (undocumented)

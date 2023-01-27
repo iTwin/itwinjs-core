@@ -98,8 +98,8 @@ export enum IModelStatus {
   NoActiveCommand = IMODEL_ERROR_BASE + 71,
 }
 
-/** Error status from various briefcase operations
- * @beta Should these be internal?
+/** Error statuses produced by various briefcase operations, typically encountered as the `errorNumber` of an [IModelError]($common).
+ * @public
  */
 export enum BriefcaseStatus {
   BRIEFCASE_STATUS_BASE = 0x20000,
@@ -115,7 +115,7 @@ export enum BriefcaseStatus {
 }
 
 /** RpcInterface status codes
- * @beta Should these be internal?
+ * @beta
  */
 export enum RpcInterfaceStatus {
   Success = 0,
@@ -124,8 +124,8 @@ export enum RpcInterfaceStatus {
   IncompatibleVersion = RPC_INTERFACE_ERROR_BASE,
 }
 
-/** Error status from various Changeset operations
- * @beta Should these be internal?
+/** Error statuses produced by various Changeset operations, typically encountered as the `errorNumber` of an [IModelError]($common).
+ * @public
  */
 export enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSetStatus in DgnPlatform
   Success = 0,
@@ -180,10 +180,12 @@ export enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSe
   CannotMergeIntoMaster = CHANGESET_ERROR_BASE + 24,
   /** Cannot merge changes into a DgnDb that has reversed change sets. */
   CannotMergeIntoReversed = CHANGESET_ERROR_BASE + 25,
+  /** ChangeSet(s) download was cancelled. */
+  DownloadCancelled = CHANGESET_ERROR_BASE + 26,
 }
 
 /** Return codes for methods which perform repository management operations
- * @beta Should these be internal?
+ * @internal
  */
 export enum RepositoryStatus {
   Success = 0,
@@ -220,7 +222,7 @@ export enum RepositoryStatus {
 }
 
 /** Status from returned HTTP status code
- * @beta Should these be internal?
+ * @beta
  */
 export enum HttpStatus {
   /** 2xx Success */
@@ -235,8 +237,8 @@ export enum HttpStatus {
   ServerError = 0x17004,
 }
 
-/** iModelHub Services Errors
- * @beta Right package?
+/** Statuses produced by APIs that interact with iModelHub, typically encountered as the `errorNumber` of an [IModelError]($common).
+ * @public
  */
 export enum IModelHubStatus {
   Success = 0,
@@ -334,7 +336,7 @@ export enum RealityDataStatus {
 }
 
 /** When you want to associate an explanatory message with an error status value.
- * @beta Internal?
+ * @internal
  */
 export interface StatusCodeWithMessage<ErrorCodeType> {
   status: ErrorCodeType;
@@ -583,6 +585,7 @@ export class BentleyError extends Error {
       case ChangeSetStatus.CannotMergeIntoReadonly: return "Cannot merge changes into a Readonly DgnDb";
       case ChangeSetStatus.CannotMergeIntoMaster: return "Cannot merge changes into a Master DgnDb";
       case ChangeSetStatus.CannotMergeIntoReversed: return "Cannot merge changes into a DgnDb that has reversed change sets";
+      case ChangeSetStatus.DownloadCancelled: return "ChangeSet(s) download was cancelled.";
       case RepositoryStatus.ServerUnavailable: return "ServerUnavailable";
       case RepositoryStatus.LockAlreadyHeld: return "LockAlreadyHeld";
       case RepositoryStatus.SyncError: return "SyncError";

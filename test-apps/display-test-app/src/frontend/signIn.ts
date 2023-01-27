@@ -6,15 +6,7 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib
 import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
-import { DtaConfiguration } from "../common/DtaConfiguration";
-import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
-import { DtaRpcInterface } from "../common/DtaRpcInterface";
-
-let configuration: DtaConfiguration = {};
-
-export function setSignInConfiguration(value: DtaConfiguration) {
-  configuration = value;
-}
+import { getConfigurationString } from "./DisplayTestApp";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
@@ -26,25 +18,22 @@ export async function signIn(): Promise<boolean> {
     }
 
     return new Promise<boolean>((resolve, reject) => {
-      existingAuthClient.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
+      existingAuthClient.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(!!token));
       existingAuthClient.signIn().catch((err) => reject(err));
     });
   }
 
-  let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient | TestFrontendAuthorizationClient | undefined;
-  if (configuration.headless) {
-    const token = await DtaRpcInterface.getClient().getAccessToken();
-    authClient = new TestFrontendAuthorizationClient(token);
-  } else if (ProcessDetector.isElectronAppFrontend) {
+  let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient | undefined;
+  if (ProcessDetector.isElectronAppFrontend) {
     authClient = new ElectronRendererAuthorization();
   } else if (ProcessDetector.isMobileAppFrontend) {
     // The default auth client works on mobile
     const accessToken = await IModelApp.authorizationClient?.getAccessToken();
-    return accessToken !== undefined && accessToken.length > 0;
+    return !!accessToken;
   } else {
-    const clientId = configuration.oidcClientId ?? "imodeljs-spa-test";
-    const redirectUri = configuration.oidcRedirectUri ?? "http://localhost:3000/signin-callback";
-    const scope = configuration.oidcScope ?? "openid email profile organization itwinjs";
+    const clientId = getConfigurationString("oidcClientId") ?? "imodeljs-spa-test";
+    const redirectUri = getConfigurationString("oidcRedirectUri") ?? "http://localhost:3000/signin-callback";
+    const scope = getConfigurationString("oidcScope") ?? "projects:read realitydata:read imodels:read imodels:modify imodelaccess:read";
     const responseType = "code";
     authClient = new BrowserAuthorizationClient({
       clientId,
@@ -65,7 +54,7 @@ export async function signIn(): Promise<boolean> {
       return true;
 
     return new Promise<boolean>((resolve, reject) => {
-      authClient!.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
+      authClient!.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(!!token));
       authClient!.signIn().catch((err) => reject(err));
     });
   }

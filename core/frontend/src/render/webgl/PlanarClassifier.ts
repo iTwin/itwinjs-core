@@ -49,7 +49,9 @@ function createTexture(handle: TextureHandle): Texture {
   });
 }
 
-function createTextureHandle(width: number, height: number, heightMult = 1.0) { return TextureHandle.createForAttachment(width, height * heightMult, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte); }
+function createTextureHandle(width: number, height: number, heightMult = 1.0) {
+  return TextureHandle.createForAttachment(width, height * heightMult, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+}
 
 class ClassifierTextures implements WebGLDisposable {
   private constructor(public readonly color: Texture,
@@ -494,7 +496,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
       this._graphics = graphics;
-      const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, new FrustumPlanes(this._frustum), projection.worldToViewMap!);
+      const frustumPlanes = this._frustum ? FrustumPlanes.fromFrustum(this._frustum) : FrustumPlanes.createEmpty();
+      const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, frustumPlanes, projection.worldToViewMap!);
       if (undefined !== drawArgs)
         treeRef.draw(drawArgs);
 

@@ -60,7 +60,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _assigningScript = false;
 
   /** Event raised just before the [[scheduleScriptReference]] property is changed.
-   * @deprecated use [[onScheduleScriptChanged]].
+   * @deprecated in 3.x. use [[onScheduleScriptChanged]].
    */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
   /** Event raised just before the [[scheduleScript]] property is changed. */
@@ -318,7 +318,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @deprecated Use [[scheduleScript]].
+   * @deprecated in 3.x. Use [[scheduleScript]].
    */
   public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
     return this._scriptReference;
@@ -577,7 +577,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const modelRange = await model.queryModelRange();
       const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
 
-      return MapCartoRectangle.create(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
+      return MapCartoRectangle.fromRadians(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
     }
     if (! (mapLayerSettings instanceof ImageMapLayerSettings)) {
       assert(false);

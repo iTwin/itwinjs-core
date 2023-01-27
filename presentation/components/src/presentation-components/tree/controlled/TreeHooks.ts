@@ -10,7 +10,8 @@ import * as React from "react";
 import { Subscription } from "rxjs/internal/Subscription";
 import {
   computeVisibleNodes, DelayLoadedTreeNodeItem, isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode,
-  PagedTreeNodeLoader, RenderedItemsRange, TreeModel, TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, VisibleTreeNodes,
+  PagedTreeNodeLoader, RenderedItemsRange, TreeModel, TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader,
+  VisibleTreeNodes,
 } from "@itwin/components-react";
 import { HierarchyUpdateRecord, PageOptions, UPDATE_FULL } from "@itwin/presentation-common";
 import { IModelHierarchyChangeEventArgs, Presentation } from "@itwin/presentation-frontend";
@@ -19,7 +20,7 @@ import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from 
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 import { createTreeNodeId, createTreeNodeItem, CreateTreeNodeItemProps } from "../Utils";
 import { reloadTree } from "./TreeReloader";
-import { useExpandedNodesTracking } from "./UseExpandedNodesTracking";
+import { useHierarchyStateTracking } from "./UseHierarchyStateTracking";
 
 /**
  * Properties for [[usePresentationTreeNodeLoader]] hook.
@@ -37,14 +38,14 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
   pagingSize: number;
 
   /**
-   * Auto-update the hierarchy when ruleset, ruleset variables or data in the iModel changes.
+   * Auto-update the hierarchy when ruleset, ruleset variables or data in the iModel changes. Cannot be used together
+   * with `seedTreeModel`.
    * @alpha
    */
   enableHierarchyAutoUpdate?: boolean;
 
   /**
    * Initialize tree data with the provided tree model.
-   * @alpha
    */
   seedTreeModel?: TreeModel;
 }
@@ -183,7 +184,7 @@ function useModelSourceUpdateOnIModelHierarchyUpdate(params: {
     treeNodeItemCreationProps,
   } = params;
 
-  useExpandedNodesTracking({ modelSource, dataProvider, enableNodesTracking: enable });
+  useHierarchyStateTracking({ modelSource, dataProvider, enableTracking: enable });
   const renderedItems = React.useRef<RenderedItemsRange | undefined>(undefined);
   const onItemsRendered = React.useCallback((items: RenderedItemsRange) => { renderedItems.current = items; }, []);
 
@@ -361,6 +362,10 @@ export function applyHierarchyChanges(
       if (!parentNode) {
         continue;
       }
+
+      // FIXME: we may receive an update record for the same parent node with different instance
+      // filters - here we should check if the instance filter in the update record matches instance filter
+      // of the parent node from model.
 
       model.clearChildren(parentNodeId);
       model.setNumChildren(parentNodeId, record.nodesCount);

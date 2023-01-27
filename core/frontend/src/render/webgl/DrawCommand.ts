@@ -28,7 +28,11 @@ export class ShaderProgramParams {
   private _target?: Target;
   private _renderPass: RenderPass = RenderPass.None;
 
-  public get target(): Target { assert(undefined !== this._target); return this._target; }
+  public get target(): Target {
+    assert(undefined !== this._target);
+    return this._target;
+  }
+
   public get renderPass() { return this._renderPass; }
 
   public get projectionMatrix() { return this.target.uniforms.getProjectionMatrix32(this.isViewCoords); }
@@ -49,13 +53,22 @@ export class DrawParams {
   private _programParams?: ShaderProgramParams;
   private _geometry?: CachedGeometry;
 
-  public get geometry(): CachedGeometry { assert(undefined !== this._geometry); return this._geometry; }
-  public get programParams(): ShaderProgramParams { assert(undefined !== this._programParams); return this._programParams; }
+  public get geometry(): CachedGeometry {
+    assert(undefined !== this._geometry);
+    return this._geometry;
+  }
+
+  public get programParams(): ShaderProgramParams {
+    assert(undefined !== this._programParams);
+    return this._programParams;
+  }
 
   public get target() { return this.programParams.target; }
   public get renderPass() { return this.programParams.renderPass; }
   public get projectionMatrix() { return this.programParams.projectionMatrix; }
-  public get isViewCoords() { return this.programParams.isViewCoords; }
+  public get isViewCoords() {
+    return this.programParams.isViewCoords || this.target.currentBranch.forceViewCoords;
+  }
   public get isOverlayPass() { return this.programParams.isOverlayPass; }
   public get context() { return this.programParams.context; }
 
@@ -252,7 +265,9 @@ export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cm
       let j = i - 1;
       while (j >= 0 && "pushBatch" !== cmds[j].opcode) // Find batch for this primitive
         j--;
-      if (j < 0) continue;
+      if (j < 0)
+        continue;
+
       const pushBatch = cmds[j] as PushBatchCommand;
       const elemId = pushBatch.batch.featureTable.findElementId(surface.mesh.uniformFeatureId);
       if (undefined !== elemId && elemId === flashedId) {

@@ -23,6 +23,8 @@ import { isStatusBarItem } from "./StatusBarItem";
 import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems";
 import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems";
 
+/* eslint-disable deprecation/deprecation */
+
 /** Private  function to generate a value that will allow the proper order to be maintained when items are placed in overflow panel */
 function getCombinedSectionItemPriority(item: CommonStatusBarItem) {
   let sectionValue = 0;
@@ -132,7 +134,7 @@ function useStatusBarItemSyncEffect(itemsManager: StatusBarItemsManager, syncIds
 /** function to produce a StatusBarItem component from an AbstractStatusBarLabelItem */
 function generateActionStatusLabelItem(item: AbstractStatusBarLabelItem, isInFooterMode: boolean): React.ReactNode {
   const iconPaddingClass = item.labelSide === StatusBarLabelSide.Left ? "nz-icon-padding-right" : "nz-icon-padding-left";
-  return (<FooterIndicator
+  return (<FooterIndicator // eslint-disable-line deprecation/deprecation
     isInFooterMode={isInFooterMode}
   >
     {item.icon && <Icon iconSpec={item.icon} />}
@@ -143,7 +145,7 @@ function generateActionStatusLabelItem(item: AbstractStatusBarLabelItem, isInFoo
 
 /** function to produce a StatusBarItem component from an AbstractStatusBarActionItem */
 function generateActionStatusBarItem(item: AbstractStatusBarActionItem, isInFooterMode: boolean): React.ReactNode {
-  return <Indicator toolTip={ConditionalStringValue.getValue(item.tooltip)} opened={false} onClick={item.execute} iconSpec={item.icon}
+  return <Indicator toolTip={ConditionalStringValue.getValue(item.tooltip)} opened={false} onClick={item.execute} iconSpec={item.icon} // eslint-disable-line deprecation/deprecation
     isInFooterMode={isInFooterMode} />;
 }
 

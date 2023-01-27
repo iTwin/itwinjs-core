@@ -6,10 +6,12 @@ import * as chai from "chai";
 import chaiSubset from "chai-subset";
 import * as cpx from "cpx2";
 import * as fs from "fs";
+import Backend from "i18next-http-backend";
 import * as path from "path";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import { Logger, LogLevel } from "@itwin/core-bentley";
+import { EmptyLocalization, Localization } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { TestBrowserAuthorizationClient, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
@@ -18,6 +20,9 @@ import {
 } from "@itwin/presentation-backend";
 import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
+import { getOutputRoot } from "./Utils";
+
+const DEFAULT_BACKEND_TIMEOUT: number = 0;
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -73,27 +78,33 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 }
 
-const initializeCommon = async (props: { backendTimeout?: number, useClientServices?: boolean }) => {
+const initializeCommon = async (props: { backendTimeout?: number, useClientServices?: boolean, localization?: Localization }) => {
   // init logging
   Logger.initializeToConsole();
+  Logger.turnOffCategories();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("i18n", LogLevel.Error);
+  Logger.setLevel("SQLite", LogLevel.Error);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
-  const libDir = path.resolve("lib");
-  const hierarchiesCacheDir = path.join(libDir, "cache");
-  if (!fs.existsSync(hierarchiesCacheDir))
-    fs.mkdirSync(hierarchiesCacheDir);
+  // prepare an empty, process-unique output directory
+  const outputRoot = getOutputRoot();
+  fs.existsSync(outputRoot) && fs.rmSync(outputRoot, { recursive: true, force: true });
+  fs.mkdirSync(outputRoot, { recursive: true });
+
+  const tempCachesDir = path.join(outputRoot, "caches");
+  if (!fs.existsSync(tempCachesDir))
+    fs.mkdirSync(tempCachesDir);
 
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,
-    rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
+    rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],
     defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
     caching: {
       hierarchies: {
         mode: HierarchyCacheMode.Disk,
-        directory: hierarchiesCacheDir,
+        directory: tempCachesDir,
       },
     },
   };
@@ -107,12 +118,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     authorizationClient: props.useClientServices
       ? TestUtility.getAuthorizationClient(TestUsers.regular)
       : undefined,
-    localization: new ITwinLocalization({
-      urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
-      initOptions: {
-        preload: ["test"],
-      },
-    }),
+    localization: props.localization ?? new EmptyLocalization(),
   };
 
   if (props.useClientServices)
@@ -120,7 +126,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
 
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,
-    backendHostProps: { cacheDir: path.join(__dirname, ".cache") },
+    backendHostProps: { cacheDir: tempCachesDir },
     frontendProps: frontendInitProps,
     frontendApp: IntegrationTestsApp,
     frontendAppOptions,
@@ -133,8 +139,8 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   });
 };
 
-export const initialize = async (backendTimeout: number = 0) => {
-  await initializeCommon({ backendTimeout });
+export const initialize = async (options?: { backendTimeout?: number, localization?: Localization }) => {
+  await initializeCommon({ backendTimeout: DEFAULT_BACKEND_TIMEOUT, ...options });
 };
 
 export const initializeWithClientServices = async () => {
@@ -151,3 +157,33 @@ export const resetBackend = () => {
   PresentationBackend.terminate();
   PresentationBackend.initialize(props);
 };
+
+export const testLocalization = new ITwinLocalization({
+  urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
+  initOptions: {
+    preload: ["test"],
+  },
+  backendHttpOptions: {
+    request: (options, url, payload, callback) => {
+      /**
+       * A few reasons why we need to modify this request fn:
+       * - The above urlTemplate uses the file:// protocol
+       * - Node v18's fetch implementation does not support file://
+       * - i18n-http-backend uses fetch if it defined globally
+       */
+      const fileProtocol = "file://";
+      const request = new Backend().options.request?.bind(this as void);
+
+      if (url.startsWith(fileProtocol)) {
+        try {
+          const data = fs.readFileSync(url.replace(fileProtocol, ""), "utf8");
+          callback(null, { status: 200, data });
+        } catch (error) {
+          callback(error, { status: 500, data: "" });
+        }
+      } else {
+        request!(options, url, payload, callback);
+      }
+    },
+  },
+});

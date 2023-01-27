@@ -74,16 +74,22 @@ class CountdownTransformer extends IModelTransformer {
     const _this = this; // eslint-disable-line @typescript-eslint/no-this-alias
     const oldExportElem = this.exporter.exportElement; // eslint-disable-line @typescript-eslint/unbound-method
     this.exporter.exportElement = async function (...args) {
-      if (_this.elementExportsUntilCall === 0) await _this.callback?.();
+      if (_this.elementExportsUntilCall === 0)
+        await _this.callback?.();
+
       if (_this.elementExportsUntilCall !== undefined)
         _this.elementExportsUntilCall--;
+
       return oldExportElem.call(this, ...args);
     };
     const oldExportRel = this.exporter.exportRelationship; // eslint-disable-line @typescript-eslint/unbound-method
     this.exporter.exportRelationship = async function (...args) {
-      if (_this.relationshipExportsUntilCall === 0) await _this.callback?.();
+      if (_this.relationshipExportsUntilCall === 0)
+        await _this.callback?.();
+
       if (_this.relationshipExportsUntilCall !== undefined)
         _this.relationshipExportsUntilCall--;
+
       return oldExportRel.call(this, ...args);
     };
   }
@@ -93,7 +99,9 @@ class CountdownTransformer extends IModelTransformer {
 class CountdownToCrashTransformer extends CountdownTransformer {
   public constructor(...args: ConstructorParameters<typeof CountdownTransformer>) {
     super(...args);
-    this.callback = () => { throw Error("crash"); };
+    this.callback = () => {
+      throw Error("crash");
+    };
   }
 }
 
@@ -127,8 +135,11 @@ function setupCrashingNativeAndTransformer({
           }
           const isConstructor = (o: Function): o is new (...a: any[]) => any =>
             "prototype" in o;
-          if (isConstructor(superValue)) return new superValue(...args);
-          else return superValue.call(this, ...args);
+          if (isConstructor(superValue))
+            return new superValue(...args);
+
+          else
+            return superValue.call(this, ...args);
         }
       );
     }
@@ -171,7 +182,9 @@ async function transformWithCrashAndRecover<
   transformer,
   disableCrashing,
   transformerProcessing = async (t, time = 0) => {
-    if (time === 0) await t.processSchemas();
+    if (time === 0)
+      await t.processSchemas();
+
     await t.processAll();
   },
 }: {
@@ -210,7 +223,10 @@ async function transformNoCrash<
 >({
   targetDb,
   transformer,
-  transformerProcessing = async (t) => { await t.processSchemas(); await t.processAll(); },
+  transformerProcessing = async (t) => {
+    await t.processSchemas();
+    await t.processAll();
+  },
 }: {
   sourceDb: IModelDb;
   targetDb: IModelDb;
@@ -232,12 +248,12 @@ describe("test resuming transformations", () => {
     iTwinId = HubMock.iTwinId;
     accessToken = await HubWrappers.getAccessToken(BackendTestUtils.TestUserType.Regular);
     const seedPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "seed.bim");
-    SnapshotDb.createEmpty(seedPath, { rootSubject: { name: "resumption-tests-seed" } });
+    SnapshotDb.createEmpty(seedPath, { rootSubject: { name: "resumption-tests-seed" } }).close();
     seedDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "ResumeTestsSeed", description: "seed for resumption tests", version0: seedPath, noLocks: true });
     seedDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: seedDbId });
     await BackendTestUtils.ExtensiveTestScenario.prepareDb(seedDb);
     BackendTestUtils.ExtensiveTestScenario.populateDb(seedDb);
-    seedDb.saveChanges();
+    seedDb.performCheckpoint();
     await seedDb.pushChanges({ accessToken, description: "populated seed db" });
   });
 
@@ -303,16 +319,24 @@ describe("test resuming transformations", () => {
       throw Error("unreachable");
     })();
 
-    const regularToResumedIdMap = new Map<Id64String, Id64String>();
-    for (const [className, findMethod] of [["bis.Element", "findTargetElementId"], ["bis.CodeSpec", "findTargetCodeSpecId"]] as const) {
+    const [elemMap, codeSpecMap, aspectMap] = new Array(3).fill(undefined).map(() => new Map<Id64String, Id64String>());
+    for (const [className, findMethod, map] of [
+      ["bis.Element", "findTargetElementId", elemMap],
+      ["bis.CodeSpec", "findTargetCodeSpecId", codeSpecMap],
+      ["bis.ElementAspect", "findTargetAspectId", aspectMap],
+    ] as const) {
       for await (const [sourceElemId] of sourceDb.query(`SELECT ECInstanceId from ${className}`)) {
         const idInRegular = regularTransformer.context[findMethod](sourceElemId);
         const idInResumed = resumedTransformer.context[findMethod](sourceElemId);
-        regularToResumedIdMap.set(idInRegular, idInResumed);
+        map.set(idInRegular, idInResumed);
       }
     }
 
-    await assertIdentityTransformation(regularTarget, resumedTarget, (id) => regularToResumedIdMap.get(id) ?? Id64.invalid);
+    await assertIdentityTransformation(regularTarget, resumedTarget, {
+      findTargetElementId: (id) => elemMap.get(id) ?? Id64.invalid,
+      findTargetCodeSpecId: (id) => codeSpecMap.get(id) ?? Id64.invalid,
+      findTargetAspectId: (id) => aspectMap.get(id) ?? Id64.invalid,
+    });
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, resumedTarget);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, regularTarget);
   });
@@ -632,7 +656,7 @@ describe("test resuming transformations", () => {
     const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
     await BackendTestUtils.ExtensiveTestScenario.prepareDb(sourceDb);
     BackendTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
-    sourceDb.saveChanges();
+    sourceDb.performCheckpoint();
     await sourceDb.pushChanges({ accessToken, description: "populated source db" });
 
     const targetDbRev0Path = IModelTransformerTestUtils.prepareOutputFile("IModelTransformerResumption", "processChanges-targetDbRev0.bim");
@@ -640,7 +664,7 @@ describe("test resuming transformations", () => {
     const provenanceTransformer = new IModelTransformer(sourceDb, targetDbRev0, { wasSourceIModelCopiedToTarget: true });
     await provenanceTransformer.processAll();
     provenanceTransformer.dispose();
-    targetDbRev0.saveChanges();
+    targetDbRev0.performCheckpoint();
 
     BackendTestUtils.ExtensiveTestScenario.updateDb(sourceDb);
     sourceDb.saveChanges();
@@ -741,7 +765,12 @@ describe("test resuming transformations", () => {
   // TRANSFORMER_RESUMPTION_TEST_MAX_CRASHING_TRANSFORMATIONS (defaults to 200)
   it.skip("crashing transforms stats gauntlet", async () => {
     let crashableCallsMade = 0;
-    const { enableCrashes } = setupCrashingNativeAndTransformer({ onCrashableCallMade() { ++crashableCallsMade; } });
+    const { enableCrashes } = setupCrashingNativeAndTransformer({
+      onCrashableCallMade() {
+        ++crashableCallsMade;
+      },
+    });
+
     // TODO: don't run a new control test to compare with every crash test,
     // right now trying to run assertIdentityTransform against the control transform target dbs in the control loop yields
     // BE_SQLITE_ERROR: Failed to prepare 'select * from (SELECT ECInstanceId FROM bis.Element) limit :sys_ecdb_count offset :sys_ecdb_offset'. The data source ECDb (parameter 'dataSourceECDb') must be a connection to the same ECDb file as the ECSQL parsing ECDb connection (parameter 'ecdb').
@@ -777,8 +806,10 @@ describe("test resuming transformations", () => {
             crashableCallsMade = 0;
             console.log(`crashed after ${timer.elapsed.seconds} seconds`); // eslint-disable-line no-console
           }
-          if (i === MAX_ITERS) assert.fail("crashed too many times");
+          if (i === MAX_ITERS)
+            assert.fail("crashed too many times");
         }
+
         console.log(`completed after ${crashCount} crashes`); // eslint-disable-line no-console
         const result = {
           resultDb: targetDb,
@@ -836,7 +867,9 @@ describe("test resuming transformations", () => {
     for (let i = 0; i < MAX_CRASHING_TRANSFORMS && totalCrashingTransformations < targetTotalCrashingTransformations; ++i) {
       // eslint-disable-next-line @typescript-eslint/no-shadow
       const result = await runAndCompareWithControl(true);
-      if (result.crashCount === 0) continue;
+      if (result.crashCount === 0)
+        continue;
+
       totalCrashingTransformations++;
       const proportionOfNonCrashingTransformTime = result.finalTransformationTime / avgNonCrashingTransformationsTime;
       const proportionOfNonCrashingTransformCalls = result.finalTransformationCallsMade / avgCrashableCallsMade;
@@ -849,6 +882,7 @@ describe("test resuming transformations", () => {
       /* eslint-enable no-console */
       totalCrashingTransformationsTime += result.finalTransformationTime;
     }
+
     const avgCrashingTransformationsTime = totalCrashingTransformationsTime / totalCrashingTransformations;
     /* eslint-disable no-console */
     console.log(`avg crashable calls made: ${avgCrashableCallsMade}`);

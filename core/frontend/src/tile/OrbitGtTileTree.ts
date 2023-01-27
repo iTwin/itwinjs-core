@@ -23,7 +23,6 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RealityDataSource } from "../RealityDataSource";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderMemory } from "../render/RenderMemory";
 import { RenderSystem } from "../render/RenderSystem";
@@ -220,6 +219,7 @@ export class OrbitGtTileTree extends TileTree {
     super(treeParams);
 
     const worldContentRange = this.iModelTransform.multiplyRange(cloudRange);
+    /* eslint-disable-next-line deprecation/deprecation */
     this.iModel.expandDisplayedExtents(worldContentRange);
     this._tileParams = { contentId: "0", range: cloudRange, maximumSize: 256 };
     this.rootTile = new OrbitGtRootTile(this._tileParams, this);
@@ -281,7 +281,7 @@ export class OrbitGtTileTree extends TileTree {
     const tileCount = frameData.tilesToRender.size();
 
     // Inform TileAdmin about tiles we are handling ourselves...
-    IModelApp.tileAdmin.addExternalTilesForUser(args.context.viewport, { requested: frameData.tilesToLoad.size(), selected: tileCount, ready: tileCount });
+    IModelApp.tileAdmin.addExternalTilesForUser(args.context.viewport, { requested: frameData.tilesToLoad.size() + (frameData.hasMissingData() ? 1 : 0), selected: tileCount, ready: tileCount });
 
     if (debugBuilder)
       debugBuilder.setSymbology(ColorDef.red, ColorDef.red, 1);
@@ -309,7 +309,15 @@ export class OrbitGtTileTree extends TileTree {
 
         features.add(new Feature(this.modelId), 1);
         const tilePoints = (tile.points8 != null) ? tile.points8.toNativeBuffer() : tile.points16.toNativeBuffer();
-        let renderGraphic = system.createPointCloud(new PointCloudArgs(tilePoints, qParams, tile.colors.toNativeBuffer(), features, voxelSize, true), this.iModel);
+        let renderGraphic = system.createPointCloud({
+          positions: tilePoints,
+          qparams: qParams,
+          colors: tile.colors.toNativeBuffer(),
+          features: features.toFeatureIndex(),
+          voxelSize,
+          colorFormat: "bgr",
+        }, this.iModel);
+
         renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
         args.graphics.add(renderGraphic);
         this._tileGraphics.set(key, new OrbitGtTileGraphic(renderGraphic, args.context.viewport, args.now));
@@ -400,8 +408,12 @@ export namespace OrbitGtTileTree {
         blobStringUrl = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
     }
 
-    if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderXhr();
-    if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
+    if (Downloader.INSTANCE == null)
+      Downloader.INSTANCE = new DownloaderXhr();
+
+    if (CRSManager.ENGINE == null)
+      CRSManager.ENGINE = await OnlineEngine.create();
+
     // wrap a caching layer (16 MB) around the blob file
     const urlFS: UrlFS = new UrlFS();
     const blobFileSize: ALong = await urlFS.getFileLength(blobStringUrl);

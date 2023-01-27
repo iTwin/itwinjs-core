@@ -9,20 +9,23 @@ import {
   ViewState,
 } from "@itwin/core-frontend";
 import {
-  BackstageItem,
-  BackstageItemUtilities,
-  ContentLayoutProps, StageUsage, UiItemsManager, UiItemsProvider,
+  ContentLayoutProps,
 } from "@itwin/appui-abstract";
 import {
   BackstageAppButton,
+  BackstageItem,
+  BackstageItemUtilities,
   ConfigurableUiManager, ContentGroup, ContentGroupProps,
   ContentGroupProvider, ContentProps, FrontstageProps, IModelViewportControl,
   SettingsModalFrontstage, StageContentLayout, StageContentLayoutProps,
+  StageUsage,
   StandardContentToolsUiItemsProvider, StandardFrontstageProps,
   StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
   StandardStatusbarUiItemsProvider,
   UiFramework,
+  UiItemsManager,
+  UiItemsProvider,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../index";
 import { AppUi } from "../AppUi";
@@ -95,7 +98,7 @@ export class InitialIModelContentStageProvider extends ContentGroupProvider {
     return { ...contentGroupProps, contents: newContentsArray };
   }
 
-  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
+  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> { // eslint-disable-line deprecation/deprecation
     const viewIdsSelected = SampleAppIModelApp.getInitialViewIds();
     const iModelConnection = UiFramework.getIModelConnection();
 

@@ -24,7 +24,7 @@
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "electron": "^17.0.0"
+    "electron": "^22.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -32,7 +32,7 @@
     "@itwin/oidc-signin-tool": "^3.2.2",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.7",
+    "@types/node": "18.11.5",
     "chai": "^4.1.2",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",

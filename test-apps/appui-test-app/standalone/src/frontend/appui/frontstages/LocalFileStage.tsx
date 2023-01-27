@@ -15,12 +15,13 @@ import { FillCentered } from "@itwin/core-react";
 import {
   BackstageAppButton,
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupProps, FrontstageManager,
+  StageUsage,
   StandardFrontstageProps, StandardFrontstageProvider, UiFramework,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { LocalFileSupport } from "../LocalFileSupport";
 import { Button, Headline } from "@itwin/itwinui-react";
-import { BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, StageUsage, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
+import { BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 
 async function getDefaultViewId(iModelConnection: IModelConnection): Promise<Id64String | undefined> {
   const requestedViewId = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
@@ -183,7 +184,7 @@ function LocalFilePage(props: LocalFilePageProps) {
         { name: "iModels", extensions: ["ibim", "bim"] },
       ],
     };
-    const val = await ElectronApp.callDialog("showOpenDialog", opts);
+    const val = await ElectronApp.dialogIpc.showOpenDialog( opts);
     if (val.canceled)
       return;
 

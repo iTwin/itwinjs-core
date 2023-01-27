@@ -7,9 +7,10 @@ import { Point3d } from "@itwin/core-geometry";
 import { GraphicType, IModelApp, RenderGraphic } from "../../../core-frontend";
 import { PrimitiveBuilder } from "../../../render-primitives";
 import { Batch, Branch, GraphicsArray, MeshGraphic } from "../../../webgl";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("PrimitiveBuilder", () => {
-  before(async () => IModelApp.startup());
+  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   after(async () => IModelApp.shutdown());
 
   function makeShape(chordTolerance: number, pickableId?: string): RenderGraphic {

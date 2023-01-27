@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
-  addFloatingWidget, addPanelWidget, addTab, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext,
+  addFloatingWidget, addPanelWidget, addTab, createNineZoneState, FloatingWidgetProvider, NineZoneDispatch, PanelStateContext,
   PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
 } from "../../appui-layout-react";
 import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
@@ -25,7 +25,7 @@ describe("WidgetTitleBar", () => {
         state={state}
         dispatch={dispatch}
       >
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
@@ -60,7 +60,7 @@ describe("WidgetTitleBar", () => {
         state={state}
         dispatch={dispatch}
       >
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
@@ -77,10 +77,10 @@ describe("WidgetTitleBar", () => {
       fireEvent.mouseUp(handle);
       fakeTimers.tick(300);
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledOnceWithExactly(dispatch, {
       type: "FLOATING_WIDGET_CLEAR_USER_SIZED",
       id: "w1",
-    })).should.true;
+    });
   });
 
   it("should dispatch WIDGET_DRAG_END with tab target", () => {
@@ -97,7 +97,7 @@ describe("WidgetTitleBar", () => {
         <WidgetIdContext.Provider value="w2">
           <WidgetTabTarget tabIndex={0} first />
         </WidgetIdContext.Provider>
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
@@ -137,7 +137,7 @@ describe("WidgetTitleBar", () => {
         state={state}
         dispatch={dispatch}
       >
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
@@ -156,7 +156,7 @@ describe("WidgetTitleBar", () => {
       dispatch.reset();
       fireEvent.mouseUp(document);
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledOnceWithExactly(dispatch, {
       type: "WIDGET_DRAG_END",
       floatingWidgetId: "w1",
       target: {
@@ -164,7 +164,7 @@ describe("WidgetTitleBar", () => {
         side: "right",
         type: "panel",
       },
-    })).should.true;
+    });
   });
 
   it("should dispatch FLOATING_WIDGET_BRING_TO_FRONT", () => {
@@ -177,7 +177,7 @@ describe("WidgetTitleBar", () => {
         state={state}
         dispatch={dispatch}
       >
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
@@ -190,10 +190,10 @@ describe("WidgetTitleBar", () => {
         touches: [{}],
       });
     });
-    dispatch.calledOnceWithExactly(sinon.match({
+    sinon.assert.calledWithExactly(dispatch, {
       type: "FLOATING_WIDGET_BRING_TO_FRONT",
       id: "w1",
-    })).should.true;
+    });
   });
 });
 

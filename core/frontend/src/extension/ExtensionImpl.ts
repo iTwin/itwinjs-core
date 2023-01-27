@@ -11,7 +11,7 @@ import { IModelApp } from "../IModelApp";
 import { CommonToolbarItem, StageUsage, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 
 /** @alpha */
-export class ToolProvider implements UiItemsProvider {
+export class ToolProvider implements UiItemsProvider { // eslint-disable-line deprecation/deprecation
   public readonly id;
   private _toolId = "";
   private _toolIcon;
@@ -24,9 +24,12 @@ export class ToolProvider implements UiItemsProvider {
     this._toolLabel = tool.description;
   }
 
-  public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
-    const toolbarItem = ToolbarItemUtilities.createActionButton(this._toolId, 0, this._toolIcon, this._toolLabel, async () => { await IModelApp.tools.run(this._toolId); });
-    return stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Vertical ? [toolbarItem] : [];
+  public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] { // eslint-disable-line deprecation/deprecation
+    const toolbarItem = ToolbarItemUtilities.createActionButton(this._toolId, 0, this._toolIcon, this._toolLabel, async () => {
+      await IModelApp.tools.run(this._toolId);
+    });
+
+    return stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Vertical ? [toolbarItem] : []; // eslint-disable-line deprecation/deprecation
   }
 }
 
@@ -37,7 +40,7 @@ export class ExtensionImpl {
   public async registerTool(tool: ToolType, onRegistered?: () => any): Promise<void> {
     try {
       IModelApp.tools.register(tool);
-      UiItemsManager.register(new ToolProvider(tool));
+      UiItemsManager.register(new ToolProvider(tool)); // eslint-disable-line deprecation/deprecation
       onRegistered?.();
     } catch (e: any) {
       console.log(`Error registering tool: ${e}`); // eslint-disable-line

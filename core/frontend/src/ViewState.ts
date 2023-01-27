@@ -87,7 +87,7 @@ export interface ComputeDisplayTransformArgs {
 }
 
 /** Arguments to [[ViewState3d.lookAt]] for either a perspective or orthographic view
- * @beta
+ * @public
  */
 export interface LookAtArgs {
   /** The new location of the camera/eye. */
@@ -105,7 +105,7 @@ export interface LookAtArgs {
 }
 
 /** Arguments to [[ViewState3d.lookAt]] to set up a perspective view
- * @beta
+ * @public
  */
 export interface LookAtPerspectiveArgs extends LookAtArgs {
   /** The new location to which the camera should point. This becomes the center of the view on the focus plane. */
@@ -116,7 +116,7 @@ export interface LookAtPerspectiveArgs extends LookAtArgs {
 }
 
 /** Arguments to [[ViewState3d.lookAt]] to set up an orthographic view
- * @beta
+ * @public
  */
 export interface LookAtOrthoArgs extends LookAtArgs {
   /** The direction in which the view should look. */
@@ -127,7 +127,7 @@ export interface LookAtOrthoArgs extends LookAtArgs {
 }
 
 /** Arguments to [[ViewState3d.lookAt]] to set up an perspective view using a (field-of-view) lens angle.
- * @beta
+ * @public
  */
 export interface LookAtUsingLensAngle extends LookAtArgs {
   /** The new location to which the camera should point. This becomes the center of the view on the focus plane. */
@@ -544,10 +544,18 @@ export abstract class ViewState extends ElementState {
     //
   }
 
-  /** @internal */
+  /** Capture a copy of this view's viewed volume.
+   * @see [[applyPose]] to apply the pose to this or another view.
+   * @public
+   * @extensions
+   */
   public abstract savePose(): ViewPose;
 
-  /** @internal */
+  /** Apply a pose to this view to change the viewed volume.
+   * @see [[savePose]] to capture the view's pose.
+   * @public
+   * @extensions
+   */
   public abstract applyPose(props: ViewPose): this;
 
   /** @internal */
@@ -598,7 +606,9 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio = true): { map: Map4d | undefined, frustFraction: number } {
-    if (viewRot === undefined) viewRot = this.getRotation();
+    if (viewRot === undefined)
+      viewRot = this.getRotation();
+
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
     const zVector = viewRot.rowZ();
@@ -1025,14 +1035,32 @@ export abstract class ViewState extends ElementState {
       newDelta.z = minimumDepth;
     }
 
-    const margin = options?.marginPercent;
-
     if (this.is3d() && this.isCameraOn) {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
       // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
       // the front or back of the view. For this reason, don't attempt to add any "margin" to camera views.
-    } else if (margin) {
+    } else if (undefined !== options?.paddingPercent) {
+      let left, right, top, bottom;
+      const padding = options.paddingPercent;
+      if (typeof padding === "number"){
+        left = right = top = bottom = padding;
+      } else {
+        left = padding.left ?? 0;
+        right = padding.right ?? 0;
+        top = padding.top ?? 0;
+        bottom = padding.bottom ?? 0;
+      }
+
+      const width = newDelta.x;
+      const height = newDelta.y;
+
+      newOrigin.x -= left * width;
+      newDelta.x += (right + left) * width;
+      newOrigin.y -= bottom * height;
+      newDelta.y += (top + bottom) * height;
+    } else if (options?.marginPercent) {
       // compute how much space we'll need for both of X and Y margins in root coordinates
+      const margin = options.marginPercent;
       const wPercent = margin.left + margin.right;
       const hPercent = margin.top + margin.bottom;
 
@@ -1413,17 +1441,20 @@ export abstract class ViewState3d extends ViewState {
     return -1 !== index ? this._modelClips[index] : undefined;
   }
 
-  /** @internal */
-  public savePose(): ViewPose { return new ViewPose3d(this); }
+  /** Capture a copy of the viewed volume and camera parameters. */
+  public savePose(): ViewPose3d { return new ViewPose3d(this); }
 
-  /** @internal */
-  public applyPose(val: ViewPose3d): this {
-    this._cameraOn = val.cameraOn;
-    this.setOrigin(val.origin);
-    this.setExtents(val.extents);
-    this.rotation.setFrom(val.rotation);
-    this.camera.setFrom(val.camera);
-    this._updateMaxGlobalScopeFactor();
+  /** @internal override */
+  public applyPose(val: ViewPose): this {
+    if (val instanceof ViewPose3d) {
+      this._cameraOn = val.cameraOn;
+      this.setOrigin(val.origin);
+      this.setExtents(val.extents);
+      this.rotation.setFrom(val.rotation);
+      this.camera.setFrom(val.camera);
+      this._updateMaxGlobalScopeFactor();
+    }
+
     return this;
   }
 
@@ -1734,7 +1765,6 @@ export abstract class ViewState3d extends ViewState {
    * @returns A [[ViewStatus]] indicating whether the camera was successfully positioned.
    * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
    * adjusted when the [[Viewport]] is synchronized from this view.
-   * @beta
    */
   public lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus {
     if (args.lensAngle) {
@@ -2265,14 +2295,17 @@ export abstract class ViewState2d extends ViewState {
   /** @internal */
   public isSpatialView(): this is SpatialViewState { return false; }
 
-  /** @internal */
-  public savePose(): ViewPose { return new ViewPose2d(this); }
+  /** Capture a copy of the viewed area. */
+  public savePose(): ViewPose2d { return new ViewPose2d(this); }
 
-  /** @internal */
-  public applyPose(val: ViewPose2d) {
-    this.setOrigin(val.origin);
-    this.setExtents(val.delta);
-    this.angle.setFrom(val.angle);
+  /** @internal override */
+  public applyPose(val: ViewPose) {
+    if (val instanceof ViewPose2d) {
+      this.setOrigin(val.origin);
+      this.setExtents(val.delta);
+      this.angle.setFrom(val.angle);
+    }
+
     return this;
   }
 
@@ -2331,7 +2364,11 @@ export abstract class ViewState2d extends ViewState {
   public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
   public setExtents(delta: XAndY) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: XAndY) { this.origin.set(origin.x, origin.y); }
-  public setRotation(rot: Matrix3d) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
+  public setRotation(rot: Matrix3d) {
+    const xColumn = rot.getColumn(0);
+    this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x));
+  }
+
   public viewsModel(modelId: Id64String) { return this.baseModelId === modelId; }
   public forEachModel(func: (model: GeometricModelState) => void) {
     const model = this.iModel.models.getLoaded(this.baseModelId);

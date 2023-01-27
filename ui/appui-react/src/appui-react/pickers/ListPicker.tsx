@@ -60,7 +60,7 @@ interface ListPickerState {
   expanded: boolean;
 }
 
-let lastOpenedPicker: ListPickerBase | undefined;
+let lastOpenedPicker: ListPickerBase | undefined; // eslint-disable-line deprecation/deprecation
 
 /** Properties for the [[ListPickerItem]] component
  * @beta
@@ -226,6 +226,7 @@ export function getListPanel(props: ListPickerProps): React.ReactNode {
 /**
  * List picker base class.
  * Used to provide an expandable list of items to enable/disable items.
+ * @deprecated in 3.5. Used in UI1.0 only.
  * @beta
  */
 export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPickerState> {
@@ -522,7 +523,7 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
     return (
       <FrameworkVersionSwitch
         v1={
-          <ListPickerBase
+          <ListPickerBase // eslint-disable-line deprecation/deprecation
             {...this.props}
             title={this.props.title}
             setEnabled={this._setEnabled}

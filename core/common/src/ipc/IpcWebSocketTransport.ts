@@ -6,8 +6,11 @@
  * @module IpcSocket
  */
 
-import { Buffer } from "buffer";
 import { IpcWebSocketMessage } from "./IpcWebSocket";
+
+function isBuffer(val: any): boolean {
+  return val && typeof (val.constructor) !== "undefined" && typeof (val.constructor.isBuffer) === "function" && val.constructor.isBuffer(val);
+}
 
 let parts: any[] = [];
 
@@ -72,8 +75,13 @@ export abstract class IpcWebSocketTransport {
 
 interface Marker { ipc: "binary", type: number, index: number }
 const types = [Uint8Array, Int8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array, DataView];
-function identify(value: any) { return Buffer.isBuffer(value) ? 0 : types.indexOf(value.constructor); }
-function lookup(value: Marker) { return types[value.type]; }
+function identify(value: any) {
+  return isBuffer(value) ? 0 : types.indexOf(value.constructor);
+}
+
+function lookup(value: Marker) {
+  return types[value.type];
+}
 
 function replacer(this: any, _key: string, value: any) {
   const asBinary = replaceBinary(value);
@@ -93,7 +101,7 @@ function reviver(_key: string, value: any) {
 }
 
 function replaceBinary(value: any): Marker | undefined {
-  if (ArrayBuffer.isView(value) || Buffer.isBuffer(value)) {
+  if (ArrayBuffer.isView(value) || isBuffer(value)) {
     const index = parts.push(value) - 1;
     const type = identify(value);
     return { ipc: "binary", type, index };
@@ -111,7 +119,11 @@ function reviveBinary(value: Marker): ArrayBufferView {
 function makePromise<T>() {
   let resolve: (value: T | PromiseLike<T>) => void = () => { };
   let reject: (reason?: any) => void = () => { };
-  const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
   return { promise, resolve, reject };
 }
 

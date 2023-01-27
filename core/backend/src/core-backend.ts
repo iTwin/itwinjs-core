@@ -7,9 +7,10 @@ export * from "./Category";
 export * from "./ChangeSummaryManager";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
+export * from "./CloudSqlite";
 export * from "./CodeService";
 export * from "./CodeSpecs";
-export * from "./CloudSqlite";
+export * from "./EntityReferences";
 export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
@@ -33,7 +34,7 @@ export * from "./BackendLoggerCategory";
 export * from "./Material";
 export * from "./Model";
 export * from "./NavigationRelationship";
-export * from "./RpcBackend";
+export * from "./rpc/tracing";
 export * from "./Schema";
 export * from "./SqliteStatement";
 export * from "./SQLiteDb";
@@ -45,6 +46,7 @@ export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
 export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
+export * from "./IModelElementCloneContext";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
 export * from "./IpcHost";
@@ -160,6 +162,10 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description AliCloudStorageService
  * Classes for working with cloud storage using AliCloud.
+ */
+/**
+ * @docs-group-description TileStorage
+ * Class for working with cloud storage using iTwin/object-storage cloud providers
  */
 /**
  * @docs-group-description Authentication

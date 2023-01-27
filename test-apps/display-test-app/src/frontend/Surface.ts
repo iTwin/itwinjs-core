@@ -128,14 +128,6 @@ export class Surface {
     }));
 
     tb.addItem(createToolButton({
-      iconUnicode: "\ue9e0", // cloud-download
-      tooltip: "Open iModel from hub",
-      click: async () => {
-        await this.openHubIModel();
-      },
-    }));
-
-    tb.addItem(createToolButton({
       iconUnicode: "\ue9d8", // "property-data"
       tooltip: "Open Blank Connection",
       click: async () => {
@@ -164,7 +156,7 @@ export class Surface {
           name: "Decoration Geometry Example",
           extents: new Range3d(-1, -1, -1, 13, 2, 2),
         });
-        openDecorationGeometryExample(viewer);
+        void openDecorationGeometryExample(viewer);
       },
     }));
 
@@ -182,14 +174,6 @@ export class Surface {
     const viewer = await this.createViewer({ iModel });
     viewer.dock(Dock.Full);
     return viewer;
-  }
-
-  private async openHubIModel(): Promise<void> {
-    const props = await this.selectHubIModel();
-    if (undefined === props) {
-      return;
-    }
-    await this.openIModel(props);
   }
 
   private async openFileIModel(fileName?: string): Promise<void> {

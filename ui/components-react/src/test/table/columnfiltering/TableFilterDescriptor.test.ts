@@ -14,6 +14,7 @@ import { NumericFilterType, NumericRangeData } from "../../../components-react/t
 import { TableFilterDescriptor } from "../../../components-react/table/columnfiltering/TableFilterDescriptor";
 import { CellItem, ColumnDescription, RowItem } from "../../../components-react/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
+/* eslint-disable deprecation/deprecation */
 
 const columns: ColumnDescription[] = [
   {
@@ -551,12 +552,6 @@ describe("TableFilterDescriptor", () => {
       const filterDescriptor = new TableFilterDescriptor(testTable, columns[3].key, columnTypes[3], FilterOperator.IsLessThan, new Date(2019, 10, 10));
       const expression = filterDescriptor.getFilterExpression();
       expect(expression).to.eq("(col3 <2458797.5)");
-    });
-
-    it.skip("IsLessThan - number", () => {
-      const filterDescriptor = new TableFilterDescriptor(testTable, columns[3].key, columnTypes[3], FilterOperator.IsLessThan, 2458797.5);
-      const expression = filterDescriptor.getFilterExpression();
-      expect(expression).to.eq("(col3 <2440587.320115741)");
     });
   });
 

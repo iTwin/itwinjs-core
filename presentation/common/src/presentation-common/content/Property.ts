@@ -42,11 +42,13 @@ export interface Property {
 
 /** @public */
 export namespace Property {
-  /** Serialize [[Property]] to JSON */
+  /**
+   * Serialize [[Property]] to JSON
+   * @deprecated in 3.x. Use [[toCompressedJSON]]
+  */
+  // istanbul ignore next
   export function toJSON(prop: Property): PropertyJSON {
-    return {
-      property: PropertyInfo.toJSON(prop.property),
-    };
+    return { ...prop };
   }
 
   /** Serialize [[Property]] to compressed JSON */
@@ -56,11 +58,13 @@ export namespace Property {
     };
   }
 
-  /** Deserializes [[Property]] from JSON */
+  /**
+   * Deserializes [[Property]] from JSON
+   * @deprecated in 3.x. Use [[Property]]
+   */
+  // istanbul ignore next
   export function fromJSON(json: PropertyJSON): Property {
-    return {
-      property: PropertyInfo.fromJSON(json.property),
-    };
+    return { ...json };
   }
 }
 
@@ -68,6 +72,7 @@ export namespace Property {
  * JSON representation of [[Property]]
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export interface PropertyJSON<TClassInfoJSON = ClassInfoJSON> {
   property: PropertyInfoJSON<TClassInfoJSON>;
 }

@@ -9,15 +9,15 @@
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const ITWINJS_CORE_VERSION = require("../../package.json").version as string; // require resolves from the lib/{cjs,esm} dir
-const COPYRIGHT_NOTICE = 'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const COPYRIGHT_NOTICE = 'Copyright © 2017-2023 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { TelemetryManager } from "@itwin/core-telemetry";
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import {
   AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
 } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { TelemetryManager } from "@itwin/core-telemetry";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -39,7 +39,8 @@ import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
-import { MapLayerFormatRegistry, MapLayerOptions, TileAdmin } from "./tile/internal";
+import { RealityDataSourceProviderRegistry } from "./RealityDataSource";
+import { MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as idleTool from "./tools/IdleTool";
@@ -107,7 +108,7 @@ export interface IModelAppOptions {
   accuSnap?: AccuSnap;
   /** If present, supplies the [[Localization]] for this session. Defaults to [ITwinLocalization]($i18n). */
   localization?: Localization;
-  /** If present, supplies the authorization information for various frontend APIs */
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   authorizationClient?: AuthorizationClient;
   /** If present, supplies security options for the frontend. */
   security?: FrontendSecurityOptions;
@@ -201,6 +202,8 @@ export class IModelApp {
   private static _animationIntervalId?: number;
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
+  private static _terrainProviderRegistry: TerrainProviderRegistry;
+  private static _realityDataSourceProviders: RealityDataSourceProviderRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
   private static _publicPath: string;
@@ -216,7 +219,7 @@ export class IModelApp {
    */
   public static readonly onAfterStartup = new BeEvent<() => void>();
 
-  /** Provides authorization information for various frontend APIs */
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public static authorizationClient?: AuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
   public static readonly tools = new ToolRegistry();
@@ -226,6 +229,14 @@ export class IModelApp {
    * @internal
    */
   public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
+  /** The [[TerrainProviderRegistry]] for this session.
+   * @beta
+   */
+  public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
+  /** The [[RealityDataSourceProviderRegistry]] for this session.
+   * @alpha
+   */
+  public static get realityDataSourceProviders(): RealityDataSourceProviderRegistry { return this._realityDataSourceProviders; }
   /** The [[RenderSystem]] for this session. */
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
@@ -400,6 +411,8 @@ export class IModelApp {
     this._quantityFormatter = opts.quantityFormatter ?? new QuantityFormatter();
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
+    this._terrainProviderRegistry = new TerrainProviderRegistry();
+    this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
     this._publicPath = opts.publicPath ?? "";
 
@@ -466,7 +479,8 @@ export class IModelApp {
   /** @internal */
   public static requestNextAnimation() {
     // Only want to call requestAnimationFrame if it is defined. Need to check whether current iModelApp is a NoRenderApp.
-    if (IModelApp._noRender) return;
+    if (IModelApp._noRender)
+      return;
 
     if (!IModelApp._animationRequested) {
       IModelApp._animationRequested = true;
@@ -527,7 +541,7 @@ export class IModelApp {
   }
 
   /** Get the user's access token for this IModelApp, or a blank string if none is available.
-   * @note accessTokens expire periodically and are automatically refreshed, if possible. Therefore tokens should not be saved, and the value
+   * @note Access tokens expire periodically and are automatically refreshed, if possible. Therefore tokens should not be saved, and the value
    * returned by this method may change over time throughout the course of a session.
    */
   public static async getAccessToken(): Promise<AccessToken> {
@@ -546,9 +560,9 @@ export class IModelApp {
       return Guid.createValue();
     };
 
-    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => { // eslint-disable-line deprecation/deprecation
       const id = _request.id;
-      const serialized: SerializedRpcActivity = {
+      const serialized: SerializedRpcActivity = { // eslint-disable-line deprecation/deprecation
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
@@ -615,7 +629,10 @@ export class IModelApp {
     overlay.tabIndex = -1; // so we can catch keystroke events
 
     // function to remove modal dialog
-    const stop = (ev: Event) => { root.removeChild(overlay); ev.stopPropagation(); };
+    const stop = (ev: Event) => {
+      root.removeChild(overlay);
+      ev.stopPropagation();
+    };
 
     if (options.autoClose) {
       overlay.onclick = overlay.oncontextmenu = stop;

@@ -61,7 +61,10 @@ export interface TileDrawArgParams {
   animationTransformNodeId?: number;
   /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
   boundingRange?: Range3d;
+  /** @alpha */
+  maximumScreenSpaceError?: number;
 }
+
 /**
  * Provides context used when selecting and drawing [[Tile]]s.
  * @see [[TileTree.selectTiles]]
@@ -114,6 +117,8 @@ export class TileDrawArgs {
   public readonly pixelSizeScaleFactor;
   /** @internal */
   public readonly animationTransformNodeId?: number;
+  /** @alpha */
+  public maximumScreenSpaceError;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -168,7 +173,7 @@ export class TileDrawArgs {
   /** Compute the size in meters of one pixel at the point on a sphere closest to the camera.
    * Device scaling is not applied.
    */
-  protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
+  public computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
     if (this.context.viewport.view.is3d() && this.context.viewport.isCameraOn && this._nearFrontCenter) {
       const toFront = Vector3d.createStartEnd(center, this._nearFrontCenter);
       const viewZ = this.context.viewport.rotation.rowZ();
@@ -256,6 +261,7 @@ export class TileDrawArgs {
     this.hiddenLineSettings = params.hiddenLineSettings;
     this.animationTransformNodeId = params.animationTransformNodeId;
     this.boundingRange = params.boundingRange;
+    this.maximumScreenSpaceError = params.maximumScreenSpaceError ?? 16; // 16 is Cesium's default.
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
@@ -266,7 +272,7 @@ export class TileDrawArgs {
     this.graphics.animationId = tree.modelId;
 
     this.viewingSpace = context.viewingSpace;
-    this._frustumPlanes = new FrustumPlanes(this.viewingSpace.getFrustum());
+    this._frustumPlanes = FrustumPlanes.fromFrustum(this.viewingSpace.getFrustum());
 
     this.planarClassifier = context.getPlanarClassifierForModel(tree.modelId);
     this.drape = context.getTextureDrapeForModel(tree.modelId);

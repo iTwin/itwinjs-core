@@ -12,7 +12,7 @@ import { TextProps } from "./TextProps";
 
 /** Styled headline text React functional component
  * @public
- * @deprecated Use Headline in itwinui-react instead
+ * @deprecated in 3.0. Use Headline in itwinui-react instead
  */
 export function Headline(props: TextProps) {
   return <StyledText {...props} mainClassName="uicore-text-headline" />;

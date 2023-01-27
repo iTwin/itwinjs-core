@@ -110,7 +110,10 @@ interface UploadOptions extends TransferOptions {
 
 async function askQuestion(query: string) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise<string>((resolve) => rl.question(query, (ans) => { rl.close(); resolve(ans); }));
+  return new Promise<string>((resolve) => rl.question(query, (ans) => {
+    rl.close();
+    resolve(ans);
+  }));
 }
 
 function flushLog() {
@@ -169,7 +172,6 @@ function getContainer(args: EditorOpts) {
 
 /** get a WorkspaceContainer that is expected to be a cloud container, throw otherwise. */
 function getCloudContainer(args: EditorOpts): CloudSqlite.CloudContainer {
-  args.syncOnConnect = true;
   const container = getContainer(args);
   const cloudContainer = container.cloudContainer;
   if (!cloudContainer || !cloudContainer.isConnected)
@@ -555,7 +557,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
       if (true === args.logging) {
         Logger.initializeToConsole();
         Logger.setLevel("CloudSqlite", LogLevel.Trace);
-        IModelHost.appWorkspace.cloudCache?.setLogMask(0xff);
+        IModelHost.appWorkspace.cloudCache?.setLogMask(CloudSqlite.LoggingMask.All);
         logTimer = setInterval(() => flushLog(), 250); // logging from other threads is buffered. This causes it to appear every 1/4 second.
       }
 

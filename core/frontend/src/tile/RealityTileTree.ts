@@ -110,7 +110,6 @@ export class TraversalSelectionContext {
 }
 
 const scratchFrustum = new Frustum();
-const scratchFrustumPlanes = new FrustumPlanes();
 const scratchCarto = Cartographic.createZero();
 const scratchPoint = Point3d.createZero(), scratchOrigin = Point3d.createZero();
 const scratchRange = Range3d.createNull();
@@ -132,18 +131,31 @@ export interface RealityTileTreeParams extends TileTreeParams {
   readonly gcsConverterAvailable: boolean;
 }
 
-/** @internal */
+/** Base class for a [[TileTree]] representing a reality model (e.g., a point cloud or photogrammetry mesh) or 3d terrain with map imagery.
+ * The tiles within the tree are instances of [[RealityTile]]s.
+ * @beta
+ */
 export class RealityTileTree extends TileTree {
+  /** @internal */
   public traversalChildrenByDepth: TraversalChildrenDetails[] = [];
+  /** @internal */
   public readonly loader: RealityTileLoader;
+  /** @internal */
   public readonly yAxisUp: boolean;
+  /** @internal */
   public cartesianRange: Range3d;
+  /** @internal */
   public cartesianTransitionDistance: number;
+  /** @internal */
   protected _gcsConverter: GeoConverter | undefined;
+  /** @internal */
   protected _rootTile: RealityTile;
+  /** @internal */
   protected _rootToEcef?: Transform;
+  /** @internal */
   protected _ecefToDb?: Transform;
 
+  /** @internal */
   public constructor(params: RealityTileTreeParams) {
     super(params);
     this.loader = params.loader;
@@ -161,29 +173,44 @@ export class RealityTileTree extends TileTree {
       }
     }
   }
+
+  /** @internal */
   public get rootTile(): RealityTile { return this._rootTile; }
+  /** @internal */
   public get is3d() { return true; }
+  /** @internal */
   public get maxDepth() { return this.loader.maxDepth; }
+  /** @internal */
   public get minDepth() { return this.loader.minDepth; }
+  /** @internal */
   public override get isContentUnbounded() { return this.loader.isContentUnbounded; }
+  /** @internal */
   public get isTransparent() { return false; }
 
+  /** @internal */
   protected _selectTiles(args: TileDrawArgs): Tile[] { return this.selectRealityTiles(args, []); }
+  /** @internal */
   public get viewFlagOverrides(): ViewFlagOverrides { return this.loader.viewFlagOverrides; }
+  /** @internal */
   public override get parentsAndChildrenExclusive() { return this.loader.parentsAndChildrenExclusive; }
 
+  /** @internal */
   public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
 
-  /** Collect tiles from this tile tree based on the criteria implemented by `collector`. */
+  /** Collect tiles from this tile tree based on the criteria implemented by `collector`.
+   * @internal
+   */
   public override collectTileGeometry(collector: TileGeometryCollector): void {
     this.rootTile.collectTileGeometry(collector);
   }
 
+  /** @internal */
   public prune(): void {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
     this.rootTile.purgeContents(olderThan);
   }
 
+  /** @internal */
   public draw(args: TileDrawArgs): void {
     const displayedTileDescendants = new Array<RealityTile[]>();
     const debugControl = args.context.target.debugControl;
@@ -225,7 +252,8 @@ export class RealityTileTree extends TileTree {
         const displayedDescendants = displayedTileDescendants[index];
         if (0 === displayedDescendants.length || !this.loader.parentsAndChildrenExclusive || selectedTile.allChildrenIncluded(displayedDescendants)) {
           targetBranch.add(graphics);
-          if (selectBuilder) selectedTile.addBoundingGraphic(selectBuilder, ColorDef.green);
+          if (selectBuilder)
+            selectedTile.addBoundingGraphic(selectBuilder, ColorDef.green);
         } else {
           if (selectBuilder)
             selectedTile.addBoundingGraphic(selectBuilder, ColorDef.red);
@@ -269,12 +297,15 @@ export class RealityTileTree extends TileTree {
       args.drawGraphicsWithType(graphicTypeBranch[0], graphicTypeBranch[1]);
     }
   }
+
+  /** @internal */
   protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
     const classifier = args.context.planarClassifiers.get(this.modelId);
     if (classifier)
       classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
   }
 
+  /** @internal */
   public getTraversalChildren(depth: number) {
     while (this.traversalChildrenByDepth.length <= depth)
       this.traversalChildrenByDepth.push(new TraversalChildrenDetails());
@@ -282,8 +313,9 @@ export class RealityTileTree extends TileTree {
     return this.traversalChildrenByDepth[depth];
   }
 
+  /** @internal */
   public doReprojectChildren(tile: Tile): boolean {
-    if (!(tile instanceof RealityTile) || !tile.region || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
+    if (!(tile instanceof RealityTile) || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
       return false;
 
     const tileRange = this.iModelTransform.isIdentity ? tile.range : this.iModelTransform.multiplyRange(tile.range, scratchRange);
@@ -291,6 +323,7 @@ export class RealityTileTree extends TileTree {
     return this.cartesianRange.intersectsRange(tileRange);
   }
 
+  /** @internal */
   public reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void {
     if (!this.doReprojectChildren(parent)) {
       resolve(children);
@@ -366,8 +399,16 @@ export class RealityTileTree extends TileTree {
     }
   }
 
+  /** @internal */
   public getBaseRealityDepth(_sceneContext: SceneContext) { return -1; }
 
+  /** Scan the list of currently selected reality tiles, and fire the viewport's 'onMapLayerScaleRangeVisibilityChanged ' event
+   * if any scale range visibility change is detected for one more map-layer definition.
+   * @internal
+   */
+  public reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]) {}
+
+  /** @internal */
   public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[] {
     this._lastSelected = BeTimePoint.now();
     const selected: RealityTile[] = [];
@@ -417,18 +458,21 @@ export class RealityTileTree extends TileTree {
         this.logTiles("Imagery:", imageryTiles.values());
     }
 
+    if (context.missing.length === 0)
+      this.reportTileVisibility(args, selected);
+
     IModelApp.tileAdmin.addTilesForUser(args.context.viewport, selected, args.readyTiles);
     return selected;
   }
 
+  /** @internal */
   public preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform) {
     const preloadFrustum = args.viewingSpace.getPreloadFrustum(frustumTransform, scratchFrustum);
-    const preloadFrustumPlanes = new FrustumPlanes(preloadFrustum);
+    const preloadFrustumPlanes = FrustumPlanes.fromFrustum(preloadFrustum);
     const worldToNpc = preloadFrustum.toMap4d();
     const preloadWorldToViewMap = args.viewingSpace.calcNpcToView().multiplyMapMap(worldToNpc!);
     const preloadArgs = new RealityTileDrawArgs(args, preloadWorldToViewMap, preloadFrustumPlanes);
 
-    scratchFrustumPlanes.init(preloadFrustum);
     if (context.preloadDebugBuilder) {
       context.preloadDebugBuilder.setSymbology(ColorDef.blue, ColorDef.blue, 2, 0);
       context.preloadDebugBuilder.addFrustum(preloadFrustum);
@@ -437,6 +481,7 @@ export class RealityTileTree extends TileTree {
     this.rootTile.preloadTilesInFrustum(preloadArgs, context, 2);
   }
 
+  /** @internal */
   protected logTiles(label: string, tiles: IterableIterator<Tile>) {
     let depthString = "";
     let min = 10000, max = -10000;
@@ -451,7 +496,7 @@ export class RealityTileTree extends TileTree {
       depthMap.set(depth, found === undefined ? 1 : found + 1);
     }
 
-    depthMap.forEach((key, value) => depthString += `${key}-${value}, `);
+    depthMap.forEach((value, key ) => depthString += `${key}(x${value}), `);
     // eslint-disable-next-line no-console
     console.log(`${label}: ${count} Min: ${min} Max: ${max} Depths: ${depthString}`);
   }

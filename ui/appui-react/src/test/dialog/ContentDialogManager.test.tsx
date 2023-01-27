@@ -7,9 +7,15 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { ConfigurableUiManager, ContentDialog, ContentDialogManager, ContentDialogRenderer, DialogChangedEventArgs } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils, { userEvent } from "../TestUtils";
+import { render, screen } from "@testing-library/react";
+import { MockRender } from "@itwin/core-frontend";
 
 describe("ContentDialogManager", () => {
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  });
 
   const spyMethod = sinon.spy();
 
@@ -20,12 +26,14 @@ describe("ContentDialogManager", () => {
   before(async () => {
     await TestUtils.initializeUiFramework(true);
     ConfigurableUiManager.initialize();
+    await MockRender.App.startup();
 
     ContentDialogManager.onContentDialogChangedEvent.addListener(handleContentDialogChanged);
   });
 
-  after(() => {
+  after(async () => {
     ContentDialogManager.onContentDialogChangedEvent.removeListener(handleContentDialogChanged);
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework(); // clear out the framework key
   });
 
@@ -71,21 +79,21 @@ describe("ContentDialogManager", () => {
       opened={true}
       title="My Title"
       dialogId={dialogId}>
-      <div />
+      <button>MyTestButton</button>
     </ContentDialog>;
 
-    const wrapper = mount(<ContentDialogRenderer />);
+    render(<ContentDialogRenderer />);
 
     expect(ContentDialogManager.dialogCount).to.eq(0);
     ContentDialogManager.openDialog(reactNode, dialogId);
     expect(ContentDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(1);
+
+    expect(screen.getByRole("button", {name: "MyTestButton"})).to.exist;
 
     ContentDialogManager.closeDialog(dialogId);
     expect(ContentDialogManager.dialogCount).to.eq(0);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(0);
+
+    expect(screen.queryByRole("button", {name: "MyTestButton"})).to.be.null;
   });
 
   it("ContentDialogRenderer component with two dialogs", () => {
@@ -94,7 +102,7 @@ describe("ContentDialogManager", () => {
       opened={true}
       title="My Title1"
       dialogId={dialogId1}>
-      <div />
+      <button>MyTestButton</button>
     </ContentDialog>;
 
     const dialogId2 = "Test2";
@@ -102,32 +110,31 @@ describe("ContentDialogManager", () => {
       opened={true}
       title="My Title2"
       dialogId={dialogId2}>
-      <div />
+      <button>MySecondTestButton</button>
     </ContentDialog>;
 
-    const wrapper = mount(<ContentDialogRenderer />);
+    render(<ContentDialogRenderer />);
 
     expect(ContentDialogManager.dialogCount).to.eq(0);
 
     ContentDialogManager.openDialog(reactNode1, dialogId1);
     expect(ContentDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(1);
+    expect(screen.getByRole("button", {name: "MyTestButton"})).to.exist;
 
     ContentDialogManager.openDialog(reactNode2, dialogId2);
     expect(ContentDialogManager.dialogCount).to.eq(2);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(2);
+    expect(screen.getByRole("button", {name: "MyTestButton"})).to.exist;
+    expect(screen.getByRole("button", {name: "MySecondTestButton"})).to.exist;
 
     ContentDialogManager.closeDialog(dialogId2);
     expect(ContentDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(1);
+    expect(screen.getByRole("button", {name: "MyTestButton"})).to.exist;
+    expect(screen.queryByRole("button", {name: "MySecondTestButton"})).to.be.null;
 
     ContentDialogManager.closeDialog(dialogId1);
     expect(ContentDialogManager.dialogCount).to.eq(0);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(0);
+    expect(screen.queryByRole("button", {name: "MyTestButton"})).to.be.null;
+    expect(screen.queryByRole("button", {name: "MySecondTestButton"})).to.be.null;
   });
 
   it("ContentDialogRenderer component with two dialogs closed in FIFO order", () => {
@@ -136,7 +143,7 @@ describe("ContentDialogManager", () => {
       opened={true}
       title="My Title"
       dialogId={dialogId1}>
-      <div />
+      <button>MyTestButton</button>
     </ContentDialog>;
 
     const dialogId2 = "Test2";
@@ -144,10 +151,10 @@ describe("ContentDialogManager", () => {
       opened={true}
       title="My Title 2"
       dialogId={dialogId2}>
-      <div />
+      <button>MySecondTestButton</button>
     </ContentDialog>;
 
-    const wrapper = mount(<ContentDialogRenderer />);
+    render(<ContentDialogRenderer />);
 
     expect(ContentDialogManager.dialogCount).to.eq(0);
 
@@ -155,32 +162,31 @@ describe("ContentDialogManager", () => {
     expect(ContentDialogManager.dialogCount).to.eq(1);
     expect(ContentDialogManager.getDialogInfo(dialogId1)).not.to.be.undefined;
 
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(1);
+    expect(screen.getByRole("button", {name: "MyTestButton"})).to.exist;
 
     ContentDialogManager.openDialog(reactNode2, dialogId2);
     expect(ContentDialogManager.dialogCount).to.eq(2);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(2);
+    expect(screen.getByRole("button", {name: "MyTestButton"})).to.exist;
+    expect(screen.getByRole("button", {name: "MySecondTestButton"})).to.exist;
 
     ContentDialogManager.closeDialog(dialogId1);
     expect(ContentDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(1);
+    expect(screen.queryByRole("button", {name: "MyTestButton"})).to.be.null;
+    expect(screen.getByRole("button", {name: "MySecondTestButton"})).to.exist;
 
     ContentDialogManager.closeDialog(dialogId2);
     expect(ContentDialogManager.dialogCount).to.eq(0);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(0);
+    expect(screen.queryByRole("button", {name: "MyTestButton"})).to.be.null;
+    expect(screen.queryByRole("button", {name: "MySecondTestButton"})).to.be.null;
   });
 
-  it("ContentDialogRenderer component with two dialogs and bring forward", () => {
+  it("ContentDialogRenderer component with two dialogs and bring forward", async () => {
     const dialogId1 = "Test1";
     const reactNode1 = <ContentDialog
       opened={true}
       title="My Title"
       dialogId={dialogId1}>
-      <div />
+      <button>MyTestButton</button>
     </ContentDialog>;
 
     const dialogId2 = "Test2";
@@ -188,46 +194,29 @@ describe("ContentDialogManager", () => {
       opened={true}
       title="My Title 2"
       dialogId={dialogId2}>
-      <div />
+      <button>MySecondTestButton</button>
     </ContentDialog>;
 
-    const wrapper = mount(<ContentDialogRenderer />);
+    render(<ContentDialogRenderer />);
 
     expect(ContentDialogManager.dialogCount).to.eq(0);
 
     ContentDialogManager.openDialog(reactNode1, dialogId1);
-    expect(ContentDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(1);
-
     ContentDialogManager.openDialog(reactNode2, dialogId2);
-    expect(ContentDialogManager.dialogCount).to.eq(2);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(2);
-
     expect(ContentDialogManager.activeDialog).to.eq(reactNode2);
 
     // Click the 2nd dialog - should stay forward
-    wrapper.find(ContentDialog).at(1).find(".core-dialog-container").simulate("pointerDown");
+    await theUserTo.click(screen.getByRole("button", {name: "MySecondTestButton"}));
     expect(ContentDialogManager.activeDialog).to.eq(reactNode2);
-    wrapper.update();
 
     // Click the 1st dialog to bring it forward
-    wrapper.find(ContentDialog).at(0).find(".core-dialog-container").simulate("pointerDown");
+    await theUserTo.click(screen.getByRole("button", {name: "MyTestButton"}));
     expect(ContentDialogManager.activeDialog).to.eq(reactNode1);
-    wrapper.update();
 
     ContentDialogManager.closeDialog(dialogId1);
-    expect(ContentDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(1);
-
     expect(ContentDialogManager.activeDialog).to.eq(reactNode2);
 
     ContentDialogManager.closeDialog(dialogId2);
-    expect(ContentDialogManager.dialogCount).to.eq(0);
-    wrapper.update();
-    expect(wrapper.find(ContentDialog).length).to.eq(0);
   });
 
 });

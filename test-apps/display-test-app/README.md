@@ -114,7 +114,7 @@ rush install -c
 
 ## Environment Variables
 
-You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you will need to edit display-test-app's entry in apps.config.json. In the "env" section, add an entry corresponding to the desired property from the SVTConfiguration interface. The "env" section contains a JSON version of an SVTConfiguration object.
+You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you can create a file named `.env.local.mobile` to hold mobile versions of the OIDC environment variables, while having Electron versions of the same variables in a file named `.env.local`.
 
 * IMJS_STANDALONE_FILENAME
   * Absolute path to an iModel to be opened on start-up.
@@ -154,9 +154,6 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the number of seconds after a Tile has been most recently used before pruning it.
 * IMJS_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
-* IMJS_FAKE_CLOUD_STORAGE
-  * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/backend/tiles/. They will be removed by a `rush clean` or `npm run clean`.
-    * NOTE: This currently only works when running display-test-app in a browser.
 * IMJS_ENABLE_MAP_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be used for (planar) map tiles.
 * IMJS_DISABLE_MAP_DRAPE_TEXTURE_FILTER
@@ -203,8 +200,6 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the GuidString of the iModel to fetch from the iModel Hub and open.
 * IMJS_URL_PREFIX
   * If defined, the URL prefix to use when accessing the iModel hub (eg "qa-").
-* IMJS_OIDC_HEADLESS
-  * If defined, run in headless mode. (Requires IMJS_OIDC_CLIENT_ID, IMJS_OIDC_SCOPE, IMJS_OIDC_REDIRECT_URI, IMJS_OIDC_EMAIL, and IMJS_OIDC_PASSWORD to also be defined, **or** for IMJS_OIDC_CLIENT_ID, IMJS_OIDC_CLIENT_SECRET, and IMJS_OIDC_SCOPE to be defined.)
 * IMJS_OIDC_CLIENT_ID
   * If defined, the client ID to use for OIDC auth.
 * IMJS_OIDC_SCOPE
@@ -212,19 +207,16 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_OIDC_REDIRECT_URI
   * If defined, the redirect URI to be used for OIDC auth.
     * NOTE: as long as IMJS_OIDC_HEADLESS is not defined, OIDC auth will default to using "http://localhost:3000/signin-callback" for this.
-* IMJS_OIDC_EMAIL
-  * If defined, along with IMJS_OIDC_HEADLESS, the email address to be used for OIDC auth.
-* IMJS_OIDC_PASSWORD
-  * If defined, along with IMJS_OIDC_HEADLESS, the password to be used for OIDC auth.
 * IMJS_OIDC_CLIENT_SECRET
-  * If defined, along with IMJS_OIDC_HEADLESS, the client secret to be used for OIDC auth.
-    * NOTE: Unlike IMJS_OIDC_PASSWORD and IMJS_OIDC_CLIENT_SECRET, this is not required in order for IMJS_OIDC_HEADLESS to work.
-* IMJS_OIDC_AUTHORITY
-  * If defined, along with IMJS_OIDC_HEADLESS, the authority to use for service authorization.
+  * If defined in iOS, the client secret to be used for OIDC auth.
 * IMJS_BRIEFCASE_CACHE_LOCATION
   * If defined, the full path to the directory in which to store cached briefcases.
 * IMJS_IGNORE_CACHE
   * If defined, causes a locally cached copy of a a remote iModel to be deleted, forcing the iModel to always be downloaded.
+* IMJS_DEBUG_URL
+  * If defined on iOS, the URL used to open the frontend. (This is used in conjunction with `npm run start:webserver` and is the URL to the debug web server running on the developer's computer.)
+* IMJS_EXIT_AFTER_MODEL_OPENED
+  * If defined on iOS, the app will exit after successfully opening an iModel. This is used for automated testing with the iOS Simulator.
 
 ## Key-ins
 
@@ -245,7 +237,10 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `d=dimensions` - the desired width and height of the image in pixels. The image will be square. e.g. `d=768`.
   * `c=0|1` - if `1`, instead of opening a new window to display the image, the image will be copied to the clipboard. NOTE: this probably doesn't work in Firefox.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
-* `dta zoom selected` - zoom the selected viewport to the elements in the selection set.
+* `dta zoom selected` - zoom the selected viewport to the elements in the selection set. Optional arguments specify the margin or padding percent as follows:
+  * `l=` `r=` `t=` `b=` followed by a number indicating the left, right, top, and/or bottom padding or margin percent.
+  * `m=0|1` where zero indicates padding should be applied and 1 indicates margin should be applied.
+  * `p=` followed by a number indicating the single value to use for top, left, right, and bottom.
 * `dta incident markers` - toggle incident marker demo in the selected viewport.
 * `dta path decoration` - toggle drawing a small path decoration in the selected viewport for testing purposes.
 * `dta markup` - toggle markup on the selected viewport.
@@ -288,6 +283,8 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `dta gen graphics` - Trigger a requestElementGraphics call to generate graphics for a single element. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
   * `elementId=Id` The element for which to obtain graphics
   * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
+* `dta reality model settings` - Open a dialog in which settings controlling the display of reality models within the currently-selected viewport can be edited. Currently, it always edits the settings for the first reality model it can find. It produces an error if no reality models are found.
+* `dta clip element geometry` - Starts a tool that clips the view based on the geometry of the selected element(s).
 
 ## Editing
 

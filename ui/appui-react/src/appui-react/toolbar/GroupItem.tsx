@@ -47,9 +47,11 @@ export class GroupItemDef extends ActionButtonItemDef {
   public static groupIdPrefix = "Group-";
 
   public groupId: string;
+  /** @deprecated in 3.6.  Used in UI1.0 only. */
   public direction: Direction; // eslint-disable-line deprecation/deprecation
   public itemsInColumn: number;
   public items: AnyItemDef[];
+  /** @deprecated in 3.6. Used in UI1.0 only. */
   public directionExplicit: boolean;
   public defaultActiveItemId?: string;
 
@@ -71,7 +73,7 @@ export class GroupItemDef extends ActionButtonItemDef {
       this.groupId = GroupItemDef.groupIdPrefix + GroupItemDef._sId;
     }
 
-    this.directionExplicit = (groupItemProps.direction !== undefined);
+    this.directionExplicit = (groupItemProps.direction !== undefined); // eslint-disable-line deprecation/deprecation
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom; // eslint-disable-line deprecation/deprecation
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
     this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.panelLabelKey); // eslint-disable-line deprecation/deprecation
@@ -124,6 +126,7 @@ export class GroupItemDef extends ActionButtonItemDef {
   public override execute(): void {
   }
 
+  /** @deprecated in 3.6. Used in UI1.0 only. */
   public override toolbarReactNode(index?: number): React.ReactNode {
     this.resolveItems();
     const key = this.getKey(index);
@@ -650,14 +653,16 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 }
 
 /** Properties for the [[GroupButton]] React component
+ * @deprecated in 3.5. Props of a deprecated component.
  * @public
  */
 export interface GroupButtonProps extends GroupItemProps, CommonProps { }
 
 /** Group Button React component
+ * @deprecated in 3.5. Use [GroupButton]($appui-abstract) instead.
  * @public
  */
-export function GroupButton(props: GroupButtonProps) {
+export function GroupButton(props: GroupButtonProps) { // eslint-disable-line deprecation/deprecation
   const groupItemDef = new GroupItemDef(props);
   groupItemDef.resolveItems();
   return (

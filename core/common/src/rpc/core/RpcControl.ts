@@ -6,10 +6,8 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@itwin/core-bentley";
-import { Buffer } from "buffer";
+import { Base64 } from "js-base64";
 import { IModelRpcProps } from "../../IModel";
-import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcInterfaceEndpoints, RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "./RpcConfiguration";
@@ -17,8 +15,11 @@ import { RpcInvocation } from "./RpcInvocation";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry } from "./RpcRegistry";
 
+/* eslint-disable deprecation/deprecation */
+
 /** An RPC operation control response.
  * @public
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export abstract class RpcControlResponse {
   public message = "RpcControlResponse";
@@ -26,6 +27,7 @@ export abstract class RpcControlResponse {
 
 /** A pending RPC operation response.
  * @public
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export class RpcPendingResponse extends RpcControlResponse {
   /** Extended status regarding the pending operation. */
@@ -40,6 +42,7 @@ export class RpcPendingResponse extends RpcControlResponse {
 
 /** A RPC operation response.
  * @public
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export class RpcNotFoundResponse extends RpcControlResponse {
   public override message = "Not found";
@@ -56,6 +59,11 @@ export class RpcControlChannel {
   private _initialized = false;
   private _clientActive = false;
   private _describeEndpoints: () => Promise<RpcInterfaceEndpoints[]> = undefined as any;
+
+  /** @internal */
+  public static ensureInitialized() {
+    this.channels.forEach((channel) => channel.initialize());
+  }
 
   private constructor(configuration: RpcConfiguration) {
     this._configuration = configuration;
@@ -112,38 +120,27 @@ export class RpcControlChannel {
     this._configuration.interfaces().forEach((definition) => interfaces.push(`${definition.interfaceName}@${definition.interfaceVersion}`));
     const id = interfaces.sort().join(",");
 
-    if (typeof (btoa) !== "undefined") // eslint-disable-line deprecation/deprecation
-      return btoa(id); // eslint-disable-line deprecation/deprecation
-    else if (typeof (Buffer) !== "undefined")
-      return Buffer.from(id, "binary").toString("base64");
-    else
-      return id;
+    return Base64.encode(id);
   }
 
   private activateClient() {
     if (this._clientActive)
       return;
 
-    if (!this._initialized) {
-      if (this._configuration.interfaces().length)
-        throw new IModelError(BentleyStatus.ERROR, `Invalid state.`);
+    this.initialize();
 
-      this.initialize();
-    }
-
-    this._clientActive = true;
     const token: IModelRpcProps = { key: "none", iTwinId: "none", iModelId: "none", changeset: { id: "none" } };
     RpcOperation.forEach(this._channelInterface, (operation) => operation.policy.token = (_request) => RpcOperation.fallbackToken ?? token);
     const client = RpcManager.getClientForInterface(this._channelInterface);
     this._describeEndpoints = async () => client.describeEndpoints();
+    this._clientActive = true;
   }
 
   /** @internal */
   public initialize() {
-    if (this._initialized)
-      throw new IModelError(BentleyStatus.ERROR, `Already initialized.`);
-
-    this._initialized = true;
+    if (this._initialized) {
+      return;
+    }
 
     const id = this.computeId();
     Object.defineProperty(this._channelInterface, "interfaceName", { value: id });
@@ -152,10 +149,14 @@ export class RpcControlChannel {
     RpcConfiguration.assign(this._channelInterface, () => this._configuration.constructor as any);
     RpcManager.registerImpl(this._channelInterface, this._channelImpl);
     RpcManager.initializeInterface(this._channelInterface);
+
+    this._initialized = true;
   }
 
   /** @internal */
   public handleUnknownOperation(invocation: RpcInvocation, _error: any): boolean {
+    this.initialize();
+
     const op = invocation.request.operation;
     if (op.interfaceVersion === "CONTROL" && op.operationName === "describeEndpoints") {
       if (this._channelInterface.interfaceName) {

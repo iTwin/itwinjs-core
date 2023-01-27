@@ -14,7 +14,7 @@ import { Toolbar } from "../toolbar/Toolbar";
 import { ToolbarWidgetProps, WidgetDef } from "./WidgetDef";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
- * @deprecated
+ * @deprecated in 3.0.
  * @public
  */
 export class ToolbarWidgetDefBase extends WidgetDef {
@@ -28,7 +28,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
   public verticalItems?: ItemList;
   private _toolbarBaseName = "";
 
-  constructor(def: ToolbarWidgetProps) {
+  constructor(def: ToolbarWidgetProps) { // eslint-disable-line deprecation/deprecation
     super(def);
 
     // eslint-disable-next-line deprecation/deprecation

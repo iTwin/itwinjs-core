@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { UiFramework, useSpecificWidgetDef } from "@itwin/appui-react";
-import { WidgetState } from "@itwin/appui-abstract";
+import { UiFramework, useSpecificWidgetDef, WidgetState } from "@itwin/appui-react";
 import { Centered } from "@itwin/core-react";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 import * as React from "react";
@@ -40,7 +39,7 @@ export function SelectedElementDataWidgetComponent() {
   const widgetDef = useSpecificWidgetDef("ui-item-provider-test:elementDataListWidget");
 
   React.useEffect(() => {
-    if (UiFramework.uiVersion === "1")
+    if (UiFramework.uiVersion === "1") // eslint-disable-line deprecation/deprecation
       return;
 
     // using setTimeout to give time for frontstage to load before calling setWidgetState

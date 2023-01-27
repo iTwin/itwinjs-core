@@ -9,7 +9,6 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
@@ -39,6 +38,9 @@ export interface CheckpointProps extends TokenArg {
 
   /** changeset for the checkpoint */
   readonly changeset: ChangesetIdWithIndex;
+
+  /** If true, then the latest successful v2 checkpoint at or before the provided changeset will be returned when calling queryV2Checkpoint.  */
+  readonly allowPreceding?: boolean;
 
   /** The number of seconds before the current token expires to attempt to reacquire a new token. Default is 1 hour. */
   readonly reattachSafetySeconds?: number;
@@ -79,9 +81,6 @@ export interface DownloadRequest {
    * function returns a non-zero value, the download is aborted.
    */
   readonly onProgress?: ProgressFunction;
-
-  /** number of retries for transient failures. Default is 5. */
-  readonly retries?: number;
 }
 
 /** @internal */
@@ -228,7 +227,7 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     const request = job.request;
-    const v2props = await IModelHost.hubAccess.queryV2Checkpoint(request.checkpoint);
+    const v2props: V2CheckpointAccessProps | undefined = await IModelHost.hubAccess.queryV2Checkpoint({...request.checkpoint, allowPreceding: true});
     if (!v2props)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
@@ -297,14 +296,16 @@ export class CheckpointManager {
       // first see if there's a V2 checkpoint available.
       const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
       if (changesetId !== request.checkpoint.changeset.id)
-        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because checkpoint for ${request.checkpoint.changeset.id} not found.  Downloaded: IModel=${request.checkpoint.iModelId}, changeset=${changesetId}`);
+        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because requested checkpoint not found.`, {requestedChangesetId: request.checkpoint.changeset.id, iModelId: request.checkpoint.iModelId, changesetId, iTwinId: request.checkpoint.iTwinId });
       else
-        Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
+        Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint.`, { iModelId: request.checkpoint.iModelId, changesetId: request.checkpoint.changeset.id, iTwinId: request.checkpoint.iTwinId });
       return changesetId;
     } catch (error: any) {
-      if (error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
-        return V1CheckpointManager.downloadCheckpoint(request);
-
+      if (error.errorNumber === IModelStatus.NotFound) { // No V2 checkpoint available, try a v1 checkpoint
+        const changeset = await V1CheckpointManager.downloadCheckpoint(request);
+        Logger.logWarning(loggerCategory, `Got an error downloading v2 checkpoint, but downloaded v1 checkpoint successfully!`, { error, iModelId: request.checkpoint.iModelId, iTwinId: request.checkpoint.iTwinId, requestedChangesetId: request.checkpoint.changeset.id, changesetId: changeset });
+        return changeset;
+      }
       throw error; // most likely, was aborted
     }
   }
@@ -327,7 +328,7 @@ export class CheckpointManager {
         if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned)
           nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
-        CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
+        CheckpointManager.validateCheckpointGuids(checkpoint, db);
         // Apply change sets if necessary
         const currentChangeset: Mutable<ChangesetIndexAndId> = nativeDb.getCurrentChangeset();
         if (currentChangeset.id !== checkpoint.changeset.id) {
@@ -371,23 +372,15 @@ export class CheckpointManager {
       }
     }
 
-    let retry = request.retries !== undefined ? request.retries : 5;
-    while (true) {
-      try {
-        await this.doDownload(request);
-        break;
-      } catch (e: any) {
-        if (--retry <= 0 || true !== e.message?.includes("Failure when receiving data from the peer"))
-          throw e;
-      }
-    }
+    await this.doDownload(request);
     return this.updateToRequestedVersion(request);
   }
 
   /** checks a file's dbGuid & iTwinId for consistency, and updates the dbGuid when possible */
-  public static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb) {
+  public static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb) {
     const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId };
 
+    const nativeDb = snapshotDb.nativeDb;
     const dbChangeset = nativeDb.getCurrentChangeset();
     const iModelId = Guid.normalize(nativeDb.getIModelId());
     if (iModelId !== Guid.normalize(checkpoint.iModelId)) {
@@ -395,7 +388,9 @@ export class CheckpointManager {
         throw new IModelError(IModelStatus.ValidationFailed, "iModelId is not properly set up in the checkpoint");
 
       Logger.logWarning(loggerCategory, "iModelId is not properly set up in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, dbGuid: iModelId }));
-      nativeDb.setIModelId(Guid.normalize(checkpoint.iModelId));
+      const iModelIdNormalized = Guid.normalize(checkpoint.iModelId);
+      nativeDb.setIModelId(iModelIdNormalized);
+      (snapshotDb as any)._iModelId = iModelIdNormalized;
       // Required to reset the ChangeSetId because setDbGuid clears the value.
       nativeDb.saveLocalValue("ParentChangeSetId", dbChangeset.id);
       if (undefined !== dbChangeset.index)

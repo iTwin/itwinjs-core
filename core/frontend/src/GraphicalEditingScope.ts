@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@itwin/core-bentley";
+import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64Set, Id64String, SortedArray } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import {
   EditingScopeNotifications, ElementGeometryChange, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
@@ -93,7 +93,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     // Register the scope synchronously, in case enter() is called again for same iModel while awaiting asynchronous initialization.
     const scope = new GraphicalEditingScope(imodel);
     try {
-      const scopeStarted = await IpcApp.callIpcHost("toggleGraphicalEditingScope", imodel.key, true);
+      const scopeStarted = await IpcApp.appFunctionIpc.toggleGraphicalEditingScope(imodel.key, true);
       assert(scopeStarted); // If it didn't, the backend threw an error.
     } catch (e) {
       scope.dispose();
@@ -117,7 +117,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     try {
       this.onExiting.raiseEvent(this);
     } finally {
-      const scopeExited = await IpcApp.callIpcHost("toggleGraphicalEditingScope", this.iModel.key, false);
+      const scopeExited = await IpcApp.appFunctionIpc.toggleGraphicalEditingScope(this.iModel.key, false);
       assert(!scopeExited);
       try {
         this.onExited.raiseEvent(this);
@@ -178,6 +178,8 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
   public notifyGeometryChanged(props: ModelGeometryChangesProps[]) {
     const changes = ModelGeometryChanges.iterable(props);
     const modelIds: Id64String[] = [];
+    let deletedIds: Id64Set | undefined;
+
     for (const modelChanges of changes) {
       // ###TODO do we care about the model range?
       let list = this._geometryChanges.get(modelChanges.id);
@@ -192,10 +194,16 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
 
         list.insert(elementChange);
         if (DbOpcode.Delete === elementChange.type) {
-          this.iModel.selectionSet.remove(elementChange.id);
-          this.iModel.hilited.setHilite(elementChange.id, false);
+          if (undefined === deletedIds)
+            deletedIds = new Set<Id64String>();
+          deletedIds.add(elementChange.id);
         }
       }
+    }
+
+    if (deletedIds) {
+      this.iModel.selectionSet.remove(deletedIds);
+      this.iModel.hilited.setHilite(deletedIds, false);
     }
 
     this.onGeometryChanges.raiseEvent(changes, this);

@@ -2,13 +2,16 @@ sep=;
 Release Tag;API Item
 public;AcquireNewBriefcaseIdArg 
 beta;AliCloudStorageService 
+deprecated;AliCloudStorageService 
 beta;AliCloudStorageServiceCredentials
+deprecated;AliCloudStorageServiceCredentials
 public;AnnotationElement2d 
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
 beta;AzureBlobStorage 
+deprecated;AzureBlobStorage 
 beta;AzureBlobStorageCredentials
 beta;BackendHubAccess
 public;BackendLoggerCategory
@@ -45,14 +48,19 @@ internal;LockAndOpenArgs
 internal;ObtainLockParams
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
 beta;class CloudStorageService
-internal;CloudStorageTileUploader
+deprecated;class CloudStorageService
+beta;CloudStorageTileUploader
+deprecated;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
+deprecated;CloudStorageUploadOptions
 alpha;CodeIndex
 alpha;CodeService
 alpha;CodeService
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
+alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
+alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
@@ -129,6 +137,10 @@ public;ElevationCallout
 public;EmbeddedFileLink 
 public;Entity
 public;EntityClassType
+alpha;EntityReferences
+internal;isValid(id: EntityReference): boolean
+internal;makeInvalid(type: ConcreteEntityTypes): EntityReference
+internal;typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
@@ -199,11 +211,15 @@ public;class GroupInformationModel
 public;GroupInformationPartition 
 public;GroupModel 
 internal;HubMock
-beta;IModelCloneContext
+beta;IModelCloneContext: typeof IModelElementCloneContext
+deprecated;IModelCloneContext: typeof IModelElementCloneContext
+beta;IModelCloneContext = IModelElementCloneContext
+deprecated;IModelCloneContext = IModelElementCloneContext
 public;class IModelDb 
 public;IModelDb
 internal;TileContentState
 internal;Tiles
+beta;IModelElementCloneContext
 public;IModelHost
 public;IModelHostConfiguration 
 public;IModelHostOptions
@@ -218,7 +234,7 @@ public;class InformationRecordElement
 public;InformationRecordModel 
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
-internal;initializeRpcBackend(enableOpenTelemetry?: boolean): void
+internal;initializeTracing(enableOpenTelemetry?: boolean): void
 beta;InstanceChange
 public;class IpcHandler
 public;IpcHost
@@ -247,6 +263,7 @@ internal;LockStatusShared
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+internal;ModelSelectorRefersToModels 
 public;NativeAppStorage
 public;NativeHost
 public;NativeHostOpts 
@@ -286,13 +303,14 @@ public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
 public;ProgressStatus
 alpha;PropertyStore
 alpha;PropertyStore
-public;PullChangesArgs = ToChangesetArgs
+public;PullChangesArgs = ToChangesetArgs &
 public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
 public;RenderMaterialElement 
 public;RenderMaterialElement
+public;RenderMaterialElementParams 
 public;RenderMaterialOwnsRenderMaterials 
 public;RenderTimeline 
 public;RepositoryLink 
@@ -362,6 +380,7 @@ public;TextAnnotation2d
 public;TextAnnotation3d 
 public;Texture 
 internal;TextureCreateProps 
+internal;throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction
 public;TitleText 
 public;ToChangesetArgs 
 public;TokenArg

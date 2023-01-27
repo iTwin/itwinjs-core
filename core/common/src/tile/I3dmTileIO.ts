@@ -25,19 +25,20 @@ export class I3dmHeader extends TileHeader {
 
   public constructor(stream: ByteStream) {
     super(stream);
-    this.length = stream.nextUint32;
-    this.featureTableJsonLength = stream.nextUint32;
-    this.featureTableBinaryLength = stream.nextUint32;
-    this.batchTableJsonLength = stream.nextUint32;
-    this.batchTableBinaryLength = stream.nextUint32;
-    this.gltfVersion = stream.nextUint32;
+    this.length = stream.readUint32();
+    this.featureTableJsonLength = stream.readUint32();
+    this.featureTableBinaryLength = stream.readUint32();
+    this.batchTableJsonLength = stream.readUint32();
+    this.batchTableBinaryLength = stream.readUint32();
+    this.gltfVersion = stream.readUint32();
     this.featureTableJsonPosition = stream.curPos;
     stream.advance(this.featureTableJsonLength);
     stream.advance(this.featureTableBinaryLength);
     if (0 !== this.batchTableJsonLength) {
       const batchStrData = stream.nextBytes(this.batchTableJsonLength);
       const batchStr = utf8ToString(batchStrData);
-      if (batchStr) this.batchTableJson = JSON.parse(batchStr);
+      if (batchStr)
+        this.batchTableJson = JSON.parse(batchStr);
     }
     stream.advance(this.batchTableBinaryLength);
 

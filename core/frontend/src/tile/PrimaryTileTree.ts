@@ -78,9 +78,9 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
 
     let elevation = 0;
     try {
-      const ranges = await iModel.models.queryModelRanges(id.modelId);
+      const ranges = await iModel.models.queryExtents(id.modelId);
       if (1 === ranges.length) {
-        const range = Range3d.fromJSON(ranges[0]);
+        const range = Range3d.fromJSON(ranges[0].extents);
         const lo = range.low.z;
         const hi = range.high.z;
         if (lo <= hi)

@@ -6,6 +6,8 @@
  * @module CloudStorage
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import { CloudStorageCache, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "./CloudStorage";
 import { IModelRpcProps } from "./IModel";
 import { IModelTileRpcInterface } from "./rpc/IModelTileRpcInterface";
@@ -18,7 +20,10 @@ export interface TileContentIdentifier {
   guid: string | undefined;
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated in 3.x.
+ */
 export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
   private static _instance: CloudStorageTileCache;
 

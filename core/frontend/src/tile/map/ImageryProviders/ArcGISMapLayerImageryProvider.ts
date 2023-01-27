@@ -5,30 +5,32 @@
 /** @packageDocumentation
  * @module Tiles
  */
-
-import { getJson, request, RequestOptions, Response } from "../../../request/Request";
 import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
 import {
-  ArcGisErrorCode, ArcGISTileMap, ArcGisUtilities,
-  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerAccessClient, MapLayerAccessToken, MapLayerFeatureInfo,
-  MapLayerImageryProvider, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
+  ArcGisErrorCode, ArcGISImageryProvider, ArcGISTileMap,
+  ArcGisUtilities,
+  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerFeatureInfo,
+  MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Range2d } from "@itwin/core-geometry";
 import { isArray } from "lodash";
+import { Logger } from "@itwin/core-bentley";
+
+const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
 
 /** @internal */
-export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
+export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   private _maxDepthFromLod = 0;
   private _minDepthFromLod = 0;
   private _copyrightText = "Copyright";
   private _querySupported = false;
   private _tileMapSupported = false;
+  private _mapSupported = false;
+  private _tilesOnly = false;
   private _tileMap: ArcGISTileMap|undefined;
-  private _accessClient: MapLayerAccessClient|undefined;
-  private _lastAccessToken: MapLayerAccessToken|undefined;
+
   public serviceJson: any;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, false);
@@ -45,71 +47,33 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
   }
 
-  private async fetchTile(row: number, column: number, zoomLevel: number): Promise<Response | undefined> {
-    const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
-    tileRequestOptions.auth = this.getRequestAuthorization();
+  private async fetchTile(row: number, column: number, zoomLevel: number) {
     const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
     if (tileUrl.length === 0)
       return undefined;
-
-    return request(tileUrl, tileRequestOptions);
+    return this.fetch(new URL(tileUrl), { method: "GET" });
   }
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-
     if ((this.status === MapLayerImageryProviderStatus.RequireAuth)) {
       return undefined;
     }
 
     try {
-      let tileResponse = await this.fetchTile(row, column, zoomLevel);
+      const tileResponse = await this.fetchTile(row, column, zoomLevel);
       if (tileResponse === undefined)
         return undefined;
-
-      // Check the content type from the response, it might contain an authentication error that need to be reported.
-      // Skip if the layer state was already invalid
-      if (ArcGisUtilities.hasTokenError(tileResponse)) {
-
-        if (this._accessClient?.invalidateToken !== undefined && this._lastAccessToken !== undefined)
-          this._accessClient.invalidateToken(this._lastAccessToken);
-
-        // Token might have expired, make a second attempt by forcing new token.
-        if (this._settings.userName && this._settings.userName.length > 0 && this._lastAccessToken) {
-          tileResponse = await this.fetchTile(row, column, zoomLevel);
-          if (tileResponse === undefined)
-            return undefined;
-        }
-
-        // OK at this point, if response still contain a token error, we assume end-user will
-        // have to provide credentials again.  Change the layer status so we
-        // don't make additional invalid requests..
-        if (tileResponse && ArcGisUtilities.hasTokenError(tileResponse)) {
-          // Check again layer status, it might have change during await.
-          if (this.status === MapLayerImageryProviderStatus.Valid) {
-            this.status = MapLayerImageryProviderStatus.RequireAuth;
-            this.onStatusChanged.raiseEvent(this);
-
-            // Only report error to end-user if we were previously able to fetch tiles
-            // and then encountered an error, otherwise I assume an error was already reported
-            // through the source validation process.
-            if (this._hasSuccessfullyFetchedTile) {
-              const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
-              IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
-            }
-          }
-
-          return undefined;
-        }
-      }
 
       if (!this._hasSuccessfullyFetchedTile) {
         this._hasSuccessfullyFetchedTile = true;
       }
-      return this.getImageFromTileResponse(tileResponse, zoomLevel);
+      return await this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error) {
+      Logger.logError(loggerCategory, `Error occurred when loading tile(${row},${column},${zoomLevel}) : ${error}`);
       return undefined;
     }
   }
+
   protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
     const childIds = this.getPotentialChildIds(tile);
     if (tile.quadId.level < Math.max(1, this.minimumZoomLevel-1)) {
@@ -134,7 +98,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       for (let i = 0; i < childIds.length; i++) {
         const childExtent = this.getEPSG4326Extent(childIds[i].row, childIds[i].column, childIds[i].level);
 
-        const childRange = MapCartoRectangle.createFromDegrees(childExtent.longitudeLeft, childExtent.latitudeBottom, childExtent.longitudeRight, childExtent.latitudeTop);
+        const childRange = MapCartoRectangle.fromDegrees(childExtent.longitudeLeft, childExtent.latitudeBottom, childExtent.longitudeRight, childExtent.latitudeTop);
         if (childRange.intersectsRange(this.cartoRange)) {
           availableChildIds.push(childIds[i]);
         }
@@ -145,83 +109,96 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     }
   }
 
-  private isEpsg3857Compatible(tileInfo: any) {
-    if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods))
-      return false;
-
-    const zeroLod = tileInfo.lods[0];
-    return zeroLod.level === 0 && Math.abs(zeroLod.resolution - 156543.03392800014) < .001;
-  }
-
   public override async initialize(): Promise<void> {
 
-    const json = await ArcGisUtilities.getServiceJson(this._settings.url, this.getRequestAuthorization());
-    if (json === undefined)
+    const metadata = await this.getServiceJson();
+
+    if (metadata?.content === undefined)
       throw new ServerError(IModelStatus.ValidationFailed, "");
 
+    const json = metadata.content;
     if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
       // Check again layer status, it might have change during await.
       if (this.status === MapLayerImageryProviderStatus.Valid) {
-        this.status = MapLayerImageryProviderStatus.RequireAuth;
-        this.onStatusChanged.raiseEvent(this);
+        this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
+        return;  // By returning (i.e not throwing), we ensure the tileTree get created and current provider is preserved to report status.
       }
     }
 
-    if (json !== undefined) {
-      this.serviceJson = json;
+    this.serviceJson = json;
 
-      if (json.capabilities) {
+    if (json.capabilities) {
+      const capabilities = json.capabilities.split(",");
 
-        this._querySupported = json.capabilities.indexOf("Query") >= 0;
-        this._tileMapSupported = json.capabilities.indexOf("Tilemap") >= 0;
-      }
-      if (json.copyrightText) this._copyrightText = json.copyrightText;
-      if (false !== (this._usesCachedTiles = json.tileInfo !== undefined && this.isEpsg3857Compatible(json.tileInfo))) {
-        if (json.maxScale !== undefined && json.maxScale !== 0 && Array.isArray(json.tileInfo.lods)) {
-          for (; this._maxDepthFromLod < json.tileInfo.lods.length && json.tileInfo.lods[this._maxDepthFromLod].scale > json.maxScale; this._maxDepthFromLod++)
-            ;
+      this._querySupported = capabilities.includes("Query");
+      this._tileMapSupported = capabilities.includes("Tilemap");
+      this._mapSupported = capabilities.includes("Map");
+      this._tilesOnly = capabilities.includes("TilesOnly");
+    }
+
+    if (json.copyrightText)
+      this._copyrightText = json.copyrightText;
+
+    this._usesCachedTiles = !!json.tileInfo;
+
+    if (this._usesCachedTiles) {
+      // Only EPSG:3857 is supported with pre-rendered tiles.  Fall back to 'Export' queries if possible otherwise throw.
+      if (!ArcGisUtilities.isEpsg3857Compatible(json.tileInfo)) {
+        if (this._mapSupported && !this._tilesOnly) {
+          this._usesCachedTiles = false;
+        } else {
+          throw new ServerError(IModelStatus.ValidationFailed, "Invalid coordinate system");
         }
+      }
+    }
+
+    if (this._usesCachedTiles) {
+      // Read max LOD
+      if (json.maxScale !== undefined && json.maxScale !== 0 && Array.isArray(json.tileInfo.lods)) {
+        for (; this._maxDepthFromLod < json.tileInfo.lods.length && json.tileInfo.lods[this._maxDepthFromLod].scale > json.maxScale; this._maxDepthFromLod++)
+          ;
       }
 
       // Create tile map object only if we are going to request tiles from this server and it support tilemap requests.
-      if (this._usesCachedTiles && this._tileMapSupported) {
-        this._tileMap = new ArcGISTileMap(this._settings.url, json.tileInfo?.lods?.length);
+      if (this._tileMapSupported) {
+        this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, json.tileInfo?.lods?.length, this._accessClient);
       }
+    }
 
-      // Read range using fullextent from service metadata
-      if (json.fullExtent) {
-        if (json.fullExtent.spatialReference.latestWkid === 3857 || json.fullExtent.spatialReference.wkid === 102100) {
-          const range3857 = Range2d.createFrom({
-            low: {x: json.fullExtent.xmin, y: json.fullExtent.ymin},
-            high: {x: json.fullExtent.xmax, y: json.fullExtent.ymax} });
+    // Read range using fullextent from service metadata
+    if (json.fullExtent) {
+      if (json.fullExtent.spatialReference.latestWkid === 3857 || json.fullExtent.spatialReference.wkid === 102100) {
+        const range3857 = Range2d.createFrom({
+          low: {x: json.fullExtent.xmin, y: json.fullExtent.ymin},
+          high: {x: json.fullExtent.xmax, y: json.fullExtent.ymax} });
 
-          const west = this.getEPSG4326Lon(range3857.xLow);
-          const south = this.getEPSG4326Lat(range3857.yLow);
-          const east = this.getEPSG4326Lon(range3857.xHigh);
-          const north = this.getEPSG4326Lat(range3857.yHigh);
-          this.cartoRange = MapCartoRectangle.createFromDegrees(west, south, east, north);
-        }
+        const west = this.getEPSG4326Lon(range3857.xLow);
+        const south = this.getEPSG4326Lat(range3857.yLow);
+        const east = this.getEPSG4326Lon(range3857.xHigh);
+        const north = this.getEPSG4326Lat(range3857.yHigh);
+        this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
       }
+    }
 
-      // Read minLOD if available
-      if (json.minLOD !== undefined) {
-        const minLod = parseInt(json.minLOD, 10);
-        if (!Number.isNaN(minLod)) {
-          this._minDepthFromLod = minLod;
-        }
-      } else if (json.minScale) {
-        // Read min LOD using minScale
-        const minScale = json.minScale;
-        if (json.tileInfo?.lods !== undefined && isArray(json.tileInfo.lods)) {
-          for (const lod of json.tileInfo.lods) {
-            if (lod.scale < minScale) {
-              this._minDepthFromLod = lod.level;
-              break;
-            }
+    // Read minLOD if available
+    if (json.minLOD !== undefined) {
+      const minLod = parseInt(json.minLOD, 10);
+      if (!Number.isNaN(minLod)) {
+        this._minDepthFromLod = minLod;
+      }
+    } else if (json.minScale) {
+      // Read min LOD using minScale
+      const minScale = json.minScale;
+      if (json.tileInfo?.lods !== undefined && isArray(json.tileInfo.lods)) {
+        for (const lod of json.tileInfo.lods) {
+          if (lod.scale < minScale) {
+            this._minDepthFromLod = lod.level;
+            break;
           }
         }
       }
     }
+
   }
 
   public override addLogoCards(cards: HTMLTableElement): void {
@@ -240,48 +217,8 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
     const urlObj = new URL(tmpUrl);
 
-    if (this._accessClient) {
-      try {
-        this._lastAccessToken = undefined;  // reset any previous accessToken, and rely on access client's cache
-        this._lastAccessToken  = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {mapLayerUrl: urlObj, userName: this._settings.userName, password: this._settings.password });
-      } catch {
-      }
-    }
-
-    let json = await getJson(urlObj.toString());
-    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
-
-      if (this._accessClient?.invalidateToken !== undefined && this._lastAccessToken !== undefined)
-        this._accessClient.invalidateToken(this._lastAccessToken);
-
-      // Token might have expired, make a second attempt by forcing new token.
-      if (this._settings.userName && this._settings.userName.length > 0 && this._lastAccessToken ) {
-        const urlObj2 = new URL(tmpUrl);
-        if (this._accessClient) {
-          try {
-            await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {mapLayerUrl: urlObj, userName: this._settings.userName, password: this._settings.password });
-          } catch {
-          }
-        }
-        json = await getJson(urlObj2.toString());
-      }
-
-      // OK at this point, if response still contain a token error, we assume end-user will
-      // have to provide credentials again.  Change the layer status so we
-      // don't make additional invalid requests..
-      if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
-      // Check again layer status, it might have change during await.
-        if (this.status === MapLayerImageryProviderStatus.Valid) {
-          this.status = MapLayerImageryProviderStatus.RequireAuth;
-          const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
-        }
-
-        json =  undefined;
-      }
-    }
-
-    return json;
+    const response = await this.fetch(urlObj, { method: "GET" } );
+    return response.json();
   }
 
   // Makes an identify request to ESRI MapService server, and return it as a list of formatted strings
@@ -348,7 +285,11 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
   protected getLayerString(prefix = "show"): string {
     const layers = new Array<string>();
-    this._settings.subLayers.forEach((subLayer) => { if (this._settings.isSubLayerVisible(subLayer)) layers.push(subLayer.idString); });
+    this._settings.subLayers.forEach((subLayer) => {
+      if (this._settings.isSubLayerVisible(subLayer))
+        layers.push(subLayer.idString);
+    });
+
     return `${prefix}: ${layers.join(",")} `;
   }
 
@@ -361,18 +302,6 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       const bboxString = `${this.getEPSG3857ExtentString(row, column, zoomLevel)}&bboxSR=3857`;
       tmpUrl = `${this._settings.url}/export?bbox=${bboxString}&size=${this.tileSize},${this.tileSize}&layers=${this.getLayerString()}&format=png&transparent=${this.transparentBackgroundString}&f=image&sr=3857&imagesr=3857`;
     }
-    const urlObj = new URL(tmpUrl);
-    try {
-      if (this._accessClient) {
-        this._lastAccessToken = undefined;  // reset any previous accessToken, and rely on access client's cache
-        this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {
-          mapLayerUrl: new URL(this._settings.url),
-          userName: this._settings.userName,
-          password: this._settings.password });
-      }
-
-    } catch {
-    }
-    return urlObj.toString();
+    return tmpUrl;
   }
 }

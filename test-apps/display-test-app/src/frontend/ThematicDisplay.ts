@@ -408,6 +408,7 @@ export class ThematicDisplayEditor {
       max: "1.0",
       step: "0.05",
       value: "0.0",
+      readout: "right",
       handler: (_) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
         props.gradientSettings!.colorMix = parseFloat(this._thematicColorMix.slider.value);
@@ -703,7 +704,7 @@ export class ThematicDisplayEditor {
     this._thematicGradientMode.select.value = settings.gradientSettings.mode.toString();
     this._thematicStepCount.input.value = settings.gradientSettings.stepCount.toString();
     this._thematicColorScheme.select.value = settings.gradientSettings.colorScheme.toString();
-    this._thematicColorMix.slider.value = settings.gradientSettings.colorMix.toString();
+    this._thematicColorMix.slider.value = this._thematicColorMix.readout.innerText = settings.gradientSettings.colorMix.toString();
 
     this._thematicAxisX.input.value = settings.axis.x.toString();
     this._thematicAxisY.input.value = settings.axis.y.toString();

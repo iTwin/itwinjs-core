@@ -19,7 +19,7 @@ import {
   EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
+  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
   QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
   SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
   ViewQueryParams, ViewStateLoadProps, ViewStateProps,
@@ -656,10 +656,17 @@ export abstract class IModelDb extends IModel {
     if (params.only)
       sql += "ONLY ";
     sql += params.from;
-    if (params.where) sql += ` WHERE ${params.where}`;
-    if (params.orderBy) sql += ` ORDER BY ${params.orderBy}`;
-    if (typeof params.limit === "number" && params.limit > 0) sql += ` LIMIT ${params.limit}`;
-    if (typeof params.offset === "number" && params.offset > 0) sql += ` OFFSET ${params.offset}`;
+    if (params.where)
+      sql += ` WHERE ${params.where}`;
+
+    if (params.orderBy)
+      sql += ` ORDER BY ${params.orderBy}`;
+
+    if (typeof params.limit === "number" && params.limit > 0)
+      sql += ` LIMIT ${params.limit}`;
+
+    if (typeof params.offset === "number" && params.offset > 0)
+      sql += ` OFFSET ${params.offset}`;
 
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {
@@ -740,6 +747,21 @@ export abstract class IModelDb extends IModel {
   /** Abandon pending changes in this iModel. */
   public abandonChanges(): void {
     this.nativeDb.abandonChanges();
+  }
+
+  /**
+   * Save all changes and perform a [checkpoint](https://www.sqlite.org/c3ref/wal_checkpoint_v2.html) on this IModelDb.
+   * This ensures that all changes to the database since it was opened are saved to its file and the WAL file is truncated.
+   * @note Checkpoint automatically happens when IModelDbs are closed. However, the checkpoint
+   * operation itself can take some time. It may be useful to call this method prior to closing so that the checkpoint "penalty" is paid earlier.
+   * @note Another use for this function is to permit the file to be copied while it is open for write. iModel files should
+   * rarely be copied, and even less so while they're opened. But this scenario is sometimes encountered for tests.
+   */
+  public performCheckpoint() {
+    if (!this.isReadonly) {
+      this.saveChanges();
+      this.nativeDb.performCheckpoint();
+    }
   }
 
   /** @internal */
@@ -919,19 +941,25 @@ export abstract class IModelDb extends IModel {
    * @internal
    */
   public get classMetaDataRegistry(): MetaDataRegistry {
-    if (this._classMetaDataRegistry === undefined) this._classMetaDataRegistry = new MetaDataRegistry();
+    if (this._classMetaDataRegistry === undefined)
+      this._classMetaDataRegistry = new MetaDataRegistry();
+
     return this._classMetaDataRegistry;
   }
 
   /** Get the linkTableRelationships for this IModel */
-  public get relationships(): Relationships { return this._relationships || (this._relationships = new Relationships(this)); }
+  public get relationships(): Relationships {
+    return this._relationships || (this._relationships = new Relationships(this));
+  }
 
   /** Get the CodeSpecs in this IModel. */
-  public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
+  public get codeSpecs(): CodeSpecs {
+    return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this));
+  }
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties);
+    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties as any); // TODO: Remove "as any" when NativeLibrary.ts is updated so "spec" isn't marked as required
   }
 
   /** Prepare an ECSQL statement.
@@ -1485,6 +1513,33 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         }
       });
     }
+
+    /** For each specified [[GeometricModel]], attempts to obtain the union of the volumes of all geometric elements within that model.
+     * @param ids The Id or Ids of the [[GeometricModel]]s for which to obtain the extents.
+     * @returns An array of results, one per supplied Id, in the order in which the Ids were supplied. If the extents could not be obtained, the
+     * corresponding results entry's `extents` will be a "null" range (@see [Range3d.isNull]($geometry)) and its `status` will indicate
+     * why the extents could not be obtained (e.g., because the Id did not identify a [[GeometricModel]]).
+     * @see [[queryRange]] to obtain the union of all of the models' extents.
+     */
+    public async queryExtents(ids: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
+      ids = typeof ids === "string" ? [ids] : ids;
+      if (ids.length === 0)
+        return [];
+
+      return this._iModel.nativeDb.queryModelExtentsAsync(ids);
+    }
+
+    /** Computes the union of the volumes of all geoemtric elements within any number of [[GeometricModel]]s, specified by model Id.
+     * @see [[queryExtents]] to obtain discrete volumes for each model.
+     */
+    public async queryRange(ids: Id64String | Id64String[]): Promise<AxisAlignedBox3d> {
+      const results = await this.queryExtents(ids);
+      const range = new Range3d();
+      for (const result of results)
+        range.union(Range3d.fromJSON(result.extents), range);
+
+      return range;
+    }
   }
 
   /** The collection of elements in an [[IModelDb]].
@@ -1532,7 +1587,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (props instanceof Code) {
         props = { code: props };
       }
-      return this._iModel.nativeDb.getElement(props) as T;
+      try {
+        return this._iModel.nativeDb.getElement(props) as T;
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber, err.message);
+      }
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1642,6 +1701,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
      * @throws [[IModelError]] if unable to insert the element.
+     * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
+     * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
+     * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
+     * if you intend to continue working with it. That will ensure its values reflect the persistent state.
      */
     public insertElement(elProps: ElementProps): Id64String {
       try {
@@ -1700,10 +1763,17 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (!usageInfo) {
         throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
       }
+
       const usedIdSet = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
       const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set): void => {
-        if (ids) { ids.forEach((id) => { if (!used.has(id)) { this._iModel.elements.deleteElement(id); } }); }
+        if (ids) {
+          ids.forEach((id) => {
+            if (!used.has(id))
+              this._iModel.elements.deleteElement(id);
+          });
+        }
       };
+
       try {
         this._iModel.nativeDb.beginPurgeOperation();
         deleteIfUnused(usageInfo.spatialCategoryIds, usedIdSet);
@@ -1723,12 +1793,19 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } finally {
         this._iModel.nativeDb.endPurgeOperation();
       }
+
       if (usageInfo.viewDefinitionIds) {
         // take another pass in case a deleted ViewDefinition was the only usage of these view-related DefinitionElements
         let viewRelatedIds: Id64Array = [];
-        if (usageInfo.displayStyleIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id))); }
-        if (usageInfo.categorySelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id))); }
-        if (usageInfo.modelSelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id))); }
+        if (usageInfo.displayStyleIds)
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id)));
+
+        if (usageInfo.categorySelectorIds)
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id)));
+
+        if (usageInfo.modelSelectorIds)
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id)));
+
         if (viewRelatedIds.length > 0) {
           const viewRelatedUsageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(viewRelatedIds);
           if (viewRelatedUsageInfo) {
@@ -1741,10 +1818,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
             } finally {
               this._iModel.nativeDb.endPurgeOperation();
             }
-            viewRelatedIds.forEach((id) => { if (!usedViewRelatedIdSet.has(id)) { usedIdSet.delete(id); } });
+
+            viewRelatedIds.forEach((id) => {
+              if (!usedViewRelatedIdSet.has(id))
+                usedIdSet.delete(id);
+            });
           }
         }
       }
+
       return usedIdSet;
     }
 
@@ -1872,10 +1954,13 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Insert a new ElementAspect into the iModel.
      * @param aspectProps The properties of the new ElementAspect.
      * @throws [[IModelError]] if unable to insert the ElementAspect.
+     * @returns the id of the newly inserted aspect.
+     * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
+     *       use [EntityReference]($common) for that instead.
      */
-    public insertAspect(aspectProps: ElementAspectProps): void {
+    public insertAspect(aspectProps: ElementAspectProps): Id64String {
       try {
-        this._iModel.nativeDb.insertElementAspect(aspectProps);
+        return this._iModel.nativeDb.insertElementAspect(aspectProps);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
       }
@@ -1965,19 +2050,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return finished;
     }
 
-    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
+    private loadViewStateProps(viewDefinitionElement: ViewDefinition, options?: ViewStateLoadProps, drawingExtents?: Range3d): ViewStateProps {
       const elements = this._iModel.elements;
-      const viewDefinitionElement = elements.getElement<ViewDefinition>(viewDefinitionId);
       const viewDefinitionProps = viewDefinitionElement.toJSON();
       const categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewDefinitionProps.categorySelectorId);
 
-      const displayStyleOptions: ElementLoadProps = {
+      const displayStyleProps = elements.getElementProps<DisplayStyleProps>({
         id: viewDefinitionProps.displayStyleId,
         displayStyle: options?.displayStyle,
-      };
-      const displayStyleProps = elements.getElementProps<DisplayStyleProps>(displayStyleOptions);
+      });
 
-      const viewStateData: ViewStateProps = { viewDefinitionProps, displayStyleProps, categorySelectorProps };
+      const viewStateData: ViewStateProps = {
+        viewDefinitionProps,
+        displayStyleProps,
+        categorySelectorProps,
+      };
 
       const modelSelectorId = (viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
       if (modelSelectorId !== undefined) {
@@ -1990,12 +2077,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         }));
       } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
         // Ensure view has known extents
-        try {
-          const extentsJson = this._iModel.nativeDb.queryModelExtents({ id: viewDefinitionElement.baseModelId }).modelExtents;
-          viewStateData.modelExtents = Range3d.fromJSON(extentsJson);
-        } catch {
-          //
-        }
+        if (drawingExtents && !drawingExtents.isNull)
+          viewStateData.modelExtents = drawingExtents.toJSON();
 
         // Include information about the associated [[SectionDrawing]], if any.
         // NB: The SectionDrawing ECClass may not exist in the iModel's version of the BisCore ECSchema.
@@ -2014,6 +2097,31 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       }
 
       return viewStateData;
+    }
+
+    /** @deprecated in 3.x. use [[getViewStateProps]]. */
+    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
+      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
+      let drawingExtents;
+      if (view instanceof DrawingViewDefinition) {
+        try {
+          drawingExtents = Range3d.fromJSON(this._iModel.nativeDb.queryModelExtents({ id: view.baseModelId }).modelExtents);
+        } catch {
+          //
+        }
+      }
+
+      return this.loadViewStateProps(view, options, drawingExtents);
+    }
+
+    /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by element Id. */
+    public async getViewStateProps(viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
+      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
+      let drawingExtents;
+      if (view instanceof DrawingViewDefinition)
+        drawingExtents = (await this._iModel.models.queryRange(view.baseModelId));
+
+      return this.loadViewStateProps(view, options, drawingExtents);
     }
 
     private getViewThumbnailArg(viewDefinitionId: Id64String): FilePropertyProps {
@@ -2466,6 +2574,7 @@ export class SnapshotDb extends IModelDb {
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    */
   public static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb {
+    iModelDb.performCheckpoint();
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
 
     const nativeDb = new IModelHost.platform.DgnDb();
@@ -2480,7 +2589,7 @@ export class SnapshotDb extends IModelDb {
     nativeDb.saveChanges();
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-    nativeDb.saveChanges();
+
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue());
     if (options?.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
@@ -2539,7 +2648,7 @@ export class SnapshotDb extends IModelDb {
     const snapshot = SnapshotDb.openFile(dbName, { key, tempFileBase, container });
     snapshot._iTwinId = checkpoint.iTwinId;
     try {
-      CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
+      CheckpointManager.validateCheckpointGuids(checkpoint, snapshot);
     } catch (err: any) {
       snapshot.close();
       throw err;

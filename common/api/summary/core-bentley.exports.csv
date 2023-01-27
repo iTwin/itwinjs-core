@@ -1,14 +1,12 @@
 sep=;
 Release Tag;API Item
 beta;AbandonedError 
-beta;AccessToken = string
+public;AccessToken = string
 public;areEqualPossiblyUndefined
 public;asInstanceOf
 public;assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition
 public;AsyncFunction = (...args: any) => Promise
 public;AsyncMethodsOf
-alpha;AsyncMutex
-alpha;AsyncMutexUnlockFnType = () => void
 public;base64StringToUint8Array(base64: string): Uint8Array
 public;BeDuration
 public;BeEvent
@@ -18,9 +16,9 @@ public;BentleyLoggerCategory
 public;BentleyStatus
 public;BeTimePoint
 public;BeUiEvent
-beta;BriefcaseStatus
+public;BriefcaseStatus
 public;ByteStream
-beta;ChangeSetStatus
+public;ChangeSetStatus
 public;CloneFunction
 public;compareBooleans(a: boolean, b: boolean): number
 public;compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number
@@ -46,7 +44,6 @@ public;DuplicatePolicy
 public;Entry
 public;EntryContainer
 alpha;class ErrorCategory 
-beta;ExtractLiterals
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => object | undefined
 public;Guid
@@ -58,7 +55,7 @@ public;Id64Array = Id64String[]
 public;Id64Set = Set
 public;Id64String = string
 public;IDisposable
-beta;IModelHubStatus
+public;IModelHubStatus
 public;IModelStatus
 public;IndexedValue
 public;IndexMap
@@ -89,6 +86,7 @@ public;MutableCompressedId64Set
 public;NonFunctionPropertiesOf
 public;NonFunctionPropertyNamesOf
 public;ObservableSet
+public;omit
 beta;OneAtATimeAction
 public;OnUnexpectedError = (error: any) => void
 public;OpenMode
@@ -100,24 +98,34 @@ public;OrderedId64Iterable
 public;OrderedSet
 public;partitionArray
 public;PerfLogger 
+public;PickAsyncMethods
 public;PriorityQueue
 public;ProcessDetector
 public;PromiseReturnType
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 alpha;RealityDataStatus
-beta;RepositoryStatus
+internal;RepositoryStatus
 beta;RpcInterfaceStatus
 public;shallowClone
 public;SortedArray
 alpha;SpanKind
 alpha;class StatusCategory
 alpha;StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined
-beta;StatusCodeWithMessage
+internal;StatusCodeWithMessage
 public;StopWatch
 alpha;class SuccessCategory 
 alpha;Tracing
 public;TransientIdSequence
+public;TupleKeyedMap
+public;TypedArrayBuilder
+public;TypedArrayBuilderOptions
+public;Uint16ArrayBuilder 
+public;Uint32ArrayBuilder 
+public;Uint8ArrayBuilder 
+public;UintArray = Uint8Array | Uint16Array | Uint32Array
+public;UintArrayBuilder 
+public;UintArrayBuilderOptions 
 public;UnexpectedErrors
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined

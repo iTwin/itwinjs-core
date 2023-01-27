@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, GuidString, ProcessDetector } from "@itwin/core-bentley";
+import { GuidString, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
@@ -15,8 +15,8 @@ import {
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
-  ToolAdmin,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
+  TileAdmin, Tool, ToolAdmin,
 } from "@itwin/core-frontend";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
@@ -27,6 +27,7 @@ import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
+import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -52,6 +53,12 @@ import { MarkupTool, ModelClipTool, ZoomToSelectedElementsTool } from "./Viewer"
 import { MacroTool } from "./MacroTools";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
+import { BingTerrainMeshProvider } from "./BingTerrainProvider";
+import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
+import { MapLayersFormats } from "@itwin/map-layers-formats";
+import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { ITwinLocalization } from "@itwin/core-i18n";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -135,11 +142,7 @@ class PullChangesTool extends Tool {
   }
 }
 
-export class DtaIpc {
-  public static async callBackend<T extends AsyncMethodsOf<DtaIpcInterface>>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>) {
-    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args);
-  }
-}
+export const dtaIpc = IpcApp.makeIpcProxy<DtaIpcInterface>(dtaChannel);
 
 class RefreshTilesTool extends Tool {
   public static override toolId = "RefreshTiles";
@@ -207,7 +210,7 @@ class ExitTool extends Tool {
 
 function createHubAccess(configuration: DtaConfiguration) {
   if (configuration.urlPrefix) {
-    return new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl:`https://${configuration.urlPrefix}api.bentley.com/imodels` }}));
+    return new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${configuration.urlPrefix}api.bentley.com/imodels` } }));
   } else {
     return new FrontendIModelsAccess();
   }
@@ -246,11 +249,16 @@ export class DisplayTestApp {
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
-          MapboxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
-          BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
+          MapboxImagery: configuration.mapBoxKey
+            ? { key: "access_token", value: configuration.mapBoxKey }
+            : undefined,
+          BingMaps: configuration.bingMapsKey
+            ? { key: "key", value: configuration.bingMapsKey }
+            : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */
         hubAccess: createHubAccess(configuration),
+        localization: new ITwinLocalization({ detectorOptions: { order: ["htmlTag"]}}),
       },
       localhostIpcApp: {
         socketUrl,
@@ -260,6 +268,7 @@ export class DisplayTestApp {
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
+      opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
       await MobileApp.startup(opts as MobileAppOpts);
@@ -284,6 +293,7 @@ export class DisplayTestApp {
     [
       ApplyModelDisplayScaleTool,
       ApplyModelTransformTool,
+      AttachCustomRealityDataTool,
       ChangeGridSettingsTool,
       CloneViewportTool,
       CloseIModelTool,
@@ -307,6 +317,7 @@ export class DisplayTestApp {
       MaximizeWindowTool,
       ModelClipTool,
       OpenIModelTool,
+      OpenRealityModelSettingsTool,
       OutputShadersTool,
       PlaceLineStringTool,
       PullChangesTool,
@@ -328,13 +339,22 @@ export class DisplayTestApp {
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
+      ViewClipByElementGeometryTool,
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
+
+    BingTerrainMeshProvider.register();
+
+    const realityApiKey = process.env.IMJS_REALITY_DATA_KEY;
+    if (realityApiKey)
+      registerRealityDataSourceProvider(realityApiKey);
+
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await EditTools.initialize({ registerAllTools: true });
+    MapLayersFormats.initialize();
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

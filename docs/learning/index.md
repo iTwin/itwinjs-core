@@ -47,6 +47,7 @@ The iTwin.js library requires a JavaScript engine with es2017 support.
 - [App frontend development](./frontend/index)
 - [App backend development](./backend/index)
 - [Classes packaged by both frontends and backends](./common/index)
+- [API support policies](./api-support-policies.md)
 - [ECSQL](./ECSQL.md)
 - [Display system](./display/index.md)
 - [iModelHub](./iModelHub/index) TODO: 9/22 - Update or remove link
@@ -68,8 +69,8 @@ Step by step instructions to:
 Tutorials:
 
 - [ECSQL Tutorial](./ECSQLTutorial/index.md)
+- [EC Schema Serialization](./serializing-xml-schemas.md)
 
 See also:
 
 - [Glossary of terms used in iTwin.js](./Glossary)
-- [Frequently asked Questions](./faq)

@@ -15,6 +15,7 @@
     "**/*.build.log": true,
     "**/*.build.error.log": true,
     "**/generated-docs": true,
+    "**/staging-docs": true,
     "**/package-deps.json": true,
     "**/node_modules": true,
     "**/test-apps/**/build": true,

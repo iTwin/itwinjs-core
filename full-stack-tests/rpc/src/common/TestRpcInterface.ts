@@ -8,6 +8,8 @@ import {
   RpcPushChannel, RpcResponseCacheControl, RpcRoutingToken, WipRpcInterface,
 } from "@itwin/core-common";
 
+/* eslint-disable deprecation/deprecation */
+
 export const testChannel = RpcPushChannel.create<number>("test");
 
 export interface TestOp1Params {

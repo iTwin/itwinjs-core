@@ -465,18 +465,24 @@ export namespace Id64 {
    * @see [[Id64.isInvalid]]
    * @see [[Id64.isValidId64]]
    */
-  export function isValid(id: Id64String): boolean { return Id64.invalid !== id; }
+  export function isValid(id: Id64String): boolean {
+    return Id64.invalid !== id;
+  }
 
   /** Returns true if the input is a well-formed [[Id64String]] representing a valid Id.
    * @see [[Id64.isValid]]
    * @see [[Id64.isId64]]
    */
-  export function isValidId64(id: string): boolean { return Id64.invalid !== id && Id64.isId64(id); }
+  export function isValidId64(id: string): boolean {
+    return Id64.invalid !== id && Id64.isId64(id);
+  }
 
   /** Returns true if the input is a well-formed [[Id64String]] representing an invalid Id.
    * @see [[Id64.isValid]]
    */
-  export function isInvalid(id: Id64String): boolean { return Id64.invalid === id; }
+  export function isInvalid(id: Id64String): boolean {
+    return Id64.invalid === id;
+  }
 
   /** A specialized replacement for Set<Id64String> optimized for performance-critical code which represents large sets of [[Id64]]s as pairs of
    * 32-bit integers.
@@ -658,8 +664,17 @@ export namespace Id64 {
 export class TransientIdSequence {
   private _localId: number = 0;
 
+  /** Generate and return the next transient Id64String in the sequence.
+   * @deprecated in 3.x. Use [[getNext]].
+   */
+  public get next(): Id64String {
+    return this.getNext();
+  }
+
   /** Generate and return the next transient Id64String in the sequence. */
-  public get next(): Id64String { return Id64.fromLocalAndBriefcaseIds(++this._localId, 0xffffff); }
+  public getNext(): Id64String {
+    return Id64.fromLocalAndBriefcaseIds(++this._localId, 0xffffff);
+  }
 }
 
 /**
@@ -678,10 +693,14 @@ export namespace Guid {
   /** Determine whether the input string is "guid-like". That is, it follows the 8-4-4-4-12 pattern. This does not enforce
    *  that the string is actually in valid UUID format.
    */
-  export function isGuid(value: string): boolean { return uuidPattern.test(value); }
+  export function isGuid(value: string): boolean {
+    return uuidPattern.test(value);
+  }
 
   /** Determine whether the input string is a valid V4 Guid string */
-  export function isV4Guid(value: string): boolean { return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value); }
+  export function isV4Guid(value: string): boolean {
+    return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value);
+  }
 
   /** Create a new V4 Guid value */
   export function createValue(): GuidString {

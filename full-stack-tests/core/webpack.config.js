@@ -39,12 +39,19 @@ function createConfig(shouldInstrument) {
       mainFields: ["main", "module"],
       fallback: {
         assert: require.resolve("assert"),
+        crypto: require.resolve("crypto-browserify"),
         http: require.resolve("stream-http"),
         https: require.resolve("https-browserify"),
         path: require.resolve("path-browserify"),
         stream: require.resolve("stream-browserify"),
         zlib: require.resolve("browserify-zlib"),
       },
+      alias: {
+        "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
+        "@azure/core-http$": "@azure/core-http/dist-esm/src/coreHttp.js",
+        "@azure/logger$": "@azure/logger/dist-esm/src/index.js",
+        "supports-color$": "supports-color/browser.js"
+      }
     },
     module: {
       noParse: [
@@ -81,6 +88,7 @@ function createConfig(shouldInstrument) {
     },
     externals: {
       electron: "commonjs electron",
+      fs
     },
     plugins: [
       // Makes some environment variables available to the JS code, for example:
@@ -98,6 +106,10 @@ function createConfig(shouldInstrument) {
           }
         ),
       }),
+      // certa doesn't like chunks
+      new webpack.optimize.LimitChunkCountPlugin({
+        maxChunks: 1,
+      }),
     ],
   };
 
@@ -109,9 +121,11 @@ function createConfig(shouldInstrument) {
         path.join(__dirname, "../../core/backend"),
         path.join(__dirname, "../../core/frontend"),
       ],
-      loader: require.resolve("istanbul-instrumenter-loader"),
-      options: {
-        debug: true
+      use: {
+        loader: "babel-loader",
+        options: {
+          plugins: ["babel-plugin-istanbul"],
+        },
       },
       enforce: "post",
     });
@@ -120,10 +134,8 @@ function createConfig(shouldInstrument) {
   return config;
 }
 
-// Exporting two configs in a array like this actually tells webpack to run twice - once for each config.
+// Runs webpack once for each config in the export array
 module.exports = [
-  // FIXME: Temporarily disabling instrumented bundle, because this webpack run is taking too long.
-  // Also hoping this fixes our source-map-loader out of memory issue for now...
-  // createConfig(true),
-  createConfig(false)
+  createConfig(false),
+  createConfig(true)
 ]

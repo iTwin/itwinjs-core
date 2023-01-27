@@ -13,6 +13,7 @@ import { CommonProps } from "@itwin/core-react";
 import { useActivityMessage } from "./ActivityMessage";
 
 /** Properties for [[ActivityMessagePopup]] component
+ * @deprecated in 3.5. Props of a deprecated component.
  * @public
  */
 export interface ActivityMessagePopupProps extends CommonProps {
@@ -21,9 +22,10 @@ export interface ActivityMessagePopupProps extends CommonProps {
 }
 
 /** Activity Message Popup React component
+ * @deprecated in 3.5. Activity messages are set-up automatically in a StatusBar.
  * @public
  */
-export function ActivityMessagePopup(props: ActivityMessagePopupProps) {
+export function ActivityMessagePopup(props: ActivityMessagePopupProps) { // eslint-disable-line deprecation/deprecation
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);
 
   React.useEffect(() => {

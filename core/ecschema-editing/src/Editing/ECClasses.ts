@@ -96,11 +96,13 @@ export class ECClasses {
     }
 
     const enumSchemaItemKey = mutableClass.schema.getSchemaItemKey(type.fullName);
-    if (enumSchemaItemKey === undefined) throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${type.fullName}.`);
+    if (enumSchemaItemKey === undefined)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${type.fullName}.`);
 
     await mutableClass.createPrimitiveProperty(name, type);
     return { itemKey: classKey, propertyName: name };
   }
+
   public async createEnumerationPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, enumProps: EnumerationPropertyProps): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
@@ -113,6 +115,7 @@ export class ECClasses {
     await newProperty.fromJSON(enumProps);
     return { itemKey: classKey, propertyName: name };
   }
+
   public async createPrimitiveArrayProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {

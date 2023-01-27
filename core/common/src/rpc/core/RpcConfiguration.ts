@@ -15,6 +15,8 @@ import { RpcRequest } from "./RpcRequest";
 import { RpcRequestContext } from "./RpcRequestContext";
 import { RpcRoutingToken } from "./RpcRoutingToken";
 
+/* eslint-disable deprecation/deprecation */
+
 /** @internal */
 export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => { new(): RpcConfiguration }; // eslint-disable-line @typescript-eslint/prefer-function-type
 
@@ -125,7 +127,7 @@ export abstract class RpcConfiguration {
   public pendingOperationRetryInterval = 10000;
 
   /** The maximum number of transient faults permitted before request failure. */
-  public transientFaultLimit = 3;
+  public transientFaultLimit = 4;
 
   /** @internal */
   public readonly routing: RpcRoutingToken = RpcRoutingToken.default;
@@ -153,7 +155,6 @@ export abstract class RpcConfiguration {
   /** Initializes the RPC interfaces managed by the configuration. */
   public static initializeInterfaces(configuration: RpcConfiguration) {
     configuration.interfaces().forEach((definition) => RpcManager.initializeInterface(definition));
-    configuration.controlChannel.initialize();
   }
 
   /** @internal */

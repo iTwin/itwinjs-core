@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+
 import * as React from "react";
+import { expect } from "chai";
 import { fireEvent, render } from "@testing-library/react";
 import { MultiTagSelect } from "../../presentation-components/instance-filter-builder/MultiTagSelect";
 
@@ -20,7 +21,7 @@ describe("MultiTagSelect", () => {
   }];
 
   it("renders with selected tags", () => {
-    const {container} = render(<MultiTagSelect
+    const { container } = render(<MultiTagSelect
       options={options}
       getOptionLabel={(option) => option.label}
       getOptionValue={(option) => option.value}
@@ -32,7 +33,7 @@ describe("MultiTagSelect", () => {
   });
 
   it("render dropdown menu", () => {
-    const {container, getByTestId} = render(<MultiTagSelect
+    const { container, getByTestId } = render(<MultiTagSelect
       options={options}
       getOptionLabel={(option) => option.label}
       getOptionValue={(option) => option.value}

@@ -12,6 +12,9 @@ on:
       - "**.md"
       - docs/**
       - .github/CODEOWNERS
+      - common/changes/**/*.json
+      - "**/CHANGELOG.json"
+      - "**/CHANGELOG.md"
 
 jobs:
   extract-api:
@@ -28,7 +31,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2
         with:
-          node-version: "14"
+          node-version: "18"
 
       - name: Rush install
         run: node common/scripts/install-run-rush.js install
@@ -38,6 +41,16 @@ jobs:
 
       - name: Rush extract-api
         run: node common/scripts/install-run-rush.js extract-api
+
+      - name: Assert no uncommitted changes (for extension api)
+        shell: bash
+        run: |
+          if [ $(git status --porcelain | wc -l) -ne "0" ]; then
+            echo "The following file(s) contain uncommitted changes:"
+            git status --porcelain -u
+            echo "Please do the following:\n1. run extract-api in the core/extension dir \n2. commit the modified generated extension api files (found in the core/frontend and core/extension dirs) \n3. run rush change and commit the change files for core-frontend and core-extension"
+            exit 1
+          fi
 
       - name: Publish extracted api
         uses: actions/upload-artifact@v2

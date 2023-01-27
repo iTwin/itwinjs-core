@@ -48,8 +48,8 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
       const widgetDef = FrontstageManager.findWidget(
         FeatureInfoUiItemsProvider.widgetId
       );
-      if (widgetDef && widgetDef.state !== WidgetState.Open)
-        widgetDef.setWidgetState(WidgetState.Open);
+      if (widgetDef && widgetDef.state !== WidgetState.Open) // eslint-disable-line deprecation/deprecation
+        widgetDef.setWidgetState(WidgetState.Open); // eslint-disable-line deprecation/deprecation
 
       DefaultMapFeatureInfoTool.onMapHit.raiseEvent(hit);
       return EventHandled.Yes;
@@ -68,6 +68,7 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
 
   public async onRestartTool() {
     const tool = new DefaultMapFeatureInfoTool();
-    if (!(await tool.run())) return this.exitTool();
+    if (!(await tool.run()))
+      return this.exitTool();
   }
 }

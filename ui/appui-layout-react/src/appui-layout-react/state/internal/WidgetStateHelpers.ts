@@ -13,7 +13,7 @@ import { FloatingWidgetState, PopoutWidgetState, WidgetState } from "../WidgetSt
 import { getTabLocation } from "../TabLocation";
 import { getWidgetLocation, isFloatingWidgetLocation, isPanelWidgetLocation, isPopoutWidgetLocation, PanelWidgetLocation } from "../WidgetLocation";
 import { Point, Rectangle, RectangleProps } from "@itwin/core-react";
-import { category, setRectangleProps } from "./NineZoneStateHelpers";
+import { category, setRectangleProps, toRectangleProps } from "./NineZoneStateHelpers";
 import { updatePanelState } from "./PanelStateHelpers";
 import { updateTabState } from "./TabStateHelpers";
 
@@ -84,8 +84,8 @@ export function removeWidgetState(state: NineZoneState, id: WidgetState["id"]): 
 
 /** @internal */
 export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial<FloatingWidgetState>): FloatingWidgetState {
+  const bounds = toRectangleProps(args?.bounds);
   return {
-    bounds: new Rectangle().toProps(),
     home: {
       side: "left",
       widgetId: undefined,
@@ -93,20 +93,22 @@ export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: 
     },
     hidden: false,
     ...args,
+    bounds,
     id,
   };
 }
 
 /** @internal */
 export function createPopoutWidgetState(id: PopoutWidgetState["id"], args?: Partial<PopoutWidgetState>): PopoutWidgetState {
+  const bounds = toRectangleProps(args?.bounds);
   return {
-    bounds: new Rectangle().toProps(),
     home: {
       side: "left",
       widgetId: undefined,
       widgetIndex: 0,
     },
     ...args,
+    bounds,
     id,
   };
 }
@@ -222,17 +224,6 @@ export function setWidgetActiveTabId(state: NineZoneState, widgetId: WidgetState
     });
   }
   return state;
-}
-
-/** @internal */
-export function floatingWidgetClearUserSizedFlag(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]) {
-  return produce(state, (draft) => {
-    const floatingWidget = draft.floatingWidgets.byId[floatingWidgetId];
-    floatingWidget.userSized = false;
-    const widget = draft.widgets[floatingWidgetId];
-    const tab = draft.tabs[widget.activeTabId];
-    tab.userSized = false;
-  });
 }
 
 /** @internal */

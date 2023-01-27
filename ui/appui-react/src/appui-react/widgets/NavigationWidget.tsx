@@ -25,7 +25,7 @@ import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
 
 /** Definition of a Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  * @public
- * @deprecated use NavigationWidgetComposer instead
+ * @deprecated in 2.x. Use NavigationWidgetComposer instead
  */
 export class NavigationWidgetDef extends ToolbarWidgetDefBase { // eslint-disable-line deprecation/deprecation
   private _navigationAidId: string;
@@ -33,7 +33,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase { // eslint-disabl
   private _navigationAidControl: NavigationAidControl | undefined;
   private _reactNode: React.ReactNode;
 
-  constructor(props: NavigationWidgetProps) {
+  constructor(props: NavigationWidgetProps) { // eslint-disable-line deprecation/deprecation
     super(props);
 
     this.widgetType = WidgetType.Navigation;
@@ -99,9 +99,9 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase { // eslint-disabl
 
 /** Properties for the [[NavigationWidget]] React component.
  * @public
- * @deprecated use NavigationWidgetComposer instead
+ * @deprecated in 2.x. Use NavigationWidgetComposer instead
  */
-export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
+export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps { // eslint-disable-line deprecation/deprecation
   iModelConnection?: IModelConnection;
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;
@@ -116,7 +116,7 @@ interface NavigationWidgetState {
 
 /** Navigation Widget React component.
  * @public
- * @deprecated use NavigationWidgetComposer instead
+ * @deprecated in 2.x. Use NavigationWidgetComposer instead
  */
 export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> { // eslint-disable-line deprecation/deprecation
 

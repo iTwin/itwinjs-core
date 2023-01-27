@@ -55,11 +55,9 @@ $text-font-color: $buic-text-color;
 
 .components-property-record-value {
   @include record-cell;
-  overflow: hidden;
 
-  span {
+  & > span {
     white-space: nowrap;
-    overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
   }

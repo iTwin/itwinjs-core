@@ -7,7 +7,10 @@
 /// <reference types="react" />
 
 import { AbstractMenuItemProps } from '@itwin/appui-abstract';
+import { AbstractStatusBarActionItem } from '@itwin/appui-abstract';
 import { AbstractStatusBarCustomItem } from '@itwin/appui-abstract';
+import { AbstractStatusBarItem } from '@itwin/appui-abstract';
+import { AbstractStatusBarLabelItem } from '@itwin/appui-abstract';
 import { AbstractToolbarProps } from '@itwin/appui-abstract';
 import { AbstractTreeNodeLoaderWithProvider } from '@itwin/components-react';
 import { AbstractWidgetProps } from '@itwin/appui-abstract';
@@ -15,15 +18,16 @@ import { AccuDraw } from '@itwin/core-frontend';
 import { ActionButton } from '@itwin/appui-abstract';
 import { ActivityMessageDetails } from '@itwin/core-frontend';
 import { ActivityMessageEndReason } from '@itwin/core-frontend';
+import { AllowedUiItemProviderOverrides } from '@itwin/appui-abstract';
 import { AutoSuggestData } from '@itwin/core-react';
 import { BackstageActionItem as BackstageActionItem_2 } from '@itwin/appui-abstract';
-import { BackstageItem } from '@itwin/appui-abstract';
+import { BackstageItem as BackstageItem_2 } from '@itwin/appui-abstract';
 import { BackstageItemsManager } from '@itwin/appui-abstract';
 import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@itwin/appui-abstract';
 import { BadgeType } from '@itwin/appui-abstract';
 import { BaseSolarDataProvider } from '@itwin/imodel-components-react';
 import { BaseTimelineDataProvider } from '@itwin/imodel-components-react';
-import { BaseUiItemsProvider } from '@itwin/appui-abstract';
+import { BaseUiItemsProvider as BaseUiItemsProvider_2 } from '@itwin/appui-abstract';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
@@ -31,10 +35,11 @@ import { BeUiEvent } from '@itwin/core-bentley';
 import { ButtonProps } from '@itwin/itwinui-react';
 import { ColorDef } from '@itwin/core-common';
 import { CommandHandler } from '@itwin/appui-abstract';
+import { CommonBackstageItem as CommonBackstageItem_2 } from '@itwin/appui-abstract';
 import { CommonDivProps } from '@itwin/core-react';
 import { CommonProps } from '@itwin/core-react';
-import { CommonStatusBarItem } from '@itwin/appui-abstract';
-import { CommonToolbarItem } from '@itwin/appui-abstract';
+import { CommonStatusBarItem as CommonStatusBarItem_2 } from '@itwin/appui-abstract';
+import { CommonToolbarItem as CommonToolbarItem_2 } from '@itwin/appui-abstract';
 import { CompassMode } from '@itwin/core-frontend';
 import { ConditionalBooleanValue } from '@itwin/appui-abstract';
 import { ConditionalStringValue } from '@itwin/appui-abstract';
@@ -85,6 +90,7 @@ import { MessageSeverity } from '@itwin/appui-abstract';
 import { MessageType } from '@itwin/core-react';
 import { NestedStagePanelKey } from '@itwin/appui-layout-react';
 import { NestedStagePanelsManagerProps } from '@itwin/appui-layout-react';
+import { NineZoneAction } from '@itwin/appui-layout-react';
 import { NineZoneDispatch } from '@itwin/appui-layout-react';
 import { NineZoneLabels } from '@itwin/appui-layout-react';
 import { NineZoneManager } from '@itwin/appui-layout-react';
@@ -115,6 +121,7 @@ import { Primitives } from '@itwin/appui-abstract';
 import { PropertyDescription } from '@itwin/appui-abstract';
 import { PropertyRecord } from '@itwin/appui-abstract';
 import { PropertyUpdatedArgs } from '@itwin/components-react';
+import { ProvidedItem } from '@itwin/appui-abstract';
 import { QuantityTypeArg } from '@itwin/core-frontend';
 import * as React_2 from 'react';
 import { ReactNode } from 'react';
@@ -124,7 +131,7 @@ import { RectangleProps } from '@itwin/core-react';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { ResizeHandle } from '@itwin/appui-layout-react';
 import { Ruleset } from '@itwin/presentation-common';
-import { SafeAreaInsets } from '@itwin/appui-layout-react';
+import { SafeAreaInsets as SafeAreaInsets_2 } from '@itwin/appui-layout-react';
 import { ScreenViewport } from '@itwin/core-frontend';
 import { SelectionMode as SelectionMode_2 } from '@itwin/components-react';
 import { SettingsManager } from '@itwin/core-react';
@@ -134,14 +141,14 @@ import { SizeProps } from '@itwin/core-react';
 import { SnapMode } from '@itwin/core-frontend';
 import { SolarDataProvider } from '@itwin/imodel-components-react';
 import { SpecialKey } from '@itwin/appui-abstract';
-import { StagePanelLocation } from '@itwin/appui-abstract';
-import { StagePanelSection } from '@itwin/appui-abstract';
+import { StagePanelLocation as StagePanelLocation_2 } from '@itwin/appui-abstract';
+import { StagePanelSection as StagePanelSection_2 } from '@itwin/appui-abstract';
 import { StagePanelType } from '@itwin/appui-layout-react';
-import { StageUsage } from '@itwin/appui-abstract';
+import { StageUsage as StageUsage_2 } from '@itwin/appui-abstract';
 import { StandardViewId } from '@itwin/core-frontend';
 import { StatusBarItemsManager as StatusBarItemsManager_2 } from '@itwin/appui-abstract';
-import { StatusBarLabelSide } from '@itwin/appui-abstract';
-import { StatusBarSection } from '@itwin/appui-abstract';
+import { StatusBarLabelSide as StatusBarLabelSide_2 } from '@itwin/appui-abstract';
+import { StatusBarSection as StatusBarSection_2 } from '@itwin/appui-abstract';
 import { Store } from 'redux';
 import { StringGetter } from '@itwin/appui-abstract';
 import { Subscription } from '@itwin/components-react';
@@ -155,11 +162,11 @@ import { Tool } from '@itwin/core-frontend';
 import { ToolAdmin } from '@itwin/core-frontend';
 import { ToolAssistanceInstruction } from '@itwin/core-frontend';
 import { ToolAssistanceInstructions } from '@itwin/core-frontend';
-import { ToolbarItem } from '@itwin/appui-abstract';
+import { ToolbarItem as ToolbarItem_2 } from '@itwin/appui-abstract';
 import { ToolbarItemsManager } from '@itwin/appui-abstract';
-import { ToolbarOrientation } from '@itwin/appui-abstract';
+import { ToolbarOrientation as ToolbarOrientation_2 } from '@itwin/appui-abstract';
 import { ToolbarPanelAlignment } from '@itwin/appui-layout-react';
-import { ToolbarUsage } from '@itwin/appui-abstract';
+import { ToolbarUsage as ToolbarUsage_2 } from '@itwin/appui-abstract';
 import { ToolSettingsWidgetManagerProps } from '@itwin/appui-layout-react';
 import { ToolTipOptions } from '@itwin/core-frontend';
 import { TreeCheckboxStateChangeEventArgs } from '@itwin/components-react';
@@ -172,7 +179,10 @@ import { UiAdmin } from '@itwin/appui-abstract';
 import { UiDataProvider } from '@itwin/appui-abstract';
 import { UiEvent } from '@itwin/appui-abstract';
 import { UiEvent as UiEvent_2 } from '@itwin/core-react';
-import { UiItemsProvider } from '@itwin/appui-abstract';
+import { UiItemProviderOverrides } from '@itwin/appui-abstract';
+import { UiItemProviderRegisteredEventArgs } from '@itwin/appui-abstract';
+import { UiItemsManager as UiItemsManager_2 } from '@itwin/appui-abstract';
+import { UiItemsProvider as UiItemsProvider_2 } from '@itwin/appui-abstract';
 import { UiLayoutDataProvider } from '@itwin/appui-abstract';
 import { UiStateEntry } from '@itwin/core-react';
 import { UiStateStorage } from '@itwin/core-react';
@@ -194,7 +204,7 @@ import { ViewStateProp } from '@itwin/imodel-components-react';
 import { ViewStateProps } from '@itwin/core-common';
 import { ViewWithUnifiedSelectionProps } from '@itwin/presentation-components';
 import { WidgetManagerProps } from '@itwin/appui-layout-react';
-import { WidgetState } from '@itwin/appui-abstract';
+import { WidgetState as WidgetState_2 } from '@itwin/appui-abstract';
 import { WidgetZoneId } from '@itwin/appui-layout-react';
 import { WritableDraft } from 'immer/dist/internal';
 import { XAndY } from '@itwin/core-geometry';
@@ -416,7 +426,7 @@ export type ActionCreatorsObject = {
     [actionCreatorName: string]: FunctionType;
 };
 
-// @public
+// @public @deprecated
 export class ActionItemButton extends React_2.Component<ActionItemButtonProps, BaseItemState> {
     constructor(props: ActionItemButtonProps);
     // @internal (undocumented)
@@ -431,7 +441,7 @@ export class ActionItemButton extends React_2.Component<ActionItemButtonProps, B
     readonly state: Readonly<BaseItemState>;
 }
 
-// @public
+// @public @deprecated
 export interface ActionItemButtonProps extends CommonProps {
     actionItem: ActionButtonItemDef;
     isEnabled?: boolean;
@@ -491,10 +501,10 @@ export interface ActivityMessageEventArgs {
     restored?: boolean;
 }
 
-// @public
+// @public @deprecated
 export function ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface ActivityMessagePopupProps extends CommonProps {
     // (undocumented)
     cancelActivityMessage?: () => void;
@@ -502,7 +512,7 @@ export interface ActivityMessagePopupProps extends CommonProps {
     dismissActivityMessage?: () => void;
 }
 
-// @public
+// @public @deprecated
 export interface ActivityMessageProps {
     // (undocumented)
     activityMessageInfo: ActivityMessageEventArgs;
@@ -525,6 +535,9 @@ export function addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageD
 // @internal (undocumented)
 export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: PanelSide, widgetId: WidgetIdTypes): NineZoneState;
 
+// @beta
+export type AllowedUiItemsProviderOverrides = AllowedUiItemProviderOverrides;
+
 // @public
 export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport);
@@ -539,10 +552,13 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
 // @public
 export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef;
 
+// @beta
+export type AnyStatusBarItem = CommonStatusBarItem_2;
+
 // @public
 export type AnyToolbarItemDef = AnyItemDef | CustomItemDef;
 
-// @public
+// @public @deprecated
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
 // @internal (undocumented)
@@ -580,7 +596,7 @@ export class AppUiSettings implements UserSettingsProvider {
     colorTheme: UiStateEntry<string>;
     // (undocumented)
     dragInteraction: UiStateEntry<boolean>;
-    // (undocumented)
+    // @deprecated (undocumented)
     frameworkVersion: UiStateEntry<FrameworkVersionId>;
     // (undocumented)
     loadUserSettings(storage: UiStateStorage): Promise<void>;
@@ -588,6 +604,8 @@ export class AppUiSettings implements UserSettingsProvider {
     readonly providerId = "AppUiSettingsProvider";
     // (undocumented)
     showWidgetIcon: UiStateEntry<boolean>;
+    // (undocumented)
+    toolbarOpacity: UiStateEntry<number>;
     // (undocumented)
     useToolAsToolSettingsLabel: UiStateEntry<boolean>;
     // (undocumented)
@@ -597,7 +615,7 @@ export class AppUiSettings implements UserSettingsProvider {
 // @beta
 export function areNoFeatureOverridesActive(): boolean;
 
-// @public
+// @public @deprecated
 export class Backstage extends React_2.Component<BackstageProps, BackstageState> {
     constructor(props: BackstageProps);
     static get backstageToggleCommand(): CommandItemDef;
@@ -620,7 +638,7 @@ export class Backstage extends React_2.Component<BackstageProps, BackstageState>
     readonly state: BackstageState;
 }
 
-// @beta @deprecated
+// @beta
 export interface BackstageActionItem extends BackstageActionItem_2 {
     // (undocumented)
     readonly type: BackstageItemType.ActionItem;
@@ -653,7 +671,7 @@ export function BackstageComposerItem({ item }: BackstageComposerItemProps): JSX
 
 // @internal
 export interface BackstageComposerItemProps {
-    readonly item: BackstageItem;
+    readonly item: BackstageItem_2;
     // (undocumented)
     readonly providerId?: string;
 }
@@ -662,7 +680,7 @@ export interface BackstageComposerItemProps {
 export interface BackstageComposerProps extends CommonProps {
     readonly header?: React_2.ReactNode;
     readonly hideSoloStageEntry?: boolean;
-    readonly items?: BackstageItem[];
+    readonly items?: BackstageItem_2[];
     readonly showOverlay?: boolean;
 }
 
@@ -675,7 +693,7 @@ export interface BackstageComposerStageLauncherProps {
     readonly item: BackstageStageLauncher_2;
 }
 
-// @public
+// @public @deprecated
 export class BackstageEvent extends UiEvent_2<BackstageEventArgs> {
 }
 
@@ -684,6 +702,9 @@ export interface BackstageEventArgs {
     // (undocumented)
     isVisible: boolean;
 }
+
+// @beta
+export type BackstageItem = BackstageItem_2;
 
 // @public @deprecated
 export interface BackstageItemProps extends IconProps {
@@ -721,12 +742,11 @@ export enum BackstageItemType {
     StageLauncher = 2
 }
 
-// @beta @deprecated
+// @beta
 export class BackstageItemUtilities {
-    // @deprecated
     static createActionItem: (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, overrides?: Partial<BackstageActionItem> | undefined) => BackstageActionItem;
-    // @deprecated
     static createStageLauncher: (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, overrides?: Partial<BackstageStageLauncher> | undefined) => BackstageStageLauncher;
+    // @deprecated
     static getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 }
 
@@ -744,7 +764,7 @@ export class BackstageManager {
     toggle(): void;
 }
 
-// @public
+// @public @deprecated
 export interface BackstageProps extends CommonProps {
     // (undocumented)
     header?: React_2.ReactNode;
@@ -756,7 +776,7 @@ export interface BackstageProps extends CommonProps {
     showOverlay?: boolean;
 }
 
-// @beta @deprecated
+// @beta
 export interface BackstageStageLauncher extends BackstageStageLauncher_2 {
     // (undocumented)
     readonly type: BackstageItemType.StageLauncher;
@@ -780,13 +800,17 @@ export interface BaseItemState {
     isVisible?: boolean;
 }
 
+// @beta
+export class BaseUiItemsProvider extends BaseUiItemsProvider_2 {
+}
+
 // @public
 export function BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element;
 
 // @public
 export interface BasicNavigationWidgetProps {
-    additionalHorizontalItems?: CommonToolbarItem[];
-    additionalVerticalItems?: CommonToolbarItem[];
+    additionalHorizontalItems?: CommonToolbarItem_2[];
+    additionalVerticalItems?: CommonToolbarItem_2[];
 }
 
 // @public
@@ -794,8 +818,8 @@ export function BasicToolWidget(props: BasicToolWidgetProps): JSX.Element;
 
 // @public
 export interface BasicToolWidgetProps {
-    additionalHorizontalItems?: CommonToolbarItem[];
-    additionalVerticalItems?: CommonToolbarItem[];
+    additionalHorizontalItems?: CommonToolbarItem_2[];
+    additionalVerticalItems?: CommonToolbarItem_2[];
     icon?: string;
     showCategoryAndModelsContextTools?: boolean;
 }
@@ -972,7 +996,7 @@ export interface CardSelectedEventArgs {
     index: number;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface Category {
     // (undocumented)
     children?: string[];
@@ -980,10 +1004,10 @@ export interface Category {
     key: string;
 }
 
-// @public
+// @public @deprecated
 export function CategoryTree(props: CategoryTreeProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface CategoryTreeProps {
     activeView?: Viewport;
     allViewports?: boolean;
@@ -999,7 +1023,7 @@ export interface CategoryTreeProps {
     width: number;
 }
 
-// @alpha (undocumented)
+// @alpha @deprecated (undocumented)
 export class CategoryVisibilityHandler implements IVisibilityHandler {
     constructor(params: CategoryVisibilityHandlerParams);
     // (undocumented)
@@ -1022,7 +1046,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     onVisibilityChange: BeEvent<VisibilityChangeListener>;
 }
 
-// @alpha (undocumented)
+// @alpha @deprecated (undocumented)
 export interface CategoryVisibilityHandlerParams {
     // (undocumented)
     activeView?: Viewport;
@@ -1063,7 +1087,7 @@ export class ChildWindowManager {
     get openChildWindows(): OpenChildWindowInfo[];
 }
 
-// @beta
+// @beta @deprecated
 export enum ClassGroupingOption {
     No = 0,
     Yes = 1,
@@ -1134,6 +1158,20 @@ export interface CommandLaunchBackstageItemProps extends BackstageItemProps, Com
     commandId: string;
 }
 
+// @beta
+export type CommonBackstageItem = CommonBackstageItem_2;
+
+// @beta
+export type CommonStatusBarItem = AbstractStatusBarItem;
+
+// @beta
+export type CommonToolbarItem = ToolbarItem_2;
+
+// @beta
+export interface CommonWidgetProps extends Readonly<AbstractWidgetProps> {
+    readonly id: string;
+}
+
 // @public @deprecated
 export class ConditionalField extends React_2.PureComponent<ConditionalFieldProps, ConditionalFieldState> {
     constructor(props: ConditionalFieldProps);
@@ -1186,7 +1224,7 @@ export enum ConfigurableUiActionId {
     AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
     // (undocumented)
     SetDragInteraction = "configurableui:set-drag-interaction",
-    // (undocumented)
+    // @deprecated (undocumented)
     SetFrameworkVersion = "configurableui:set-framework-version",
     // (undocumented)
     SetShowWidgetIcon = "configurableui:set-show-widget-icon",
@@ -1194,6 +1232,8 @@ export enum ConfigurableUiActionId {
     SetSnapMode = "configurableui:set_snapmode",
     // (undocumented)
     SetTheme = "configurableui:set_theme",
+    // (undocumented)
+    SetToolbarOpacity = "configurableui:set-toolbar-opacity",
     // (undocumented)
     SetToolPrompt = "configurableui:set_toolprompt",
     // (undocumented)
@@ -1217,6 +1257,7 @@ export const ConfigurableUiActions: {
     setViewOverlayDisplay: (displayViewOverlay: boolean) => ActionWithPayload<ConfigurableUiActionId.SetViewOverlayDisplay, boolean>;
     setAnimateToolSettings: (animateToolSettings: boolean) => ActionWithPayload<ConfigurableUiActionId.AnimateToolSettings, boolean>;
     setUseToolAsToolSettingsLabel: (useToolAsToolSettingsLabel: boolean) => ActionWithPayload<ConfigurableUiActionId.UseToolAsToolSettingsLabel, boolean>;
+    setToolbarOpacity: (opacity: number) => ActionWithPayload<ConfigurableUiActionId.SetToolbarOpacity, number>;
 };
 
 // @public
@@ -1312,7 +1353,7 @@ export interface ConfigurableUiState {
     animateToolSettings: boolean;
     // (undocumented)
     autoCollapseUnpinnedPanels: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
     showWidgetIcon: boolean;
@@ -1320,6 +1361,8 @@ export interface ConfigurableUiState {
     snapMode: number;
     // (undocumented)
     theme: string;
+    // (undocumented)
+    toolbarOpacity: number;
     // (undocumented)
     toolPrompt: string;
     // (undocumented)
@@ -1453,9 +1496,11 @@ export interface ContentGroupProps {
 // @public
 export abstract class ContentGroupProvider {
     applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps): ContentGroupProps;
+    // @beta
+    contentGroup?(config: FrontstageConfig): Promise<ContentGroup>;
     onFrontstageDeactivated(): Promise<void>;
     prepareToSaveProps(contentGroupProps: ContentGroupProps): ContentGroupProps;
-    // (undocumented)
+    // @deprecated
     abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
 }
 
@@ -1575,6 +1620,7 @@ export class CoreTools {
     static get fitViewCommand(): ToolItemDef;
     // (undocumented)
     static get flyViewCommand(): ToolItemDef;
+    // @deprecated
     static get keyinBrowserButtonItemDef(): CustomItemDef;
     // (undocumented)
     static get keyinPaletteButtonItemDef(): ToolItemDef;
@@ -1605,6 +1651,8 @@ export class CoreTools {
     // (undocumented)
     static get selectElementCommand(): ToolItemDef;
     // (undocumented)
+    static get setupCameraWalkTool(): ToolItemDef;
+    // (undocumented)
     static get toggleCameraViewCommand(): ToolItemDef;
     // (undocumented)
     static get viewRedoCommand(): ToolItemDef;
@@ -1627,7 +1675,7 @@ export function createAction<T extends string, P>(type: T, payload: P): ActionWi
 // @internal @deprecated
 export function createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef;
 
-// @alpha
+// @alpha @deprecated
 export const createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element;
 
 // @public
@@ -1945,6 +1993,7 @@ export interface DefaultNavigationTools {
     vertical?: {
         walk?: boolean;
         toggleCamera?: boolean;
+        setupWalkCamera?: boolean;
     };
 }
 
@@ -2035,12 +2084,18 @@ export class DialogManagerBase {
     // (undocumented)
     emitDialogChangedEvent(): void;
     // (undocumented)
+    static getDialogZIndexDefault(): number;
+    static initialize(): void;
+    // (undocumented)
     get onDialogChangedEvent(): DialogChangedEvent;
     openDialog(dialog: React_2.ReactNode, id?: string, parentDocument?: Document): void;
     // (undocumented)
     pushDialog(dialogInfo: DialogInfo): void;
     // (undocumented)
     removeDialog(dialog: React_2.ReactNode): void;
+    // (undocumented)
+    static get topZIndex(): number;
+    static set topZIndex(zIndex: number);
     // (undocumented)
     update(): void;
 }
@@ -2061,6 +2116,8 @@ export class DialogRendererBase extends React_2.PureComponent<DialogRendererProp
 export interface DialogRendererProps {
     // (undocumented)
     dialogManager: DialogManagerBase;
+    // (undocumented)
+    style?: React_2.CSSProperties;
 }
 
 // @internal
@@ -2143,10 +2200,10 @@ export function expandWidget(state: NineZoneState, id: TabState["id"]): NineZone
 // @public
 export interface ExtensibleToolbarProps {
     // (undocumented)
-    items: CommonToolbarItem[];
-    orientation: ToolbarOrientation;
+    items: CommonToolbarItem_2[];
+    orientation: ToolbarOrientation_2;
     // (undocumented)
-    usage: ToolbarUsage;
+    usage: ToolbarUsage_2;
 }
 
 // @beta
@@ -2170,8 +2227,9 @@ export class FloatingViewportContentControl extends ViewportContentControl {
 // @beta (undocumented)
 export interface FloatingViewportContentProps {
     contentId: string;
-    initialViewState: ViewState;
+    initialViewState: ViewStateProp;
     onContextMenu?: (e: React_2.MouseEvent) => boolean;
+    viewportRef?: React_2.Ref<ScreenViewport>;
 }
 
 // @alpha
@@ -2240,7 +2298,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 export const FrameworkReducer: (state: CombinedReducerState<    {
 configurableUiState: typeof ConfigurableUiReducer;
 sessionState: typeof SessionStateReducer;
-}>, action: DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, FrameworkVersionId>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AnimateToolSettings, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.UseToolAsToolSettingsLabel, boolean>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, DeepReadonlyArray<PresentationSelectionScope>>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, DeepReadonlyObject<CursorMenuData>>>) => CombinedReducerState<    {
+}>, action: DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, FrameworkVersionId>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AnimateToolSettings, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.UseToolAsToolSettingsLabel, boolean>> | DeepReadonlyObject<ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolbarOpacity, number>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, DeepReadonlyArray<PresentationSelectionScope>>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | DeepReadonlyObject<ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, DeepReadonlyObject<CursorMenuData>>>) => CombinedReducerState<    {
 configurableUiState: typeof ConfigurableUiReducer;
 sessionState: typeof SessionStateReducer;
 }>;
@@ -2280,7 +2338,7 @@ export interface FrameworkStagePanelProps {
     // (undocumented)
     isTargeted: boolean;
     // (undocumented)
-    location: StagePanelLocation;
+    location: StagePanelLocation_2;
     // (undocumented)
     maxSize?: number;
     // (undocumented)
@@ -2310,6 +2368,9 @@ export interface FrameworkState {
     // (undocumented)
     sessionState: SessionState;
 }
+
+// @internal (undocumented)
+export function FrameworkStateReducer(state: NineZoneState, action: NineZoneAction, frontstageDef: FrontstageDef): NineZoneState;
 
 // @alpha
 export class FrameworkToolAdmin extends ToolAdmin {
@@ -2353,7 +2414,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
 }
 
-// @public
+// @public @deprecated
 export function FrameworkVersion(props: FrameworkVersionProps): JSX.Element;
 
 // @internal
@@ -2368,13 +2429,13 @@ export interface FrameworkVersionChangedEventArgs {
     version: FrameworkVersionId;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export const FrameworkVersionContext: React_2.Context<FrameworkVersionId>;
 
-// @public
+// @public @deprecated
 export type FrameworkVersionId = "1" | "2";
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export interface FrameworkVersionProps {
     // (undocumented)
     children?: React_2.ReactNode;
@@ -2433,7 +2494,7 @@ export interface FrameworkZoneProps extends CommonProps {
     zone: ZoneManagerProps;
 }
 
-// @public
+// @public @deprecated
 export class Frontstage extends React_2.Component<FrontstageProps, FrontstageState> {
     // @internal
     constructor(props: FrontstageProps);
@@ -2444,7 +2505,7 @@ export class Frontstage extends React_2.Component<FrontstageProps, FrontstageSta
     // @internal
     componentWillUnmount(): void;
     // @internal (undocumented)
-    static createStagePanelDef(panelLocation: StagePanelLocation, props: FrontstageProps): StagePanelDef | undefined;
+    static createStagePanelDef(panelLocation: StagePanelLocation_2, props: FrontstageProps): StagePanelDef | undefined;
     // @internal (undocumented)
     static createZoneDef(zoneNode: React_2.ReactElement<ZoneProps> | undefined, zoneLocation: ZoneLocation, props: FrontstageProps): ZoneDef | undefined;
     // @internal
@@ -2480,13 +2541,13 @@ export class FrontstageComposer extends React_2.Component<CommonProps, Frontstag
     // (undocumented)
     handleFloatingZonesBoundsChange(bounds: RectangleProps): void;
     // @alpha (undocumented)
-    handlePanelInitialize(panelLocation: StagePanelLocation, size: number): void;
+    handlePanelInitialize(panelLocation: StagePanelLocation_2, size: number): void;
     // @alpha (undocumented)
-    handlePanelPaneTargetChange(panelLocation: StagePanelLocation, paneIndex: number | undefined): void;
+    handlePanelPaneTargetChange(panelLocation: StagePanelLocation_2, paneIndex: number | undefined): void;
     // @alpha (undocumented)
-    handlePanelResize(panelLocation: StagePanelLocation, resizeBy: number): void;
+    handlePanelResize(panelLocation: StagePanelLocation_2, resizeBy: number): void;
     // @alpha (undocumented)
-    handlePanelTargetChange(panelLocation: StagePanelLocation | undefined): void;
+    handlePanelTargetChange(panelLocation: StagePanelLocation_2 | undefined): void;
     // (undocumented)
     handleResize: (zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => void;
     // (undocumented)
@@ -2500,7 +2561,7 @@ export class FrontstageComposer extends React_2.Component<CommonProps, Frontstag
     // (undocumented)
     handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void;
     // @alpha (undocumented)
-    handleTogglePanelCollapse(panelLocation: StagePanelLocation): void;
+    handleTogglePanelCollapse(panelLocation: StagePanelLocation_2): void;
     // (undocumented)
     handleWidgetStateChange(widgetId: WidgetZoneId, tabIndex: number, isOpening: boolean): void;
     // (undocumented)
@@ -2513,6 +2574,22 @@ export class FrontstageComposer extends React_2.Component<CommonProps, Frontstag
     setZoneAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean): void;
     // @internal (undocumented)
     readonly state: Readonly<FrontstageComposerState>;
+}
+
+// @beta
+export interface FrontstageConfig extends CommonProps {
+    readonly bottomPanel?: StagePanelConfig;
+    readonly contentGroup: ContentGroup | ContentGroupProvider;
+    readonly contentManipulation?: WidgetConfig;
+    readonly id: string;
+    readonly leftPanel?: StagePanelConfig;
+    readonly rightPanel?: StagePanelConfig;
+    readonly statusBar?: WidgetConfig;
+    readonly toolSettings?: WidgetConfig;
+    readonly topPanel?: StagePanelConfig;
+    readonly usage?: string;
+    readonly version: number;
+    readonly viewNavigation?: WidgetConfig;
 }
 
 // @public
@@ -2532,21 +2609,21 @@ export interface FrontstageDeactivatedEventArgs {
 export class FrontstageDef {
     // (undocumented)
     addFloatingContentControl(contentControl?: ContentControl): void;
-    // (undocumented)
+    // @deprecated (undocumented)
     get applicationData(): any | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get bottomCenter(): ZoneDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get bottomLeft(): ZoneDef | undefined;
     // @beta @deprecated (undocumented)
     get bottomMostPanel(): StagePanelDef | undefined;
     // @beta (undocumented)
     get bottomPanel(): StagePanelDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get bottomRight(): ZoneDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get centerLeft(): ZoneDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get centerRight(): ZoneDef | undefined;
     get contentControls(): ContentControl[];
     // (undocumented)
@@ -2555,10 +2632,12 @@ export class FrontstageDef {
     get contentGroupProvider(): ContentGroupProvider | undefined;
     // (undocumented)
     get contentLayoutDef(): ContentLayoutDef | undefined;
+    // @beta (undocumented)
+    get contentManipulation(): WidgetDef | undefined;
     static create(provider: FrontstageProvider): Promise<FrontstageDef>;
-    // (undocumented)
+    // @deprecated (undocumented)
     get defaultContentId(): string;
-    // (undocumented)
+    // @deprecated (undocumented)
     get defaultTool(): ToolItemDef | undefined;
     // @internal
     dockPopoutWidgetContainer(widgetContainerId: string): void;
@@ -2582,9 +2661,10 @@ export class FrontstageDef {
     // @internal
     getPanelCurrentState(panelDef: StagePanelDef): [StagePanelState, number];
     // @beta
-    getStagePanelDef(location: StagePanelLocation): StagePanelDef | undefined;
+    getStagePanelDef(location: StagePanelLocation_2): StagePanelDef | undefined;
     // @internal
-    getWidgetCurrentState(widgetDef: WidgetDef): WidgetState | undefined;
+    getWidgetCurrentState(widgetDef: WidgetDef): WidgetState_2 | undefined;
+    // @deprecated
     getZoneDef(zoneId: number): ZoneDef | undefined;
     // (undocumented)
     get id(): string;
@@ -2636,24 +2716,27 @@ export class FrontstageDef {
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
     setActiveViewFromViewport(viewport: ScreenViewport): boolean;
     setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
-    // @internal (undocumented)
-    setFloatingWidgetBoundsInternal(floatingWidgetId: string, bounds: RectangleProps, inhibitNineZoneStateChangedEvent?: boolean): void;
     // (undocumented)
     setFloatingWidgetContainerBounds(floatingWidgetId: string, bounds: RectangleProps): boolean;
     // @internal (undocumented)
     setIsApplicationClosing(value: boolean): void;
+    // @deprecated
     startDefaultTool(): void;
+    // @beta (undocumented)
+    get statusBar(): WidgetDef | undefined;
     // @internal (undocumented)
     get timeTracker(): TimeTracker;
-    // (undocumented)
+    // @beta (undocumented)
+    get toolSettings(): WidgetDef | undefined;
+    // @deprecated (undocumented)
     get topCenter(): ZoneDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get topLeft(): ZoneDef | undefined;
     // @beta @deprecated (undocumented)
     get topMostPanel(): StagePanelDef | undefined;
     // @beta (undocumented)
     get topPanel(): StagePanelDef | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get topRight(): ZoneDef | undefined;
     // @internal (undocumented)
     updateWidgetDefs(): void;
@@ -2661,11 +2744,14 @@ export class FrontstageDef {
     get usage(): string;
     // (undocumented)
     get version(): number;
+    // @beta (undocumented)
+    get viewNavigation(): WidgetDef | undefined;
     waitUntilReady(): Promise<void>;
     // @internal
     get widgetDefs(): {
         [Symbol.iterator](): Iterator<WidgetDef, any, undefined>;
     };
+    // @deprecated
     get zoneDefs(): ZoneDef[];
 }
 
@@ -2718,6 +2804,8 @@ export class FrontstageManager {
     // @internal
     static ensureToolInformationIsSet(toolId: string): void;
     static findWidget(widgetId: string): WidgetDef | undefined;
+    // @internal (undocumented)
+    static get frontstageDefs(): ReadonlyMap<string, FrontstageDef>;
     static getFrontstageDef(id?: string): Promise<FrontstageDef | undefined>;
     // (undocumented)
     static hasFrontstage(frontstageId: string): boolean;
@@ -2728,6 +2816,7 @@ export class FrontstageManager {
     static get isLoading(): boolean;
     static get modalFrontstageCount(): number;
     static get nestedFrontstageCount(): number;
+    // @deprecated
     static get NineZoneManager(): NineZoneManager;
     // @internal (undocumented)
     static get nineZoneSize(): Size | undefined;
@@ -2773,7 +2862,7 @@ export class FrontstageManager {
     static setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection): void;
     static setActiveTool(tool: Tool): void;
     static setActiveToolId(toolId: string): void;
-    static setWidgetState(widgetId: string, state: WidgetState): boolean;
+    static setWidgetState(widgetId: string, state: WidgetState_2): boolean;
     static updateModalFrontstage(): void;
 }
 
@@ -2783,7 +2872,7 @@ export interface FrontstageNineZoneStateChangedEventArgs extends FrontstageEvent
     state: NineZoneState | undefined;
 }
 
-// @public
+// @public @deprecated
 export interface FrontstageProps extends CommonProps {
     applicationData?: any;
     // @deprecated
@@ -2829,8 +2918,10 @@ export interface FrontstageProps extends CommonProps {
 
 // @public
 export abstract class FrontstageProvider {
-    // (undocumented)
+    // @deprecated
     abstract get frontstage(): React_2.ReactElement<FrontstageProps>;
+    // @beta
+    frontstageConfig?(): FrontstageConfig;
     abstract get id(): string;
 }
 
@@ -2873,7 +2964,7 @@ export const getBackstageItemStateFromProps: (props: BackstageItemProps) => Back
 // @internal (undocumented)
 export function getBadgeClassName(badgeType: BadgeType | undefined): "uifw-badge-new" | "uifw-badge-tp" | undefined;
 
-// @alpha
+// @alpha @deprecated
 export function getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise<string[]>;
 
 // @internal (undocumented)
@@ -2910,7 +3001,7 @@ export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue;
 export function getListPanel(props: ListPickerProps): React_2.ReactNode;
 
 // @internal (undocumented)
-export const getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
+export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
 
 // @internal (undocumented)
 export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[];
@@ -2922,29 +3013,34 @@ export function getQuantityFormatsSettingsManagerEntry(itemPriority: number, opt
 export function getSelectionContextSyncEventIds(): string[];
 
 // @internal (undocumented)
-export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps;
+export function getStableWidgetProps<T extends {
+    id?: string;
+}>(widgetProps: T, stableId: string): T;
 
 // @internal (undocumented)
-export const getStagePanelType: (location: StagePanelLocation) => StagePanelType;
+export const getStagePanelType: (location: StagePanelLocation_2) => StagePanelType;
 
 // @beta
+export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntry;
+
+// @beta @deprecated (undocumented)
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry;
 
 // @internal (undocumented)
 export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes;
 
-// @public
+// @public @deprecated
 export function GroupButton(props: GroupButtonProps): JSX.Element;
 
 // @internal
 export function GroupButtonItem(props: GroupButtonProps_2): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface GroupButtonProps extends GroupItemProps, CommonProps {
 }
 
 // @internal (undocumented)
-export type GroupedItems = ReadonlyArray<ReadonlyArray<BackstageItem>>;
+export type GroupedItems = ReadonlyArray<ReadonlyArray<BackstageItem_2>>;
 
 // @internal
 export class GroupItem extends React_2.Component<GroupItemComponentProps, GroupItemState> {
@@ -2970,9 +3066,9 @@ export class GroupItemDef extends ActionButtonItemDef {
     constructor(groupItemProps: GroupItemProps, onItemExecuted?: OnItemExecutedFunc);
     // (undocumented)
     defaultActiveItemId?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     direction: Direction;
-    // (undocumented)
+    // @deprecated (undocumented)
     directionExplicit: boolean;
     // (undocumented)
     execute(): void;
@@ -2998,7 +3094,7 @@ export class GroupItemDef extends ActionButtonItemDef {
     // (undocumented)
     resolveItems(force?: boolean): void;
     setPanelLabel(v: string | StringGetter | ConditionalStringValue): void;
-    // (undocumented)
+    // @deprecated (undocumented)
     toolbarReactNode(index?: number): React_2.ReactNode;
 }
 
@@ -3006,7 +3102,7 @@ export class GroupItemDef extends ActionButtonItemDef {
 export interface GroupItemProps extends ItemProps {
     // (undocumented)
     defaultActiveItemId?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     direction?: Direction;
     // (undocumented)
     groupId?: string;
@@ -3173,7 +3269,7 @@ export interface IModelViewportControlOptions {
 // @internal
 export const INACTIVITY_TIME_DEFAULT = 3500;
 
-// @beta
+// @beta @deprecated
 export function Indicator(props: IndicatorProps): JSX.Element;
 
 // @public
@@ -3186,10 +3282,12 @@ export interface InitialAppUiSettings {
     colorTheme: string;
     // (undocumented)
     dragInteraction: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
     showWidgetIcon?: boolean;
+    // (undocumented)
+    toolbarOpacity: number;
     // (undocumented)
     useToolAsToolSettingsLabel?: boolean;
     // (undocumented)
@@ -3267,6 +3365,12 @@ export enum InputStatus {
     Valid = 0
 }
 
+// @beta
+export function isBackstageActionItem(item: BackstageItem): item is BackstageActionItem_2;
+
+// @beta
+export function isBackstageStageLauncher(item: BackstageItem): item is BackstageStageLauncher_2;
+
 // @internal (undocumented)
 export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open;
 
@@ -3288,8 +3392,26 @@ export const isReactContent: (content: PopupContentType) => content is ReactCont
 // @internal
 export const isReactNotifyMessageDetails: (details: any) => details is ReactNotifyMessageDetails;
 
-// @public
-export const isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem;
+// @beta
+export function isStatusBarActionItem(item: AnyStatusBarItem): item is StatusBarActionItem;
+
+// @beta
+export function isStatusBarCustomItem(item: AnyStatusBarItem): item is StatusBarCustomItem;
+
+// @public @deprecated
+export const isStatusBarItem: (item: CommonStatusBarItem_2) => item is StatusBarItem;
+
+// @beta
+export function isStatusBarLabelItem(item: AnyStatusBarItem): item is StatusBarLabelItem;
+
+// @beta
+export function isToolbarActionItem(item: ToolbarItem): item is ToolbarActionItem;
+
+// @beta
+export function isToolbarCustomItem(item: ToolbarItem): item is ToolbarCustomItem;
+
+// @beta
+export function isToolbarGroupItem(item: ToolbarItem): item is ToolbarGroupItem;
 
 // @internal (undocumented)
 export const isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps;
@@ -3382,7 +3504,7 @@ export interface ItemProps extends IconProps {
     tooltipKey?: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface IVisibilityHandler extends IDisposable {
     // (undocumented)
     changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
@@ -3576,7 +3698,7 @@ export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
     render(): JSX.Element;
 }
 
-// @beta
+// @beta @deprecated
 export class ListPickerBase extends React_2.PureComponent<ListPickerProps, ListPickerState> {
     constructor(props: any);
     // @internal (undocumented)
@@ -3932,10 +4054,10 @@ export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
     render(): React_2.ReactNode;
 }
 
-// @public
+// @public @deprecated
 export function ModelsTree(props: ModelsTreeProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export enum ModelsTreeNodeType {
     // (undocumented)
     Category = 3,
@@ -3951,7 +4073,7 @@ export enum ModelsTreeNodeType {
     Unknown = 0
 }
 
-// @public
+// @public @deprecated
 export interface ModelsTreeProps {
     activeView?: Viewport;
     // @beta
@@ -3974,10 +4096,10 @@ export interface ModelsTreeProps {
     width: number;
 }
 
-// @beta
+// @beta @deprecated
 export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 
-// @alpha
+// @alpha @deprecated
 export class ModelsVisibilityHandler implements IVisibilityHandler {
     constructor(props: ModelsVisibilityHandlerProps);
     // (undocumented)
@@ -4113,7 +4235,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     updateNavigationAid(navigationAidId: string, imodel?: IModelConnection): void;
 }
 
-// @public
+// @public @deprecated
 export interface NavigationWidgetProps extends ToolbarWidgetProps {
     // (undocumented)
     navigationAidId?: string;
@@ -4134,7 +4256,7 @@ export class NestedFrontstage {
     static get backToPreviousFrontstageCommand(): CommandItemDef;
 }
 
-// @public
+// @public @deprecated
 export interface NineZoneChangeHandler {
     // (undocumented)
     handleFloatingZonesBoundsChange(bounds: RectangleProps): void;
@@ -4400,12 +4522,15 @@ export const PromptField: ConnectedComponent<typeof PromptFieldComponent, Omit_3
 // @public
 export class PropsHelper {
     // (undocumented)
-    static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem>;
+    static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem_2>;
     static getIcon(iconSpec: string | ConditionalStringValue | React_2.ReactNode): JSX.Element | undefined;
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
     static isShallowEqual(newObj: any, prevObj: any): boolean;
 }
+
+// @beta
+export type ProviderItem = ProvidedItem;
 
 // @beta
 export function QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element;
@@ -4476,6 +4601,16 @@ export const ReducerRegistryInstance: ReducerRegistry;
 export function removeMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState;
 
 // @alpha
+export class RestoreAllFrontstagesTool extends Tool {
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    run(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class RestoreFrontstageLayoutTool extends Tool {
     // (undocumented)
     static iconSpec: string;
@@ -4534,7 +4669,13 @@ export const RULESET_SPATIAL_BREAKDOWN: Ruleset;
 export const RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset;
 
 // @public
-export const SafeAreaContext: React_2.Context<SafeAreaInsets>;
+export const SafeAreaContext: React_2.Context<SafeAreaInsets_2>;
+
+// @beta
+export type SafeAreaInsets = SafeAreaInsets_2;
+
+// @beta
+export const SafeAreaInsets: typeof SafeAreaInsets_2;
 
 // @internal
 export interface SavedWidget {
@@ -4836,6 +4977,11 @@ export const setPanelSize: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | ReactText | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | {
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: Key | null;
@@ -4852,11 +4998,6 @@ export const setPanelSize: (base: {
                 } | any | null | undefined;
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
-            } | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -4913,7 +5054,7 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
 export function setWidgetLabel(state: NineZoneState, id: TabState["id"], label: string): NineZoneState;
 
 // @internal (undocumented)
-export function setWidgetState(state: NineZoneState, widgetDef: WidgetDef, widgetState: WidgetState): NineZoneState;
+export function setWidgetState(state: NineZoneState, widgetDef: WidgetDef, widgetState: WidgetState_2): NineZoneState;
 
 // @alpha
 export class SheetCard extends React_2.Component<SheetCardProps, SheetCardState> {
@@ -5001,10 +5142,10 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     protected _viewState: ViewState;
 }
 
-// @public
+// @public @deprecated
 export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface SpatialContainmentTreeProps {
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
@@ -5077,7 +5218,7 @@ export interface StageContentLayoutProps {
     viewStateProps: ViewStateHelperProps[];
 }
 
-// @public
+// @public @deprecated
 export class StagePanel extends React_2.Component<StagePanelProps, StagePanelComponentState> {
     constructor(props: StagePanelProps);
     // (undocumented)
@@ -5089,23 +5230,34 @@ export class StagePanel extends React_2.Component<StagePanelProps, StagePanelCom
     // (undocumented)
     static readonly defaultProps: StagePanelDefaultProps;
     // (undocumented)
-    static initializeStagePanelDef(panelDef: StagePanelDef, props: StagePanelProps, panelLocation: StagePanelLocation): void;
+    static initializeStagePanelDef(panelDef: StagePanelDef, props: StagePanelProps, panelLocation: StagePanelLocation_2): void;
     // (undocumented)
     render(): React_2.ReactNode;
 }
 
-// @public
+// @public @deprecated
 export interface StagePanelChangeHandler {
     // @alpha (undocumented)
-    handlePanelInitialize(panelLocation: StagePanelLocation, size: number): void;
+    handlePanelInitialize(panelLocation: StagePanelLocation_2, size: number): void;
     // @alpha (undocumented)
-    handlePanelPaneTargetChange(panelLocation: StagePanelLocation, paneIndex: number | undefined): void;
+    handlePanelPaneTargetChange(panelLocation: StagePanelLocation_2, paneIndex: number | undefined): void;
     // @alpha (undocumented)
-    handlePanelResize(panelLocation: StagePanelLocation, resizeBy: number): void;
+    handlePanelResize(panelLocation: StagePanelLocation_2, resizeBy: number): void;
     // @alpha (undocumented)
-    handlePanelTargetChange(panelLocation: StagePanelLocation | undefined): void;
+    handlePanelTargetChange(panelLocation: StagePanelLocation_2 | undefined): void;
     // @alpha (undocumented)
-    handleTogglePanelCollapse(panelLocation: StagePanelLocation): void;
+    handleTogglePanelCollapse(panelLocation: StagePanelLocation_2): void;
+}
+
+// @beta
+export interface StagePanelConfig {
+    readonly defaultState?: StagePanelState;
+    readonly maxSize?: StagePanelMaxSizeSpec;
+    readonly minSize?: number;
+    readonly pinned?: boolean;
+    readonly resizable?: boolean;
+    readonly sections?: StagePanelSectionsConfig;
+    readonly size?: number;
 }
 
 // @public
@@ -5117,8 +5269,8 @@ export class StagePanelDef extends WidgetHost {
     // @internal (undocumented)
     get defaultState(): StagePanelState;
     // @internal (undocumented)
-    initializeFromProps(props?: StagePanelProps, panelLocation?: StagePanelLocation): void;
-    get location(): StagePanelLocation;
+    initializeFromProps(props?: StagePanelProps, location?: StagePanelLocation_2): void;
+    get location(): StagePanelLocation_2;
     // @internal (undocumented)
     get maxSizeSpec(): StagePanelMaxSizeSpec | undefined;
     // @internal (undocumented)
@@ -5134,11 +5286,11 @@ export class StagePanelDef extends WidgetHost {
     get size(): number | undefined;
     set size(size: number | undefined);
     // @internal (undocumented)
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined, allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, _section: StagePanelSection_2 | undefined, allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
 }
 
-// @public
+// @public @deprecated
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
 // @alpha @deprecated
@@ -5151,16 +5303,22 @@ export class StagePanelHeader extends React_2.PureComponent<StagePanelHeaderProp
 export interface StagePanelHeaderProps extends CommonProps {
     collapseButton?: boolean;
     collapseButtonTitle?: string;
-    location: StagePanelLocation;
+    location: StagePanelLocation_2;
     title?: string;
 }
+
+// @beta
+export type StagePanelLocation = StagePanelLocation_2;
+
+// @beta
+export const StagePanelLocation: typeof StagePanelLocation_2;
 
 // @public
 export type StagePanelMaxSizeSpec = number | {
     percentage: number;
 };
 
-// @public
+// @public @deprecated
 export interface StagePanelProps {
     allowedZones?: ZoneLocation[];
     applicationData?: any;
@@ -5204,6 +5362,21 @@ export interface StagePanelRuntimeProps {
     zoneDefProvider: ZoneDefProvider;
 }
 
+// @beta
+export type StagePanelSection = StagePanelSection_2;
+
+// @beta
+export const StagePanelSection: typeof StagePanelSection_2;
+
+// @beta
+export type StagePanelSectionConfig = ReadonlyArray<WidgetConfig>;
+
+// @beta
+export interface StagePanelSectionsConfig {
+    readonly end?: StagePanelSectionConfig;
+    readonly start?: StagePanelSectionConfig;
+}
+
 // @public
 export enum StagePanelState {
     // (undocumented)
@@ -5219,7 +5392,7 @@ export enum StagePanelState {
 // @internal (undocumented)
 export class StagePanelZoneDef extends WidgetHost {
     // (undocumented)
-    initializeFromProps(props: StagePanelZoneProps, panelLocation: StagePanelLocation, panelZone: StagePanelZoneDefKeys): void;
+    initializeFromProps(props: StagePanelZoneProps, panelLocation: StagePanelLocation_2, panelZone: StagePanelZoneDefKeys): void;
 }
 
 // @internal (undocumented)
@@ -5238,7 +5411,7 @@ export class StagePanelZonesDef {
     // (undocumented)
     get end(): StagePanelZoneDef;
     // (undocumented)
-    initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation): void;
+    initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation_2): void;
     // (undocumented)
     get start(): StagePanelZoneDef;
 }
@@ -5250,25 +5423,31 @@ export interface StagePanelZonesProps {
     start?: StagePanelZoneProps;
 }
 
+// @beta
+export type StageUsage = StageUsage_2;
+
+// @beta
+export const StageUsage: typeof StageUsage_2;
+
 // @public
-export class StandardContentToolsProvider extends BaseUiItemsProvider {
+export class StandardContentToolsProvider extends BaseUiItemsProvider_2 {
     constructor(providerId: string, defaultContentTools?: DefaultContentTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
-    provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem_2[];
     // (undocumented)
-    provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
+    provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage_2, toolbarOrientation: ToolbarOrientation_2, stageAppData?: any): CommonToolbarItem_2[];
     static register(providerId: string, defaultContentTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardContentToolsProvider;
 }
 
 // @beta (undocumented)
-export class StandardContentToolsUiItemsProvider implements UiItemsProvider {
+export class StandardContentToolsUiItemsProvider implements UiItemsProvider_2 {
     constructor(defaultContextTools?: DefaultContentTools | undefined);
     // (undocumented)
     get id(): string;
     // (undocumented)
-    provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem_2[];
     // (undocumented)
-    provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
+    provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage_2, toolbarOrientation: ToolbarOrientation_2, stageAppData?: any): CommonToolbarItem_2[];
 }
 
 // @public
@@ -5287,7 +5466,7 @@ export interface StandardFrontstageProps {
     rightPanelProps?: WidgetPanelProps;
     topPanelProps?: WidgetPanelProps;
     // (undocumented)
-    usage: StageUsage | string;
+    usage: StageUsage_2 | string;
     // (undocumented)
     version?: number;
 }
@@ -5320,20 +5499,20 @@ export interface StandardMessageBoxProps extends CommonProps {
 }
 
 // @public
-export class StandardNavigationToolsProvider extends BaseUiItemsProvider {
+export class StandardNavigationToolsProvider extends BaseUiItemsProvider_2 {
     constructor(providerId: string, defaultNavigationTools?: DefaultNavigationTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
-    provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[];
+    provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage_2, toolbarOrientation: ToolbarOrientation_2, _stageAppData?: any): CommonToolbarItem_2[];
     static register(providerId: string, defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardNavigationToolsProvider;
 }
 
 // @beta
-export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider {
+export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider_2 {
     constructor(defaultNavigationTools?: DefaultNavigationTools | undefined);
     // (undocumented)
     get id(): string;
     // (undocumented)
-    provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[];
+    provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage_2, toolbarOrientation: ToolbarOrientation_2, _stageAppData?: any): CommonToolbarItem_2[];
 }
 
 // @alpha
@@ -5353,20 +5532,20 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
 }
 
 // @public
-export class StandardStatusbarItemsProvider extends BaseUiItemsProvider {
+export class StandardStatusbarItemsProvider extends BaseUiItemsProvider_2 {
     constructor(providerId: string, _defaultItems?: DefaultStatusbarItems | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
-    provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem_2[];
     static register(providerId: string, defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardStatusbarItemsProvider;
 }
 
 // @beta
-export class StandardStatusbarUiItemsProvider implements UiItemsProvider {
+export class StandardStatusbarUiItemsProvider implements UiItemsProvider_2 {
     constructor(_defaultItems?: DefaultStatusbarItems | undefined);
     // (undocumented)
     get id(): string;
     // (undocumented)
-    provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem_2[];
 }
 
 // @public
@@ -5394,6 +5573,9 @@ export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState>
     render(): React_2.ReactNode;
 }
 
+// @beta
+export type StatusBarActionItem = AbstractStatusBarActionItem;
+
 // @public
 export function StatusBarCenterSection(props: CommonDivProps): JSX.Element;
 
@@ -5403,7 +5585,7 @@ export function StatusBarComposer(props: StatusBarComposerProps): JSX.Element;
 // @public
 export interface StatusBarComposerProps extends CommonProps {
     centerClassName?: string;
-    items: CommonStatusBarItem[];
+    items: CommonStatusBarItem_2[];
     leftClassName?: string;
     mainClassName?: string;
     rightClassName?: string;
@@ -5412,10 +5594,40 @@ export interface StatusBarComposerProps extends CommonProps {
 // @internal
 export const StatusBarContext: React_2.Context<StatusBarWidgetControlArgs>;
 
+// @beta
+export type StatusBarCustomItem = StatusBarItem;
+
+// @beta
+export function StatusBarDialog(props: StatusBarDialogProps): JSX.Element;
+
+// @beta
+export namespace StatusBarDialog {
+    const TitleBar: typeof StatusBarDialogTitleBar;
+    const TitleBarButton: typeof StatusBarDialogTitleBarButton;
+}
+
+// @beta
+export interface StatusBarDialogProps extends CommonProps {
+    children?: React_2.ReactNode;
+    titleBar?: React_2.ReactNode;
+}
+
 // @public
 export type StatusBarFieldId = string | null;
 
-// @public
+// @beta
+export function StatusBarIndicator(props: StatusBarIndicatorProps): JSX.Element;
+
+// @beta
+export interface StatusBarIndicatorProps extends CommonProps {
+    children?: React_2.ReactNode;
+    defaultIsOpen?: boolean;
+    onClick?: () => void;
+    popup?: React_2.ReactNode;
+    title?: string;
+}
+
+// @public @deprecated
 export interface StatusBarItem extends AbstractStatusBarCustomItem {
     readonly reactNode: React_2.ReactNode;
 }
@@ -5437,8 +5649,38 @@ export class StatusBarItemsManager extends StatusBarItemsManager_2 {
 
 // @public
 export class StatusBarItemUtilities {
-    static createStatusBarItem: (id: string, section: StatusBarSection, itemPriority: number, reactNode: React_2.ReactNode, itemProps?: Partial<StatusBarItem> | undefined) => StatusBarItem;
+    // @deprecated
+    static createStatusBarItem: (id: string, section: StatusBarSection_2, itemPriority: number, reactNode: React_2.ReactNode, itemProps?: Partial<StatusBarItem> | undefined) => StatusBarItem;
 }
+
+// @public
+export namespace StatusBarItemUtilities {
+    // @beta
+    export function createActionItem(id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, tooltip: string | ConditionalStringValue, execute: () => void, overrides?: Partial<StatusBarActionItem>): StatusBarActionItem;
+    // @beta
+    export function createCustomItem(id: string, section: StatusBarSection, itemPriority: number, reactNode: React_2.ReactNode, overrides?: Partial<StatusBarCustomItem>): StatusBarCustomItem;
+    // @beta
+    export function createLabelItem(id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, labelSide?: StatusBarLabelSide_2, overrides?: Partial<StatusBarLabelItem>): StatusBarLabelItem;
+}
+
+// @beta
+export function StatusBarLabelIndicator(props: StatusBarLabelIndicatorProps): JSX.Element;
+
+// @beta
+export interface StatusBarLabelIndicatorProps extends Omit<StatusBarIndicatorProps, "children"> {
+    iconSpec?: IconSpec;
+    label?: string;
+    labelSide?: StatusBarLabelSide_2;
+}
+
+// @beta
+export type StatusBarLabelItem = AbstractStatusBarLabelItem;
+
+// @beta
+export type StatusBarLabelSide = StatusBarLabelSide_2;
+
+// @beta
+export const StatusBarLabelSide: typeof StatusBarLabelSide_2;
 
 // @public
 export function StatusBarLeftSection(props: CommonDivProps): JSX.Element;
@@ -5453,6 +5695,15 @@ export interface StatusBarProps extends CommonProps {
 
 // @public
 export function StatusBarRightSection(props: CommonDivProps): JSX.Element;
+
+// @beta
+export type StatusBarSection = StatusBarSection_2;
+
+// @beta
+export const StatusBarSection: typeof StatusBarSection_2;
+
+// @public
+export function StatusBarSeparator(props: CommonProps): JSX.Element;
 
 // @public
 export function StatusBarSpaceBetween(props: CommonDivProps): JSX.Element;
@@ -5524,7 +5775,7 @@ export interface StatusFieldProps extends CommonProps {
 // @public @deprecated
 export function StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface StatusMessageRendererProps extends CommonProps {
     // (undocumented)
     cancelActivityMessage?: () => void;
@@ -5537,7 +5788,7 @@ export interface StatusMessageRendererProps extends CommonProps {
 // @public @deprecated
 export function StickyMessage(props: StickyMessageProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface StickyMessageProps {
     // (undocumented)
     closeMessage: (id: string) => void;
@@ -5606,6 +5857,8 @@ export enum SyncUiEventId {
     BackstageEvent = "backstageevent",
     ContentControlActivated = "contentcontrolactivated",
     ContentLayoutActivated = "contentlayoutactivated",
+    // @alpha
+    FeatureOverridesChanged = "featureoverrideschanged",
     FrontstageActivating = "frontstageactivating",
     FrontstageReady = "frontstageready",
     ModalDialogChanged = "modaldialogchanged",
@@ -5734,7 +5987,7 @@ export interface TaskPropsList {
 }
 
 // @public
-export const ThemeManager: ConnectedComponent<typeof ThemeManagerComponent, Omit_3<React_2.ClassAttributes<ThemeManagerComponent> & ThemeManagerProps, "theme" | "widgetOpacity">>;
+export const ThemeManager: ConnectedComponent<typeof ThemeManagerComponent, Omit_3<React_2.ClassAttributes<ThemeManagerComponent> & ThemeManagerProps, "theme" | "widgetOpacity" | "toolbarOpacity">>;
 
 // @public
 export class TileLoadingIndicator extends React_2.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
@@ -5749,7 +6002,7 @@ export class TileLoadingIndicator extends React_2.PureComponent<StatusFieldProps
 // @public @deprecated
 export function ToastMessage(props: ToastMessageProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface ToastMessageProps {
     // (undocumented)
     closeMessage: (id: string) => void;
@@ -5763,7 +6016,7 @@ export interface ToastMessageProps {
     toastTarget: HTMLElement | null;
 }
 
-// @alpha
+// @alpha @deprecated
 export function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
 
 // @public
@@ -5831,6 +6084,12 @@ export class Toolbar extends React_2.Component<ToolbarProps, ToolbarState> {
 }
 
 // @public
+export const TOOLBAR_OPACITY_DEFAULT = 0.5;
+
+// @beta
+export type ToolbarActionItem = ActionButton;
+
+// @public
 export class ToolbarButtonHelper {
     static getAppButton(): HTMLButtonElement | null;
     static getToolbarButtonByTitle(title: string): HTMLButtonElement | null;
@@ -5844,10 +6103,16 @@ export class ToolbarButtonHelper {
 export function ToolbarComposer(props: ExtensibleToolbarProps): JSX.Element;
 
 // @beta
+export type ToolbarCustomItem = CustomButtonDefinition;
+
+// @beta
 export const ToolbarDragInteractionContext: React_2.Context<boolean>;
 
+// @beta
+export type ToolbarGroupItem = GroupButton_2;
+
 // @internal
-export class ToolbarGroupItem extends React_2.Component<ToolbarGroupItemComponentProps, ToolbarGroupItemState> {
+export class ToolbarGroupItemComponent extends React_2.Component<ToolbarGroupItemComponentProps, ToolbarGroupItemState> {
     constructor(props: ToolbarGroupItemComponentProps);
     // (undocumented)
     componentDidMount(): void;
@@ -5868,15 +6133,30 @@ export class ToolbarHelper {
     static constructChildToolbarItems(itemDefs: AnyItemDef[]): Array<ActionButton | GroupButton_2>;
     static createCustomDefinitionToolbarItem(itemPriority: number, itemDef: CustomItemDef, overrides?: Partial<CustomButtonDefinition>): CustomToolbarItem;
     // (undocumented)
-    static createNodeForToolbarItem(item: CommonToolbarItem, onItemExecuted?: OnItemExecutedFunc): React_2.ReactNode;
-    static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef, overrides?: Partial<ToolbarItem>): CommonToolbarItem;
+    static createNodeForToolbarItem(item: CommonToolbarItem_2, onItemExecuted?: OnItemExecutedFunc): React_2.ReactNode;
+    static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef, overrides?: Partial<ToolbarItem_2>): CommonToolbarItem_2;
     // (undocumented)
-    static createToolbarItemsFromItemDefs(itemDefs: AnyItemDef[], startingItemPriority?: number, overrides?: Partial<ToolbarItem>): CommonToolbarItem[];
+    static createToolbarItemsFromItemDefs(itemDefs: AnyItemDef[], startingItemPriority?: number, overrides?: Partial<ToolbarItem_2>): CommonToolbarItem_2[];
     // (undocumented)
     static getIconReactNode(item: ActionButton | GroupButton_2): React_2.ReactNode;
     // @internal
-    static isCustomToolbarButton: (item: CommonToolbarItem) => item is CustomToolbarItem;
+    static isCustomToolbarButton: (item: CommonToolbarItem_2) => item is CustomToolbarItem;
 }
+
+// @beta
+export type ToolbarItem = CommonToolbarItem_2;
+
+// @beta
+export namespace ToolbarItemUtilities {
+    export function createActionItem(id: ToolbarActionItem["id"], itemPriority: ToolbarActionItem["itemPriority"], icon: ToolbarActionItem["icon"], label: ToolbarActionItem["label"], execute: ToolbarActionItem["execute"], overrides?: Partial<ToolbarActionItem>): ToolbarActionItem;
+    export function createGroupItem(id: string, itemPriority: number, icon: ToolbarGroupItem["icon"], label: ToolbarGroupItem["label"], items: ToolbarGroupItem["items"], overrides?: Partial<ToolbarGroupItem>): ToolbarGroupItem;
+}
+
+// @beta
+export type ToolbarOrientation = ToolbarOrientation_2;
+
+// @beta
+export const ToolbarOrientation: typeof ToolbarOrientation_2;
 
 // @beta
 export class ToolbarPopup extends React_2.PureComponent<ToolbarPopupProps, ToolbarPopupState> {
@@ -5891,7 +6171,7 @@ export class ToolbarPopup extends React_2.PureComponent<ToolbarPopupProps, Toolb
 // @beta
 export interface ToolbarPopupProps extends PopupPropsBase {
     // (undocumented)
-    items: CommonToolbarItem[];
+    items: CommonToolbarItem_2[];
     // (undocumented)
     onCancel: OnCancelFunc;
     // (undocumented)
@@ -5911,6 +6191,12 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
     panelAlignment?: ToolbarPanelAlignment;
     toolbarId?: string;
 }
+
+// @beta
+export type ToolbarUsage = ToolbarUsage_2;
+
+// @beta
+export const ToolbarUsage: typeof ToolbarUsage_2;
 
 // @public @deprecated
 export class ToolbarWidgetDefBase extends WidgetDef {
@@ -5936,7 +6222,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     get widgetBaseName(): string;
 }
 
-// @public
+// @public @deprecated
 export interface ToolbarWidgetProps extends WidgetProps {
     // (undocumented)
     horizontalDirection?: Direction;
@@ -5948,7 +6234,7 @@ export interface ToolbarWidgetProps extends WidgetProps {
     verticalItems?: ItemList;
 }
 
-// @public
+// @public @deprecated
 export class ToolButton extends React_2.Component<ToolButtonProps, BaseItemState> {
     constructor(props: ToolItemProps);
     // (undocumented)
@@ -5963,7 +6249,7 @@ export class ToolButton extends React_2.Component<ToolButtonProps, BaseItemState
     readonly state: Readonly<BaseItemState>;
 }
 
-// @public
+// @public @deprecated
 export interface ToolButtonProps extends ToolItemProps, CommonProps {
 }
 
@@ -6140,7 +6426,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
     renderCornerItem(): React_2.ReactNode | undefined;
 }
 
-// @public
+// @public @deprecated
 export interface ToolWidgetProps extends ToolbarWidgetProps {
     // (undocumented)
     appButton?: CommandItemDef;
@@ -6157,7 +6443,7 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
 }
 
 // @internal (undocumented)
-export function toPanelSide(location: StagePanelLocation): PanelSide;
+export function toPanelSide(location: StagePanelLocation_2): PanelSide;
 
 // @internal
 export interface TrackingTime {
@@ -6234,11 +6520,14 @@ export class UiFramework {
     static getIModelConnection(): IModelConnection | undefined;
     // (undocumented)
     static getIsUiVisible(): boolean;
+    static getToolbarOpacity(): number;
     static getUiStateStorage(): UiStateStorage;
     // (undocumented)
     static getWidgetOpacity(): number;
     // @alpha (undocumented)
     static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
+    static initialize(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
+    // @deprecated (undocumented)
     static initialize(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void>;
     static get initialized(): boolean;
     // @internal
@@ -6291,9 +6580,10 @@ export class UiFramework {
     // (undocumented)
     static setShowWidgetIcon(value: boolean): void;
     static get settingsManager(): SettingsManager;
+    static setToolbarOpacity(opacity: number): void;
     // (undocumented)
     static setUiStateStorage(storage: UiStateStorage, immediateSync?: boolean): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     static setUiVersion(version: FrameworkVersionId): void;
     // (undocumented)
     static setUseDragInteraction(useDragInteraction: boolean): void;
@@ -6308,6 +6598,7 @@ export class UiFramework {
     static terminate(): void;
     // @internal
     static translate(key: string | string[]): string;
+    // @deprecated
     static get uiVersion(): FrameworkVersionId;
     // (undocumented)
     static useDefaultPopoutUrl: boolean;
@@ -6330,6 +6621,22 @@ export interface UiIntervalEventArgs {
 }
 
 // @beta
+export class UiItemsManager extends UiItemsManager_2 {
+}
+
+// @beta
+export type UiItemsProvider = UiItemsProvider_2;
+
+// @beta
+export type UiItemsProviderOverrides = UiItemProviderOverrides;
+
+// @beta
+export type UiItemsProviderRegisteredEventArgs = UiItemProviderRegisteredEventArgs;
+
+// @beta
+export function UiSettingsPage(): JSX.Element;
+
+// @beta @deprecated (undocumented)
 export function UiSettingsPage({ allowSettingUiFrameworkVersion }: {
     allowSettingUiFrameworkVersion: boolean;
 }): JSX.Element;
@@ -6453,22 +6760,22 @@ export const useBackstageManager: () => BackstageManager;
 export function useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport): Category[];
 
 // @internal
-export const useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
+export const useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem_2[];
 
 // @public
-export const useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
+export const useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem_2[];
 
 // @public
-export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[];
+export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem_2[];
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export function useFrameworkVersion(): FrameworkVersionId;
 
 // @internal (undocumented)
 export function useFrontstageManager(frontstageDef: FrontstageDef, useToolAsToolSettingsLabel?: boolean): void;
 
 // @internal (undocumented)
-export const useGroupedItems: (items: ReadonlyArray<BackstageItem>) => GroupedItems;
+export const useGroupedItems: (items: ReadonlyArray<BackstageItem_2>) => GroupedItems;
 
 // @internal (undocumented)
 export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
@@ -6529,13 +6836,13 @@ export function useToolSettingsNode(): string | number | boolean | {} | React_2.
 export function useTransientState(onSave?: () => void, onRestore?: () => void): void;
 
 // @public
-export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
+export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem_2[];
 
 // @public
-export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
+export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem_2[];
 
 // @public
-export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
+export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage_2, toolbarOrientation: ToolbarOrientation_2) => readonly CommonToolbarItem_2[];
 
 // @public (undocumented)
 export function useUiStateStorageHandler(): UiStateStorage;
@@ -6546,14 +6853,14 @@ export function useUiVisibility(): boolean;
 // @internal
 export function useUpdateNineZoneSize(frontstageDef: FrontstageDef): void;
 
-// @alpha
+// @alpha @deprecated
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
     filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
     isFiltering: boolean;
     nodeHighlightingProps: HighlightableTreeProps | undefined;
 };
 
-// @alpha
+// @alpha @deprecated
 export const useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element;
 
 // @internal (undocumented)
@@ -6711,10 +7018,10 @@ export class ViewUtilities {
     static viewSupportsCamera(viewport: ScreenViewport): boolean;
 }
 
-// @alpha
+// @alpha @deprecated
 export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
-// @alpha
+// @alpha @deprecated
 export interface VisibilityStatus {
     // (undocumented)
     isDisabled?: boolean;
@@ -6724,7 +7031,7 @@ export interface VisibilityStatus {
     tooltip?: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler {
     constructor(params: VisibilityTreeEventHandlerParams);
     // (undocumented)
@@ -6737,7 +7044,7 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
     onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs): Subscription | undefined;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEventHandlerParams {
     // (undocumented)
     selectionPredicate?: VisibilityTreeSelectionPredicate;
@@ -6745,7 +7052,7 @@ export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEv
     visibilityHandler: IVisibilityHandler | undefined;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface VisibilityTreeFilterInfo {
     // (undocumented)
     activeMatchIndex?: number;
@@ -6753,13 +7060,13 @@ export interface VisibilityTreeFilterInfo {
     filter: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export const visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element;
 
-// @alpha
+// @alpha @deprecated
 export function VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element;
 
-// @alpha
+// @alpha @deprecated
 export interface VisibilityTreeNoFilteredDataProps {
     // (undocumented)
     message: string;
@@ -6767,10 +7074,10 @@ export interface VisibilityTreeNoFilteredDataProps {
     title: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
-// @public
+// @public @deprecated
 export class Widget extends React_2.Component<WidgetProps> {
     constructor(props: WidgetProps);
     // (undocumented)
@@ -6802,6 +7109,11 @@ export interface WidgetChangeHandler {
     handleWidgetStateChange(widgetId: WidgetZoneId, tabIndex: number, isOpening: boolean): void;
 }
 
+// @beta
+export type WidgetConfig = Readonly<Omit<WidgetProps, "id">> & {
+    readonly id: string;
+};
+
 // @internal (undocumented)
 export function WidgetContent(): JSX.Element;
 
@@ -6814,16 +7126,21 @@ export class WidgetControl extends ConfigurableUiControl {
     set reactNode(r: React_2.ReactNode);
     restoreTransientState(): boolean;
     saveTransientState(): void;
-    setWidgetState(state: WidgetState): void;
+    setWidgetState(state: WidgetState_2): void;
     get widgetDef(): WidgetDef;
     set widgetDef(w: WidgetDef);
 }
 
 // @public
 export class WidgetDef {
-    constructor(widgetProps: WidgetProps);
+    constructor();
+    // @deprecated
+    constructor(props: WidgetProps);
     // (undocumented)
-    get activeState(): WidgetState;
+    get activeState(): WidgetState_2;
+    // (undocumented)
+    get allowedPanelTargets(): ReadonlyArray<"left" | "right" | "bottom" | "top"> | undefined;
+    set allowedPanelTargets(targets: ReadonlyArray<"left" | "right" | "bottom" | "top"> | undefined);
     // (undocumented)
     get applicationData(): any | undefined;
     // (undocumented)
@@ -6834,7 +7151,7 @@ export class WidgetDef {
     get canPopout(): boolean | undefined;
     // (undocumented)
     get classId(): string | ConfigurableUiControlConstructor | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps;
     // @internal (undocumented)
     get defaultFloatingPosition(): PointProps | undefined;
@@ -6843,12 +7160,12 @@ export class WidgetDef {
     get defaultFloatingSize(): SizeProps | undefined;
     set defaultFloatingSize(size: SizeProps | undefined);
     // @internal (undocumented)
-    get defaultState(): WidgetState;
+    get defaultState(): WidgetState_2;
     // @internal (undocumented)
     get defaultTabLocation(): TabLocation;
     // @alpha
     expand(): void;
-    // (undocumented)
+    // @deprecated (undocumented)
     get fillZone(): boolean;
     // (undocumented)
     get floatingContainerId(): string | undefined;
@@ -6862,7 +7179,7 @@ export class WidgetDef {
     set iconSpec(spec: IconSpec);
     // (undocumented)
     get id(): string;
-    // (undocumented)
+    // @deprecated (undocumented)
     static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef): void;
     // (undocumented)
     get initialProps(): WidgetProps | undefined;
@@ -6874,7 +7191,7 @@ export class WidgetDef {
     get isFloatingStateSupported(): boolean;
     // (undocumented)
     get isFloatingStateWindowResizable(): boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     get isFreeform(): boolean;
     // (undocumented)
     get isStatusBar(): boolean;
@@ -6903,19 +7220,19 @@ export class WidgetDef {
     setFloatingContainerId(value: string | undefined): void;
     setLabel(v: string | ConditionalStringValue | StringGetter): void;
     setTooltip(v: string | ConditionalStringValue | StringGetter): void;
-    // (undocumented)
+    // @deprecated (undocumented)
     setUpSyncSupport(props: WidgetProps): void;
     // (undocumented)
-    setWidgetState(newState: WidgetState): void;
+    setWidgetState(newState: WidgetState_2): void;
     // @alpha
     show(): void;
     // (undocumented)
-    get state(): WidgetState;
+    get state(): WidgetState_2;
     // (undocumented)
     get stateChanged(): boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     get stateFunc(): WidgetStateFunc | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     get syncEventIds(): string[];
     // @internal (undocumented)
     get tabLocation(): TabLocation | undefined;
@@ -6941,7 +7258,7 @@ export class WidgetHost {
     findWidgetDef(id: string): WidgetDef | undefined;
     getSingleWidgetDef(): WidgetDef | undefined;
     // @internal
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined, allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section: StagePanelSection_2 | undefined, allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
     get widgetCount(): number;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
 }
@@ -6949,9 +7266,9 @@ export class WidgetHost {
 // @internal
 export interface WidgetInfo {
     // (undocumented)
-    location: ZoneLocation | StagePanelLocation;
+    location: ZoneLocation | StagePanelLocation_2;
     // (undocumented)
-    section: StagePanelSection;
+    section: StagePanelSection_2;
     // (undocumented)
     stageId?: string;
     // (undocumented)
@@ -6962,8 +7279,8 @@ export interface WidgetInfo {
 
 // @beta
 export class WidgetManager {
-    addWidgetDef(widgetDef: WidgetDef, stageId: string | undefined, stageUsage: string | undefined, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection): boolean;
-    getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection, frontstageApplicationData?: any): ReadonlyArray<WidgetDef> | undefined;
+    addWidgetDef(widgetDef: WidgetDef, stageId: string | undefined, stageUsage: string | undefined, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2): boolean;
+    getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2, frontstageApplicationData?: any): ReadonlyArray<WidgetDef> | undefined;
     // @internal
     readonly onWidgetsChanged: WidgetsChangedEvent;
     removeWidgetDef(widgetId: string): boolean;
@@ -7007,7 +7324,7 @@ export function WidgetPanelsToolbars(): JSX.Element;
 // @internal (undocumented)
 export function WidgetPanelsToolSettings(): JSX.Element | null;
 
-// @public
+// @public @deprecated
 export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps {
     classId?: string | ConfigurableUiControlConstructor;
     control?: ConfigurableUiControlConstructor;
@@ -7180,6 +7497,12 @@ export interface WidgetStackTabsProps {
     widgetTabs: WidgetTabs;
 }
 
+// @beta
+export type WidgetState = WidgetState_2;
+
+// @beta
+export const WidgetState: typeof WidgetState_2;
+
 // @public
 export class WidgetStateChangedEvent extends UiEvent<WidgetStateChangedEventArgs> {
 }
@@ -7189,11 +7512,11 @@ export interface WidgetStateChangedEventArgs {
     // (undocumented)
     widgetDef: WidgetDef;
     // (undocumented)
-    widgetState: WidgetState;
+    widgetState: WidgetState_2;
 }
 
-// @public
-export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;
+// @public @deprecated
+export type WidgetStateFunc = (state: Readonly<WidgetState_2>) => WidgetState_2;
 
 // @internal
 export interface WidgetTab {
@@ -7212,7 +7535,7 @@ export type WidgetTabs = {
 
 // @public
 export enum WidgetType {
-    // (undocumented)
+    // @deprecated (undocumented)
     FreeFrom = 2,
     // (undocumented)
     Navigation = 1,
@@ -7229,7 +7552,7 @@ export enum WidgetType {
 // @public @deprecated
 export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
 
-// @public
+// @public @deprecated
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React_2.JSXElementConstructor<P> & C) => {
     new (props: JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>> | Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>): {
         render(): JSX.Element;
@@ -7357,7 +7680,7 @@ export interface WorkflowPropsList {
     workflows: WorkflowProps[];
 }
 
-// @public
+// @public @deprecated
 export class Zone extends React_2.Component<ZoneProps> {
     constructor(props: ZoneProps);
     // (undocumented)
@@ -7370,7 +7693,7 @@ export class Zone extends React_2.Component<ZoneProps> {
     render(): React_2.ReactNode;
 }
 
-// @public
+// @public @deprecated
 export class ZoneDef extends WidgetHost {
     constructor();
     // @deprecated
@@ -7393,7 +7716,7 @@ export class ZoneDef extends WidgetHost {
     get zoneState(): ZoneState;
 }
 
-// @public
+// @public @deprecated
 export interface ZoneDefProvider {
     // (undocumented)
     getZoneDef(zoneId: number): ZoneDef | undefined;
@@ -7419,7 +7742,7 @@ export enum ZoneLocation {
     TopRight = 3
 }
 
-// @public
+// @public @deprecated
 export interface ZoneProps extends CommonProps {
     allowsMerging?: boolean;
     applicationData?: any;

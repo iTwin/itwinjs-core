@@ -5,29 +5,32 @@ beta;BackendDiagnosticsHandler
 beta;BackendDiagnosticsOptions
 internal;combineDiagnosticsOptions(...options: Array
 public;ContentCacheConfig
-beta;DiskHierarchyCacheConfig 
+public;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
 internal;getLocalizedStringEN(key: string): any
-beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
-beta;HierarchyCacheConfigBase
-beta;HierarchyCacheMode
-beta;HybridCacheConfig 
-beta;MemoryHierarchyCacheConfig 
-alpha;MultiElementPropertiesResponse
+public;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
+public;HierarchyCacheConfigBase
+public;HierarchyCacheMode
+public;HybridCacheConfig 
+public;MemoryHierarchyCacheConfig 
+public;MultiElementPropertiesResponse
 public;MultiManagerPresentationProps 
 internal;normalizeVersion(version?: string): string
 public;Presentation
+public;PresentationAssetsRootConfig
 public;PresentationBackendLoggerCategory
 public;PresentationBackendNativeLoggerCategory
 public;PresentationManager
+public;PresentationManagerCachingConfig
 public;PresentationManagerMode
+deprecated;PresentationManagerMode
 public;PresentationManagerProps
 public;PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps
 public;PresentationPropsBase 
 internal;reportDiagnostics
-beta;RulesetEmbedder
+public;RulesetEmbedder
 public;RulesetEmbedderProps
-beta;RulesetInsertOptions
+public;RulesetInsertOptions
 public;RulesetManager
 internal;RulesetManagerImpl 
 public;RulesetVariablesManager

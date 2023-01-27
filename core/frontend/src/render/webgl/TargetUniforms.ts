@@ -21,6 +21,7 @@ import { desync, sync, SyncObserver, SyncToken } from "./Sync";
 import { Target } from "./Target";
 import { ThematicUniforms } from "./ThematicUniforms";
 import { ViewRectUniforms } from "./ViewRectUniforms";
+import { RealityModelUniforms } from "./RealityModelUniforms";
 
 class PixelWidthFactor {
   /** The pixel width factor depends on both the frustum and the view rect. It also depends on the frustum scale associated with the current Branch. */
@@ -131,6 +132,7 @@ export class TargetUniforms {
   public readonly branch: BranchUniforms;
   public readonly batch: BatchUniforms;
   public readonly shadow: ShadowUniforms;
+  public readonly realityModel = new RealityModelUniforms();
   private readonly _pixelWidthFactor = new PixelWidthFactor();
   private readonly _sunDirection = new SunDirection();
 

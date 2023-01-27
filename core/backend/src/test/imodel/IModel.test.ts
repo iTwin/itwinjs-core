@@ -11,9 +11,9 @@ import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, Process
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
-  FontMap, FontType, GeoCoordinatesRequestProps, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
+  FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping,
+  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -26,7 +26,7 @@ import {
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
-  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement,
+  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory, SqliteStatement,
   SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
@@ -325,19 +325,22 @@ describe("iModel", () => {
       pattern_weight: 0.5,
       TextureId: "test_textureid",
     };
-    /* eslint-enable @typescript-eslint/naming-convention */
 
-    const renderMaterialParams = new RenderMaterialElement.Params(testPaletteName);
-    renderMaterialParams.description = testDescription;
-    renderMaterialParams.color = color;
-    renderMaterialParams.specularColor = specularColor;
-    renderMaterialParams.finish = finish;
-    renderMaterialParams.transmit = transmit;
-    renderMaterialParams.diffuse = diffuse;
-    renderMaterialParams.specular = specular;
-    renderMaterialParams.reflect = reflect;
-    renderMaterialParams.reflectColor = reflectColor;
-    renderMaterialParams.patternMap = textureMapProps;
+    /* eslint-enable @typescript-eslint/naming-convention */
+    const renderMaterialParams: RenderMaterialElementParams = {
+      paletteName: testPaletteName,
+      description: testDescription,
+      color,
+      specularColor,
+      finish,
+      transmit,
+      diffuse,
+      specular,
+      reflect,
+      reflectColor,
+      patternMap: textureMapProps,
+    };
+
     const renderMaterialId = RenderMaterialElement.insert(imodel2, IModel.dictionaryId, testMaterialName, renderMaterialParams);
 
     const renderMaterial = imodel2.elements.getElement<RenderMaterialElement>(renderMaterialId);
@@ -637,7 +640,8 @@ describe("iModel", () => {
     assert.exists(model);
     assert.isTrue(model instanceof geomModel);
     roundtripThroughJson(model);
-    const modelExtents: AxisAlignedBox3d = (model as PhysicalModel).queryExtents();
+    const modelExtents: AxisAlignedBox3d = (model as PhysicalModel).queryExtents(); // eslint-disable-line deprecation/deprecation
+
     assert.isBelow(modelExtents.low.x, modelExtents.high.x);
     assert.isBelow(modelExtents.low.y, modelExtents.high.y);
     assert.isBelow(modelExtents.low.z, modelExtents.high.z);
@@ -796,7 +800,11 @@ describe("iModel", () => {
   it("should iterate ViewDefinitions", () => {
     // imodel2 contains 3 SpatialViewDefinitions and no other views.
     let numViews = 0;
-    let result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return true; });
+    let result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => {
+      ++numViews;
+      return true;
+    });
+
     expect(result).to.be.true;
     expect(numViews).to.equal(3);
 
@@ -813,13 +821,21 @@ describe("iModel", () => {
 
     // Query specifically for 2d views
     numViews = 0;
-    result = imodel2.views.iterateViews({ from: "BisCore.ViewDefinition2d" }, (_view: ViewDefinition) => { ++numViews; return true; });
+    result = imodel2.views.iterateViews({ from: "BisCore.ViewDefinition2d" }, (_view: ViewDefinition) => {
+      ++numViews;
+      return true;
+    });
+
     expect(result).to.be.true;
     expect(numViews).to.equal(0);
 
     // Terminate iteration on first view
     numViews = 0;
-    result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return false; });
+    result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => {
+      ++numViews;
+      return false;
+    });
+
     expect(result).to.be.false;
     expect(numViews).to.equal(1);
   });
@@ -1002,8 +1018,12 @@ describe("iModel", () => {
   it("update the project extents", async () => {
     const originalExtents = imodel1.projectExtents;
     const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
-    newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
-    newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
+    newExtents.low.x -= 50;
+    newExtents.low.y -= 25;
+    newExtents.low.z -= 189;
+    newExtents.high.x += 1087;
+    newExtents.high.y += 19;
+    newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
     const updatedProps = imodel1.nativeDb.getIModelProps();
@@ -1202,7 +1222,6 @@ describe("iModel", () => {
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subCategory).scopeType, CodeScopeSpec.Type.ParentElement);
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.viewDefinition).scopeType, CodeScopeSpec.Type.Model);
     assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subject).scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
-    assert.isTrue(imodel2.codeSpecs.getByName(BisCodeSpec.spatialCategory).isManagedWithIModel);
   });
 
   it("should create and insert CodeSpecs", () => {
@@ -1212,7 +1231,6 @@ describe("iModel", () => {
     assert.deepEqual(codeSpecId, codeSpec.id);
     assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
     assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
-    assert.equal(codeSpec.isManagedWithIModel, true);
 
     // Should not be able to insert a duplicate.
     const codeSpecDup = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
@@ -1231,13 +1249,11 @@ describe("iModel", () => {
 
     const codeSpec4 = testImodel.codeSpecs.getById(codeSpec3Id);
     codeSpec4.name = "CodeSpec4";
-    codeSpec4.isManagedWithIModel = false;
     const codeSpec4Id = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
     assert.notDeepEqual(codeSpec3Id, codeSpec4Id);
     assert.equal(codeSpec4.scopeType, CodeScopeSpec.Type.Repository);
     assert.equal(codeSpec4.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
     const copyOfCodeSpec4 = testImodel.codeSpecs.getById(codeSpec4Id);
-    assert.equal(copyOfCodeSpec4.isManagedWithIModel, false);
     assert.deepEqual(codeSpec4, copyOfCodeSpec4);
 
     assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec1"));
@@ -1261,14 +1277,12 @@ describe("iModel", () => {
     if (true) {
       const iModelDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
       const codeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      codeSpec.isManagedWithIModel = false;
       const codeSpecId = iModelDb.codeSpecs.insert(codeSpec);
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.id, codeSpecId);
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      assert.isFalse(codeSpec.isManagedWithIModel);
       iModelDb.saveChanges();
       iModelDb.close();
     }
@@ -1281,7 +1295,6 @@ describe("iModel", () => {
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
-      assert.isFalse(codeSpec.isManagedWithIModel);
       iModelDb.close();
     }
   });
@@ -1388,6 +1401,7 @@ describe("iModel", () => {
     const id2 = elements.insertElement(elementProps);
 
     const geometricModel = testImodel.models.getModel<GeometricModel>(newModelId);
+    // eslint-disable-next-line deprecation/deprecation
     assert.throws(() => geometricModel.queryExtents()); // no geometry
 
     // Create grouping relationships from 0 to 1 and from 0 to 2
@@ -1720,24 +1734,32 @@ describe("iModel", () => {
         const requestProps1: GeoCoordinatesRequestProps = { target: datumOrGCS, iModelCoords: testPoint1 };
         const response1 = await iModel.getGeoCoordinatesFromIModelCoordinates(requestProps1);
 
-        const expectedPt1 = Point3d.fromJSON(outputCoord.p);
-        const outPt1 = Point3d.fromJSON(response1.geoCoords[0].p);
+        expect(response1.geoCoords[0].s === outputCoord.s).to.be.true;
 
-        expect(Geometry.isSamePoint3dXY(expectedPt1, outPt1)).to.be.true;
-        expect(Math.abs(expectedPt1.z - outPt1.z) < 0.0001).to.be.true;
-        expect(response1.geoCoords[0].s === outputCoord.s);
+        // If success or warning we compare result
+        if (outputCoord.s === GeoCoordStatus.Success || outputCoord.s === GeoCoordStatus.OutOfUsefulRange) {
 
-        const testPoint2: XYZProps[] = [];
-        testPoint2.push(outputCoord.p);
-        const requestProps2: IModelCoordinatesRequestProps = { source: datumOrGCS, geoCoords: testPoint2 };
-        const response2 = await iModel.getIModelCoordinatesFromGeoCoordinates(requestProps2);
+          const expectedPt1 = Point3d.fromJSON(outputCoord.p);
+          const outPt1 = Point3d.fromJSON(response1.geoCoords[0].p);
 
-        const expectedPt2 = Point3d.fromJSON(inputCoord);
-        const outPt2 = Point3d.fromJSON(response2.iModelCoords[0].p);
+          expect(Geometry.isSamePoint3dXY(expectedPt1, outPt1)).to.be.true;
+          expect(Math.abs(expectedPt1.z - outPt1.z) < 0.0001).to.be.true;
 
-        expect(expectedPt2.distanceXY(outPt2) < 0.001).to.be.true;
-        expect(Math.abs(expectedPt2.z - outPt2.z) < 0.001).to.be.true;
-        expect(response1.geoCoords[0].s === 0);
+          // No point testing reversal when Out of useful range since reversibility is doubtful
+          if (outputCoord.s !== GeoCoordStatus.OutOfUsefulRange) {
+            const testPoint2: XYZProps[] = [];
+            testPoint2.push(outputCoord.p);
+            const requestProps2: IModelCoordinatesRequestProps = { source: datumOrGCS, geoCoords: testPoint2 };
+            const response2 = await iModel.getIModelCoordinatesFromGeoCoordinates(requestProps2);
+
+            const expectedPt2 = Point3d.fromJSON(inputCoord);
+            const outPt2 = Point3d.fromJSON(response2.iModelCoords[0].p);
+
+            expect(expectedPt2.distanceXY(outPt2) < 0.001).to.be.true;
+            expect(Math.abs(expectedPt2.z - outPt2.z) < 0.001).to.be.true;
+          }
+        }
+
         iModel.close();
       };
 
@@ -1822,34 +1844,34 @@ describe("iModel", () => {
         },
       };
 
-      await convertTest("ExtonCampus1.bim", { horizontalCRS: { id: "EPSG:2272" }, verticalCRS: { id: "NAVD88" } }, "WGS84", { x: 775970.3155166894, y: 83323.24543981979, z: 130.74977547686285 }, { p: { x: -75.68712011112366, y: 40.06524845273591, z: 95.9769083 }, s: 0 });
+      await convertTest("ExtonCampus1.bim", { horizontalCRS: { id: "EPSG:2272" }, verticalCRS: { id: "NAVD88" } }, "WGS84", { x: 775970.3155166894, y: 83323.24543981979, z: 130.74977547686285 }, { p: { x: -75.68712011112366, y: 40.06524845273591, z: 95.9769083 }, s: GeoCoordStatus.Success });
 
-      await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NAVD88" } }, { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, { x: 548296.472, y: 4179414.470, z: 0.8457 }, { p: { x: 548392.9689991799, y: 4179217.683834238, z: -0.0006774162750405877 }, s: 0 });
+      await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NAVD88" } }, { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, { x: 548296.472, y: 4179414.470, z: 0.8457 }, { p: { x: 548392.9689991799, y: 4179217.683834238, z: -0.0006774162750405877 }, s: GeoCoordStatus.Success });
 
-      await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 199247.08883859176, y: 150141.68625139236, z: 0.0 }, { p: { x: -0.80184489371471, y: 51.978341907041205, z: 0.0 }, s: 0 });
-      await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 66091.33104544488, y: 394055.0279323471, z: 0.0 }, { p: { x: -2.8125, y: 54.162433968067798, z: 0.0 }, s: 0 });
-      await convertTest("BritishNatGrid-Ellipsoid1.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: 0 });
-      await convertTest("BritishNatGrid-Ellipsoid2.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "ETRF89", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2030365061523707, y: 49.960007477936202, z: 0.0 }, s: 0 });
-      await convertTest("BritishNatGrid-Ellipsoid3.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "OSGB", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: 0 });
-      await convertTest("GermanyDHDN-3-Ellipsoid1.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.035413954488630, y: 50.575070810112159, z: 0.0 }, s: 0 });
-      await convertTest("GermanyDHDN-3-Ellipsoid2.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "DHDN/3", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.035413954488630, y: 50.575070810112159, z: 0.0 }, s: 0 });
-      await convertTest("GermanyDHDN-3-Ellipsoid3.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "WGS84", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.034215937440818, y: 50.573862480894853, z: 0.0 }, s: 0 });
-      await convertTest("UTM83-10-NGVD29-1.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: 0.0 }, s: 0 });
-      await convertTest("UTM83-10-NGVD29-2.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "NAD83", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: 0 });
-      await convertTest("UTM83-10-NGVD29-3.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "WGS84", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: 0 });
-      await convertTest("UTM27-10-Ellipsoid1.bim", { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 623075.328, y: 4265650.532, z: 0.0 }, { p: { x: -121.58798236995744, y: 38.532616292207997, z: 0.0 }, s: 0 });
-      await convertTest("UTM27-10-Ellipsoid2.bim", { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "ELLIPSOID" } }, "NAD83", { x: 623075.328, y: 4265650.532, z: 0.0 }, { p: { x: -121.58905088839697, y: 38.532522753851708, z: 0.0 }, s: 0 });
+      await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 199247.08883859176, y: 150141.68625139236, z: 0.0 }, { p: { x: -0.80184489371471, y: 51.978341907041205, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 66091.33104544488, y: 394055.0279323471, z: 0.0 }, { p: { x: -2.8125, y: 54.162433968067798, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("BritishNatGrid-Ellipsoid1.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("BritishNatGrid-Ellipsoid2.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "ETRF89", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2030365061523707, y: 49.960007477936202, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("BritishNatGrid-Ellipsoid3.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "OSGB", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("GermanyDHDN-3-Ellipsoid1.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.035413954488630, y: 50.575070810112159, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("GermanyDHDN-3-Ellipsoid2.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "DHDN/3", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.035413954488630, y: 50.575070810112159, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("GermanyDHDN-3-Ellipsoid3.bim", { horizontalCRS: { id: "DHDN/3.GK3d-4/EN" }, verticalCRS: { id: "ELLIPSOID" } }, "WGS84", { x: 4360857.005, y: 5606083.067, z: 0.0 }, { p: { x: 10.034215937440818, y: 50.573862480894853, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-1.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-2.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "NAD83", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-3.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, "WGS84", { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM27-10-Ellipsoid1.bim", { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 623075.328, y: 4265650.532, z: 0.0 }, { p: { x: -121.58798236995744, y: 38.532616292207997, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM27-10-Ellipsoid2.bim", { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "ELLIPSOID" } }, "NAD83", { x: 623075.328, y: 4265650.532, z: 0.0 }, { p: { x: -121.58905088839697, y: 38.532522753851708, z: 0.0 }, s: GeoCoordStatus.Success });
 
-      await convertTest("UTM83-10-NGVD29-4.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" } }, { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: 0 });
+      await convertTest("UTM83-10-NGVD29-4.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "LL84" }, verticalCRS: { id: "ELLIPSOID" } }, { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: -30.12668428839329 }, s: GeoCoordStatus.Success });
 
-      await convertTest("UTM83-10-NGVD29-5.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "LL84" }, verticalCRS: { id: "GEOID" } }, { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: 0.7621583779125531 }, s: 0 });
-      await convertTest("UTM83-10-NGVD29-6.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NAVD88" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: 0 });
-      await convertTest("UTM83-10-NGVD29-7.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "GEOID" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: 0 });
-      await convertTest("UTM83-10-NGVD29-8.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NGVD29" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.0 }, s: 0 });
-      await convertTest("UTM83-10-NGVD29-9.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { epsg: 26942 }, verticalCRS: { id: "NAVD88" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: 0 });
-      await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NAVD88" } }, { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, { x: 548296.472, y: 4179414.470, z: 0.8457 }, { p: { x: 548392.9689991799, y: 4179217.683834238, z: -0.0006774162750405877 }, s: 0 });
+      await convertTest("UTM83-10-NGVD29-5.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "LL84" }, verticalCRS: { id: "GEOID" } }, { x: 632748.112, y: 4263868.307, z: 0.0 }, { p: { x: -121.47738265889652, y: 38.513305313793019, z: 0.7621583779125531 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-6.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NAVD88" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-7.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "GEOID" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-8.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NGVD29" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.0 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-9.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } }, { horizontalCRS: { epsg: 26942 }, verticalCRS: { id: "NAVD88" } }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: GeoCoordStatus.Success });
+      await convertTest("UTM83-10-NGVD29-10.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NAVD88" } }, { horizontalCRS: { id: "UTM27-10" }, verticalCRS: { id: "NGVD29" } }, { x: 548296.472, y: 4179414.470, z: 0.8457 }, { p: { x: 548392.9689991799, y: 4179217.683834238, z: -0.0006774162750405877 }, s: GeoCoordStatus.Success });
 
-      await convertTest("BritishNatGrid-Ellipsoid4.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "HS2_Snake_2015" }, verticalCRS: { id: "GEOID" } }, { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 237732.58101946692, y: 364048.01547843055, z: -47.874172425966336 }, s: 0 });
+      await convertTest("BritishNatGrid-Ellipsoid4.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "HS2_Snake_2015" }, verticalCRS: { id: "GEOID" } }, { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 237732.58101946692, y: 364048.01547843055, z: -47.874172425966336 }, s: GeoCoordStatus.Success });
 
       await convertTest("BritishNatGrid-Ellipsoid5.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } },
         {
@@ -1873,9 +1895,9 @@ describe("iModel", () => {
             id: "GEOID",
           },
         }
-        , { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 237732.58101952373, y: 364048.01548327296, z: -47.874172425966336 }, s: 0 });
+        , { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 237732.58101952373, y: 364048.01548327296, z: -47.874172425966336 }, s: GeoCoordStatus.Success });
 
-      await convertTest("BritishNatGrid-Ellipsoid.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: { id: "GEOID" } }, { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: 0 });
+      await convertTest("BritishNatGrid-Ellipsoid.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: { id: "GEOID" } }, { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.Success });
 
       await convertTest("UTM83-10-NGVD29-12.bim", { horizontalCRS: { id: "UTM83-10" }, verticalCRS: { id: "NGVD29" } },
         {
@@ -1909,7 +1931,69 @@ describe("iModel", () => {
           verticalCRS: {
             id: "GEOID",
           },
-        }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: 0 });
+        }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: GeoCoordStatus.Success });
+
+      // Do some test that return errors
+      // First test uses one GCS in Eastern USA and the other in UK. This will produce a hard domain error
+      await convertTest("Error1.bim", { horizontalCRS: { id: "UTM84-17N" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: { id: "GEOID" } }, { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.OutOfMathematicalDomain });
+
+      // This test performs conversion in a region outside normal use of GCS but still mathematically valid (soft domain error)
+      await convertTest("Error2.bim", { horizontalCRS: { id: "DanishS34-S99" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: -6618.5925260757449, y: 36058.097489683532, z: 0.0 }, { p: { x: 13.53250346041385, y: 54.71216475341563, z: 0.0 }, s: GeoCoordStatus.OutOfUsefulRange });
+      // -6618.5925260757449, 36058.097489683532
+      // { x: -221748.034, y: -10012.784, z: 0.0 } { p: { x: 10.36481105, y: 54.38462506, z: 0.0 }
+      // This test makes use of a GCS using a grid file that does not even exist and will return a datum conversion error.
+      const userGCSWithinexistentGridFile: GeographicCRSProps = {
+        horizontalCRS: {
+          id: "User1",
+          datumId: "UserDatum1",
+          datum: {
+            id: "UserDatum1",
+            ellipsoidId: "CLRK66",
+            transforms: [
+              {
+                method: "GridFiles",
+                sourceEllipsoid: {
+                  id: "CLRK66",
+                  equatorialRadius: 6378160.0,
+                  polarRadius: 6356774.719195305951,
+                },
+                targetEllipsoid: {
+                  id: "WGS84",
+                  equatorialRadius: 6378160.0,
+                  polarRadius: 6356774.719195305951,
+                },
+                gridFile: {
+                  files: [
+                    { fileName: "./user/inexistent.gdc", format: "NTv2", direction: "Direct" },
+                  ],
+                },
+              },
+            ],
+          },
+          unit: "Meter",
+          projection: {
+            method: "TransverseMercator",
+            centralMeridian: -115,
+            latitudeOfOrigin: 0,
+            scaleFactor: 0.9992,
+            falseEasting: 1.0,
+            falseNorthing: 2.0,
+          },
+          extent: {
+            southWest: { latitude: 48, longitude: -120.5 },
+            northEast: { latitude: 84, longitude: -109.5 },
+          },
+        }, verticalCRS: { id: "ELLIPSOID" },
+      };
+
+      await convertTest("Error3.bim", userGCSWithinexistentGridFile, "WGS84", { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.NoDatumConverter });
+
+      // The model GCS is not valid
+      await convertTest("Error4.bim", { horizontalCRS: { id: "badfood" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: { id: "GEOID" } }, { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.NoGCSDefined });
+
+      // The given GCS is not valid
+      await convertTest("Error5.bim", { horizontalCRS: { id: "UTM84-17N" }, verticalCRS: { id: "ELLIPSOID" } }, { horizontalCRS: { id: "badfood" }, verticalCRS: { id: "GEOID" } }, { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.NoGCSDefined });
+
     });
   }
 
@@ -2089,7 +2173,9 @@ describe("iModel", () => {
     };
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(V2CheckpointManager, "attach").callsFake(async () => { return { dbName: "fakeDb", container: { accessToken: "sas" } as any }; });
+    sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
+      return { dbName: "fakeDb", container: { accessToken: "sas" } as any };
+    });
     const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
@@ -2120,7 +2206,9 @@ describe("iModel", () => {
     assert.include(infoLogStub.args[1][1], "refreshed checkpoint");
 
     errorLogStub.resetHistory();
-    queryStub.callsFake(async () => { throw new Error("no checkpoint"); });
+    queryStub.callsFake(async () => {
+      throw new Error("no checkpoint");
+    });
     await expect(checkpoint.refreshContainerSas(accessToken)).to.eventually.be.rejectedWith("no checkpoint");
 
     checkpoint.close();
@@ -2240,8 +2328,8 @@ describe("iModel", () => {
     assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotDb3.key));
     assert.equal(snapshotDb3, SnapshotDb.findByKey(snapshotDb3.key));
     assert.equal(snapshotDb3, IModelDb.findByKey(snapshotDb3.key));
-    assert.throws(() => { BriefcaseDb.findByKey(snapshotDb1.key); }); // lookup of key for SnapshotDb via BriefcaseDb should throw
-    assert.throws(() => { StandaloneDb.findByKey(snapshotDb1.key); }); // likewise for StandaloneDb
+    assert.throws(() => BriefcaseDb.findByKey(snapshotDb1.key)); // lookup of key for SnapshotDb via BriefcaseDb should throw
+    assert.throws(() => StandaloneDb.findByKey(snapshotDb1.key)); // likewise for StandaloneDb
     assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
@@ -2478,17 +2566,11 @@ describe("iModel", () => {
     expect((elProps as any).isPrivate).undefined;
     expect((elProps as any).isInstanceOfEntity).undefined;
 
-    // update UserLabel to undefined
-    element.userLabel = undefined;
-    element.update();
-    element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.equal(element.userLabel, undefined); // NOTE: userLabel is cleared when userLabel is specified as undefined
-
-    // update UserLabel to ""
+    // remove userlabel by setting it to the blank string
     element.userLabel = "";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.isUndefined(element.userLabel); // NOTE: userLabel is also cleared when the empty string is specified
+    assert.isUndefined(element.userLabel); // NOTE: userLabel is cleared when the empty string is specified
   });
 
   it("should update FederationGuid", () => {
@@ -2524,17 +2606,22 @@ describe("iModel", () => {
     assert.equal(element.federationGuid, federationGuid);
     assert.isTrue(element.isPrivate);
 
-    // update FederationGuid to undefined
-    element.federationGuid = undefined;
-    element.update();
+    // remove federationGuid by setting it to undefined in ElementProps
+    const elProps = element.toJSON();
+    elProps.federationGuid = undefined;
+    imodel1.elements.updateElement(elProps);
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.federationGuid);
 
-    // update FederationGuid to ""
-    element.federationGuid = "";
-    element.update();
-    element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.isUndefined(element.federationGuid);
+    // ensure that update doesn't change federationGuid from an element immediately after insert (toJSON should remove undefined value)
+    const subject5 = Subject.create(imodel1, IModel.rootSubjectId, "Subject5");
+    const s5Id = subject5.insert();
+    const s5pre = imodel1.elements.getElement<Subject>(s5Id);
+    subject5.description = "new descr";
+    subject5.update();
+    const s5post = imodel1.elements.getElement<Subject>(s5Id);
+    expect(s5pre.federationGuid).equal(s5post.federationGuid);
+    expect(s5post.description).equal(subject5.description);
   });
 
   it("should support partial update", () => {
@@ -2583,7 +2670,6 @@ describe("iModel", () => {
     // Element.FederationGuid is a custom-handled property
     assert.equal(subject1.federationGuid, federationGuid1);
     assert.equal(subject2.federationGuid, federationGuid2);
-    assert.isUndefined(subject3.federationGuid);
     assert.isUndefined(subject4.federationGuid);
 
     // test partial update of Description (auto-handled)
@@ -2591,7 +2677,7 @@ describe("iModel", () => {
       id: subject1.id,
       classFullName: subject1.classFullName,
       description: "Description1-Updated",
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
     assert.equal(subject1.description, "Description1-Updated"); // should have been updated
     assert.isDefined(subject1.model);
@@ -2605,7 +2691,7 @@ describe("iModel", () => {
       id: subject2.id,
       classFullName: subject2.classFullName,
       userLabel: "UserLabel2-Updated",
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
     assert.isDefined(subject2.model);
     assert.isDefined(subject2.parent);
@@ -2619,7 +2705,6 @@ describe("iModel", () => {
     subject2.description = "";
     subject3.description = "Description3";
     subject4.description = "Description4";
-    subject1.userLabel = undefined;
     subject2.userLabel = "";
     subject3.userLabel = "UserLabel3";
     subject4.userLabel = "UserLabel4";
@@ -2639,31 +2724,31 @@ describe("iModel", () => {
     assert.equal(subject4.description, "Description4");
 
     // Element.UserLabel is a custom-handled property
-    assert.isUndefined(subject1.userLabel);
     assert.isUndefined(subject2.userLabel); // NOTE: different behavior between auto-handled and custom-handled
     assert.equal(subject3.userLabel, "UserLabel3");
     assert.equal(subject4.userLabel, "UserLabel4");
 
     // test partial update of Description to undefined
+    const s3Fed = subject3.federationGuid;
     imodel1.elements.updateElement({
       id: subject3.id,
       classFullName: subject3.classFullName,
       description: undefined,
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
     assert.isUndefined(subject3.description); // should have been updated
     assert.isDefined(subject3.model);
     assert.isDefined(subject3.parent);
     assert.equal(subject3.code.value, "Subject3"); // should not have changed
     assert.equal(subject3.userLabel, "UserLabel3"); // should not have changed
-    assert.isUndefined(subject3.federationGuid); // should not have changed
+    assert.equal(subject3.federationGuid, s3Fed); // should not have changed
 
     // test partial update of UserLabel to undefined
     imodel1.elements.updateElement({
       id: subject4.id,
       classFullName: subject4.classFullName,
       userLabel: undefined,
-    } as unknown as ElementProps);
+    } as SubjectProps);
     subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
     assert.isDefined(subject4.model);
     assert.isDefined(subject4.parent);
@@ -2671,5 +2756,6 @@ describe("iModel", () => {
     assert.equal(subject4.code.value, "Subject4"); // should not have changed
     assert.equal(subject4.description, "Description4"); // should not have changed
     assert.isUndefined(subject4.federationGuid); // should not have changed
+
   });
 });

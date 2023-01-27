@@ -6,11 +6,11 @@ import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, UiFramework,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, StageUsage, UiFramework,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../index";
 import { IModelIndex } from "../imodelindex/IModelIndex";
-import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 class IModelIndexControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -39,7 +39,7 @@ export class IModelIndexFrontstage extends FrontstageProvider {
     return IModelIndexFrontstage.stageId;
   }
 
-  public get frontstage(): React.ReactElement<FrontstageProps> {
+  public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
     const contentGroup: ContentGroup = new ContentGroup({
       id: "imodelIndexGroup",
       layout: StandardContentLayouts.singleView,
@@ -52,7 +52,7 @@ export class IModelIndexFrontstage extends FrontstageProvider {
     });
 
     return (
-      <Frontstage id={this.id}
+      <Frontstage id={this.id} // eslint-disable-line deprecation/deprecation
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         usage={StageUsage.Private}
