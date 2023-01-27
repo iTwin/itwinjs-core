@@ -578,7 +578,7 @@ function is(expected: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, R
 function applyInstanceFilter(node: PresentationTreeNodeItem, propName: string = "prop"): InstanceFilterDefinition {
   const property = createTestPropertyInfo({ name: propName });
   const field = createTestPropertiesContentField({ properties: [{ property }], name: property.name });
-  const instanceFilter = `this.${property.name} IS NULL`;
+  const instanceFilter = `this.${property.name} = NULL`;
   node.filtering = {
     descriptor: createTestContentDescriptor({ fields: [] }),
     active: {

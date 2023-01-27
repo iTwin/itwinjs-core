@@ -1281,6 +1281,7 @@ export interface CodeSpecProperties {
     scopeSpec: {
         type: CodeScopeSpec.Type;
         fGuidRequired?: boolean;
+        relationship?: string;
     };
     // (undocumented)
     spec?: {
@@ -4297,7 +4298,7 @@ export enum HSVConstants {
 // @internal (undocumented)
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
-// @public
+// @public @deprecated
 export interface HttpServerRequest extends BackendReadable {
     // (undocumented)
     aborted: boolean;
@@ -4349,7 +4350,7 @@ export interface HttpServerRequest extends BackendReadable {
     url?: string;
 }
 
-// @public
+// @public @deprecated
 export interface HttpServerResponse extends BackendWritable {
     // (undocumented)
     send(body?: any): HttpServerResponse;
@@ -5865,7 +5866,7 @@ export interface OpenAPIEncoding {
     style?: string;
 }
 
-// @public
+// @public @deprecated
 export interface OpenAPIInfo {
     // (undocumented)
     title: string;
@@ -7724,7 +7725,7 @@ export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => {
     new (): RpcConfiguration;
 };
 
-// @public
+// @public @deprecated
 export enum RpcContentType {
     // (undocumented)
     Binary = 2,
@@ -7754,7 +7755,7 @@ export class RpcControlChannel {
     static obtain(configuration: RpcConfiguration): RpcControlChannel;
 }
 
-// @public
+// @public @deprecated
 export abstract class RpcControlResponse {
     // (undocumented)
     message: string;
@@ -7788,7 +7789,7 @@ export class RpcDirectRequest extends RpcRequest {
     protected setHeader(name: string, value: string): void;
 }
 
-// @public
+// @public @deprecated
 export enum RpcEndpoint {
     // (undocumented)
     Backend = 1,
@@ -7903,7 +7904,7 @@ export class RpcMultipart {
     static writeValueToForm(form: FormDataCommon, value: RpcSerializedValue): void;
 }
 
-// @public
+// @public @deprecated
 export class RpcNotFoundResponse extends RpcControlResponse {
     // (undocumented)
     message: string;
@@ -7971,7 +7972,7 @@ export class RpcPendingQueue {
     static instance: RpcPendingQueue;
 }
 
-// @public
+// @public @deprecated
 export class RpcPendingResponse extends RpcControlResponse {
     constructor(message?: string);
     message: string;
@@ -8010,7 +8011,7 @@ export abstract class RpcProtocol {
     transferChunkThreshold: number;
 }
 
-// @public
+// @public @deprecated
 export enum RpcProtocolEvent {
     // (undocumented)
     BackendErrorOccurred = 11,
@@ -8233,7 +8234,7 @@ export interface RpcRequestContext {
     serialize: (request: RpcRequest) => Promise<SerializedRpcActivity>;
 }
 
-// @public
+// @public @deprecated
 export enum RpcRequestEvent {
     // (undocumented)
     PendingUpdateReceived = 1,
@@ -8270,7 +8271,7 @@ export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfig
 // @internal
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
-// @public
+// @public @deprecated
 export enum RpcRequestStatus {
     // (undocumented)
     BadGateway = 10,
@@ -8304,7 +8305,7 @@ export enum RpcRequestStatus {
     Unknown = 0
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export namespace RpcRequestStatus {
     // (undocumented)
     export function isTransientError(status: RpcRequestStatus): boolean;

@@ -56,6 +56,8 @@ export interface BaseFieldJSON {
 
 // @public
 export interface BaseNodeKey {
+    // @alpha
+    instanceKeysSelectQuery?: PresentationQuery;
     pathFromRoot: string[];
     type: string;
     version: number;
@@ -63,12 +65,20 @@ export interface BaseNodeKey {
 
 // @public @deprecated
 export interface BaseNodeKeyJSON {
+    // @alpha (undocumented)
+    instanceKeysSelectQuery?: PresentationQuery;
     // (undocumented)
     pathFromRoot: string[];
     // (undocumented)
     type: string;
     // (undocumented)
     version?: number;
+}
+
+// @alpha (undocumented)
+export interface BasePresentationQueryBinding {
+    // (undocumented)
+    type: "Id" | "IdSet" | "ECValue" | "ValueSet";
 }
 
 // @public
@@ -145,13 +155,13 @@ export interface CheckBoxRule extends RuleBase {
     defaultValue?: boolean;
     isEnabled?: string | boolean;
     propertyName?: string;
-    ruleType: RuleTypes.CheckBox;
+    ruleType: "CheckBox";
     useInversedPropertyValue?: boolean;
 }
 
 // @public
 export interface ChildNodeRule extends NavigationRuleBase {
-    ruleType: RuleTypes.ChildNodes;
+    ruleType: "ChildNodes";
 }
 
 // @public
@@ -167,7 +177,7 @@ export interface ChildNodeSpecificationBase {
     nestedRules?: ChildNodeRule[];
     priority?: number;
     relatedInstances?: RelatedInstanceSpecification[];
-    specType: ChildNodeSpecificationTypes;
+    specType: `${ChildNodeSpecificationTypes}`;
     suppressSimilarAncestorsCheck?: boolean;
 }
 
@@ -187,7 +197,7 @@ export enum ChildNodeSpecificationTypes {
 export interface ClassGroup extends GroupingSpecificationBase {
     baseClass?: SingleSchemaClassSpecification;
     createGroupForSingleItem?: boolean;
-    specType: GroupingSpecificationTypes.Class;
+    specType: "Class";
 }
 
 // @public
@@ -335,7 +345,7 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
     handleInstancesPolymorphically?: boolean;
     handlePropertiesPolymorphically?: boolean;
     instanceFilter?: string;
-    specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses;
+    specType: "ContentInstancesOfSpecificClasses";
 }
 
 // @public
@@ -349,7 +359,7 @@ export interface ContentJSON {
 // @public
 export interface ContentModifier extends RuleBase, ContentModifiersList {
     class?: SingleSchemaClassSpecification;
-    ruleType: RuleTypes.ContentModifier;
+    ruleType: "ContentModifier";
 }
 
 // @public
@@ -364,7 +374,7 @@ export interface ContentModifiersList {
 export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
     instanceFilter?: string;
     relationshipPaths: RepeatableRelationshipPathSpecification[];
-    specType: ContentSpecificationTypes.ContentRelatedInstances;
+    specType: "ContentRelatedInstances";
 }
 
 // @public
@@ -379,7 +389,7 @@ export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequ
 // @public
 export interface ContentRule extends RuleBase {
     condition?: string;
-    ruleType: RuleTypes.Content;
+    ruleType: "Content";
     specifications: ContentSpecification[];
 }
 
@@ -409,7 +419,7 @@ export interface ContentSpecificationBase extends ContentModifiersList {
     relatedInstances?: RelatedInstanceSpecification[];
     // @deprecated
     showImages?: boolean;
-    specType: ContentSpecificationTypes;
+    specType: `${ContentSpecificationTypes}`;
 }
 
 // @public
@@ -440,14 +450,14 @@ export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
     description?: string;
     imageId?: string;
     label: string;
-    specType: ChildNodeSpecificationTypes.CustomNode;
+    specType: "CustomNode";
     type: string;
 }
 
 // @public
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     queries?: QuerySpecification[];
-    specType: ChildNodeSpecificationTypes.CustomQueryInstanceNodes;
+    specType: "CustomQueryInstanceNodes";
 }
 
 // @public
@@ -475,7 +485,7 @@ export interface DefaultGroupingPropertiesContainer {
 
 // @public
 export interface DefaultPropertyCategoryOverride extends RuleBase {
-    ruleType: RuleTypes.DefaultPropertyCategoryOverride;
+    ruleType: "DefaultPropertyCategoryOverride";
     specification: PropertyCategorySpecification;
 }
 
@@ -641,7 +651,7 @@ export interface DiagnosticsScopeLogs {
 
 // @public
 export interface DisabledSortingRule extends SortingRuleBase {
-    ruleType: RuleTypes.DisabledSorting;
+    ruleType: "DisabledSorting";
 }
 
 // @public
@@ -779,7 +789,27 @@ export interface ECPropertyGroupingNodeKeyJSON extends GroupingNodeKey {
 // @public
 export interface ECPropertyValueQuerySpecification extends QuerySpecificationBase {
     parentPropertyName: string;
-    specType: QuerySpecificationTypes.ECPropertyValue;
+    specType: "ECPropertyValue";
+}
+
+// @alpha (undocumented)
+export interface ECValueBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "ECValue";
+    // (undocumented)
+    value: any;
+    // (undocumented)
+    valueType: string;
+}
+
+// @alpha (undocumented)
+export interface ECValueSetBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "ValueSet";
+    // (undocumented)
+    value: any[];
+    // (undocumented)
+    valueType: string;
 }
 
 // @public
@@ -911,7 +941,7 @@ export interface ExtendedDataRule extends RuleBase {
     items: {
         [key: string]: string;
     };
-    ruleType: RuleTypes.ExtendedData;
+    ruleType: "ExtendedData";
 }
 
 // @public
@@ -1021,7 +1051,7 @@ export interface GroupingRule extends RuleBase {
     class: SingleSchemaClassSpecification;
     condition?: string;
     groups: GroupingSpecification[];
-    ruleType: RuleTypes.Grouping;
+    ruleType: "Grouping";
 }
 
 // @public
@@ -1029,7 +1059,7 @@ export type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstan
 
 // @public
 export interface GroupingSpecificationBase {
-    specType: GroupingSpecificationTypes;
+    specType: `${GroupingSpecificationTypes}`;
 }
 
 // @public
@@ -1219,17 +1249,33 @@ export interface Id64sRulesetVariableJSON extends RulesetVariableBaseJSON {
     value: Id64String[] | CompressedId64Set;
 }
 
+// @alpha (undocumented)
+export interface IdBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "Id";
+    // (undocumented)
+    value: Id64String;
+}
+
 // @public
 export interface IdCategoryIdentifier {
     categoryId: string;
     type: "Id";
 }
 
+// @alpha (undocumented)
+export interface IdSetBinding extends BasePresentationQueryBinding {
+    // (undocumented)
+    type: "IdSet";
+    // (undocumented)
+    value: Id64String[];
+}
+
 // @public @deprecated
 export interface ImageIdOverride extends RuleBase {
     condition?: string;
     imageIdExpression: string;
-    ruleType: RuleTypes.ImageIdOverride;
+    ruleType: "ImageIdOverride";
 }
 
 // @beta
@@ -1290,27 +1336,27 @@ export interface InstanceKeyJSON {
 // @public
 export interface InstanceLabelOverride extends RuleBase {
     class: SingleSchemaClassSpecification;
-    ruleType: RuleTypes.InstanceLabelOverride;
+    ruleType: "InstanceLabelOverride";
     values: InstanceLabelOverrideValueSpecification[];
 }
 
 // @public
 export interface InstanceLabelOverrideBriefcaseIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.BriefcaseId;
+    specType: "BriefcaseId";
 }
 
 // @public
 export interface InstanceLabelOverrideClassLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.ClassLabel;
+    specType: "ClassLabel";
 }
 
 // @public
 export interface InstanceLabelOverrideClassNameSpecification extends InstanceLabelOverrideValueSpecificationBase {
     full?: boolean;
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.ClassName;
+    specType: "ClassName";
 }
 
 // @public
@@ -1321,13 +1367,13 @@ export interface InstanceLabelOverrideCompositeValueSpecification extends Instan
     }>;
     separator?: string;
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.Composite;
+    specType: "Composite";
 }
 
 // @public
 export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabelOverrideValueSpecificationBase {
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.LocalId;
+    specType: "LocalId";
 }
 
 // @public
@@ -1335,20 +1381,20 @@ export interface InstanceLabelOverridePropertyValueSpecification extends Instanc
     propertyName: string;
     propertySource?: RelationshipPathSpecification;
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.Property;
+    specType: "Property";
 }
 
 // @public
 export interface InstanceLabelOverrideRelatedInstanceLabelSpecification extends InstanceLabelOverrideValueSpecificationBase {
     pathToRelatedInstance: RelationshipPathSpecification;
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.RelatedInstanceLabel;
+    specType: "RelatedInstanceLabel";
 }
 
 // @public
 export interface InstanceLabelOverrideStringValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
     // (undocumented)
-    specType: InstanceLabelOverrideValueSpecificationType.String;
+    specType: "String";
     value: string;
 }
 
@@ -1357,7 +1403,7 @@ export type InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompo
 
 // @public
 export interface InstanceLabelOverrideValueSpecificationBase {
-    specType: InstanceLabelOverrideValueSpecificationType;
+    specType: `${InstanceLabelOverrideValueSpecificationType}`;
 }
 
 // @public
@@ -1387,7 +1433,7 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     instanceFilter?: string;
-    specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses;
+    specType: "InstanceNodesOfSpecificClasses";
 }
 
 // @public
@@ -1605,7 +1651,7 @@ export interface LabelOverride extends RuleBase {
     condition?: string;
     description?: string;
     label?: string;
-    ruleType: RuleTypes.LabelOverride;
+    ruleType: "LabelOverride";
 }
 
 // @public
@@ -1832,7 +1878,7 @@ export interface NodeArtifactsRule extends RuleBase {
     items: {
         [key: string]: string;
     };
-    ruleType: RuleTypes.NodeArtifacts;
+    ruleType: "NodeArtifacts";
 }
 
 // @public
@@ -2093,6 +2139,15 @@ export interface PresentationIpcInterface {
     updateHierarchyState(params: UpdateHierarchyStateParams<NodeKey>): Promise<void>;
 }
 
+// @alpha
+export interface PresentationQuery {
+    bindings?: PresentationQueryBinding[];
+    query: string;
+}
+
+// @alpha
+export type PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding;
+
 // @public
 export class PresentationRpcInterface extends RpcInterface {
     // @deprecated (undocumented)
@@ -2274,13 +2329,13 @@ export interface PropertyCategorySpecification {
 // @public
 export interface PropertyEditorJsonParameters extends PropertyEditorParametersBase {
     json: any;
-    paramsType: PropertyEditorParameterTypes.Json;
+    paramsType: "Json";
 }
 
 // @public
 export interface PropertyEditorMultilineParameters extends PropertyEditorParametersBase {
     height?: number;
-    paramsType: PropertyEditorParameterTypes.Multiline;
+    paramsType: "Multiline";
 }
 
 // @public
@@ -2288,7 +2343,7 @@ export type PropertyEditorParameters = PropertyEditorJsonParameters | PropertyEd
 
 // @public
 export interface PropertyEditorParametersBase {
-    paramsType: PropertyEditorParameterTypes;
+    paramsType: `${PropertyEditorParameterTypes}`;
 }
 
 // @public
@@ -2307,7 +2362,7 @@ export enum PropertyEditorParameterTypes {
 export interface PropertyEditorRangeParameters extends PropertyEditorParametersBase {
     max?: number;
     min?: number;
-    paramsType: PropertyEditorParameterTypes.Range;
+    paramsType: "Range";
 }
 
 // @public
@@ -2316,7 +2371,7 @@ export interface PropertyEditorSliderParameters extends PropertyEditorParameters
     isVertical?: boolean;
     max: number;
     min: number;
-    paramsType: PropertyEditorParameterTypes.Slider;
+    paramsType: "Slider";
 }
 
 // @public
@@ -2330,13 +2385,13 @@ export interface PropertyGroup extends GroupingSpecificationBase {
     createGroupForSingleItem?: boolean;
     createGroupForUnspecifiedValues?: boolean;
     // @deprecated
-    groupingValue?: PropertyGroupingValue;
+    groupingValue?: `${PropertyGroupingValue}`;
     imageId?: string;
     propertyName: string;
     ranges?: PropertyRangeGroupSpecification[];
     // @deprecated
-    sortingValue?: PropertyGroupingValue;
-    specType: GroupingSpecificationTypes.Property;
+    sortingValue?: `${PropertyGroupingValue}`;
+    specType: "Property";
 }
 
 // @public @deprecated
@@ -2415,7 +2470,7 @@ export interface PropertyRangeGroupSpecification {
 // @public
 export interface PropertySortingRule extends SortingRuleBase {
     propertyName: string;
-    ruleType: RuleTypes.PropertySorting;
+    ruleType: "PropertySorting";
     sortAscending?: boolean;
 }
 
@@ -2437,7 +2492,7 @@ export type QuerySpecification = StringQuerySpecification | ECPropertyValueQuery
 // @public
 export interface QuerySpecificationBase {
     class: SingleSchemaClassSpecification;
-    specType: QuerySpecificationTypes;
+    specType: `${QuerySpecificationTypes}`;
 }
 
 // @public
@@ -2528,7 +2583,7 @@ export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassI
 export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     instanceFilter?: string;
     relationshipPaths: RepeatableRelationshipPathSpecification[];
-    specType: ChildNodeSpecificationTypes.RelatedInstanceNodes;
+    specType: "RelatedInstanceNodes";
 }
 
 // @public
@@ -2551,10 +2606,10 @@ export interface RelatedPropertiesSpecification {
     handleTargetClassPolymorphically?: boolean;
     instanceFilter?: string;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
-    properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
+    properties?: Array<string | PropertySpecification> | `${RelatedPropertiesSpecialValues}`;
     propertiesSource: RelationshipPathSpecification;
-    relationshipMeaning?: RelationshipMeaning;
-    relationshipProperties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
+    relationshipMeaning?: `${RelationshipMeaning}`;
+    relationshipProperties?: Array<string | PropertySpecification> | `${RelatedPropertiesSpecialValues}`;
     // @beta
     skipIfDuplicate?: boolean;
 }
@@ -2589,7 +2644,7 @@ export type RelationshipPathSpecification = RelationshipStepSpecification | Rela
 
 // @public
 export interface RelationshipStepSpecification {
-    direction: RelationshipDirection.Forward | RelationshipDirection.Backward;
+    direction: `${RelationshipDirection}`;
     relationship: SingleSchemaClassSpecification;
     targetClass?: SingleSchemaClassSpecification;
 }
@@ -2637,7 +2692,7 @@ export interface RootCategoryIdentifier {
 // @public
 export interface RootNodeRule extends NavigationRuleBase {
     autoExpand?: boolean;
-    ruleType: RuleTypes.RootNodes;
+    ruleType: "RootNodes";
 }
 
 // @beta
@@ -2707,7 +2762,7 @@ export interface RuleBase {
     onlyIfNotHandled?: boolean;
     priority?: number;
     requiredSchemas?: RequiredSchemaSpecification[];
-    ruleType: RuleTypes;
+    ruleType: `${RuleTypes}`;
 }
 
 // @public
@@ -2797,8 +2852,8 @@ export enum RuleTypes {
 
 // @public
 export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
-    applicationStage?: SameLabelInstanceGroupApplicationStage;
-    specType: GroupingSpecificationTypes.SameLabelInstance;
+    applicationStage?: `${SameLabelInstanceGroupApplicationStage}`;
+    specType: "SameLabelInstance";
 }
 
 // @public
@@ -2858,7 +2913,7 @@ export interface SelectedNodeInstancesSpecification extends ContentSpecification
     acceptableClassNames?: string[];
     acceptablePolymorphically?: boolean;
     acceptableSchemaName?: string;
-    specType: ContentSpecificationTypes.SelectedNodeInstances;
+    specType: "SelectedNodeInstances";
 }
 
 // @public
@@ -2979,7 +3034,7 @@ export interface StartStructProps {
 // @public
 export interface StringQuerySpecification extends QuerySpecificationBase {
     query: string;
-    specType: QuerySpecificationTypes.String;
+    specType: "String";
 }
 
 // @public
@@ -3032,7 +3087,7 @@ export interface StyleOverride extends RuleBase {
     condition?: string;
     fontStyle?: string;
     foreColor?: string;
-    ruleType: RuleTypes.StyleOverride;
+    ruleType: "StyleOverride";
 }
 
 // @public
@@ -3161,7 +3216,7 @@ export interface Variable {
     defaultValue?: string;
     id: string;
     label: string;
-    type?: VariableValueType;
+    type?: `${VariableValueType}`;
 }
 
 // @public

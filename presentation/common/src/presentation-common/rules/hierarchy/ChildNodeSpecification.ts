@@ -18,7 +18,6 @@ import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecifi
  * @public
  */
 export enum ChildNodeSpecificationTypes {
-  // hierarchy specifications
   RelatedInstanceNodes = "RelatedInstanceNodes",
   InstanceNodesOfSpecificClasses = "InstanceNodesOfSpecificClasses",
   CustomQueryInstanceNodes = "CustomQueryInstanceNodes",
@@ -32,8 +31,11 @@ export enum ChildNodeSpecificationTypes {
  * @public
  */
 export interface ChildNodeSpecificationBase {
-  /** Used for serializing to JSON. */
-  specType: ChildNodeSpecificationTypes;
+  /**
+   * Used for serializing to JSON.
+   * @see ChildNodeSpecificationTypes
+   */
+  specType: `${ChildNodeSpecificationTypes}`;
 
   /**
    * Controls the order in which specifications are handled — specification with higher priority value is

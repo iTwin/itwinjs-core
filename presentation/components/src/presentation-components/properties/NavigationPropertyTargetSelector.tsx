@@ -12,6 +12,7 @@ import { AsyncPaginate } from "react-select-async-paginate";
 import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 import { PropertyEditorProps, PropertyValueRendererManager } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
+import { useRefs, useResizeObserver } from "@itwin/core-react";
 import { SvgCaretDownSmall } from "@itwin/itwinui-icons-react";
 import { InstanceKey, LabelDefinition, NavigationPropertyInfo } from "@itwin/presentation-common";
 import { translate } from "../common/Utils";
@@ -35,7 +36,6 @@ export interface NavigationPropertyTargetSelectorProps extends PropertyEditorPro
 /** @internal */
 export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPropertyTargetSelectorAttributes, NavigationPropertyTargetSelectorProps>((props, ref) => {
   const { imodel, getNavigationPropertyInfo, propertyRecord, onCommit, setFocus } = props;
-  const divRef = React.useRef<HTMLDivElement>(null);
   const targetsRuleset = useNavigationPropertyTargetsRuleset(getNavigationPropertyInfo, propertyRecord.property);
   const loadTargets = useNavigationPropertyTargetsLoader({ imodel, ruleset: targetsRuleset });
 
@@ -46,6 +46,7 @@ export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPrope
     target && onCommit && onCommit({ propertyRecord, newValue: getPropertyValue(target) });
   }, [propertyRecord, onCommit]);
 
+  const divRef = React.useRef<HTMLDivElement>(null);
   React.useImperativeHandle(ref,
     () => ({
       getValue: () => getPropertyValue(selectedTarget),
@@ -58,10 +59,14 @@ export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPrope
     setSelectedTarget(getNavigationTargetFromPropertyRecord(propertyRecord));
   }, [propertyRecord]);
 
+  const [width, setWidth] = React.useState<number>();
+  const selectRef = useResizeObserver(React.useCallback((newWidth) => { setWidth(newWidth); }, []));
+  const refs = useRefs(selectRef, divRef);
+
   if (!targetsRuleset)
     return <ReadonlyNavigationPropertyTarget record={props.propertyRecord} />;
 
-  return <div ref={divRef}>
+  return <div ref={refs}>
     <AsyncPaginate
       isMulti={false}
       onChange={onChange}
@@ -78,9 +83,11 @@ export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPrope
       loadingMessage={() => translate("navigation-property-editor.loading-target-instances")}
       styles={{
         control: () => ({ height: "27px" }),
+        container: () => ({ width: "auto" }),
         valueContainer: () => ({ height: "27px" }),
-        menu: () => ({ position: "absolute", zIndex: 9999 }),
+        menu: () => ({ position: "absolute", zIndex: 9999, width }),
         option: () => ({ whiteSpace: "nowrap" }),
+        placeholder: (style: any) => ({ ...style, position: "relative", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }),
       }}
       components={{
         Control: TargetSelectControl,

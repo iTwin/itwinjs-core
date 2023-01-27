@@ -37,7 +37,7 @@ import { CommonPropertyGridProps, PropertyGridCommons } from "./PropertyGridComm
 import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRelatedPropsSupplier";
 
 /** Properties for [[VirtualizedPropertyGrid]] React component
- * @beta
+ * @public
  */
 export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
   model: IPropertyGridModel;
@@ -82,7 +82,7 @@ export interface PropertyGridInternalContext {
 
 /**
  * Context of the surrounding [VirtualizedPropertyGrid]($components-react) component.
- * @beta
+ * @public
  */
 export interface VirtualizedPropertyGridContext {
   orientation: Orientation;
@@ -128,7 +128,7 @@ const [
 
 /**
  * VirtualizedPropertyGrid React component.
- * @beta
+ * @public
  */
 export class VirtualizedPropertyGrid extends React.Component<VirtualizedPropertyGridProps, VirtualizedPropertyGridState> {
   private _listRef = React.createRef<VariableSizeList>();

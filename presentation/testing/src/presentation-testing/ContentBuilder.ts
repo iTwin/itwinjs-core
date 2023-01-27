@@ -160,6 +160,7 @@ export class ContentBuilder {
    * @param rulesetOrId Either a [[Ruleset]] object or a ruleset id.
    * @param displayType Type of content container display. For example:
    * "PropertyPane", "Grid", "List" etc.
+   * @deprecated in 3.x. This method turned out to be useless as it creates content for too many instances. Should use [[createContent]] instead.
    */
   public async createContentForAllInstances(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane) {
     return this.createContentForClasses(rulesetOrId, false, displayType);
@@ -171,6 +172,7 @@ export class ContentBuilder {
    * @param rulesetOrId Either a [[Ruleset]] object or a ruleset id.
    * @param displayType Type of content container display. For example:
    * "PropertyPane", "Grid", "List" etc.
+   * @deprecated in 3.x. This method turned out to be useless as it creates content for too many instances. Should use [[createContent]] instead.
    */
   public async createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane) {
     return this.createContentForClasses(rulesetOrId, true, displayType);

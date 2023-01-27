@@ -27,7 +27,7 @@ const NODE_LOAD_DELAY = 500;
 
 /**
  * Data structure that describes range of rendered items in the tree.
- * @beta
+ * @public
  */
 export interface RenderedItemsRange {
   overscanStartIndex: number;
@@ -56,10 +56,7 @@ export interface TreeRendererProps {
   /** Properties used to highlight nodes and scroll to active match while filtering. */
   nodeHighlightingProps?: HighlightableTreeProps;
 
-  /**
-   * Callback that is called when rendered items range changes.
-   * @beta
-   */
+  /** Callback that is called when rendered items range changes. */
   onItemsRendered?: (renderedItems: RenderedItemsRange) => void;
 
   /**

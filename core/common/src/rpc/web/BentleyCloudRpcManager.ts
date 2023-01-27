@@ -15,6 +15,8 @@ import { BentleyCloudRpcProtocol } from "./BentleyCloudRpcProtocol";
 import { OpenAPIInfo } from "./OpenAPI";
 import { RpcRoutingToken } from "../core/RpcRoutingToken";
 
+/* eslint-disable deprecation/deprecation */
+
 /** Initialization parameters for BentleyCloudRpcConfiguration.
  * @internal
  */
