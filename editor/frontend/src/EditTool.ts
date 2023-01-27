@@ -6,8 +6,9 @@
  * @module Editing
  */
 
+import { BeDuration } from "@itwin/core-bentley";
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
-import { editorChannel } from "@itwin/editor-common";
+import { EditCommandBusy, editorChannel } from "@itwin/editor-common";
 import { DeleteElementsTool } from "./DeleteElementsTool";
 import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool, RegionBooleanTool } from "./ModifyCurveTools";
 import {
@@ -24,7 +25,9 @@ import { CreateBoxTool, CreateConeTool, CreateCylinderTool, CreateSphereTool, Cr
 import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
-/** @alpha Options for [[EditTools.initialize]]. */
+/** Options for [[EditTools.initialize]].
+ * @beta
+ */
 export interface EditorOptions {
   /** If true, all tools will be registered. */
   registerAllTools?: true | undefined;
@@ -40,18 +43,47 @@ export interface EditorOptions {
   registerSolidModelingTools?: true | undefined;
 }
 
-/** @alpha functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand. */
+export namespace EditTools {
+  export interface StartArgs {
+    commandId: string;
+    iModelKey: string;
+  }
+  /** handler for retries when an EditTool attempts to start but a backend command is busy and can't finish its work.
+   * @param attempt the number of times this handler was previously called for this EditTool
+   * @param msg the message about what's happening from the currently busy EditCommand.
+   * @returns the delay (in milliseconds) before attempting again. If `undefined` use default (usually 1 second)
+   */
+  export type BusyRetry = (attempt: number, msg: string) => Promise<number | undefined>;
+}
+
+/**
+ * Supports PrimitiveTool and InputCollector sub-classes.
+ * @beta
+ */
 export class EditTools {
-  public static namespace = "Editor";
-  public static tools = "Editor:tools.";
+  public static readonly namespace = "Editor";
+  public static readonly tools = "Editor:tools.";
+  public static busyRetry?: EditTools.BusyRetry;
   private static _initialized = false;
 
-  public static async startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T> {
-    return IpcApp.callIpcChannel(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
+  public static async startCommand<T>(startArg: EditTools.StartArgs, ...cmdArgs: any[]): Promise<T> {
+    let attempt = 0;
+    while (true) {
+      try {
+        return await (IpcApp.callIpcChannel(editorChannel, "startCommand", startArg.commandId, startArg.iModelKey, ...cmdArgs) as Promise<T>);
+      } catch (e: any) {
+        if (e.name !== "EditCommandBusy")
+          throw e; // unknown backend error
+        const delay = await this.busyRetry?.(attempt++, e.message) ?? 1000;
+        await BeDuration.fromMilliseconds(delay).wait();
+      }
+    }
   }
 
   /** @internal */
-  public static translate(prompt: string) { return IModelApp.localization.getLocalizedString(this.tools + prompt); }
+  public static translate(prompt: string) {
+    return IModelApp.localization.getLocalizedString(this.tools + prompt);
+  }
 
   /** Call this before using the package (e.g., before attempting to use any of its tools.)
    * To initialize when starting up your app:
