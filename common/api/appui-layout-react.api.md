@@ -2117,8 +2117,8 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
             2: ZoneManagerProps;
             3: ZoneManagerProps;
             4: ZoneManagerProps;
-            7: ZoneManagerProps;
             6: ZoneManagerProps;
+            7: ZoneManagerProps;
             8: ZoneManagerProps;
             9: ZoneManagerProps;
         };
