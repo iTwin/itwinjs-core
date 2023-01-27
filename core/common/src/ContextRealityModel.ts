@@ -361,11 +361,18 @@ export class ContextRealityModels {
    * @param container The object that holds the JSON representation of the list.
    * @param createContextRealityModel Optional function used to instantiate ContextRealityModels added to the list.
    */
-  public constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel) {
+  public constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel, populate = true) {
     this._container = container;
     this._createModel = createContextRealityModel ?? ((props) => new ContextRealityModel(props));
 
-    const models = container.contextRealityModels;
+    if (populate)
+      this.populate();
+  }
+
+  /** @internal needs to be invoked after DisplayStyleSettings constructor by DisplayStyleState constructor.*/
+  public populate(): void {
+    assert(this._models.length === 0, "do not call ContextRealityModels.populate more than once");
+    const models = this._container.contextRealityModels;
     if (models)
       for (const model of models)
         this._models.push(this.createModel(model));
