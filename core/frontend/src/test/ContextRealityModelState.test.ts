@@ -5,12 +5,12 @@
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ContextRealityModelProps, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings,
+  Code, ContextRealityModelProps, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings,
 } from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
-import { TileTreeOwner } from "../tile/internal";
+import { createRealityTileTreeReference, TileTreeOwner } from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
 
 describe.only("ContextRealityModelState", () => {
@@ -120,7 +120,46 @@ describe.only("ContextRealityModelState", () => {
   });
 
   it("does not share trees with persistent reality models", () => {
-    // ###TODO need a way to test this...
+    const style = new Style();
+    const rdSourceKey = undefined as any; // API claims required but is not actually...
+    const getDisplaySettings = () => RealityModelDisplaySettings.defaults;
+    const persistentRef1 = createRealityTileTreeReference({
+      source: style,
+      iModel: imodel,
+      modelId: "0x123",
+      url: "a",
+      getDisplaySettings,
+      rdSourceKey,
+    });
+    expect(persistentRef1.modelId).to.equal("0x123");
+
+    const persistentRef2 = createRealityTileTreeReference({
+      source: style,
+      iModel: imodel,
+      modelId: "0x456",
+      url: "a",
+      getDisplaySettings,
+      rdSourceKey,
+    });
+    expect(persistentRef2.modelId).to.equal("0x456");
+    expect(persistentRef2.treeOwner).not.to.equal(persistentRef1.treeOwner);
+
+    const transientId = imodel.transientIds.peekNext();
+    style.attachRealityModel({ tilesetUrl: "a" });
+    style.expectTrees([transientId]);
+    expect(style.trees[0].owner).not.to.equal(persistentRef1.treeOwner);
+    expect(style.trees[0].owner).not.to.equal(persistentRef2.treeOwner);
+
+    const transientRef = createRealityTileTreeReference({
+      source: style,
+      iModel: imodel,
+      modelId: transientId,
+      url: "a",
+      getDisplaySettings,
+      rdSourceKey,
+    });
+    expect(transientRef.modelId).to.equal(transientId);
+    expect(transientRef.treeOwner).to.equal(style.trees[0].owner);
   });
 
   it("keeps same modelId but gets new TileTreeOwner when settings change", () => {
