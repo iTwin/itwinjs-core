@@ -231,9 +231,9 @@ const useProximityOpacitySetting = () => {
  */
 export interface ExtensibleToolbarProps {
   items: CommonToolbarItem[];
-  usage: ToolbarUsage;
+  usage: ToolbarUsage; // eslint-disable-line deprecation/deprecation
   /** Toolbar orientation. */
-  orientation: ToolbarOrientation;
+  orientation: ToolbarOrientation; // eslint-disable-line deprecation/deprecation
 }
 
 /**
@@ -261,7 +261,7 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
 
   const toolbarItems = React.useMemo(() => combineItems(defaultItems, addonItems), [defaultItems, addonItems]);
 
-  const toolbarOrientation = orientation === ToolbarOrientation.Horizontal ? Orientation.Horizontal : Orientation.Vertical;
+  const toolbarOrientation = orientation === ToolbarOrientation.Horizontal ? Orientation.Horizontal : Orientation.Vertical; // eslint-disable-line deprecation/deprecation
   // eslint-disable-next-line deprecation/deprecation
   const expandsTo = toolbarOrientation === Orientation.Horizontal ? Direction.Bottom : usage === ToolbarUsage.ViewNavigation ? Direction.Left : Direction.Right;
   // eslint-disable-next-line deprecation/deprecation

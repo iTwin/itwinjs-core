@@ -12,6 +12,7 @@ import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ProvidedItem } from "../items/ProvidedItem";
 
 /** Used to specify the usage of the toolbar which determine the toolbar position.
+ * @deprecated in 3.6. Use [ToolbarUsage]($appui-react) instead.
  * @public
  */
 export enum ToolbarUsage {
@@ -22,6 +23,7 @@ export enum ToolbarUsage {
 }
 
 /** Used to specify the orientation of the toolbar.
+ * @deprecated in 3.6. Use [ToolbarOrientation]($appui-react) instead.
  * @public
  */
 export enum ToolbarOrientation {
@@ -34,7 +36,7 @@ export enum ToolbarOrientation {
 /** Describes the data needed to insert a UI items into an existing set of UI items.
  * @public
  */
-export interface ToolbarItem extends ProvidedItem {
+export interface ToolbarItem extends ProvidedItem { // eslint-disable-line deprecation/deprecation
   /** can be used by application to store miscellaneous data. */
   readonly applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
@@ -90,7 +92,7 @@ export interface GroupButton extends ToolbarItem {
   /** label shown as the title in at top of group panel. */
   readonly panelLabel?: string | ConditionalStringValue;
   /** children of the group */
-  readonly items: ReadonlyArray<ActionButton | GroupButton>;
+  readonly items: ReadonlyArray<ActionButton | GroupButton>; // eslint-disable-line deprecation/deprecation
 }
 
 /** Describes the data needed to insert a custom button into a toolbar.
@@ -111,9 +113,10 @@ export interface CustomButtonDefinition extends ToolbarItem {
 export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
 
 /** Type for Toolbar Item Id
+ * @deprecated in 3.6.
  * @public
  */
-export type ToolbarItemId = CommonToolbarItem["id"];
+export type ToolbarItemId = CommonToolbarItem["id"]; // eslint-disable-line deprecation/deprecation
 
 /** Helper class to create Abstract StatusBar Item definitions.
  * @public
@@ -127,7 +130,7 @@ export class ToolbarItemUtilities {
     ...overrides,
   });
 
-  /** Creates a Group button */
+  /** Creates a Group button. */
   public static createGroupButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: ReadonlyArray<ActionButton | GroupButton>, overrides?: Partial<GroupButton>): GroupButton => ({
     id, itemPriority,
     icon, label,

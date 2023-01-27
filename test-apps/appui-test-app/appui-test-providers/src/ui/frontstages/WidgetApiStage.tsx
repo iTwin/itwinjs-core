@@ -7,16 +7,11 @@ import { useSelector } from "react-redux";
 
 import {
   BackstageAppButton, BackstageManager, CommandItemDef, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps,
-  FrontstageProps,
-  IModelViewportControl, StagePanelState, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
-  StandardNavigationToolsUiItemsProvider,
-  StandardStatusbarUiItemsProvider,
-  StateManager,
-  UiFramework,
+  FrontstageProps, IModelViewportControl, StagePanelState, StageUsage, StandardContentToolsUiItemsProvider, StandardFrontstageProps,
+  StandardFrontstageProvider, StandardNavigationToolsUiItemsProvider, StandardStatusbarUiItemsProvider, StateManager, UiFramework, UiItemsManager, WidgetState,
 } from "@itwin/appui-react";
 import {
-  ConditionalStringValue,
-  StageUsage, StandardContentLayouts, UiItemsManager, WidgetState,
+  ConditionalStringValue, StandardContentLayouts,
 } from "@itwin/appui-abstract";
 import { getSavedViewLayoutProps } from "../../tools/ContentLayoutTools";
 import { WidgetApiStageUiItemsProvider } from "../providers/WidgetApiStageUiItemsProvider";

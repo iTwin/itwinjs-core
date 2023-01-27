@@ -18,7 +18,7 @@ import "./tooluiproviders/Tool1UiProvider";
 import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
-import { ContentLayoutProps, FunctionKey, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
+import { ContentLayoutProps, FunctionKey, StandardContentLayouts } from "@itwin/appui-abstract";
 import { IModelApp } from "@itwin/core-frontend";
 
 import {
@@ -28,6 +28,7 @@ import {
   ContentGroupProps,
   KeyboardShortcutProps,
   UiFramework,
+  WidgetState,
 } from "@itwin/appui-react";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { Frontstage1 } from "./frontstages/Frontstage1";

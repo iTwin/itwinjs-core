@@ -5,12 +5,12 @@
 import * as React from "react";
 import {
   BackstageAppButton, ContentGroup, ContentGroupProvider, FrontstageProps,
-  IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  IModelViewportControl, StageUsage, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
   UiFramework,
 } from "@itwin/appui-react";
-import { ContentLayoutProps, StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { ContentLayoutProps, StandardContentLayouts } from "@itwin/appui-abstract";
 import { CustomContentUiProvider } from "../providers/CustomContentUiProvider";
 import { SampleContentControl } from "../content/SampleContentControl";
 

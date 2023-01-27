@@ -69,7 +69,7 @@ interface ToolbarGroupItemState {
 /** Group Item React component.
  * @internal
  */
-export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentProps, ToolbarGroupItemState> {
+export class ToolbarGroupItemComponent extends React.Component<ToolbarGroupItemComponentProps, ToolbarGroupItemState> {
   /** @internal */
   public override readonly state: Readonly<ToolbarGroupItemState>;
   private _trayIndex = 0;
@@ -504,7 +504,7 @@ interface GroupButtonProps {
  */
 export function GroupButtonItem(props: GroupButtonProps) {
   return (
-    <ToolbarGroupItem
+    <ToolbarGroupItemComponent
       groupItem={props.item}
       key={props.item.id}
       onItemExecuted={props.onItemExecuted}

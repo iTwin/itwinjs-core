@@ -48,8 +48,8 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
       const widgetDef = UiFramework.frontstages.findWidget(
         FeatureInfoUiItemsProvider.widgetId
       );
-      if (widgetDef && widgetDef.state !== WidgetState.Open)
-        widgetDef.setWidgetState(WidgetState.Open);
+      if (widgetDef && widgetDef.state !== WidgetState.Open) // eslint-disable-line deprecation/deprecation
+        widgetDef.setWidgetState(WidgetState.Open); // eslint-disable-line deprecation/deprecation
 
       DefaultMapFeatureInfoTool.onMapHit.raiseEvent(hit);
       return EventHandled.Yes;

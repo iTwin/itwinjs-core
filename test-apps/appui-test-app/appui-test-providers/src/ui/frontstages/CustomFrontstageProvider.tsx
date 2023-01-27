@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton,
-  BackstageManager,
-  ConfigurableCreateInfo,
-  ContentControl,
-  ContentGroup, ContentToolWidgetComposer, CoreTools, FrontstageConfig, FrontstageProps, FrontstageProvider, StagePanelState, StandardContentToolsUiItemsProvider, StandardNavigationToolsUiItemsProvider, StandardStatusbarUiItemsProvider, StatusBarWidgetComposerControl, UiFramework, ViewToolWidgetComposer,
+  BackstageAppButton, BackstageManager, ConfigurableCreateInfo, ContentControl, ContentGroup,
+  ContentToolWidgetComposer, CoreTools, FrontstageConfig, FrontstageProps, FrontstageProvider, StagePanelState,
+  StandardContentToolsUiItemsProvider, StandardNavigationToolsUiItemsProvider, StandardStatusbarUiItemsProvider, StatusBarWidgetComposerControl,
+  UiFramework, UiItemsManager, ViewToolWidgetComposer,
 } from "@itwin/appui-react";
-import { StandardContentLayouts, UiItemsManager } from "@itwin/appui-abstract";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { CustomStageUiItemsProvider } from "../providers/CustomStageUiItemsProvider";
 
 class CustomContentControl extends ContentControl {

@@ -5,9 +5,9 @@
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import {
-  FrontstageDef, StagePanelState, UiFramework, useActiveFrontstageDef,
+  FrontstageDef, StagePanelLocation, StagePanelState, UiFramework, useActiveFrontstageDef, WidgetState,
 } from "@itwin/appui-react";
-import { SpecialKey, StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { NumberInput, RectangleProps } from "@itwin/core-react";
 import { Button, Input, Select, SelectOption } from "@itwin/itwinui-react";
 

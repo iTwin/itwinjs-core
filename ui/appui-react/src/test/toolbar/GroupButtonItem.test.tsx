@@ -9,10 +9,10 @@ import * as sinon from "sinon";
 import { ActionButton, BadgeType, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { WithOnOutsideClickProps } from "@itwin/core-react";
 import { GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@itwin/appui-layout-react";
-import { GroupButtonItem, ToolbarDragInteractionContext, ToolbarGroupItem, ToolGroupPanelContext, UiFramework } from "../../appui-react";
+import { GroupButtonItem, ToolbarDragInteractionContext, ToolbarGroupItem, ToolbarGroupItemComponent, ToolGroupPanelContext, UiFramework } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
-const tool1 = ToolbarItemUtilities.createActionButton("childButton1", 10, "icon-button", "label", () => { }, { badgeType: BadgeType.New });
+const tool1 = ToolbarItemUtilities.createActionButton("childButton1", 10, "icon-button", "label", () => { }, { badgeType: BadgeType.New }); // eslint-disable-line deprecation/deprecation
 const tool2 = ToolbarItemUtilities.createActionButton("childButton2", 20, "icon-button", "label", () => { });
 const group1 = ToolbarItemUtilities.createGroupButton("groupButton", 10, "icon-button", "label", [tool1, tool2]);
 
@@ -73,13 +73,13 @@ describe("GroupButtonItem", () => {
         it("should close on outside click", () => {
           const sut = mount(
             <ToolbarDragInteractionContext.Provider value={false}>
-              <ToolbarGroupItem
+              <ToolbarGroupItemComponent
                 groupItem={group1} key={group1.id}
               />
             </ToolbarDragInteractionContext.Provider>,
           );
 
-          const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
+          const groupItem = sut.find(ToolbarGroupItemComponent) as ReactWrapper<ToolbarGroupItemComponent["props"], ToolbarGroupItemComponent["state"], ToolbarGroupItemComponent>;
           groupItem.setState({ isPressed: true });
 
           const toolGroup = sut.find("WithOnOutsideClick") as ReactWrapper<WithOnOutsideClickProps>;
@@ -93,11 +93,11 @@ describe("GroupButtonItem", () => {
         it("should toggle panel when onOpenPanel executed", () => {
           const sut = mount(
             <ToolbarDragInteractionContext.Provider value={true}>
-              <ToolbarGroupItem
+              <ToolbarGroupItemComponent
                 groupItem={group1} key={group1.id} />
             </ToolbarDragInteractionContext.Provider>,
           );
-          const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
+          const groupItem = sut.find(ToolbarGroupItemComponent) as ReactWrapper<ToolbarGroupItemComponent["props"], ToolbarGroupItemComponent["state"], ToolbarGroupItemComponent>;
           const buttonDiv = sut.find("WithDragInteraction") as ReactWrapper<WithDragInteractionProps>;
           expect(buttonDiv.length).to.eq(1);
           buttonDiv.prop("onOpenPanel")!();
@@ -118,11 +118,11 @@ describe("GroupButtonItem", () => {
 
           const sut = mount(
             <ToolbarDragInteractionContext.Provider value={true}>
-              <ToolbarGroupItem
+              <ToolbarGroupItemComponent
                 groupItem={group2Col} key={group2Col.id} />
             </ToolbarDragInteractionContext.Provider>,
           );
-          const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
+          const groupItem = sut.find(ToolbarGroupItemComponent) as ReactWrapper<ToolbarGroupItemComponent["props"], ToolbarGroupItemComponent["state"], ToolbarGroupItemComponent>;
           const buttonDiv = sut.find("WithDragInteraction") as ReactWrapper<WithDragInteractionProps>;
           expect(buttonDiv.length).to.eq(1);
           buttonDiv.prop("onOpenPanel")!();
@@ -137,11 +137,11 @@ describe("GroupButtonItem", () => {
 
           const sut = mount(
             <ToolbarDragInteractionContext.Provider value={true}>
-              <ToolbarGroupItem
+              <ToolbarGroupItemComponent
                 groupItem={group3Col} key={group3Col.id} />
             </ToolbarDragInteractionContext.Provider>,
           );
-          const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
+          const groupItem = sut.find(ToolbarGroupItemComponent) as ReactWrapper<ToolbarGroupItemComponent["props"], ToolbarGroupItemComponent["state"], ToolbarGroupItemComponent>;
           const buttonDiv = sut.find("WithDragInteraction") as ReactWrapper<WithDragInteractionProps>;
           expect(buttonDiv.length).to.eq(1);
           buttonDiv.prop("onOpenPanel")!();
@@ -156,11 +156,11 @@ describe("GroupButtonItem", () => {
 
           const sut = mount(
             <ToolbarDragInteractionContext.Provider value={true}>
-              <ToolbarGroupItem
+              <ToolbarGroupItemComponent
                 groupItem={group4Col} key={group4Col.id} />
             </ToolbarDragInteractionContext.Provider>,
           );
-          const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
+          const groupItem = sut.find(ToolbarGroupItemComponent) as ReactWrapper<ToolbarGroupItemComponent["props"], ToolbarGroupItemComponent["state"], ToolbarGroupItemComponent>;
           const buttonDiv = sut.find("WithDragInteraction") as ReactWrapper<WithDragInteractionProps>;
           expect(buttonDiv.length).to.eq(1);
           buttonDiv.prop("onOpenPanel")!();
@@ -204,12 +204,12 @@ describe("GroupButtonItem", () => {
 
           const sut = mount(
             <ToolbarDragInteractionContext.Provider value={true}>
-              <ToolbarGroupItem
+              <ToolbarGroupItemComponent
                 groupItem={group}
               />
             </ToolbarDragInteractionContext.Provider>,
           );
-          const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
+          const groupItem = sut.find(ToolbarGroupItemComponent) as ReactWrapper<ToolbarGroupItemComponent["props"], ToolbarGroupItemComponent["state"], ToolbarGroupItemComponent>;
           groupItem.setState({ isPressed: true });
 
           const withDragInteraction = sut.find("WithDragInteraction") as ReactWrapper<WithDragInteractionProps>;
@@ -227,13 +227,13 @@ describe("GroupButtonItem", () => {
           const sut = mount(
             <ToolbarDragInteractionContext.Provider value={true}>
               <ToolGroupPanelContext.Provider value={true}>
-                <ToolbarGroupItem
+                <ToolbarGroupItemComponent
                   groupItem={group}
                 />
               </ToolGroupPanelContext.Provider>
             </ToolbarDragInteractionContext.Provider>,
           );
-          const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
+          const groupItem = sut.find(ToolbarGroupItemComponent) as ReactWrapper<ToolbarGroupItemComponent["props"], ToolbarGroupItemComponent["state"], ToolbarGroupItemComponent>;
           groupItem.setState({ isPressed: true });
           const groupToolExpander = sut.find(GroupToolExpander);
           groupToolExpander.prop("onPointerUp")!();
@@ -248,13 +248,13 @@ describe("GroupButtonItem", () => {
           const sut = mount(
             <ToolbarDragInteractionContext.Provider value={true}>
               <ToolGroupPanelContext.Provider value={true}>
-                <ToolbarGroupItem
+                <ToolbarGroupItemComponent
                   groupItem={group}
                 />
               </ToolGroupPanelContext.Provider>
             </ToolbarDragInteractionContext.Provider>,
           );
-          const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
+          const groupItem = sut.find(ToolbarGroupItemComponent) as ReactWrapper<ToolbarGroupItemComponent["props"], ToolbarGroupItemComponent["state"], ToolbarGroupItemComponent>;
           groupItem.setState({ isPressed: true });
           const groupTool = sut.find(GroupTool);
           groupTool.prop("onPointerUp")!();
@@ -269,13 +269,13 @@ describe("GroupButtonItem", () => {
           const sut = mount(
             <ToolbarDragInteractionContext.Provider value={true}>
               <ToolGroupPanelContext.Provider value={true}>
-                <ToolbarGroupItem
+                <ToolbarGroupItemComponent
                   groupItem={group} onItemExecuted={onItemExecuted}
                 />
               </ToolGroupPanelContext.Provider>
             </ToolbarDragInteractionContext.Provider>,
           );
-          const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
+          const groupItem = sut.find(ToolbarGroupItemComponent) as ReactWrapper<ToolbarGroupItemComponent["props"], ToolbarGroupItemComponent["state"], ToolbarGroupItemComponent>;
           groupItem.setState({ isPressed: true });
           const groupTool = sut.find(GroupTool);
           groupTool.prop("onPointerUp")!();
@@ -292,13 +292,13 @@ describe("GroupButtonItem", () => {
           const sut = mount(
             <ToolbarDragInteractionContext.Provider value={true}>
               <ToolGroupPanelContext.Provider value={true}>
-                <ToolbarGroupItem
+                <ToolbarGroupItemComponent
                   groupItem={group}
                 />
               </ToolGroupPanelContext.Provider>
             </ToolbarDragInteractionContext.Provider>,
           );
-          const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
+          const groupItem = sut.find(ToolbarGroupItemComponent) as ReactWrapper<ToolbarGroupItemComponent["props"], ToolbarGroupItemComponent["state"], ToolbarGroupItemComponent>;
           groupItem.setState({
             isPressed: true,
             trayId: "tray-2",
@@ -313,12 +313,12 @@ describe("GroupButtonItem", () => {
         it("should minimize on outside click", () => {
           const sut = mount(
             <ToolbarDragInteractionContext.Provider value={true}>
-              <ToolbarGroupItem
+              <ToolbarGroupItemComponent
                 groupItem={group2}
               />
             </ToolbarDragInteractionContext.Provider>,
           );
-          const groupItem = sut.find(ToolbarGroupItem) as ReactWrapper<ToolbarGroupItem["props"], ToolbarGroupItem["state"], ToolbarGroupItem>;
+          const groupItem = sut.find(ToolbarGroupItemComponent) as ReactWrapper<ToolbarGroupItemComponent["props"], ToolbarGroupItemComponent["state"], ToolbarGroupItemComponent>;
           groupItem.setState({ isPressed: true });
           const toolGroup = sut.find("WithOnOutsideClick") as ReactWrapper<WithOnOutsideClickProps>;
           const event = new MouseEvent("");
@@ -329,7 +329,7 @@ describe("GroupButtonItem", () => {
       });
 
       it("should toggle panel on click", () => {
-        const sut = mount<ToolbarGroupItem>(<ToolbarGroupItem groupItem={group1} />);
+        const sut = mount<ToolbarGroupItem>(<ToolbarGroupItemComponent groupItem={group1} />);
         const item = sut.find(Item); // eslint-disable-line deprecation/deprecation
 
         item.prop("onClick")!();

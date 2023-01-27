@@ -60,7 +60,7 @@ export function useWidgetDef(): WidgetDef | undefined {
       setWidgetDef(frontstage?.findWidgetDef(tabId));
     };
 
-    return UiItemsManager.onUiProviderRegisteredEvent.addListener(handlerActivated);
+    return UiItemsManager.onUiProviderRegisteredEvent.addListener(handlerActivated); // eslint-disable-line deprecation/deprecation
   }, [frontstage, tabId]);
 
   return widgetDef;

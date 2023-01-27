@@ -5,12 +5,12 @@
 import * as React from "react";
 import {
   BackstageAppButton, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
-  IModelViewportControl, StageContentLayout, StageContentLayoutProps, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  IModelViewportControl, StageContentLayout, StageContentLayoutProps, StageUsage, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
   UiFramework,
 } from "@itwin/appui-react";
-import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { NetworkTracingUiProvider } from "../providers/NetworkTracingUiProvider";
 import { LocalStateStorage } from "@itwin/core-react";
 import { IModelConnection } from "@itwin/core-frontend";

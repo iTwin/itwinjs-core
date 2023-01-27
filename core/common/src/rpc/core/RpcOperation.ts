@@ -16,6 +16,8 @@ import {
   RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T,
 } from "./RpcRequest";
 
+/* eslint-disable deprecation/deprecation */
+
 /** The policy for an RPC operation.
  * @internal
  */

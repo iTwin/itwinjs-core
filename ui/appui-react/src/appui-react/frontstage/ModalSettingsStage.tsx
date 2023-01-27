@@ -8,7 +8,7 @@
 
 import "./ModalSettingsStage.scss";
 import * as React from "react";
-import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities, StageUsage } from "@itwin/appui-abstract";
+import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities } from "@itwin/appui-abstract";
 import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { Logger } from "@itwin/core-bentley";
@@ -16,6 +16,7 @@ import { Centered, SettingsContainer } from "@itwin/core-react";
 import { ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "../framework/FrameworkFrontstages";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventId } from "../framework/FrameworkEvents";
+import { StageUsage } from "./StageUsage";
 
 function ModalSettingsStage({ initialSettingsTabId }: { initialSettingsTabId?: string }) {
   const id = UiFramework.frontstages.activeFrontstageDef?.id ?? "none";
@@ -66,7 +67,7 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
   private static noSettingsAvailable = () => new ConditionalBooleanValue(() => 0 === UiFramework.settingsManager.providers.length, [SyncUiEventId.SettingsProvidersChanged]);
 
   public static getBackstageActionItem(groupPriority: number, itemPriority: number) {
-    return BackstageItemUtilities.createActionItem(SettingsModalFrontstage.id, groupPriority, itemPriority, () => UiFramework.frontstages.openModalFrontstage(new SettingsModalFrontstage()),
+    return BackstageItemUtilities.createActionItem(SettingsModalFrontstage.id, groupPriority, itemPriority, () => UiFramework.frontstages.openModalFrontstage(new SettingsModalFrontstage()), // eslint-disable-line deprecation/deprecation
       UiFramework.translate("settings.settingsStageLabel"),
       undefined, IconSpecUtilities.createWebComponentIconSpec(settingsIconSvg), { isHidden: SettingsModalFrontstage.noSettingsAvailable() });
   }

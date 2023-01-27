@@ -20,6 +20,8 @@ import { TileLoadingIndicator } from "../statusfields/tileloading/TileLoadingInd
 import { SelectionScopeField } from "../statusfields/SelectionScope";
 import { StatusBarSeparator } from "../statusbar/Separator";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Defines what items to include from the provider. If any items are
  * specified then only those items will be added to statusbar.

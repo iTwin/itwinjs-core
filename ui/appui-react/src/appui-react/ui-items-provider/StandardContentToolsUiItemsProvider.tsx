@@ -20,6 +20,8 @@ import { SectionsStatusField } from "../statusfields/SectionsField";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Defines what tools to include from the provider. If any tools in the horizontal or vertical group are
  * specified then only those tools will be provided to stage.
