@@ -9,8 +9,6 @@ Use [BriefcaseManager.downloadBriefcase]($backend) to download a briefcase, and 
 
 Use [BriefcaseDb.close]($backend) to close the local briefcase.
 
-Note that an [AccessToken](../common/AccessToken.md) is an argument to BriefcaseDb.open.  TODO: 9/22 - remove/update link?
-
 ## Opening a *snapshot* iModel
 
 The [SnapshotDb]($backend) class also provides methods for opening, closing, and accessing a *snapshot* iModel.

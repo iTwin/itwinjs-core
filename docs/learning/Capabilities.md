@@ -24,15 +24,6 @@ There are two forms of iModels:
 1. ✔️️ Briefcase iModels synchronize with iModelHub and have a Changeset Timeline
 2. ✔️️ [Snapshot iModels](./backend/AccessingIModels.md) are static, read-only (conceptually similar to PDF), are not synchronized, and have no timeline
 
-### iModelHub
-
-TODO: 9/22 - Update Links below
-[iModelHub](./iModelHub/index) is the control center for Briefcase iModels and manages:
-
-- ✔️️ Authenticating access to iModels
-- ✔️️ Synchronization with the Changeset [Timeline](./iModelHub/index.md#the-timeline-of-changes-to-an-iModel)
-- ✔️️ [Named Versions](./iModelHub/versions.md)
-
 ### BIS Classes
 
 The contents of an iModel are defined by [BIS](../bis/index.md) classes.
