@@ -7,6 +7,7 @@ public;BaseFieldJSON
 public;BaseNodeKey
 public;BaseNodeKeyJSON
 deprecated;BaseNodeKeyJSON
+alpha;BasePresentationQueryBinding
 public;BaseTypeDescription
 public;BooleanRulesetVariable 
 public;BooleanRulesetVariableJSON 
@@ -113,6 +114,8 @@ public;ECPropertyGroupingNodeKey
 public;ECPropertyGroupingNodeKeyJSON 
 deprecated;ECPropertyGroupingNodeKeyJSON 
 public;ECPropertyValueQuerySpecification 
+alpha;ECValueBinding 
+alpha;ECValueSetBinding 
 public;EditorDescription
 public;ElementProperties
 public;ElementPropertiesArrayPropertyItem = ElementPropertiesPrimitiveArrayPropertyItem | ElementPropertiesStructArrayPropertyItem
@@ -181,7 +184,9 @@ public;Id64RulesetVariableJSON
 deprecated;Id64RulesetVariableJSON 
 public;Id64sRulesetVariable 
 public;Id64sRulesetVariableJSON 
+alpha;IdBinding 
 public;IdCategoryIdentifier
+alpha;IdSetBinding 
 public;ImageIdOverride 
 deprecated;ImageIdOverride 
 beta;InstanceFilterDefinition
@@ -303,6 +308,8 @@ internal;PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface"
 public;PresentationError 
 internal;PresentationIpcEvents
 internal;PresentationIpcInterface
+alpha;PresentationQuery
+alpha;PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
 public;PresentationRpcResponse

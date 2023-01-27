@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, Field, KeySet, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Field, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -35,13 +35,13 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               relatedProperties: [{
                 propertiesSource: [{
                   relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                  direction: RelationshipDirection.Backward,
+                  direction: "Backward",
                 }],
               }],
             }],
@@ -78,13 +78,13 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               relatedProperties: [{
                 propertiesSource: [{
                   relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
-                  direction: RelationshipDirection.Backward,
+                  direction: "Backward",
                 }],
                 handleTargetClassPolymorphically: true,
               }],
@@ -124,16 +124,16 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               relatedProperties: [{
                 propertiesSource: [{
                   relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: RelationshipDirection.Forward,
+                  direction: "Forward",
                   targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
                 }],
-                relationshipMeaning: RelationshipMeaning.SameInstance,
+                relationshipMeaning: "SameInstance",
               }],
             }],
           }],
@@ -184,13 +184,13 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               relatedProperties: [{
                 propertiesSource: [{
                   relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: RelationshipDirection.Forward,
+                  direction: "Forward",
                   targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
                 }],
                 properties: ["UserLabel", "Description"],
@@ -226,13 +226,13 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               relatedProperties: [{
                 propertiesSource: [{
                   relationship: { schemaName: "BisCore", className: "SubjectOwnsSubjects" },
-                  direction: RelationshipDirection.Forward,
+                  direction: "Forward",
                 }],
                 autoExpand: true,
               }],
@@ -275,25 +275,25 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               relatedProperties: [{
                 propertiesSource: [{
                   relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: RelationshipDirection.Forward,
+                  direction: "Forward",
                   targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
                 }],
                 properties: ["UserLabel"],
               }],
             }],
           }, {
-            ruleType: RuleTypes.ContentModifier,
+            ruleType: "ContentModifier",
             class: { schemaName: "BisCore", className: "Model" },
             relatedProperties: [{
               propertiesSource: [{
                 relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
                 targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
               }],
               skipIfDuplicate: true,
@@ -326,19 +326,19 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               relatedProperties: [{
                 propertiesSource: [{
                   relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: RelationshipDirection.Forward,
+                  direction: "Forward",
                   targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
                 }],
                 nestedRelatedProperties: [{
                   propertiesSource: [{
                     relationship: { schemaName: "BisCore", className: "ElementHasLinks" },
-                    direction: RelationshipDirection.Forward,
+                    direction: "Forward",
                     targetClass: { schemaName: "BisCore", className: "RepositoryLink" },
                   }],
                 }],
@@ -374,13 +374,13 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               relatedProperties: [{
                 propertiesSource: [{
                   relationship: { schemaName: "ECDbMeta", className: "ClassHasBaseClasses" },
-                  direction: RelationshipDirection.Forward,
+                  direction: "Forward",
                 }],
                 properties: ["Name"],
                 relationshipProperties: ["Ordinal"],
@@ -416,13 +416,13 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               relatedProperties: [{
                 propertiesSource: [{
                   relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
-                  direction: RelationshipDirection.Forward,
+                  direction: "Forward",
                   targetClass: { schemaName: "BisCore", className: "PhysicalPartition" },
                 }],
                 properties: ["UserLabel"],

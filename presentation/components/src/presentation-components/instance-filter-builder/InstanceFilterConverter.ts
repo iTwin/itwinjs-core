@@ -9,11 +9,16 @@
 import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import { isUnaryPropertyFilterOperator, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ClassInfo, InstanceFilterDefinition, NestedContentField, PropertiesField, PropertyInfo, RelationshipPath } from "@itwin/presentation-common";
+import { ClassInfo, InstanceFilterDefinition, NestedContentField, PropertiesField, RelationshipPath } from "@itwin/presentation-common";
 import { getIModelMetadataProvider } from "./ECMetadataProvider";
 import { PresentationInstanceFilter, PresentationInstanceFilterCondition, PresentationInstanceFilterConditionGroup } from "./Types";
 
-/** @alpha */
+/**
+ * Converts [[PresentationInstanceFilter]] built by [[PresentationInstanceFilterBuilder]] component into
+ * [InstanceFilterDefinition]($presentation-common) that can be passed to [PresentationManager]($presentation-frontend) through request options
+ * in order to filter results.
+ * @beta
+ */
 export async function convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise<InstanceFilterDefinition> {
   const context: ConvertContext = { relatedInstances: [], propertyClasses: [] };
   const expression = convertFilter(filter, context);
@@ -58,7 +63,7 @@ function convertCondition(condition: PresentationInstanceFilterCondition, ctx: C
   addClassInfoToContext(relatedInstance ? relatedInstance.path[0].sourceClassInfo : property.classInfo, ctx);
   const propertyAlias = relatedInstance?.alias ?? "this";
 
-  return createComparison(property, propertyAlias, operator, value);
+  return createComparison(property.name, field.type.typeName, propertyAlias, operator, value);
 }
 
 function addClassInfoToContext(classInfo: ClassInfo, ctx: ConvertContext) {
@@ -93,8 +98,8 @@ function getPathToPrimaryClass(field: NestedContentField): RelationshipPath {
   return [...field.pathToPrimaryClass];
 }
 
-function createComparison(property: PropertyInfo, alias: string, operator: PropertyFilterRuleOperator, propValue?: PrimitiveValue): string {
-  const propertyAccessor = `${alias}.${property.name}`;
+function createComparison(propertyName: string, type: string, alias: string, operator: PropertyFilterRuleOperator, propValue?: PrimitiveValue): string {
+  const propertyAccessor = `${alias}.${propertyName}`;
   const operatorExpression = getRuleOperatorString(operator);
   if (propValue === undefined || isUnaryPropertyFilterOperator(operator)) {
     return `${propertyAccessor} ${operatorExpression}`;
@@ -115,11 +120,11 @@ function createComparison(property: PropertyInfo, alias: string, operator: Prope
       break;
   }
 
-  if (property.type === "navigation")
+  if (type === "navigation")
     return `${propertyAccessor}.Id ${operatorExpression} ${(value as Primitives.InstanceKey).id}`;
-  if (property.type === "double")
+  if (type === "double")
     return `CompareDoubles(${propertyAccessor}, ${valueExpression}) ${operatorExpression} 0`;
-  if (property.type === "dateTime")
+  if (type === "dateTime")
     return `CompareDateTimes(${propertyAccessor}, ${valueExpression}) ${operatorExpression} 0`;
 
   return `${propertyAccessor} ${operatorExpression} ${valueExpression}`;
@@ -145,15 +150,15 @@ function getRuleOperatorString(operator: PropertyFilterRuleOperator) {
     case PropertyFilterRuleOperator.IsEqual:
       return "=";
     case PropertyFilterRuleOperator.IsFalse:
-      return "IS FALSE";
+      return "= FALSE";
     case PropertyFilterRuleOperator.IsNotEqual:
       return "<>";
     case PropertyFilterRuleOperator.IsNotNull:
-      return "IS NOT NULL";
+      return "<> NULL";
     case PropertyFilterRuleOperator.IsNull:
-      return "IS NULL";
+      return "= NULL";
     case PropertyFilterRuleOperator.IsTrue:
-      return "IS TRUE";
+      return "= TRUE";
     case PropertyFilterRuleOperator.Less:
       return "<";
     case PropertyFilterRuleOperator.LessOrEqual:

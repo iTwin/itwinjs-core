@@ -11,7 +11,7 @@ import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
  * The actual schemas can be downloaded using @see getSchemaJSON to get the schema as JSON props.
  * @internal
  */
-export abstract class ECSchemaRpcInterface extends RpcInterface {
+export abstract class ECSchemaRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** The version of the RPC Interface. */
   public static version = "2.0.0";
 
