@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Avoid creating unnecessary copies of tile trees for context reality models.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

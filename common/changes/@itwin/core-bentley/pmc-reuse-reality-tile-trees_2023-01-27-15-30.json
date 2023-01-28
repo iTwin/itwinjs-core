@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Added TransientIdSequence.peekNext to preview the next Id in the sequence.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
