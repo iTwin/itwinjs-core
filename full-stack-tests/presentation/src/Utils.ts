@@ -6,6 +6,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { Field } from "@itwin/presentation-common";
+import { IModelJsFs } from "@itwin/core-backend";
 
 /**
  * Simplified type for `sinon.SinonSpy`.
@@ -72,6 +73,6 @@ export function getOutputRoot() {
 /** Given a file name, returns a path that is safe to use for read-write scenarios when running the tests */
 export function prepareOutputFilePath(fileName: string): string {
   const filePath = path.join(getOutputRoot(), fileName);
-  fs.rmSync(filePath, { force: true });
+  IModelJsFs.removeSync(filePath, { force: true });
   return filePath;
 }

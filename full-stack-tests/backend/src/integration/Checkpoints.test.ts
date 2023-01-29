@@ -57,7 +57,7 @@ describe("Checkpoints", () => {
   before(async () => {
     originalEnv = { ...process.env };
     process.env.CHECKPOINT_CACHE_DIR = cloudcacheDir;
-    fs.rmSync(cloudcacheDir, { recursive: true, force: true });
+    IModelJsFs.removeSync(cloudcacheDir, { recursive: true, force: true });
 
     // Props for daemon
     accountProps = {
@@ -139,7 +139,7 @@ describe("Checkpoints", () => {
         changeset: testChangeSet,
       })).eventually.rejectedWith(/Cannot create CloudCache: invalid cache directory or directory does not exist/);
     } finally {
-      fs.rmSync(portfile);
+      IModelJsFs.removeSync(portfile);
     }
   });
 
