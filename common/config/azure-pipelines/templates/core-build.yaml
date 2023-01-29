@@ -1,7 +1,8 @@
 # This defines the core steps for building and validating iTwin.js Core
 
 parameters:
-  - name: nodeVersion
+  - name: nodeVersion # name of the parameter; required
+    type: string # data type of the parameter; required
 
   - name: workingDir
     type: string
