@@ -19,7 +19,7 @@ schedules:
 jobs:
   - job:
     variables:
-      - name: linuxPool
+      - name: linux_pool
         value: "iModeljs Linux"
       - name: mac_pool
         value: iModelTechCI
@@ -110,6 +110,7 @@ jobs:
       maxParallel: 3
 
     pool:
+      name: $(name)
       demands:
         - Agent.OS -equals $(platform)
 
