@@ -20,7 +20,6 @@ variables:
 jobs:
   - job: Integration_Tests_Full
     strategy:
-      maxParallel: 3
       matrix:
         Linux_node_12_22:
           imageName: ubuntu-latest
