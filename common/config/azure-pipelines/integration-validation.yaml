@@ -22,9 +22,9 @@ jobs:
     strategy:
       maxParallel: 3
       matrix:
-        Linux_node_12_7:
+        Linux_node_12_22:
           imageName: ubuntu-latest
-          nodeVersion: 12.17.0
+          nodeVersion: 12.22.0
         Linux_node_12_x:
           imageName: ubuntu-latest
           nodeVersion: 12.x
@@ -34,9 +34,9 @@ jobs:
         linux_node_16_x:
           imageName: ubuntu-latest
           nodeVersion: 16.x
-        Windows_node_12_7:
+        Windows_node_12_22:
           imageName: windows-latest
-          nodeVersion: 12.17.0
+          nodeVersion: 12.22.0
         Windows_node_12_x:
           imageName: windows-latest
           nodeVersion: 12.x
@@ -46,9 +46,9 @@ jobs:
         Windows_node_16_x:
           imageName: windows-latest
           nodeVersion: 16.x
-        MacOS_node_12_7:
+        MacOS_node_12_22:
           imageName: macos-latest
-          nodeVersion: 12.17.0
+          nodeVersion: 12.22.0
         MacOS_node_12_x:
           imageName: macos-latest
           nodeVersion: 12.x
@@ -63,4 +63,4 @@ jobs:
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          Node_Version: $(nodeVersion)
+          nodeVersion: $(nodeVersion)
