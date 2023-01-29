@@ -66,7 +66,13 @@ steps:
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test
     workingDirectory: "full-stack-tests/rpc"
     displayName: "Run RPC Full Stack Tests"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
+  # MacOS and Windows agents work without any virtual display
+  - script: npm run test
+    workingDirectory: "full-stack-tests/rpc"
+    displayName: "Run RPC Full Stack Tests"
+    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/rpc-interface"
@@ -82,12 +88,25 @@ steps:
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:frontend:ci
     workingDirectory: "core/electron"
     displayName: "Run Electron Frontend Tests"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
+  # MacOS and Windows agents work without any virtual display
+  - script: npm run test:integration:frontend:ci
+    workingDirectory: "core/electron"
+    displayName: "Run Electron Frontend Tests"
+    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+
+  # By default linux agents do not have a real display so use the virtual framebuffer
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:backend
     workingDirectory: "core/electron"
     displayName: "Run Electron Backend Tests"
-    condition: succeededOrFailed()
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
+  # MacOS and Windows agents work without any virtual display
+  - script: npm run test:integration:backend
+    workingDirectory: "core/electron"
+    displayName: "Run Electron Backend Tests"
+    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - task: PublishTestResults@2
     displayName: "Publish Backend Test Results"
