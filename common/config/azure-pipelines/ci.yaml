@@ -60,7 +60,4 @@ jobs:
       - checkout: self
       - template: ./templates/core-build.yaml
         parameters:
-          name: Node_18
           nodeVersion: 18.12.x
-          pool:
-            vmImage: $(OS)
