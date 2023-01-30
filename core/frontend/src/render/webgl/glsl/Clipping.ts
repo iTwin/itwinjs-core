@@ -64,15 +64,7 @@ const applyClipPlanesPrelude = `
   bool clippedByCurrentPlaneSet = false;
 `;
 
-const applyClipPlanesLoopWebGL1 = `
-  for (int i = 0; i < MAX_CLIPPING_PLANES; i++) {
-    if (i < u_clipParams[0])
-      continue;
-    else if (i >= u_clipParams[1])
-      break;
-`;
-
-const applyClipPlanesLoopWebGL2 = `
+const applyClipPlanesLoop = `
   for (int i = u_clipParams[0]; i < u_clipParams[1]; i++) {
 `;
 
@@ -110,13 +102,12 @@ const applyClipPlanesPostlude = `
   return false;
 `;
 
-const applyClipPlanesWebGL1 = applyClipPlanesPrelude + applyClipPlanesLoopWebGL1 + applyClipPlanesPostlude;
-const applyClipPlanesWebGL2 = applyClipPlanesPrelude + applyClipPlanesLoopWebGL2 + applyClipPlanesPostlude;
+const applyClipPlanes = applyClipPlanesPrelude + applyClipPlanesLoop + applyClipPlanesPostlude;
 
 const clipParams = new Int32Array(3);
 
 /** @internal */
-export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
+export function addClipping(prog: ProgramBuilder) {
   const frag = prog.frag;
   const vert = prog.vert;
 
@@ -170,5 +161,5 @@ export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
     });
   }, VariablePrecision.High);
 
-  frag.set(FragmentShaderComponent.ApplyClipping, isWebGL2 ? applyClipPlanesWebGL2 : applyClipPlanesWebGL1);
+  frag.set(FragmentShaderComponent.ApplyClipping, applyClipPlanes);
 }

@@ -73,79 +73,6 @@ export const enum ContextState {
   Error,
 }
 
-/** Describes WebGL extension methods.
- * @internal
- */
-abstract class WebGLExtensions {
-  private _system: System;
-  public constructor(system: System) {
-    this._system = system;
-  }
-  public get system() { return this._system; }
-  public abstract setDrawBuffers(attachments: GLenum[]): void;
-  public abstract vertexAttribDivisor(index: number, divisor: number): void;
-  public abstract drawArraysInst(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void;
-  public abstract invalidateFrameBuffer(_attachments: number[]): void;
-}
-
-/** Describes WebGL1 extension methods.
- * @internal
- */
-class WebGL1Extensions extends WebGLExtensions {
-  private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
-  private readonly _instancingExtension?: ANGLE_instanced_arrays;
-
-  public constructor(system: System, drawBuffersExt: WEBGL_draw_buffers | undefined, instancingExt: ANGLE_instanced_arrays | undefined) {
-    super(system);
-    this._drawBuffersExtension = drawBuffersExt;
-    this._instancingExtension = instancingExt;
-  }
-
-  public setDrawBuffers(attachments: GLenum[]): void {
-    // NB: The WEBGL_draw_buffers member is not exported directly because that type name is not available in some contexts (e.g. test-imodel-service).
-    if (undefined !== this._drawBuffersExtension)
-      this._drawBuffersExtension.drawBuffersWEBGL(attachments);
-  }
-
-  public vertexAttribDivisor(index: number, divisor: number): void {
-    assert(undefined !== this._instancingExtension);
-    this._instancingExtension.vertexAttribDivisorANGLE(index, divisor);
-  }
-
-  public drawArraysInst(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void {
-    if (undefined !== this._instancingExtension) {
-      this._instancingExtension.drawArraysInstancedANGLE(type, first, count, numInstances);
-    }
-  }
-
-  public invalidateFrameBuffer(_attachments: number[]): void { } // does not exist in WebGL1
-}
-
-/** Describes WebGL2 extension methods.
- * @internal
- */
-class WebGL2Extensions extends WebGLExtensions {
-  private _context: WebGL2RenderingContext;
-  public constructor(system: System) {
-    super(system);
-    this._context = system.context as WebGL2RenderingContext;
-  }
-
-  public setDrawBuffers(attachments: GLenum[]): void {
-    this._context.drawBuffers(attachments);
-  }
-
-  public vertexAttribDivisor(index: number, divisor: number): void {
-    this._context.vertexAttribDivisor(index, divisor);
-  }
-
-  public drawArraysInst(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void { this._context.drawArraysInstanced(type, first, count, numInstances); }
-
-  public invalidateFrameBuffer(attachments: number[]): void {
-    this._context.invalidateFramebuffer(this._context.FRAMEBUFFER, attachments);
-  }
-}
-
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
  * @internal
  */
@@ -350,12 +277,11 @@ function getMaterialColor(color: ColorDef | RgbColorProps | undefined): ColorDef
 export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer, WebGLDisposable {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
-  public readonly context: WebGLContext;
+  public readonly context: WebGL2RenderingContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
   public readonly glTimer: GLTimer;
-  private readonly _extensions: WebGLExtensions;
   private readonly _textureBindings: TextureBinding[] = [];
   private _removeEventListener?: () => void;
 
@@ -397,14 +323,15 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public override get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
   public override get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
   public override get supportsCreateImageBitmap(): boolean { return this.capabilities.supportsCreateImageBitmap; }
-  public override get supportsNonuniformScaledInstancing(): boolean { return this.capabilities.isWebGL2; }
+  public override get supportsNonuniformScaledInstancing(): boolean { return true; }
 
   /** Requires gl_VertexID (WebGL 2 only) and > 8 texture units (WebGL 1 only guarantees 8). */
-  public override get supportsIndexedEdges(): boolean { return this.isWebGL2; }
-  public get isWebGL2(): boolean { return this.capabilities.isWebGL2; }
+  public override get supportsIndexedEdges(): boolean { return true; }
   public override get isMobile(): boolean { return this.capabilities.isMobile; }
 
-  public setDrawBuffers(attachments: GLenum[]): void { this._extensions.setDrawBuffers(attachments); }
+  public setDrawBuffers(attachments: GLenum[]): void {
+    this.context.drawBuffers(attachments);
+  }
 
   public doIdleWork(): boolean {
     return this.techniques.idleCompileNextShader();
@@ -633,16 +560,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
       }
       case DepthType.TextureUnsignedInt24Stencil8: {
-        if (this.capabilities.isWebGL2) {
-          if (numSamples > 1) {
-            return RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.DEPTH24_STENCIL8, numSamples);
-          } else {
-            const context2 = this.context as WebGL2RenderingContext;
-            return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, context2.UNSIGNED_INT_24_8);
-          }
+        if (numSamples > 1) {
+          return RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.DEPTH24_STENCIL8, numSamples);
         } else {
-          const dtExt: WEBGL_depth_texture | undefined = this.capabilities.queryExtensionObject<WEBGL_depth_texture>("WEBGL_depth_texture");
-          return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, dtExt!.UNSIGNED_INT_24_8_WEBGL);
+          const context2 = this.context as WebGL2RenderingContext;
+          return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, context2.UNSIGNED_INT_24_8);
         }
       }
       default: {
@@ -821,17 +743,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   protected constructor(canvas: HTMLCanvasElement, context: WebGLContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);
     this.canvas = canvas;
-    this.context = context;
+    this.context = context as WebGL2RenderingContext;
     this.capabilities = capabilities;
     this.resourceCache = new Map<IModelConnection, IdMap>();
     this.glTimer = GLTimer.create(this);
-    if (capabilities.isWebGL2)
-      this._extensions = new WebGL2Extensions(this);
-    else {
-      const drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
-      const instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
-      this._extensions = new WebGL1Extensions(this, drawBuffersExtension, instancingExtension);
-    }
 
     // Make this System a subscriber to the the IModelConnection onClose event
     this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
@@ -931,17 +846,21 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     }
   }
 
-  public vertexAttribDivisor(index: number, divisor: number) { this._extensions.vertexAttribDivisor(index, divisor); }
+  public vertexAttribDivisor(index: number, divisor: number) {
+    this.context.vertexAttribDivisor(index, divisor);
+  }
 
   public drawArrays(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void {
     if (0 !== numInstances) {
-      this._extensions.drawArraysInst(type, first, count, numInstances);
+      this.context.drawArraysInstanced(type, first, count, numInstances);
     } else {
       this.context.drawArrays(type, first, count);
     }
   }
 
-  public invalidateFrameBuffer(attachments: number[]): void { this._extensions.invalidateFrameBuffer(attachments); }
+  public invalidateFrameBuffer(attachments: number[]): void {
+    this.context.invalidateFramebuffer(this.context.FRAMEBUFFER, attachments);
+  }
 
   public override enableDiagnostics(enable: RenderDiagnostics): void {
     Debug.printEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.DebugOutput);

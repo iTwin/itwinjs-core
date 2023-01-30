@@ -336,10 +336,7 @@ export class IModelApp {
    * and/or performance.
    */
   public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
-    if (undefined === System.instance || undefined === System.instance.options.useWebGL2)
-      return queryRenderCompatibility(true, System.createContext);
-    else
-      return queryRenderCompatibility(System.instance.options.useWebGL2, System.createContext);
+    return queryRenderCompatibility(true, System.createContext);
   }
 
   /**

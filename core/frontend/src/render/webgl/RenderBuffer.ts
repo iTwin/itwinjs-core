@@ -74,7 +74,7 @@ export class RenderBuffer implements WebGLDisposable {
 }
 
 /**
- * A RenderBuffer for doing antialiasing (multisampling).  Used by WebGL2 only.
+ * A RenderBuffer for doing antialiasing (multisampling).
  * @internal
  */
 export class RenderBufferMultiSample implements WebGLDisposable {
