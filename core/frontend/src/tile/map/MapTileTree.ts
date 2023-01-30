@@ -488,8 +488,6 @@ export class MapTileTree extends RealityTileTree {
     let allTilesRead = true;
     for (const selectedTile of selected) {
       if (selectedTile instanceof MapTile) {
-        if (!selectedTile.isReady)
-          allTilesRead = false;
         let selectedImageryTiles = selectedTile.imageryTiles;
         if (selectedTile.hiddenImageryTiles) {
           selectedImageryTiles = selectedImageryTiles ? [...selectedImageryTiles, ...selectedTile.hiddenImageryTiles] : selectedTile.hiddenImageryTiles;
@@ -518,9 +516,6 @@ export class MapTileTree extends RealityTileTree {
         }
       }
     }
-
-    if (!allTilesRead)
-      changes;
 
     for (const [treeId, prevState] of layersVisibilityBefore) {
       const newState = this.getImageryTreeState(treeId);

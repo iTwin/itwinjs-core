@@ -643,7 +643,7 @@ export class MapTile extends RealityTile {
       if (layerImageryTree.baseImageryLayer) {
         tmpTiles = [...tmpTiles, ...tmpLeafTiles];
       } else {
-        this._replacementLeafTiles = tmpLeafTiles;
+        this._replacementLeafTiles = [...this._replacementLeafTiles, ...tmpLeafTiles];
       }
 
       // MapTileTree might include a non-visible imagery tree, we need to check for that.
