@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "add EditTools.busyRetry",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}

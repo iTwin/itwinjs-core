@@ -42,6 +42,6 @@ export interface EditorIpc {
  * @beta
  */
 export interface EditCommandIpc {
-  /** Identify the current `EditCommand`'s name and version, optionally supplying additional properties that describe its state. */
+  /** Identify the current `EditCommand`'s name and version, optionally returning additional properties that describe its state. */
   ping: () => Promise<{ commandId: string, version: string, [propName: string]: any }>;
 }
