@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import {
-  CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, MutableCompressedId64Set, OrderedId64Iterable,
+  CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, MutableCompressedId64Set, OrderedId64Iterable, TransientIdSequence,
 } from "../core-bentley";
 
 class Uint64Id {
@@ -629,5 +629,23 @@ describe("MutableCompressedId64Set", () => {
       expect(set.equals(test[2])).to.be.true;
       expect(set.equals(expected)).to.be.true;
     }
+  });
+});
+
+describe("TransientIdSequence", () => {
+  it("should produce an ordered sequence of Ids beginning with 0xffffff0000000001", () => {
+    const ids = new TransientIdSequence();
+    expect(ids.getNext()).to.equal("0xffffff0000000001");
+    expect(ids.getNext()).to.equal("0xffffff0000000002");
+    expect(ids.getNext()).to.equal("0xffffff0000000003");
+    expect(ids.getNext()).to.equal("0xffffff0000000004");
+  });
+
+  it("should preview the next Id in the sequence without consuming it", () => {
+    const ids = new TransientIdSequence();
+    expect(ids.peekNext()).to.equal("0xffffff0000000001");
+    expect(ids.getNext()).to.equal("0xffffff0000000001");
+    expect(ids.peekNext()).to.equal("0xffffff0000000002");
+    expect(ids.getNext()).to.equal("0xffffff0000000002");
   });
 });

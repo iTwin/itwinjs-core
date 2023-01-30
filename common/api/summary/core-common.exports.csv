@@ -147,6 +147,7 @@ public;ContextRealityModel
 public;ContextRealityModelProps
 public;ContextRealityModelProps
 public;ContextRealityModels
+public;ContextRealityModelsArgs
 public;ContextRealityModelsContainer
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
 internal;CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps

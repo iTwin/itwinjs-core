@@ -9,11 +9,10 @@
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
 import { CommonProps, FillCentered } from "@itwin/core-react";
-import { StatusBarDialog, StatusBarLabelIndicator } from "@itwin/appui-react";
+import { StatusBarDialog, StatusBarLabelIndicator, StatusBarLabelSide } from "@itwin/appui-react";
 import { ColorPickerPopup } from "@itwin/imodel-components-react";
 import { ColorDef } from "@itwin/core-common";
 import { Button } from "@itwin/itwinui-react";
-import { StatusBarLabelSide } from "@itwin/appui-abstract";
 
 export function TestStatusBarDialog() {
   const colorDef = ColorDef.blue;

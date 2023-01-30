@@ -214,6 +214,11 @@ Similarly, [TransientIdSequence.next]($bentley) returns a new Id each time it is
 
 [RenderMaterialElement.Params]($backend) is defined as a class, which makes it unwieldy to use. You can now use the interface [RenderMaterialElementParams]($backend) instead.
 
+### @itwin/appui-abstract
+
+[UiItemsProvider]($appui-abstract) and other AppUI specific types and APIs are deprecated and moved to `@itwin/appui-react` package.
+For a replacement in case of API rename consult @deprecated tag in the documentation.
+
 ### @itwin/appui-react
 
 [ModelsTree]($appui-react) and [CategoryTree]($appui-react) were moved to [@itwin/tree-widget-react](https://github.com/iTwin/viewer-components-react/tree/master/packages/itwin/tree-widget) package and deprecated in `@itwin/appui-react` packages. They will be removed from `@itwin/appui-react` in future major version.
