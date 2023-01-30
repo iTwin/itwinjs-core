@@ -57,7 +57,7 @@ describe("Checkpoints", () => {
   before(async () => {
     originalEnv = { ...process.env };
     process.env.CHECKPOINT_CACHE_DIR = cloudcacheDir;
-    IModelJsFs.removeSync(cloudcacheDir, { recursive: true, force: true });
+    IModelJsFs.removeSync(cloudcacheDir);
 
     // Props for daemon
     accountProps = {
