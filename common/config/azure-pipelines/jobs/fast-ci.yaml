@@ -61,7 +61,6 @@ jobs:
         parameters:
           nodeVersion: 18.12.x
           buildIos: ${{ eq(variables['Agent.OS'], 'Darwin') }}
-          rushBuildCacheEnabled: 0
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
