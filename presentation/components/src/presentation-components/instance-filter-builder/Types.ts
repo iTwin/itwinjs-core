@@ -6,7 +6,7 @@
  * @module InstancesFilter
  */
 
-import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
+import { PrimitiveValue, PropertyDescription } from "@itwin/appui-abstract";
 import { PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { ClassId, PropertiesField } from "@itwin/presentation-common";
 
@@ -23,14 +23,19 @@ export interface PresentationInstanceFilterConditionGroup {
 export interface PresentationInstanceFilterCondition {
   operator: PropertyFilterRuleOperator;
   field: PropertiesField;
-  value?: PropertyValue;
+  value?: PrimitiveValue;
 }
 
 /** @alpha */
 export interface InstanceFilterPropertyInfo {
-  sourceClassIds: ClassId[];
+  sourceClassId: ClassId;
   field: PropertiesField;
   propertyDescription: PropertyDescription;
   className: string;
   categoryLabel?: string;
+}
+
+/** @alpha */
+export function isPresentationInstanceFilterConditionGroup(filter: PresentationInstanceFilter): filter is PresentationInstanceFilterConditionGroup {
+  return (filter as any).conditions !== undefined;
 }

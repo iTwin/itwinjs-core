@@ -18,7 +18,7 @@ export async function signIn(): Promise<boolean> {
     }
 
     return new Promise<boolean>((resolve, reject) => {
-      existingAuthClient.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
+      existingAuthClient.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(!!token));
       existingAuthClient.signIn().catch((err) => reject(err));
     });
   }
@@ -29,11 +29,11 @@ export async function signIn(): Promise<boolean> {
   } else if (ProcessDetector.isMobileAppFrontend) {
     // The default auth client works on mobile
     const accessToken = await IModelApp.authorizationClient?.getAccessToken();
-    return accessToken !== undefined && accessToken.length > 0;
+    return !!accessToken;
   } else {
     const clientId = getConfigurationString("oidcClientId") ?? "imodeljs-spa-test";
     const redirectUri = getConfigurationString("oidcRedirectUri") ?? "http://localhost:3000/signin-callback";
-    const scope = getConfigurationString("oidcScope") ?? "openid email profile organization itwinjs";
+    const scope = getConfigurationString("oidcScope") ?? "projects:read realitydata:read imodels:read imodels:modify imodelaccess:read";
     const responseType = "code";
     authClient = new BrowserAuthorizationClient({
       clientId,
@@ -54,7 +54,7 @@ export async function signIn(): Promise<boolean> {
       return true;
 
     return new Promise<boolean>((resolve, reject) => {
-      authClient!.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
+      authClient!.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(!!token));
       authClient!.signIn().catch((err) => reject(err));
     });
   }

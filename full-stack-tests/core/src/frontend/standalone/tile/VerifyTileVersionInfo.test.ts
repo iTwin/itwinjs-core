@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { CurrentImdlVersion, IModelTileRpcInterface } from "@itwin/core-common";
+import { CurrentImdlVersion, EmptyLocalization, IModelTileRpcInterface } from "@itwin/core-common";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 
 describe("iMdl format version", () => {
   before(async () => {
     if (ProcessDetector.isElectronAppFrontend)
-      await ElectronApp.startup();
+      await ElectronApp.startup({ iModelApp: { localization: new EmptyLocalization() }});
   });
 
   after(async () => {

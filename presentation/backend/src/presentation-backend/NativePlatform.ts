@@ -12,7 +12,7 @@ import { FormatProps } from "@itwin/core-quantity";
 import {
   DiagnosticsScopeLogs, NodeKeyJSON, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
-import { HierarchyCacheMode, PresentationManagerMode } from "./PresentationManager";
+import { HierarchyCacheMode } from "./PresentationManager";
 
 /** @internal */
 export enum NativePlatformRequestTypes {
@@ -83,17 +83,17 @@ export interface NativePlatformDefinition extends IDisposable {
   unsetRulesetVariableValue(rulesetId: string, variableId: string): NativePlatformResponse<void>;
 
   getUpdateInfo(): NativePlatformResponse<UpdateInfoJSON | undefined>;
-  updateHierarchyState(db: any, rulesetId: string, changeType: "nodesExpanded" | "nodesCollapsed", serializedKeys: string): NativePlatformResponse<void>;
+  updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKeyJSON, isExpanded?: boolean, instanceFilters?: string[] }>): NativePlatformResponse<void>;
 }
 
 /** @internal */
 export interface DefaultNativePlatformProps {
   id: string;
   taskAllocationsMap: { [priority: number]: number };
-  mode: PresentationManagerMode;
   isChangeTrackingEnabled: boolean;
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
   contentCacheSize?: number;
+  workerConnectionCacheSize?: number;
   defaultFormats?: NativePresentationDefaultUnitFormats;
   useMmap?: boolean | number;
 }
@@ -105,10 +105,9 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
   return class implements NativePlatformDefinition {
     private _nativeAddon: IModelJsNative.ECPresentationManager;
     public constructor() {
-      const mode = (props.mode === PresentationManagerMode.ReadOnly) ? IModelJsNative.ECPresentationManagerMode.ReadOnly : IModelJsNative.ECPresentationManagerMode.ReadWrite;
       const cacheConfig = props.cacheConfig ?? { mode: HierarchyCacheMode.Disk, directory: "" };
       const defaultFormats = props.defaultFormats ? this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
-      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, mode, cacheConfig, defaultFormats });
+      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, cacheConfig, defaultFormats });
     }
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
@@ -197,8 +196,8 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public getUpdateInfo() {
       return this.handleResult(this._nativeAddon.getUpdateInfo());
     }
-    public updateHierarchyState(db: any, rulesetId: string, changeType: "nodesExpanded" | "nodesCollapsed", serializedKeys: string) {
-      return this.handleResult(this._nativeAddon.updateHierarchyState(db, rulesetId, changeType, serializedKeys));
+    public updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKeyJSON, isExpanded?: boolean, instanceFilter?: string }>) {
+      return this.handleResult(this._nativeAddon.updateHierarchyState(db, rulesetId, stateChanges));
     }
   };
 };

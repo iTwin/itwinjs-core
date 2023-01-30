@@ -160,6 +160,15 @@
         "EnterDrapePoint": "Enter drape terrain point",
         "SelectDrapeRealityModel": "Select reality model or map (with terrain) to drape"
       }
+    },
+    "OpenRealityModelSettings": {
+      "keyin": "dta reality model settings"
+    },
+    "AttachCustomRealityData": {
+      "keyin": "dta attach reality"
+    },
+    "DtaClipByElementGeometry": {
+      "keyin": "dta clip element geometry"
     }
   }
 }

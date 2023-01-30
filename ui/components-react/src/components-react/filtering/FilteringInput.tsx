@@ -153,7 +153,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
       >
         <span className="components-filtering-input-input">
           <Input type="text"
-            placeholder={UiComponents.translate("filteringInput:placeholder")}
+            placeholder={UiComponents.translate("filteringInput.placeholder")}
             // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus={this.props.autoFocus}
             onKeyDown={this._onFilterKeyDown}

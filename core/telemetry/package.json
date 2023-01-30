@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-telemetry",
-  "version": "3.4.0-dev.57",
+  "version": "3.6.0-dev.45",
   "description": "iTwin.js Telemetry Client",
   "main": "lib/cjs/core-telemetry.js",
   "module": "lib/esm/core-telemetry.js",
@@ -42,7 +42,7 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.59",
+    "@types/node": "18.11.5",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
     "mocha": "^10.0.0",

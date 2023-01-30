@@ -18,17 +18,17 @@ export function PropertyFilterBuilderRuleValue(props: PropertyFilterBuilderRuleV
   const { value, property, onChange } = props;
 
   const propertyRecord = React.useMemo(() => {
-    return new PropertyRecord(value ?? {valueFormat: PropertyValueFormat.Primitive}, property);
+    return new PropertyRecord(value ?? { valueFormat: PropertyValueFormat.Primitive }, property);
   }, [value, property]);
 
-  const onValueChange = React.useCallback(({newValue}: PropertyUpdatedArgs) => {
+  const onValueChange = React.useCallback(({ newValue }: PropertyUpdatedArgs) => {
     onChange(newValue);
   }, [onChange]);
 
   return <div className="rule-value">
     <EditorContainer
       propertyRecord={propertyRecord}
-      onCancel={/* istanbul ignore next */ () => {}}
+      onCancel={/* istanbul ignore next */ () => { }}
       onCommit={onValueChange}
       setFocus={false}
     />

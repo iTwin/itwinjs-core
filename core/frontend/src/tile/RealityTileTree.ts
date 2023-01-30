@@ -110,7 +110,6 @@ export class TraversalSelectionContext {
 }
 
 const scratchFrustum = new Frustum();
-const scratchFrustumPlanes = new FrustumPlanes();
 const scratchCarto = Cartographic.createZero();
 const scratchPoint = Point3d.createZero(), scratchOrigin = Point3d.createZero();
 const scratchRange = Range3d.createNull();
@@ -316,7 +315,7 @@ export class RealityTileTree extends TileTree {
 
   /** @internal */
   public doReprojectChildren(tile: Tile): boolean {
-    if (!(tile instanceof RealityTile) || !tile.region || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
+    if (!(tile instanceof RealityTile) || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
       return false;
 
     const tileRange = this.iModelTransform.isIdentity ? tile.range : this.iModelTransform.multiplyRange(tile.range, scratchRange);
@@ -403,6 +402,12 @@ export class RealityTileTree extends TileTree {
   /** @internal */
   public getBaseRealityDepth(_sceneContext: SceneContext) { return -1; }
 
+  /** Scan the list of currently selected reality tiles, and fire the viewport's 'onMapLayerScaleRangeVisibilityChanged ' event
+   * if any scale range visibility change is detected for one more map-layer definition.
+   * @internal
+   */
+  public reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]) {}
+
   /** @internal */
   public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[] {
     this._lastSelected = BeTimePoint.now();
@@ -453,6 +458,9 @@ export class RealityTileTree extends TileTree {
         this.logTiles("Imagery:", imageryTiles.values());
     }
 
+    if (context.missing.length === 0)
+      this.reportTileVisibility(args, selected);
+
     IModelApp.tileAdmin.addTilesForUser(args.context.viewport, selected, args.readyTiles);
     return selected;
   }
@@ -460,12 +468,11 @@ export class RealityTileTree extends TileTree {
   /** @internal */
   public preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform) {
     const preloadFrustum = args.viewingSpace.getPreloadFrustum(frustumTransform, scratchFrustum);
-    const preloadFrustumPlanes = new FrustumPlanes(preloadFrustum);
+    const preloadFrustumPlanes = FrustumPlanes.fromFrustum(preloadFrustum);
     const worldToNpc = preloadFrustum.toMap4d();
     const preloadWorldToViewMap = args.viewingSpace.calcNpcToView().multiplyMapMap(worldToNpc!);
     const preloadArgs = new RealityTileDrawArgs(args, preloadWorldToViewMap, preloadFrustumPlanes);
 
-    scratchFrustumPlanes.init(preloadFrustum);
     if (context.preloadDebugBuilder) {
       context.preloadDebugBuilder.setSymbology(ColorDef.blue, ColorDef.blue, 2, 0);
       context.preloadDebugBuilder.addFrustum(preloadFrustum);
@@ -489,7 +496,7 @@ export class RealityTileTree extends TileTree {
       depthMap.set(depth, found === undefined ? 1 : found + 1);
     }
 
-    depthMap.forEach((key, value) => depthString += `${key}-${value}, `);
+    depthMap.forEach((value, key ) => depthString += `${key}(x${value}), `);
     // eslint-disable-next-line no-console
     console.log(`${label}: ${count} Min: ${min} Max: ${max} Depths: ${depthString}`);
   }

@@ -124,6 +124,7 @@ export class MapLayerPreferences {
 
     await MapLayersUI.iTwinConfig.save({
       accessToken,
+      namespace: MapLayerPreferences._preferenceNamespace,
       key: `${MapLayerPreferences._preferenceNamespace}.${newSource.name}`,
       iTwinId,
       iModelId: storeOnIModel ? iModelId : undefined,

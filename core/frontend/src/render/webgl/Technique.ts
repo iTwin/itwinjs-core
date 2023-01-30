@@ -14,6 +14,7 @@ import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
+import { createEDLCalcBasicProgram, createEDLCalcFullProgram, createEDLFilterProgram, createEDLMixProgram } from "./glsl/EDL";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
 import { createCombine3TexturesProgram } from "./glsl/Combine3Textures";
@@ -36,14 +37,16 @@ import createPlanarGridProgram from "./glsl/PlanarGrid";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
-import createRealityMeshBuilder, { createClassifierRealityMeshHiliter, createRealityMeshHiliter } from "./glsl/RealityMesh";
+import {
+  addColorOverrideMix, createClassifierRealityMeshHiliter, createRealityMeshBuilder, createRealityMeshHiliter,
+} from "./glsl/RealityMesh";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { RenderPass } from "./RenderFlags";
-import { ProgramBuilder, VariableType, VertexShaderComponent } from "./ShaderBuilder";
+import { ProgramBuilder, VertexShaderComponent } from "./ShaderBuilder";
 import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
@@ -619,11 +622,6 @@ class PointCloudTechnique extends VariedTechnique {
   public constructor(gl: WebGLContext) {
     super(PointCloudTechnique._kHilite + 2);
 
-    this._earlyZFlags = [
-      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
-      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
-    ];
-
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       this.addHiliteShader(gl, IsInstanced.No, iClassified, "quantized", (_inst, classified) => createPointCloudHiliter(classified));
       const flags = scratchTechniqueFlags;
@@ -635,11 +633,7 @@ class PointCloudTechnique extends VariedTechnique {
           const builder = createPointCloudBuilder(flags.isClassified, featureMode, thematic);
           if (FeatureMode.Overrides === featureMode) {
             addUniformFeatureSymbology(builder, true);
-            builder.vert.addUniform("u_overrideColorMix", VariableType.Float, (prog) => {
-              prog.addGraphicUniform("u_overrideColorMix", (uniform, params) => {
-                uniform.setUniform1f(params.geometry.asPointCloud!.overrideColorMix);
-              });
-            });
+            addColorOverrideMix(builder.vert);
             builder.vert.set(VertexShaderComponent.ApplyFeatureColor, mixFeatureColor);
           }
 
@@ -799,6 +793,10 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.VolClassBlend },
   { techniqueId: TechniqueId.Combine3Textures },
   { techniqueId: TechniqueId.PlanarGrid },
+  { techniqueId: TechniqueId.EDLCalcBasic },
+  { techniqueId: TechniqueId.EDLCalcFull },
+  { techniqueId: TechniqueId.EDLFilter },
+  { techniqueId: TechniqueId.EDLMix },
 ];
 const numTechniquesByPriority = techniquesByPriority.length;
 
@@ -883,10 +881,16 @@ export class Techniques implements WebGLDisposable {
   public compileShaders(): boolean {
     let allCompiled = true;
 
+    let techNdx = 0;
     for (const tech of this._list) {
+      if (!System.instance.isWebGL2 && (TechniqueId.EDLCalcBasic === techNdx || TechniqueId.EDLCalcFull === techNdx || TechniqueId.EDLFilter === techNdx || TechniqueId.EDLMix === techNdx)) {
+        techNdx++;
+        continue;
+      }
       if (!tech.compileShaders()) {
         allCompiled = false;
       }
+      techNdx++;
     }
 
     return allCompiled;
@@ -967,6 +971,10 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
     this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
     this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
+    this._list[TechniqueId.EDLCalcBasic] = new SingularTechnique(createEDLCalcBasicProgram(gl));
+    this._list[TechniqueId.EDLCalcFull] = new SingularTechnique(createEDLCalcFullProgram(gl));
+    this._list[TechniqueId.EDLFilter] = new SingularTechnique(createEDLFilterProgram(gl));
+    this._list[TechniqueId.EDLMix] = new SingularTechnique(createEDLMixProgram(gl));
 
     if (System.instance.supportsIndexedEdges)
       this._list[TechniqueId.IndexedEdge] = new EdgeTechnique(gl, "IndexedEdge");

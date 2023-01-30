@@ -41,6 +41,7 @@ export class ImageRenderer {
     const doc = parser.parseFromString(input, "application/xml");
 
     const errorNode = doc.querySelector("parsererror");
+    // istanbul ignore if
     if (errorNode) {
       return false;
     }
@@ -50,6 +51,7 @@ export class ImageRenderer {
   }
 
   private convertSvgToDataUri(svg: string) {
+    // istanbul ignore if
     if (!this.isSvg(svg)) {
       return "";
     }

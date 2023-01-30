@@ -118,6 +118,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /docs/getting-started @iTwin/itwinjs-core-admins @williamkbentley
 /docs/config          @iTwin/itwinjs-core-admins @williamkbentley
 /docs/presentation    @iTwin/itwinjs-core-presentation
+/docs/bis             @diegoalexdiaz @ColinKerr
 
 # These domains should be split up a bit more
 /domains                      @iTwin/itwinjs-core-admins
@@ -146,10 +147,11 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/display-performance-test-app     @iTwin/itwinjs-core-display @hnn0003
 /test-apps/display-test-app                 @bbastings @kabentley @iTwin/itwinjs-core-display
 /test-apps/display-test-app/ios             @iTwin/mobilesdkadmins
-/test-apps/export-gltf                      @mgooding @MichaelBelousov
-/test-apps/export-obj                       @mgooding @MichaelBelousov
+/test-apps/display-test-app/android         @iTwin/mobilesdkadmins
+/test-apps/export-gltf                      @MichaelBelousov @iTwin/itwinjs-core-display
+/test-apps/export-obj                       @MichaelBelousov @iTwin/itwinjs-core-display
 /test-apps/imjs-importer                    @bbastings @dassaf4 @saeeedtorabi
-/test-apps/imodel-from-geojson              @mgooding @pmconne
+/test-apps/imodel-from-geojson              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-reality-model        @iTwin/itwinjs-core-display
 /test-apps/imodel-transformer               @MichaelBelousov @ColinKerr

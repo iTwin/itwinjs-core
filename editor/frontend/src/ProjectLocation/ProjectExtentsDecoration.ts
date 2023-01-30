@@ -17,8 +17,9 @@ import {
   Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Matrix3d, Point3d, PolygonOps, Range1d, Range3d, Range3dProps, Ray3d,
   Transform, Vector3d,
 } from "@itwin/core-geometry";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
+import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "../EditTool";
+import { basicManipulationIpc } from "../EditToolIpc";
 import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 
 function translateMessage(key: string) {
@@ -116,9 +117,9 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (!this.init())
       return;
 
-    this._monumentId = this.iModel.transientIds.next;
-    this._northId = this.iModel.transientIds.next;
-    this._clipId = this.iModel.transientIds.next;
+    this._monumentId = this.iModel.transientIds.getNext();
+    this._northId = this.iModel.transientIds.getNext();
+    this._clipId = this.iModel.transientIds.getNext();
 
     this.start();
   }
@@ -192,7 +193,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (numCurrent < numReqControls) {
       const transientIds = this.iModel.transientIds;
       for (let i: number = numCurrent; i < numReqControls; i++)
-        this._controlIds[i] = transientIds.next;
+        this._controlIds[i] = transientIds.getNext();
     } else if (numCurrent > numReqControls) {
       this._controlIds.length = numReqControls;
     }
@@ -944,10 +945,6 @@ export class ProjectLocationCancelTool extends Tool {
 export class ProjectLocationSaveTool extends Tool {
   public static override toolId = "ProjectLocation.Save";
 
-  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
-  }
-
   protected async allowRestartTxnSession(iModel: BriefcaseConnection): Promise<boolean> {
     if (!await iModel.txns.isUndoPossible())
       return true;
@@ -970,10 +967,10 @@ export class ProjectLocationSaveTool extends Tool {
       await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, deco.iModel.key);
 
       if (undefined !== extents)
-        await ProjectLocationSaveTool.callCommand("updateProjectExtents", extents);
+        await basicManipulationIpc.updateProjectExtents(extents);
 
       if (undefined !== ecefLocation)
-        await ProjectLocationSaveTool.callCommand("updateEcefLocation", ecefLocation);
+        await basicManipulationIpc.updateEcefLocation(ecefLocation);
 
       await deco.iModel.saveChanges(this.toolId);
       await deco.iModel.txns.restartTxnSession();

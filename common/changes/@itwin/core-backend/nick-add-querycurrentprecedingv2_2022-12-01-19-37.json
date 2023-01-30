@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add allowPreceding as an optional boolean to CheckpointProps interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

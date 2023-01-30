@@ -489,10 +489,14 @@ export class Descriptor implements DescriptorSource {
     createDescriptorOverrides(): DescriptorOverrides;
     readonly displayType: string;
     readonly fields: Field[];
+    fieldsFilterExpression?: string;
+    // @deprecated
     filterExpression?: string;
     static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
     readonly inputKeysHash?: string;
+    // @alpha
+    instanceFilter?: InstanceFilterDefinition;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     sortDirection?: SortDirection;
@@ -519,9 +523,13 @@ export interface DescriptorJSON {
     // (undocumented)
     fields: FieldJSON<Id64String>[];
     // (undocumented)
+    fieldsFilterExpression?: string;
+    // @deprecated (undocumented)
     filterExpression?: string;
     // (undocumented)
     inputKeysHash: string;
+    // @alpha (undocumented)
+    instanceFilter?: InstanceFilterDefinition;
     // (undocumented)
     selectClasses: SelectClassInfoJSON<Id64String>[];
     // (undocumented)
@@ -536,11 +544,15 @@ export interface DescriptorJSON {
 export interface DescriptorOverrides {
     contentFlags?: number;
     displayType?: string;
+    fieldsFilterExpression?: string;
     fieldsSelector?: {
         type: "include" | "exclude";
         fields: FieldDescriptor[];
     };
+    // @deprecated
     filterExpression?: string;
+    // @alpha
+    instanceFilter?: InstanceFilterDefinition;
     sorting?: {
         field: FieldDescriptor;
         direction: SortDirection;
@@ -554,8 +566,12 @@ export interface DescriptorSource {
     readonly contentFlags: number;
     readonly displayType: string;
     readonly fields: Field[];
+    readonly fieldsFilterExpression?: string;
+    // @deprecated
     readonly filterExpression?: string;
     readonly inputKeysHash?: string;
+    // @alpha
+    readonly instanceFilter?: InstanceFilterDefinition;
     readonly selectClasses: SelectClassInfo[];
     readonly selectionInfo?: SelectionInfo;
     readonly sortDirection?: SortDirection;
@@ -1071,6 +1087,8 @@ export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = R
 
 // @public
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+    // @alpha
+    instanceFilter?: string;
     parentKey?: TNodeKey;
 }
 
@@ -1094,6 +1112,8 @@ export interface HierarchyUpdateRecord {
     // (undocumented)
     expandedNodes?: ExpandedNodeUpdateRecord[];
     // (undocumented)
+    instanceFilter?: string;
+    // (undocumented)
     nodesCount: number;
     // (undocumented)
     parent?: NodeKey;
@@ -1109,6 +1129,8 @@ export namespace HierarchyUpdateRecord {
 export interface HierarchyUpdateRecordJSON {
     // (undocumented)
     expandedNodes?: ExpandedNodeUpdateRecordJSON[];
+    // (undocumented)
+    instanceFilter?: string;
     // (undocumented)
     nodesCount: number;
     // (undocumented)
@@ -1192,6 +1214,32 @@ export interface ImageIdOverride extends RuleBase {
     condition?: string;
     imageIdExpression: string;
     ruleType: RuleTypes.ImageIdOverride;
+}
+
+// @alpha (undocumented)
+export interface InstanceFilterDefinition {
+    expression: string;
+    relatedInstances?: InstanceFilterRelatedInstanceDefinition[];
+    selectClassName: string;
+}
+
+// @alpha (undocumented)
+export type InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInstancePath & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias);
+
+// @alpha (undocumented)
+export interface InstanceFilterRelatedInstancePath {
+    isRequired?: boolean;
+    pathFromSelectToPropertyClass: StrippedRelationshipPath;
+}
+
+// @alpha (undocumented)
+export interface InstanceFilterRelatedInstanceRelationshipAlias {
+    relationshipAlias: string;
+}
+
+// @alpha (undocumented)
+export interface InstanceFilterRelatedInstanceTargetAlias {
+    alias: string;
 }
 
 // @public
@@ -1979,9 +2027,6 @@ export type PartialNode = AllOrNone<Partial<Node_2>, "key" | "label">;
 
 // @public
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
-
-// @internal (undocumented)
-export const PRESENTATION_COMMON_ROOT: string;
 
 // @internal (undocumented)
 export const PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface";
@@ -3004,13 +3049,15 @@ export const UPDATE_FULL = "FULL";
 // @internal (undocumented)
 export interface UpdateHierarchyStateParams<TNodeKey> extends CommonIpcParams {
     // (undocumented)
-    changeType: "nodesExpanded" | "nodesCollapsed";
-    // (undocumented)
     imodelKey: string;
     // (undocumented)
-    nodeKeys: Array<TNodeKey>;
-    // (undocumented)
     rulesetId: string;
+    // (undocumented)
+    stateChanges: Array<{
+        nodeKey: TNodeKey | undefined;
+        isExpanded?: boolean;
+        instanceFilters?: string[];
+    }>;
 }
 
 // @alpha (undocumented)

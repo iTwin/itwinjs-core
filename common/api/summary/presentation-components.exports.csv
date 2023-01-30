@@ -6,13 +6,17 @@ public;CacheInvalidationProps
 public;ContentDataProvider 
 public;ContentDataProviderProps 
 public;ControlledPresentationTreeFilteringProps
+alpha;convertPresentationFilterToPropertyFilter(descriptor: Descriptor, filter: PresentationInstanceFilter): PropertyFilter | undefined
+alpha;convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise
 alpha;createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined
 internal;createFieldInfo(field: Field, namePrefix?: string):
 alpha;createInstanceFilterPropertyInfos(descriptor: Descriptor): InstanceFilterPropertyInfo[]
 internal;createPresentationInstanceFilter(descriptor: Descriptor, filter: PropertyFilter): PresentationInstanceFilter | undefined
 internal;createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription
 public;DataProvidersFactory
+deprecated;DataProvidersFactory
 public;DataProvidersFactoryProps
+deprecated;DataProvidersFactoryProps
 public;DEFAULT_PROPERTY_GRID_RULESET: Ruleset
 public;DiagnosticsProps
 beta;FavoritePropertiesDataFilterer 
@@ -26,6 +30,7 @@ internal;FieldRecord
 internal;FilteredPresentationTreeDataProvider 
 internal;FilteredPresentationTreeDataProviderProps
 internal;getFavoritesCategory: () => CategoryDescription
+internal;getInstanceFilterFieldName(property: PropertyDescription): string
 public;IContentDataProvider 
 public;IFavoritePropertiesDataProvider
 public;IFilteredPresentationTreeDataProvider 
@@ -38,9 +43,15 @@ public;IPresentationDataProvider
 public;IPresentationLabelsProvider
 public;IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider
 public;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider &
+deprecated;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider &
 public;IPresentationTreeDataProvider 
 internal;IPropertiesAppender
+alpha;isPresentationInstanceFilterConditionGroup(filter: PresentationInstanceFilter): filter is PresentationInstanceFilterConditionGroup
 public;IUnifiedSelectionComponent
+alpha;NavigationPropertyEditor 
+alpha;NavigationPropertyEditorContext
+alpha;navigationPropertyEditorContext: React_2.Context
+alpha;NavigationPropertyTargetEditor 
 internal;PRESENTATION_TREE_NODE_KEY = "__presentation-components/key"
 public;PresentationComponentsLoggerCategory
 alpha;PresentationInstanceFilter = PresentationInstanceFilterConditionGroup | PresentationInstanceFilterCondition
@@ -48,13 +59,19 @@ alpha;PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilder
 alpha;PresentationInstanceFilterBuilderProps
 alpha;PresentationInstanceFilterCondition
 alpha;PresentationInstanceFilterConditionGroup
+alpha;PresentationInstanceFilterDialog(props: PresentationInstanceFilterDialogProps): JSX.Element
+alpha;PresentationInstanceFilterDialogProps 
+alpha;PresentationInstanceFilterInfo
 alpha;PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps): JSX.Element
+alpha;PresentationInstanceFilterPropertyProps
 public;PresentationLabelsProvider 
 public;PresentationLabelsProviderProps
 public;PresentationPropertyDataProvider 
 public;PresentationPropertyDataProviderProps 
 public;PresentationTableDataProvider 
+deprecated;PresentationTableDataProvider 
 public;PresentationTableDataProviderProps 
+deprecated;PresentationTableDataProviderProps 
 public;PresentationTreeDataProvider 
 beta;PresentationTreeDataProviderDataSourceEntryPoints
 public;PresentationTreeDataProviderProps 
@@ -68,9 +85,13 @@ internal;class PropertyRecordsBuilder
 internal;ReloadedHierarchyPart
 internal;reloadVisibleHierarchyParts(visibleNodes: VisibleTreeNodes, renderedItems: RenderedItemsRange, dataProvider: IPresentationTreeDataProvider): Promise
 public;TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5
+deprecated;TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5
 public;TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20
+deprecated;TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20
 public;tableWithUnifiedSelection
+deprecated;tableWithUnifiedSelection
 public;TableWithUnifiedSelectionProps
+deprecated;TableWithUnifiedSelectionProps
 beta;UnifiedSelectionContext
 beta;UnifiedSelectionContextProvider(props: UnifiedSelectionContextProviderProps): React_2.ReactElement
 beta;UnifiedSelectionContextProviderProps
@@ -78,9 +99,11 @@ beta;UnifiedSelectionState = (selectionLevel?: number) => Readonly
 public;UnifiedSelectionTreeEventHandler 
 public;UnifiedSelectionTreeEventHandlerParams
 public;useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps):
+internal;useFilterBuilderNavigationPropertyEditorContext(imodel: IModelConnection, descriptor: Descriptor): NavigationPropertyEditorContext
 internal;useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider
+alpha;useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext
 internal;useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider
-alpha;usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider, enableClassFiltering?: boolean):
+alpha;usePresentationInstanceFilteringProps(descriptor: Descriptor, imodel: IModelConnection, initialClasses?: ClassInfo[]):
 public;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult
 public;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): UsePropertyDataProviderWithUnifiedSelectionResult
 public;UsePropertyDataProviderWithUnifiedSelectionResult

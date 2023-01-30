@@ -39,7 +39,7 @@ async function init() {
   console.log(`Mobile backend for rpc full-stack-tests listening on port ${mobilePort}`);
   return () => {
     httpServer.close();
-    MobileHost.onEnterBackground.raiseEvent();
+    MobileHost.onWillTerminate.raiseEvent();
   };
 }
 

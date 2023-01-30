@@ -15,12 +15,19 @@
     "select-instance": "Select element"
   },
   "instance-filter-builder": {
-    "classes": "Classes",
+    "select-class": "Select class...",
     "category": "Category:",
     "class": "Class:",
-    "schema": "Schema:"
+    "schema": "Schema:",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "filter": "Filter"
   },
   "tree": {
     "presentation-components-muted-node": "Too many child nodes."
+  },
+  "navigation-property-editor": {
+    "select-target-instance": "Select target instance",
+    "loading-target-instances": "Loading target instances"
   }
 }

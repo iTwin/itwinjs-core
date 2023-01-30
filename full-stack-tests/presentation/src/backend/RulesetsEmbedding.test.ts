@@ -5,8 +5,9 @@
 import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";
+import path from "path";
+import { IModelDb, StandaloneDb } from "@itwin/core-backend";
 import { Id64 } from "@itwin/core-bentley";
-import { SnapshotDb } from "@itwin/core-backend";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
@@ -25,17 +26,9 @@ const RULESET_1: Ruleset = {
 };
 
 describe("RulesEmbedding", () => {
-  let imodel: SnapshotDb;
+  let imodel: IModelDb;
   let embedder: RulesetEmbedder;
   let ruleset: Ruleset;
-  const testIModelName: string = "assets/datasets/RulesetEmbeddingTest.ibim";
-
-  function createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotDb {
-    const seedDb = SnapshotDb.openFile(seedFileName);
-    const testDb = SnapshotDb.createFrom(seedDb, testFileName);
-    seedDb.close();
-    return testDb;
-  }
 
   before(async () => {
     await initialize();
@@ -46,7 +39,13 @@ describe("RulesEmbedding", () => {
   });
 
   beforeEach(async () => {
-    imodel = createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    const iModelPath = path.resolve(__dirname, "RulesetEmbedding.test.bim");
+    fs.existsSync(iModelPath) && fs.unlinkSync(iModelPath);
+    imodel = StandaloneDb.createEmpty(iModelPath, {
+      rootSubject: {
+        name: "presentation-full-stack-tests/RulesetEmbedding",
+      },
+    });
     embedder = new RulesetEmbedder({ imodel });
     ruleset = {
       id: "test-ruleset",
@@ -55,8 +54,9 @@ describe("RulesEmbedding", () => {
   });
 
   afterEach(async () => {
+    const iModelPath = imodel.pathName;
     imodel.close();
-    fs.unlinkSync(testIModelName);
+    fs.unlinkSync(iModelPath);
   });
 
   it("handles getting rulesets with nothing inserted", async () => {

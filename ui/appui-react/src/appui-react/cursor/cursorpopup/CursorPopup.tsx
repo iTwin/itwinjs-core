@@ -11,8 +11,8 @@ import * as React from "react";
 import classnames from "classnames";
 import { PointProps, RelativePosition } from "@itwin/appui-abstract";
 import { CommonDivProps, CommonProps, Div, RectangleProps, Size, SizeProps } from "@itwin/core-react";
-import { TitleBar } from "@itwin/appui-layout-react";
 import { CursorPopupFadeOutEventArgs, CursorPopupManager } from "./CursorPopupManager";
+import { StatusBarDialog } from "../../statusbar/dialog/Dialog";
 
 /** Properties for the [[CursorPopup]] React component
  * @public
@@ -181,7 +181,7 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
     return (
       <div className={classNames} ref={(e) => this.setDivRef(e)} style={positioningStyle}>
         {this.props.title &&
-          <TitleBar
+          <StatusBarDialog.TitleBar
             title={this.props.title}
             className="uifw-cursorpopup-title" />
         }

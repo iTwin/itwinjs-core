@@ -13,11 +13,12 @@ export interface PropertyFilterBuilderRulePropertyProps {
   selectedProperty?: PropertyDescription;
   onSelectedPropertyChanged: (property?: PropertyDescription) => void;
   propertyRenderer?: (name: string) => React.ReactNode;
+  isDisabled?: boolean;
 }
 
 /** @alpha */
 export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps) {
-  const { selectedProperty, properties, onSelectedPropertyChanged, propertyRenderer } = props;
+  const { selectedProperty, properties, onSelectedPropertyChanged, propertyRenderer, isDisabled } = props;
 
   const selectOptions = React.useMemo<SelectOption<string>[]>(() => properties.map((property) => ({
     id: property.name,
@@ -48,8 +49,10 @@ export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRu
       value={selectedProperty?.name}
       inputProps={{
         placeholder: UiComponents.translate("filterBuilder.chooseProperty"),
+        disabled: isDisabled,
       }}
       itemRenderer={itemRenderer}
+      enableVirtualization={true}
     />
   </div>;
 }

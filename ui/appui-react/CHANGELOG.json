@@ -2,6 +2,183 @@
   "name": "@itwin/appui-react",
   "entries": [
     {
+      "version": "3.5.2",
+      "tag": "@itwin/appui-react_v3.5.2",
+      "date": "Wed, 11 Jan 2023 16:46:30 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix detailed output message on a new line in toasts."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.5.1",
+      "tag": "@itwin/appui-react_v3.5.1",
+      "date": "Thu, 15 Dec 2022 16:38:28 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.5.0",
+      "tag": "@itwin/appui-react_v3.5.0",
+      "date": "Wed, 07 Dec 2022 19:12:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add FeatureOverridesChanged SyncUIEvent in SyncUiEventDispatcher.ts"
+          },
+          {
+            "comment": "Do not auto-hide the UI when floating widget is hovered."
+          },
+          {
+            "comment": "Fix a circular dependency issue."
+          },
+          {
+            "comment": "Updated pin icon for help widget."
+          },
+          {
+            "comment": "Deprecate pseudo components of frontstage provider in favor of configuration interfaces."
+          },
+          {
+            "comment": "Add automatic horizonal scrolling to the ListPicker's expandable blocks for small form factors or long strings."
+          },
+          {
+            "comment": "Refactored many tests to remove enzyme and snaphot testing"
+          },
+          {
+            "comment": "Unpin classnames package"
+          },
+          {
+            "comment": "Rename RestoreFrontstagesLayoutTool to RestoreAllFrontstagesTool."
+          },
+          {
+            "comment": "Add RestoreFrontstagesLayout tool."
+          },
+          {
+            "comment": "Deprecate components in preparation for next major version."
+          },
+          {
+            "comment": "Persist the toolbar-opacity to state."
+          },
+          {
+            "comment": "Add a toolbar opacity to the state and the UiFramework API to allow users or apps to configure it. Add a slider to the UiSettingsPage to control the toolbar opacity. "
+          },
+          {
+            "comment": "Update WidgetDef to pass the optional prop allowedPanelTargets to createTab wh"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.7",
+      "tag": "@itwin/appui-react_v3.4.7",
+      "date": "Wed, 30 Nov 2022 14:28:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.6",
+      "tag": "@itwin/appui-react_v3.4.6",
+      "date": "Tue, 22 Nov 2022 14:24:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Maintain widget panel location after frontstage is changed."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.4.5",
+      "tag": "@itwin/appui-react_v3.4.5",
+      "date": "Thu, 17 Nov 2022 21:32:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.4",
+      "tag": "@itwin/appui-react_v3.4.4",
+      "date": "Thu, 10 Nov 2022 19:32:17 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.3",
+      "tag": "@itwin/appui-react_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:57 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.2",
+      "tag": "@itwin/appui-react_v3.4.2",
+      "date": "Mon, 24 Oct 2022 13:23:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.1",
+      "tag": "@itwin/appui-react_v3.4.1",
+      "date": "Mon, 17 Oct 2022 20:06:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.0",
+      "tag": "@itwin/appui-react_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed private categories being displayed in ModelsTree and CategoriesTree components."
+          },
+          {
+            "comment": "Fix an issue where maxWidgetCount of a panel is exceeded when adding a widget."
+          },
+          {
+            "comment": "Persist WidgetDef configuration in a separate structure."
+          },
+          {
+            "comment": "Ability to float a widget that is hidden by default."
+          },
+          {
+            "comment": "Dock removed widget tool settings."
+          },
+          {
+            "comment": "Updated Node types declaration to support latest v16"
+          },
+          {
+            "comment": "Restore floating widgets after a reload."
+          },
+          {
+            "comment": "Adding setup walk tool to standard navigation tools"
+          },
+          {
+            "comment": "Move the management of zIndex for modal and modeless dialogs to DialogManagerBase to allow modal dialogs (MessageBox) to use the topZIndex so that they open on top of any modeless dialogs that are open. ContentDialog still maintains its own zIndex at a much lower elevation."
+          },
+          {
+            "comment": "Models Tree: Do not recreate subject model ids cache unless iModel changes"
+          },
+          {
+            "comment": "Make sure FloatingViewportContent specifies controlId to FloatingViewport. Make sure FloatingViewportContent updates whenever the ViewState changes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.5",
+      "tag": "@itwin/appui-react_v3.3.5",
+      "date": "Tue, 27 Sep 2022 11:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.4",
+      "tag": "@itwin/appui-react_v3.3.4",
+      "date": "Thu, 08 Sep 2022 19:00:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.3",
+      "tag": "@itwin/appui-react_v3.3.3",
+      "date": "Tue, 06 Sep 2022 20:54:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.3.2",
       "tag": "@itwin/appui-react_v3.3.2",
       "date": "Thu, 01 Sep 2022 14:37:22 GMT",

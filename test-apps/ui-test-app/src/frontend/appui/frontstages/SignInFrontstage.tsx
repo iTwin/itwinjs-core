@@ -46,7 +46,7 @@ export class SignInFrontstage extends FrontstageProvider {
     return SignInFrontstage.stageId;
   }
 
-  public get frontstage(): React.ReactElement<FrontstageProps> {
+  public get frontstage(): React.ReactElement<FrontstageProps> { // eslint-disable-line deprecation/deprecation
     const contentGroup: ContentGroup = new ContentGroup({
       id: "sign-in-stage",
       layout: StandardContentLayouts.singleView,
@@ -59,7 +59,7 @@ export class SignInFrontstage extends FrontstageProvider {
     });
 
     return (
-      <Frontstage id={this.id}
+      <Frontstage id={this.id} // eslint-disable-line deprecation/deprecation
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isIModelIndependent={true}

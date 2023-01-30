@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider, MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -220,6 +220,24 @@ export interface ReadImageBufferArgs {
   upsideDown?: boolean;
 }
 
+/** MapLayer visibility based on its scale range definition.
+ * @beta
+ */
+export interface MapLayerScaleRangeVisibility {
+  /** True if map-layer is part of [[DisplayStyleState]]'s overlay map, otherwise map-layer is part of [[DisplayStyleState]]'s background map
+  * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
+  isOverlay: boolean;
+
+  /** Index of the map-layer in [[DisplayStyleState]]'s background/overlay map
+   * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
+  index: number;
+
+  /** Scale range visibility value of the map-layer */
+  visibility: MapTileTreeScaleRangeVisibility;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -291,6 +309,11 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
+
+  /** Event indicating when a map-layer scale range visibility change for the current viewport scale.
+ * @beta
+ */
+  public readonly onMapLayerScaleRangeVisibilityChanged = new BeEvent<(layerIndexes: MapLayerScaleRangeVisibility[]) => void>();
 
   /** @internal */
   protected _hasMissingTiles = false;
@@ -790,6 +813,38 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
 
+  /** Return the map-layer scale range visibility for the provided map-layer index.
+   * @param index of the owning map layer.
+   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   * @see [[DisplayStyleState.mapLayerAtIndex]].
+   * @beta
+  */
+  public getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility {
+    const treeRef = ( isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
+    if (treeRef) {
+      return treeRef.getMapLayerScaleRangeVisibility(index);
+
+    }
+    return MapTileTreeScaleRangeVisibility.Unknown;
+  }
+
+  /** Return a list of map-layers indexes matching a given  MapTile tree Id and a layer imagery tree id.
+   * Note: A imagery tree can be shared for multiple map-layers.
+   * @internal
+   * */
+  public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
+    if (this._mapTiledGraphicsProvider)
+      return this._mapTiledGraphicsProvider?.getMapLayerIndexesFromIds(mapTreeId, layerTreeId);
+
+    return [];
+
+  }
+
+  /** @beta
+   * Fully reset a map-layer tile tree; by calling this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
+   */
+  public resetMapLayer(index: number, isOverlay: boolean) { this._mapTiledGraphicsProvider?.resetMapLayer(index, isOverlay); }
+
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
 
@@ -811,8 +866,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.changeView(newView, options); // switch this viewport to use new ViewState2d
 
     if (options && options.doFit) { // optionally fit view to the extents of the new model
-      const range = await this.iModel.models.queryModelRanges([baseModelId]);
-      this.zoomToVolume(Range3d.fromJSON(range[0]), options);
+      const range = await this.iModel.models.queryExtents([baseModelId]);
+      this.zoomToVolume(Range3d.fromJSON(range[0]?.extents), options);
     }
   }
 
@@ -1068,6 +1123,10 @@ export abstract class Viewport implements IDisposable, TileUser {
       removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
         this.synchWithView();
       }));
+
+      removals.push(this.iModel.onDisplayedExtentsExpansion.addListener(() => {
+        this.invalidateController();
+      }));
     }
   }
 
@@ -1095,6 +1154,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     removals.push(settings.onWhiteOnWhiteReversalChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
+    removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
 
     removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
@@ -1901,21 +1962,24 @@ export abstract class Viewport implements IDisposable, TileUser {
       return ViewStatus.InvalidViewport;
 
     if (view.is3d() && view.isCameraOn) {
-      const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
-      const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, Matrix3d.createScale(factor, factor, 1.0));
+      const eyePoint = view.getEyePoint().clone();
+      const targetPoint = view.getTargetPoint();
 
-      const offset = centerNpc.minus(NpcCenter); // offset by difference of old/new center
-      offset.z = 0.0;     // z center stays the same.
+      if (newCenter) {
+        const dir = eyePoint.vectorTo(targetPoint);
+        newCenter.plusScaled(dir, -0.5, eyePoint);
+        newCenter.plusScaled(dir, 0.5, targetPoint);
+      }
 
-      const offsetTransform = Transform.createTranslationXYZ(offset.x, offset.y, offset.z);
-      const product = offsetTransform.multiplyTransformTransform(scaleTransform);
+      const transform = Transform.createFixedPointAndMatrix(targetPoint, Matrix3d.createScale(factor, factor, factor));
+      const zDir = view.getZVector();
 
-      const frust = new Frustum();
-      product.multiplyPoint3dArrayInPlace(frust.points);
+      transform.multiplyPoint3d(eyePoint, eyePoint);
+      targetPoint.setFrom(eyePoint.plusScaled(zDir, zDir.dotProduct(eyePoint.vectorTo(targetPoint))));
 
-      this.npcToWorldArray(frust.points);
-      view.setupFromFrustum(frust);
-      view.centerEyePoint();
+      const status = view.lookAt({eyePoint, targetPoint, upVector: view.getYVector(), lensAngle: view.camera.lens });
+      if (ViewStatus.Success !== status)
+        return status;
     } else {
       // for non-camera views, do the zooming by adjusting the origin and delta directly so there can be no
       // chance of the rotation changing due to numerical precision errors calculating it from the frustum corners.
@@ -2596,7 +2660,6 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param options Specifies how to query.
    * @param callback Callback to invoke with the results.
    * @note This function may be slow, especially if the features are being queried from screen pixels. Avoid calling it repeatedly in rapid succession.
-   * @beta
    */
   public queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void {
     return queryVisibleFeatures(this, options, callback);
@@ -2811,6 +2874,7 @@ export class ScreenViewport extends Viewport {
   };
 
   private _evController?: EventController;
+  private _resizeObserver?: ResizeObserver;
   private _viewCmdTargetCenter?: Point3d;
   /** The number of entries in the view undo/redo buffer. */
   public maxUndoSteps = 20;
@@ -2996,12 +3060,36 @@ export class ScreenViewport extends Viewport {
     return { x: ev.movementX, y: ev.movementY };
   }
 
-  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
+  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined.
+   * @deprecated this was intended for internal use only.
+   */
   public setEventController(controller?: EventController) {
     if (this._evController)
       this._evController.destroy();
 
     this._evController = controller;
+  }
+
+  /** Invoked by ViewManager.addViewport.
+   * @internal
+   */
+  public onViewManagerAdd(): void {
+    this.onViewManagerDrop();
+
+    this._evController = new EventController(this);
+    this._resizeObserver = new ResizeObserver(() => {
+      this.requestRedraw();
+    });
+    this._resizeObserver.observe(this.canvas);
+  }
+
+  /** Invoked by ViewManager.dropViewport.
+   * @internal
+   */
+  public onViewManagerDrop(): void {
+    this._evController?.destroy();
+    this._resizeObserver?.disconnect();
+    this._evController = this._resizeObserver = undefined;
   }
 
   /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.

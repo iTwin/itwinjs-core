@@ -10,12 +10,12 @@ import {
   assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
-  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
-  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
-  SubCategoryResultRow,
+  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
+  ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat,
+  RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow,
   TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
@@ -156,6 +156,12 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
+
+  /** Event called immediately after *this* IModelConnection has its displayed extents expanded.
+   * @note This event is called only for this IModelConnection.
+   * @internal
+   */
+  public readonly onDisplayedExtentsExpansion = new BeEvent<() => void>();
 
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
   public fontMap?: FontMap;
@@ -393,11 +399,28 @@ export abstract class IModelConnection extends IModel {
   /** Request element mass properties from the backend.
    * @note For better performance use [[getMassPropertiesPerCandidate]] when called from a loop with identical operations and a single candidate per iteration.
    */
-  public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps); }
+  public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps);
+  }
 
   /** Request mass properties for multiple elements from the backend. */
   public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
+  }
+
+  /** Produce encoded [Polyface]($core-geometry)s from the geometry stream of a [GeometricElement]($backend).
+   * A polyface is produced for each geometric entry in the element's geometry stream, excluding geometry like open curves that can't be converted into polyfaces.
+   * The polyfaces can be decoded using [readElementMeshes]($common).
+   * Symbology, UV parameters, and normal vectors are not included in the result.
+   * @param requestProps A description of how to produce the polyfaces and from which element to obtain them.
+   * @returns an encoded list of polyfaces that can be decoded by [readElementMeshes]($common).
+   * @throws Error if [ElementMeshRequestProps.source]($common) does not refer to a [GeometricElement]($backend).
+   * @note This function is intended to support limited analysis of an element's geometry as a mesh. It is not intended for producing graphics.
+   * @see [[TileAdmin.requestElementGraphics]] to obtain meshes appropriate for display.
+   * @beta
+   */
+  public async generateElementMeshes(requestProps: ElementMeshRequestProps): Promise<Uint8Array> {
+    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).generateElementMeshes(this.getRpcProps(), requestProps);
   }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
@@ -485,10 +508,7 @@ export abstract class IModelConnection extends IModel {
     this.displayedExtents.setFrom(this.projectExtents);
     this.displayedExtents.extendRange(this._extentsExpansion);
 
-    for (const vp of IModelApp.viewManager) {
-      if (vp.view.isSpatialView() && vp.iModel === this)
-        vp.invalidateController();
-    }
+    this.onDisplayedExtentsExpansion.raiseEvent();
   }
 
   /** @internal */
@@ -772,10 +792,33 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       this._loaded.delete(modelId);
     }
 
-    /** Query for a set of model ranges by ModelIds. */
+    /** Query for a set of model ranges by ModelIds.
+     * @param modelIds the Id or Ids of the [GeometricModel]($backend)s for which to query the ranges.
+     * @returns An array containing the range of each model of each unique model Id, omitting the range for any Id which did no identify a GeometricModel.
+     * @note The contents of the returned array do not follow a deterministic order.
+     * @throws [IModelError]($common) if exactly one model Id is specified and that Id does not identify a GeoemtricModel.
+     * @see [[queryExtents]] for a similar function that does not throw and produces a deterministically-ordered result.
+     */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelRanges(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
+    }
+
+    /** For each [GeometricModel]($backend) specified by Id, attempts to obtain the union of the volumes of all geometric elements within that model.
+     * @param modelIds The Id or Ids of the geometric models for which to obtain the extents.
+     * @returns An array of results, one per supplied Id, in the order in which the Ids were supplied. If the extents could not be obtained, the
+     * corresponding results entry's `extents` will be a "null" range (@see [Range3d.isNull]($geometry) and its `status` will indicate
+     * why the extents could not be obtained (e.g., because the Id did not identify a [GeometricModel]($backend)).
+     */
+    public async queryExtents(modelIds: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
+      const iModel = this._iModel;
+      if (!iModel.isOpen)
+        return [];
+
+      if (typeof modelIds === "string")
+        modelIds = [modelIds];
+
+      return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelExtents(iModel.getRpcProps(), modelIds);
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams.

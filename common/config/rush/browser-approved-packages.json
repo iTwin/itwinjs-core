@@ -68,7 +68,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/plant-custom-attributes-schema",
@@ -128,7 +128,7 @@
     },
     {
       "name": "@itwin/certa",
-      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/cloud-agnostic-core",
@@ -287,6 +287,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@itwin/itwinui-icons-color-react",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "@itwin/itwinui-icons-react",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -304,6 +308,10 @@
     },
     {
       "name": "@itwin/map-layers-auth",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/map-layers-formats",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -463,6 +471,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "babel-loader",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "babel-plugin-istanbul",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "benchmark",
       "allowedCategories": [ "backend", "common" ]
     },
@@ -476,7 +492,7 @@
     },
     {
       "name": "buffer",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "cache-require-paths",
@@ -553,6 +569,10 @@
     {
       "name": "cross-spawn",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "crypto-browserify",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "debug",
@@ -703,6 +723,10 @@
       "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
+      "name": "google-protobuf",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "https-browserify",
       "allowedCategories": [ "internal" ]
     },
@@ -716,7 +740,7 @@
     },
     {
       "name": "i18next-http-backend",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "ignore-styles",
@@ -741,10 +765,6 @@
     {
       "name": "inversify",
       "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "istanbul-instrumenter-loader",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "js-base64",
@@ -816,6 +836,10 @@
     },
     {
       "name": "nock",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "node-simctl",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -927,6 +951,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "react-select-async-paginate",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-select-event",
       "allowedCategories": [ "frontend" ]
     },
@@ -945,10 +973,6 @@
     {
       "name": "react-window",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "recursive-readdir",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "redux",
@@ -1015,10 +1039,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "string_decoder",
-      "allowedCategories": [ "common" ]
-    },
-    {
       "name": "superagent",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -1071,8 +1091,8 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "uuid",
-      "allowedCategories": [ "frontend", "tools" ]
+      "name": "vhacd-js",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "webpack",
@@ -1093,10 +1113,6 @@
     {
       "name": "wtfnode",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "xml-js",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "xmlhttprequest",

@@ -2,38 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { getPropertyFilterOperatorLabel, PropertyFilterRuleOperator, UiComponents } from "@itwin/components-react";
+import { PropertyDescription } from "@itwin/appui-abstract";
+import { getPropertyFilterOperatorLabel, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator, UiComponents } from "@itwin/components-react";
+import { BeEvent } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
-import { Descriptor } from "@itwin/presentation-common";
+import { Descriptor, NavigationPropertyInfo } from "@itwin/presentation-common";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField, createTestPropertyInfo,
+  createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
+import { ECClassInfo, getIModelMetadataProvider } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
 import {
-  PresentationInstanceFilterBuilder, PresentationInstanceFilterProperty, usePresentationInstanceFilteringProps,
+  PresentationInstanceFilterBuilder, PresentationInstanceFilterInfo, useFilterBuilderNavigationPropertyEditorContext,
+  usePresentationInstanceFilteringProps,
 } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
+import { INSTANCE_FILTER_FIELD_SEPARATOR } from "../../presentation-components/instance-filter-builder/Utils";
 import { stubRaf } from "./Common";
-import { InstanceFilterPropertyInfo } from "../../presentation-components/instance-filter-builder/Types";
-
-export const createTestInstanceFilterPropertyInfo = (props?: Partial<InstanceFilterPropertyInfo>) => ({
-  sourceClassIds: ["0x1"],
-  field: createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }], category: createTestCategoryDescription() }),
-  propertyDescription: {
-    name: "TestName",
-    displayLabel: "TestDisplayLabel",
-    typename: "string",
-  },
-  className: props?.className ? props?.className : "testSchema:testClass",
-  ...props,
-});
 
 describe("PresentationInstanceFilter", () => {
   stubRaf();
@@ -42,19 +34,48 @@ describe("PresentationInstanceFilter", () => {
   const propertiesField = createTestPropertiesContentField({
     properties: [{ property: { classInfo, name: "prop1", type: "string" } }],
     name: "prop1Field",
+    label: "propertiesField",
+    category,
+  });
+  const propertiesField2 = createTestPropertiesContentField({
+    properties: [{ property: { classInfo, name: "prop2", type: "string" } }],
+    name: "prop2Field",
+    label: "propertiesField2",
+    category,
+  });
+  const propertiesField3 = createTestPropertiesContentField({
+    properties: [{ property: { classInfo, name: "prop3", type: "string" } }],
+    name: "prop3Field",
+    label: "propertiesField3",
     category,
   });
   const descriptor = createTestContentDescriptor({
     selectClasses: [{ selectClassInfo: classInfo, isSelectPolymorphic: false }],
     categories: [category],
-    fields: [propertiesField],
+    fields: [propertiesField, propertiesField2, propertiesField3],
   });
+  const initialFilter: PresentationInstanceFilterInfo = {
+    filter: {
+      operator: PropertyFilterRuleGroupOperator.And,
+      conditions: [{
+        field: propertiesField,
+        operator: PropertyFilterRuleOperator.IsNull,
+        value: undefined,
+      },
+      {
+        field: propertiesField2,
+        operator: PropertyFilterRuleOperator.IsNull,
+        value: undefined,
+      }],
+    },
+    usedClasses: [classInfo],
+  };
+
   const imodelMock = moq.Mock.ofType<IModelConnection>();
+  const onCloseEvent = new BeEvent<() => void>();
 
   before(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await UiComponents.initialize(new EmptyLocalization());
     await Presentation.initialize();
     Element.prototype.scrollIntoView = sinon.stub();
@@ -72,6 +93,17 @@ describe("PresentationInstanceFilter", () => {
       return;
     }
     imodelMock.setup((x) => x.query(moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny())).returns(() => generator());
+    imodelMock.setup((x) => x.key).returns(() => "test_imodel");
+    imodelMock.setup((x) => x.onClose).returns(() => onCloseEvent);
+    const metadataProvider = getIModelMetadataProvider(imodelMock.object);
+    sinon.stub(metadataProvider, "getECClassInfo").callsFake(async () => {
+      return new ECClassInfo(classInfo.id, classInfo.name, classInfo.label, new Set(), new Set());
+    });
+  });
+
+  afterEach(() => {
+    onCloseEvent.raiseEvent();
+    imodelMock.reset();
   });
 
   it("invokes 'onInstanceFilterChanged' with filter", async () => {
@@ -81,8 +113,6 @@ describe("PresentationInstanceFilter", () => {
       descriptor={descriptor}
       onInstanceFilterChanged={spy}
     />);
-    expect(spy).to.be.calledOnceWith(undefined);
-    spy.resetHistory();
 
     // select property
     const propertySelector = container.querySelector<HTMLInputElement>(".rule-property .iui-input");
@@ -103,19 +133,38 @@ describe("PresentationInstanceFilter", () => {
     // wait until operator is selected
     await waitFor(() => getByText(getPropertyFilterOperatorLabel(PropertyFilterRuleOperator.IsNotNull)));
 
-    expect(spy).to.be.calledOnceWith({
-      field: propertiesField,
-      operator: PropertyFilterRuleOperator.IsNotNull,
-      value: undefined,
-    });
+    expect(spy).to.be.calledWith({
+      filter: {
+        field: propertiesField,
+        operator: PropertyFilterRuleOperator.IsNotNull,
+        value: undefined,
+      },
+      usedClasses: [classInfo],
+    }
+    );
+  });
+
+  it("renders with initial filter", async () => {
+    const spy = sinon.spy();
+    const { container, queryByDisplayValue } = render(<PresentationInstanceFilterBuilder
+      imodel={imodelMock.object}
+      descriptor={descriptor}
+      onInstanceFilterChanged={spy}
+      initialFilter={initialFilter}
+    />);
+    const rules = container.querySelectorAll(".rule-property");
+    expect(rules.length).to.be.eq(2);
+    const rule1 = queryByDisplayValue(propertiesField.label);
+    expect(rule1).to.not.be.null;
+    const rule2 = queryByDisplayValue(propertiesField2.label);
+    expect(rule2).to.not.be.null;
   });
 });
 
 describe("usePresentationInstanceFilteringProps", () => {
   interface HookProps {
     descriptor: Descriptor;
-    classHierarchyProvider?: ECClassHierarchyProvider;
-    enableClassFiltering?: boolean;
+    imodel: IModelConnection;
   }
 
   const category = createTestCategoryDescription({ name: "root", label: "Root" });
@@ -156,13 +205,26 @@ describe("usePresentationInstanceFilteringProps", () => {
     fields: [basePropertiesField, concretePropertiesField1, concretePropertiesField2, derivedPropertiesField],
   });
 
+  const onCloseEvent = new BeEvent<() => void>();
+  const imodelMock = moq.Mock.ofType<IModelConnection>();
   const initialProps: HookProps = {
     descriptor,
+    imodel: imodelMock.object,
   };
+
+  beforeEach(() => {
+    imodelMock.setup((x) => x.key).returns(() => "test_imodel");
+    imodelMock.setup((x) => x.onClose).returns(() => onCloseEvent);
+  });
+
+  afterEach(() => {
+    onCloseEvent.raiseEvent();
+    imodelMock.reset();
+  });
 
   it("initializes class list from descriptor", () => {
     const { result } = renderHook(
-      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
       { initialProps });
     expect(result.current.classes).to.have.lengthOf(2).and.to.containSubset([
       concreteClass1,
@@ -172,7 +234,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
   it("updates selected classes when 'onClassSelected' is called", () => {
     const { result } = renderHook(
-      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
       { initialProps });
     result.current.onClassSelected(concreteClass1);
     expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
@@ -182,7 +244,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
   it("updates selected classes when 'onClassDeselected' is called", () => {
     const { result } = renderHook(
-      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
       { initialProps });
     result.current.onClassSelected(concreteClass1);
     expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
@@ -194,7 +256,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
   it("does not change selected classes when 'onClassDeselected' is called with not selected class", () => {
     const { result } = renderHook(
-      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
       { initialProps });
     result.current.onClassSelected(concreteClass1);
     expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
@@ -208,7 +270,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
   it("clears selected classes when 'onClearClasses' is called", () => {
     const { result } = renderHook(
-      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
       { initialProps });
     result.current.onClassSelected(concreteClass1);
     expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
@@ -218,103 +280,128 @@ describe("usePresentationInstanceFilteringProps", () => {
     expect(result.current.selectedClasses).to.be.empty;
   });
 
-  describe("properties filtering", () => {
-    const classHierarchyProvider = new ECClassHierarchyProvider(
-      new Set([baseClass.id, concreteClass1.id, concreteClass2.id, derivedClass.id]),
-      new Map([
-        [concreteClass1.id, [baseClass.id]],
-        [concreteClass2.id, [baseClass.id]],
-        [derivedClass.id, [concreteClass1.id, baseClass.id]],
-      ]),
-      new Map([
-        [baseClass.id, [concreteClass1.id, concreteClass2.id, derivedClass.id]],
-        [concreteClass1.id, [derivedClass.id]],
-      ])
-    );
+  it("clears selected classes when new descriptor is provided", () => {
+    const { result, rerender } = renderHook(
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
+      { initialProps });
+    result.current.onClassSelected(concreteClass1);
+    expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
+      concreteClass1,
+    ]);
+    const newDescriptor = createTestContentDescriptor({
+      selectClasses: [
+        { selectClassInfo: concreteClass1, isSelectPolymorphic: false },
+      ],
+      categories: [category],
+      fields: [basePropertiesField],
+    });
+    // rerender with new descriptor
+    rerender({ descriptor: newDescriptor, imodel: initialProps.imodel });
 
-    it("returns properties only of selected class", () => {
-      const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
-        { initialProps: { ...initialProps, classHierarchyProvider } });
+    expect(result.current.selectedClasses).to.be.empty;
+  });
+
+  describe("properties filtering", () => {
+    beforeEach(() => {
+      // stub metadataProvider for test imodel
+      const metadataProvider = getIModelMetadataProvider(imodelMock.object);
+      sinon.stub(metadataProvider, "getECClassInfo").callsFake(async (id) => {
+        switch (id) {
+          case baseClass.id:
+            return new ECClassInfo(baseClass.id, baseClass.name, baseClass.label, new Set(), new Set([concreteClass1.id, concreteClass2.id, derivedClass.id]));
+          case concreteClass1.id:
+            return new ECClassInfo(concreteClass1.id, concreteClass1.name, concreteClass1.label, new Set([baseClass.id]), new Set([derivedClass.id]));
+          case concreteClass2.id:
+            return new ECClassInfo(concreteClass2.id, concreteClass2.name, concreteClass2.label, new Set([baseClass.id]), new Set());
+          case derivedClass.id:
+            return new ECClassInfo(derivedClass.id, derivedClass.name, derivedClass.label, new Set([baseClass.id, concreteClass1.id]), new Set());
+        }
+        return undefined;
+      });
+    });
+
+    afterEach(() => {
+      sinon.resetBehavior();
+    });
+
+    it("returns properties only of selected class", async () => {
+      const { result, waitForValueToChange } = renderHook(
+        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
+        { initialProps });
 
       result.current.onClassSelected(concreteClass2);
+      await waitForValueToChange(() => result.current);
       expect(result.current.properties).to.have.lengthOf(2);
     });
 
-    it("selects classes that have selected property", () => {
-      const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
-        { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: true } });
+    it("return all properties when selected class contains all available properties", async () => {
+      const testDescriptor = createTestContentDescriptor({
+        selectClasses: [
+          { selectClassInfo: concreteClass1, isSelectPolymorphic: false },
+        ],
+        categories: [category],
+        fields: [basePropertiesField, concretePropertiesField1],
+      });
+      const { result, waitForValueToChange } = renderHook(
+        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
+        { initialProps: { ...initialProps, descriptor: testDescriptor } });
 
-      const property = result.current.properties.find((prop) => prop.displayLabel === concretePropertiesField2.label);
-      result.current.onPropertySelected(property!);
-      expect(result.current.selectedClasses).to.have.lengthOf(1).and.containSubset([
-        concreteClass2,
-      ]);
-    });
-
-    it("removes selected class that does not have selected property", () => {
-      const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
-        { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: true } });
-
+      expect(result.current.properties).to.have.lengthOf(2);
       result.current.onClassSelected(concreteClass1);
-      result.current.onClassSelected(concreteClass2);
-      expect(result.current.selectedClasses).to.have.lengthOf(2).and.containSubset([
-        concreteClass1,
-        concreteClass2,
-      ]);
+      await waitForValueToChange(() => result.current);
+      expect(result.current.properties).to.have.lengthOf(2);
+
+    });
+
+    it("selects classes that have selected property", async () => {
+      const { result, waitForValueToChange } = renderHook(
+        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
+        { initialProps });
 
       const property = result.current.properties.find((prop) => prop.displayLabel === concretePropertiesField2.label);
       result.current.onPropertySelected(property!);
+      await waitForValueToChange(() => result.current);
       expect(result.current.selectedClasses).to.have.lengthOf(1).and.containSubset([
         concreteClass2,
       ]);
     });
 
-    it("selects all derived classes that have selected property", () => {
-      const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
-        { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: true } });
+    it("selects all derived classes that have selected property", async () => {
+      const { result, waitForValueToChange } = renderHook(
+        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
+        { initialProps });
 
       const property = result.current.properties.find((prop) => prop.displayLabel === basePropertiesField.label);
       result.current.onPropertySelected(property!);
+      await waitForValueToChange(() => result.current);
       expect(result.current.selectedClasses).to.have.lengthOf(2).and.containSubset([
         concreteClass1,
         concreteClass2,
       ]);
     });
 
-    it("does not change selected classes when selected property class is already selected", () => {
-      const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
-        { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: true } });
+    it("does not change selected classes when selected property class is already selected", async () => {
+      const { result, waitForValueToChange } = renderHook(
+        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
+        { initialProps });
 
       result.current.onClassSelected(concreteClass2);
+      await waitForValueToChange(() => result.current);
       expect(result.current.selectedClasses).to.have.lengthOf(1).and.containSubset([
         concreteClass2,
       ]);
       const property = result.current.properties.find((prop) => prop.displayLabel === concretePropertiesField2.label);
       result.current.onPropertySelected(property!);
+      await waitForValueToChange(() => result.current);
       expect(result.current.selectedClasses).to.have.lengthOf(1).and.containSubset([
         concreteClass2,
       ]);
-    });
-
-    it("does not change selected classes when filtering by properties is disabled", () => {
-      const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
-        { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: false } });
-
-      const property = result.current.properties.find((prop) => prop.displayLabel === concretePropertiesField2.label);
-      result.current.onPropertySelected(property!);
-      expect(result.current.selectedClasses).to.be.empty;
     });
 
     it("does not change selected classes when 'onPropertySelected' is invoked with invalid property", () => {
       const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
-        { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: true } });
+        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.imodel),
+        { initialProps });
 
       result.current.onPropertySelected({ name: "invalidProp", displayLabel: "InvalidProp", typename: "string" });
       expect(result.current.selectedClasses).to.be.empty;
@@ -322,51 +409,68 @@ describe("usePresentationInstanceFilteringProps", () => {
   });
 });
 
-describe("PresentationInstanceFilterProperty", () => {
-  stubRaf();
-  const className = "TestClassName";
-  const schemaName = "TestSchema";
+describe("useFilterBuilderNavigationPropertyEditorContext", () => {
+  interface Props {
+    imodel: IModelConnection;
+    descriptor: Descriptor;
+  }
+  const testImodel = {} as IModelConnection;
 
-  before(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
+  it("returns navigation property info", async () => {
+    const navigationPropertyInfo: NavigationPropertyInfo = {
+      classInfo: { id: "2", label: "Prop Class", name: "TestSchema:PropClass" },
+      targetClassInfo: { id: "3", label: "Target Class", name: "TestSchema:TargetClass" },
+      isForwardRelationship: true,
+      isTargetPolymorphic: true,
+    };
+    const fieldName = "field_name";
+    const testDescriptor = createTestContentDescriptor({
+      fields: [
+        createTestPropertiesContentField({
+          name: fieldName,
+          properties: [{
+            property: {
+              classInfo: { id: "1", label: "Field Class", name: "TestSchema:FieldClass" },
+              name: "nav_prop",
+              type: "navigation",
+              navigationPropertyInfo,
+            },
+          }],
+        }),
+      ],
     });
-    await UiComponents.initialize(new EmptyLocalization());
-    await Presentation.initialize();
-    Element.prototype.scrollIntoView = sinon.stub();
+    const propertyDescription: PropertyDescription = {
+      displayLabel: "TestProp",
+      name: `test_category${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`,
+      typename: "navigation",
+    };
+
+    const { result } = renderHook(
+      ({ imodel, descriptor }: Props) => useFilterBuilderNavigationPropertyEditorContext(imodel, descriptor),
+      { initialProps: { imodel: testImodel, descriptor: testDescriptor } }
+    );
+
+    const info = await result.current.getNavigationPropertyInfo(propertyDescription);
+    expect(info).to.be.deep.eq(navigationPropertyInfo);
   });
 
-  after(async () => {
-    Presentation.terminate();
-    UiComponents.terminate();
-    await IModelApp.shutdown();
-    sinon.restore();
-  });
-
-  it("renders with badge", () => {
-    const testPropertyInfo = createTestInstanceFilterPropertyInfo({
-      className: `${schemaName}:${className}`,
-      categoryLabel: "TestCategoryLabel",
+  it("returns `undefined` for non properties field", async () => {
+    const fieldName = "field_name";
+    const testDescriptor = createTestContentDescriptor({
+      fields: [createTestSimpleContentField({ name: fieldName })],
     });
-    const { container, queryByText } = render(<PresentationInstanceFilterProperty
-      instanceFilterPropertyInfo={testPropertyInfo} />);
+    const propertyDescription: PropertyDescription = {
+      displayLabel: "TestProp",
+      name: `test_category${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`,
+      typename: "navigation",
+    };
 
-    expect(queryByText(testPropertyInfo.propertyDescription.displayLabel)).to.not.be.null;
-    const propertyBadgeSelector = container.querySelector<HTMLInputElement>(".badge");
-    expect(propertyBadgeSelector).to.not.be.null;
-    fireEvent.mouseEnter(propertyBadgeSelector!);
-    expect(queryByText(className)).to.not.be.null;
-    expect(queryByText(schemaName)).to.not.be.null;
-  });
+    const { result } = renderHook(
+      ({ imodel, descriptor }: Props) => useFilterBuilderNavigationPropertyEditorContext(imodel, descriptor),
+      { initialProps: { imodel: testImodel, descriptor: testDescriptor } }
+    );
 
-  it("renders without badge", () => {
-    const TestPropertyInfoWithoutBadge = createTestInstanceFilterPropertyInfo({
-      className: `${schemaName}:${className}`,
-    });
-    const { container, queryByText } = render(<PresentationInstanceFilterProperty
-      instanceFilterPropertyInfo={TestPropertyInfoWithoutBadge} />);
-
-    expect(queryByText(TestPropertyInfoWithoutBadge.propertyDescription.displayLabel)).to.not.be.null;
-    expect(container.querySelector<HTMLInputElement>(".badge")).to.be.null;
+    const info = await result.current.getNavigationPropertyInfo(propertyDescription);
+    expect(info).to.be.undefined;
   });
 });

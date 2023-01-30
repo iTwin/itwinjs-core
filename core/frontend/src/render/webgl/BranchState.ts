@@ -8,7 +8,7 @@
 
 import { Transform } from "@itwin/core-geometry";
 import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags,
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RealityModelDisplaySettings, RenderMode, ViewFlags,
 } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -40,6 +40,8 @@ export interface BranchStateOptions {
   is3d: boolean;
   frustumScale?: { x: number, y: number };
   readonly appearanceProvider?: FeatureAppearanceProvider;
+  readonly realityModelDisplaySettings?: RealityModelDisplaySettings;
+  forceViewCoords?: boolean;
 }
 
 /**
@@ -54,6 +56,7 @@ export class BranchState {
   public get viewFlags() { return this._opts.viewFlags; }
   public set viewFlags(vf: ViewFlags) { this._opts.viewFlags = vf.normalize(); }
   public get clipVolume() { return this._opts.clipVolume; }
+  public get forceViewCoords(): boolean { return true === this._opts.forceViewCoords; }
   public get planarClassifier() { return this._opts.planarClassifier; }
   public get textureDrape() { return this._opts.textureDrape; }
   public get edgeSettings() { return this._opts.edgeSettings; }
@@ -62,6 +65,7 @@ export class BranchState {
   public get frustumScale() { return this._opts.frustumScale!; }
   public get appearanceProvider() { return this._opts.appearanceProvider; }
   public get secondaryClassifiers() { return this._opts.secondaryClassifiers; }
+  public get realityModelDisplaySettings() { return this._opts.realityModelDisplaySettings; }
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -78,22 +82,23 @@ export class BranchState {
 
   /** Create a BranchState from a Branch. Any properties not explicitly specified by the new Branch are inherited from the previous BranchState. */
   public static fromBranch(prev: BranchState, branch: Branch): BranchState {
-    const viewFlags = branch.branch.getViewFlags(prev.viewFlags);
-    const transform = prev.transform.multiplyTransformTransform(branch.localToWorldTransform);
-    const symbologyOverrides = branch.branch.symbologyOverrides ?? prev.symbologyOverrides;
-    const iModel = branch.iModel ?? prev.iModel;
-    const planarClassifier = (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier;
-    const textureDrape = branch.textureDrape ?? prev.textureDrape;
-    const clipVolume = branch.clips;
-    const edgeSettings = branch.edgeSettings ?? prev.edgeSettings;
-    const is3d = branch.frustum?.is3d ?? prev.is3d;
-    const frustumScale = branch.frustum?.scale ?? prev.frustumScale;
-    const secondaryClassifiers = branch.secondaryClassifiers?? prev.secondaryClassifiers;
-
-    // The branch can augment the symbology overrides. If it doesn't want to, allow its parent to do so, unless this branch supplies its own symbology overrides.
-    const appearanceProvider = branch.appearanceProvider ?? (branch.branch.symbologyOverrides ? undefined : prev.appearanceProvider);
-
-    return new BranchState({ viewFlags, transform, symbologyOverrides, clipVolume, planarClassifier, textureDrape, edgeSettings, iModel, is3d, frustumScale, appearanceProvider, secondaryClassifiers });
+    return new BranchState({
+      viewFlags: branch.branch.getViewFlags(prev.viewFlags),
+      transform: prev.transform.multiplyTransformTransform(branch.localToWorldTransform),
+      symbologyOverrides: branch.branch.symbologyOverrides ?? prev.symbologyOverrides,
+      iModel: branch.iModel ?? prev.iModel,
+      planarClassifier: (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier,
+      textureDrape: branch.textureDrape ?? prev.textureDrape,
+      clipVolume: branch.clips,
+      forceViewCoords: prev.forceViewCoords,
+      edgeSettings: branch.edgeSettings ?? prev.edgeSettings,
+      is3d: branch.frustum?.is3d ?? prev.is3d,
+      frustumScale: branch.frustum?.scale ?? prev.frustumScale,
+      secondaryClassifiers: branch.secondaryClassifiers?? prev.secondaryClassifiers,
+      // The branch can augment the symbology overrides. If it doesn't want to, allow its parent to do so, unless this branch supplies its own symbology overrides.
+      appearanceProvider: branch.appearanceProvider ?? (branch.branch.symbologyOverrides ? undefined : prev.appearanceProvider),
+      realityModelDisplaySettings: branch.branch.realityModelDisplaySettings ?? prev.realityModelDisplaySettings,
+    });
   }
 
   public getFeatureAppearance(overrides: FeatureSymbology.Overrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
@@ -107,6 +112,10 @@ export class BranchState {
     const vf = new ViewFlags({ renderMode: RenderMode.SmoothShade, lighting: false, whiteOnWhiteReversal: false });
 
     return new BranchState({ viewFlags: vf, transform: Transform.createIdentity(), symbologyOverrides: new FeatureSymbology.Overrides(), edgeSettings: EdgeSettings.create(undefined), is3d: true });
+  }
+
+  public withViewCoords(): BranchState {
+    return new BranchState({ ...this._opts, forceViewCoords: true });
   }
 
   public constructor(opts: BranchStateOptions) {

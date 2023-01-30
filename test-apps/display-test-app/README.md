@@ -215,6 +215,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, causes a locally cached copy of a a remote iModel to be deleted, forcing the iModel to always be downloaded.
 * IMJS_DEBUG_URL
   * If defined on iOS, the URL used to open the frontend. (This is used in conjunction with `npm run start:webserver` and is the URL to the debug web server running on the developer's computer.)
+* IMJS_EXIT_AFTER_MODEL_OPENED
+  * If defined on iOS, the app will exit after successfully opening an iModel. This is used for automated testing with the iOS Simulator.
 
 ## Key-ins
 
@@ -235,7 +237,10 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `d=dimensions` - the desired width and height of the image in pixels. The image will be square. e.g. `d=768`.
   * `c=0|1` - if `1`, instead of opening a new window to display the image, the image will be copied to the clipboard. NOTE: this probably doesn't work in Firefox.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
-* `dta zoom selected` - zoom the selected viewport to the elements in the selection set.
+* `dta zoom selected` - zoom the selected viewport to the elements in the selection set. Optional arguments specify the margin or padding percent as follows:
+  * `l=` `r=` `t=` `b=` followed by a number indicating the left, right, top, and/or bottom padding or margin percent.
+  * `m=0|1` where zero indicates padding should be applied and 1 indicates margin should be applied.
+  * `p=` followed by a number indicating the single value to use for top, left, right, and bottom.
 * `dta incident markers` - toggle incident marker demo in the selected viewport.
 * `dta path decoration` - toggle drawing a small path decoration in the selected viewport for testing purposes.
 * `dta markup` - toggle markup on the selected viewport.
@@ -278,6 +283,8 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `dta gen graphics` - Trigger a requestElementGraphics call to generate graphics for a single element. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
   * `elementId=Id` The element for which to obtain graphics
   * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
+* `dta reality model settings` - Open a dialog in which settings controlling the display of reality models within the currently-selected viewport can be edited. Currently, it always edits the settings for the first reality model it can find. It produces an error if no reality models are found.
+* `dta clip element geometry` - Starts a tool that clips the view based on the geometry of the selected element(s).
 
 ## Editing
 

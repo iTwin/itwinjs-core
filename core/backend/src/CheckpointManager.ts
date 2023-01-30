@@ -40,6 +40,9 @@ export interface CheckpointProps extends TokenArg {
   /** changeset for the checkpoint */
   readonly changeset: ChangesetIdWithIndex;
 
+  /** If true, then the latest successful v2 checkpoint at or before the provided changeset will be returned when calling queryV2Checkpoint.  */
+  readonly allowPreceding?: boolean;
+
   /** The number of seconds before the current token expires to attempt to reacquire a new token. Default is 1 hour. */
   readonly reattachSafetySeconds?: number;
 }
@@ -225,7 +228,7 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     const request = job.request;
-    const v2props = await IModelHost.hubAccess.queryV2Checkpoint(request.checkpoint);
+    const v2props: V2CheckpointAccessProps | undefined = await IModelHost.hubAccess.queryV2Checkpoint({...request.checkpoint, allowPreceding: true});
     if (!v2props)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
@@ -294,14 +297,16 @@ export class CheckpointManager {
       // first see if there's a V2 checkpoint available.
       const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
       if (changesetId !== request.checkpoint.changeset.id)
-        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because checkpoint for ${request.checkpoint.changeset.id} not found.  Downloaded: IModel=${request.checkpoint.iModelId}, changeset=${changesetId}`);
+        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because requested checkpoint not found.`, {requestedChangesetId: request.checkpoint.changeset.id, iModelId: request.checkpoint.iModelId, changesetId, iTwinId: request.checkpoint.iTwinId });
       else
-        Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
+        Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint.`, { iModelId: request.checkpoint.iModelId, changesetId: request.checkpoint.changeset.id, iTwinId: request.checkpoint.iTwinId });
       return changesetId;
     } catch (error: any) {
-      if (error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
-        return V1CheckpointManager.downloadCheckpoint(request);
-
+      if (error.errorNumber === IModelStatus.NotFound) { // No V2 checkpoint available, try a v1 checkpoint
+        const changeset = await V1CheckpointManager.downloadCheckpoint(request);
+        Logger.logWarning(loggerCategory, `Got an error downloading v2 checkpoint, but downloaded v1 checkpoint successfully!`, { error, iModelId: request.checkpoint.iModelId, iTwinId: request.checkpoint.iTwinId, requestedChangesetId: request.checkpoint.changeset.id, changesetId: changeset });
+        return changeset;
+      }
       throw error; // most likely, was aborted
     }
   }
