@@ -7,7 +7,7 @@ import {
   EmptyLocalization,
   Gradient, ImageSource, ImageSourceFormat, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
-import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
+import { Capabilities } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { CreateRenderMaterialArgs } from "../../../render/RenderMaterial";
 import { IModelConnection } from "../../../IModelConnection";
@@ -138,7 +138,7 @@ describe("System", () => {
         this.requestedIds.length = 0;
       }
 
-      public constructor(canvas: HTMLCanvasElement, context: WebGLContext, capabilities: Capabilities, options: RenderSystem.Options) {
+      public constructor(canvas: HTMLCanvasElement, context: WebGL2RenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
         super(canvas, context, capabilities, options);
 
         const map = this.getIdMap(imodel);

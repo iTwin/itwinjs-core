@@ -355,7 +355,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
-  public static createContext(canvas: HTMLCanvasElement, _useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLContext | undefined {
+  public static createContext(canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLContext | undefined {
+    if (!useWebGL2)
+      return undefined; // WebGL 2 is required.
+
     let contextAttributes: WebGLContextAttributes = { powerPreference: "high-performance" };
     if (undefined !== inputContextAttributes) {
       // NOTE: Order matters with spread operator - if caller wants to override powerPreference, he should be able to.
@@ -372,11 +375,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     if (null === canvas)
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
 
-    const useWebGL2 = (undefined === options.useWebGL2 ? true : options.useWebGL2);
-    const context = this.createContext(canvas, useWebGL2, optionsIn?.contextAttributes);
-    if (undefined === context) {
+    const context = this.createContext(canvas, true, optionsIn?.contextAttributes);
+    if (undefined === context)
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
-    }
+
+    if (!(context instanceof WebGL2RenderingContext))
+      throw new IModelError(BentleyStatus.ERROR, "WebGL 2 support is required");
 
     const capabilities = Capabilities.create(context, options.disabledExtensions);
     if (undefined === capabilities)
@@ -731,7 +735,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return BackgroundMapDrape.create(drapedTree, mapTree);
   }
 
-  protected constructor(canvas: HTMLCanvasElement, context: WebGLContext, capabilities: Capabilities, options: RenderSystem.Options) {
+  protected constructor(canvas: HTMLCanvasElement, context: WebGL2RenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);
     this.canvas = canvas;
     this.context = context as WebGL2RenderingContext;

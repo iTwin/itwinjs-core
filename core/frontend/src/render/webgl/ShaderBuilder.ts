@@ -7,7 +7,6 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeDetails } from "./AttributeMap";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { volClassOpaqueColor } from "./glsl/PlanarClassification";
@@ -1170,7 +1169,7 @@ export class ProgramBuilder {
   }
 
   /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
-  public buildProgram(gl: WebGLContext): ShaderProgram {
+  public buildProgram(gl: WebGL2RenderingContext): ShaderProgram {
     const vertSource = this.vert.buildSource(this._attrMap);
     const fragSource = this.frag.buildSource(); // NB: frag has no need to specify attributes, only vertex does.
 

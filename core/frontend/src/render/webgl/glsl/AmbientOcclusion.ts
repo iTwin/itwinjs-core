@@ -8,7 +8,6 @@
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AmbientOcclusionGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
@@ -204,7 +203,7 @@ function _shouldUseDB() {
 }
 
 /** @internal */
-export function createAmbientOcclusionProgram(context: WebGLContext): ShaderProgram {
+export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
   const shouldUseDB = _shouldUseDB();

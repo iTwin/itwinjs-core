@@ -6,7 +6,6 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { PlanarGridTransparency } from "../../RenderSystem";
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
@@ -52,7 +51,7 @@ const fwidth2d =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return fwidth(screen
 
 const defaultTransparency = new PlanarGridTransparency();
 /** @internal */
-export default function createPlanarGridProgram(context: WebGLContext): ShaderProgram {
+export default function createPlanarGridProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.PlanarGrid, false));
   const vert = builder.vert;
   const frag = builder.frag;

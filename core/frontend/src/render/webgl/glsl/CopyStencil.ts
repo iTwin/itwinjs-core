@@ -7,7 +7,6 @@
  */
 
 import { ColorDef, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
 import { BoundaryType, ScreenPointsGeometry, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry";
 import { FloatRgb, FloatRgba } from "../FloatRGBA";
@@ -73,7 +72,7 @@ function setScratchColor(display: number, hilite: FloatRgb, hAlpha: number): voi
 }
 
 /** @internal */
-export function createVolClassColorUsingStencilProgram(context: WebGLContext): ShaderProgram {
+export function createVolClassColorUsingStencilProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computehiliteColor);
@@ -97,7 +96,7 @@ export function createVolClassColorUsingStencilProgram(context: WebGLContext): S
 }
 
 /** @internal */
-export function createVolClassCopyZProgram(context: WebGLContext): ShaderProgram {
+export function createVolClassCopyZProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord); // TODO: I think this is not necessary because it's already added from the create above
@@ -130,7 +129,7 @@ export function createVolClassCopyZProgram(context: WebGLContext): ShaderProgram
 }
 
 /** @internal */
-export function createVolClassCopyZUsingPointsProgram(context: WebGLContext): ShaderProgram {
+export function createVolClassCopyZUsingPointsProgram(context: WebGL2RenderingContext): ShaderProgram {
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.VolClassCopyZ, false);
   const builder = new ProgramBuilder(attrMap);
 
@@ -162,7 +161,7 @@ export function createVolClassCopyZUsingPointsProgram(context: WebGLContext): Sh
 }
 
 /** @internal */
-export function createVolClassSetBlendProgram(context: WebGLContext): ShaderProgram {
+export function createVolClassSetBlendProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
@@ -215,7 +214,7 @@ export function createVolClassSetBlendProgram(context: WebGLContext): ShaderProg
 }
 
 /** @internal */
-export function createVolClassBlendProgram(context: WebGLContext): ShaderProgram {
+export function createVolClassBlendProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
