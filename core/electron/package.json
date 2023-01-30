@@ -40,7 +40,7 @@
     "@itwin/core-common": "workspace:^3.6.0-dev.53",
     "@itwin/core-frontend": "workspace:^3.6.0-dev.53",
     "@itwin/presentation-common": "workspace:^3.6.0-dev.53",
-    "electron": "^22.0.0"
+    "electron": "^23.0.0-beta.6"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -55,7 +55,7 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "18.11.5",
     "chai": "^4.1.2",
-    "electron": "^22.0.0",
+    "electron": "^23.0.0-beta.6",
     "eslint": "^7.11.0",
     "mocha": "^10.0.0",
     "rimraf": "^3.0.2",

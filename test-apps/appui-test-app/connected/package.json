@@ -63,7 +63,7 @@
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "electron": "^22.0.0",
+    "electron": "^23.0.0-beta.6",
     "eslint": "^7.11.0",
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",

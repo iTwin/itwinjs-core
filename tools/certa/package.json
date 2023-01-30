@@ -50,14 +50,14 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "18.11.5",
     "@types/yargs": "17.0.19",
-    "electron": "^22.0.0",
+    "electron": "^23.0.0-beta.6",
     "eslint": "^7.11.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"
   },
   "peerDependencies": {
-    "electron": "^22.0.0"
+    "electron": "^23.0.0-beta.6"
   },
   "peerDependenciesMeta": {
     "electron": {
