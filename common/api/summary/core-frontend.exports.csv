@@ -436,6 +436,7 @@ internal;OPCFormatInterpreter
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
+internal;OrbitGtTreeReference 
 public;OrthographicViewState 
 public;OsmBuildingDisplayOptions
 public;OutputMessageAlert

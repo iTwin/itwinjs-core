@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  AbstractStatusBarItemUtilities,
-  CommonStatusBarItem, CommonToolbarItem, IconSpecUtilities, StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
+  CommonToolbarItem, IconSpecUtilities,
 } from "@itwin/appui-abstract";
 import { SampleTool } from "../../tools/SampleTool";
 import { UnitsPopupUiDataProvider } from "../dialogs/UnitsPopup";
@@ -13,6 +12,7 @@ import { IModelApp } from "@itwin/core-frontend";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { OpenAbstractDialogTool } from "../../tools/OpenAbstractModalDialogTool";
 import statusFieldSvg from "../icons/StatusField.svg";
+import { AnyStatusBarItem, StageUsage, StatusBarItemUtilities, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider } from "@itwin/appui-react";
 
 /**
  * The GeneralUiItemsProvider provides additional items to any frontstage that has a usage value of StageUsage.General.
@@ -34,13 +34,13 @@ export class GeneralUiItemsProvider implements UiItemsProvider {
     return [];
   }
 
-  public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
+  public provideStatusBarItems(_stageId: string, stageUsage: string): AnyStatusBarItem[] {
     const unitsIcon = IconSpecUtilities.createWebComponentIconSpec(statusFieldSvg);
-    const statusBarItems: CommonStatusBarItem[] = [];
+    const statusBarItems: AnyStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
         /** Add a status bar item to set the active unit system used to display quantity values.  */
-        AbstractStatusBarItemUtilities.createActionItem("UiItemsProvidersTest:UnitsStatusBarItem", StatusBarSection.Center, 100,
+        StatusBarItemUtilities.createActionItem("UiItemsProvidersTest:UnitsStatusBarItem", StatusBarSection.Center, 100,
           unitsIcon, UiItemsProvidersTest.translate("StatusBar.UnitsFlyover"),
           () => {
             IModelApp.uiAdmin.openDialog(new UnitsPopupUiDataProvider(), UiItemsProvidersTest.translate("StatusBar.Units"),
