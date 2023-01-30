@@ -27,27 +27,7 @@ function _createCanvas(): HTMLCanvasElement | undefined {
 }
 
 describe("Render Compatibility", () => {
-  // NB: We assume software rendering for these tests because puppeteer only supports software rendering.
-  // Further, we run in the context of Chrome, whose Swift software renderer fully supports our renderer.
-  // We will run this test using WebGL1 since you cannot disable frag_depth in WebGL2.
-  it("should turn off logarithmicZBuffer if the gl frag depth extension is not available", () => {
-    const canvas = _createCanvas();
-    expect(canvas).to.not.be.undefined;
-    const context = System.createContext(canvas!, false);
-    expect(context).to.not.be.undefined;
-
-    let renderSysOpts: RenderSystem.Options = { logarithmicDepthBuffer: false, useWebGL2: false };
-    let testSys = System.create(renderSysOpts);
-    expect(testSys.options.logarithmicDepthBuffer).to.be.false;
-    renderSysOpts = { logarithmicDepthBuffer: true, useWebGL2: false };
-    testSys = System.create(renderSysOpts);
-    expect(testSys.options.logarithmicDepthBuffer).to.equal(testSys.capabilities.supportsFragDepth);
-    renderSysOpts = { logarithmicDepthBuffer: true, disabledExtensions: ["EXT_frag_depth"], useWebGL2: false };
-    testSys = System.create(renderSysOpts);
-    expect(testSys.options.logarithmicDepthBuffer).to.be.false;
-  });
-
-  it("should return webgl context if webgl2 is unsupported", () => {
+  it("requires WebGL 2", () => {
     const canvas = _createCanvas();
     expect(canvas).to.not.be.undefined;
     // force canvas to fail context creation if webgl2 is requested
@@ -55,25 +35,21 @@ describe("Render Compatibility", () => {
     (canvas as any).getContext = (contextId: any, args?: any) => {
       if (contextId === "webgl2")
         return null;
+
       return originalMethod(contextId, args);
     };
+
     const context = System.createContext(canvas!, false);
-    expect(context).to.not.be.undefined;
-    expect(context instanceof WebGL2RenderingContext).to.be.false;
-    expect(context instanceof WebGLRenderingContext).to.be.true;
+    expect(context).to.be.undefined;
   });
 });
 
 describe("Instancing", () => {
   class TestApp extends MockRender.App {
-    public static async test(enableInstancing: boolean, supportsInstancing: boolean, expectEnabled: boolean): Promise<void> {
+    public static async test(enableInstancing: boolean, expectEnabled: boolean): Promise<void> {
       const tileAdminProps: TileAdmin.Props = { enableInstancing };
-      const renderSysOpts: RenderSystem.Options = { useWebGL2: false }; // use WebGL1 since instanced arrays cannot be disabled in WebGL2
-      if (!supportsInstancing)
-        renderSysOpts.disabledExtensions = ["ANGLE_instanced_arrays"];
 
       await IModelApp.startup({
-        renderSys: renderSysOpts,
         tileAdmin: tileAdminProps,
         localization: new EmptyLocalization(),
       });
@@ -90,19 +66,11 @@ describe("Instancing", () => {
   });
 
   it("should enable instancing if supported and requested", async () => {
-    await TestApp.test(true, true, true);
-  });
-
-  it("should not enable instancing if requested but not supported", async () => {
-    await TestApp.test(true, false, false);
+    await TestApp.test(true, true);
   });
 
   it("should not enable instancing if supported but not requested", async () => {
-    await TestApp.test(false, true, false);
-  });
-
-  it("should not enable instancing if neither requested nor supported", async () => {
-    await TestApp.test(false, false, false);
+    await TestApp.test(false, false);
   });
 });
 
@@ -110,10 +78,8 @@ describe("ExternalTextures", () => {
   class TestApp extends MockRender.App {
     public static async test(enableExternalTextures: boolean, expectEnabled: boolean): Promise<void> {
       const tileAdminProps: TileAdmin.Props = { enableExternalTextures };
-      const renderSysOpts: RenderSystem.Options = { useWebGL2: false }; // use WebGL1 since instanced arrays cannot be disabled in WebGL2
 
       await IModelApp.startup({
-        renderSys: renderSysOpts,
         tileAdmin: tileAdminProps,
         localization: new EmptyLocalization(),
       });
