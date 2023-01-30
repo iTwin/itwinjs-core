@@ -73,57 +73,38 @@ export namespace BufferParameters {
  * An abstract class which specifies an interface for binding and unbinding vertex buffers and their associated state.
  * @internal
  */
-export abstract class BuffersContainer implements WebGLDisposable {
-  protected _linkages: BufferHandleLinkage[] = [];
-
-  protected constructor() { }
-
-  public get linkages(): BufferHandleLinkage[] { return this._linkages; }
-
-  public abstract bind(): void;
-  public abstract unbind(): void;
-  public abstract addBuffer(buffer: BufferHandle, params: BufferParameters[]): void;
-  public abstract appendLinkages(linkages: BufferHandleLinkage[]): void;
-
-  public abstract get isDisposed(): boolean;
-  public abstract dispose(): void; // NB: BufferHandle objects contained within BufferHandleLinkage entries are disposed where they are created because they could be shared among multiple BuffersContainer objects.
+export class BuffersContainer implements WebGLDisposable {
+  public readonly linkages: BufferHandleLinkage[] = [];
+  protected readonly _vao: VAOHandle;
+  private readonly _context: WebGL2RenderingContext;
 
   public static create(): BuffersContainer {
-    if (System.instance.capabilities.isWebGL2)
-      return new VAOContainerWebGL2(System.instance.context as WebGL2RenderingContext);
-    else {
-      const vaoExt = System.instance.capabilities.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object");
-      if (undefined !== vaoExt) {
-        return new VAOContainerWebGL1(vaoExt);
-      } else {
-        return new VBOContainer();
-      }
-    }
-  }
-}
-
-/**
- * A BuffersContainer implementation which uses VAOs for binding and unbinding buffer state.
- * @internal
- */
-export abstract class VAOContainer extends BuffersContainer {
-  public constructor() {
-    super();
+    return new BuffersContainer(System.instance.context as WebGL2RenderingContext);
   }
 
-  public bind(): void { }
+  private constructor(context: WebGL2RenderingContext) {
+    this._context = context;
+    this._vao = new VAOHandle(this._context);
+  }
 
-  public unbind(): void { }
+  // NB: BufferHandle objects contained within BufferHandleLinkage entries are disposed where they are created because they could be shared among multiple BuffersContainer objects.
+  public dispose(): void {
+    this._vao.dispose();
+  }
+
+  public get isDisposed(): boolean {
+    return this._vao.isDisposed;
+  }
 
   public addBuffer(buffer: BufferHandle, params: BufferParameters[]): void {
     const linkage = BufferHandleLinkage.create(buffer, params);
-    this._linkages.push(linkage);
+    this.linkages.push(linkage);
     this._bindLinkage(linkage);
   }
 
   public appendLinkages(linkages: BufferHandleLinkage[]): void {
     for (const linkage of linkages) {
-      this._linkages.push(BufferHandleLinkage.clone(linkage));
+      this.linkages.push(BufferHandleLinkage.clone(linkage));
       this._bindLinkage(linkage);
     }
   }
@@ -141,116 +122,20 @@ export abstract class VAOContainer extends BuffersContainer {
     this.unbind();
   }
 
-  public get isDisposed(): boolean { return false; }
-
-  public dispose(): void { }
-}
-
-/**
- * A BuffersContainer implementation for WebGL1 which uses VAOs for binding and unbinding buffer state.
- * @internal
- */
-export class VAOContainerWebGL1 extends VAOContainer {
-  protected _vao: VertexArrayObjectHandle;
-  private _vaoExt: OES_vertex_array_object;
-
-  public constructor(context: OES_vertex_array_object) {
-    super();
-    this._vaoExt = context;
-    this._vao = new VertexArrayObjectHandle(this._vaoExt);
-  }
-
-  public override bind(): void {
-    this._vao.bind();
-  }
-
-  public override unbind(): void {
-    VertexArrayObjectHandle.unbind(this._vaoExt);
-  }
-
-  public override get isDisposed(): boolean { return this._vao.isDisposed; }
-
-  public override dispose(): void {
-    this._vao.dispose();
-  }
-}
-
-/**
- * A BuffersContainer implementation for WebGL2 which uses VAOs for binding and unbinding buffer state.
- * @internal
- */
-export class VAOContainerWebGL2 extends VAOContainer {
-  protected _vao: VertexArrayObjectHandleWebGL2;
-  private _context: WebGL2RenderingContext;
-
-  public constructor(context: WebGL2RenderingContext) {
-    super();
-    this._context = context;
-    this._vao = new VertexArrayObjectHandleWebGL2(this._context);
-  }
-
-  public override bind(): void {
-    this._vao.bind();
-  }
-
-  public override unbind(): void {
-    VertexArrayObjectHandleWebGL2.unbind(this._context);
-  }
-
-  public override get isDisposed(): boolean { return this._vao.isDisposed; }
-
-  public override dispose(): void {
-    this._vao.dispose();
-  }
-}
-
-/**
- * A BuffersContainer implementation which uses only VBOs (no VAOs) for binding and unbinding buffer state.
- * @internal
- */
-export class VBOContainer extends BuffersContainer {
   public bind(): void {
-    const system = System.instance;
-    for (const linkage of this._linkages) {
-      const buffer = linkage.buffer;
-      const params = linkage.params;
-      buffer.bind();
-      for (const p of params) {
-        system.enableVertexAttribArray(p.glAttribLoc, p.glInstanced);
-        system.context.vertexAttribPointer(p.glAttribLoc, p.glSize, p.glType, p.glNormalized, p.glStride, p.glOffset);
-      }
-    }
-
-    system.updateVertexAttribArrays();
+    this._vao.bind();
   }
 
   public unbind(): void {
-    for (const linkage of this._linkages) {
-      linkage.buffer.unbind();
-    }
+    VAOHandle.unbind(this._context);
   }
-
-  public addBuffer(buffer: BufferHandle, params: BufferParameters[]): void {
-    this._linkages.push(BufferHandleLinkage.create(buffer, params));
-  }
-
-  public appendLinkages(linkages: BufferHandleLinkage[]): void {
-    for (const linkage of linkages) {
-      this._linkages.push(BufferHandleLinkage.clone(linkage));
-    }
-  }
-
-  private _isDisposed = false;
-  public get isDisposed(): boolean { return this._isDisposed; }
-  public dispose() { this._isDisposed = true; }
 }
 
-/**
- * A handle to a WebGLVertexArrayObjectOES for WebGL2.
+/** A handle to a WebGLVertexArrayObjectOES.
  * The WebGLVertexArrayObjectOES is allocated by the constructor and should be freed by a call to dispose().
  * @internal
  */
-export class VertexArrayObjectHandleWebGL2 implements WebGLDisposable {
+export class VAOHandle implements WebGLDisposable {
   private _context: WebGL2RenderingContext;
   private _arrayObject?: WebGLVertexArrayObjectOES;
 
@@ -289,53 +174,6 @@ export class VertexArrayObjectHandleWebGL2 implements WebGLDisposable {
   /** Ensures no vertex array object is bound */
   public static unbind(context: WebGL2RenderingContext): void {
     context.bindVertexArray(null);
-  }
-}
-
-/**
- * A handle to a WebGLVertexArrayObjectOES.
- * The WebGLVertexArrayObjectOES is allocated by the constructor and should be freed by a call to dispose().
- * @internal
- */
-export class VertexArrayObjectHandle implements WebGLDisposable {
-  private _vaoExt: OES_vertex_array_object;
-  private _arrayObject?: WebGLVertexArrayObjectOES;
-
-  /** Allocates the WebGLVertexArrayObjectOES using the supplied context. Free the WebGLVertexArrayObjectOES using dispose() */
-  public constructor(vaoExt: OES_vertex_array_object) {
-    this._vaoExt = vaoExt;
-    const arrayObject = this._vaoExt.createVertexArrayOES();
-
-    // vaoExt.createVertexArrayOES() returns WebGLVertexArrayObjectOES | null...
-    if (null !== arrayObject) {
-      this._arrayObject = arrayObject;
-    } else {
-      this._arrayObject = undefined;
-    }
-
-    assert(!this.isDisposed);
-  }
-
-  public get isDisposed(): boolean { return this._arrayObject === undefined; }
-
-  /** Frees the WebGL vertex array object */
-  public dispose(): void {
-    if (!this.isDisposed) {
-      this._vaoExt.deleteVertexArrayOES(this._arrayObject!);
-      this._arrayObject = undefined;
-    }
-  }
-
-  /** Binds this vertex array object */
-  public bind(): void {
-    if (undefined !== this._arrayObject) {
-      this._vaoExt.bindVertexArrayOES(this._arrayObject);
-    }
-  }
-
-  /** Ensures no vertex array object is bound */
-  public static unbind(vaoExt: OES_vertex_array_object): void {
-    vaoExt.bindVertexArrayOES(null);
   }
 }
 
