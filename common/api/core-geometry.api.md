@@ -430,15 +430,31 @@ export class BarycentricTriangle {
     get area(): number;
     get aspectRatio(): number;
     centroid(result?: Point3d): Point3d;
+    circumcenter(result?: Point3d): Point3d;
     clone(result?: BarycentricTriangle): BarycentricTriangle;
+    closestPoint(b0: number, b1: number, b2: number): {
+        closestEdgeIndex: number;
+        closestEdgeParam: number;
+    };
+    closestVertexIndex(b0: number, b1: number, b2: number): number;
     static create(point0: Point3d, point1: Point3d, point2: Point3d, result?: BarycentricTriangle): BarycentricTriangle;
     static createXYZXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, result?: BarycentricTriangle): BarycentricTriangle;
+    distanceSquared(a0: number, a1: number, a2: number, b0: number, b1: number, b2: number): number;
     dotProductOfCrossProductsFromOrigin(other: BarycentricTriangle): number;
+    edgeLength(oppositeVertexIndex: number): number;
+    edgeLengthSquared(oppositeVertexIndex: number): number;
     fractionToPoint(b0: number, b1: number, b2: number, result?: Point3d): Point3d;
+    incenter(result?: Point3d): Point3d;
     intersectRay3d(ray: Ray3d, result?: TriangleLocationDetail): TriangleLocationDetail;
     intersectSegment(point0: Point3d, point1: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail;
     isAlmostEqual(other: BarycentricTriangle): boolean;
+    static isInRegionBeyondEdge(b0: number, b1: number, b2: number): number;
+    static isInRegionBeyondVertex(b0: number, b1: number, b2: number): number;
+    static isInsideTriangle(b0: number, b1: number, b2: number): boolean;
+    static isOnBoundedEdge(b0: number, b1: number, b2: number): number;
+    static isOnVertex(b0: number, b1: number, b2: number): number;
     normal(result?: Vector3d): Vector3d | undefined;
+    get perimeter(): number;
     points: Point3d[];
     pointToFraction(point: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail;
     set(point0: Point3d | undefined, point1: Point3d | undefined, point2: Point3d | undefined): void;
@@ -4610,23 +4626,26 @@ export interface PolygonClipper {
 
 // @public
 export enum PolygonLocation {
-    InsidePolygonProjectsToEdgeInterior = 4,
-    InsidePolygonProjectsToVertex = 3,
-    Invalid = 0,
+    InsidePolygon = 3,
+    InsidePolygonProjectsToEdgeInterior = 5,
+    InsidePolygonProjectsToVertex = 4,
     OnPolygonEdgeInterior = 2,
     OnPolygonVertex = 1,
-    OutsidePolygonProjectsToEdgeInterior = 6,
-    OutsidePolygonProjectsToVertex = 5
+    OutsidePolygon = 6,
+    OutsidePolygonProjectsToEdgeInterior = 8,
+    OutsidePolygonProjectsToVertex = 7,
+    Unknown = 0
 }
 
 // @public
 export class PolygonLocationDetail {
     a: number;
-    code: number;
-    static create(x: number, y: number, z: number, result?: PolygonLocationDetail): PolygonLocationDetail;
-    static createInvalid(result?: PolygonLocationDetail): PolygonLocationDetail;
-    edgeIndex: number;
-    edgeParam: number;
+    closestEdgeIndex: number;
+    closestEdgeParam: number;
+    code: PolygonLocation;
+    static create(result?: PolygonLocationDetail): PolygonLocationDetail;
+    get hasEdgeProjection(): boolean;
+    invalidate(): void;
     get isInsideOrOn(): boolean;
     get isValid(): boolean;
     point: Point3d;
@@ -5802,20 +5821,14 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
 }
 
 // @public
-export enum TriangleLocation {
-    Invalid = 0,
-    OnEdgeInterior = 2,
-    OnVertex = 1,
-    StrictlyInside = 3,
-    StrictlyOutside = 4
-}
-
-// @public
 export class TriangleLocationDetail {
     a: number;
-    classify(paramTol?: number): number;
-    static create(x: number, y: number, z: number, b1: number, b2: number, a?: number, result?: TriangleLocationDetail): TriangleLocationDetail;
-    static createInvalid(result?: TriangleLocationDetail): TriangleLocationDetail;
+    classify(paramTol?: number): PolygonLocation;
+    closestEdgeIndex: number;
+    closestEdgeParam: number;
+    static create(result?: TriangleLocationDetail): TriangleLocationDetail;
+    get hasEdgeProjection(): boolean;
+    invalidate(): void;
     isInsideOrOn(paramTol?: number): boolean;
     isValid(paramTol?: number): boolean;
     local: Point3d;

@@ -276,7 +276,6 @@ public;TorusPipe
 public;Transform 
 public;TransformProps = number[][] | number[] |
 public;class TransitionSpiral3d 
-public;TriangleLocation
 public;TriangleLocationDetail
 internal;Triangulator
 internal;TriDiagonalSystem

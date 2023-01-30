@@ -250,7 +250,7 @@ export class XYZ implements XYAndZ {
   public setAt(index: number, value: number): void {
     if (index < 0.5)
       this.x = value;
-    if (index > 1.5)
+    else if (index > 1.5)
       this.z = value;
     else
       this.y = value;

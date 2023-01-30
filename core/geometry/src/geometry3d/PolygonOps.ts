@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { Geometry, PlaneAltitudeEvaluator, PolygonLocation } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { XYParitySearchContext } from "../topology/XYParitySearchContext";
@@ -22,26 +22,6 @@ import { Ray3d } from "./Ray3d";
 import { SortablePolygon } from "./SortablePolygon";
 import { XAndY } from "./XYZProps";
 
-/** Enumeration of possible locations of a point in the plane of a polygon.
- * @public
- */
-export enum PolygonLocation {
-  /** No location specified. */
-  Invalid = 0,
-  /** Point is at a vertex. */
-  OnPolygonVertex = 1,
-  /** Point is on an edge (but not a vertex). */
-  OnPolygonEdgeInterior = 2,
-  /** Point is strictly inside the polygon and projects to a vertex. */
-  InsidePolygonProjectsToVertex = 3,
-  /** Point is strictly inside the polygon and projects to an edge (but not a vertex). */
-  InsidePolygonProjectsToEdgeInterior = 4,
-  /** Point is strictly outside the polygon and projects to a vertex. */
-  OutsidePolygonProjectsToVertex = 5,
-  /** Point is strictly outside the polygon and projects to an edge (but not a vertex). */
-  OutsidePolygonProjectsToEdgeInterior = 6,
-}
-
 /**
  * Carries data about a point in the plane of a polygon.
  * @public
@@ -53,66 +33,60 @@ export class PolygonLocationDetail {
   public a: number;
   /** Application-specific vector */
   public v: Vector3d;
-  /** A number that classifies the point's location with respect to the polygon. See `PolygonLocation` enum. */
-  public code: number;
-  /** The projection parameter of p onto the polygon edge closest to p. Only relevant if `code` is valid. */
-  public edgeParam: number;
-  /** The polygon vertex index at the base of the edge closest to p. Only relevant if `code` is valid. */
-  public edgeIndex: number;
+  /** A number that classifies the point's location with respect to the polygon. */
+  public code: PolygonLocation;
+  /** Index of the polygon vertex at the base of the edge closest to p. Valid if `hasEdgeProjection` returns true. */
+  public closestEdgeIndex: number;
+  /** The projection parameter of p onto the polygon edge closest to p. Valid if `hasEdgeProjection` returns true. */
+  public closestEdgeParam: number;
 
   private constructor() {
     this.point = new Point3d();
     this.a = 0.0;
     this.v = new Vector3d();
-    this.code = PolygonLocation.Invalid;
-    this.edgeParam = 0.0;
-    this.edgeIndex = 0;
+    this.code = PolygonLocation.Unknown;
+    this.closestEdgeIndex = 0;
+    this.closestEdgeParam = 0.0;
   }
 
-  private clear() {
-    this.point.x = this.point.y = this.point.z = 0.0;
+  /** Zero out this detail. */
+  public invalidate() {
+    this.point.setZero();
     this.a = 0.0;
-    this.v.x = this.v.y = this.v.z = 0.0;
-    this.code = PolygonLocation.Invalid;
-    this.edgeParam = 0.0;
-    this.edgeIndex = 0;
+    this.v.setZero();
+    this.code = PolygonLocation.Unknown;
+    this.closestEdgeIndex = 0;
+    this.closestEdgeParam = 0.0;
   }
 
   /** Create an invalid detail with all zeroes.
    * @param result optional pre-allocated object to fill and return
    */
-  public static createInvalid(result?: PolygonLocationDetail): PolygonLocationDetail {
+  public static create(result?: PolygonLocationDetail): PolygonLocationDetail {
     if (undefined === result)
       result = new PolygonLocationDetail();
     else
-      result.clear();
+      result.invalidate();
     return result;
   }
 
-  /**
-   * Create a detail from the coordinates of a point p in the plane of a polygon.
-   * @param x x-coordinate of p
-   * @param y y-coordinate of p
-   * @param z z-coordinate of p
-   * @param result optional pre-allocated object to fill and return
-   */
-  public static create(x: number, y: number, z: number, result?: PolygonLocationDetail): PolygonLocationDetail {
-    result = this.createInvalid(result);
-    result.point.set(x, y, z);
-    return result;
-  }
-
-  /** Whether the location code is valid. */
+  /** Whether this instance specifies a valid location. */
   public get isValid(): boolean {
-    return this.code === PolygonLocation.OnPolygonVertex || this.code === PolygonLocation.OnPolygonEdgeInterior ||
-           this.code === PolygonLocation.InsidePolygonProjectsToVertex || this.code === PolygonLocation.InsidePolygonProjectsToEdgeInterior ||
-           this.code === PolygonLocation.OutsidePolygonProjectsToVertex || this.code === PolygonLocation.OutsidePolygonProjectsToEdgeInterior;
+    return this.code !== PolygonLocation.Unknown;
   }
 
   /** Whether this instance specifies a location inside or on the polygon. */
   public get isInsideOrOn(): boolean {
-    return this.code === PolygonLocation.OnPolygonVertex || this.code === PolygonLocation.OnPolygonEdgeInterior ||
+    return this.code === PolygonLocation.InsidePolygon ||
+           this.code === PolygonLocation.OnPolygonVertex || this.code === PolygonLocation.OnPolygonEdgeInterior ||
            this.code === PolygonLocation.InsidePolygonProjectsToVertex || this.code === PolygonLocation.InsidePolygonProjectsToEdgeInterior;
+  }
+
+  /** Whether this instance contains closest edge data. */
+  public get hasEdgeProjection(): boolean {
+    return this.code === PolygonLocation.OnPolygonVertex || this.code === PolygonLocation.OnPolygonEdgeInterior ||
+           this.code === PolygonLocation.InsidePolygonProjectsToVertex || this.code === PolygonLocation.InsidePolygonProjectsToEdgeInterior ||
+           this.code === PolygonLocation.OutsidePolygonProjectsToVertex || this.code === PolygonLocation.OutsidePolygonProjectsToEdgeInterior;
   }
 }
 
@@ -346,12 +320,12 @@ export class PolygonOps {
    * * If the upVector is near-zero length, a simple z vector is used.
    * @returns sum of triangle areas.
    */
-   public static sumTriangleAreasPerpendicularToUpVector(points: Point3d[] | GrowableXYZArray, upVector: Vector3d): number {
-    let scale = upVector.magnitude ();
+  public static sumTriangleAreasPerpendicularToUpVector(points: Point3d[] | GrowableXYZArray, upVector: Vector3d): number {
+    let scale = upVector.magnitude();
     if (scale < Geometry.smallMetricDistance) {
-      upVector = Vector3d.create (0,0,1);
+      upVector = Vector3d.create(0, 0, 1);
       scale = 1.0;
-      }
+    }
 
     let s = 0;
     const n = points.length;
@@ -479,7 +453,7 @@ export class PolygonOps {
     return 0.5 * area;
   }
   /** Sum the areaXY () values for multiple polygons */
-  public static sumAreaXY(polygons: Point3d[][]): number{
+  public static sumAreaXY(polygons: Point3d[][]): number {
     let s = 0.0;
     for (const p of polygons)
       s += this.areaXY(p);
@@ -881,7 +855,7 @@ export class PolygonOps {
       --numPoints; // ignore closure point
     }
 
-    result = PolygonLocationDetail.createInvalid(result);
+    result = PolygonLocationDetail.create(result);
     if (0 === numPoints)
       return result;  // invalid
     if (1 === numPoints) {
@@ -889,8 +863,8 @@ export class PolygonOps {
       result.a = result.point.distance(testPoint);
       result.v.setZero();
       result.code = PolygonLocation.OnPolygonVertex;
-      result.edgeParam = 0.0;
-      result.edgeIndex = 0;
+      result.closestEdgeIndex = 0;
+      result.closestEdgeParam = 0.0;
       return result;
     }
 
@@ -917,8 +891,8 @@ export class PolygonOps {
           result.a = Math.sqrt(distToStart2);
           result.v.setZero();
           result.code = PolygonLocation.OnPolygonVertex;
-          result.edgeParam = 0.0;
-          result.edgeIndex = iBase;
+          result.closestEdgeIndex = iBase;
+          result.closestEdgeParam = 0.0;
           return result;
         }
         if (distToStart2 < minDist2) {
@@ -928,8 +902,8 @@ export class PolygonOps {
             result.a = Math.sqrt(distToStart2);
             polygon.crossProductIndexIndexIndex(iBase, iPrev, iNext, result.v)!;
             result.code = PolygonLocation.OnPolygonVertex;
-            result.edgeParam = 0.0;
-            result.edgeIndex = iBase;
+            result.closestEdgeIndex = iBase;
+            result.closestEdgeParam = 0.0;
             minDist2 = distToStart2;
           }
         }
@@ -944,8 +918,8 @@ export class PolygonOps {
             result.a = Math.sqrt(distToStart2);
             result.v.setZero();
             result.code = PolygonLocation.OnPolygonVertex;
-            result.edgeParam = 0.0;
-            result.edgeIndex = iBase;
+            result.closestEdgeIndex = iBase;
+            result.closestEdgeParam = 0.0;
             return result;
           }
           const distToEnd2 = projDist2 + (1.0 - edgeParam) * (1.0 - edgeParam) * uDotU;
@@ -955,8 +929,8 @@ export class PolygonOps {
             result.a = Math.sqrt(distToEnd2);
             result.v.setZero();
             result.code = PolygonLocation.OnPolygonVertex;
-            result.edgeParam = 0.0;
-            result.edgeIndex = iNext;
+            result.closestEdgeIndex = iNext;
+            result.closestEdgeParam = 0.0;
             return result;
           }
           // testPoint is on edge interior
@@ -964,8 +938,8 @@ export class PolygonOps {
           result.a = Math.sqrt(projDist2);
           result.v.setZero();
           result.code = PolygonLocation.OnPolygonEdgeInterior;
-          result.edgeParam = edgeParam;
-          result.edgeIndex = iBase;
+          result.closestEdgeIndex = iBase;
+          result.closestEdgeParam = edgeParam;
           return result;
         }
         if (projDist2 < minDist2) {
@@ -974,8 +948,8 @@ export class PolygonOps {
           result.a = Math.sqrt(projDist2);
           polygon.crossProductIndexIndexXYAndZ(iBase, iNext, testPoint, result.v)!;
           result.code = PolygonLocation.OnPolygonEdgeInterior;
-          result.edgeParam = edgeParam;
-          result.edgeIndex = iBase;
+          result.closestEdgeIndex = iBase;
+          result.closestEdgeParam = edgeParam;
           minDist2 = projDist2;
         }
       } else {  // edgeParam > 1.0
@@ -1006,20 +980,19 @@ export class PolygonOps {
     if (!(polygon instanceof IndexedXYZCollection))
       return this.intersectRay3d(new Point3dArrayCarrier(polygon), ray, distTol, result);
     if (!this.unitNormal(polygon, this._normal))
-      return PolygonLocationDetail.createInvalid(result);
+      return PolygonLocationDetail.create(result);
     this._workPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(polygon.getXAtUncheckedPointIndex(0),
-                                                                polygon.getYAtUncheckedPointIndex(0),
-                                                                polygon.getZAtUncheckedPointIndex(0),
-                                                                this._normal.x, this._normal.y, this._normal.z,
-                                                                this._workPlane)!;
+      polygon.getYAtUncheckedPointIndex(0), polygon.getZAtUncheckedPointIndex(0),
+      this._normal.x, this._normal.y, this._normal.z, this._workPlane)!;
     const intersectionPoint = Point3d.createZero(this._workPoint);
     const rayParam = ray.intersectionWithPlane(this._workPlane, intersectionPoint);
     if (undefined === rayParam)
-      return PolygonLocationDetail.createInvalid(result);
+      return PolygonLocationDetail.create(result);
     result = this.closestPoint(polygon, intersectionPoint, distTol, result);
     if (result.isValid) {
       result.point.setFrom(intersectionPoint);
       result.a = rayParam;
+      // result.code currently classifies the closest point. Change it to classify intersectionPoint.
       const dot = result.v.dotProduct(this._normal);
       if (dot !== 0.0) {
         if (PolygonLocation.OnPolygonVertex === result.code)
