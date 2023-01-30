@@ -84,12 +84,7 @@ namespace Convert {
   export function scopeToString(scope: VariableScope, isVertexShader: boolean): string {
     switch (scope) {
       case VariableScope.Global: return "";
-      case VariableScope.Varying: {
-        if (System.instance.capabilities.isWebGL2)
-          return (isVertexShader ? "out" : "in");
-        else
-          return "varying";
-      }
+      case VariableScope.Varying: return (isVertexShader ? "out" : "in");
       case VariableScope.Uniform: return "uniform";
       default:
         assert(false);
@@ -235,10 +230,7 @@ export class ShaderVariables {
   }
 
   public addBitFlagConstant(name: string, value: number) {
-    if (System.instance.capabilities.isWebGL2)
-      this.addGlobal(name, VariableType.Uint, `${(2 ** value).toFixed(0)}u`, true);
-    else
-      this.addGlobal(name, VariableType.Float, (1.0 / (2 ** (value + 1))).toExponential(7), true);
+    this.addGlobal(name, VariableType.Uint, `${(2 ** value).toFixed(0)}u`, true);
   }
 
   /** Constructs the lines of glsl code declaring the variables of a certain scope. */
@@ -507,17 +499,10 @@ export class ShaderBuilder extends ShaderVariables {
     super();
     this._components.length = maxComponents;
     this._flags = flags;
-    if (System.instance.capabilities.isWebGL2) {
-      this._version = "#version 300 es";
-      this.addDefine("TEXTURE", "texture");
-      this.addDefine("TEXTURE_CUBE", "texture");
-      this.addDefine("TEXTURE_PROJ", "textureProj");
-    } else {
-      this._version = "#version 100";
-      this.addDefine("TEXTURE", "texture2D");
-      this.addDefine("TEXTURE_CUBE", "textureCube");
-      this.addDefine("TEXTURE_PROJ", "texture2DProj");
-    }
+    this._version = "#version 300 es";
+    this.addDefine("TEXTURE", "texture");
+    this.addDefine("TEXTURE_CUBE", "texture");
+    this.addDefine("TEXTURE_PROJ", "textureProj");
   }
 
   protected addComponent(index: number, component: string): void {
@@ -621,19 +606,15 @@ export class ShaderBuilder extends ShaderVariables {
 
     // Attribute declarations
     if (attrMap !== undefined) {
-      const webGL2 = System.instance.capabilities.isWebGL2;
       attrMap.forEach((attr: AttributeDetails, key: string) => {
-        if (webGL2)
-          src.addline(`in ${Convert.typeToString(attr.type)} ${key};`);
-        else
-          src.addline(`attribute ${Convert.typeToString(attr.type)} ${key};`);
+        src.addline(`in ${Convert.typeToString(attr.type)} ${key};`);
       });
     }
 
     // Variable declarations
     src.add(this.buildDeclarations(isVertexShader));
 
-    // Layouts (WebGL2 only)
+    // Layouts
     for (const layout of this._fragOutputs)
       src.addline(layout);
 
@@ -944,11 +925,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
 
   public constructor(flags: ShaderBuilderFlags = { }) {
     super(FragmentShaderComponent.COUNT, flags);
-
-    if (System.instance.capabilities.isWebGL2)
-      this.addFragOutput("FragColor", -1);
-    else
-      this.addDefine("FragColor", "gl_FragColor");
+    this.addFragOutput("FragColor", -1);
   }
 
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
@@ -956,16 +933,9 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   public unset(id: FragmentShaderComponent) { this.removeComponent(id); }
 
   public addDrawBuffersExtension(n: number): void {
-    if (System.instance.capabilities.isWebGL2) {
-      this.clearFragOutput();
-      for (let i = 0; i < n; i++)
-        this.addFragOutput(`FragColor${i}`, i);
-    } else {
-      assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
-      this.addExtension("GL_EXT_draw_buffers");
-      for (let i = 0; i < n; i++)
-        this.addDefine(`FragColor${i}`, `gl_FragData[${i}]`);
-    }
+    this.clearFragOutput();
+    for (let i = 0; i < n; i++)
+      this.addFragOutput(`FragColor${i}`, i);
   }
 
   public buildSource(): string {
@@ -1008,10 +978,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (undefined !== finalizeDepth) {
       prelude.addFunction("float finalizeDepth()", finalizeDepth);
       main.addline("  float finalDepth = finalizeDepth();");
-      if (System.instance.capabilities.isWebGL2)
-        main.addline("  gl_FragDepth = finalDepth;");
-      else
-        main.addline("  gl_FragDepthEXT = finalDepth;");
+      main.addline("  gl_FragDepth = finalDepth;");
     }
 
     let clipIndent = "";

@@ -83,23 +83,6 @@ describe("IndexedEdgeParams", () => {
       await IModelApp.shutdown();
     });
 
-    it("are not produced if unsupported by client device", async () => {
-      await IModelApp.startup({
-        renderSys: { useWebGL2: false },
-        localization: new EmptyLocalization(),
-      });
-      expect(IModelApp.renderSystem.supportsIndexedEdges).to.be.false;
-      expect(IModelApp.tileAdmin.enableIndexedEdges).to.be.false;
-
-      const args = createMeshArgs();
-      const edges = EdgeParams.fromMeshArgs(args)!;
-      expect(edges).not.to.be.undefined;
-      expect(edges.segments).not.to.be.undefined;
-      expect(edges.silhouettes).not.to.be.undefined;
-      expect(edges.polylines).to.be.undefined; // converted to segments
-      expect(edges.indexed).to.be.undefined;
-    });
-
     it("are not produced if explicitly disabled by TileAdmin", async () => {
       await IModelApp.startup({
         tileAdmin: { enableIndexedEdges: false },

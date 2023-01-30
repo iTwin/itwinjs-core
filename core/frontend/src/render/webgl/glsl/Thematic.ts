@@ -65,8 +65,7 @@ vec3 getIsoLineColor(float ndx, float stepCount) {
 }
 `;
 
-const fwidthWhenAvailable = `\nfloat _universal_fwidth(float coord) { return fwidth(coord); }\n`;
-const fwidthWhenNotAvailable = `\nfloat _universal_fwidth(float coord) { return coord; }\n`; // ###TODO: can we do something reasonable in this case?
+const fwidth = `\nfloat _universal_fwidth(float coord) { return fwidth(coord); }\n`;
 
 const slopeAndHillShadeShader = ` else if (kThematicDisplayMode_Slope == u_thematicDisplayMode) {
     float d = dot(g_normal, u_thematicAxis);
@@ -342,16 +341,7 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
     });
   }
 
-  const isWebGL2 = System.instance.capabilities.isWebGL2;
-  if (isWebGL2) {
-    frag.addFunction(fwidthWhenAvailable);
-  } else if (System.instance.capabilities.supportsStandardDerivatives) {
-    frag.addExtension("GL_OES_standard_derivatives");
-    frag.addFunction(fwidthWhenAvailable);
-  } else {
-    frag.addFunction(fwidthWhenNotAvailable);
-  }
-
+  frag.addFunction(fwidth);
   if (System.instance.capabilities.supportsTextureFloat) {
     frag.addFunction(getSensorFloat);
   } else {

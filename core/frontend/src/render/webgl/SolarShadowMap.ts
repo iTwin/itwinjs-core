@@ -123,16 +123,8 @@ class Bundle implements WebGLDisposable {
       case RenderType.TextureFloat:
         break;
       case RenderType.TextureHalfFloat:
-        if (System.instance.capabilities.isWebGL2) {
-          pixelDataType = (System.instance.context as WebGL2RenderingContext).HALF_FLOAT;
-          break;
-        } else {
-          const exthf = System.instance.capabilities.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
-          if (undefined !== exthf) {
-            pixelDataType = exthf.HALF_FLOAT_OES;
-            break;
-          }
-        }
+        pixelDataType = (System.instance.context as WebGL2RenderingContext).HALF_FLOAT;
+        break;
       /* falls through */
       default:
         return undefined;

@@ -159,10 +159,7 @@ function addMaterial(builder: ProgramBuilder, instanced: boolean): void {
   vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
   vert.addGlobal("use_material", VariableType.Boolean);
-  if (System.instance.capabilities.isWebGL2)
-    vert.addInitializer("use_material = (0u == (surfaceFlags & kSurfaceBit_IgnoreMaterial));");
-  else
-    vert.addInitializer("use_material = !nthBitSet(surfaceFlags, kSurfaceBit_IgnoreMaterial);");
+  vert.addInitializer("use_material = (0u == (surfaceFlags & kSurfaceBit_IgnoreMaterial));");
 
   // Uniform material
   vert.addFunction(decodeMaterialColor);
@@ -269,9 +266,6 @@ export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClass
 }
 
 const isSurfaceBitSet = `
-bool isSurfaceBitSet(float flag) { return nthBitSet(surfaceFlags, flag); }
-`;
-const isSurfaceBitSet2 = `
 bool isSurfaceBitSet(uint flag) { return 0u != (surfaceFlags & flag); }
 `;
 
@@ -296,30 +290,19 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addBitFlagConstant("kSurfaceBit_HasNormalMap", SurfaceBitIndex.HasNormalMap);
 
   // Only need masks for flags modified in vertex shader
-  const suffix = System.instance.capabilities.isWebGL2 ? "u" : ".0";
-  const type = System.instance.capabilities.isWebGL2 ? VariableType.Uint : VariableType.Float;
+  const suffix = "u";
+  const type = VariableType.Uint;
   builder.addConstant("kSurfaceMask_HasTexture", type, SurfaceFlags.HasTexture.toString() + suffix);
   builder.addConstant("kSurfaceMask_IgnoreMaterial", type, SurfaceFlags.IgnoreMaterial.toString() + suffix);
   builder.addConstant("kSurfaceMask_OverrideRgb", type, SurfaceFlags.OverrideRgb.toString() + suffix);
   builder.addConstant("kSurfaceMask_HasNormalMap", type, SurfaceFlags.HasNormalMap.toString() + suffix);
 
   addExtractNthBit(builder);
-  if (System.instance.capabilities.isWebGL2) {
-    builder.addFunction(isSurfaceBitSet2);
-    builder.addGlobal("surfaceFlags", VariableType.Uint);
-  } else {
-    builder.addFunction(isSurfaceBitSet);
-    builder.addGlobal("surfaceFlags", VariableType.Float);
-  }
+  builder.addFunction(isSurfaceBitSet);
+  builder.addGlobal("surfaceFlags", VariableType.Uint);
 }
 
 const initSurfaceFlags = `
-  surfaceFlags = u_surfaceFlags[kSurfaceBitIndex_HasTexture] ? kSurfaceMask_HasTexture : 0.0;
-  surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_IgnoreMaterial] ? kSurfaceMask_IgnoreMaterial : 0.0;
-  surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideRgb] ? kSurfaceMask_OverrideRgb : 0.0;
-  surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_HasNormalMap] ? kSurfaceMask_HasNormalMap : 0.0;
-`;
-const initSurfaceFlags2 = `
   surfaceFlags = u_surfaceFlags[kSurfaceBitIndex_HasTexture] ? kSurfaceMask_HasTexture : 0u;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_IgnoreMaterial] ? kSurfaceMask_IgnoreMaterial : 0u;
   surfaceFlags += u_surfaceFlags[kSurfaceBitIndex_OverrideRgb] ? kSurfaceMask_OverrideRgb : 0u;
@@ -343,8 +326,7 @@ const computeColorSurfaceFlags = `
     surfaceFlags += kSurfaceMask_OverrideRgb;
 `;
 
-const returnSurfaceFlags = "  return surfaceFlags;\n";
-const returnSurfaceFlags2 = "  return float(surfaceFlags);\n";
+const returnSurfaceFlags = "  return float(surfaceFlags);\n";
 
 const computeSurfaceFlags = computeBaseSurfaceFlags;
 const computeSurfaceFlagsWithColor = computeBaseSurfaceFlags + computeColorSurfaceFlags;
@@ -474,16 +456,13 @@ export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: b
   addSurfaceFlagsLookup(builder.vert);
   addSurfaceFlagsLookup(builder.frag);
 
-  let compute = (System.instance.capabilities.isWebGL2 ? initSurfaceFlags2 : initSurfaceFlags);
+  let compute = initSurfaceFlags;
   if (withFeatureOverrides)
     compute += `${withFeatureColor ? computeSurfaceFlagsWithColor : computeSurfaceFlags}\n`;
-  compute += (System.instance.capabilities.isWebGL2 ? returnSurfaceFlags2 : returnSurfaceFlags);
+  compute += returnSurfaceFlags;
   builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", compute);
 
-  if (System.instance.capabilities.isWebGL2)
-    builder.frag.addInitializer("surfaceFlags = uint(floor(v_surfaceFlags + 0.5));");
-  else
-    builder.frag.addInitializer("surfaceFlags = floor(v_surfaceFlags + 0.5);");
+  builder.frag.addInitializer("surfaceFlags = uint(floor(v_surfaceFlags + 0.5));");
 
   builder.addUniformArray("u_surfaceFlags", VariableType.Boolean, SurfaceBitIndex.Count, (prog) => {
     prog.addGraphicUniform("u_surfaceFlags", (uniform, params) => {
@@ -504,22 +483,22 @@ function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: Is
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? getComputeAnimatedNormal(quantized) : "return computeSurfaceNormal();");
   builder.frag.addGlobal("g_normal", VariableType.Vec3);
   let finalizeNormal = finalizeNormalPrelude;
-  if (System.instance.capabilities.isWebGL2) {
-    finalizeNormal += finalizeNormalNormalMap;
-    builder.frag.addUniform("u_normalMapScale", VariableType.Float, (prog) => {
-      prog.addGraphicUniform("u_normalMapScale", (uniform, params) => {
-        let normalMapScale = 1.0;
-        if (undefined !== params.geometry.materialInfo && !params.geometry.materialInfo.isAtlas &&
-            undefined !== params.geometry.materialInfo.textureMapping &&
-            undefined !== params.geometry.materialInfo.textureMapping.normalMapParams) {
-          normalMapScale = params.geometry.materialInfo.textureMapping.normalMapParams.scale ?? 1.0;
-          if (params.geometry.materialInfo.textureMapping.normalMapParams.greenUp)
-            normalMapScale = -normalMapScale;
-        }
-        uniform.setUniform1f(normalMapScale);
-      });
+
+  finalizeNormal += finalizeNormalNormalMap;
+  builder.frag.addUniform("u_normalMapScale", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_normalMapScale", (uniform, params) => {
+      let normalMapScale = 1.0;
+      if (undefined !== params.geometry.materialInfo && !params.geometry.materialInfo.isAtlas &&
+          undefined !== params.geometry.materialInfo.textureMapping &&
+          undefined !== params.geometry.materialInfo.textureMapping.normalMapParams) {
+        normalMapScale = params.geometry.materialInfo.textureMapping.normalMapParams.scale ?? 1.0;
+        if (params.geometry.materialInfo.textureMapping.normalMapParams.greenUp)
+          normalMapScale = -normalMapScale;
+      }
+      uniform.setUniform1f(normalMapScale);
     });
-  }
+  });
+
   finalizeNormal += finalizeNormalPostlude;
   builder.frag.set(FragmentShaderComponent.FinalizeNormal, finalizeNormal);
 
@@ -539,8 +518,8 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
   }
 
   // Point clouds do not need to compute texture coordinates since the only texture they use is the thematic gradient.
-  // Surfaces now need texture coordinates even for thematic in case they have a normal map (except for webgl1 which does not have normal maps).
-  if (!isPointCloud && (System.instance.capabilities.isWebGL2 || !isThematic)) {
+  // Surfaces now need texture coordinates even for thematic in case they have a normal map.
+  if (!isPointCloud) {
     builder.vert.addFunction(unquantize2d);
     addChooseVec2WithBitFlagsFunction(builder.vert);
     const quantized = "quantized" === builder.vert.positionType;
@@ -574,7 +553,7 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
     });
   });
 
-  if (!isHilite && !isPointCloud && System.instance.capabilities.isWebGL2) {
+  if (!isHilite && !isPointCloud) {
     builder.frag.addUniform("s_normalMap", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("s_normalMap", (uniform, params) => {
         const surfGeom = params.geometry.asSurface!;

@@ -147,16 +147,8 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
         break;
       }
       case RenderType.TextureHalfFloat: {
-        if (System.instance.capabilities.isWebGL2) {
-          pixelDataType = (System.instance.context as WebGL2RenderingContext).HALF_FLOAT;
-          break;
-        } else {
-          const ext = System.instance.capabilities.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
-          if (undefined !== ext) {
-            pixelDataType = ext.HALF_FLOAT_OES;
-            break;
-          }
-        }
+        pixelDataType = (System.instance.context as WebGL2RenderingContext).HALF_FLOAT;
+        break;
       }
       /* falls through */
       case RenderType.TextureUnsignedByte: {
@@ -1017,12 +1009,10 @@ abstract class Compositor extends SceneCompositor {
     });
     this.target.frameStatsCollector.endTime("onRenderOpaqueTime");
 
-    // Render point cloud geometry with possible EDL (WebGL2 only)
-    if (System.instance.capabilities.isWebGL2) {
-      this.target.beginPerfMetricRecord("Render PointClouds");
-      this.renderPointClouds(commands, compositeFlags);
-      this.target.endPerfMetricRecord();
-    }
+    // Render point cloud geometry with possible EDL
+    this.target.beginPerfMetricRecord("Render PointClouds");
+    this.renderPointClouds(commands, compositeFlags);
+    this.target.endPerfMetricRecord();
 
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");

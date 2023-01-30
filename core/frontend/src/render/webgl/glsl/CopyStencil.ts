@@ -120,8 +120,7 @@ export function createVolClassCopyZProgram(context: WebGLContext): ShaderProgram
     });
   });
 
-  if (!System.instance.capabilities.isWebGL2)
-    frag.addExtension("GL_EXT_frag_depth");
+  frag.addExtension("GL_EXT_frag_depth");
   frag.set(FragmentShaderComponent.FinalizeDepth, depthFromTexture);
 
   builder.vert.headerComment = "//!V! VolClassCopyZ";

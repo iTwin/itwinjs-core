@@ -18,17 +18,4 @@ describe("BuffersContainer", () => {
     const buffers = BuffersContainer.create();
     expect(buffers instanceof VAOContainer).to.be.true;
   });
-
-  it("should use VBO is VAOs disabled", async () => {
-    await IModelApp.startup({
-      renderSys: {
-        useWebGL2: false,
-        disabledExtensions: ["OES_vertex_array_object"],
-      },
-      localization: new EmptyLocalization(),
-    });
-
-    const buffers = BuffersContainer.create();
-    expect(buffers instanceof VBOContainer).to.be.true;
-  });
 });

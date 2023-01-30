@@ -241,16 +241,10 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   }
 
   if (wantGlobalOvrFlags) {
-    let bitmapType;
-    if (System.instance.capabilities.isWebGL2) {
-      vert.addFunction(nthFeatureBitSet2);
-      vert.addFunction(extractNthFeatureBit2);
-      bitmapType = VariableType.Uint;
-    } else {
-      vert.addFunction(nthFeatureBitSet);
-      vert.addFunction(extractNthFeatureBit);
-      bitmapType = VariableType.Float;
-    }
+    const bitmapType = VariableType.Uint;
+    vert.addFunction(nthFeatureBitSet2);
+    vert.addFunction(extractNthFeatureBit2);
+
     vert.addUniform("u_globalOvrFlags", bitmapType, (prog) => {
       prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
         let flags = 0.0;

@@ -138,9 +138,6 @@ export class UniformHandle {
   }
 
   public setUniformBitflags(data: number) {
-    if (System.instance.capabilities.isWebGL2)
-      this.setUniform1ui(data);
-    else
-      this.setUniform1f(data);
+    this.setUniform1ui(data);
   }
 }
