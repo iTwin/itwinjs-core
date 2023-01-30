@@ -202,7 +202,7 @@ export class FrameBuffer implements WebGLDisposable {
     if (!this._fboMs)
       return;
     System.instance.frameBufferStack.suspend();
-    const gl2 = System.instance.context as WebGL2RenderingContext;
+    const gl2 = System.instance.context;
     const attachments = [];
     const max = (undefined === ndx ? this._colorMsBuffers.length : ndx + 1);
     for (let i = 0; i < max; ++i) {

@@ -134,7 +134,7 @@ export class UniformHandle {
 
   public setUniform1ui(data: number) {
     if (this.updateDatum(DataType.Uint, data))
-      (System.instance.context as WebGL2RenderingContext).uniform1ui(this._location, data);
+      System.instance.context.uniform1ui(this._location, data);
   }
 
   public setUniformBitflags(data: number) {

@@ -147,7 +147,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
         break;
       }
       case RenderType.TextureHalfFloat: {
-        pixelDataType = (System.instance.context as WebGL2RenderingContext).HALF_FLOAT;
+        pixelDataType = System.instance.context.HALF_FLOAT;
         break;
       }
       /* falls through */

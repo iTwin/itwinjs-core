@@ -54,7 +54,7 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   // Figure out the internal format.  For all but WebGL2 float/half-float datatypes it is just same as format.
   // TODO: probably need to just support internal format types in Texture2DCreateParams.
   let internalFormat = params.format;
-  const context2 = System.instance.context as WebGL2RenderingContext;
+  const context2 = System.instance.context;
   if (GL.Texture.Format.Rgba === params.format) {
     if (GL.Texture.DataType.Float === params.dataType)
       internalFormat = context2.RGBA32F;
