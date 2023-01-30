@@ -98,7 +98,7 @@ export enum ArcMethod {
     StartMidEnd = 2
 }
 
-// @alpha
+// @internal
 export const basicManipulationIpc: PickAsyncMethods<BasicManipulationCommandIpc>;
 
 // @alpha (undocumented)
@@ -1694,7 +1694,7 @@ export class LoftProfilesTool extends ElementGeometryCacheTool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export function makeEditToolIpc<K extends EditCommandIpc>(): PickAsyncMethods<K>;
 
 // @alpha
@@ -2512,7 +2512,7 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
     static toolId: string;
 }
 
-// @alpha
+// @internal
 export const solidModelingIpc: PickAsyncMethods<SolidModelingCommandIpc>;
 
 // @alpha

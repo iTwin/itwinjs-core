@@ -98,6 +98,7 @@ export class EditCommandAdmin {
   private static _isInitialized = false;
   public static get activeCommand() { return this._activeCommand; }
 
+  /** @internal */
   public static async finishCommand() {
     if (this._activeCommand) {
       const finished = await this._activeCommand.requestFinish();
@@ -107,6 +108,9 @@ export class EditCommandAdmin {
     this._activeCommand = undefined;
   }
 
+  /** Called from frontend via `EditorIpc.startCommand`
+   * @internal
+   */
   public static async runCommand(cmd: EditCommand): Promise<any> {
     await this.finishCommand();
     this._activeCommand = cmd;

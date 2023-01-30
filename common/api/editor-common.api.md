@@ -132,9 +132,8 @@ export interface EdgeParameterRangeProps {
     uRange: Range1dProps;
 }
 
-// @beta (undocumented)
+// @beta
 export interface EditCommandIpc {
-    // (undocumented)
     ping: () => Promise<{
         commandId: string;
         version: string;
@@ -148,11 +147,9 @@ export const editorBuiltInCmdIds: {
     cmdSolidModeling: string;
 };
 
-// @beta (undocumented)
+// @beta
 export interface EditorIpc {
-    // (undocumented)
     callMethod: (name: string, ...args: any[]) => Promise<any>;
-    // (undocumented)
     startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
 }
 
