@@ -14,7 +14,7 @@ import {
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ChangeSummaryManager,
+  BriefcaseDb, ChangeSummaryManager,
   ChannelRootAspect, ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
   ElementRefersToElements, ElementUniqueAspect, Entity, EntityReferences, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
@@ -1142,7 +1142,19 @@ export class IModelTransformer extends IModelExportHandler {
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
    */
-  public async processSchemas(): Promise<void> {
+  public async processSchemas({
+    /**
+     * Upgrade the profile of the target while transforming schemas.
+     * This can prevent errors when the source's schemas and/or profile are too new.
+     * This will close and reopen the target several times, and push changes.
+     * This does nothing if it is not a briefcase
+     */
+    doUpgrade = true,
+  } = {}): Promise<void> {
+    if (doUpgrade && this.targetDb instanceof BriefcaseDb) {
+      this.targetDb.close();
+      await BriefcaseDb.upgradeSchemas({ fileName: this.targetDb.pathName });
+    }
     // we do not need to initialize for this since no entities are exported
     try {
       IModelJsFs.mkdirSync(this._schemaExportDir);
