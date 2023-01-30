@@ -222,25 +222,25 @@ export class BarycentricTriangle {
     //    d^2 = -a^2 * Y * Z - b^2 * Z * X - c^2 * X * Y
     // By the barycentric coordinate triangle area ratio formula, the (signed) projection distance d of p to e_k is computed:
     //    b[k] = area(p,v_i,v_j)/A = (d|e_k|/2)/A => d = 2A*b[k]/|e_k|
-    // Substitute for d, then with displacement vector p-q with i_th, j_th, k_th barycentric coordinates b[i]-u, b[j]-(1-u), b[k], we have:
+    // Substitute for d, then with q_ijk=(u,1-u,0) and displacement vector (p-q)_ijk=(b[i]-u,b[j]-(1-u),b[k]), we have:
     //    4 A^2 b[k]^2 / s2[k] = -s2[i](b[j]-(1-u))b[k] - s2[j]b[k](b[i]-u) - s2[k](b[i]-u)(b[j]-(1-u))
-    // With further substitutions for A^2 (Heron's formula) and b[k]=1-b[i]-b[j], we get the coded formula for u, the i_th barycentric coordinate of q.
-    // To verify, use WolframAlpha input form below, where x=b[i], y=b[j], a^2=s2[i], b^2=s2[j], c^2=s2[k]:
+    // With further substitutions for A^2 (Heron's formula) and b[k]=1-b[i]-b[j], solve for u to get the coded equation.
+    // To verify, use the WolframAlpha input form, where x=b[i], y=b[j], a^2=s2[i], b^2=s2[j], c^2=s2[k]:
     //    solve(4(1/2(a+b+c))(1/2(-a+b+c))(1/2(a-b+c))(1/2(a+b-c))(1-x-y)^2)/c^2=-a^2(y-(1-u))(1-x-y)-b^2(1-x-y)(x-u)-c^2(x-u)(y-(1-u)) for u
     k = Geometry.cyclic3dAxis(k);
     const i = Geometry.cyclic3dAxis(k + 1);
     const j = Geometry.cyclic3dAxis(i + 1);
     const u = (b[k] * (s2[i] - s2[j]) + s2[k] * (b[i] - b[j] + 1)) / (2 * s2[k]);
-    return 1-u; // convert from barycentric coordinate to edge parameter
+    return 1-u; // convert from i_th barycentric coordinate to parameter along edge e_k
   }
 
   /** Convert from opposite-vertex to start-vertex edge indexing. */
-  private static edgeOppositeVertexIndexToStartVertexIndex(edgeIndex: number): number {
+  public static edgeOppositeVertexIndexToStartVertexIndex(edgeIndex: number): number {
     return Geometry.cyclic3dAxis(edgeIndex + 1);
   }
 
   /** Convert from start-vertex to opposite-vertex edge indexing. */
-  private static edgeStartVertexIndexToOppositeVertexIndex(startVertexIndex: number): number {
+  public static edgeStartVertexIndexToOppositeVertexIndex(startVertexIndex: number): number {
     return Geometry.cyclic3dAxis(startVertexIndex - 1);
   }
 
