@@ -272,7 +272,7 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
   }
 
   if (isAnimated) {
-    addAnimation(vert, false, IsThematic.No);
+    addAnimation(vert, false);
     vert.addInitializer(animateEndPoint);
   }
 

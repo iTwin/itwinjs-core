@@ -184,7 +184,7 @@ function computeAnimParams(params: Float32Array, channel: AuxChannel, fraction: 
 }
 
 /** @internal */
-export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isThematic: IsThematic): void {
+export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): void {
   // Lookup table
   vert.addGlobal("g_anim_step", VariableType.Vec2);
   vert.addGlobal("g_anim_center", VariableType.Vec2);

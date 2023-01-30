@@ -217,14 +217,14 @@ const computePositionPostlude = `
   return u_proj * pos;
 `;
 
-function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isThematic: IsThematic, isHiliter: boolean, positionType: PositionType): ProgramBuilder {
+function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isHiliter: boolean, positionType: PositionType): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, instanced);
   const builder = new ProgramBuilder(attrMap, { positionType, instanced });
   const vert = builder.vert;
 
   if (animated)
-    addAnimation(vert, true, isThematic);
+    addAnimation(vert, true);
 
   if (shadowable)
     addSolarShadowMap(builder);
@@ -250,7 +250,7 @@ function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable
 
 /** @internal */
 export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified, posType: PositionType): ProgramBuilder {
-  const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No, IsThematic.No, true, posType);
+  const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No, true, posType);
 
   addSurfaceFlags(builder, true, false);
   addTexture(builder, IsAnimated.No, IsThematic.No, false, true);
@@ -474,7 +474,7 @@ export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: b
   });
 }
 
-function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: IsAnimated) {
+function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
   addNormalMatrix(builder.vert);
 
   const quantized = "quantized" === builder.vert.positionType;
@@ -610,7 +610,7 @@ function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
 
 /** @internal */
 export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
-  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isShadowable, flags.isThematic, false, flags.positionType);
+  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isShadowable, false, flags.positionType);
   addShaderFlags(builder);
 
   const feat = flags.featureMode;
@@ -626,7 +626,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
   addSurfaceDiscard(builder, flags);
-  addNormal(builder, flags.isInstanced, flags.isAnimated);
+  addNormal(builder, flags.isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
   builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
