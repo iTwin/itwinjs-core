@@ -45,7 +45,7 @@ jobs:
           name: $(mac_pool)
 
     pool:
-        name: iModelTechMacArm
+      name: iModelTechMacArm
       demands:
         - Agent.OS -equals $(platform)
           # - Agent.Name -equals BuildMacM1Minion52-A

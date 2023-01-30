@@ -19,7 +19,7 @@ jobs:
       "MacOS_${{ parameters.name }}":
         OS: macOS-latest
         platform: Darwin
-        name: $(mac_pool)
+      name: $(mac_pool)
 
   timeoutInMinutes: 120
 
