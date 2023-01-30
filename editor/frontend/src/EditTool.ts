@@ -7,23 +7,18 @@
  */
 
 import { BeDuration } from "@itwin/core-bentley";
-import { IModelApp, IpcApp, ToolRegistry } from "@itwin/core-frontend";
+import { IModelApp, IpcApp } from "@itwin/core-frontend";
 import { editorIpcStrings } from "@itwin/editor-common";
-import { DeleteElementsTool } from "./DeleteElementsTool";
-import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool, RegionBooleanTool } from "./ModifyCurveTools";
-import {
-  ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool,
-} from "./ProjectLocation/ProjectExtentsDecoration";
-import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
-import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
-import {
-  ChamferEdgesTool, CutSolidElementsTool, DeleteSubEntitiesTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool,
-  IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, RoundEdgesTool, SewSheetElementsTool, SpinFacesTool, SubtractSolidElementsTool,
-  SweepAlongPathTool, SweepFacesTool, ThickenSheetElementsTool, UniteSolidElementsTool,
-} from "./SolidModelingTools";
-import { CreateBoxTool, CreateConeTool, CreateCylinderTool, CreateSphereTool, CreateTorusTool, ExtrudeCurveTool, RevolveCurveTool } from "./SolidPrimitiveTools";
-import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
+
 import * as UndoRedoTools from "./UndoRedoTool";
+import * as DeleteElementsTool from "./DeleteElementsTool";
+import * as ModifyCurveTools from "./ModifyCurveTools";
+import * as ProjectLocation from "./ProjectLocation/ProjectExtentsDecoration";
+import * as ProjectGeoLocation from "./ProjectLocation/ProjectGeolocation";
+import * as SketchTools from "./SketchTools";
+import * as SolidModelingTools from "./SolidModelingTools";
+import * as SolidPrimitiveTools from "./SolidPrimitiveTools";
+import * as TransformTools from "./TransformElementsTool";
 
 /** @beta */
 export namespace EditTools {
@@ -86,59 +81,18 @@ export class EditTools {
 
     const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
 
-    IModelApp.tools.registerModule(UndoRedoTools);
+    const tools = IModelApp.tools;
+    tools.registerModule(UndoRedoTools);
 
-    // TEMPORARY: Register tools for testing. To be moved into apps.
-    const tools = [
-      DeleteElementsTool,
-      MoveElementsTool,
-      CopyElementsTool,
-      RotateElementsTool,
-      ProjectLocationShowTool,
-      ProjectLocationHideTool,
-      ProjectLocationCancelTool,
-      ProjectLocationSaveTool,
-      ProjectGeolocationMoveTool,
-      ProjectGeolocationPointTool,
-      ProjectGeolocationNorthTool,
-      CreateArcTool,
-      CreateBCurveTool,
-      CreateCircleTool,
-      CreateEllipseTool,
-      CreateLineStringTool,
-      CreateRectangleTool,
-      BreakCurveTool,
-      ExtendCurveTool,
-      OffsetCurveTool,
-      CreateSphereTool,
-      CreateCylinderTool,
-      CreateConeTool,
-      CreateBoxTool,
-      CreateTorusTool,
-      ExtrudeCurveTool,
-      RevolveCurveTool,
-      RegionBooleanTool,
-      UniteSolidElementsTool,
-      SubtractSolidElementsTool,
-      IntersectSolidElementsTool,
-      SewSheetElementsTool,
-      ThickenSheetElementsTool,
-      CutSolidElementsTool,
-      EmbossSolidElementsTool,
-      ImprintSolidElementsTool,
-      SweepAlongPathTool,
-      LoftProfilesTool,
-      OffsetFacesTool,
-      HollowFacesTool,
-      SweepFacesTool,
-      SpinFacesTool,
-      RoundEdgesTool,
-      ChamferEdgesTool,
-      DeleteSubEntitiesTool,
-    ];
-
-    for (const tool of tools)
-      tool.register(this.namespace);
+    // TODO: TEMPORARY - Register tools for testing. To be moved into apps.
+    tools.registerModule(ProjectLocation);
+    tools.registerModule(ProjectGeoLocation);
+    tools.registerModule(SketchTools);
+    tools.registerModule(SolidModelingTools);
+    tools.registerModule(SolidPrimitiveTools);
+    tools.registerModule(TransformTools);
+    tools.registerModule(DeleteElementsTool);
+    tools.registerModule(ModifyCurveTools);
 
     return namespacePromise;
   }
