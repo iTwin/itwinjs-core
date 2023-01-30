@@ -32,7 +32,7 @@ export interface EditorIpc {
 
   /** Call a method on the currently active `EditCommand` and return its value.
    * @param name the name of the method to invoke.
-   * @para args arguments passed to the method.
+   * @param args arguments passed to the method.
    * @note throws an exception if there is no active `EditCommand`, or if the active EditCommand does not implement the supplied method. */
   callMethod: (name: string, ...args: any[]) => Promise<any>;
 }
