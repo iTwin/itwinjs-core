@@ -12,10 +12,11 @@ import { GL } from "../../../render/webgl/GL";
 import { RenderBuffer } from "../../../render/webgl/RenderBuffer";
 import { TextureHandle } from "../../../render/webgl/Texture";
 import { System } from "../../../render/webgl/System";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FrameBuffer tests", () => {
   // eslint-disable-next-line @typescript-eslint/return-await
-  before(async () => await IModelApp.startup());
+  before(async () => await IModelApp.startup({ localization: new EmptyLocalization() }));
   // eslint-disable-next-line @typescript-eslint/return-await
   after(async () => await IModelApp.shutdown());
 

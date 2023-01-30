@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
-import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
-import { ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider } from "@itwin/appui-react";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
+import { ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, StageUsage } from "@itwin/appui-react";
 import { IModelApp } from "@itwin/core-frontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { Centered } from "@itwin/core-react";

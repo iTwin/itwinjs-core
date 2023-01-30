@@ -22,8 +22,14 @@ export function MapLayersWidget(props: MapLayersWidgetProps) {
   const [notGeoLocatedMsg] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Messages.NotSupported"));
   const activeViewport = useActiveViewport();
   const ref = React.useRef<HTMLDivElement>(null);
+  const [isGeoLocated, setIsGeoLocated] = React.useState(!!activeViewport?.iModel.isGeoLocated);
 
-  if (activeViewport && !!activeViewport?.iModel.isGeoLocated && activeViewport.view.isSpatialView())
+  React.useEffect(() => {
+    const updateIsGeoLocated = () => setIsGeoLocated(!!activeViewport?.iModel.isGeoLocated);
+    return activeViewport?.iModel.onEcefLocationChanged.addListener(updateIsGeoLocated);
+  }, [activeViewport?.iModel]);
+
+  if (activeViewport && isGeoLocated && activeViewport.view.isSpatialView())
     return (
       <div ref={ref} className="map-manager-layer-host">
         <MapLayerManager activeViewport={activeViewport} mapLayerOptions={props.mapLayerOptions} getContainerForClone={() => {

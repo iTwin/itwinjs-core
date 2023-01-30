@@ -10,8 +10,8 @@ import { Id64String } from "@itwin/core-bentley";
 
 /**
  * Data structure for storing element properties information in a simplified format.
- * @see [[Content]] for a format stores all available element property data.
- * @beta
+ * @see [[Content]] for a format that stores all available element property data.
+ * @public
  */
 export interface ElementProperties {
   /** Label of element's ECClass. */
@@ -26,7 +26,7 @@ export interface ElementProperties {
 
 /**
  * Base type for all [[ElementPropertiesItem]] types.
- * @beta
+ * @public
  */
 export interface ElementPropertiesItemBase {
   /** Type of the properties item. */
@@ -35,7 +35,7 @@ export interface ElementPropertiesItemBase {
 
 /**
  * Definition for a category. A category can nest other property items, including categories.
- * @beta
+ * @public
  */
 export interface ElementPropertiesCategoryItem extends ElementPropertiesItemBase {
   /** Type of the properties item. */
@@ -46,7 +46,7 @@ export interface ElementPropertiesCategoryItem extends ElementPropertiesItemBase
 
 /**
  * Base type for all [[ElementPropertiesPropertyItem]] types.
- * @beta
+ * @public
  */
 export interface ElementPropertiesPropertyItemBase extends ElementPropertiesItemBase {
   /** Type of the properties item. */
@@ -55,7 +55,7 @@ export interface ElementPropertiesPropertyItemBase extends ElementPropertiesItem
 
 /**
  * Definition for a primitive property value.
- * @beta
+ * @public
  */
 export interface ElementPropertiesPrimitivePropertyItem extends ElementPropertiesPropertyItemBase {
   /** Type of the properties item. */
@@ -66,7 +66,7 @@ export interface ElementPropertiesPrimitivePropertyItem extends ElementPropertie
 
 /**
  * Base type for all [[ElementPropertiesArrayPropertyItem]] types.
- * @beta
+ * @public
  */
 export interface ElementPropertiesArrayPropertyItemBase extends ElementPropertiesPropertyItemBase {
   /** Type of the properties item. */
@@ -77,7 +77,7 @@ export interface ElementPropertiesArrayPropertyItemBase extends ElementPropertie
 
 /**
  * Definition for a primitives' array property value.
- * @beta
+ * @public
  */
 export interface ElementPropertiesPrimitiveArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
   /** Type of values contained in this array. */
@@ -88,7 +88,7 @@ export interface ElementPropertiesPrimitiveArrayPropertyItem extends ElementProp
 
 /**
  * Definition for a structs' array property value.
- * @beta
+ * @public
  */
 export interface ElementPropertiesStructArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
   /** Type of values contained in this array. */
@@ -99,13 +99,13 @@ export interface ElementPropertiesStructArrayPropertyItem extends ElementPropert
 
 /**
  * Definition for an array property value.
- * @beta
+ * @public
  */
 export type ElementPropertiesArrayPropertyItem = ElementPropertiesPrimitiveArrayPropertyItem | ElementPropertiesStructArrayPropertyItem;
 
 /**
  * Definition for an struct property value.
- * @beta
+ * @public
  */
 export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPropertyItemBase {
   /** Type of the properties item. */
@@ -116,18 +116,18 @@ export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPr
 
 /**
  * Available element property types.
- * @beta
+ * @public
  */
 export type ElementPropertiesPropertyValueType = "primitive" | "array" | "struct";
 
 /**
  * Definition of a property value.
- * @beta
+ * @public
  */
 export type ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | ElementPropertiesArrayPropertyItem | ElementPropertiesStructPropertyItem;
 
 /**
  * Definition of a property item, including a property category.
- * @beta
+ * @public
  */
 export type ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem;

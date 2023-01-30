@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "add optional CodeSpecProperties.scopeSpec.relationship member",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

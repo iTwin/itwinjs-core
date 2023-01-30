@@ -22,7 +22,7 @@ export interface StatusBarLabelIndicatorProps extends Omit<StatusBarIndicatorPro
   /** Indicator label. */
   label?: string;
   /** Side to display label. */
-  labelSide?: StatusBarLabelSide;
+  labelSide?: StatusBarLabelSide; // eslint-disable-line deprecation/deprecation
 }
 
 /** [[StatusBar]] indicator that shows a label with an icon.
@@ -32,7 +32,7 @@ export function StatusBarLabelIndicator(props: StatusBarLabelIndicatorProps) {
   const { className, iconSpec, label, labelSide, ...other } = props;
   const classNames = classnames(
     "uifw-statusbar-labelIndicator",
-    labelSide === StatusBarLabelSide.Right && "uifw-reversed",
+    labelSide === StatusBarLabelSide.Right && "uifw-reversed", // eslint-disable-line deprecation/deprecation
     className,
   );
   return (

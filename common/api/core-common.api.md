@@ -63,8 +63,6 @@ import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
-import { RepositoryStatus } from '@itwin/core-bentley';
-import { RpcInterfaceStatus } from '@itwin/core-bentley';
 import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
@@ -331,7 +329,7 @@ export namespace AreaPattern {
     }
 }
 
-// @beta
+// @public
 export interface AuthorizationClient {
     getAccessToken(): Promise<AccessToken>;
 }
@@ -666,14 +664,11 @@ export type BlobRange = QueryLimit;
 // @public
 export class BoundingSphere {
     constructor(center?: Point3d, radius?: number);
-    // (undocumented)
     center: Point3d;
-    // (undocumented)
     init(center: Point3d, radius: number): void;
-    // (undocumented)
     radius: number;
-    // (undocumented)
-    transformBy(transform: Transform, result: BoundingSphere): BoundingSphere;
+    transformBy(transform: Transform, result?: BoundingSphere): BoundingSphere;
+    transformInPlace(transform: Transform): void;
 }
 
 // @alpha
@@ -1264,20 +1259,36 @@ export namespace CodeScopeSpec {
 export class CodeSpec {
     static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec;
     // @internal
-    static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec;
+    static createFromJson(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties): CodeSpec;
     id: Id64String;
     iModel: IModel;
-    // @beta
+    // @deprecated
     get isManagedWithIModel(): boolean;
     set isManagedWithIModel(value: boolean);
     get isValid(): boolean;
     name: string;
     // @internal
-    properties: any;
+    properties: CodeSpecProperties;
     get scopeReq(): CodeScopeSpec.ScopeRequirement;
     set scopeReq(req: CodeScopeSpec.ScopeRequirement);
     get scopeType(): CodeScopeSpec.Type;
     set scopeType(scopeType: CodeScopeSpec.Type);
+}
+
+// @public
+export interface CodeSpecProperties {
+    // (undocumented)
+    scopeSpec: {
+        type: CodeScopeSpec.Type;
+        fGuidRequired?: boolean;
+        relationship?: string;
+    };
+    // (undocumented)
+    spec?: {
+        isManagedWithDgnDb?: boolean;
+    };
+    // (undocumented)
+    version?: string;
 }
 
 // @public
@@ -1692,6 +1703,7 @@ export namespace ContextRealityModelProps {
 // @public
 export class ContextRealityModels {
     constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel);
+    constructor(args: ContextRealityModelsArgs);
     add(props: ContextRealityModelProps): ContextRealityModel;
     clear(): void;
     delete(model: ContextRealityModel): boolean;
@@ -1701,12 +1713,22 @@ export class ContextRealityModels {
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
+    populate(): void;
     replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
     update(toUpdate: ContextRealityModel, updateProps: Partial<ContextRealityModelProps>): ContextRealityModel;
 }
 
 // @public
+export interface ContextRealityModelsArgs {
+    container: ContextRealityModelsContainer;
+    createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+    deferPopulating?: boolean;
+}
+
+// @public
 export interface ContextRealityModelsContainer {
+    // @internal
+    container?: never;
     contextRealityModels?: ContextRealityModelProps[];
 }
 
@@ -1742,8 +1764,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1900544,
-    Major = 29,
+    Combined = 1966080,
+    Major = 30,
     Minor = 0
 }
 
@@ -2217,6 +2239,8 @@ export class DisplayStyleSettings {
 // @public
 export interface DisplayStyleSettingsOptions {
     createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+    // @internal
+    deferContextRealityModels?: boolean;
 }
 
 // @public
@@ -3058,15 +3082,6 @@ export interface FeatureAppearanceSource {
     getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
-// @internal
-export class FeatureGates {
-    addMonitor(feature: string, monitor: (val: GateValue) => void): () => void;
-    check(feature: string, defaultVal?: GateValue): GateValue;
-    readonly gates: Map<string, GateValue>;
-    onChanged: BeEvent<(feature: string, val: GateValue) => void>;
-    setGate(feature: string, val: GateValue): void;
-}
-
 // @internal (undocumented)
 export class FeatureIndex {
     // (undocumented)
@@ -3355,38 +3370,25 @@ export class Frustum {
     translate(offset: XYAndZ): void;
 }
 
-// @internal
+// @public
 export class FrustumPlanes {
-    constructor(frustum?: Frustum);
-    // (undocumented)
     computeContainment(points: Point3d[], sphere?: BoundingSphere, tolerance?: number): FrustumPlanes.Containment;
-    // (undocumented)
     computeFrustumContainment(box: Frustum, sphere?: BoundingSphere): FrustumPlanes.Containment;
-    // (undocumented)
     containsPoint(point: Point3d, tolerance?: number): boolean;
-    // (undocumented)
-    init(frustum: Frustum): void;
-    // (undocumented)
+    static createEmpty(): FrustumPlanes;
+    static fromFrustum(frustum: Frustum): FrustumPlanes;
+    init(frustum: Frustum): boolean;
     intersectsFrustum(box: Frustum, sphere?: BoundingSphere): boolean;
-    // (undocumented)
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
-    // (undocumented)
     get isValid(): boolean;
-    // (undocumented)
-    get planes(): ClipPlane[] | undefined;
+    get planes(): ClipPlane[];
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace FrustumPlanes {
-    // (undocumented)
-    export function addPlaneFromPoints(planes: ClipPlane[], points: Point3d[], i0: number, i1: number, i2: number, expandPlaneDistance?: number): void;
-    // (undocumented)
     export enum Containment {
-        // (undocumented)
         Inside = 2,
-        // (undocumented)
         Outside = 0,
-        // (undocumented)
         Partial = 1
     }
 }
@@ -3396,9 +3398,6 @@ export interface FunctionalElementProps extends ElementProps {
     // (undocumented)
     typeDefinition?: RelatedElementProps;
 }
-
-// @internal (undocumented)
-export type GateValue = number | boolean | string | undefined;
 
 // @public
 export class GeocentricTransform implements GeocentricTransformProps {
@@ -4298,7 +4297,7 @@ export enum HSVConstants {
 // @internal (undocumented)
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
-// @public
+// @public @deprecated
 export interface HttpServerRequest extends BackendReadable {
     // (undocumented)
     aborted: boolean;
@@ -4350,7 +4349,7 @@ export interface HttpServerRequest extends BackendReadable {
     url?: string;
 }
 
-// @public
+// @public @deprecated
 export interface HttpServerResponse extends BackendWritable {
     // (undocumented)
     send(body?: any): HttpServerResponse;
@@ -4689,8 +4688,11 @@ export interface IModelEncryptionProps {
 
 // @public
 export class IModelError extends BentleyError {
-    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus, message: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: GetMetaDataFunction);
 }
+
+// @public
+export type IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus;
 
 // @public
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
@@ -5762,11 +5764,22 @@ export class NonUniformColor {
     readonly isOpaque: boolean;
 }
 
+// @public
+export enum NormalMapFlags {
+    GreenUp = 1,
+    None = 0
+}
+
 // @beta
 export interface NormalMapParams {
-    greenDown?: boolean;
+    greenUp?: boolean;
     normalMap?: RenderTexture;
     scale?: number;
+}
+
+// @public
+export interface NormalMapProps extends TextureMapProps {
+    NormalFlags?: NormalMapFlags;
 }
 
 // @public
@@ -5852,7 +5865,7 @@ export interface OpenAPIEncoding {
     style?: string;
 }
 
-// @public
+// @public @deprecated
 export interface OpenAPIInfo {
     // (undocumented)
     title: string;
@@ -6482,6 +6495,8 @@ export enum PrimitiveTypeCode {
     DateTime = 769,
     // (undocumented)
     Double = 1025,
+    // (undocumented)
+    IGeometry = 2561,
     // (undocumented)
     Integer = 1281,
     // (undocumented)
@@ -7153,6 +7168,12 @@ export namespace RenderMaterial {
 }
 
 // @public
+export interface RenderMaterialAssetMapsProps {
+    Normal?: NormalMapProps;
+    Pattern?: TextureMapProps;
+}
+
+// @public
 export interface RenderMaterialAssetProps {
     color?: RgbFactorProps;
     diffuse?: number;
@@ -7165,9 +7186,8 @@ export interface RenderMaterialAssetProps {
     HasSpecular?: boolean;
     HasSpecularColor?: boolean;
     HasTransmit?: boolean;
-    Map?: {
-        Pattern?: TextureMapProps;
-    };
+    Map?: RenderMaterialAssetMapsProps;
+    pbr_normal?: number;
     reflect?: number;
     reflect_color?: RgbFactorProps;
     specular?: number;
@@ -7568,8 +7588,6 @@ export interface RepositoryLinkProps extends UrlLinkProps {
     repositoryGuid?: GuidString;
 }
 
-export { RepositoryStatus }
-
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
@@ -7706,7 +7724,7 @@ export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => {
     new (): RpcConfiguration;
 };
 
-// @public
+// @public @deprecated
 export enum RpcContentType {
     // (undocumented)
     Binary = 2,
@@ -7736,7 +7754,7 @@ export class RpcControlChannel {
     static obtain(configuration: RpcConfiguration): RpcControlChannel;
 }
 
-// @public
+// @public @deprecated
 export abstract class RpcControlResponse {
     // (undocumented)
     message: string;
@@ -7770,7 +7788,7 @@ export class RpcDirectRequest extends RpcRequest {
     protected setHeader(name: string, value: string): void;
 }
 
-// @public
+// @public @deprecated
 export enum RpcEndpoint {
     // (undocumented)
     Backend = 1,
@@ -7816,8 +7834,6 @@ export interface RpcInterfaceEndpoints {
 
 // @internal (undocumented)
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
-
-export { RpcInterfaceStatus }
 
 // @internal
 export class RpcInvocation {
@@ -7887,7 +7903,7 @@ export class RpcMultipart {
     static writeValueToForm(form: FormDataCommon, value: RpcSerializedValue): void;
 }
 
-// @public
+// @public @deprecated
 export class RpcNotFoundResponse extends RpcControlResponse {
     // (undocumented)
     message: string;
@@ -7955,7 +7971,7 @@ export class RpcPendingQueue {
     static instance: RpcPendingQueue;
 }
 
-// @public
+// @public @deprecated
 export class RpcPendingResponse extends RpcControlResponse {
     constructor(message?: string);
     message: string;
@@ -7994,7 +8010,7 @@ export abstract class RpcProtocol {
     transferChunkThreshold: number;
 }
 
-// @public
+// @public @deprecated
 export enum RpcProtocolEvent {
     // (undocumented)
     BackendErrorOccurred = 11,
@@ -8217,7 +8233,7 @@ export interface RpcRequestContext {
     serialize: (request: RpcRequest) => Promise<SerializedRpcActivity>;
 }
 
-// @public
+// @public @deprecated
 export enum RpcRequestEvent {
     // (undocumented)
     PendingUpdateReceived = 1,
@@ -8254,7 +8270,7 @@ export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfig
 // @internal
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
-// @public
+// @public @deprecated
 export enum RpcRequestStatus {
     // (undocumented)
     BadGateway = 10,
@@ -8288,7 +8304,7 @@ export enum RpcRequestStatus {
     Unknown = 0
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export namespace RpcRequestStatus {
     // (undocumented)
     export function isTransientError(status: RpcRequestStatus): boolean;
@@ -9879,7 +9895,6 @@ export interface ViewFlagProps {
     shadows?: boolean;
     thematicDisplay?: boolean;
     visEdges?: boolean;
-    // @beta
     wiremesh?: boolean;
 }
 
@@ -9923,7 +9938,6 @@ export class ViewFlags {
     readonly visibleEdges: boolean;
     readonly weights: boolean;
     readonly whiteOnWhiteReversal: boolean;
-    // @beta
     readonly wiremesh: boolean;
     with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags;
     withRenderMode(renderMode: RenderMode): ViewFlags;

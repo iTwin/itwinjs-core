@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import * as React from "react";
+import { expect } from "chai";
 import sinon from "sinon";
 import { UiComponents } from "@itwin/components-react";
 import { EmptyLocalization } from "@itwin/core-common";
@@ -20,9 +20,7 @@ describe("PresentationInstanceFilterProperty", () => {
   const schemaName = "TestSchema";
 
   before(async () => {
-    await NoRenderApp.startup({
-      localization: new EmptyLocalization(),
-    });
+    await NoRenderApp.startup();
     await UiComponents.initialize(new EmptyLocalization());
     await Presentation.initialize();
     Element.prototype.scrollIntoView = sinon.stub();
@@ -40,8 +38,12 @@ describe("PresentationInstanceFilterProperty", () => {
       className: `${schemaName}:${className}`,
       categoryLabel: "TestCategoryLabel",
     });
-    const { container, queryByText } = render(<PresentationInstanceFilterProperty
-      instanceFilterPropertyInfo={testPropertyInfo} />);
+    const { container, queryByText } = render(
+      <PresentationInstanceFilterProperty
+        propertyDescription={testPropertyInfo.propertyDescription}
+        fullClassName={testPropertyInfo.className}
+        categoryLabel={testPropertyInfo.categoryLabel}
+      />);
 
     expect(queryByText(testPropertyInfo.propertyDescription.displayLabel)).to.not.be.null;
     const propertyBadgeSelector = container.querySelector<HTMLInputElement>(".badge");
@@ -52,13 +54,16 @@ describe("PresentationInstanceFilterProperty", () => {
   });
 
   it("renders without badge", () => {
-    const TestPropertyInfoWithoutBadge = createTestInstanceFilterPropertyInfo({
+    const testPropertyInfo = createTestInstanceFilterPropertyInfo({
       className: `${schemaName}:${className}`,
     });
-    const { container, queryByText } = render(<PresentationInstanceFilterProperty
-      instanceFilterPropertyInfo={TestPropertyInfoWithoutBadge} />);
+    const { container, queryByText } = render(
+      <PresentationInstanceFilterProperty
+        propertyDescription={testPropertyInfo.propertyDescription}
+        fullClassName={testPropertyInfo.className}
+      />);
 
-    expect(queryByText(TestPropertyInfoWithoutBadge.propertyDescription.displayLabel)).to.not.be.null;
+    expect(queryByText(testPropertyInfo.propertyDescription.displayLabel)).to.not.be.null;
     expect(container.querySelector<HTMLInputElement>(".badge")).to.be.null;
   });
 });
