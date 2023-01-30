@@ -7,16 +7,15 @@
  */
 
 /** @internal */
-export const editorChannel = "editor";
+export const editorIpcStrings = {
+  channel: "editor",
+  commandBusy: "EditCommandBusy",
+} as const;
 
 /** @beta */
 export interface EditorIpc {
   startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
   callMethod: (name: string, ...args: any[]) => Promise<any>;
-}
-
-/** Thrown when the current EditCommand cannot finish in a timely manner. Frontend Tools should wait and retry. */
-export class EditCommandBusy extends Error {
 }
 
 /** @beta */

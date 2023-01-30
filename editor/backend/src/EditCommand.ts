@@ -8,8 +8,8 @@
 
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
-import { IModelError } from "@itwin/core-common";
-import { EditCommandBusy, EditCommandIpc, editorChannel, EditorIpc } from "@itwin/editor-common";
+import { BackendError, IModelError } from "@itwin/core-common";
+import { EditCommandIpc, EditorIpc, editorIpcStrings } from "@itwin/editor-common";
 
 /** @beta */
 export type EditCommandType = typeof EditCommand;
@@ -41,8 +41,6 @@ export class EditCommand implements EditCommandIpc {
     return { version: this.ctor.version, commandId: this.ctor.commandId };
   }
 
-  public async onCleanup(): Promise<void> { }
-
   // This is only temporary to find subclasses that used to implement this method. It was made async and renamed `requestFinish`.
   private onFinish() { }
 
@@ -53,13 +51,13 @@ export class EditCommand implements EditCommandIpc {
    * potentially showing the returned string to the user.
    */
   public async requestFinish(): Promise<"done" | string> {
-    this.onFinish(); // temporary
+    this.onFinish(); // TODO: temporary, remove
     return "done";
   }
 }
 
 class EditorAppHandler extends IpcHandler implements EditorIpc {
-  public get channelName() { return editorChannel; }
+  public get channelName() { return editorIpcStrings.channel; }
 
   public async startCommand(commandId: string, iModelKey: string, ...args: any[]) {
     await EditCommandAdmin.finishCommand();
@@ -104,7 +102,7 @@ export class EditCommandAdmin {
     if (this._activeCommand) {
       const finished = await this._activeCommand.requestFinish();
       if ("done" !== finished)
-        throw new EditCommandBusy(finished);
+        throw new BackendError(IModelStatus.ServerTimeout, editorIpcStrings.commandBusy, finished);
     }
     this._activeCommand = undefined;
   }

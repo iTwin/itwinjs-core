@@ -132,7 +132,7 @@ export interface EdgeParameterRangeProps {
     uRange: Range1dProps;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface EditCommandIpc {
     // (undocumented)
     ping: () => Promise<{
@@ -148,16 +148,19 @@ export const editorBuiltInCmdIds: {
     cmdSolidModeling: string;
 };
 
-// @internal (undocumented)
-export const editorChannel = "editor";
-
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface EditorIpc {
     // (undocumented)
     callMethod: (name: string, ...args: any[]) => Promise<any>;
     // (undocumented)
     startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
 }
+
+// @internal (undocumented)
+export const editorIpcStrings: {
+    readonly channel: "editor";
+    readonly commandBusy: "EditCommandBusy";
+};
 
 // @alpha (undocumented)
 export interface ElementGeometryCacheFilter {
@@ -448,7 +451,6 @@ export interface TransformSubEntityProps {
     subEntities: SubEntityProps | SubEntityProps[];
     transforms: TransformProps[];
 }
-
 
 // (No @packageDocumentation comment for this package)
 

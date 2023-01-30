@@ -34,8 +34,8 @@ alpha;CutSolidElementsTool
 alpha;DeleteElementsTool 
 alpha;DeleteSubEntitiesTool 
 alpha;DynamicGraphicsProvider
-alpha;EditorOptions
-alpha;EditTools
+beta;EditTools
+beta;EditTools
 alpha;class ElementGeometryCacheTool 
 alpha;ElementGeometryGraphicsProvider
 alpha;EmbossSolidElementsTool 
