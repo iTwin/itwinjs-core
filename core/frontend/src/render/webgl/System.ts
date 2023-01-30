@@ -355,22 +355,14 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
-  public static createContext(canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLContext | undefined {
+  public static createContext(canvas: HTMLCanvasElement, _useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLContext | undefined {
     let contextAttributes: WebGLContextAttributes = { powerPreference: "high-performance" };
     if (undefined !== inputContextAttributes) {
       // NOTE: Order matters with spread operator - if caller wants to override powerPreference, he should be able to.
       contextAttributes = { ...contextAttributes, ...inputContextAttributes };
     }
 
-    // If requested, first try obtaining a WebGL2 context.
-    let context = null;
-    if (useWebGL2)
-      context = canvas.getContext("webgl2", contextAttributes);
-
-    // Fall back to WebGL1 if necessary.
-    if (null === context)
-      context = canvas.getContext("webgl", contextAttributes);
-
+    const context = canvas.getContext("webgl2", contextAttributes);
     return context ?? undefined;
   }
 
