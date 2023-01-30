@@ -43,6 +43,7 @@ describe("ChangeMerging", () => {
     IModelJsFs.copySync(seedFileName, testFileName);
     const upgradedDb = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     createChangeset(upgradedDb);
+    upgradedDb.performCheckpoint();
 
     // Open copies of the seed file.
     const firstFileName = IModelTestUtils.prepareOutputFile("ChangeMerging", "first.bim");
