@@ -43,6 +43,7 @@ export interface SelectClassInfo {
  * Serialized [[SelectClassInfo]] JSON representation
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   selectClassInfo: TClassInfoJSON;
   isSelectPolymorphic: boolean;
@@ -103,7 +104,7 @@ export enum ContentFlags {
 
   /**
    * Each content record additionally has an image id
-   * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 3.x. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   ShowImages = 1 << 1,
 
@@ -122,8 +123,6 @@ export enum ContentFlags {
   /**
    * Set related input keys on [[Item]] objects when creating content. This helps identify which [[Item]] is associated to which
    * given input key at the cost of performance creating those items.
-   *
-   * @beta
    */
   IncludeInputKeys = 1 << 8,
 
@@ -165,6 +164,7 @@ export interface DescriptorJSON {
   classesMap: { [id: string]: CompressedClassInfoJSON };
   connectionId: string;
   inputKeysHash: string;
+  /** @deprecated in 3.x. The attribute is not used anymore. */
   contentOptions: any;
   selectionInfo?: SelectionInfo;
   displayType: string;
@@ -174,10 +174,10 @@ export interface DescriptorJSON {
   sortingFieldName?: string;
   sortDirection?: SortDirection;
   contentFlags: number;
-  /** @deprecated The attribute was replaced with [[fieldsFilterExpression]]. */
+  /** @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]]. */
   filterExpression?: string;
   fieldsFilterExpression?: string;
-  /** @alpha */
+  /** @beta */
   instanceFilter?: InstanceFilterDefinition;
 }
 
@@ -213,14 +213,31 @@ export interface DescriptorOverrides {
 
   /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
-   * @deprecated The attribute was replaced with [[fieldsFilterExpression]].
+   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
    */
   filterExpression?: string;
-  /** [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content */
+  /**
+   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
+   * select fields.
+   *
+   * This is different from [[instanceFilter]] as filtering is applied on the union of all selects,
+   * which removes access to content instance property values. Instead of referencing properties
+   * through `this.PropertyName` alias, the expression should reference them by field names. In cases
+   * when properties field merges multiple properties, this allows applying the filter on all of them
+   * at once. This is useful for filtering table rows by column value, when content is displayed in
+   * table format.
+   */
   fieldsFilterExpression?: string;
   /**
-   * Content instances filter
-   * @alpha
+   * Instances filter that allows filtering content by class, properties of specific class
+   * or properties of instances related to the content instance.
+   *
+   * This is different from [[fieldsFilterExpression]] as filter is applied at a lower level - on
+   * specific select class rather than a union of multiple select classes. This means the filter has
+   * access to properties of that class and they can be referenced using symbols like `this.Property`.
+   * This is useful for filtering instances of specific class.
+   *
+   * @beta
    */
   instanceFilter?: InstanceFilterDefinition;
 }
@@ -251,17 +268,34 @@ export interface DescriptorSource {
   /** Sorting direction */
   readonly sortDirection?: SortDirection;
   /**
-   * Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions)
-   * @deprecated The attribute was replaced with [[fieldsFilterExpression]].
+   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
+   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
    */
-  readonly filterExpression?: string;
-  /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
-  readonly fieldsFilterExpression?: string;
+  filterExpression?: string;
   /**
-   * Content instances filter
-   * @alpha
+   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
+   * select fields.
+   *
+   * This is different from [[instanceFilter]] as filtering is applied on the union of all selects,
+   * which removes access to content instance property values. Instead of referencing properties
+   * through `this.PropertyName` alias, the expression should reference them by field names. In cases
+   * when properties field merges multiple properties, this allows applying the filter on all of them
+   * at once. This is useful for filtering table rows by column value, when content is displayed in
+   * table format.
    */
-  readonly instanceFilter?: InstanceFilterDefinition;
+  fieldsFilterExpression?: string;
+  /**
+   * Instances filter that allows filtering content by class, properties of specific class
+   * or properties of instances related to the content instance.
+   *
+   * This is different from [[fieldsFilterExpression]] as filter is applied at a lower level - on
+   * specific select class rather than a union of multiple select classes. This means the filter has
+   * access to properties of that class and they can be referenced using symbols like `this.Property`.
+   * This is useful for filtering instances of specific class.
+   *
+   * @beta
+   */
+  instanceFilter?: InstanceFilterDefinition;
 }
 
 /**
@@ -275,7 +309,10 @@ export class Descriptor implements DescriptorSource {
   public readonly connectionId?: string;
   /** Hash of the input keys used to create the descriptor */
   public readonly inputKeysHash?: string;
-  /** Extended options used to create the descriptor */
+  /**
+   * Extended options used to create the descriptor.
+   * @deprecated since 3.6. The attribute is not used anymore.
+   */
   public readonly contentOptions: any;
   /** Selection info used to create the descriptor */
   public readonly selectionInfo?: SelectionInfo;
@@ -294,15 +331,32 @@ export class Descriptor implements DescriptorSource {
   /** Sorting direction */
   public sortDirection?: SortDirection;
   /**
-   * Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions)
-   * @deprecated The attribute was replaced with [[fieldsFilterExpression]].
+   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
+   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
    */
   public filterExpression?: string;
-  /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
+  /**
+   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
+   * select fields.
+   *
+   * This is different from [[instanceFilter]] as filtering is applied on the union of all selects,
+   * which removes access to content instance property values. Instead of referencing properties
+   * through `this.PropertyName` alias, the expression should reference them by field names. In cases
+   * when properties field merges multiple properties, this allows applying the filter on all of them
+   * at once. This is useful for filtering table rows by column value, when content is displayed in
+   * table format.
+   */
   public fieldsFilterExpression?: string;
   /**
-   * Content instances filter
-   * @alpha
+   * Instances filter that allows filtering content by class, properties of specific class
+   * or properties of instances related to the content instance.
+   *
+   * This is different from [[fieldsFilterExpression]] as filter is applied at a lower level - on
+   * specific select class rather than a union of multiple select classes. This means the filter has
+   * access to properties of that class and they can be referenced using symbols like `this.Property`.
+   * This is useful for filtering instances of specific class.
+   *
+   * @beta
    */
   public instanceFilter?: InstanceFilterDefinition;
 
@@ -330,9 +384,6 @@ export class Descriptor implements DescriptorSource {
     const fields: FieldJSON<string>[] = this.fields.map((field) => field.toCompressedJSON(classesMap));
     return Object.assign(
       {
-        connectionId: this.connectionId,
-        inputKeysHash: this.inputKeysHash,
-        contentOptions: this.contentOptions,
         displayType: this.displayType,
         contentFlags: this.contentFlags,
         categories: this.categories.map(CategoryDescription.toJSON),
@@ -340,6 +391,10 @@ export class Descriptor implements DescriptorSource {
         selectClasses,
         classesMap,
       },
+      this.connectionId !== undefined && { connectionId: this.connectionId },
+      this.inputKeysHash !== undefined && { inputKeysHash: this.inputKeysHash },
+      // istanbul ignore next
+      this.contentOptions !== undefined && { contentOptions: this.contentOptions }, // eslint-disable-line deprecation/deprecation
       this.sortingField !== undefined && { sortingFieldName: this.sortingField.name },
       this.sortDirection !== undefined && { sortDirection: this.sortDirection },
       this.filterExpression !== undefined && { filterExpression: this.filterExpression }, // eslint-disable-line deprecation/deprecation

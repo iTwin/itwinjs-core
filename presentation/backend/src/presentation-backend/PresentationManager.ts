@@ -13,10 +13,11 @@ import {
   ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions,
   DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, LocalizationHelper,
-  MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized,
-  Ruleset, RulesetVariable, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, WithCancelEvent,
+  FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyLevelDescriptorRequestOptions, HierarchyLevelJSON,
+  HierarchyRequestOptions, InstanceKey, isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition,
+  LocalizationHelper, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError,
+  PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
 import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
@@ -29,7 +30,7 @@ import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStr
 /**
  * Presentation manager working mode.
  * @public
- * @deprecated The attribute is not used by [[PresentationManager]] anymore
+ * @deprecated in 3.x. The attribute is not used by [[PresentationManager]] anymore
  */
 export enum PresentationManagerMode {
   /**
@@ -47,7 +48,7 @@ export enum PresentationManagerMode {
 
 /**
  * Presentation hierarchy cache mode.
- * @beta
+ * @public
  */
 export enum HierarchyCacheMode {
   /**
@@ -62,19 +63,21 @@ export enum HierarchyCacheMode {
   /**
    * Hierarchy cache is created on disk. In this mode everything is cached in memory while creating hierarchy level
    * and persisted in disk cache when whole hierarchy level is created.
+   *
+   * **Note:** This mode is still experimental.
    */
   Hybrid = "hybrid",
 }
 
 /**
  * Configuration for hierarchy cache.
- * @beta
+ * @public
  */
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
 
 /**
  * Base interface for all [[HierarchyCacheConfig]] implementations.
- * @beta
+ * @public
  */
 export interface HierarchyCacheConfigBase {
   mode: HierarchyCacheMode;
@@ -84,7 +87,7 @@ export interface HierarchyCacheConfigBase {
  * Configuration for in-memory hierarchy cache.
  *
  * @see [Memory cache documentation page]($docs/presentation/advanced/Caching.md#memory-cache)
- * @beta
+ * @public
  */
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Memory;
@@ -94,7 +97,7 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
  * Configuration for persistent disk hierarchy cache.
  *
  * @see [Disk cache documentation page]($docs/presentation/advanced/Caching.md#disk-cache)
- * @beta
+ * @public
  */
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Disk;
@@ -109,8 +112,6 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   /**
    * While the cache itself is stored on a disk, there's still a required small in-memory cache.
    * The parameter allows controlling size of that cache. Defaults to `32768000` bytes (32 MB).
-   *
-   * @beta
    */
   memoryCacheSize?: number;
 }
@@ -122,7 +123,7 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
  * alternative for cases when there are lots of simultaneous requests.
  *
  * @see [Hybrid cache documentation page]($docs/presentation/advanced/Caching.md#hybrid-cache)
- * @beta
+ * @public
  */
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Hybrid;
@@ -142,8 +143,6 @@ export interface ContentCacheConfig {
    * Maximum number of content descriptors cached in memory for quicker paged content requests.
    *
    * Defaults to `100`.
-   *
-   * @beta
    */
   size?: number;
 }
@@ -157,7 +156,6 @@ export interface PresentationManagerCachingConfig {
    * Hierarchies-related caching options.
    *
    * @see [Hierarchies cache documentation page]($docs/presentation/advanced/Caching.md#hierarchies-cache)
-   * @beta
    */
   hierarchies?: HierarchyCacheConfig;
 
@@ -175,7 +173,6 @@ export interface PresentationManagerCachingConfig {
    * cache. Defaults to `32768000` bytes (32 MB).
    *
    * @see [Worker connections cache documentation page]($docs/presentation/advanced/Caching.md#worker-connections-cache)
-   * @beta
    */
   workerConnectionCacheSize?: number;
 }
@@ -193,7 +190,7 @@ export interface UnitSystemFormat {
 
 /**
  * Data structure for multiple element properties request response.
- * @alpha
+ * @public
  */
 export interface MultiElementPropertiesResponse {
   total: number;
@@ -211,7 +208,7 @@ export interface PresentationAssetsRootConfig {
   /**
    * Path to `presentation-common` assets.
    *
-   * @deprecated This path is not used anymore
+   * @deprecated in 3.x. This path is not used anymore
    */
   common: string;
 }
@@ -254,7 +251,7 @@ export interface PresentationManagerProps {
    * A list of directories containing application's locale-specific localized
    * string files (in simplified i18next v3 format)
    *
-   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   localeDirectories?: string[];
 
@@ -262,7 +259,7 @@ export interface PresentationManagerProps {
    * Sets the active locale to use when localizing presentation-related
    * strings. It can later be changed through [[PresentationManager.activeLocale]].
    *
-   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   defaultLocale?: string;
 
@@ -286,7 +283,7 @@ export interface PresentationManagerProps {
    * Should schemas preloading be enabled. If true, presentation manager listens
    * for `BriefcaseDb.onOpened` event and force pre-loads all ECSchemas.
    *
-   * @deprecated Use [[PresentationPropsBase.enableSchemasPreload]] instead.
+   * @deprecated in 3.x. Use [[PresentationPropsBase.enableSchemasPreload]] instead.
    */
   enableSchemasPreload?: boolean;
 
@@ -301,7 +298,7 @@ export interface PresentationManagerProps {
    *
    * Defaults to [[PresentationManagerMode.ReadWrite]].
    *
-   * @deprecated The attribute is not used by [[PresentationManager]] anymore
+   * @deprecated in 3.x. The attribute is not used by [[PresentationManager]] anymore
    */
   mode?: PresentationManagerMode; // eslint-disable-line deprecation/deprecation
 
@@ -309,7 +306,7 @@ export interface PresentationManagerProps {
    * The interval (in milliseconds) used to poll for presentation data changes. Only has
    * effect in read-write mode (see [[mode]]).
    *
-   * @alpha
+   * @beta
    */
   updatesPollInterval?: number;
 
@@ -322,7 +319,7 @@ export interface PresentationManagerProps {
    *
    * Set to a falsy value to turn off. `true` for memory-mapping the whole iModel. Number value for memory-mapping the specified amount of bytes.
    *
-   * @alpha
+   * @beta
    */
   useMmap?: boolean | number;
 
@@ -368,7 +365,7 @@ export class PresentationManager {
 
   /**
    * Get / set active locale used for localizing presentation data
-   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   public activeLocale: string | undefined;
 
@@ -434,7 +431,10 @@ export class PresentationManager {
    * @public
    */
   public async getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node[]> {
-    const nodes = await this._detail.getNodes(requestOptions);
+    const serializedNodesJson = await this._detail.getNodes(requestOptions);
+    // eslint-disable-next-line deprecation/deprecation
+    const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
+    const nodes = Node.listFromJSON(nodesJson.nodes);
     return this._localizationHelper.getLocalizedNodes(nodes);
   }
 
@@ -444,6 +444,16 @@ export class PresentationManager {
    */
   public async getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
     return this._detail.getNodesCount(requestOptions);
+  }
+
+  /**
+   * Retrieves hierarchy level descriptor
+   * @beta
+   */
+  public async getNodesDescriptor(requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined> {
+    const response = await this._detail.getNodesDescriptor(requestOptions);
+    const reviver = (key: string, value: any) => key === "" ? Descriptor.fromJSON(value) : value;
+    return JSON.parse(response, reviver);
   }
 
   /**
@@ -464,7 +474,11 @@ export class PresentationManager {
     return this._detail.getFilteredNodePaths(requestOptions);
   }
 
-  /** @beta */
+  /**
+   * Get information about the sources of content when building it for specific ECClasses. Sources involve classes of the primary select instance,
+   * its related instances for loading related and navigation properties.
+   * @public
+   */
   public async getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]> {
     return this._detail.getContentSources(requestOptions);
   }
@@ -510,13 +524,13 @@ export class PresentationManager {
 
   /**
    * Retrieves property data in a simplified format for a single element specified by ID.
-   * @beta
+   * @public
    */
   public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined>;
   /**
    * Retrieves property data in simplified format for multiple elements specified by class or all element.
    * @return An object that contains element count and AsyncGenerator to iterate over properties of those elements in batches of undefined size.
-   * @alpha
+   * @public
    */
   public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse>;
   public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<ElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined | MultiElementPropertiesResponse> {
@@ -592,9 +606,13 @@ export class PresentationManager {
   /**
    * Computes selection set based on provided selection scope.
    * @public
+   * @deprecated in 3.x. Use overload with `ComputeSelectionRequestOptions` parameter.
    */
   public async computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string } & BackendDiagnosticsAttribute): Promise<KeySet>;
-  /** @alpha */
+  /**
+   * Computes selection based on provided element IDs and selection scope.
+   * @public
+   */
   // eslint-disable-next-line @typescript-eslint/unified-signatures
   public async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
   public async computeSelection(requestOptions: ((SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }) | ComputeSelectionRequestOptions<IModelDb>) & BackendDiagnosticsAttribute): Promise<KeySet> {
@@ -636,6 +654,7 @@ export class PresentationManager {
       expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
     };
 
+    // eslint-disable-next-line deprecation/deprecation
     const reviver = (key: string, value: any) => (key === "") ? HierarchyCompareInfo.fromJSON(value) : value;
     return JSON.parse(await this._detail.request(params), reviver);
   }

@@ -6,6 +6,8 @@
  * @module IModelComponents
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import "./SpatialContainmentTree.scss";
 import * as React from "react";
 import { IModelConnection } from "@itwin/core-frontend";
@@ -25,6 +27,7 @@ export const RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset = require("./Sp
 /**
  * Properties for the [[SpatialContainmentTree]] component
  * @public
+ * @deprecated in 3.6. Use 'SpatialContainmentTree' from `@itwin/breakdown-trees-react` package.
  */
 export interface SpatialContainmentTreeProps {
   iModel: IModelConnection;
@@ -42,6 +45,7 @@ export interface SpatialContainmentTreeProps {
 /**
  * Tree which displays and manages models or categories contained in an iModel.
  * @public
+ * @deprecated in 3.6. Use 'SpatialContainmentTree' from `@itwin/breakdown-trees-react` package.
  */
 export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
   const { nodeLoader } = usePresentationTreeNodeLoader({

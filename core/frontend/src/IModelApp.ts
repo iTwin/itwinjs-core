@@ -9,7 +9,7 @@
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const ITWINJS_CORE_VERSION = require("../../package.json").version as string; // require resolves from the lib/{cjs,esm} dir
-const COPYRIGHT_NOTICE = 'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const COPYRIGHT_NOTICE = 'Copyright © 2017-2023 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
@@ -108,7 +108,7 @@ export interface IModelAppOptions {
   accuSnap?: AccuSnap;
   /** If present, supplies the [[Localization]] for this session. Defaults to [ITwinLocalization]($i18n). */
   localization?: Localization;
-  /** If present, supplies the authorization information for various frontend APIs */
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   authorizationClient?: AuthorizationClient;
   /** If present, supplies security options for the frontend. */
   security?: FrontendSecurityOptions;
@@ -219,7 +219,7 @@ export class IModelApp {
    */
   public static readonly onAfterStartup = new BeEvent<() => void>();
 
-  /** Provides authorization information for various frontend APIs */
+  /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public static authorizationClient?: AuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
   public static readonly tools = new ToolRegistry();
@@ -541,7 +541,7 @@ export class IModelApp {
   }
 
   /** Get the user's access token for this IModelApp, or a blank string if none is available.
-   * @note accessTokens expire periodically and are automatically refreshed, if possible. Therefore tokens should not be saved, and the value
+   * @note Access tokens expire periodically and are automatically refreshed, if possible. Therefore tokens should not be saved, and the value
    * returned by this method may change over time throughout the course of a session.
    */
   public static async getAccessToken(): Promise<AccessToken> {
@@ -560,9 +560,9 @@ export class IModelApp {
       return Guid.createValue();
     };
 
-    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => { // eslint-disable-line deprecation/deprecation
       const id = _request.id;
-      const serialized: SerializedRpcActivity = {
+      const serialized: SerializedRpcActivity = { // eslint-disable-line deprecation/deprecation
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,

@@ -3445,14 +3445,14 @@ export class Matrix3d implements BeJSONFunctions {
     static create90DegreeRotationAroundAxis(axisIndex: number): Matrix3d;
     static createCapture(coffs: Float64Array, inverseCoffs?: Float64Array): Matrix3d;
     static createColumns(vectorU: Vector3d, vectorV: Vector3d, vectorW: Vector3d, result?: Matrix3d): Matrix3d;
-    static createColumnsInAxisOrder(axisOrder: AxisOrder, columnA: Vector3d, columnB: Vector3d, columnC: Vector3d | undefined, result?: Matrix3d): Matrix3d;
+    static createColumnsInAxisOrder(axisOrder: AxisOrder, columnA: Vector3d | undefined, columnB: Vector3d | undefined, columnC: Vector3d | undefined, result?: Matrix3d): Matrix3d;
     static createColumnsXYW(vectorU: XAndY, u: number, vectorV: XAndY, v: number, vectorW: XAndY, w: number, result?: Matrix3d): Matrix3d;
     static createDirectionalScale(direction: Vector3d, scale: number, result?: Matrix3d): Matrix3d;
     static createFromQuaternion(quat: Point4d): Matrix3d;
     static createIdentity(result?: Matrix3d): Matrix3d;
     static createPartialRotationVectorToVector(vectorA: Vector3d, fraction: number, vectorB: Vector3d, result?: Matrix3d): Matrix3d | undefined;
-    static createPerpendicularVectorFavorPlaneContainingZ(vector: Vector3d, result?: Vector3d): Vector3d;
-    static createPerpendicularVectorFavorXYPlane(vector: Vector3d, result?: Vector3d): Vector3d;
+    static createPerpendicularVectorFavorPlaneContainingZ(vectorA: Vector3d, result?: Vector3d): Vector3d;
+    static createPerpendicularVectorFavorXYPlane(vectorA: Vector3d, result?: Vector3d): Vector3d;
     static createRigidFromColumns(vectorA: Vector3d, vectorB: Vector3d, axisOrder: AxisOrder, result?: Matrix3d): Matrix3d | undefined;
     static createRigidFromMatrix3d(source: Matrix3d, axisOrder?: AxisOrder, result?: Matrix3d): Matrix3d | undefined;
     static createRigidHeadsUp(vectorA: Vector3d, axisOrder?: AxisOrder, result?: Matrix3d): Matrix3d;
@@ -3503,9 +3503,7 @@ export class Matrix3d implements BeJSONFunctions {
     inverseState: InverseMatrixState;
     isAlmostEqual(other: Matrix3d, tol?: number): boolean;
     isAlmostEqualAllowZRotation(other: Matrix3d, tol?: number): boolean;
-    // (undocumented)
     isAlmostEqualColumn(columnIndex: AxisIndex, other: Matrix3d, tol?: number): boolean;
-    // (undocumented)
     isAlmostEqualColumnXYZ(columnIndex: AxisIndex, ax: number, ay: number, az: number, tol?: number): boolean;
     get isDiagonal(): boolean;
     isExactEqual(other: Matrix3d): boolean;

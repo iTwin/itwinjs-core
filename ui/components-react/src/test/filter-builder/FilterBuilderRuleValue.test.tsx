@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
@@ -26,18 +27,18 @@ describe("PropertyFilterBuilderRuleValue", () => {
   });
 
   it("renders string value", async () => {
-    const {getByDisplayValue} = render(<PropertyFilterBuilderRuleValue
-      value={{valueFormat: PropertyValueFormat.Primitive, value: "Test String"}}
+    const { getByDisplayValue } = render(<PropertyFilterBuilderRuleValue
+      value={{ valueFormat: PropertyValueFormat.Primitive, value: "Test String" }}
       property={defaultProperty}
-      onChange={() => {}}
+      onChange={() => { }}
     />);
     await waitFor(() => getByDisplayValue("Test String"));
   });
 
   it("renders empty value", () => {
-    const {container} = render(<PropertyFilterBuilderRuleValue
+    const { container } = render(<PropertyFilterBuilderRuleValue
       property={defaultProperty}
-      onChange={() => {}}
+      onChange={() => { }}
     />);
 
     const input = container.querySelector<HTMLInputElement>(".iui-input");
@@ -48,7 +49,7 @@ describe("PropertyFilterBuilderRuleValue", () => {
 
   it("calls onChange when value is changed", async () => {
     const spy = sinon.spy();
-    const {container, getByDisplayValue} = render(<PropertyFilterBuilderRuleValue
+    const { container, getByDisplayValue } = render(<PropertyFilterBuilderRuleValue
       property={defaultProperty}
       onChange={spy}
     />);
@@ -56,11 +57,11 @@ describe("PropertyFilterBuilderRuleValue", () => {
     const input = container.querySelector<HTMLInputElement>(".iui-input");
     expect(input).to.not.be.null;
 
-    act(() => { fireEvent.change(input!, {target: {value: "test text"}}); });
+    act(() => { fireEvent.change(input!, { target: { value: "test text" } }); });
     act(() => { fireEvent.focusOut(input!); });
 
     await waitFor(() => getByDisplayValue("test text"));
 
-    expect(spy).to.be.calledOnceWith({valueFormat: PropertyValueFormat.Primitive, value: "test text", displayValue: ""});
+    expect(spy).to.be.calledOnceWith({ valueFormat: PropertyValueFormat.Primitive, value: "test text", displayValue: "" });
   });
 });

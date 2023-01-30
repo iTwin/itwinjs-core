@@ -55,7 +55,7 @@ export class PropsHelper {
     }
     return true;
   }
-  public static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem> {
+  public static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem> { // eslint-disable-line deprecation/deprecation
     // istanbul ignore else
     if (!iconSpec || !React.isValidElement(iconSpec))
       return {};

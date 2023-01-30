@@ -222,15 +222,37 @@ export namespace CodeScopeSpec {
     RelatedElement = 4,
   }
 
-  /** Requirements for how the CodeScope Element is identified.
+  /**
+   * Requirements for how the CodeScope Element is identified.
    * @public
    */
   export enum ScopeRequirement {
-    /** The Code is required to have a valid ElementId as its scope */
+    /** The ElementId of CodeScope element identifies its scope. Used for Codes that are unique only within a single iModel. */
     ElementId = 1,
-    /** The Code is required to have a valid FederationGuid as its scope */
+    /** The FederationGuid of the CodeScope element identifies its scope. Used for Codes that are globally unique. */
     FederationGuid = 2,
   }
+}
+
+/**
+ * The JSON properties of a CodeSpec
+ * @public
+ */
+export interface CodeSpecProperties {
+  scopeSpec: {
+    /** the type of CodeSpec */
+    type: CodeScopeSpec.Type;
+    /** If true, the federationGuid of the scope element identifies the scope, for Codes that are globally unique.
+     * Otherwise, the ElementId of the scopeElement is used, for Codes that are scoped only within a single iModel.
+     */
+    fGuidRequired?: boolean;
+    /** The relationship className (in the form "schema:class"), when `type` is `CodeScopeSpec.Type.RelatedElement` */
+    relationship?: string;
+  };
+  spec?: {
+    isManagedWithDgnDb?: boolean;
+  };
+  version?: string;
 }
 
 /** A [Code Specification]($docs/bis/guide/references/glossary#codespec) captures the rules for encoding and decoding significant business information into
@@ -248,32 +270,16 @@ export class CodeSpec {
   /** The name of this CodeSpec. */
   public name: string;
   /** The JSON properties for this CodeSpec.
-   * > Note: Use the getters and setters instead of accessing this directly.
+   * @note Use the getters and setters instead of accessing this directly.
    * @internal
    */
-  public properties: any;
+  public properties: CodeSpecProperties;
 
-  /** Internal-only constructor. Proper use is to supply `properties` only or `scopeType` and `scopeReq` but not `properties`.
-   */
-  private constructor(iModel: IModel, id: Id64String, name: string, scopeType?: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any) {
+  private constructor(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties) {
     this.iModel = iModel;
     this.id = id;
     this.name = name;
-    if (properties) {
-      this.properties = properties;
-      if (!this.properties.scopeSpec) {
-        this.properties.scopeSpec = {};
-        this.scopeType = CodeScopeSpec.Type.Repository;
-      }
-    } else {
-      this.properties = { scopeSpec: {} };
-      this.scopeType = CodeScopeSpec.Type.Repository;
-    }
-    if (undefined !== scopeType)
-      this.scopeType = scopeType;
-
-    if (undefined !== scopeReq)
-      this.scopeReq = scopeReq;
+    this.properties = properties ?? { scopeSpec: { type: CodeScopeSpec.Type.Repository } };
   }
 
   /** Create a new CodeSpec from the specified parameters
@@ -281,14 +287,18 @@ export class CodeSpec {
    * @see [CodeSpecs.insert]($backend)
    */
   public static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec {
-    return new CodeSpec(iModel, Id64.invalid, name, scopeType, scopeReq, undefined);
+    const props: CodeSpecProperties = { scopeSpec: { type: scopeType } };
+    if (scopeReq)
+      props.scopeSpec.fGuidRequired = scopeReq === CodeScopeSpec.ScopeRequirement.FederationGuid;
+
+    return new CodeSpec(iModel, Id64.invalid, name, props);
   }
 
   /** Create a new CodeSpec directly from JSON. Used internally by the CodeSpecs.load function.
    * @internal
    */
-  public static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec {
-    return new CodeSpec(iModel, id, name, undefined, undefined, properties); // eslint-disable-line deprecation/deprecation
+  public static createFromJson(iModel: IModel, id: Id64String, name: string, properties?: CodeSpecProperties): CodeSpec {
+    return new CodeSpec(iModel, id, name, properties);
   }
 
   /** Will be true if the id of this CodeSpec is valid. */
@@ -298,7 +308,9 @@ export class CodeSpec {
   public get scopeType(): CodeScopeSpec.Type { return this.properties.scopeSpec.type; }
   public set scopeType(scopeType: CodeScopeSpec.Type) { this.properties.scopeSpec.type = scopeType; }
 
-  /** Will be `CodeScopeSpec.ScopeRequirement.FederationGuid` if the scoping element is required to have a FederationGuid or `CodeScopeSpec.ScopeRequirement.ElementId` otherwise (which is the default). */
+  /** Will be `CodeScopeSpec.ScopeRequirement.FederationGuid` if the scoping element is required to have a FederationGuid or
+   * CodeScopeSpec.ScopeRequirement.ElementId` otherwise (the default).
+   */
   public get scopeReq(): CodeScopeSpec.ScopeRequirement {
     return this.properties.scopeSpec.fGuidRequired ? CodeScopeSpec.ScopeRequirement.FederationGuid : CodeScopeSpec.ScopeRequirement.ElementId;
   }
@@ -310,13 +322,10 @@ export class CodeSpec {
   }
 
   /** Will be true if the codes associated with this CodeSpec are managed along with the iModel and false if the codes are managed by an external service.
-   * @beta
+   * @deprecated in 3.6 Use scopeReq instead.
    */
   public get isManagedWithIModel(): boolean {
-    if (this.properties.spec && this.properties.spec.isManagedWithDgnDb !== undefined) {
-      return this.properties.spec.isManagedWithDgnDb;
-    }
-    return true;
+    return this.properties.spec?.isManagedWithDgnDb ?? true;
   }
   public set isManagedWithIModel(value: boolean) {
     if (!this.properties.spec)

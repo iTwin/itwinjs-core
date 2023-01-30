@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { getFieldByLabel, tryGetFieldByLabel } from "../../../Utils";
@@ -35,15 +35,15 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
               // load content for all `bis.SpatialCategory` and `bis.GeometricModel` instances
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["SpatialCategory", "GeometricModel"] },
               handleInstancesPolymorphically: true,
             }],
           }, {
-            ruleType: RuleTypes.ContentModifier,
+            ruleType: "ContentModifier",
             class: { schemaName: "BisCore", className: "Category" },
             calculatedProperties: [{
               label: "Calculated",
@@ -88,20 +88,20 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
               // load content for given input instances
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
             }],
           }, {
-            ruleType: RuleTypes.ContentModifier,
+            ruleType: "ContentModifier",
             requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
             class: { schemaName: "BisCore", className: "ExternalSourceAspect" },
             relatedProperties: [{
               // request to include properties of related ExternalSourceAspect instances
               propertiesSource: {
                 relationship: { schemaName: "BisCore", className: "ElementOwnsMultiAspects" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
                 targetClass: { schemaName: "BisCore", className: "ExternalSourceAspect" },
               },
             }],
@@ -132,15 +132,15 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
               // load content of all `bis.SpatialCategory` instances
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              specType: "ContentInstancesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["SpatialCategory"] },
               handleInstancesPolymorphically: true,
             }],
           }, {
-            ruleType: RuleTypes.ContentModifier,
+            ruleType: "ContentModifier",
             class: { schemaName: "BisCore", className: "SpatialCategory" },
             priority: 1,
             propertyOverrides: [{
@@ -149,7 +149,7 @@ describe("Learning Snippets", () => {
               isDisplayed: false,
             }],
           }, {
-            ruleType: RuleTypes.ContentModifier,
+            ruleType: "ContentModifier",
             class: { schemaName: "BisCore", className: "SpatialCategory" },
             priority: 2,
             propertyOverrides: [{
@@ -184,18 +184,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
               // load content for given input instances
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
             }],
           }, {
-            ruleType: RuleTypes.ContentModifier,
+            ruleType: "ContentModifier",
             class: { schemaName: "BisCore", className: "GeometricElement3d" },
             relatedProperties: [{
               propertiesSource: {
                 relationship: { schemaName: "BisCore", className: "GeometricElement3dIsInCategory" },
-                direction: RelationshipDirection.Forward,
+                direction: "Forward",
               },
               handleTargetClassPolymorphically: true,
             }],
@@ -225,13 +225,13 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
               // load content for given input instances
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
             }],
           }, {
-            ruleType: RuleTypes.ContentModifier,
+            ruleType: "ContentModifier",
             class: { schemaName: "BisCore", className: "GeometricElement3d" },
             calculatedProperties: [{
               label: "Yaw & Pitch & Roll",
@@ -263,13 +263,13 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
               // load content for given input instances
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
             }],
           }, {
-            ruleType: RuleTypes.ContentModifier,
+            ruleType: "ContentModifier",
             class: { schemaName: "BisCore", className: "GeometricElement3d" },
             propertyCategories: [{
               id: "custom-category",
@@ -313,13 +313,13 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
               // load content for given input instances
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
             }],
           }, {
-            ruleType: RuleTypes.ContentModifier,
+            ruleType: "ContentModifier",
             class: { schemaName: "BisCore", className: "GeometricElement3d" },
             propertyOverrides: [{
               // force hide the UserLabel property

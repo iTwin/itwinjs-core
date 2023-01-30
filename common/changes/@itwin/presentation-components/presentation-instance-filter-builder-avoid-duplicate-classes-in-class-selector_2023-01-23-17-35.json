@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Fix duplicate classes displayed in instance filter class selector",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}

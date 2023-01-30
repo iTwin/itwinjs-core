@@ -6,10 +6,9 @@
 
 import * as React from "react";
 import {
-  AbstractWidgetProps, CommonToolbarItem, StagePanelLocation, StagePanelSection,
-  ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState,
-} from "@itwin/appui-abstract";
-import { BackstageManager, ToolbarHelper } from "@itwin/appui-react";
+  BackstageManager, CommonWidgetProps, StagePanelLocation, StagePanelSection, ToolbarHelper, ToolbarItem, ToolbarOrientation,
+  ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState,
+} from "@itwin/appui-react";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../appui/widgets/LayoutWidget";
 import { AppTools } from "./ToolSpecifications";
 import { FrontstageUi2 } from "../appui/frontstages/FrontstageUi2";
@@ -29,7 +28,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   }
 
   private getLeftPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: CommonWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push(
@@ -101,7 +100,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   }
 
   private getRightPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: CommonWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push(
@@ -173,7 +172,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   }
 
   private getTopPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: CommonWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push(
@@ -220,7 +219,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   }
 
   private getBottomPanelWidgets(section?: StagePanelSection | undefined) {
-    const widgets: AbstractWidgetProps[] = [];
+    const widgets: CommonWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
       widgets.push(
@@ -264,7 +263,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
     return widgets;
   }
 
-  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
+  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection | undefined): ReadonlyArray<CommonWidgetProps> {
     const allowedStages = [FrontstageUi2.stageId];
     if (allowedStages.includes(stageId)) {
       switch (location) {
@@ -282,18 +281,18 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
     return [];
   }
 
-  public provideToolbarButtonItems(stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+  public provideToolbarButtonItems(stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): ToolbarItem[] {
     const allowedStages = [FrontstageUi2.stageId];
     if (allowedStages.includes(stageId)) {
       if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
-        const items: CommonToolbarItem[] = [];
+        const items: ToolbarItem[] = [];
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.toggleHideShowItemsCommand, { groupPriority: 3000 }));
         items.push(ToolbarHelper.createToolbarItemFromItemDef(15, AppTools.splitSingleViewportCommandDef, { groupPriority: 3000 }));
         if (!this.toolWidgetDisplayCornerButton)
           items.push(ToolbarHelper.createToolbarItemFromItemDef(20, BackstageManager.getBackstageToggleCommand("icon-bentley-systems"), { groupPriority: 3000 }));
         return items;
       } else if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
-        const items: CommonToolbarItem[] = [];
+        const items: ToolbarItem[] = [];
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.saveContentLayout, { groupPriority: 3000 }));
         items.push(ToolbarHelper.createToolbarItemFromItemDef(15, AppTools.restoreSavedContentLayout, { groupPriority: 3000 }));
         return items;

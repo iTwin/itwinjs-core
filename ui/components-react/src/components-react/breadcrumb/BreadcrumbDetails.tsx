@@ -24,7 +24,7 @@ import { BreadcrumbTreeUtils, DataRowItem, getPropertyRecordAsString } from "./B
 
 /** Properties for the [[BreadcrumbDetails]] component
  * @beta
- * @deprecated
+ * @deprecated in 3.0.
  */
 export interface BreadcrumbDetailsProps extends CommonProps {
   /** Path data object shared by Breadcrumb component */
@@ -50,7 +50,7 @@ interface BreadcrumbDetailsState {
  * A Table containing all children of tree node specified in path.
  * Used in conjunction with [[Breadcrumb]] to see children of current path.
  * @beta
- * @deprecated
+ * @deprecated in 3.0.
  */
 export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, BreadcrumbDetailsState> {
   private _tree!: BeInspireTree<TreeNodeItem>;

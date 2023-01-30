@@ -11,7 +11,7 @@ import {
 } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@itwin/presentation-common";
+import { LabelDefinition, Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { act, cleanup, renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
@@ -349,10 +349,15 @@ describe("usePresentationNodeLoader", () => {
 });
 
 function createNode(label: string): Node {
-  return Node.fromJSON({
-    key: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [], pathFromRoot: [label] },
-    labelDefinition: { displayValue: label, rawValue: label, typeName: "string" },
-  });
+  return {
+    key: {
+      version: 2,
+      type: StandardNodeTypes.ECInstancesNode,
+      instanceKeys: [],
+      pathFromRoot: [label],
+    },
+    label: LabelDefinition.fromLabelString(label),
+  };
 }
 
 function createNodeInput(label: string): TreeModelNodeInput {

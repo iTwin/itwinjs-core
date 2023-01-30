@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapTiledGraphicsProvider, MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -220,6 +220,24 @@ export interface ReadImageBufferArgs {
   upsideDown?: boolean;
 }
 
+/** MapLayer visibility based on its scale range definition.
+ * @beta
+ */
+export interface MapLayerScaleRangeVisibility {
+  /** True if map-layer is part of [[DisplayStyleState]]'s overlay map, otherwise map-layer is part of [[DisplayStyleState]]'s background map
+  * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
+  isOverlay: boolean;
+
+  /** Index of the map-layer in [[DisplayStyleState]]'s background/overlay map
+   * @see [[DisplayStyleState.mapLayerAtIndex]].
+  */
+  index: number;
+
+  /** Scale range visibility value of the map-layer */
+  visibility: MapTileTreeScaleRangeVisibility;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -291,6 +309,11 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
+
+  /** Event indicating when a map-layer scale range visibility change for the current viewport scale.
+ * @beta
+ */
+  public readonly onMapLayerScaleRangeVisibilityChanged = new BeEvent<(layerIndexes: MapLayerScaleRangeVisibility[]) => void>();
 
   /** @internal */
   protected _hasMissingTiles = false;
@@ -790,6 +813,33 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
 
+  /** Return the map-layer scale range visibility for the provided map-layer index.
+   * @param index of the owning map layer.
+   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   * @see [[DisplayStyleState.mapLayerAtIndex]].
+   * @beta
+  */
+  public getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility {
+    const treeRef = ( isOverlay ? this._mapTiledGraphicsProvider?.overlayMap : this._mapTiledGraphicsProvider?.backgroundMap);
+    if (treeRef) {
+      return treeRef.getMapLayerScaleRangeVisibility(index);
+
+    }
+    return MapTileTreeScaleRangeVisibility.Unknown;
+  }
+
+  /** Return a list of map-layers indexes matching a given  MapTile tree Id and a layer imagery tree id.
+   * Note: A imagery tree can be shared for multiple map-layers.
+   * @internal
+   * */
+  public getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[] {
+    if (this._mapTiledGraphicsProvider)
+      return this._mapTiledGraphicsProvider?.getMapLayerIndexesFromIds(mapTreeId, layerTreeId);
+
+    return [];
+
+  }
+
   /** @beta
    * Fully reset a map-layer tile tree; by calling this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
    */
@@ -1067,15 +1117,12 @@ export abstract class Viewport implements IDisposable, TileUser {
       removals.push(view.details.onModelClipGroupsChanged.addListener(() => {
         this.invalidateScene();
       }));
+
       // If a map elevation request is required (only in cases where terrain is not geodetic)
       // then the completion of the request will require synching with the view so that the
       // frustum depth is recalculated correctly.  Register this for removal when the view is detached.
       removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
         this.synchWithView();
-      }));
-
-      removals.push(this.iModel.onDisplayedExtentsExpansion.addListener(() => {
-        this.invalidateController();
       }));
     }
   }
@@ -1927,7 +1974,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       transform.multiplyPoint3d(eyePoint, eyePoint);
       targetPoint.setFrom(eyePoint.plusScaled(zDir, zDir.dotProduct(eyePoint.vectorTo(targetPoint))));
 
-      const status = view.lookAt({eyePoint, targetPoint, upVector: view.getYVector(), lensAngle: view.camera.lens });
+      const status = view.lookAt({ eyePoint, targetPoint, upVector: view.getYVector(), lensAngle: view.camera.lens });
       if (ViewStatus.Success !== status)
         return status;
     } else {
@@ -2489,7 +2536,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param flipVertically If true, the image is flipped along the x-axis.
    * @returns The contents of the viewport within the specified rectangle as a bitmap image, or undefined if the image could not be read.
    * @note By default the image is returned with the coordinate (0,0) referring to the bottom-most pixel. Pass `true` for `flipVertically` to flip it along the x-axis.
-   * @deprecated Use readImageBuffer.
+   * @deprecated in 3.x. Use readImageBuffer.
    */
   public readImage(rect: ViewRect = new ViewRect(1, 1, 0, 0), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
     // eslint-disable-next-line deprecation/deprecation
@@ -2512,6 +2559,28 @@ export abstract class Viewport implements IDisposable, TileUser {
     return this.target.readImageToCanvas();
   }
 
+  /** Used internally by `waitForSceneCompletion`.
+   * @internal
+   */
+  protected hasAdditionalTiles(): boolean {
+    const tilesThisVp = IModelApp.tileAdmin.getTilesForUser(this);
+    const ext = tilesThisVp?.external;
+    if ((ext?.requested ?? 0) > 0)
+      return true;
+    // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
+    for (const vp of this.view.secondaryViewports) {
+      if (vp.numRequestedTiles > 0) {
+        return true;
+      }
+
+      const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
+      if (tiles && tiles.external.requested > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** Returns a Promise that resolves after the contents of this viewport are fully loaded and rendered.
    * This can be useful, for example, when you want to capture an image of the viewport's contents, as in the following code:
    * ```ts
@@ -2532,21 +2601,8 @@ export abstract class Viewport implements IDisposable, TileUser {
 
       haveExternalTexRequests = system.hasExternalTextureRequests;
       haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
-      if (!haveNewTiles) {
-        // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
-        for (const vp of this.view.secondaryViewports) {
-          if (vp.numRequestedTiles > 0) {
-            haveNewTiles = true;
-            break;
-          }
-
-          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
-          if (tiles && tiles.external.requested > 0) {
-            haveNewTiles = true;
-            break;
-          }
-        }
-      }
+      if (!haveNewTiles)
+        haveNewTiles = this.hasAdditionalTiles();
 
       // Since the viewport is not being managed by the ViewManager, we must manually pump the TileAdmin to initiate further tile requests each tick of the tile-wait loop.
       if (haveNewTiles)
@@ -2610,7 +2666,6 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param options Specifies how to query.
    * @param callback Callback to invoke with the results.
    * @note This function may be slow, especially if the features are being queried from screen pixels. Avoid calling it repeatedly in rapid succession.
-   * @beta
    */
   public queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void {
     return queryVisibleFeatures(this, options, callback);
@@ -3012,7 +3067,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined.
-   * @deprecated this was intended for internal use only.
+   * @deprecated in 3.x. this was intended for internal use only.
    */
   public setEventController(controller?: EventController) {
     if (this._evController)
@@ -3495,21 +3550,8 @@ export class ScreenViewport extends Viewport {
         }
 
         let haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
-        if (!haveNewTiles) {
-          // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
-          for (const vp of this.view.secondaryViewports) {
-            if (vp.numRequestedTiles > 0) {
-              haveNewTiles = true;
-              break;
-            }
-
-            const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
-            if (tiles && tiles.external.requested > 0) {
-              haveNewTiles = true;
-              break;
-            }
-          }
-        }
+        if (!haveNewTiles)
+          haveNewTiles = this.hasAdditionalTiles();
 
         if (!haveNewTiles && !system.hasExternalTextureRequests) {
           removeOnViewClose();

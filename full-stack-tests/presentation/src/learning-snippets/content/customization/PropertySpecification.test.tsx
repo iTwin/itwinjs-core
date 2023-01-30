@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import * as React from "react";
+import { expect } from "chai";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   IPropertyDataProvider, PrimitivePropertyValueRenderer, PropertyDataChangeEvent, PropertyValueRendererContext, PropertyValueRendererManager,
   VirtualizedPropertyGridWithDataProvider,
 } from "@itwin/components-react";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
 import { render } from "@testing-library/react";
@@ -43,9 +43,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               propertyOverrides: [{
                 name: "UserLabel",
                 overridesPriority: 1,
@@ -92,9 +92,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               propertyOverrides: [{
                 name: "UserLabel",
                 labelOverride: "Custom Label",
@@ -124,9 +124,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               propertyCategories: [{
                 id: "custom-category",
                 label: "Custom Category",
@@ -164,9 +164,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               propertyOverrides: [{
                 name: "LastMod",
                 isDisplayed: true,
@@ -197,9 +197,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               propertyOverrides: [{
                 name: "UserLabel",
                 isDisplayed: true,
@@ -230,9 +230,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               propertyOverrides: [{
                 name: "CodeValue",
                 renderer: {
@@ -304,9 +304,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               propertyOverrides: [{
                 name: "UserLabel",
                 editor: {
@@ -343,9 +343,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               propertyOverrides: [{
                 name: "UserLabel",
                 isReadOnly: true,
@@ -378,9 +378,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.Content,
+            ruleType: "Content",
             specifications: [{
-              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              specType: "SelectedNodeInstances",
               propertyOverrides: [{
                 name: "UserLabel",
                 priority: 9999,

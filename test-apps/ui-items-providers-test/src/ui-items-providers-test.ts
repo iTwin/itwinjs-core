@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { UiItemsManager } from "@itwin/appui-abstract";
 import { SampleTool } from "./tools/SampleTool";
-import { ReducerRegistryInstance } from "@itwin/appui-react";
+import { ReducerRegistryInstance, UiItemsManager } from "@itwin/appui-react";
 import { GenericLocateTool } from "./tools/GenericLocateTool";
 import { OpenTraceDialogTool } from "./tools/OpenTraceDialogTool";
 import { IModelApp } from "@itwin/core-frontend";

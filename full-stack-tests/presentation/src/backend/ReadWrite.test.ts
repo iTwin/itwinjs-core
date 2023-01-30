@@ -4,26 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
-import { SnapshotDb } from "@itwin/core-backend";
+import { IModelDb, StandaloneDb } from "@itwin/core-backend";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { PresentationManager } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
+import { prepareOutputFilePath } from "../Utils";
 
 describe("ReadWrite", () => {
 
   let manager: PresentationManager;
-  let imodel: SnapshotDb;
-  const testIModelName: string = "assets/datasets/ReadWrite.ibim";
+  let imodel: IModelDb;
 
-  function createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotDb {
-    const seedDb = SnapshotDb.openFile(seedFileName);
-    const testDb = SnapshotDb.createFrom(seedDb, testFileName);
-    seedDb.close();
-    return testDb;
+  function createIModelFromSeed() {
+    const imodelPath = prepareOutputFilePath("ReadWrite.bim");
+    fs.copyFileSync("assets/datasets/Properties_60InstancesWithUrl2.ibim", imodelPath);
+    return StandaloneDb.openFile(imodelPath);
   }
 
   before(async () => {
     await initialize();
+    Logger.setLevel("BeSQLite", LogLevel.Info);
   });
 
   after(async () => {
@@ -32,12 +33,13 @@ describe("ReadWrite", () => {
 
   beforeEach(async () => {
     manager = new PresentationManager();
-    imodel = createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = createIModelFromSeed();
   });
 
   afterEach(async () => {
+    const imodelPath = imodel.pathName;
     imodel.close();
-    fs.unlinkSync(testIModelName);
+    fs.unlinkSync(imodelPath);
     manager.dispose();
   });
 

@@ -258,7 +258,7 @@ export class DisplayTestApp {
         },
         /* eslint-enable @typescript-eslint/naming-convention */
         hubAccess: createHubAccess(configuration),
-        localization: new ITwinLocalization({ detectorOptions: { order: ["htmlTag"]}}),
+        localization: new ITwinLocalization({ detectorOptions: { order: ["htmlTag"] } }),
       },
       localhostIpcApp: {
         socketUrl,
@@ -353,7 +353,7 @@ export class DisplayTestApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await EditTools.initialize({ registerAllTools: true });
+    await EditTools.initialize();
     MapLayersFormats.initialize();
   }
 

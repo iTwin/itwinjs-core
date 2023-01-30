@@ -909,3 +909,12 @@ describe("Angle.dotProductsToHalfAngleTrigValues", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+
+describe("Angle.radiansBetweenVectorsXYZ", () => {
+  it("Angle.radiansBetweenVectorsXYZ", () => {
+    const radians = Angle.radiansBetweenVectorsXYZ(1 / 2, Math.sqrt(3) / 2, 0, -1 / 2, Math.sqrt(3) / 2, 0);
+    const angle = Angle.createRadians(radians);
+    const expectedRadian: number = 60;
+    expect(Geometry.isAlmostEqualOptional(angle.degrees, expectedRadian, Geometry.smallAngleRadians)).equal(true);
+  });
+});

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { PropertyGrid} from "@itwin/components-react";
+import { PropertyGrid } from "@itwin/components-react";
 import { FillCentered, Orientation } from "@itwin/core-react";
 
 import { FeatureInfoDataProvider, MapFeatureInfoDataUpdate, MapFeatureInfoLoadState } from "./FeatureInfoDataProvider";
@@ -64,9 +64,9 @@ export function MapFeatureInfoWidget({ featureInfoOpts }: MapFeatureInfoWidgetPr
     return (<FillCentered><ProgressRadial indeterminate={true}></ProgressRadial></FillCentered>);
   } else if (!hasData) {
     return (<FillCentered><span><i>{noRecordsMessage}</i></span></FillCentered>);
-  } else{
+  } else {
     if (dataProvider.current)
-      return (<PropertyGrid dataProvider={dataProvider.current} orientation={Orientation.Vertical}
+      return (<PropertyGrid dataProvider={dataProvider.current} orientation={Orientation.Vertical} // eslint-disable-line deprecation/deprecation
         isPropertySelectionEnabled={featureInfoOpts?.propertyGridOptions?.isPropertySelectionEnabled} />);
     else
       return (<></>);

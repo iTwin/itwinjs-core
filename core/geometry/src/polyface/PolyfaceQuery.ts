@@ -393,8 +393,8 @@ export class PolyfaceQuery {
     let numNegative = 0;
     const edgeVector = Vector3d.create();
     for (const cluster of manifoldClusters) {
-      const sideA = cluster.at(0);
-      const sideB = cluster.at(1);
+      const sideA = cluster[0];
+      const sideB = cluster[1];
       if (sideA instanceof SortableEdge
         && sideB instanceof SortableEdge
         && source.data.point.vectorIndexIndex(sideA.vertexIndexA, sideA.vertexIndexB, edgeVector)) {

@@ -6,6 +6,8 @@
  * @module IModelComponents
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import "./CategoriesTree.scss";
 import * as React from "react";
 import { IModelApp, IModelConnection, SpatialViewState, ViewManager, Viewport } from "@itwin/core-frontend";
@@ -31,6 +33,7 @@ export const RULESET_CATEGORIES: Ruleset = require("./Categories.json"); // esli
 /**
  * Properties for the [[CategoryTree]] component
  * @public
+ * @deprecated in 3.6. Was moved to `@itwin/tree-widget-react` package.
  */
 export interface CategoryTreeProps {
   /** Flag for accommodating all viewports */
@@ -46,7 +49,7 @@ export interface CategoryTreeProps {
   /** Height of the component */
   height: number;
   /**
-   * Information for tree filtering.
+   * Information for tree filtering.s
    * @alpha
    */
   filterInfo?: VisibilityTreeFilterInfo;
@@ -69,6 +72,7 @@ export interface CategoryTreeProps {
 /**
  * Tree which displays and manages categories contained in an iModel.
  * @public
+ * @deprecated in 3.6. Was moved to `@itwin/tree-widget-react` package.
  */
 export function CategoryTree(props: CategoryTreeProps) {
   const { nodeLoader } = usePresentationTreeNodeLoader({
@@ -147,6 +151,7 @@ async function setViewType(activeView?: Viewport) {
 /**
  * Toggles visibility of categories to show or hide.
  * @alpha
+ * @deprecated in 3.6. Was moved to `@itwin/tree-widget-react` package.
  */
 export async function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider) {
   // istanbul ignore next
@@ -162,6 +167,7 @@ export async function toggleAllCategories(viewManager: ViewManager, imodel: IMod
 /**
  * Gets ids of all categories or categories from filtered data provider.
  * @alpha
+ * @deprecated in 3.6. Was moved to `@itwin/tree-widget-react` package.
  */
 export async function getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider) {
   if (filteredProvider) {

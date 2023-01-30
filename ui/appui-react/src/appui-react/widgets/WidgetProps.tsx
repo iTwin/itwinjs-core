@@ -12,10 +12,10 @@ import { IconProps } from "@itwin/core-react";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
 /** Properties for a [[Widget]] component.
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.5. Props of a deprecated component.
  * @public
  */
-export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps {
+export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps { // eslint-disable-line deprecation/deprecation
   /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
   labelKey?: string;
   /** if set, it is used to define a key that is used to look up a localized string. This value is used only if tooltip is not explicitly set. */
@@ -28,4 +28,12 @@ export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent
   classId?: string | ConfigurableUiControlConstructor;
   /** @alpha */
   preferredPanelSize?: "fit-content";
+}
+
+/** Properties of a Widget.
+ * @beta
+ */
+export interface CommonWidgetProps extends Readonly<AbstractWidgetProps> { // eslint-disable-line deprecation/deprecation
+  /** Id used to uniquely identify the widget. */
+  readonly id: string;
 }

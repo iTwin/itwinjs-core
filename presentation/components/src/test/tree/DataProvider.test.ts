@@ -2,21 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as faker from "faker";
+import equal from "fast-deep-equal";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { PageOptions } from "@itwin/components-react";
+import { PageOptions, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { BeEvent, Logger } from "@itwin/core-bentley";
+import { EmptyLocalization } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CheckBoxState } from "@itwin/core-react";
-import { Node, RegisteredRuleset } from "@itwin/presentation-common";
+import {
+  Descriptor, HierarchyRequestOptions, InstanceFilterDefinition, Node, NodeKey, Paged, RegisteredRuleset, RulesetVariable,
+} from "@itwin/presentation-common";
 import {
   createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
-  PromiseContainer, ResolvablePromise,
+  createTestContentDescriptor, createTestPropertiesContentField, createTestPropertyInfo, PromiseContainer, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
+import { translate } from "../../presentation-components/common/Utils";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
+import {
+  PresentationInfoTreeNodeItem, PresentationTreeNodeItem, PresentationTreeNodeItemFilteringInfo,
+} from "../../presentation-components/tree/PresentationTreeNodeItem";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 
@@ -31,6 +40,7 @@ describe("TreeDataProvider", () => {
 
   before(() => {
     rulesetId = faker.random.word();
+    Presentation.setLocalization(new EmptyLocalization());
     Presentation.setPresentationManager(presentationManagerMock.object);
   });
 
@@ -93,7 +103,7 @@ describe("TreeDataProvider", () => {
       const parentKey = createRandomECInstancesNodeKey();
       const parentNode = createRandomTreeNodeItem(parentKey);
       presentationManagerMock
-        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, parentKey }))
+        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, parentKey, instanceFilter: undefined }))
         .returns(async () => 999)
         .verifiable();
       const actualResult = await provider.getNodesCount(parentNode);
@@ -106,7 +116,7 @@ describe("TreeDataProvider", () => {
       const parentKey = createRandomECInstancesNodeKey();
       const parentNode = createRandomTreeNodeItem(parentKey);
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 123 }, parentKey }))
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 123 }, parentKey, instanceFilter: undefined }))
         .returns(async () => ({ nodes: resultNodes, count: resultNodes.length }))
         .verifiable();
       provider.pagingSize = 123;
@@ -121,11 +131,11 @@ describe("TreeDataProvider", () => {
       const resultContainers = [new PromiseContainer<{ nodes: Node[], count: number }>(), new PromiseContainer<{ nodes: Node[], count: number }>()];
 
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 }, parentKey: parentKeys[0] }))
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 }, parentKey: parentKeys[0], instanceFilter: undefined }))
         .returns(async () => resultContainers[0].promise)
         .verifiable(moq.Times.once());
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 }, parentKey: parentKeys[1] }))
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 }, parentKey: parentKeys[1], instanceFilter: undefined }))
         .returns(async () => resultContainers[1].promise)
         .verifiable(moq.Times.once());
 
@@ -147,7 +157,7 @@ describe("TreeDataProvider", () => {
       const parentKey = createRandomECInstancesNodeKey();
       const parentNode = createRandomTreeNodeItem(parentKey);
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 }, parentKey }))
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 }, parentKey, instanceFilter: undefined }))
         .returns(async () => ({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 }))
         .verifiable(moq.Times.exactly(2));
 
@@ -167,6 +177,20 @@ describe("TreeDataProvider", () => {
       expect(override).to.be.calledOnce;
     });
 
+    it("passes instance filter to presentation manager", async () => {
+      const parentKey = createRandomECInstancesNodeKey();
+      const parentNode = createRandomTreeNodeItem(parentKey);
+      const instanceFilter = applyInstanceFilter(parentNode);
+      presentationManagerMock
+        .setup(async (x) => x.getNodesCount(is({ imodel: imodelMock.object, rulesetOrId: rulesetId, parentKey, instanceFilter })))
+        .returns(async () => 1)
+        .verifiable();
+
+      const actualResult = await provider.getNodesCount(parentNode);
+      expect(actualResult).to.eq(1);
+      presentationManagerMock.verifyAll();
+    });
+
   });
 
   describe("getNodes", () => {
@@ -176,7 +200,7 @@ describe("TreeDataProvider", () => {
       const parentNode = createRandomTreeNodeItem(parentKey);
       const pageOptions: PageOptions = { start: 0, size: faker.random.number() };
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey }))
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter: undefined }))
         .returns(async () => ({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 }))
         .verifiable();
       const actualResult = await provider.getNodes(parentNode, pageOptions);
@@ -192,18 +216,18 @@ describe("TreeDataProvider", () => {
       const resultNodesNonFirstPageContainer = new PromiseContainer<{ nodes: Node[], count: number }>();
 
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined, parentKey: parentKeys[0] }))
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined, parentKey: parentKeys[0], instanceFilter: undefined }))
         .returns(async () => resultNodesFirstPageContainer0.promise)
         .verifiable(moq.Times.once());
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 0 }, parentKey: parentKeys[0] }))
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 0 }, parentKey: parentKeys[0], instanceFilter: undefined }))
         .verifiable(moq.Times.never());
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 1, size: 0 }, parentKey: parentKeys[0] }))
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 1, size: 0 }, parentKey: parentKeys[0], instanceFilter: undefined }))
         .returns(async () => resultNodesNonFirstPageContainer.promise)
         .verifiable(moq.Times.once());
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 1 }, parentKey: parentKeys[1] }))
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 1 }, parentKey: parentKeys[1], instanceFilter: undefined }))
         .returns(async () => resultNodesFirstPageContainer1.promise)
         .verifiable(moq.Times.once());
 
@@ -265,6 +289,46 @@ describe("TreeDataProvider", () => {
       expect(loggerSpy.notCalled).to.be.true;
     });
 
+    it("passes instance filter to presentation manager", async () => {
+      const parentKey = createRandomECInstancesNodeKey();
+      const parentNode = createRandomTreeNodeItem(parentKey);
+      const instanceFilter0 = applyInstanceFilter(parentNode);
+
+      const pageOptions: PageOptions = { start: 0, size: faker.random.number() };
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount(is({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter: instanceFilter0 })))
+        .returns(async () => ({ nodes: [createRandomECInstancesNode()], count: 1 }))
+        .verifiable();
+
+      const actualResult0 = await provider.getNodes(parentNode, pageOptions);
+      expect(actualResult0).to.have.lengthOf(1);
+
+      const instanceFilter1 = applyInstanceFilter(parentNode, "prop2");
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount(is({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter: instanceFilter1 })))
+        .returns(async () => ({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 }))
+        .verifiable();
+
+      const actualResult1 = await provider.getNodes(parentNode, pageOptions);
+      expect(actualResult1).to.have.lengthOf(2);
+
+      presentationManagerMock.verifyAll();
+    });
+
+    it("returns info node if filtered hierarchy level does not have children", async () => {
+      const parentKey = createRandomECInstancesNodeKey();
+      const parentNode = createRandomTreeNodeItem(parentKey);
+      const instanceFilter = applyInstanceFilter(parentNode);
+
+      const pageOptions: PageOptions = { start: 0, size: faker.random.number() };
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount(is({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey, instanceFilter })))
+        .returns(async () => ({ nodes: [], count: 0 }));
+
+      const actualResult = await provider.getNodes(parentNode, pageOptions);
+      expect(actualResult).to.have.lengthOf(1);
+      expect((actualResult[0] as PresentationInfoTreeNodeItem).message).to.eq(translate("tree.no-filtered-children"));
+    });
   });
 
   describe("getFilteredNodes", () => {
@@ -303,7 +367,7 @@ describe("TreeDataProvider", () => {
       });
 
       presentationManagerMock
-        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, diagnostics: { editor: "error", handler: diagnosticsHandler } }))
+        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, diagnostics: { editor: "error", handler: diagnosticsHandler }, instanceFilter: undefined }))
         .returns(async () => 0)
         .verifiable();
       await provider.getNodesCount();
@@ -321,11 +385,70 @@ describe("TreeDataProvider", () => {
       });
 
       presentationManagerMock
-        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, diagnostics: { backendVersion: true, perf: true, dev: "error", handler: diagnosticsHandler } }))
+        .setup(async (x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, diagnostics: { backendVersion: true, perf: true, dev: "error", handler: diagnosticsHandler }, instanceFilter: undefined }))
         .returns(async () => 0)
         .verifiable();
       await provider.getNodesCount();
       presentationManagerMock.verifyAll();
+    });
+
+  });
+
+  describe("filterable nodes", () => {
+    async function loadDescriptor(filteringInfo: PresentationTreeNodeItemFilteringInfo) {
+      if (filteringInfo.descriptor instanceof Descriptor)
+        return filteringInfo.descriptor;
+      return filteringInfo.descriptor();
+    }
+
+    it("sets filtering info if nodes supports filtering", async () => {
+      const nodes = [createRandomECInstancesNode(), createRandomECInstancesNode({ supportsFiltering: true })];
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount(moq.It.isAny()))
+        .returns(async () => ({ nodes, count: 0 }));
+
+      const actualResult = await provider.getNodes();
+      expect(actualResult).to.have.lengthOf(2);
+      expect((actualResult[0] as PresentationTreeNodeItem).filtering).to.be.undefined;
+      expect((actualResult[1] as PresentationTreeNodeItem).filtering).to.not.be.undefined;
+    });
+
+    it("loads node descriptor for filtering", async () => {
+      const nodes = [createRandomECInstancesNode({ supportsFiltering: true })];
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount(moq.It.isAny()))
+        .returns(async () => ({ nodes, count: 0 }));
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, parentKey: nodes[0].key }))
+        .returns(async () => createTestContentDescriptor({ fields: [] }));
+
+      const actualResult = await provider.getNodes();
+      expect(actualResult).to.have.lengthOf(1);
+      const treeItem = actualResult[0] as PresentationTreeNodeItem;
+      expect(treeItem.filtering).to.not.be.undefined;
+      const descriptor = await loadDescriptor(treeItem.filtering!);
+      expect(descriptor).to.not.be.undefined;
+    });
+
+    it("throws if cannot load node descriptor for filtering", async () => {
+      const nodes = [createRandomECInstancesNode({ supportsFiltering: true })];
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesAndCount(moq.It.isAny()))
+        .returns(async () => ({ nodes, count: 0 }));
+
+      presentationManagerMock
+        .setup(async (x) => x.getNodesDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, parentKey: nodes[0].key }))
+        .returns(async () => undefined);
+
+      const actualResult = await provider.getNodes();
+      expect(actualResult).to.have.lengthOf(1);
+      const treeItem = actualResult[0] as PresentationTreeNodeItem;
+      expect(treeItem.filtering).to.not.be.undefined;
+      await expect(loadDescriptor(treeItem.filtering!)).to.be.rejected;
     });
 
   });
@@ -340,7 +463,7 @@ describe("TreeDataProvider", () => {
       };
 
       presentationManagerMock
-        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }))
+        .setup(async (x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined, instanceFilter: undefined }))
         .returns(async () => ({ nodes: [node], count: 1 }));
     }
 
@@ -441,3 +564,33 @@ describe("TreeDataProvider", () => {
   });
 
 });
+
+function is(expected: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>) {
+  return moq.It.is((options: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>) => {
+    return equal(options.imodel, expected.imodel)
+      && equal(options.rulesetOrId, expected.rulesetOrId)
+      && equal(options.parentKey, expected.parentKey)
+      && equal(options.paging, expected.paging)
+      && options.instanceFilter?.expression === expected.instanceFilter?.expression;
+  });
+}
+
+function applyInstanceFilter(node: PresentationTreeNodeItem, propName: string = "prop"): InstanceFilterDefinition {
+  const property = createTestPropertyInfo({ name: propName });
+  const field = createTestPropertiesContentField({ properties: [{ property }], name: property.name });
+  const instanceFilter = `this.${property.name} = NULL`;
+  node.filtering = {
+    descriptor: createTestContentDescriptor({ fields: [] }),
+    active: {
+      filter: {
+        field,
+        operator: PropertyFilterRuleOperator.IsNull,
+      },
+      usedClasses: [],
+    },
+  };
+  return {
+    expression: instanceFilter,
+    selectClassName: property.classInfo.name,
+  };
+}

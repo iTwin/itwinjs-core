@@ -7,14 +7,14 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
+import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
+import { combineFieldNames, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
 import {
-  createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
-  createTestPropertyInfo, createTestSimpleContentField,
+  createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor, createTestNestedContentField,
+  createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
-import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import * as utils from "../../presentation-components/common/Utils";
 
 class TestComponent extends React.Component {
@@ -61,7 +61,7 @@ describe("Utils", () => {
       });
       const nestingField = createTestNestedContentField({ nestedFields: [nestedField] });
       const descriptor = createTestContentDescriptor({ fields: [nestingField] });
-      const result = utils.findField(descriptor, applyOptionalPrefix(nestedField.name, "doesn't exist"));
+      const result = utils.findField(descriptor, combineFieldNames(nestedField.name, "doesn't exist"));
       expect(result).to.be.undefined;
     });
 
@@ -80,7 +80,7 @@ describe("Utils", () => {
       });
       const nestingField = createTestNestedContentField({ nestedFields: [nestedField] });
       const descriptor = createTestContentDescriptor({ fields: [nestingField] });
-      const result = utils.findField(descriptor, applyOptionalPrefix(nestedField.name, nestingField.name));
+      const result = utils.findField(descriptor, combineFieldNames(nestedField.name, nestingField.name));
       expect(result!.name).to.eq(nestedField.name);
     });
 

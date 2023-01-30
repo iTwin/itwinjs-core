@@ -68,7 +68,7 @@ interface ToastState {
 export type ToastStyle = Pick<React.CSSProperties, "width" | "height">;
 
 /** Footer message that animates out to specified element after some timeout. Used in [[Footer]] component.
- * @deprecated Use [ToastMessage]($appui-react) instead
+ * @deprecated in 3.0. Use [ToastMessage]($appui-react) instead
  * @internal
  */
 export class Toast extends React.PureComponent<ToastProps, ToastState> {

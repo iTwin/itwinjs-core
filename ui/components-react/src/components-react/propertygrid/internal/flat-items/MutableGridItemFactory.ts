@@ -16,7 +16,7 @@ import { CategoryRecordsDict, MutableGridCategory } from "./MutableGridCategory"
 
 /**
  * IMutableGridItemFactory interface for creating MutableGridItem objects
- * @beta
+ * @public
  */
 export interface IMutableGridItemFactory {
   createCategorizedProperty: (
@@ -38,7 +38,7 @@ export interface IMutableGridItemFactory {
 
 /**
  * Implementation of IMutableGridItemFactory for creating MutableGridItem objects.
- * @beta
+ * @public
  */
 export class MutableGridItemFactory implements IMutableGridItemFactory {
   protected createPrimitiveProperty(

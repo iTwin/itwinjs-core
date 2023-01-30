@@ -335,7 +335,7 @@ describe("MapManagerSettings", () => {
     toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
 
     const select = component.find(Select);
-    select.props().onChange!("geoid");
+    select.props().onChange!("geoid", "added");
     viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }), moq.Times.once());
     component.unmount();
   });
@@ -350,7 +350,7 @@ describe("MapManagerSettings", () => {
     toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
 
     const select = component.find(Select);
-    select.props().onChange!("geodetic");
+    select.props().onChange!("geodetic", "added");
     viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geodetic } }), moq.Times.once());
     component.unmount();
   });
@@ -365,7 +365,7 @@ describe("MapManagerSettings", () => {
     toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
 
     const select = component.find(Select);
-    select.props().onChange!("ground");
+    select.props().onChange!("ground", "added");
     viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }), moq.Times.once());
     component.unmount();
   });
