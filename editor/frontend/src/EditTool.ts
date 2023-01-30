@@ -82,17 +82,17 @@ export class EditTools {
     const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
 
     const tools = IModelApp.tools;
-    tools.registerModule(UndoRedoTools);
+    tools.registerModule(UndoRedoTools, this.namespace);
 
     // TODO: TEMPORARY - Register tools for testing. To be moved into apps.
-    tools.registerModule(ProjectLocation);
-    tools.registerModule(ProjectGeoLocation);
-    tools.registerModule(SketchTools);
-    tools.registerModule(SolidModelingTools);
-    tools.registerModule(SolidPrimitiveTools);
-    tools.registerModule(TransformTools);
-    tools.registerModule(DeleteElementsTool);
-    tools.registerModule(ModifyCurveTools);
+    tools.registerModule(ProjectLocation, this.namespace);
+    tools.registerModule(ProjectGeoLocation, this.namespace);
+    tools.registerModule(SketchTools, this.namespace);
+    tools.registerModule(SolidModelingTools, this.namespace);
+    tools.registerModule(SolidPrimitiveTools, this.namespace);
+    tools.registerModule(TransformTools, this.namespace);
+    tools.registerModule(DeleteElementsTool, this.namespace);
+    tools.registerModule(ModifyCurveTools, this.namespace);
 
     return namespacePromise;
   }
