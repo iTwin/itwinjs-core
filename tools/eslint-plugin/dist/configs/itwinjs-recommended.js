@@ -378,7 +378,7 @@ module.exports = {
     "@itwin/prefer-get": "error",
     "@itwin/require-basic-rpc-values": "off",
     "@itwin/no-internal-barrel-imports": "error",
-    "@itwin/require-version": "error",
+    "@itwin/require-version-in-deprecation": "error",
   },
   overrides: [
     {

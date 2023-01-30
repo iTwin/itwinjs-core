@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// Writing all of these eslint rules in javascript so we can run them before the build step
+//Custom rule that enforces version and description for @deprecated
 
 "use strict";
 
@@ -25,10 +25,10 @@ module.exports = {
         if (tag.tagName.escapedText == "deprecated") {
 
           if (tag.comment == undefined) {
-            context.report(node, "Please provide version and info about the depercated API");
+            context.report(node, "@deprecated version and description missing");
           }
-          else if (!(/\d+\.(\d|x)/.test(String(tag.comment)))) {
-            context.report(node, "@deprecated version not found");
+          else if (!(/\d+(\.(\d|x))+.{5,}/.test(String(tag.comment)))) {
+            context.report(node, "@deprecated missing version or description.");
           }
         }
       }
