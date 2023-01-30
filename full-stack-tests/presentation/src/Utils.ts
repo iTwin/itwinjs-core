@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as fs from "fs";
 import * as path from "path";
 import { Field } from "@itwin/presentation-common";
 import { IModelJsFs } from "@itwin/core-backend";
