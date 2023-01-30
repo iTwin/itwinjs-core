@@ -162,8 +162,8 @@ export abstract class IpcHandler {
       } catch (err: any) {
         const ret: IpcInvokeReturn = {
           error: {
-            name: (err && typeof err === "object") ? err.constructor.name : "Unknown Error",
-            message: BentleyError.getErrorMessage(err),
+            name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
+            message: err.message ?? BentleyError.getErrorMessage(err),
             errorNumber: err.errorNumber ?? 0,
           },
         };

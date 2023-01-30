@@ -7,7 +7,8 @@
  */
 
 /** Standard stage uses. Allows extension to target ui item to include on a stage without
- *  knowing the stage name defined in the host application.
+ * knowing the stage name defined in the host application.
+ * @deprecated in 3.6. Use [StageUsage]($appui-react) instead.
  * @public
  */
 export enum StageUsage {

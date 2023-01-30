@@ -19,8 +19,8 @@ export interface MapLayersConfig {
 }
 /** Configuration for registering UiItemsProviders for the MapLayers package */
 export interface MapLayersUiProviderConfig {
-  mapLayerProviderOverrides?: UiItemProviderOverrides;
-  featureInfoProviderOverrides?: UiItemProviderOverrides;
+  mapLayerProviderOverrides?: UiItemProviderOverrides; // eslint-disable-line deprecation/deprecation
+  featureInfoProviderOverrides?: UiItemProviderOverrides; // eslint-disable-line deprecation/deprecation
 }
 
 /** MapLayersUI is use when the package is used as a dependency to another app.
@@ -66,14 +66,14 @@ export class MapLayersUI {
     const mlProvider = new MapLayersUiItemsProvider({ ...MapLayersUI._mapLayerOptions });
     const mlProviderId = config?.mapLayerProviderOverrides?.providerId ?? mlProvider.id;
     MapLayersUI._uiItemsProvidersId.push(mlProviderId);
-    UiItemsManager.register(mlProvider, config?.mapLayerProviderOverrides);
+    UiItemsManager.register(mlProvider, config?.mapLayerProviderOverrides); // eslint-disable-line deprecation/deprecation
 
     // Register the FeatureInfo widget only if MapHit was provided.
     if (MapLayersUI._featureInfoOpts?.onMapHit) {
       const fiProvider = new FeatureInfoUiItemsProvider({ ...MapLayersUI._featureInfoOpts });
       const fiProviderId = config?.featureInfoProviderOverrides?.providerId ?? fiProvider.id;
       MapLayersUI._uiItemsProvidersId.push(fiProviderId);
-      UiItemsManager.register(fiProvider,  config?.featureInfoProviderOverrides);
+      UiItemsManager.register(fiProvider,  config?.featureInfoProviderOverrides); // eslint-disable-line deprecation/deprecation
     }
   }
 
@@ -82,7 +82,7 @@ export class MapLayersUI {
     IModelApp.localization.unregisterNamespace(MapLayersUI.localizationNamespace);
 
     MapLayersUI._uiItemsProvidersId.forEach((uiProviderId) => {
-      UiItemsManager.unregister(uiProviderId);
+      UiItemsManager.unregister(uiProviderId); // eslint-disable-line deprecation/deprecation
     });
   }
 

@@ -11,6 +11,8 @@ import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { BackstageItem } from "./BackstageItem";
 
+/* eslint-disable deprecation/deprecation */
+
 /** Arguments of [[BackstageItemsManager.onChanged]] event.
  * @internal
  */
