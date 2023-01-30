@@ -91,22 +91,6 @@ jobs:
           platform: Darwin
           name: $(mac_pool)
           node_version: 12.x
-
-        "Windows_Node_12_22":
-          OS: windows-latest
-          platform: Windows_NT
-          name: $(win_pool)
-          node_version: 12.22.0
-        "Linux_Node_12_22":
-          OS: ubuntu-latest
-          platform: Linux
-          name: $(linux_pool)
-          node_version: 12.22.0
-        "MacOS_Node_12_22":
-          OS: macOS-latest
-          platform: Darwin
-          name: $(mac_pool)
-          node_version: 12.22.0
       maxParallel: 3
 
     pool:
