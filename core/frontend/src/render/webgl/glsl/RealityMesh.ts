@@ -216,7 +216,7 @@ const mixFeatureColor = `
   `;
 
 function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: TextureUnit) {
-  addNormalMatrix(builder.vert, IsInstanced.No);
+  addNormalMatrix(builder.vert);
   builder.vert.addFunction(octDecodeNormal);
   builder.vert.addGlobal("g_hillshadeIndex", VariableType.Float);
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", computeNormal);

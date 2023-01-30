@@ -41,22 +41,7 @@ vec4 computeVertexPosition(vec3 encodedIndex) {
 }
 `;
 
-const computeUnquantizedPosition1 = `
-vec4 computeVertexPosition(vec3 encodedIndex) {
-  vec3 pf[4];
-  pf[0] = g_vertLutData0.xyz;
-  g_featureAndMaterialIndex.x = g_vertLutData0.w;
-  pf[1] = g_vertLutData1.xyz;
-  g_featureAndMaterialIndex.y = g_vertLutData1.w;
-  pf[2] = g_vertLutData2.xyz;
-  g_featureAndMaterialIndex.z = g_vertLutData2.w;
-  pf[3] = g_vertLutData3.xyz;
-  g_featureAndMaterialIndex.w = g_vertLutData3.w;
-  return vec4(decode3Float32(pf), 1.0);
-}
-`;
-
-const computeUnquantizedPosition2 = `
+const computeUnquantizedPosition = `
 vec4 computeVertexPosition(vec3 encodedIndex) {
   uvec3 vux = uvec3(g_vertLutData0.xyz);
   g_featureAndMaterialIndex.x = g_vertLutData0.w;
@@ -95,33 +80,18 @@ function getSamplePosition(type: PositionType): string {
     `;
   }
 
-  if (System.instance.capabilities.isWebGL2) {
-    return `
-    ${prelude}
-      uvec3 vux = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-      tc.x += g_vert_stepX;
-      uvec3 vuy = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-      tc.x += g_vert_stepX;
-      uvec3 vuz = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-      tc.x += g_vert_stepX;
-      uvec3 vuw = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-      uvec3 u = (vuw << 24) | (vuz << 16) | (vuy << 8) | vux;
-      return vec4(uintBitsToFloat(u), 1.0);
-    }`;
-  }
-
   return `
-    ${prelude}
-      vec3 pf[4];
-      pf[0] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
-      tc.x += g_vert_stepX;
-      pf[1] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
-      tc.x += g_vert_stepX;
-      pf[2] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
-      tc.x += g_vert_stepX;
-      pf[3] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
-      return vec4(decode3Float32(pf), 1.0);
-    }`;
+  ${prelude}
+    uvec3 vux = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+    tc.x += g_vert_stepX;
+    uvec3 vuy = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+    tc.x += g_vert_stepX;
+    uvec3 vuz = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+    tc.x += g_vert_stepX;
+    uvec3 vuw = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+    uvec3 u = (vuw << 24) | (vuz << 16) | (vuy << 8) | vux;
+    return vec4(uintBitsToFloat(u), 1.0);
+  }`;
 }
 
 /** @internal */
@@ -192,25 +162,13 @@ export function addModelViewMatrix(vert: VertexShaderBuilder): void {
 }
 
 const computeNormalMatrix = `
-  g_nmx = mat3(u_modelViewN);
-  g_nmx[0][0] *= u_frustumScale.x;
-  g_nmx[1][1] *= u_frustumScale.y;
-`;
-
-const computeNormalMatrix2 = `
   g_nmx = transpose(inverse(mat3(MAT_MV)));
   g_nmx[0][0] *= u_frustumScale.x;
   g_nmx[1][1] *= u_frustumScale.y;
 `;
 
-const computeNormalMatrix1Inst = `
-  g_nmx = mat3(MAT_MV);
-  g_nmx[0][0] *= u_frustumScale.x;
-  g_nmx[1][1] *= u_frustumScale.y;
-`;
-
 /** @internal */
-export function addNormalMatrix(vert: VertexShaderBuilder, instanced: IsInstanced) {
+export function addNormalMatrix(vert: VertexShaderBuilder) {
   vert.addGlobal("g_nmx", VariableType.Mat3);
   vert.addUniform("u_frustumScale", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_frustumScale", (uniform, params) => {
@@ -219,18 +177,7 @@ export function addNormalMatrix(vert: VertexShaderBuilder, instanced: IsInstance
     });
   });
 
-  if (System.instance.capabilities.isWebGL2) {
-    vert.addInitializer(computeNormalMatrix2);
-  } else if (IsInstanced.Yes === instanced) {
-    vert.addInitializer(computeNormalMatrix1Inst);
-  } else {
-    vert.addUniform("u_modelViewN", VariableType.Mat3, (prog) => {
-      prog.addGraphicUniform("u_modelViewN", (uniform, params) => {
-        params.target.uniforms.branch.bindModelViewNTransform(uniform, params.geometry, false);
-      });
-    });
-    vert.addInitializer(computeNormalMatrix);
-  }
+  vert.addInitializer(computeNormalMatrix);
 }
 
 function readVertexData(index: number): string {
@@ -279,16 +226,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addFunction(decodeUint24);
   vert.addFunction(decodeUint16);
 
-  if (unquantized) {
-    if (System.instance.capabilities.isWebGL2) {
-      vert.addFunction(computeUnquantizedPosition2);
-    } else {
-      vert.addFunction(decode3Float32);
-      vert.addFunction(computeUnquantizedPosition1);
-    }
-  } else {
-    vert.addFunction(computeVertexPositionFromLUT);
-  }
+  vert.addFunction(unquantized ? computeUnquantizedPosition : computeVertexPositionFromLUT);
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {

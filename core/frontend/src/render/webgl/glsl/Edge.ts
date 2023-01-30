@@ -293,7 +293,7 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
   addLineWeight(vert);
 
   if (isSilhouette || isIndexed) {
-    addNormalMatrix(vert, instanced);
+    addNormalMatrix(vert);
     addFrustum(builder);
     vert.addFunction(octDecodeNormal);
     vert.set(VertexShaderComponent.CheckForEarlyDiscard, isSilhouette ? checkForSilhouetteDiscardNonIndexed : checkForSilhouetteDiscardIndexed);

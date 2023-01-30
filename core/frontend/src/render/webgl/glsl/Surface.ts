@@ -475,7 +475,7 @@ export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: b
 }
 
 function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: IsAnimated) {
-  addNormalMatrix(builder.vert, instanced);
+  addNormalMatrix(builder.vert);
 
   const quantized = "quantized" === builder.vert.positionType;
   builder.vert.addFunction(octDecodeNormal);
