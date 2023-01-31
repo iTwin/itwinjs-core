@@ -15,7 +15,7 @@ import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChangeSummaryManager,
-  ChannelRootAspect, ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
+  ChannelRootAspect, ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSchemaXmlContext, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
   ElementRefersToElements, ElementUniqueAspect, Entity, EntityReferences, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
@@ -1148,6 +1148,17 @@ export class IModelTransformer extends IModelExportHandler {
     this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir, schemaFileName);
   }
 
+  private _makeLongNameResolvingSchemaCtx(): ECSchemaXmlContext {
+    const result = new ECSchemaXmlContext();
+    result.setSchemaLocater((key) => {
+      const match = this._longNamedSchemasMap.get(key.name);
+      if (match !== undefined)
+        return path.join(this._schemaExportDir, match);
+      return undefined;
+    });
+    return result;
+  }
+
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
@@ -1162,7 +1173,10 @@ export class IModelTransformer extends IModelExportHandler {
       if (exportedSchemaFiles.length === 0)
         return;
       const schemaFullPaths = exportedSchemaFiles.map((s) => path.join(this._schemaExportDir, s));
-      return await this.targetDb.importSchemas(schemaFullPaths);
+      const maybeLongNameResolvingSchemaCtx = this._longNamedSchemasMap.size > 0
+        ? this._makeLongNameResolvingSchemaCtx()
+        : undefined;
+      return await this.targetDb.importSchemas(schemaFullPaths, { ecSchemaXmlContext: maybeLongNameResolvingSchemaCtx });
     } finally {
       IModelJsFs.removeSync(this._schemaExportDir);
       this._longNamedSchemasMap.clear();

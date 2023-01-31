@@ -51,6 +51,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
 
 // spell:ignore fontid fontmap
 
@@ -145,6 +146,18 @@ export interface LockControl {
    * Release all locks currently held by this Briefcase from the lock server.
    */
   releaseAllLocks(): Promise<void>;
+}
+
+/**
+ * Options for the importing of schemas
+ * @public
+ */
+export interface ImportSchemasOptions {
+  /**
+   * An [[ECSchemaXmlContext]] to use instead of building a default one.
+   * This can be useful in rare cases where custom schema location logic is necessary
+   */
+  ecSchemaXmlContext?: ECSchemaXmlContext;
 }
 
 /** A null-implementation of LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
@@ -783,13 +796,19 @@ export abstract class IModelDb extends IModel {
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param schemaFileName  array of Full paths to ECSchema.xml files to be imported.
+   * @param {ImportSchemasOptions} options - options during schema import.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * @see querySchemaVersion
    */
-  public async importSchemas(schemaFileNames: LocalFileName[]): Promise<void> {
+  public async importSchemas(schemaFileNames: LocalFileName[], options?: ImportSchemasOptions): Promise<void> {
     if (this.isSnapshot || this.isStandalone) {
-      const status = this.nativeDb.importSchemas(schemaFileNames);
+      const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
+      const nativeOptions: IModelJsNative.ImportSchemasOptions | undefined
+        = maybeCustomNativeContext
+          ? { ecSchemaXmlContext: maybeCustomNativeContext }
+          : undefined;
+      const status = this.nativeDb.importSchemas(schemaFileNames, nativeOptions);
       if (DbResult.BE_SQLITE_OK !== status)
         throw new IModelError(status, "Error importing schema");
       this.clearCaches();
