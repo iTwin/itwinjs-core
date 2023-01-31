@@ -1138,12 +1138,13 @@ export class IModelTransformer extends IModelExportHandler {
    * the target iModel when it is exported from the source iModel. */
   public override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
     const ext = ".ecschema.xml";
-    let schemaFileName = schema.name;
+    let schemaFileName = schema.name + ext;
     // many file systems have a max file-name/path-segment size of 255
-    if (schema.name.length + ext.length > 255) {
-      // this name should be well under 255 characters since the longest possible utf8 string representation of a number has 24 chars
+    if (schemaFileName.length > 255) {
+      // this name should be well under 255 characters since JavaScript stringifies large floating point numbers
+      // to scientific notation
       schemaFileName = `SchemaNameWasTooLong_${this._longNamedSchemasMap.size}${ext}`;
-      this._longNamedSchemasMap.set(schemaFileName, schema.name);
+      this._longNamedSchemasMap.set(schema.name, schemaFileName);
     }
     this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir, schemaFileName);
   }
