@@ -7,41 +7,18 @@
 
 "use strict";
 
-const { getParserServices } = require("./utils/parser");
-const ts = require("typescript");
-
 module.exports = {
   create(context) {
-
-    const parserServices = getParserServices(context);
-
-    function checkJsDoc(declaration, node) {
-      let tags = ts.getJSDocTags(declaration);
-
-      if (!tags || tags.length == 0) {
-        return;
-      }
-      for (let tag of tags) {
-        if (tag.tagName.escapedText == "deprecated") {
-
-          if (tag.comment == undefined) {
-            context.report(node, "@deprecated version and description missing");
-          }
-          else if (!(/\d+(\.(\d|x))+.{5,}/.test(String(tag.comment)))) {
-            context.report(node, "@deprecated missing version or description.");
+    return {
+      Program(node) {
+        for (let comment of node.comments) {
+          if (/@deprecated/.test(comment.value)) {
+            if (!(/\d+(\.(\d|x))+.{5,}/.test(comment.value))) {
+              context.report(comment, "@deprecated in Major.minor format followed by deprecation reason and/or alternative API usage required");
+            }
           }
         }
       }
     }
-
-    return {
-      ExportNamedDeclaration(node) {
-        const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
-        if (!tsCall)
-          return;
-        checkJsDoc(tsCall, node);
-      }
-    }
-
   }
 }
