@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Undeprecate RpcPendingResponse and RpcNotFoundResponse\"",
+      "comment": "",
       "type": "none"
     }
   ],
