@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import * as fs from "fs";
 import * as path from "path";
 import * as Semver from "semver";
 import * as sinon from "sinon";
@@ -2022,6 +2023,71 @@ describe("IModelTransformer", () => {
     expect(noSystemSchemasTransformer.exporter.wantSystemSchemas).to.be.false;
     await noSystemSchemasTransformer.processSchemas();
     noSystemSchemasTransformer.dispose();
+  });
+
+  it.only("handles long schema names and references to them (on linux)", async function () {
+    if (process.platform !== "linux") {
+      this.skip();
+    }
+
+    const longSchemaName = `ThisSchemaIs${"Long".repeat(100)}`;
+    // most linux file systems have a path-segment/file-name length limit of 255 bytes
+    assert(Buffer.from(longSchemaName).byteLength > 255);
+    expect(() => fs.writeFileSync(longSchemaName, "")).to.throw(/too long/);
+
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "LongSchemaRef.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRef" } });
+
+    const longSchema = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="${longSchemaName}" alias="ls" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="units" version="01.00" alias="u"/>
+      </ECSchema>
+    `;
+
+    const reffingSchemaName = "Reffing";
+    const reffingSchema = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="${reffingSchemaName}" alias="refg" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="${longSchemaName}" version="01.00" alias="ls" />
+      </ECSchema>
+    `;
+
+    await sourceDb.importSchemaStrings([longSchema, reffingSchema]);
+    sourceDb.saveChanges();
+
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRefTarget1.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRefTarget1" } });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+
+    let schemaExportDir!: string;
+    let exportedSchemas!: string[];
+    let outOfOrderExportedSchemas!: string[];
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const unboundOriginalExportSchemas = transformer.exporter.exportSchemas;
+
+    try {
+      sinon.replace(transformer.exporter, "exportSchemas", async function (this: IModelExporter) {
+        await unboundOriginalExportSchemas.call(this);
+        // eslint-disable-next-line @typescript-eslint/dot-notation
+        schemaExportDir = transformer["_schemaExportDir"];
+        exportedSchemas = fs.readdirSync(schemaExportDir);
+        assert(exportedSchemas.length === 3);
+        const reffingSchemaFile = `${reffingSchemaName}.ecschema.xml`;
+        assert(exportedSchemas.includes(reffingSchemaFile));
+        // make sure the referencing schema is first, so it is imported first, and the schema locator is forced
+        // to look for its references (like the long name schema) that haven't been imported yet
+        outOfOrderExportedSchemas = [reffingSchemaFile, ...exportedSchemas.filter((s) => s !== reffingSchema)];
+      });
+
+      // force import references out of order to make sure we hit an issue if schema locator can't find things
+      sinon.replace(IModelJsFs, "readdirSync", () => outOfOrderExportedSchemas);
+
+      await transformer.processSchemas();
+    } finally {
+      transformer.dispose();
+      sinon.restore();
+    }
   });
 
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
