@@ -1132,23 +1132,19 @@ export class IModelTransformer extends IModelExportHandler {
     return Semver.gt(`${schemaKey.version.read}.${schemaKey.version.write}.${schemaKey.version.minor}`, Schema.toSemverString(versionInTarget));
   }
 
-  private uniqueShortName(name: string, maxLen: number, suffix = ""): string {
-    const hashLen = 6;
-    const hashSep = "_";
-    const calcHash = (_s: string) => Math.random().toString();
-    const nameSegmentMax = maxLen - (suffix.length + hashSep.length + hashLen);
-    const result = name.length > nameSegmentMax
-      ? name.slice(0, nameSegmentMax) + calcHash(name) + suffix
-      : name + suffix;
-    return result;
-  }
+  private _longNamedSchemasMap = new Map<string, string>();
 
   /** Override of [IModelExportHandler.onExportSchema]($transformer) that serializes a schema to disk for [[processSchemas]] to import into
    * the target iModel when it is exported from the source iModel. */
   public override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
+    const ext = ".ecschema.xml";
+    let schemaFileName = schema.name;
     // many file systems have a max file-name/path-segment size of 255
-    // FIXME: check if it's possible to have non ascii characters in schema names
-    const schemaFileName = this.uniqueShortName(schema.name, 255, ".ecschema.xml");
+    if (schema.name.length + ext.length > 255) {
+      // this name should be well under 255 characters since the longest possible utf8 string representation of a number has 24 chars
+      schemaFileName = `SchemaNameWasTooLong_${this._longNamedSchemasMap.size}${ext}`;
+      this._longNamedSchemasMap.set(schemaFileName, schema.name);
+    }
     this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir, schemaFileName);
   }
 
@@ -1160,6 +1156,7 @@ export class IModelTransformer extends IModelExportHandler {
     // we do not need to initialize for this since no entities are exported
     try {
       IModelJsFs.mkdirSync(this._schemaExportDir);
+      this._longNamedSchemasMap.clear();
       await this.exporter.exportSchemas();
       const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
       if (exportedSchemaFiles.length === 0)
@@ -1168,6 +1165,7 @@ export class IModelTransformer extends IModelExportHandler {
       return await this.targetDb.importSchemas(schemaFullPaths);
     } finally {
       IModelJsFs.removeSync(this._schemaExportDir);
+      this._longNamedSchemasMap.clear();
     }
   }
 
