@@ -80,7 +80,7 @@ function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
   // this algorithm on low-end hardware.
 
   // Finally, the application can put the viewport into "fadeout mode", which explicitly enables flat alpha weight in order to de-emphasize transparent geometry.
-  const maxRenderType = System.instance.capabilities.maxRenderType;
+  const maxRenderType = System.instance.maxRenderType;
   let flatAlphaWeight = RenderType.TextureUnsignedByte === maxRenderType || params.target.isFadeOutActive;
   if (!flatAlphaWeight) {
     const surface = params.geometry.asSurface;

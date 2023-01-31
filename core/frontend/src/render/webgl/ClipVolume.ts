@@ -62,7 +62,7 @@ class ClipPlanesBuffer {
     this._clips = clips;
     this.numRows = numRows;
 
-    if (System.instance.capabilities.supportsTextureFloat)
+    if (System.instance.supportsTextureFloat)
       this._append = (value: number) => this.appendFloat(value);
     else
       this._append = (value: number) => this.appendEncodedFloat(value);

@@ -141,7 +141,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     assert(undefined === this.accumulation);
 
     let pixelDataType: GL.Texture.DataType = GL.Texture.DataType.UnsignedByte;
-    switch (System.instance.capabilities.maxRenderType) {
+    switch (System.instance.maxRenderType) {
       case RenderType.TextureFloat: {
         pixelDataType = GL.Texture.DataType.Float;
         break;
@@ -426,10 +426,10 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     this.volClassCopyZ = SingleTexturedViewportQuadGeometry.createGeometry(depth.getHandle()!, TechniqueId.VolClassCopyZ);
     this.volClassSetBlend = VolumeClassifierGeometry.createVCGeometry(depth.getHandle()!);
     this.volClassBlend = SingleTexturedViewportQuadGeometry.createGeometry(textures.volClassBlend!.getHandle()!, TechniqueId.VolClassBlend);
-    if (!System.instance.capabilities.supportsFragDepth)
+    if (!System.instance.supportsFragDepth)
       this.volClassCopyZWithPoints = ScreenPointsGeometry.createGeometry(width, height, depth.getHandle()!);
     return undefined !== this.volClassColorStencil && undefined !== this.volClassCopyZ && undefined !== this.volClassSetBlend && undefined !== this.volClassBlend
-      && (System.instance.capabilities.supportsFragDepth || undefined !== this.volClassCopyZWithPoints);
+      && (System.instance.supportsFragDepth || undefined !== this.volClassCopyZWithPoints);
   }
 
   public disableVolumeClassifier(): void {
@@ -438,7 +438,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       this.volClassCopyZ = dispose(this.volClassCopyZ);
       this.volClassSetBlend = dispose(this.volClassSetBlend);
       this.volClassBlend = dispose(this.volClassBlend);
-      if (!System.instance.capabilities.supportsFragDepth)
+      if (!System.instance.supportsFragDepth)
         this.volClassCopyZWithPoints = dispose(this.volClassCopyZWithPoints);
     }
   }
@@ -679,7 +679,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   }
 
   public static create(target: Target): SceneCompositor {
-    return System.instance.capabilities.supportsDrawBuffers ? new MRTCompositor(target) : new MPCompositor(target);
+    return System.instance.supportsDrawBuffers ? new MRTCompositor(target) : new MPCompositor(target);
   }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
@@ -836,9 +836,9 @@ abstract class Compositor extends SceneCompositor {
     const height = rect.height;
     const includeOcclusion = this.target.wantAmbientOcclusion;
     const wantVolumeClassifier = (undefined !== this.target.activeVolumeClassifierProps);
-    let wantAntialiasSamples = this.target.antialiasSamples <= 1 || !System.instance.capabilities.supportsDrawBuffers ? 1 : this.target.antialiasSamples;
-    if (wantAntialiasSamples > System.instance.capabilities.maxAntialiasSamples)
-      wantAntialiasSamples = System.instance.capabilities.maxAntialiasSamples;
+    let wantAntialiasSamples = this.target.antialiasSamples <= 1 || !System.instance.supportsDrawBuffers ? 1 : this.target.antialiasSamples;
+    if (wantAntialiasSamples > System.instance.maxAntialiasSamples)
+      wantAntialiasSamples = System.instance.maxAntialiasSamples;
     const changeAntialiasSamples = (this._antialiasSamples > 1 && wantAntialiasSamples > 1 && this._antialiasSamples !== wantAntialiasSamples);
 
     // If not yet initialized, or dimensions changed, or antialiasing changed the number of samples, initialize.
@@ -911,7 +911,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Allocate or free volume classifier-related resources if necessary.  Make sure that we have depth/stencil.
     if (wantVolumeClassifier !== this._haveVolumeClassifier) {
-      if (wantVolumeClassifier && DepthType.TextureUnsignedInt24Stencil8 === System.instance.capabilities.maxDepthType) {
+      if (wantVolumeClassifier && DepthType.TextureUnsignedInt24Stencil8 === System.instance.maxDepthType) {
         this._vcAltDepthStencil = System.instance.createDepthBuffer(width, height) as TextureHandle;
         if (undefined !== this._depthMS)
           this._vcAltDepthStencilMS = System.instance.createDepthBuffer(width, height, this._antialiasSamples) as TextureHandle;
@@ -1522,7 +1522,7 @@ abstract class Compositor extends SceneCompositor {
       fbStack.execute(volClassBlendFbo, true, this.useMsBuffers, () => {
         this.target.pushState(this.target.decorationsState);
         System.instance.applyRenderState(this._vcCopyZRenderState!);
-        if (System.instance.capabilities.supportsFragDepth)
+        if (System.instance.supportsFragDepth)
           this.target.techniques.draw(getDrawParams(this.target, this._geom.volClassCopyZ!));  // This method uses the EXT_frag_depth extension
         else
           this.target.techniques.draw(getDrawParams(this.target, this._geom.volClassCopyZWithPoints!)); // This method draws GL_POINTS (1 per pixel) to set Z in vertex shader

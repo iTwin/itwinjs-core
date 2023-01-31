@@ -144,7 +144,7 @@ export function addClipping(prog: ProgramBuilder) {
 
   addModelViewMatrix(vert);
 
-  if (System.instance.capabilities.supportsTextureFloat) {
+  if (System.instance.supportsTextureFloat) {
     frag.addFunction(getClipPlaneFloat);
   } else {
     frag.addFunction(unpackFloat);

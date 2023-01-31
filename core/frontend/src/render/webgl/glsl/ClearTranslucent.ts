@@ -24,7 +24,7 @@ export function createClearTranslucentProgram(context: WebGL2RenderingContext): 
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
-  if (System.instance.capabilities.supportsMRTTransparency) {
+  if (System.instance.supportsMRTTransparency) {
     frag.addDrawBuffersExtension(2);
     frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
   } else {

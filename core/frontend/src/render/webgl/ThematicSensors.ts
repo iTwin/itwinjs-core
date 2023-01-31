@@ -57,7 +57,7 @@ export abstract class ThematicSensors implements WebGLDisposable {
         target.plan.thematic.sensorSettings.distanceCutoff);
     }
 
-    const obj = System.instance.capabilities.supportsTextureFloat ? FloatSensors.createFloat(target, range, sensors) : PackedSensors.createPacked(target, range, sensors);
+    const obj = System.instance.supportsTextureFloat ? FloatSensors.createFloat(target, range, sensors) : PackedSensors.createPacked(target, range, sensors);
     obj._update(obj.target.uniforms.frustum.viewMatrix);
     return obj;
   }

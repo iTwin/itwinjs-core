@@ -45,8 +45,7 @@ describe("FrameBuffer tests", () => {
     if (!IModelApp.hasRenderSystem)
       return;
 
-    const caps: Capabilities = System.instance.capabilities;
-    if (caps.maxColorAttachments < 2) {
+    if (System.instance.maxColorAttachments < 2) {
       return;
     }
 
@@ -77,8 +76,7 @@ describe("FrameBuffer tests", () => {
     if (!IModelApp.hasRenderSystem)
       return;
 
-    const caps: Capabilities = System.instance.capabilities;
-    if (caps.maxColorAttachments < 2) {
+    if (System.instance.maxColorAttachments < 2) {
       return;
     }
 

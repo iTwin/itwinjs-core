@@ -279,7 +279,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGL2RenderingContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
-  public readonly capabilities: Capabilities;
+  private readonly _capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
   public readonly glTimer: GLTimer;
   private readonly _textureBindings: TextureBinding[] = [];
@@ -320,13 +320,34 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this._screenSpaceEffects;
   }
 
-  public override get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
-  public override get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
-  public override get supportsCreateImageBitmap(): boolean { return this.capabilities.supportsCreateImageBitmap; }
+  public override get maxTextureSize(): number { return this._capabilities.maxTextureSize; }
+  public override get supportsInstancing(): boolean { return this._capabilities.supportsInstancing; }
+  public override get supportsCreateImageBitmap(): boolean { return this._capabilities.supportsCreateImageBitmap; }
+  public get supportsDrawBuffers() { return this._capabilities.supportsDrawBuffers; }
+  public get maxRenderType() { return this._capabilities.maxRenderType; }
+  public get canRenderDepthWithoutColor() { return this._capabilities.canRenderDepthWithoutColor; }
+  public get supportsTextureFloatLinear() { return this._capabilities.supportsTextureFloatLinear; }
+  public get supportsTextureHalfFloatLinear() { return this._capabilities.supportsTextureHalfFloatLinear; }
+  public get supportsTextureFloat() { return this._capabilities.supportsTextureFloat; }
+  public get fragDepthDoesNotDisableEarlyZ() { return this._capabilities.driverBugs.fragDepthDoesNotDisableEarlyZ; }
+  public get supportsFragDepth() { return this._capabilities.supportsFragDepth; }
+  public get maxAntialiasSamples() { return this._capabilities.maxAntialiasSamples; }
+  public get maxDepthType() { return this._capabilities.maxDepthType; }
+  public get supportsMRTPickShaders() { return this._capabilities.supportsMRTPickShaders; }
+  public get supportsMRTTransparency() { return this._capabilities.supportsMRTTransparency; }
+  public get maxColorAttachments() { return this._capabilities.maxColorAttachments; }
+  public get maxFragTextureUnits() { return this._capabilities.maxFragTextureUnits; }
+  public get maxVertTextureUnits() { return this._capabilities.maxVertTextureUnits; }
+  public get supportsNonPowerOf2Textures() { return this._capabilities.supportsNonPowerOf2Textures; }
+  public get maxTexSizeAllow() { return this._capabilities.maxTexSizeAllow; }
+  public get disjointTimerQuery() {
+    const ext = this._capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2");
+    return ext ?? this._capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
+  }
 
   /** Requires gl_VertexID (WebGL 2 only) and > 8 texture units (WebGL 1 only guarantees 8). */
   public override get supportsIndexedEdges(): boolean { return true; }
-  public override get isMobile(): boolean { return this.capabilities.isMobile; }
+  public override get isMobile(): boolean { return this._capabilities.isMobile; }
 
   public setDrawBuffers(attachments: GLenum[]): void {
     this.context.drawBuffers(attachments);
@@ -547,7 +568,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public createDepthBuffer(width: number, height: number, numSamples: number = 1): DepthBuffer | undefined {
     // Note: The buffer/texture created here have ownership passed to the caller (system will not dispose of these)
-    switch (this.capabilities.maxDepthType) {
+    switch (this._capabilities.maxDepthType) {
       case DepthType.RenderBufferUnsignedShort16: {
         return RenderBuffer.create(width, height);
       }
@@ -739,7 +760,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     super(options);
     this.canvas = canvas;
     this.context = context as WebGL2RenderingContext;
-    this.capabilities = capabilities;
+    this._capabilities = capabilities;
     this.resourceCache = new Map<IModelConnection, IdMap>();
     this.glTimer = GLTimer.create(this);
 
@@ -782,7 +803,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {
     this.lineCodeTexture!.bindSampler(uniform, unit);
   }
-  public override get maxRealityImageryLayers() { return Math.min(this.capabilities.maxFragTextureUnits, this.capabilities.maxVertTextureUnits) < 16 ? 3 : 6; }
+  public override get maxRealityImageryLayers() { return Math.min(this._capabilities.maxFragTextureUnits, this._capabilities.maxVertTextureUnits) < 16 ? 3 : 6; }
 
   public disposeTexture(texture: WebGLTexture) {
     System.instance.context.deleteTexture(texture);
@@ -870,7 +891,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public override set dpiAwareLOD(dpiAware: boolean) { this._dpiAwareLOD = dpiAware; }
 
   public loseContext(): boolean {
-    const ext = this.capabilities.queryExtensionObject<WEBGL_lose_context>("WEBGL_lose_context");
+    const ext = this._capabilities.queryExtensionObject<WEBGL_lose_context>("WEBGL_lose_context");
     if (undefined === ext)
       return false;
 
@@ -899,6 +920,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public setMaxAnisotropy(max: number | undefined): void {
-    this.capabilities.setMaxAnisotropy(max, this.context);
+    this._capabilities.setMaxAnisotropy(max, this.context);
   }
 }

@@ -342,7 +342,7 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
   }
 
   frag.addFunction(fwidth);
-  if (System.instance.capabilities.supportsTextureFloat) {
+  if (System.instance.supportsTextureFloat) {
     frag.addFunction(getSensorFloat);
   } else {
     frag.addFunction(unpackFloat);

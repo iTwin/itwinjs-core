@@ -215,11 +215,10 @@ class Texture2DCreateParams {
     let targetWidth = image.naturalWidth;
     let targetHeight = image.naturalHeight;
 
-    const caps = System.instance.capabilities;
     if (RenderTexture.Type.Glyph === type) {
       targetWidth = nextHighestPowerOfTwo(targetWidth);
       targetHeight = nextHighestPowerOfTwo(targetHeight);
-    } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
+    } else if (!System.instance.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
       if (GL.Texture.WrapMode.ClampToEdge === props.wrapMode) {
         // NPOT are supported but not mipmaps
         // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
@@ -232,7 +231,7 @@ class Texture2DCreateParams {
     }
 
     // Cap texture dimensions to system WebGL capabilities
-    const maxTexSize = System.instance.capabilities.maxTextureSize;
+    const maxTexSize = System.instance.maxTextureSize;
     targetWidth = Math.min(targetWidth, maxTexSize);
     targetHeight = Math.min(targetHeight, maxTexSize);
 
@@ -259,11 +258,10 @@ class Texture2DCreateParams {
     let targetWidth = image.width;
     let targetHeight = image.height;
 
-    const caps = System.instance.capabilities;
     if (RenderTexture.Type.Glyph === type) {
       targetWidth = nextHighestPowerOfTwo(targetWidth);
       targetHeight = nextHighestPowerOfTwo(targetHeight);
-    } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
+    } else if (!System.instance.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
       if (GL.Texture.WrapMode.ClampToEdge === props.wrapMode) {
         // NPOT are supported but not mipmaps
         // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
@@ -634,7 +632,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
 
     try {
       if (!req.imodel.isClosed) {
-        const maxTextureSize = System.instance.capabilities.maxTexSizeAllow;
+        const maxTextureSize = System.instance.maxTexSizeAllow;
         const texData = await req.imodel.queryTextureData({ name: req.name, maxTextureSize });
         if (undefined !== texData) {
           const cnvReq = { req, texData };
@@ -663,7 +661,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
       const cnvReq = this._convertRequests.shift();
       if (undefined !== cnvReq) {
         const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.texData.format);
-        if (System.instance.capabilities.supportsCreateImageBitmap) {
+        if (System.instance.supportsCreateImageBitmap) {
           const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
           const image = await createImageBitmap(blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
           if (!cnvReq.req.imodel.isClosed) {

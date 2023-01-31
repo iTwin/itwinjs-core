@@ -182,7 +182,7 @@ export abstract class VariedTechnique implements Technique {
       addLogDepth(builder);
 
       assert(!builder.frag.requiresEarlyZWorkaround);
-      if (System.instance.capabilities.driverBugs.fragDepthDoesNotDisableEarlyZ)
+      if (System.instance.fragDepthDoesNotDisableEarlyZ)
         builder.frag.requiresEarlyZWorkaround = -1 !== this._earlyZFlags.findIndex((x) => x.equals(flags));
     }
 
@@ -976,7 +976,7 @@ export class Techniques implements WebGLDisposable {
     else
       this._list[TechniqueId.IndexedEdge] = unsupportedTechnique;
 
-    if (System.instance.capabilities.supportsFragDepth)
+    if (System.instance.supportsFragDepth)
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     else
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZUsingPointsProgram(gl));

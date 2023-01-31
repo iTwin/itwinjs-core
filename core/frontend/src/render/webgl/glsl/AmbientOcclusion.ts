@@ -199,7 +199,7 @@ const unfinalizeLinearDepthDB = `
 `;
 
 function _shouldUseDB() {
-  return System.instance.supportsLogZBuffer && System.instance.capabilities.supportsTextureFloat;
+  return System.instance.supportsLogZBuffer && System.instance.supportsTextureFloat;
 }
 
 /** @internal */

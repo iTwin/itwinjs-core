@@ -13,11 +13,8 @@ class DisjointTimerExtension {
   private _context: WebGL2RenderingContext;
 
   public constructor(system: System) {
-    this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2");
-    if (this._e === undefined) // If webgl2 timer doesn't work, attempt to use the older disjoint timer
-      this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
-
-    this._context = system.context as WebGL2RenderingContext;
+    this._e = system.disjointTimerQuery;
+    this._context = system.context;
   }
 
   public get isSupported(): boolean { return this._e !== undefined; }

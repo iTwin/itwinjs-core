@@ -171,7 +171,7 @@ export class BackgroundMapDrape extends TextureDrape {
 
     const system = System.instance;
     const gl = system.context;
-    const useMRT = System.instance.capabilities.supportsDrawBuffers;
+    const useMRT = System.instance.supportsDrawBuffers;
 
     system.frameBufferStack.execute(this._fbo, true, false, () => {
       gl.clearColor(0, 0, 0, 0);

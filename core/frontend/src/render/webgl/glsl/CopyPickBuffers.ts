@@ -28,7 +28,7 @@ export function createCopyPickBuffersProgram(context: WebGL2RenderingContext): S
 
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 
-  if (System.instance.capabilities.maxColorAttachments < 2) {
+  if (System.instance.maxColorAttachments < 2) {
     // NB: Never used - we gl.clear() each attachment directly.
     frag.set(FragmentShaderComponent.AssignFragData, "FragColor = vec4(0.0);");
   } else {

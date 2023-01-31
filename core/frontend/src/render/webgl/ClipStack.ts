@@ -72,7 +72,7 @@ export class ClipStack {
     this._getTransform = getTransform;
     this._wantViewClip = wantViewClip;
 
-    this._isFloatTexture = System.instance.capabilities.supportsTextureFloat;
+    this._isFloatTexture = System.instance.supportsTextureFloat;
     this._numTotalRows = this._numRowsInUse = 0;
     this._cpuBuffer = new Uint8Array(this._numTotalRows);
     this._gpuBuffer = this.allocateGpuBuffer();

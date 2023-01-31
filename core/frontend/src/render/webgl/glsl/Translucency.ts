@@ -59,7 +59,7 @@ export function addTranslucency(prog: ProgramBuilder): void {
   frag.addFunction(computeLinearDepth);
   frag.addFunction(computeAlphaWeight);
 
-  if (System.instance.capabilities.supportsMRTTransparency) {
+  if (System.instance.supportsMRTTransparency) {
     frag.addDrawBuffersExtension(2);
     frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
   } else {
