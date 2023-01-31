@@ -2825,8 +2825,6 @@ export class EmptyLocalization implements Localization {
     // (undocumented)
     getLocalizedString(key: string | string[]): string;
     // (undocumented)
-    getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string;
-    // (undocumented)
     getNamespacePromise(): Promise<void> | undefined;
     // (undocumented)
     initialize(): Promise<void>;
@@ -5310,8 +5308,6 @@ export interface Localization {
     getLanguageList(): readonly string[];
     getLocalizedKeys(inputString: string): string;
     getLocalizedString(key: string | string[], options?: TranslationOptions): string;
-    // @deprecated
-    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
     // @internal (undocumented)
     getNamespacePromise(name: string): Promise<void> | undefined;
     initialize(namespaces: string[]): Promise<void>;

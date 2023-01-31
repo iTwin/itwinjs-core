@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-i18n",
+      "comment": "Remove getLocalizedStringWithNamespace method from ITwinLocalization",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-i18n"
+}
