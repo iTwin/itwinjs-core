@@ -1,6 +1,9 @@
 # This defines the core steps for building and validating iTwin.js Core
 
 parameters:
+  - name: nodeVersion # name of the parameter; required
+    type: string # data type of the parameter; required
+
   - name: workingDir
     type: string
     default: $(System.DefaultWorkingDirectory)
@@ -10,8 +13,6 @@ parameters:
   - name: buildIos
     type: boolean
     default: false
-  - name: nodeVersion
-    default: ""
   - name: currentBranch
     default: $(Build.SourceBranch)
   - name: targetBranch
