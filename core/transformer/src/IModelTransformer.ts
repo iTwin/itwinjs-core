@@ -1132,10 +1132,24 @@ export class IModelTransformer extends IModelExportHandler {
     return Semver.gt(`${schemaKey.version.read}.${schemaKey.version.write}.${schemaKey.version.minor}`, Schema.toSemverString(versionInTarget));
   }
 
+  private uniqueShortName(name: string, maxLen: number, suffix = ""): string {
+    const hashLen = 6;
+    const hashSep = "_";
+    const calcHash = (_s: string) => Math.random().toString();
+    const nameSegmentMax = maxLen - (suffix.length + hashSep.length + hashLen);
+    const result = name.length > nameSegmentMax
+      ? name.slice(0, nameSegmentMax) + calcHash(name) + suffix
+      : name + suffix;
+    return result;
+  }
+
   /** Override of [IModelExportHandler.onExportSchema]($transformer) that serializes a schema to disk for [[processSchemas]] to import into
    * the target iModel when it is exported from the source iModel. */
   public override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
-    this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir);
+    // many file systems have a max file-name/path-segment size of 255
+    // FIXME: check if it's possible to have non ascii characters in schema names
+    const schemaFileName = this.uniqueShortName(schema.name, 255, ".ecschema.xml");
+    this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir, schemaFileName);
   }
 
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
