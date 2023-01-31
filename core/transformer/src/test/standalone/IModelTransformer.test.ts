@@ -2025,13 +2025,15 @@ describe("IModelTransformer", () => {
     noSystemSchemasTransformer.dispose();
   });
 
-  it.only("handles long schema names and references to them (on linux)", async function () {
-    if (process.platform !== "linux") {
+  it("handles long schema names and references to them (on linux)", async function () {
+    if (process.platform === "win32") {
+      // windows has no bound on path segment (file name) length, it does have a bound on path sizes, which we
+      // do handle technically, but I'd rather not test. Even generated schema names should not be a 32kB string.
       this.skip();
     }
 
     const longSchemaName = `ThisSchemaIs${"Long".repeat(100)}`;
-    // most linux file systems have a path-segment/file-name length limit of 255 bytes
+    // most mac/linux file systems have a path-segment/file-name length limit of 255 bytes
     assert(Buffer.from(longSchemaName).byteLength > 255);
     expect(() => fs.writeFileSync(longSchemaName, "")).to.throw(/too long/);
 
