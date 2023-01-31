@@ -36,13 +36,13 @@ import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react
 export function UiSettingsPage(): JSX.Element;
 
 /**
- * @deprecated Framework version is deprecated, only UI2.0 is supported.
+ * @deprecated in 3.6. Framework version is deprecated, only UI2.0 is supported.
  * @beta
  */
 export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettingUiFrameworkVersion: boolean }): JSX.Element; // eslint-disable-line @typescript-eslint/unified-signatures
 
 /**
- * @deprecated
+ * @deprecated in 3.6.
  * @beta
  */
 export function UiSettingsPage(props?: { allowSettingUiFrameworkVersion: boolean }) {
@@ -282,13 +282,13 @@ function SettingsItem(props: SettingsItemProps) {
 export function getUiSettingsManagerEntry(itemPriority: number): SettingsTabEntry;
 
 /**
- * @deprecated Framework version is deprecated, only UI2.0 is supported. Use `getUiSettingsManagerEntry(itemPriority)` instead.
+ * @deprecated in 3.6. Framework version is deprecated, only UI2.0 is supported. Use `getUiSettingsManagerEntry(itemPriority)` instead.
  * @beta
  */
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry; // eslint-disable-line @typescript-eslint/unified-signatures
 
 /**
- * @deprecated
+ * @deprecated in 3.6.
  * @beta
  */
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry {

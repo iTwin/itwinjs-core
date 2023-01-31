@@ -6,7 +6,6 @@
  * @module PresentationRules
  */
 
-import { RuleTypes } from "../Rule";
 import { NavigationRuleBase } from "./NavigationRule";
 
 /**
@@ -17,5 +16,5 @@ import { NavigationRuleBase } from "./NavigationRule";
  */
 export interface ChildNodeRule extends NavigationRuleBase {
   /** Used for serializing to JSON. */
-  ruleType: RuleTypes.ChildNodes;
+  ruleType: "ChildNodes";
 }

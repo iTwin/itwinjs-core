@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Element.toJSON should not include undefined values for userLabel or federationGuid",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

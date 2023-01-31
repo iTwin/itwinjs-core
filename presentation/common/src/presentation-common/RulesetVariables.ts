@@ -119,6 +119,7 @@ export interface RulesetVariableBaseJSON {
 /**
  * JSON representation of [[BooleanRulesetVariable]].
  * @public
+ * @deprecated in 3.x. Use [[BooleanRulesetVariable]]
  */
 export interface BooleanRulesetVariableJSON extends RulesetVariableBaseJSON {
   type: VariableValueTypes.Bool;
@@ -127,6 +128,7 @@ export interface BooleanRulesetVariableJSON extends RulesetVariableBaseJSON {
 /**
  * JSON representation of [[StringRulesetVariable]].
  * @public
+ * @deprecated in 3.x. Use [[StringRulesetVariable]]
  */
 export interface StringRulesetVariableJSON extends RulesetVariableBaseJSON {
   type: VariableValueTypes.String;
@@ -135,6 +137,7 @@ export interface StringRulesetVariableJSON extends RulesetVariableBaseJSON {
 /**
  * JSON representation of [[IntRulesetVariable]].
  * @public
+ * @deprecated in 3.x. Use [[IntRulesetVariable]]
  */
 export interface IntRulesetVariableJSON extends RulesetVariableBaseJSON {
   type: VariableValueTypes.Int;
@@ -143,6 +146,7 @@ export interface IntRulesetVariableJSON extends RulesetVariableBaseJSON {
 /**
  * JSON representation of [[IntsRulesetVariable]].
  * @public
+ * @deprecated in 3.x. Use [[IntsRulesetVariable]]
  */
 export interface IntsRulesetVariableJSON extends RulesetVariableBaseJSON {
   type: VariableValueTypes.IntArray;
@@ -151,6 +155,7 @@ export interface IntsRulesetVariableJSON extends RulesetVariableBaseJSON {
 /**
  * JSON representation of [[Id64RulesetVariable]].
  * @public
+ * @deprecated in 3.x. Use [[Id64RulesetVariable]]
  */
 export interface Id64RulesetVariableJSON extends RulesetVariableBaseJSON {
   type: VariableValueTypes.Id64;
@@ -168,6 +173,7 @@ export interface Id64sRulesetVariableJSON extends RulesetVariableBaseJSON {
  * JSON representation of [[RulesetVariable]].
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export type RulesetVariableJSON = BooleanRulesetVariableJSON | StringRulesetVariableJSON | IntRulesetVariableJSON | IntsRulesetVariableJSON | Id64RulesetVariableJSON | Id64sRulesetVariableJSON;
 
 /** @public */
