@@ -738,7 +738,7 @@ describe("Curves", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Curves", "DistanceIndexClonePartial");
   });
-  it("Create and exercise distanceIndex", () => {
+  it.only("Create and exercise distanceIndex", () => {
     const ck = new Checker();
     const paths = Sample.createCurveChainWithDistanceIndex();
     let dx = 0.0;

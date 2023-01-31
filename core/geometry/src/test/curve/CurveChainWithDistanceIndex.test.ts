@@ -13,6 +13,7 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Sample } from "../../serialization/GeometrySamples";
+import { Arc3d } from "../../curve/Arc3d";
 
 /* eslint-disable no-console */
 const closestPointProblemFileFile = "./src/test/testInputs/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
@@ -128,6 +129,23 @@ describe("CurveChainWithDistanceIndex", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "ClonePartialFromExtendedClosestPointDetailFraction");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("fractionToCurvature", () => {
+    const ck = new Checker();
+    const radius = 100.0;
+    const arc = Arc3d.createXY(Point3d.createZero(), radius);
+    let curvature = arc.fractionToCurvature(0.0)!;
+    ck.testCoordinate(curvature, 1.0 / radius);
+
+    const path = new Path();
+    path.children.push(arc);
+
+    const indexed = CurveChainWithDistanceIndex.createCapture(path);
+    curvature = indexed.fractionToCurvature(0.0)!;
+    ck.testCoordinate(curvature, 1.0 / radius);
+
     expect(ck.getNumErrors()).equals(0);
   });
 });

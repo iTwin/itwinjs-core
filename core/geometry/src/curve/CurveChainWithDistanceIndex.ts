@@ -548,8 +548,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     const fragment = this.chainDistanceToFragment(distanceAlongPath, true)!;
     const curveFraction = fragment.chainDistanceToAccurateChildFraction(distanceAlongPath, true);
     result = fragment.childCurve.fractionToPointAndDerivative(curveFraction, result);
-    const a = this._totalLength / result.direction.magnitude();
-    result.direction.scaleInPlace(a);
+    result.direction.scaleInPlace(fragment.fractionScaleFactor(this._totalLength));
     return result;
   }
 
@@ -574,23 +573,15 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * * vectorV is the second derivative, i.e.derivative of vectorU.
    */
   public fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined {
-    const totalLength = this._totalLength;
-    const distanceAlongPath = fraction * totalLength;
+    const distanceAlongPath = fraction * this._totalLength;
     const fragment = this.chainDistanceToFragment(distanceAlongPath, true)!;
     const curveFraction = fragment.chainDistanceToAccurateChildFraction(distanceAlongPath, true);
     result = fragment.childCurve.fractionToPointAnd2Derivatives(curveFraction, result);
     if (!result)
       return undefined;
-    const dotUU = result.vectorU.magnitudeSquared();
-    const magU = Math.sqrt(dotUU);
-    const dotUV = result.vectorU.dotProduct(result.vectorV);
-    const duds = 1.0 / magU;
-    const a = duds * duds;
-    Vector3d.createAdd2Scaled(result.vectorV, a, result.vectorU, -a * dotUV / dotUU, result.vectorV);   // IN PLACE update to vectorV.
-    result.vectorU.scale(duds);
-    // scale for 0..1 parameterization ....
-    result.vectorU.scaleInPlace(totalLength);
-    result.vectorV.scaleInPlace(totalLength * totalLength);
+    const scale = fragment.fractionScaleFactor(this._totalLength);
+    result.vectorU.scaleInPlace(scale);
+    result.vectorV.scaleInPlace(scale * scale);
     return result;
   }
   /** Attempt to transform in place.
