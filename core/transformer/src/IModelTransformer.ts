@@ -1139,10 +1139,13 @@ export class IModelTransformer extends IModelExportHandler {
   public override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
     const ext = ".ecschema.xml";
     let schemaFileName = schema.name + ext;
-    // many file systems have a max file-name/path-segment size of 255
-    if (schemaFileName.length > 255) {
-      // this name should be well under 255 characters since JavaScript stringifies large floating point numbers
-      // to scientific notation
+    // many file systems have a max file-name/path-segment size of 255, but not windows
+    // for windows, see https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
+    const systemMaxPathSegmentSize = process.platform === "win32" ? 32767 : 255;
+    if (schemaFileName.length > systemMaxPathSegmentSize) {
+      // this name should be well under 255 bytes, you'd have to be past 2**53-1 (Number.MAX_SAFE_INTEGER) long named
+      // schemas in order to hit decimal formatting, which is scientific notation, so size bound and valid windows
+      // path chars anyway
       schemaFileName = `SchemaNameWasTooLong_${this._longNamedSchemasMap.size}${ext}`;
       this._longNamedSchemasMap.set(schema.name, schemaFileName);
     }
