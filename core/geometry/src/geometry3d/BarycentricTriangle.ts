@@ -122,6 +122,10 @@ export class TriangleLocationDetail {
 export class BarycentricTriangle {
   /** Array of 3 point coordinates for the triangle. */
   public points: Point3d[];
+
+  /** Edge length squared cache, indexed by opposite vertex index */
+  protected s2: (number | undefined)[];
+
   /** Constructor.
    * * Point references are CAPTURED
    */
@@ -130,6 +134,10 @@ export class BarycentricTriangle {
     this.points.push(point0);
     this.points.push(point1);
     this.points.push(point2);
+    this.s2 = [];
+    this.s2.push(undefined);
+    this.s2.push(undefined);
+    this.s2.push(undefined);
   }
 
   /**
@@ -204,34 +212,6 @@ export class BarycentricTriangle {
       return TriangleLocationDetail.create(result);
     BarycentricTriangle._workRay = Ray3d.create(point, BarycentricTriangle._workVector0, BarycentricTriangle._workRay);
     return this.intersectRay3d(BarycentricTriangle._workRay, result); // is free to use workVector0
-  }
-
-  /** Compute the projection of point p onto the infinite line containing edge e_k of the triangle T(v_i,v_j,v_k).
-   * @param k index of the edge e_k(v_i,v_j) opposite v_k onto which to project p. Note that k is NOT the index of the start vertex of e_k.
-   * @param b barycentric coordinates; p = b[i] * v_i + b[j] * v_j + b[k] * v_k, with b[i] + b[j] + b[k] = 1.
-   * @param s2 s2[i] > 0 is the squared length of the edge opposite v_i.
-   * @param a2 squared area of T (assumed nonzero)
-   * @returns parameter u along edge k, such that:
-   * * the projection point is q = v_i + u * (v_j - v_i)
-   * * the barycentric coords of the projection are b[i] = 1 - u, b[j] = u, b[k] = 0
-  */
-  private static computeProjectionToEdge(k: number, b: number[], s2: number[]): number {
-    // We seek a formula for the projection distance of point p to q on an edge of T, with p,q given in barycentric coordinates.
-    // Let T have area A and sides e0,e1,e2 opposite vertices v0,v1,v2 of lengths a,b,c respectively.
-    // By the formula for the magnitude d of a barycentric displacement vector with coords (X,Y,Z):
-    //    d^2 = -a^2 * Y * Z - b^2 * Z * X - c^2 * X * Y
-    // By the barycentric coordinate triangle area ratio formula, the (signed) projection distance d of p to e_k is computed:
-    //    b[k] = area(p,v_i,v_j)/A = (d|e_k|/2)/A => d = 2A*b[k]/|e_k|
-    // Substitute for d, then with q_ijk=(u,1-u,0) and displacement vector (p-q)_ijk=(b[i]-u,b[j]-(1-u),b[k]), we have:
-    //    4 A^2 b[k]^2 / s2[k] = -s2[i](b[j]-(1-u))b[k] - s2[j]b[k](b[i]-u) - s2[k](b[i]-u)(b[j]-(1-u))
-    // With further substitutions for A^2 (Heron's formula) and b[k]=1-b[i]-b[j], solve for u to get the coded equation.
-    // To verify, use the WolframAlpha input form, where x=b[i], y=b[j], a^2=s2[i], b^2=s2[j], c^2=s2[k]:
-    //    solve(4(1/2(a+b+c))(1/2(-a+b+c))(1/2(a-b+c))(1/2(a+b-c))(1-x-y)^2)/c^2=-a^2(y-(1-u))(1-x-y)-b^2(1-x-y)(x-u)-c^2(x-u)(y-(1-u)) for u
-    k = Geometry.cyclic3dAxis(k);
-    const i = Geometry.cyclic3dAxis(k + 1);
-    const j = Geometry.cyclic3dAxis(i + 1);
-    const u = (b[k] * (s2[i] - s2[j]) + s2[k] * (b[i] - b[j] + 1)) / (2 * s2[k]);
-    return 1-u; // convert from i_th barycentric coordinate to parameter along edge e_k
   }
 
   /** Convert from opposite-vertex to start-vertex edge indexing. */
@@ -336,7 +316,24 @@ export class BarycentricTriangle {
     });
   }
 
-  /** Compute the projection of a point p to the triangle T(v_0,v_1,v_2).
+  /** Compute the projection of barycentric point p onto the (unbounded) edge e_k(v_i,v_j) of the triangle T(v_i,v_j,v_k).
+   * @param k vertex v_k is opposite the edge e_k
+   * @param b barycentric coordinates of point to project
+   * @returns parameter s along e_k, such that:
+   * * the projection point is q = v_i + s * (v_j - v_i)
+   * * the barycentric coords of the projection are q_ijk = (1 - s, s, 0)
+   */
+  private computeProjectionToEdge(k: number, b: number[]): number {
+    // Let U=v_j-v_i and V=v_k-v_i. Then
+    // 0 = (p-q).(v_j-v_i) = ((p-v_i)-(q-v_i)).(v_j-v_i) = (b[j]U + b[k]V - sU).U = b[j]U.U + b[k]U.V - sU.U
+    // Thus s = b[j] + b[k]U.V/U.U
+    k = Geometry.cyclic3dAxis(k);
+    const i = Geometry.cyclic3dAxis(k + 1);
+    const j = Geometry.cyclic3dAxis(i + 1);
+    return b[j] + b[k] * this.dotProductOfEdgeVectorsAtVertex(i) / this.edgeLengthSquared(k);
+  }
+
+  /** Compute the projection of a barycentric point p to the triangle T(v_0,v_1,v_2).
    * @param b0 barycentric coordinate of p corresponding to v_0
    * @param b1 barycentric coordinate of p corresponding to v_1
    * @param b2 barycentric coordinate of p corresponding to v_2
@@ -344,25 +341,28 @@ export class BarycentricTriangle {
    */
   public closestPoint(b0: number, b1: number, b2: number): {closestEdgeIndex: number, closestEdgeParam: number} {
     const b: number[] = [b0, b1, b2];
-    const s2: number[] = [this.edgeLengthSquared(0), this.edgeLengthSquared(1), this.edgeLengthSquared(2)];
     let edgeIndex = -1;  // opposite-vertex index
     let edgeParam = 0.0;
     if (BarycentricTriangle.isInsideTriangle(b0, b1, b2)) { // projects to any edge
-      edgeIndex = BarycentricTriangle.indexOfMinimum((i: number) => { return b[i] * b[i] / s2[i]; }); // cf. computeProjectionToEdge
-      edgeParam = BarycentricTriangle.computeProjectionToEdge(edgeIndex, b, s2);
+      edgeIndex = BarycentricTriangle.indexOfMinimum((i: number) => {
+        // We want smallest projection distance d_i of p to e_i.
+        // Since b[i]=d_i|e_i|/2A we can compare quantities b[i]/|e_i|.
+        return b[i] * b[i] / this.edgeLengthSquared(i); // avoid sqrt
+      });
+      edgeParam = this.computeProjectionToEdge(edgeIndex, b);
     } else if ((edgeIndex = BarycentricTriangle.isInRegionBeyondVertex(b0, b1, b2)) >= 0) { // projects to other edges, or any vertex
       edgeIndex = Geometry.cyclic3dAxis(edgeIndex + 1);
-      edgeParam = BarycentricTriangle.computeProjectionToEdge(edgeIndex, b, s2);
+      edgeParam = this.computeProjectionToEdge(edgeIndex, b);
       if (edgeParam < 0 || edgeParam > 1) {
         edgeIndex = Geometry.cyclic3dAxis(edgeIndex + 1);
-        edgeParam = BarycentricTriangle.computeProjectionToEdge(edgeIndex, b, s2);
+        edgeParam = this.computeProjectionToEdge(edgeIndex, b);
         if (edgeParam < 0 || edgeParam > 1) {
           edgeParam = 0.0;
           edgeIndex = BarycentricTriangle.edgeStartVertexIndexToOppositeVertexIndex(this.closestVertexIndex(b0, b1, b2));
         }
       }
     } else if ((edgeIndex = BarycentricTriangle.isInRegionBeyondEdge(b0, b1, b2)) >= 0) { // projects to the edge or its vertices
-      edgeParam = BarycentricTriangle.computeProjectionToEdge(edgeIndex, b, s2);
+      edgeParam = this.computeProjectionToEdge(edgeIndex, b);
       if (edgeParam < 0) {
         edgeParam = 0.0;  // start of this edge
       } else if (edgeParam > 1) {
@@ -508,25 +508,36 @@ export class BarycentricTriangle {
    * @see edgeStartVertexIndexToOppositeVertexIndex
    */
   public edgeLength(oppositeVertexIndex: number): number {
-    const i = BarycentricTriangle.edgeOppositeVertexIndexToStartVertexIndex(oppositeVertexIndex);
-    const j = Geometry.cyclic3dAxis(i + 1);
-    return this.points[i].distance(this.points[j]);
+    return Math.sqrt(this.edgeLengthSquared(oppositeVertexIndex));
   }
 
   /** Compute squared length of the triangle edge opposite the vertex with the given index.
    * @see edgeStartVertexIndexToOppositeVertexIndex
   */
   public edgeLengthSquared(oppositeVertexIndex: number): number {
-    const i = BarycentricTriangle.edgeOppositeVertexIndexToStartVertexIndex(oppositeVertexIndex);
+    const vi = Geometry.cyclic3dAxis(oppositeVertexIndex);
+    const cached = this.s2[vi];
+    if (undefined !== cached)
+      return cached;
+    const i = BarycentricTriangle.edgeOppositeVertexIndexToStartVertexIndex(vi);
     const j = Geometry.cyclic3dAxis(i + 1);
-    return this.points[i].distanceSquared(this.points[j]);
+    return this.s2[vi] = this.points[i].distanceSquared(this.points[j]);
+  }
+
+  /** Compute dot product of the edge vectors based at the vertex with the given index. */
+  public dotProductOfEdgeVectorsAtVertex(baseVertexIndex: number): number {
+    const i = Geometry.cyclic3dAxis(baseVertexIndex);
+    const j = Geometry.cyclic3dAxis(i + 1);
+    const k = Geometry.cyclic3dAxis(j + 1);
+    return Geometry.dotProductXYZXYZ(this.points[j].x - this.points[i].x, this.points[j].y - this.points[i].y, this.points[j].z - this.points[i].z,
+      this.points[k].x - this.points[i].x, this.points[k].y - this.points[i].y, this.points[k].z - this.points[i].z);
   }
 
   /** Compute the squared distance between two points given by their barycentric coordinates.
    * * It is assumed that a0 + a1 + a2 = b0 + b1 + b2 = 1.
    */
   public distanceSquared(a0: number, a1: number, a2: number, b0: number, b1: number, b2: number): number {
-    // cf. computeProjectionToEdge for formula
+    // the barycentric displacement vector distance formula
     return -this.edgeLengthSquared(0) * (b1 - a1) * (b2 - a2) - this.edgeLengthSquared(1) * (b2 - a2) * (b0 - a0) - this.edgeLengthSquared(2) * (b0 - a0) * (b1 - a1);
   }
 }
