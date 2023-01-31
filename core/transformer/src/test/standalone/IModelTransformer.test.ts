@@ -2028,7 +2028,8 @@ describe("IModelTransformer", () => {
   it("handles long schema names and references to them (on linux)", async function () {
     if (process.platform === "win32") {
       // windows has no bound on path segment (file name) length, it does have a bound on path sizes, which we
-      // do handle technically, but I'd rather not test. Even generated schema names should not be a 32kB string.
+      // do handle technically, but I'd rather not test. Even generated schema names should not be a 32kB string,
+      // that should be stopped at the connector
       this.skip();
     }
 
