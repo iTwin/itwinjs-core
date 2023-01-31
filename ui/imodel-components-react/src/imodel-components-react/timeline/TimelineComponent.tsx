@@ -451,7 +451,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     };
 
     return (
-      <DropdownMenu menuItems={createMenuItemNodes}>
+      <DropdownMenu menuItems={createMenuItemNodes} appendTo='parent' >
         <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2"
           role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
         ></span>
