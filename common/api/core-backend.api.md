@@ -2793,7 +2793,7 @@ export abstract class IModelDb extends IModel {
     getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
-    importSchemas(schemaFileNames: LocalFileName[]): Promise<void>;
+    importSchemas(schemaFileNames: LocalFileName[], options?: ImportSchemasOptions): Promise<void>;
     // @alpha
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
@@ -3199,6 +3199,11 @@ export { IModelJsNative }
 export interface IModelNameArg extends TokenArg, ITwinIdArg {
     // (undocumented)
     readonly iModelName: string;
+}
+
+// @public
+export interface ImportSchemasOptions {
+    ecSchemaXmlContext?: ECSchemaXmlContext;
 }
 
 // @public
