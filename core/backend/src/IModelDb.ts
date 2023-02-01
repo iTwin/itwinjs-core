@@ -788,7 +788,7 @@ export abstract class IModelDb extends IModel {
    * @see querySchemaVersion
    */
   public async importSchemas(schemaFileNames: LocalFileName[]): Promise<void> {
-    if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+    if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
       await this.acquireSchemaLock();
 
     const stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true });
