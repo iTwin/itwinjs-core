@@ -88,7 +88,6 @@ describe("IndexedEdgeParams", () => {
         tileAdmin: { enableIndexedEdges: false },
         localization: new EmptyLocalization(),
       });
-      expect(IModelApp.renderSystem.supportsIndexedEdges).to.be.true;
       expect(IModelApp.tileAdmin.enableIndexedEdges).to.be.false;
 
       const args = createMeshArgs();

@@ -65,18 +65,6 @@ export interface Technique extends WebGLDisposable {
   compileShaders(): boolean;
 }
 
-/* Placeholder technique used for techniques not supported by particular client.
- * e.g., IndexedEdgeTechnique only supported on WebGL 2.
- */
-const unsupportedTechnique: Technique = {
-  getShader: () => { throw new Error("Unsupported technique"); },
-  getShaderByIndex: () => { throw new Error("Unsupported technique"); },
-  getShaderCount: () => 0,
-  compileShaders: () => true,
-  isDisposed: true,
-  dispose: () => undefined,
-};
-
 /** A rendering technique implemented using a single shader program, typically for some specialized purpose.
  * @internal
  */
@@ -967,10 +955,7 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.EDLFilter] = new SingularTechnique(createEDLFilterProgram(gl));
     this._list[TechniqueId.EDLMix] = new SingularTechnique(createEDLMixProgram(gl));
 
-    if (System.instance.supportsIndexedEdges)
-      this._list[TechniqueId.IndexedEdge] = new EdgeTechnique(gl, "IndexedEdge");
-    else
-      this._list[TechniqueId.IndexedEdge] = unsupportedTechnique;
+    this._list[TechniqueId.IndexedEdge] = new EdgeTechnique(gl, "IndexedEdge");
 
     this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     this._list[TechniqueId.VolClassSetBlend] = new SingularTechnique(createVolClassSetBlendProgram(gl));

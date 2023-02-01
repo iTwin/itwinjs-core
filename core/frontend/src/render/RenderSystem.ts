@@ -280,13 +280,7 @@ export abstract class RenderSystem implements IDisposable {
   public get maxTextureSize(): number { return 0; }
 
   /** @internal */
-  public get supportsInstancing(): boolean { return true; }
-
-  /** @internal */
   public get supportsCreateImageBitmap(): boolean { return false; }
-
-  /** @internal */
-  public get supportsIndexedEdges(): boolean { return true; }
 
   /** @internal */
   public get dpiAwareLOD(): boolean { return true === this.options.dpiAwareLOD; }
