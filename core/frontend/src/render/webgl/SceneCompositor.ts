@@ -257,6 +257,18 @@ class FrameBuffers implements WebGLDisposable {
   public altZOnly?: FrameBuffer;
   public volClassCreateBlend?: FrameBuffer;
   public volClassCreateBlendAltZ?: FrameBuffer;
+  public opaqueAll?: FrameBuffer;
+  public opaqueAndCompositeAll?: FrameBuffer;
+  public opaqueAndCompositeAllHidden?: FrameBuffer;
+  public pingPong?: FrameBuffer;
+  public pingPongMS?: FrameBuffer;
+  public translucent?: FrameBuffer;
+  public clearTranslucent?: FrameBuffer;
+  public idsAndZ?: FrameBuffer;
+  public idsAndAltZ?: FrameBuffer;
+  public idsAndZComposite?: FrameBuffer;
+  public idsAndAltZComposite?: FrameBuffer;
+  public edlDrawCol?: FrameBuffer;
 
   public init(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer | undefined): boolean {
     if (!this.initPotentialMSFbos(textures, depth, depthMS))
@@ -266,9 +278,30 @@ class FrameBuffers implements WebGLDisposable {
     this.hilite = FrameBuffer.create([textures.hilite!], depth);
     this.hiliteUsingStencil = FrameBuffer.create([textures.hilite!], depth);
 
-    return undefined !== this.depthAndOrder
-      && undefined !== this.hilite
-      && undefined !== this.hiliteUsingStencil;
+    if (!this.depthAndOrder || !this.hilite || !this.hiliteUsingStencil)
+      return false;
+
+    assert(undefined === this.opaqueAll);
+
+    if (!this.initPotentialMSMRTFbos(textures, depth, depthMS))
+      return false;
+
+    assert(undefined !== textures.accumulation && undefined !== textures.revealage);
+    const colors = [textures.accumulation, textures.revealage];
+    this.translucent = FrameBuffer.create(colors, depth);
+    this.clearTranslucent = FrameBuffer.create(colors);
+
+    // We borrow the SceneCompositor's accum and revealage textures for the surface pass.
+    // First we render edges, writing to our textures.
+    // Then we copy our textures to borrowed textures.
+    // Finally we render surfaces, writing to our textures and reading from borrowed textures.
+    assert(undefined !== textures.accumulation && undefined !== textures.revealage);
+    const pingPong = [textures.accumulation, textures.revealage];
+    this.pingPong = FrameBuffer.create(pingPong);
+
+    return undefined !== this.translucent
+      && undefined !== this.clearTranslucent
+      && undefined !== this.pingPong;
   }
 
   private initPotentialMSFbos(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer | undefined): boolean {
@@ -286,11 +319,59 @@ class FrameBuffers implements WebGLDisposable {
       && undefined !== this.opaqueAndCompositeColor;
   }
 
-  public enableOcclusion(textures: Textures, _depth: DepthBuffer, _depthMs: DepthBuffer | undefined): boolean {
+  private initPotentialMSMRTFbos(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
+    const boundColor = System.instance.frameBufferStack.currentColorBuffer;
+    assert(undefined !== boundColor && undefined !== textures.color && undefined !== textures.featureId && undefined !== textures.depthAndOrder && undefined !== textures.accumulation && undefined !== textures.revealage);
+    const colorAndPick = [boundColor, textures.featureId, textures.depthAndOrder];
+
+    if (undefined === depthMs) {
+      this.opaqueAll = FrameBuffer.create(colorAndPick, depth);
+      colorAndPick[0] = textures.color;
+      this.opaqueAndCompositeAll = FrameBuffer.create(colorAndPick, depth);
+    } else {
+      assert(undefined !== textures.colorMsBuff && undefined !== textures.featureIdMsBuff && undefined !== textures.featureIdMsBuffHidden && undefined !== textures.depthAndOrderMsBuff && undefined !== textures.depthAndOrderMsBuffHidden);
+      const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuff, textures.depthAndOrderMsBuff];
+      const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
+      this.opaqueAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
+      colorAndPick[0] = textures.color;
+      this.opaqueAndCompositeAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
+    }
+
+    return undefined !== this.opaqueAll
+      && undefined !== this.opaqueAndCompositeAll;
+  }
+
+  public enableOcclusion(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
     assert(undefined !== textures.occlusion && undefined !== textures.occlusionBlur);
     this.occlusion = FrameBuffer.create([textures.occlusion]);
     this.occlusionBlur = FrameBuffer.create([textures.occlusionBlur]);
-    return undefined !== this.occlusion && undefined !== this.occlusionBlur;
+    let rVal = undefined !== this.occlusion && undefined !== this.occlusionBlur;
+
+    if (undefined === depthMs) {
+      // If not using multisampling then we can use the accumulation and revealage textures for the hidden pick buffers,
+      assert(undefined !== textures.color && undefined !== textures.accumulation && undefined !== textures.revealage);
+      const colorAndPick = [textures.color, textures.accumulation, textures.revealage];
+      this.opaqueAndCompositeAllHidden = FrameBuffer.create(colorAndPick, depth);
+      rVal = rVal && undefined !== this.opaqueAndCompositeAllHidden;
+    } else {
+      // If multisampling then we cannot use the revealage texture for depthAndOrder for the hidden edges since it is of the wrong type for blitting,
+      // so instead use a special depthAndOrderHidden texture just for this purpose.
+      // The featureId texture is not needed for hidden edges, so the accumulation texture can be used for it if we don't blit from the multisample bufffer into it.
+      assert(undefined !== textures.color && undefined !== textures.accumulation && undefined !== textures.depthAndOrderHidden);
+      assert(undefined !== textures.colorMsBuff && undefined !== textures.featureIdMsBuffHidden && undefined !== textures.depthAndOrderMsBuffHidden);
+      const colorAndPick = [textures.color, textures.accumulation, textures.depthAndOrderHidden];
+      const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuffHidden, textures.depthAndOrderMsBuffHidden];
+      const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
+      this.opaqueAndCompositeAllHidden = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
+      // We will also need a frame buffer for copying the real pick data buffers into these hidden edge pick data buffers.
+      const pingPong = [textures.accumulation, textures.depthAndOrderHidden];
+      const pingPongMSBuffs = [textures.featureIdMsBuffHidden, textures.depthAndOrderMsBuffHidden];
+      const pingPongFilters = [GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
+      this.pingPongMS = FrameBuffer.create(pingPong, depth, pingPongMSBuffs, pingPongFilters, depthMs);
+      rVal = rVal && undefined !== this.opaqueAndCompositeAllHidden && (undefined === depthMs || undefined !== this.pingPongMS);
+    }
+
+    return rVal;
   }
 
   public disableOcclusion(): void {
@@ -298,9 +379,16 @@ class FrameBuffers implements WebGLDisposable {
       this.occlusion = dispose(this.occlusion);
       this.occlusionBlur = dispose(this.occlusionBlur);
     }
+
+    this.opaqueAndCompositeAllHidden = dispose(this.opaqueAndCompositeAllHidden);
+    this.pingPongMS = dispose(this.pingPongMS);
   }
 
   public enableVolumeClassifier(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
+    const boundColor = System.instance.frameBufferStack.currentColorBuffer;
+    if (undefined === boundColor)
+      return;
+
     if (undefined === this.stencilSet) {
       if (undefined !== depthMS) { // if multisampling use the multisampled depth everywhere
         this.stencilSet = FrameBuffer.create([], depth, [], [], depthMS);
@@ -314,6 +402,17 @@ class FrameBuffers implements WebGLDisposable {
         this.volClassCreateBlendAltZ = FrameBuffer.create([textures.volClassBlend!], volClassDepth);
       }
     }
+
+    if (undefined !== this.opaqueAll && undefined !== this.opaqueAndCompositeAll) {
+      if (undefined !== volClassDepth) {
+        let ids = [this.opaqueAll.getColor(0), this.opaqueAll.getColor(1)];
+        this.idsAndZ = FrameBuffer.create(ids, depth);
+        this.idsAndAltZ = FrameBuffer.create(ids, volClassDepth);
+        ids = [this.opaqueAndCompositeAll.getColor(0), this.opaqueAndCompositeAll.getColor(1)];
+        this.idsAndZComposite = FrameBuffer.create(ids, depth);
+        this.idsAndAltZComposite = FrameBuffer.create(ids, volClassDepth);
+      }
+    }
   }
 
   public disableVolumeClassifier(): void {
@@ -323,32 +422,46 @@ class FrameBuffers implements WebGLDisposable {
       this.volClassCreateBlend = dispose(this.volClassCreateBlend);
       this.volClassCreateBlendAltZ = dispose(this.volClassCreateBlendAltZ);
     }
+
+    if (undefined !== this.idsAndZ) {
+      this.idsAndZ = dispose(this.idsAndZ);
+      this.idsAndAltZ = dispose(this.idsAndAltZ);
+      this.idsAndZComposite = dispose(this.idsAndZComposite);
+      this.idsAndAltZComposite = dispose(this.idsAndAltZComposite);
+    }
   }
 
   public enableMultiSampling(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer): boolean {
     this.opaqueColor = dispose(this.opaqueColor);
     this.opaqueAndCompositeColor = dispose(this.opaqueAndCompositeColor);
-    return this.initPotentialMSFbos(textures, depth, depthMS);
+    let rVal = this.initPotentialMSFbos(textures, depth, depthMS);
+
+    this.opaqueAll = dispose(this.opaqueAll);
+    this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
+    rVal = this.initPotentialMSMRTFbos(textures, depth, depthMS);
+    return rVal;
   }
 
   public disableMultiSampling(textures: Textures, depth: DepthBuffer): boolean {
+    this.opaqueAll = dispose(this.opaqueAll);
+    this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
+    if (!this.initPotentialMSMRTFbos(textures, depth, undefined))
+      return false;
+
     this.opaqueColor = dispose(this.opaqueColor);
     this.opaqueAndCompositeColor = dispose(this.opaqueAndCompositeColor);
     return this.initPotentialMSFbos(textures, depth, undefined);
   }
 
   public get isDisposed(): boolean {
-    return undefined === this.opaqueColor
-      && undefined === this.opaqueAndCompositeColor
-      && undefined === this.depthAndOrder
-      && undefined === this.hilite
-      && undefined === this.hiliteUsingStencil
-      && undefined === this.occlusion
-      && undefined === this.occlusionBlur
-      && undefined === this.stencilSet
-      && undefined === this.altZOnly
-      && undefined === this.volClassCreateBlend
-      && undefined === this.volClassCreateBlendAltZ;
+    return undefined === this.opaqueColor && undefined === this.opaqueAndCompositeColor && undefined === this.depthAndOrder
+      && undefined === this.hilite && undefined === this.hiliteUsingStencil && undefined === this.occlusion
+      && undefined === this.occlusionBlur && undefined === this.stencilSet && undefined === this.altZOnly
+      && undefined === this.volClassCreateBlend && undefined === this.volClassCreateBlendAltZ && undefined === this.opaqueAll
+      && undefined === this.opaqueAndCompositeAll && undefined === this.opaqueAndCompositeAllHidden && undefined === this.pingPong
+      && undefined === this.pingPongMS && undefined === this.translucent && undefined === this.clearTranslucent
+      && undefined === this.idsAndZ && undefined === this.idsAndAltZ && undefined === this.idsAndZComposite
+      && undefined === this.idsAndAltZComposite && undefined === this.edlDrawCol;
   }
 
   public dispose() {
@@ -363,6 +476,19 @@ class FrameBuffers implements WebGLDisposable {
     this.altZOnly = dispose(this.altZOnly);
     this.volClassCreateBlend = dispose(this.volClassCreateBlend);
     this.volClassCreateBlendAltZ = dispose(this.volClassCreateBlendAltZ);
+
+    this.opaqueAll = dispose(this.opaqueAll);
+    this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
+    this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAllHidden);
+    this.pingPong = dispose(this.pingPong);
+    this.pingPongMS = dispose(this.pingPongMS);
+    this.translucent = dispose(this.translucent);
+    this.clearTranslucent = dispose(this.clearTranslucent);
+    this.idsAndZ = dispose(this.idsAndZ);
+    this.idsAndAltZ = dispose(this.idsAndAltZ);
+    this.idsAndZComposite = dispose(this.idsAndZComposite);
+    this.idsAndAltZComposite = dispose(this.idsAndAltZComposite);
+    this.edlDrawCol = dispose(this.edlDrawCol);
   }
 }
 
@@ -1830,178 +1956,6 @@ abstract class Compositor extends SceneCompositor {
   }
 }
 
-class MRTFrameBuffers extends FrameBuffers {
-  public opaqueAll?: FrameBuffer;
-  public opaqueAndCompositeAll?: FrameBuffer;
-  public opaqueAndCompositeAllHidden?: FrameBuffer;
-  public pingPong?: FrameBuffer;
-  public pingPongMS?: FrameBuffer;
-  public translucent?: FrameBuffer;
-  public clearTranslucent?: FrameBuffer;
-  public idsAndZ?: FrameBuffer;
-  public idsAndAltZ?: FrameBuffer;
-  public idsAndZComposite?: FrameBuffer;
-  public idsAndAltZComposite?: FrameBuffer;
-  public edlDrawCol?: FrameBuffer;
-
-  public override init(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
-    if (!super.init(textures, depth, depthMs))
-      return false;
-
-    assert(undefined === this.opaqueAll);
-
-    if (!this.initPotentialMSMRTFbos(textures, depth, depthMs))
-      return false;
-
-    assert(undefined !== textures.accumulation && undefined !== textures.revealage);
-    const colors = [textures.accumulation, textures.revealage];
-    this.translucent = FrameBuffer.create(colors, depth);
-    this.clearTranslucent = FrameBuffer.create(colors);
-
-    // We borrow the SceneCompositor's accum and revealage textures for the surface pass.
-    // First we render edges, writing to our textures.
-    // Then we copy our textures to borrowed textures.
-    // Finally we render surfaces, writing to our textures and reading from borrowed textures.
-    assert(undefined !== textures.accumulation && undefined !== textures.revealage);
-    const pingPong = [textures.accumulation, textures.revealage];
-    this.pingPong = FrameBuffer.create(pingPong);
-
-    return undefined !== this.translucent
-      && undefined !== this.clearTranslucent
-      && undefined !== this.pingPong;
-  }
-
-  private initPotentialMSMRTFbos(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
-    const boundColor = System.instance.frameBufferStack.currentColorBuffer;
-    assert(undefined !== boundColor && undefined !== textures.color && undefined !== textures.featureId && undefined !== textures.depthAndOrder && undefined !== textures.accumulation && undefined !== textures.revealage);
-    const colorAndPick = [boundColor, textures.featureId, textures.depthAndOrder];
-
-    if (undefined === depthMs) {
-      this.opaqueAll = FrameBuffer.create(colorAndPick, depth);
-      colorAndPick[0] = textures.color;
-      this.opaqueAndCompositeAll = FrameBuffer.create(colorAndPick, depth);
-    } else {
-      assert(undefined !== textures.colorMsBuff && undefined !== textures.featureIdMsBuff && undefined !== textures.featureIdMsBuffHidden && undefined !== textures.depthAndOrderMsBuff && undefined !== textures.depthAndOrderMsBuffHidden);
-      const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuff, textures.depthAndOrderMsBuff];
-      const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
-      this.opaqueAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
-      colorAndPick[0] = textures.color;
-      this.opaqueAndCompositeAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
-    }
-
-    return undefined !== this.opaqueAll
-      && undefined !== this.opaqueAndCompositeAll;
-  }
-
-  public override enableOcclusion(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
-    let rVal = super.enableOcclusion(textures, depth, depthMs);
-    if (undefined === depthMs) {
-      // If not using multisampling then we can use the accumulation and revealage textures for the hidden pick buffers,
-      assert(undefined !== textures.color && undefined !== textures.accumulation && undefined !== textures.revealage);
-      const colorAndPick = [textures.color, textures.accumulation, textures.revealage];
-      this.opaqueAndCompositeAllHidden = FrameBuffer.create(colorAndPick, depth);
-      rVal = rVal && undefined !== this.opaqueAndCompositeAllHidden;
-    } else {
-      // If multisampling then we cannot use the revealage texture for depthAndOrder for the hidden edges since it is of the wrong type for blitting,
-      // so instead use a special depthAndOrderHidden texture just for this purpose.
-      // The featureId texture is not needed for hidden edges, so the accumulation texture can be used for it if we don't blit from the multisample bufffer into it.
-      assert(undefined !== textures.color && undefined !== textures.accumulation && undefined !== textures.depthAndOrderHidden);
-      assert(undefined !== textures.colorMsBuff && undefined !== textures.featureIdMsBuffHidden && undefined !== textures.depthAndOrderMsBuffHidden);
-      const colorAndPick = [textures.color, textures.accumulation, textures.depthAndOrderHidden];
-      const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuffHidden, textures.depthAndOrderMsBuffHidden];
-      const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
-      this.opaqueAndCompositeAllHidden = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
-      // We will also need a frame buffer for copying the real pick data buffers into these hidden edge pick data buffers.
-      const pingPong = [textures.accumulation, textures.depthAndOrderHidden];
-      const pingPongMSBuffs = [textures.featureIdMsBuffHidden, textures.depthAndOrderMsBuffHidden];
-      const pingPongFilters = [GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
-      this.pingPongMS = FrameBuffer.create(pingPong, depth, pingPongMSBuffs, pingPongFilters, depthMs);
-      rVal = rVal && undefined !== this.opaqueAndCompositeAllHidden && (undefined === depthMs || undefined !== this.pingPongMS);
-    }
-    return rVal;
-  }
-
-  public override disableOcclusion(): void {
-    super.disableOcclusion();
-    this.opaqueAndCompositeAllHidden = dispose(this.opaqueAndCompositeAllHidden);
-    this.pingPongMS = dispose(this.pingPongMS);
-  }
-
-  public override enableVolumeClassifier(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
-    const boundColor = System.instance.frameBufferStack.currentColorBuffer;
-    if (undefined === boundColor)
-      return;
-    super.enableVolumeClassifier(textures, depth, volClassDepth, depthMS, volClassDepthMS);
-    if (undefined !== this.opaqueAll && undefined !== this.opaqueAndCompositeAll) {
-      if (undefined !== volClassDepth) {
-        let ids = [this.opaqueAll.getColor(0), this.opaqueAll.getColor(1)];
-        this.idsAndZ = FrameBuffer.create(ids, depth);
-        this.idsAndAltZ = FrameBuffer.create(ids, volClassDepth);
-        ids = [this.opaqueAndCompositeAll.getColor(0), this.opaqueAndCompositeAll.getColor(1)];
-        this.idsAndZComposite = FrameBuffer.create(ids, depth);
-        this.idsAndAltZComposite = FrameBuffer.create(ids, volClassDepth);
-      }
-    }
-  }
-
-  public override disableVolumeClassifier(): void {
-    super.disableVolumeClassifier();
-    if (undefined !== this.idsAndZ) {
-      this.idsAndZ = dispose(this.idsAndZ);
-      this.idsAndAltZ = dispose(this.idsAndAltZ);
-      this.idsAndZComposite = dispose(this.idsAndZComposite);
-      this.idsAndAltZComposite = dispose(this.idsAndAltZComposite);
-    }
-  }
-
-  public override enableMultiSampling(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer): boolean {
-    super.enableMultiSampling(textures, depth, depthMS);
-    this.opaqueAll = dispose(this.opaqueAll);
-    this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
-    return this.initPotentialMSMRTFbos(textures, depth, depthMS);
-  }
-
-  public override disableMultiSampling(textures: Textures, depth: DepthBuffer): boolean {
-    this.opaqueAll = dispose(this.opaqueAll);
-    this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
-    if (!this.initPotentialMSMRTFbos(textures, depth, undefined))
-      return false;
-    return super.disableMultiSampling(textures, depth);
-  }
-
-  public override get isDisposed(): boolean {
-    return super.isDisposed
-      && undefined === this.opaqueAll
-      && undefined === this.opaqueAndCompositeAll
-      && undefined === this.opaqueAndCompositeAllHidden
-      && undefined === this.pingPong
-      && undefined === this.pingPongMS
-      && undefined === this.translucent
-      && undefined === this.clearTranslucent
-      && undefined === this.idsAndZ
-      && undefined === this.idsAndAltZ
-      && undefined === this.idsAndZComposite
-      && undefined === this.idsAndAltZComposite
-      && undefined === this.edlDrawCol;
-  }
-
-  public override dispose(): void {
-    super.dispose();
-    this.opaqueAll = dispose(this.opaqueAll);
-    this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
-    this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAllHidden);
-    this.pingPong = dispose(this.pingPong);
-    this.pingPongMS = dispose(this.pingPongMS);
-    this.translucent = dispose(this.translucent);
-    this.clearTranslucent = dispose(this.clearTranslucent);
-    this.idsAndZ = dispose(this.idsAndZ);
-    this.idsAndAltZ = dispose(this.idsAndAltZ);
-    this.idsAndZComposite = dispose(this.idsAndZComposite);
-    this.idsAndAltZComposite = dispose(this.idsAndAltZComposite);
-    this.edlDrawCol = dispose(this.edlDrawCol);
-  }
-}
-
 interface SinglePointCloudData {
   pcs?: PointCloudDisplaySettings;
   cmds: DrawCommands;
@@ -2050,13 +2004,13 @@ class MRTGeometry extends Geometry {
 // SceneCompositor used when multiple render targets are supported (WEBGL_draw_buffers exists and supports at least 4 color attachments).
 class MRTCompositor extends Compositor {
   public constructor(target: Target) {
-    super(target, new MRTFrameBuffers(), new MRTGeometry());
+    super(target, new FrameBuffers(), new MRTGeometry());
   }
 
   public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
 
-  private get _fbos(): MRTFrameBuffers { return this._frameBuffers as MRTFrameBuffers; }
+  private get _fbos(): FrameBuffers { return this._frameBuffers; }
   private get _geometry(): MRTGeometry { return this._geom as MRTGeometry; }
 
   protected override enableVolumeClassifierFbos(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
