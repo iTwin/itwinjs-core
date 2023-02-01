@@ -23,8 +23,7 @@ import { createCompositeProgram } from "./glsl/Composite";
 import { createCopyColorProgram } from "./glsl/CopyColor";
 import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
 import {
-  createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZProgram, createVolClassCopyZUsingPointsProgram,
-  createVolClassSetBlendProgram,
+  createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZProgram, createVolClassSetBlendProgram,
 } from "./glsl/CopyStencil";
 import { createEdgeBuilder, EdgeBuilderType } from "./glsl/Edge";
 import { createEVSMProgram } from "./glsl/EVSMFromDepth";
@@ -880,12 +879,9 @@ export class Techniques implements WebGLDisposable {
   public compileShaders(): boolean {
     let allCompiled = true;
 
-    let techNdx = 0;
     for (const tech of this._list) {
       if (!tech.compileShaders())
         allCompiled = false;
-
-      techNdx++;
     }
 
     return allCompiled;
