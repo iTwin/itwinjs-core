@@ -2077,7 +2077,7 @@ describe("IModelTransformer", () => {
         assert(exportedSchemaPaths.includes(reffingSchemaFile), `Expected ${reffingSchemaFile} in ${exportedSchemaPaths}`);
         // make sure the referencing schema is first, so it is imported first, and the schema locator is forced
         // to look for its references (like the long name schema) that haven't been imported yet
-        outOfOrderExportedSchemas = [reffingSchemaFile, ...exportedSchemaPaths.filter((s) => s !== reffingSchema)];
+        outOfOrderExportedSchemas = [reffingSchemaFile, ...exportedSchemaPaths.filter((s) => s !== reffingSchemaFile)];
       }
     }
 
@@ -2098,9 +2098,11 @@ describe("IModelTransformer", () => {
 
     try {
       // force import references out of order to make sure we hit an issue if schema locator can't find things
-      sinon.replace(IModelJsFs, "readdirSync", () => outOfOrderExportedSchemas);
+      sinon.replace(IModelJsFs, "readdirSync", () => outOfOrderExportedSchemas.map((s) => path.basename(s)));
       await transformer.processSchemas();
     } finally {
+      sourceDb.close();
+      targetDb.close();
       transformer.dispose();
       sinon.restore();
     }
