@@ -788,15 +788,8 @@ export abstract class IModelDb extends IModel {
    * @see querySchemaVersion
    */
   public async importSchemas(schemaFileNames: LocalFileName[]): Promise<void> {
-    if (this.isSnapshot || this.isStandalone) {
-      const status = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true });
-      if (DbResult.BE_SQLITE_OK !== status)
-        throw new IModelError(status, "Error importing schema");
-      this.clearCaches();
-      return;
-    }
-
-    await this.acquireSchemaLock();
+    if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+      await this.acquireSchemaLock();
 
     const stat = this.nativeDb.importSchemas(schemaFileNames, { schemaLockHeld: true });
     if (DbResult.BE_SQLITE_OK !== stat) {
@@ -816,16 +809,8 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
-    if (this.isSnapshot || this.isStandalone) {
-      const status = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
-      if (DbResult.BE_SQLITE_OK !== status) {
-        throw new IModelError(status, "Error importing schema");
-      }
-      this.clearCaches();
-      return;
-    }
-
-    await this.acquireSchemaLock();
+    if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+      await this.acquireSchemaLock();
 
     const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
     if (DbResult.BE_SQLITE_OK !== stat)
