@@ -810,7 +810,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   }
 
   public static create(target: Target): SceneCompositor {
-    return new MRTCompositor(target);
+    return new Compositor(target);
   }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
@@ -824,14 +824,14 @@ enum PrimitiveDrawState {
 }
 
 // The actual base class. Specializations are provided based on whether or not multiple render targets are supported.
-abstract class Compositor extends SceneCompositor {
+class Compositor extends SceneCompositor {
   protected _width: number = -1;
   protected _height: number = -1;
   protected _includeOcclusion: boolean = false;
   protected _textures = new Textures();
   protected _depth?: DepthBuffer;
   protected _depthMS?: DepthBuffer; // multisample depth buffer
-  protected _frameBuffers: FrameBuffers;
+  protected _fbos: FrameBuffers;
   protected _geom: Geometry;
   protected _readPickDataFromPingPong: boolean = true;
   protected _opaqueRenderState = new RenderState();
@@ -856,38 +856,327 @@ abstract class Compositor extends SceneCompositor {
   protected readonly _viewProjectionMatrix = new Matrix4();
   protected _primitiveDrawState = PrimitiveDrawState.Both; // used by drawPrimitive to decide whether a primitive needs to be drawn.
 
+  public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
+  public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
+  private get _samplerFbo(): FrameBuffer { return this._readPickDataFromPingPong ? this._fbos.pingPong! : this._fbos.opaqueAll!; }
+  private getSamplerTexture(index: number) { return this._samplerFbo.getColor(index); }
+
   public drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean) {
     if ((outputsToPick && this._primitiveDrawState !== PrimitiveDrawState.NonPickable) ||
         (!outputsToPick && this._primitiveDrawState !== PrimitiveDrawState.Pickable))
       primitive.draw(exec);
   }
 
-  protected abstract clearOpaque(_needComposite: boolean): void;
-  protected abstract renderLayers(_commands: RenderCommands, _needComposite: boolean, pass: RenderPass): void;
-  protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
-  protected abstract renderPointClouds(_commands: RenderCommands, _compositeFlags: CompositeFlags): void;
-  protected abstract renderForVolumeClassification(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
-  protected abstract renderIndexedClassifierForReadPixels(_commands: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, _needComposite: boolean): void;
-  protected abstract clearTranslucent(): void;
-  protected abstract renderTranslucent(_commands: RenderCommands): void;
-  protected abstract getBackgroundFbo(_needComposite: boolean): FrameBuffer;
-  protected abstract pingPong(): void;
+  protected clearOpaque(needComposite: boolean): void {
+    const fbo = needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!;
+    const system = System.instance;
+    system.frameBufferStack.execute(fbo, true, this.useMsBuffers, () => {
+      // Clear pick data buffers to 0's and color buffer to background color
+      // (0,0,0,0) in elementID0 and ElementID1 buffers indicates invalid element id
+      // (0,0,0,0) in DepthAndOrder buffer indicates render order 0 and encoded depth of 0 (= far plane)
+      system.applyRenderState(this._noDepthMaskRenderState);
+      const params = getDrawParams(this.target, this._geom.clearPickAndColor!);
+      this.target.techniques.draw(params);
+
+      // Clear depth buffer
+      system.applyRenderState(RenderState.defaults); // depthMask == true.
+      system.context.clearDepth(1.0);
+      system.context.clear(GL.BufferBit.Depth);
+    });
+  }
+
+  protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
+    const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    const useMsBuffers = RenderPass.OpaqueLayers === pass && fbo.isMultisampled && this.useMsBuffers;
+    this._readPickDataFromPingPong = !useMsBuffers;
+    System.instance.frameBufferStack.execute(fbo, true, useMsBuffers, () => {
+      this.drawPass(commands, pass, true);
+    });
+
+    this._readPickDataFromPingPong = false;
+  }
+
+  protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
+    if (CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion) && !renderForReadPixels) {
+      this.renderOpaqueAO(commands);
+      return;
+    }
+    const needComposite = CompositeFlags.None !== compositeFlags;
+    const fbStack = System.instance.frameBufferStack;
+
+    // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels() or ambient occlusion).
+    let fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
+    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
+    fbStack.execute(fbo, true, useMsBuffers, () => {
+      this.drawPass(commands, RenderPass.OpaqueLinear);
+      this.drawPass(commands, RenderPass.OpaquePlanar, true);
+      if (renderForReadPixels) {
+        this.drawPass(commands, RenderPass.PointClouds, true); // don't need EDL for this
+        this.drawPass(commands, RenderPass.OpaqueGeneral, true);
+        if (useMsBuffers)
+          fbo.blitMsBuffersToTextures(true);
+      }
+    });
+    this._readPickDataFromPingPong = false;
+
+    // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
+    if (!renderForReadPixels) {
+      fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
+      fbStack.execute(fbo, true, useMsBuffers, () => {
+        this.drawPass(commands, RenderPass.OpaqueGeneral, false);
+        this.drawPass(commands, RenderPass.HiddenEdge, false);
+      });
+      // assume we are done with MS at this point, so update the non-MS buffers
+      if (useMsBuffers)
+        fbo.blitMsBuffersToTextures(needComposite);
+    }
+  }
+
+  protected renderOpaqueAO(commands: RenderCommands) {
+    const fbStack = System.instance.frameBufferStack;
+    const haveHiddenEdges = 0 !== commands.getCommands(RenderPass.HiddenEdge).length;
+
+    // Output the linear, planar, and pickable surfaces to color and pick data buffers.
+    let fbo = this._fbos.opaqueAndCompositeAll!;
+    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
+    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
+    fbStack.execute(fbo, true, useMsBuffers, () => {
+      this.drawPass(commands, RenderPass.OpaqueLinear);
+      this.drawPass(commands, RenderPass.OpaquePlanar, true);
+      this._primitiveDrawState = PrimitiveDrawState.Pickable;
+      this.drawPass(commands, RenderPass.OpaqueGeneral, true);
+      this._primitiveDrawState = PrimitiveDrawState.Both;
+      if (useMsBuffers)
+        fbo.blitMsBuffersToTextures(true);
+    });
+    this._readPickDataFromPingPong = false;
+
+    // Output the non-pickable surfaces and hidden edges to just the color buffer.
+    fbo = this._fbos.opaqueAndCompositeColor!;
+    fbStack.execute(fbo, true, useMsBuffers, () => {
+      this._primitiveDrawState = PrimitiveDrawState.NonPickable;
+      this.drawPass(commands, RenderPass.OpaqueGeneral, false);
+      if (haveHiddenEdges)
+        this.drawPass(commands, RenderPass.HiddenEdge, false);
+      this._primitiveDrawState = PrimitiveDrawState.Both;
+    });
+    if (useMsBuffers)
+      fbo.blitMsBuffersToTextures(true);
+
+    // If there are no hidden edges, then we're done & can run the AO passes using the normal depthAndOrder texture.
+    if (haveHiddenEdges) {
+      // AO needs the pick data (orderAndDepth) for the hidden edges.  We don't want it in with the other pick data though since they are not pickable, so we will use other textures.
+      // If not multisampling we will re-use the ping-pong/transparency textures since we are done with ping-ponging at this point and transparency happens later.
+      // If multisampling then we will use the accumulation texture for featureIDs and a special texture for depthAndOrder since the revealage texture is not the right type for multisampling.
+      // First we will need to copy what's in the pick buffers so far into the hidden pick buffers.
+      System.instance.applyRenderState(this._noDepthMaskRenderState);
+      fbo = (useMsBuffers ? this._fbos.pingPongMS! : this._fbos.pingPong!);
+      fbStack.execute(fbo, true, useMsBuffers, () => {
+        const params = getDrawParams(this.target, this._geom.copyPickBuffers!);
+        this.target.techniques.draw(params);
+      });
+      if (useMsBuffers)
+        fbo.blitMsBuffersToTextures(false, 1); // only want to blit the depth/order target
+      // Now draw the hidden edges, using an fbo which places their depth/order into the hidden pick buffers.
+      // Since we are not writing to the actual pick buffers we let this._readPickDataFromPingPong remain false.
+      fbo = this._fbos.opaqueAndCompositeAllHidden!;
+      this._primitiveDrawState = PrimitiveDrawState.Pickable;
+      fbStack.execute(fbo, true, useMsBuffers, () => {
+        this.drawPass(commands, RenderPass.HiddenEdge, false);
+      });
+      this._primitiveDrawState = PrimitiveDrawState.Both;
+      if (useMsBuffers) {
+        // Only want to blit the color and depth/order targets as the featureId target is not blit-able and will generate a GL error.
+        fbo.blitMsBuffersToTextures(false, 0);
+        fbo.blitMsBuffersToTextures(false, 2);
+      }
+      this._needHiddenEdges = false;
+    }
+
+    this._needHiddenEdges = haveHiddenEdges; // this will cause the alternate renderAndOrder texture with the hidden edges to be read for the 2nd AO blur pass.
+    this.renderAmbientOcclusion();
+    this._needHiddenEdges = false;
+  }
+
+  protected renderPointClouds(commands: RenderCommands, compositeFlags: CompositeFlags) {
+    const is3d = FrustumUniformType.Perspective === this.target.uniforms.frustum.type;
+    // separate individual point clouds and get their point cloud settings
+    const pointClouds: Array<SinglePointCloudData> = [];
+    let pcs: PointCloudDisplaySettings | undefined;
+    const cmds = commands.getCommands(RenderPass.PointClouds);
+    let curPC: SinglePointCloudData | undefined;
+    let pushDepth = 0;
+    for (const cmd of cmds) {
+      if ("pushBranch" === cmd.opcode) { // should be first command
+        ++pushDepth;
+        if (pushDepth === 1) {
+          pcs = cmd.branch.branch.realityModelDisplaySettings?.pointCloud;
+          this.target.uniforms.realityModel.pointCloud.updateRange (cmd.branch.branch.realityModelRange,
+            this.target, cmd.branch.localToWorldTransform, is3d);
+          pointClouds.push(curPC = { pcs, cmds: [cmd] });
+        } else {
+          assert (undefined !== curPC);
+          curPC.cmds.push(cmd);
+        }
+      } else {
+        if ("popBranch" === cmd.opcode)
+          --pushDepth;
+        assert (undefined !== curPC);
+        curPC.cmds.push(cmd);
+      }
+    }
+
+    const needComposite = CompositeFlags.None !== compositeFlags;
+    const fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
+    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
+    const system = System.instance;
+    const fbStack = system.frameBufferStack;
+
+    this._readPickDataFromPingPong = false;
+
+    for (const pc of pointClouds) {
+      pcs = pc.pcs;
+      let edlOn = pcs?.edlMode !== "off" && is3d;
+      if (edlOn) {
+        if (undefined === this._textures.hilite)
+          edlOn = false;
+        else {
+          // create fbo on fly if not present, or has changed (from MS)
+          // ###TODO consider not drawing point clouds to MS buffers, at least if EDL, it isn't worth the overhead.
+          //         would have to blit depth before draw, use depth for draw, then run shader to copy depth back to MSAA
+          //         at end, wherever color buf changed (test alpha, else discard)
+          //         this would also simplify this code considerably
+          let drawColBufs;
+          if (undefined !== this._fbos.edlDrawCol)
+            drawColBufs = this._fbos.edlDrawCol.getColorTargets(useMsBuffers, 0);
+          if (undefined === this._fbos.edlDrawCol || this._textures.hilite !== drawColBufs?.tex || this._textures.hiliteMsBuff !== drawColBufs.msBuf) {
+            this._fbos.edlDrawCol = dispose (this._fbos.edlDrawCol);
+            const filters = [GL.MultiSampling.Filter.Linear];
+            if (useMsBuffers)
+              this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth,
+                useMsBuffers && this._textures.hiliteMsBuff ? [this._textures.hiliteMsBuff] : undefined, filters, this._depthMS);
+            else
+              this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth);
+          }
+          if (undefined === this._fbos.edlDrawCol)
+            edlOn = false;
+          else { // can draw EDL
+            // first draw pointcloud to borrowed hilite texture(MS) and regular depth(MS) buffers
+            fbStack.execute(this._fbos.edlDrawCol, true, useMsBuffers, () => {
+              system.context.clearColor(0, 0, 0, 0);
+              system.context.clear(GL.BufferBit.Color);
+              system.applyRenderState(this.getRenderState(RenderPass.PointClouds));
+              this.target.techniques.execute(this.target, pc.cmds, RenderPass.PointClouds);
+            });
+            if (useMsBuffers)
+              this._fbos.edlDrawCol.blitMsBuffersToTextures(true, 0); // need to read the non-MS depth and hilite buffers
+
+            // next process buffers to generate EDL (depth buffer is passed during init)
+            this.target.beginPerfMetricRecord("Calc EDL");  // ### todo keep? (probably)
+            const sts = this.eyeDomeLighting.draw ({
+              edlMode: pc.pcs?.edlMode === "full" ? EDLMode.Full : EDLMode.On,
+              edlFilter: !!pcs?.edlFilter,
+              useMsBuffers,
+              inputTex: this._textures.hilite,
+              curFbo: fbo,
+            });
+            this.target.endPerfMetricRecord();
+            if (!sts) {
+              edlOn = false;
+            }
+          }
+        }
+      }
+      if (!edlOn) {
+        // draw the regular way
+        fbStack.execute(fbo, true, useMsBuffers, () => {
+          system.applyRenderState(this.getRenderState(RenderPass.PointClouds));
+          this.target.techniques.execute(this.target, pc.cmds, RenderPass.PointClouds);
+        });
+      }
+    }
+  }
+
+  protected renderForVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
+    const needComposite = CompositeFlags.None !== compositeFlags;
+    const needAO = CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion);
+    const fbStack = System.instance.frameBufferStack;
+
+    if (renderForReadPixels || needAO) {
+      this._readPickDataFromPingPong = true;
+      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, this.useMsBuffers, () => {
+        this.drawPass(commands, RenderPass.OpaqueGeneral, true, RenderPass.VolumeClassifiedRealityData);
+      });
+    } else {
+      this._readPickDataFromPingPong = false;
+      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, this.useMsBuffers, () => {
+        this.drawPass(commands, RenderPass.OpaqueGeneral, false, RenderPass.VolumeClassifiedRealityData);
+      });
+    }
+  }
+
+  protected renderIndexedClassifierForReadPixels(cmds: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, needComposite: boolean) {
+    this._readPickDataFromPingPong = true;
+    const fbo = (renderForIntersectingVolumes ? (needComposite ? this._fbos.idsAndZComposite! : this._fbos.idsAndZ!)
+      : (needComposite ? this._fbos.idsAndAltZComposite! : this._fbos.idsAndAltZ!));
+    System.instance.frameBufferStack.execute(fbo, true, false, () => {
+      System.instance.applyRenderState(state);
+      this.target.techniques.execute(this.target, cmds, RenderPass.OpaqueGeneral);
+    });
+    this._readPickDataFromPingPong = false;
+  }
+
+  protected clearTranslucent() {
+    System.instance.applyRenderState(this._noDepthMaskRenderState);
+    System.instance.frameBufferStack.execute(this._fbos.clearTranslucent!, true, false, () => {
+      const params = getDrawParams(this.target, this._geom.clearTranslucent!);
+      this.target.techniques.draw(params);
+    });
+  }
+
+  protected renderTranslucent(commands: RenderCommands) {
+    System.instance.frameBufferStack.execute(this._fbos.translucent!, true, false, () => {
+      this.drawPass(commands, RenderPass.Translucent);
+    });
+  }
+
+  protected getBackgroundFbo(needComposite: boolean): FrameBuffer {
+    return needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
+  }
+
+  protected pingPong() {
+    if (this._fbos.opaqueAll!.isMultisampled && this.useMsBuffers) {
+      // If we are multisampling we can just blit the FeatureId and DepthAndOrder MS buffers to their textures.
+      this._fbos.opaqueAll!.blitMsBuffersToTextures(false, 1);
+      this._fbos.opaqueAll!.blitMsBuffersToTextures(false, 2);
+    } else {
+      System.instance.applyRenderState(this._noDepthMaskRenderState);
+      System.instance.frameBufferStack.execute(this._fbos.pingPong!, true, this.useMsBuffers, () => {
+        const params = getDrawParams(this.target, this._geom.copyPickBuffers!);
+        this.target.techniques.draw(params);
+      });
+    }
+  }
 
   public get antialiasSamples(): number { return this._antialiasSamples; }
 
   protected get useMsBuffers(): boolean { return this._antialiasSamples > 1 && !this.target.isReadPixelsInProgress; }
 
   protected enableVolumeClassifierFbos(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
-    this._frameBuffers.enableVolumeClassifier(textures, depth, volClassDepth, depthMS, volClassDepthMS);
+    this._fbos.enableVolumeClassifier(textures, depth, volClassDepth, depthMS, volClassDepthMS);
   }
-  protected disableVolumeClassifierFbos(): void { this._frameBuffers.disableVolumeClassifier(); }
+
+  protected disableVolumeClassifierFbos(): void {
+    this._fbos.disableVolumeClassifier();
+  }
 
   /** This function generates a texture that contains ambient occlusion information to be applied later. */
   protected renderAmbientOcclusion() {
     const system = System.instance;
 
     // Render unblurred ambient occlusion based on depth buffer
-    let fbo = this._frameBuffers.occlusion!;
+    let fbo = this._fbos.occlusion!;
     this.target.beginPerfMetricRecord("Compute AO");
     system.frameBufferStack.execute(fbo, true, false, () => {
       System.instance.applyRenderState(RenderState.defaults);
@@ -897,7 +1186,7 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     // Render the X-blurred ambient occlusion based on unblurred ambient occlusion
-    fbo = this._frameBuffers.occlusionBlur!;
+    fbo = this._fbos.occlusionBlur!;
     this.target.beginPerfMetricRecord("Blur AO X");
     system.frameBufferStack.execute(fbo, true, false, () => {
       System.instance.applyRenderState(RenderState.defaults);
@@ -907,7 +1196,7 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     // Render the Y-blurred ambient occlusion based on X-blurred ambient occlusion (render into original occlusion framebuffer)
-    fbo = this._frameBuffers.occlusion!;
+    fbo = this._fbos.occlusion!;
     this.target.beginPerfMetricRecord("Blur AO Y");
     system.frameBufferStack.execute(fbo, true, false, () => {
       System.instance.applyRenderState(RenderState.defaults);
@@ -917,11 +1206,10 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
   }
 
-  protected constructor(target: Target, fbos: FrameBuffers, geometry: Geometry) {
+  public constructor(target: Target) {
     super(target);
-
-    this._frameBuffers = fbos;
-    this._geom = geometry;
+    this._fbos = new FrameBuffers();
+    this._geom = new Geometry();
 
     this._opaqueRenderState.flags.depthTest = true;
 
@@ -1001,7 +1289,7 @@ abstract class Compositor extends SceneCompositor {
         // Multisampling and AO buffers are also somewhat co-dependent, so if AO is on
         // and is staying on, just disable AO and let it get re-enabled later.
         this._geom.disableOcclusion();
-        this._frameBuffers.disableOcclusion();
+        this._fbos.disableOcclusion();
         this._textures.disableOcclusion();
         this._includeOcclusion = false;
       }
@@ -1026,14 +1314,14 @@ abstract class Compositor extends SceneCompositor {
           assert(false, "Failed to initialize occlusion textures");
           return false;
         }
-        if (!this._frameBuffers.enableOcclusion(this._textures, this._depth!, this._depthMS)) {
+        if (!this._fbos.enableOcclusion(this._textures, this._depth!, this._depthMS)) {
           assert(false, "Failed to initialize occlusion frame buffers");
           return false;
         }
         this._geom.enableOcclusion(this._textures, this._depth!);
       } else {
         this._geom.disableOcclusion();
-        this._frameBuffers.disableOcclusion();
+        this._fbos.disableOcclusion();
         this._textures.disableOcclusion();
       }
     }
@@ -1250,7 +1538,7 @@ abstract class Compositor extends SceneCompositor {
     // (If *only* overlays exist, then clearOpaque() above already took care of this).
     if (haveRenderCommands) {
       const system = System.instance;
-      system.frameBufferStack.execute(this._frameBuffers.opaqueColor!, true, this.useMsBuffers, () => {
+      system.frameBufferStack.execute(this._fbos.opaqueColor!, true, this.useMsBuffers, () => {
         system.applyRenderState(RenderState.defaults);
         system.context.clearDepth(1.0);
         system.context.clear(GL.BufferBit.Depth);
@@ -1272,7 +1560,7 @@ abstract class Compositor extends SceneCompositor {
     return PixelBuffer.create(rect, selector, this);
   }
 
-  public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined { return this.readFrameBuffer(rect, this._frameBuffers.depthAndOrder); }
+  public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined { return this.readFrameBuffer(rect, this._fbos.depthAndOrder); }
 
   public readFeatureIds(rect: ViewRect): Uint8Array | undefined {
     const tex = this._textures.featureId;
@@ -1292,8 +1580,8 @@ abstract class Compositor extends SceneCompositor {
   }
 
   public get screenSpaceEffectFbo(): FrameBuffer {
-    assert(undefined !== this._frameBuffers.hilite);
-    return this._frameBuffers.hilite;
+    assert(undefined !== this._fbos.hilite);
+    return this._fbos.hilite;
   }
 
   private readFrameBuffer(rect: ViewRect, fbo?: FrameBuffer): Uint8Array | undefined {
@@ -1321,7 +1609,7 @@ abstract class Compositor extends SceneCompositor {
       && undefined === this._vcAltDepthStencil
       && !this._includeOcclusion
       && this._textures.isDisposed
-      && this._frameBuffers.isDisposed
+      && this._fbos.isDisposed
       && this._geom.isDisposed
       && !this._haveVolumeClassifier
       && this.solarShadowMap.isDisposed
@@ -1342,7 +1630,7 @@ abstract class Compositor extends SceneCompositor {
     this._vcAltDepthStencil = dispose(this._vcAltDepthStencil);
     this._includeOcclusion = false;
     dispose(this._textures);
-    dispose(this._frameBuffers);
+    dispose(this._fbos);
     dispose(this._geom);
     this._haveVolumeClassifier = false;
     this.eyeDomeLighting.reset();
@@ -1357,7 +1645,7 @@ abstract class Compositor extends SceneCompositor {
       this._depthMS = undefined;
     if (this._depth !== undefined) {
       return this._textures.init(this._width, this._height, this._antialiasSamples)
-        && this._frameBuffers.init(this._textures, this._depth, this._depthMS)
+        && this._fbos.init(this._textures, this._depth, this._depthMS)
         && this._geom.init(this._textures)
         && this.eyeDomeLighting.init(this._width, this._height, this._depth);
     }
@@ -1370,10 +1658,19 @@ abstract class Compositor extends SceneCompositor {
     this._depthMS = System.instance.createDepthBuffer(this._width, this._height, this._antialiasSamples);
     if (undefined === this._depthMS)
       return false;
-    return this._textures.enableMultiSampling(this._width, this._height, this._antialiasSamples);
+
+    if (!this._textures.enableMultiSampling(this._width, this._height, this._antialiasSamples))
+      return false;
+
+    assert(undefined !== this._depth && undefined !== this._depthMS);
+    return this._fbos.enableMultiSampling(this._textures, this._depth, this._depthMS);
   }
 
   protected disableMultiSampling(): boolean {
+    assert(undefined !== this._depth);
+    if (!this._fbos.disableMultiSampling(this._textures, this._depth))
+      return false;
+
     // Want to disable multisampling without deleting & reallocating other stuff.
     this._depthMS = dispose(this._depthMS);
     assert(undefined !== this._depth);
@@ -1537,7 +1834,7 @@ abstract class Compositor extends SceneCompositor {
 
   private renderIndexedVolumeClassifier(cmdsByIndex: DrawCommands, needComposite: boolean) {
     // Set the stencil for the given classifier stencil volume.
-    System.instance.frameBufferStack.execute(this._frameBuffers.stencilSet!, false, this.useMsBuffers, () => {
+    System.instance.frameBufferStack.execute(this._fbos.stencilSet!, false, this.useMsBuffers, () => {
       this.target.pushState(this._vcBranchState!);
       System.instance.applyRenderState(this._vcSetStencilRenderState!);
       this.target.techniques.executeForIndexedClassifier(this.target, cmdsByIndex, RenderPass.Classification);
@@ -1597,18 +1894,18 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
-    if (undefined === this._frameBuffers.altZOnly || undefined === this._frameBuffers.stencilSet)
+    if (undefined === this._fbos.altZOnly || undefined === this._fbos.stencilSet)
       return;
 
     if (renderForReadPixels && this.target.vcSupportIntersectingVolumes) {
       // Clear the stencil.
-      fbStack.execute(this._frameBuffers.stencilSet, false, this.useMsBuffers, () => {
+      fbStack.execute(this._fbos.stencilSet, false, this.useMsBuffers, () => {
         System.instance.context.clearStencil(0);
         System.instance.context.clear(GL.BufferBit.Stencil);
       });
 
       if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
-        this._frameBuffers.stencilSet.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
+        this._fbos.stencilSet.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
 
       for (let i = 0; i < cmdsByIndex.length; i += numCmdsPerClassifier)
         this.renderIndexedVolumeClassifier(cmdsByIndex.slice(i, i + numCmdsPerClassifier), needComposite);
@@ -1621,10 +1918,10 @@ abstract class Compositor extends SceneCompositor {
     const doColorByElement = SpatialClassifierInsideDisplay.ElementColor === insideFlags || renderForReadPixels;
     const doColorByElementForIntersectingVolumes = this.target.vcSupportIntersectingVolumes;
     const needAltZ = (doColorByElement && !doColorByElementForIntersectingVolumes) || needOutsideDraw;
-    let zOnlyFbo = this._frameBuffers.stencilSet;
-    let volClassBlendFbo = this._frameBuffers.volClassCreateBlend;
+    let zOnlyFbo = this._fbos.stencilSet;
+    let volClassBlendFbo = this._fbos.volClassCreateBlend;
     let volClassBlendReadZTexture = this._vcAltDepthStencil!.getHandle()!;
-    let volClassBlendReadZTextureFbo = this._frameBuffers.altZOnly;
+    let volClassBlendReadZTextureFbo = this._fbos.altZOnly;
     if (!needAltZ) {
       // Initialize the blend texture and the stencil.
       assert(undefined !== volClassBlendFbo);
@@ -1636,11 +1933,11 @@ abstract class Compositor extends SceneCompositor {
     } else {
       // If we are doing color-by-element for the inside do not care about intersecting volumes or we need to color the outside
       // then we need to copy the Z buffer and set up a different zbuffer/stencil to render in.
-      zOnlyFbo = this._frameBuffers.altZOnly;
-      volClassBlendFbo = this._frameBuffers.volClassCreateBlendAltZ;
+      zOnlyFbo = this._fbos.altZOnly;
+      volClassBlendFbo = this._fbos.volClassCreateBlendAltZ;
       assert(undefined !== volClassBlendFbo);
       volClassBlendReadZTexture = this._depth!.getHandle()!;
-      volClassBlendReadZTextureFbo = this._frameBuffers.stencilSet;
+      volClassBlendReadZTextureFbo = this._fbos.stencilSet;
       if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
         volClassBlendReadZTextureFbo.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
       // Copy the current Z into the Alt-Z.  At the same time go ahead and clear the stencil and the blend texture.
@@ -1657,7 +1954,7 @@ abstract class Compositor extends SceneCompositor {
 
     if (renderForReadPixels) {
       // Set the stencil for all of the classifier volumes.
-      System.instance.frameBufferStack.execute(this._frameBuffers.altZOnly, false, this.useMsBuffers, () => {
+      System.instance.frameBufferStack.execute(this._fbos.altZOnly, false, this.useMsBuffers, () => {
         this.target.pushState(this._vcBranchState!);
         System.instance.applyRenderState(this._vcSetStencilRenderState!);
         this.target.techniques.execute(this.target, cmds, RenderPass.Classification);
@@ -1679,7 +1976,7 @@ abstract class Compositor extends SceneCompositor {
       this.setAllStencilOps(this._vcColorRenderState!, GL.StencilOperation.Keep); // don't clear the stencil so that all classifiers behind reality mesh will still draw
       this.target.activeVolumeClassifierTexture = this._geom.volClassCopyZ!.texture;
       if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
-        this._frameBuffers.stencilSet.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
+        this._fbos.stencilSet.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
       this.renderIndexedClassifierForReadPixels(cmds, this._vcColorRenderState!, false, needComposite);
       this.target.activeVolumeClassifierTexture = undefined;
       this._vcColorRenderState!.flags.depthTest = false;
@@ -1773,7 +2070,7 @@ abstract class Compositor extends SceneCompositor {
         }
       } else {
         if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
-          this._frameBuffers.stencilSet.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
+          this._fbos.stencilSet.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
         fbStack.execute(volClassBlendFbo, false, this.useMsBuffers, () => {
           // For coloring the inside by element color we will draw the inside using the the classifiers themselves.
           // To do this we need to first clear our Alt-Z.  The shader will then test and write Z and will discard
@@ -1814,7 +2111,7 @@ abstract class Compositor extends SceneCompositor {
     // if (cmdsSelected.length > 0 && insideFlags !== this.target.activeVolumeClassifierProps!.flags.selected) {
     if (!doColorByElement && cmdsSelected.length > 0 && insideFlags !== SpatialClassifierInsideDisplay.Hilite) { // assume selected ones are always hilited
       // Set the stencil using just the hilited volume classifiers.
-      fbStack.execute(this._frameBuffers.stencilSet, false, this.useMsBuffers, () => {
+      fbStack.execute(this._fbos.stencilSet, false, this.useMsBuffers, () => {
         this.target.pushState(this._vcBranchState!);
         System.instance.applyRenderState(this._vcSetStencilRenderState!);
         if (needAltZ) {
@@ -1827,9 +2124,9 @@ abstract class Compositor extends SceneCompositor {
         this.target.popBranch();
       });
       if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
-        this._frameBuffers.altZOnly.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
+        this._fbos.altZOnly.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
 
-      fbStack.execute(this._frameBuffers.volClassCreateBlend!, false, this.useMsBuffers, () => {
+      fbStack.execute(this._fbos.volClassCreateBlend!, false, this.useMsBuffers, () => {
         this._geom.volClassSetBlend!.boundaryType = BoundaryType.Selected;
         this._geom.volClassSetBlend!.texture = this._vcAltDepthStencil!.getHandle()!; // need to attach the alt depth instead of the real one since it is bound to the frame buffer
         this.target.pushState(this.target.decorationsState);
@@ -1863,7 +2160,7 @@ abstract class Compositor extends SceneCompositor {
     const flashedClassifierCmds = extractFlashedVolumeClassifierCommands(this.target.flashedId, cmdsByIndex, numCmdsPerClassifier);
     if (undefined !== flashedClassifierCmds && !doColorByElement) {
       // Set the stencil for this one classifier.
-      fbStack.execute(this._frameBuffers.stencilSet, false, this.useMsBuffers, () => {
+      fbStack.execute(this._fbos.stencilSet, false, this.useMsBuffers, () => {
         this.target.pushState(this._vcBranchState!);
         System.instance.applyRenderState(this._vcSetStencilRenderState!);
         this.target.techniques.executeForIndexedClassifier(this.target, flashedClassifierCmds, RenderPass.OpaqueGeneral);
@@ -1885,7 +2182,7 @@ abstract class Compositor extends SceneCompositor {
 
   private renderHilite(commands: RenderCommands) {
     const system = System.instance;
-    system.frameBufferStack.execute(this._frameBuffers.hilite!, true, false, () => {
+    system.frameBufferStack.execute(this._fbos.hilite!, true, false, () => {
       // Clear the hilite buffer.
       system.context.clearColor(0, 0, 0, 0);
       system.context.clear(GL.BufferBit.Color);
@@ -1896,7 +2193,7 @@ abstract class Compositor extends SceneCompositor {
     // Process planar classifiers
     const planarClassifierCmds = commands.getCommands(RenderPass.HilitePlanarClassification);
     if (0 !== planarClassifierCmds.length) {
-      system.frameBufferStack.execute(this._frameBuffers.hiliteUsingStencil!, true, false, () => {
+      system.frameBufferStack.execute(this._fbos.hiliteUsingStencil!, true, false, () => {
         system.applyRenderState(this._opaqueRenderState);
         this.target.techniques.execute(this.target, planarClassifierCmds, RenderPass.HilitePlanarClassification);
       });
@@ -1906,14 +2203,14 @@ abstract class Compositor extends SceneCompositor {
     const vcHiliteCmds = commands.getCommands(RenderPass.HiliteClassification);
     if (0 !== vcHiliteCmds.length && undefined !== this._vcBranchState) {
       // Set the stencil for the given classifier stencil volume.
-      system.frameBufferStack.execute(this._frameBuffers.stencilSet!, false, false, () => {
+      system.frameBufferStack.execute(this._fbos.stencilSet!, false, false, () => {
         this.target.pushState(this._vcBranchState!);
         system.applyRenderState(this._vcSetStencilRenderState!);
         this.target.techniques.execute(this.target, vcHiliteCmds, RenderPass.Hilite);
         this.target.popBranch();
       });
       // Process the stencil for the hilite data.
-      system.frameBufferStack.execute(this._frameBuffers.hiliteUsingStencil!, true, false, () => {
+      system.frameBufferStack.execute(this._fbos.hiliteUsingStencil!, true, false, () => {
         system.applyRenderState(this._vcPickDataRenderState!);
         this.target.techniques.execute(this.target, vcHiliteCmds, RenderPass.Hilite);
       });
@@ -1974,329 +2271,4 @@ abstract class Compositor extends SceneCompositor {
 interface SinglePointCloudData {
   pcs?: PointCloudDisplaySettings;
   cmds: DrawCommands;
-}
-
-// SceneCompositor used when multiple render targets are supported (WEBGL_draw_buffers exists and supports at least 4 color attachments).
-class MRTCompositor extends Compositor {
-  public constructor(target: Target) {
-    super(target, new FrameBuffers(), new Geometry());
-  }
-
-  public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
-  public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
-
-  private get _fbos(): FrameBuffers { return this._frameBuffers; }
-  private get _geometry(): Geometry { return this._geom; }
-
-  protected override enableVolumeClassifierFbos(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
-    this._fbos.enableVolumeClassifier(textures, depth, volClassDepth, depthMS, volClassDepthMS);
-  }
-  protected override disableVolumeClassifierFbos(): void { this._fbos.disableVolumeClassifier(); }
-
-  protected override enableMultiSampling(): boolean {
-    if (!super.enableMultiSampling())
-      return false;
-    assert(undefined !== this._depth && undefined !== this._depthMS);
-    return this._fbos.enableMultiSampling(this._textures, this._depth, this._depthMS);
-  }
-
-  protected override disableMultiSampling(): boolean {
-    assert(undefined !== this._depth);
-    if (!this._fbos.disableMultiSampling(this._textures, this._depth))
-      return false;
-    return super.disableMultiSampling();
-  }
-
-  protected clearOpaque(needComposite: boolean): void {
-    const fbo = needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!;
-    const system = System.instance;
-    system.frameBufferStack.execute(fbo, true, this.useMsBuffers, () => {
-      // Clear pick data buffers to 0's and color buffer to background color
-      // (0,0,0,0) in elementID0 and ElementID1 buffers indicates invalid element id
-      // (0,0,0,0) in DepthAndOrder buffer indicates render order 0 and encoded depth of 0 (= far plane)
-      system.applyRenderState(this._noDepthMaskRenderState);
-      const params = getDrawParams(this.target, this._geometry.clearPickAndColor!);
-      this.target.techniques.draw(params);
-
-      // Clear depth buffer
-      system.applyRenderState(RenderState.defaults); // depthMask == true.
-      system.context.clearDepth(1.0);
-      system.context.clear(GL.BufferBit.Depth);
-    });
-  }
-
-  protected renderPointClouds(commands: RenderCommands, compositeFlags: CompositeFlags) {
-    const is3d = FrustumUniformType.Perspective === this.target.uniforms.frustum.type;
-    // separate individual point clouds and get their point cloud settings
-    const pointClouds: Array<SinglePointCloudData> = [];
-    let pcs: PointCloudDisplaySettings | undefined;
-    const cmds = commands.getCommands(RenderPass.PointClouds);
-    let curPC: SinglePointCloudData | undefined;
-    let pushDepth = 0;
-    for (const cmd of cmds) {
-      if ("pushBranch" === cmd.opcode) { // should be first command
-        ++pushDepth;
-        if (pushDepth === 1) {
-          pcs = cmd.branch.branch.realityModelDisplaySettings?.pointCloud;
-          this.target.uniforms.realityModel.pointCloud.updateRange (cmd.branch.branch.realityModelRange,
-            this.target, cmd.branch.localToWorldTransform, is3d);
-          pointClouds.push(curPC = { pcs, cmds: [cmd] });
-        } else {
-          assert (undefined !== curPC);
-          curPC.cmds.push(cmd);
-        }
-      } else {
-        if ("popBranch" === cmd.opcode)
-          --pushDepth;
-        assert (undefined !== curPC);
-        curPC.cmds.push(cmd);
-      }
-    }
-
-    const needComposite = CompositeFlags.None !== compositeFlags;
-    const fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
-    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
-    const system = System.instance;
-    const fbStack = system.frameBufferStack;
-
-    this._readPickDataFromPingPong = false;
-
-    for (const pc of pointClouds) {
-      pcs = pc.pcs;
-      let edlOn = pcs?.edlMode !== "off" && is3d;
-      if (edlOn) {
-        if (undefined === this._textures.hilite)
-          edlOn = false;
-        else {
-          // create fbo on fly if not present, or has changed (from MS)
-          // ###TODO consider not drawing point clouds to MS buffers, at least if EDL, it isn't worth the overhead.
-          //         would have to blit depth before draw, use depth for draw, then run shader to copy depth back to MSAA
-          //         at end, wherever color buf changed (test alpha, else discard)
-          //         this would also simplify this code considerably
-          let drawColBufs;
-          if (undefined !== this._fbos.edlDrawCol)
-            drawColBufs = this._fbos.edlDrawCol.getColorTargets(useMsBuffers, 0);
-          if (undefined === this._fbos.edlDrawCol || this._textures.hilite !== drawColBufs?.tex || this._textures.hiliteMsBuff !== drawColBufs.msBuf) {
-            this._fbos.edlDrawCol = dispose (this._fbos.edlDrawCol);
-            const filters = [GL.MultiSampling.Filter.Linear];
-            if (useMsBuffers)
-              this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth,
-                useMsBuffers && this._textures.hiliteMsBuff ? [this._textures.hiliteMsBuff] : undefined, filters, this._depthMS);
-            else
-              this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth);
-          }
-          if (undefined === this._fbos.edlDrawCol)
-            edlOn = false;
-          else { // can draw EDL
-            // first draw pointcloud to borrowed hilite texture(MS) and regular depth(MS) buffers
-            fbStack.execute(this._fbos.edlDrawCol, true, useMsBuffers, () => {
-              system.context.clearColor(0, 0, 0, 0);
-              system.context.clear(GL.BufferBit.Color);
-              system.applyRenderState(this.getRenderState(RenderPass.PointClouds));
-              this.target.techniques.execute(this.target, pc.cmds, RenderPass.PointClouds);
-            });
-            if (useMsBuffers)
-              this._fbos.edlDrawCol.blitMsBuffersToTextures(true, 0); // need to read the non-MS depth and hilite buffers
-
-            // next process buffers to generate EDL (depth buffer is passed during init)
-            this.target.beginPerfMetricRecord("Calc EDL");  // ### todo keep? (probably)
-            const sts = this.eyeDomeLighting.draw ({
-              edlMode: pc.pcs?.edlMode === "full" ? EDLMode.Full : EDLMode.On,
-              edlFilter: !!pcs?.edlFilter,
-              useMsBuffers,
-              inputTex: this._textures.hilite,
-              curFbo: fbo,
-            });
-            this.target.endPerfMetricRecord();
-            if (!sts) {
-              edlOn = false;
-            }
-          }
-        }
-      }
-      if (!edlOn) {
-        // draw the regular way
-        fbStack.execute(fbo, true, useMsBuffers, () => {
-          system.applyRenderState(this.getRenderState(RenderPass.PointClouds));
-          this.target.techniques.execute(this.target, pc.cmds, RenderPass.PointClouds);
-        });
-      }
-    }
-  }
-
-  protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
-    if (CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion) && !renderForReadPixels) {
-      this.renderOpaqueAO(commands);
-      return;
-    }
-    const needComposite = CompositeFlags.None !== compositeFlags;
-    const fbStack = System.instance.frameBufferStack;
-
-    // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels() or ambient occlusion).
-    let fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
-    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
-    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
-    fbStack.execute(fbo, true, useMsBuffers, () => {
-      this.drawPass(commands, RenderPass.OpaqueLinear);
-      this.drawPass(commands, RenderPass.OpaquePlanar, true);
-      if (renderForReadPixels) {
-        this.drawPass(commands, RenderPass.PointClouds, true); // don't need EDL for this
-        this.drawPass(commands, RenderPass.OpaqueGeneral, true);
-        if (useMsBuffers)
-          fbo.blitMsBuffersToTextures(true);
-      }
-    });
-    this._readPickDataFromPingPong = false;
-
-    // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
-    if (!renderForReadPixels) {
-      fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
-      fbStack.execute(fbo, true, useMsBuffers, () => {
-        this.drawPass(commands, RenderPass.OpaqueGeneral, false);
-        this.drawPass(commands, RenderPass.HiddenEdge, false);
-      });
-      // assume we are done with MS at this point, so update the non-MS buffers
-      if (useMsBuffers)
-        fbo.blitMsBuffersToTextures(needComposite);
-    }
-  }
-
-  protected renderOpaqueAO(commands: RenderCommands) {
-    const fbStack = System.instance.frameBufferStack;
-    const haveHiddenEdges = 0 !== commands.getCommands(RenderPass.HiddenEdge).length;
-
-    // Output the linear, planar, and pickable surfaces to color and pick data buffers.
-    let fbo = this._fbos.opaqueAndCompositeAll!;
-    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
-    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
-    fbStack.execute(fbo, true, useMsBuffers, () => {
-      this.drawPass(commands, RenderPass.OpaqueLinear);
-      this.drawPass(commands, RenderPass.OpaquePlanar, true);
-      this._primitiveDrawState = PrimitiveDrawState.Pickable;
-      this.drawPass(commands, RenderPass.OpaqueGeneral, true);
-      this._primitiveDrawState = PrimitiveDrawState.Both;
-      if (useMsBuffers)
-        fbo.blitMsBuffersToTextures(true);
-    });
-    this._readPickDataFromPingPong = false;
-
-    // Output the non-pickable surfaces and hidden edges to just the color buffer.
-    fbo = this._fbos.opaqueAndCompositeColor!;
-    fbStack.execute(fbo, true, useMsBuffers, () => {
-      this._primitiveDrawState = PrimitiveDrawState.NonPickable;
-      this.drawPass(commands, RenderPass.OpaqueGeneral, false);
-      if (haveHiddenEdges)
-        this.drawPass(commands, RenderPass.HiddenEdge, false);
-      this._primitiveDrawState = PrimitiveDrawState.Both;
-    });
-    if (useMsBuffers)
-      fbo.blitMsBuffersToTextures(true);
-
-    // If there are no hidden edges, then we're done & can run the AO passes using the normal depthAndOrder texture.
-    if (haveHiddenEdges) {
-      // AO needs the pick data (orderAndDepth) for the hidden edges.  We don't want it in with the other pick data though since they are not pickable, so we will use other textures.
-      // If not multisampling we will re-use the ping-pong/transparency textures since we are done with ping-ponging at this point and transparency happens later.
-      // If multisampling then we will use the accumulation texture for featureIDs and a special texture for depthAndOrder since the revealage texture is not the right type for multisampling.
-      // First we will need to copy what's in the pick buffers so far into the hidden pick buffers.
-      System.instance.applyRenderState(this._noDepthMaskRenderState);
-      fbo = (useMsBuffers ? this._fbos.pingPongMS! : this._fbos.pingPong!);
-      fbStack.execute(fbo, true, useMsBuffers, () => {
-        const params = getDrawParams(this.target, this._geometry.copyPickBuffers!);
-        this.target.techniques.draw(params);
-      });
-      if (useMsBuffers)
-        fbo.blitMsBuffersToTextures(false, 1); // only want to blit the depth/order target
-      // Now draw the hidden edges, using an fbo which places their depth/order into the hidden pick buffers.
-      // Since we are not writing to the actual pick buffers we let this._readPickDataFromPingPong remain false.
-      fbo = this._fbos.opaqueAndCompositeAllHidden!;
-      this._primitiveDrawState = PrimitiveDrawState.Pickable;
-      fbStack.execute(fbo, true, useMsBuffers, () => {
-        this.drawPass(commands, RenderPass.HiddenEdge, false);
-      });
-      this._primitiveDrawState = PrimitiveDrawState.Both;
-      if (useMsBuffers) {
-        // Only want to blit the color and depth/order targets as the featureId target is not blit-able and will generate a GL error.
-        fbo.blitMsBuffersToTextures(false, 0);
-        fbo.blitMsBuffersToTextures(false, 2);
-      }
-      this._needHiddenEdges = false;
-    }
-
-    this._needHiddenEdges = haveHiddenEdges; // this will cause the alternate renderAndOrder texture with the hidden edges to be read for the 2nd AO blur pass.
-    this.renderAmbientOcclusion();
-    this._needHiddenEdges = false;
-  }
-
-  protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
-    const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
-    const useMsBuffers = RenderPass.OpaqueLayers === pass && fbo.isMultisampled && this.useMsBuffers;
-    this._readPickDataFromPingPong = !useMsBuffers;
-    System.instance.frameBufferStack.execute(fbo, true, useMsBuffers, () => {
-      this.drawPass(commands, pass, true);
-    });
-
-    this._readPickDataFromPingPong = false;
-  }
-
-  protected renderForVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
-    const needComposite = CompositeFlags.None !== compositeFlags;
-    const needAO = CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion);
-    const fbStack = System.instance.frameBufferStack;
-
-    if (renderForReadPixels || needAO) {
-      this._readPickDataFromPingPong = true;
-      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, this.useMsBuffers, () => {
-        this.drawPass(commands, RenderPass.OpaqueGeneral, true, RenderPass.VolumeClassifiedRealityData);
-      });
-    } else {
-      this._readPickDataFromPingPong = false;
-      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, this.useMsBuffers, () => {
-        this.drawPass(commands, RenderPass.OpaqueGeneral, false, RenderPass.VolumeClassifiedRealityData);
-      });
-    }
-  }
-
-  protected renderIndexedClassifierForReadPixels(cmds: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, needComposite: boolean) {
-    this._readPickDataFromPingPong = true;
-    const fbo = (renderForIntersectingVolumes ? (needComposite ? this._fbos.idsAndZComposite! : this._fbos.idsAndZ!)
-      : (needComposite ? this._fbos.idsAndAltZComposite! : this._fbos.idsAndAltZ!));
-    System.instance.frameBufferStack.execute(fbo, true, false, () => {
-      System.instance.applyRenderState(state);
-      this.target.techniques.execute(this.target, cmds, RenderPass.OpaqueGeneral);
-    });
-    this._readPickDataFromPingPong = false;
-  }
-
-  protected clearTranslucent() {
-    System.instance.applyRenderState(this._noDepthMaskRenderState);
-    System.instance.frameBufferStack.execute(this._fbos.clearTranslucent!, true, false, () => {
-      const params = getDrawParams(this.target, this._geometry.clearTranslucent!);
-      this.target.techniques.draw(params);
-    });
-  }
-
-  protected renderTranslucent(commands: RenderCommands) {
-    System.instance.frameBufferStack.execute(this._fbos.translucent!, true, false, () => {
-      this.drawPass(commands, RenderPass.Translucent);
-    });
-  }
-
-  protected pingPong() {
-    if (this._fbos.opaqueAll!.isMultisampled && this.useMsBuffers) {
-      // If we are multisampling we can just blit the FeatureId and DepthAndOrder MS buffers to their textures.
-      this._fbos.opaqueAll!.blitMsBuffersToTextures(false, 1);
-      this._fbos.opaqueAll!.blitMsBuffersToTextures(false, 2);
-    } else {
-      System.instance.applyRenderState(this._noDepthMaskRenderState);
-      System.instance.frameBufferStack.execute(this._fbos.pingPong!, true, this.useMsBuffers, () => {
-        const params = getDrawParams(this.target, this._geometry.copyPickBuffers!);
-        this.target.techniques.draw(params);
-      });
-    }
-  }
-
-  protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!; }
-
-  private get _samplerFbo(): FrameBuffer { return this._readPickDataFromPingPong ? this._fbos.pingPong! : this._fbos.opaqueAll!; }
-  private getSamplerTexture(index: number) { return this._samplerFbo.getColor(index); }
 }
