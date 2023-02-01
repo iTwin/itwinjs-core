@@ -144,14 +144,14 @@ export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
  */
 export enum TextureUnit {
   // For shaders which know exactly which textures will be used
-  Zero = WebGL2RenderingContext.TEXTURE0,
-  One = WebGL2RenderingContext.TEXTURE1,
-  Two = WebGL2RenderingContext.TEXTURE2,
-  Three = WebGL2RenderingContext.TEXTURE3,
-  Four = WebGL2RenderingContext.TEXTURE4,
-  Five = WebGL2RenderingContext.TEXTURE5,
-  Six = WebGL2RenderingContext.TEXTURE6,
-  Seven = WebGL2RenderingContext.TEXTURE7,
+  Zero = WebGLRenderingContext.TEXTURE0,
+  One = WebGLRenderingContext.TEXTURE1,
+  Two = WebGLRenderingContext.TEXTURE2,
+  Three = WebGLRenderingContext.TEXTURE3,
+  Four = WebGLRenderingContext.TEXTURE4,
+  Five = WebGLRenderingContext.TEXTURE5,
+  Six = WebGLRenderingContext.TEXTURE6,
+  Seven = WebGLRenderingContext.TEXTURE7,
 
   ClipVolume = Zero,
   FeatureSymbology = One,
@@ -176,9 +176,9 @@ export enum TextureUnit {
   RealityMesh0 = Two,
   RealityMesh1 = VertexLUT, // Reality meshes do not use VertexLUT.
   RealityMesh2 = ShadowMap, //  Shadow map when picking -- PickDepthAndOrder otherwise....
-  RealityMesh3 = WebGL2RenderingContext.TEXTURE8,
-  RealityMesh4 = WebGL2RenderingContext.TEXTURE9,
-  RealityMesh5 = WebGL2RenderingContext.TEXTURE10,
+  RealityMesh3 = WebGLRenderingContext.TEXTURE8,
+  RealityMesh4 = WebGLRenderingContext.TEXTURE9,
+  RealityMesh5 = WebGLRenderingContext.TEXTURE10,
 
   RealityMeshThematicGradient = WebGLRenderingContext.TEXTURE11,
 
