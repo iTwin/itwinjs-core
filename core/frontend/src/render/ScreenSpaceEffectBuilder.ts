@@ -192,7 +192,7 @@ export interface ScreenSpaceEffectContext {
  */
 export interface ScreenSpaceEffectBuilder {
   /** True if the shader will be used with a WebGL 2 rendering context.
-   * @deprecated in 4.x. WebGL 1 is no longer supported, so all rendering contexts use WebGL 2.
+   * @deprecated in 4.x. WebGL 1 is no longer supported, so this property is always `true`.
    */
   readonly isWebGL2: boolean;
 
