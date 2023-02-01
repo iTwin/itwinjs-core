@@ -9,7 +9,6 @@
 import { assert } from "@itwin/core-bentley";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
-import { System } from "../System";
 import { addEyeSpace } from "./Common";
 import { addModelViewMatrix } from "./Vertex";
 
@@ -32,23 +31,6 @@ float unpackFloat(vec4 v) {
   sign = -(sign * 2.0 - 1.0);
   float unpacked = dot(sign * v.xyz, vec3(1.0 / 256.0, 1.0 / 65536.0, 1.0 / 16777216.0)); // shift x right 8, y right 16 and z right 24
   return unpacked * pow(10.0, exponent);
-}
-`;
-
-// ###TODO: oct-encode the normal to reduce # of samples from 4 to 2
-const unpackClipPlane = `
-vec4 getClipPlane(int index) {
-  float y = (float(index) + 0.5) / float(u_clipParams[2]);
-  float sx = 0.25;
-  vec2 tc = vec2(0.125, y);
-  float nx = unpackFloat(TEXTURE(s_clipSampler, tc));
-  tc.x += sx;
-  float ny = unpackFloat(TEXTURE(s_clipSampler, tc));
-  tc.x += sx;
-  float nz = unpackFloat(TEXTURE(s_clipSampler, tc));
-  tc.x += sx;
-  float dist = unpackFloat(TEXTURE(s_clipSampler, tc));
-  return vec4(nx, ny, nz, dist);
 }
 `;
 
