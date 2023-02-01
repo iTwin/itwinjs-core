@@ -62,7 +62,7 @@ class PersistentModel implements RealityModel {
   }
 }
 
-function createRealityModelSettingsPanel(model: RealityModel, element: HTMLElement, isEDL: boolean) {
+function createRealityModelSettingsPanel(model: RealityModel, element: HTMLElement) {
   const updateSettings = (props: RealityModelDisplayProps) => model.settings = model.settings.clone(props);
   const updateAppearance = (props: FeatureAppearanceProps | undefined) => {
     if (!props)
@@ -169,120 +169,118 @@ function createRealityModelSettingsPanel(model: RealityModel, element: HTMLEleme
 
   setSizeMode(model.settings.pointCloud.sizeMode);
 
-  if (isEDL) {
-    //  ----------------- EDL -----------------
-    const setEDLMode = (mode: string) => {
-      const isOn = mode !== "off";
-      const isFull = mode === "full";
-      updatePointCloud({ edlMode: isOn ? (isFull ? "full" : "on") : "off" });
-      edlFilter.style.display = isFull ? "" : "none";
-      edlMixWt1Slider.style.display = isFull ? "" : "none";
-      edlMixWt2Slider.style.display = isFull ? "" : "none";
-      edlMixWt4Slider.style.display = isFull ? "" : "none";
-    };
+  //  ----------------- EDL -----------------
+  const setEDLMode = (mode: string) => {
+    const isOn = mode !== "off";
+    const isFull = mode === "full";
+    updatePointCloud({ edlMode: isOn ? (isFull ? "full" : "on") : "off" });
+    edlFilter.style.display = isFull ? "" : "none";
+    edlMixWt1Slider.style.display = isFull ? "" : "none";
+    edlMixWt2Slider.style.display = isFull ? "" : "none";
+    edlMixWt4Slider.style.display = isFull ? "" : "none";
+  };
 
-    const hr = document.createElement("hr");
-    hr.style.borderColor = "grey";
-    element.appendChild(hr);
+  const hr = document.createElement("hr");
+  hr.style.borderColor = "grey";
+  element.appendChild(hr);
 
-    const edlDiv = document.createElement("div");
-    element.appendChild(edlDiv);
-    edlDiv.style.display = "inline";
+  const edlDiv = document.createElement("div");
+  element.appendChild(edlDiv);
+  edlDiv.style.display = "inline";
 
-    const label1 = document.createElement("label");
-    label1.innerText = "EDL ";
-    label1.style.display = "inline";
-    edlDiv.appendChild(label1);
+  const label1 = document.createElement("label");
+  label1.innerText = "EDL ";
+  label1.style.display = "inline";
+  edlDiv.appendChild(label1);
 
-    const edlMode = createRadioBox({
-      id: "pcs_edlMode",
-      defaultValue: model.settings.pointCloud.edlMode,
-      entries: [
-        { value: "off", label: "Off " },
-        { value: "on", label: "On " },
-        { value: "full", label: "Full " },
-      ],
-      parent: edlDiv,
-      handler: (value) => setEDLMode(value),
-    });
-    edlMode.div.style.display = edlMode.form.style.display = "inline";
+  const edlMode = createRadioBox({
+    id: "pcs_edlMode",
+    defaultValue: model.settings.pointCloud.edlMode,
+    entries: [
+      { value: "off", label: "Off " },
+      { value: "on", label: "On " },
+      { value: "full", label: "Full " },
+    ],
+    parent: edlDiv,
+    handler: (value) => setEDLMode(value),
+  });
+  edlMode.div.style.display = edlMode.form.style.display = "inline";
 
-    // EDL strength
-    const edlStrengthSlider = createSlider({
-      name: " Strength ", id: "pcs_strength", parent: element,
-      min: "0.0", max: "25", step: "0.25",
-      value: model.settings.pointCloud.edlStrength.toString(),
-      readout: "right", verticalAlign: false, textAlign: false,
-      handler: (slider) => {
-        const scale = Number.parseFloat(slider.value);
-        if (!Number.isNaN(scale))
-          updatePointCloud({ edlStrength: scale });
-      },
-    }).div;
-    edlStrengthSlider.style.display = "";
+  // EDL strength
+  const edlStrengthSlider = createSlider({
+    name: " Strength ", id: "pcs_strength", parent: element,
+    min: "0.0", max: "25", step: "0.25",
+    value: model.settings.pointCloud.edlStrength.toString(),
+    readout: "right", verticalAlign: false, textAlign: false,
+    handler: (slider) => {
+      const scale = Number.parseFloat(slider.value);
+      if (!Number.isNaN(scale))
+        updatePointCloud({ edlStrength: scale });
+    },
+  }).div;
+  edlStrengthSlider.style.display = "";
 
-    // EDL radius
-    const edlRadiusSlider = createSlider({
-      name: " Radius ", id: "pcs_radius", parent: element,
-      min: "0.0", max: "25", step: "0.25",
-      value: model.settings.pointCloud.edlRadius.toString(),
-      readout: "right", verticalAlign: false, textAlign: false,
-      handler: (slider) => {
-        const scale = Number.parseFloat(slider.value);
-        if (!Number.isNaN(scale))
-          updatePointCloud({ edlRadius: scale });
-      },
-    }).div;
-    edlRadiusSlider.style.display = "";
+  // EDL radius
+  const edlRadiusSlider = createSlider({
+    name: " Radius ", id: "pcs_radius", parent: element,
+    min: "0.0", max: "25", step: "0.25",
+    value: model.settings.pointCloud.edlRadius.toString(),
+    readout: "right", verticalAlign: false, textAlign: false,
+    handler: (slider) => {
+      const scale = Number.parseFloat(slider.value);
+      if (!Number.isNaN(scale))
+        updatePointCloud({ edlRadius: scale });
+    },
+  }).div;
+  edlRadiusSlider.style.display = "";
 
-    const edlFilter = createCheckBox({
-      name: " Filter", id: "pcs_filter",
-      parent: element,
-      isChecked: model.settings.pointCloud.edlFilter === 1,
-      handler: (cb) => updatePointCloud({ edlFilter: cb.checked ? 1 : 0 }),
-    }).div;
+  const edlFilter = createCheckBox({
+    name: " Filter", id: "pcs_filter",
+    parent: element,
+    isChecked: model.settings.pointCloud.edlFilter === 1,
+    handler: (cb) => updatePointCloud({ edlFilter: cb.checked ? 1 : 0 }),
+  }).div;
 
-    const edlMixWt1Slider = createSlider({
-      name: " Mix Wt 1 ", id: "pcs_mixwt1", parent: element,
-      min: "0.0", max: "1", step: "0.01",
-      value: model.settings.pointCloud.edlMixWts1?.toString() ?? "1",
-      readout: "right", verticalAlign: false, textAlign: false,
-      handler: (slider) => {
-        const scale = Number.parseFloat(slider.value);
-        if (!Number.isNaN(scale))
-          updatePointCloud({ edlMixWts1: scale });
-      },
-    }).div;
-    edlMixWt1Slider.style.display = "";
+  const edlMixWt1Slider = createSlider({
+    name: " Mix Wt 1 ", id: "pcs_mixwt1", parent: element,
+    min: "0.0", max: "1", step: "0.01",
+    value: model.settings.pointCloud.edlMixWts1?.toString() ?? "1",
+    readout: "right", verticalAlign: false, textAlign: false,
+    handler: (slider) => {
+      const scale = Number.parseFloat(slider.value);
+      if (!Number.isNaN(scale))
+        updatePointCloud({ edlMixWts1: scale });
+    },
+  }).div;
+  edlMixWt1Slider.style.display = "";
 
-    const edlMixWt2Slider = createSlider({
-      name: " Mix Wt 2 ", id: "pcs_mixwt2", parent: element,
-      min: "0.0", max: "1", step: "0.01",
-      value: model.settings.pointCloud.edlMixWts2?.toString() ?? "0.5",
-      readout: "right", verticalAlign: false, textAlign: false,
-      handler: (slider) => {
-        const scale = Number.parseFloat(slider.value);
-        if (!Number.isNaN(scale))
-          updatePointCloud({ edlMixWts2: scale });
-      },
-    }).div;
-    edlMixWt2Slider.style.display = "";
+  const edlMixWt2Slider = createSlider({
+    name: " Mix Wt 2 ", id: "pcs_mixwt2", parent: element,
+    min: "0.0", max: "1", step: "0.01",
+    value: model.settings.pointCloud.edlMixWts2?.toString() ?? "0.5",
+    readout: "right", verticalAlign: false, textAlign: false,
+    handler: (slider) => {
+      const scale = Number.parseFloat(slider.value);
+      if (!Number.isNaN(scale))
+        updatePointCloud({ edlMixWts2: scale });
+    },
+  }).div;
+  edlMixWt2Slider.style.display = "";
 
-    const edlMixWt4Slider = createSlider({
-      name: " Mix Wt 4 ", id: "pcs_mixwt4", parent: element,
-      min: "0.0", max: "1", step: "0.01",
-      value: model.settings.pointCloud.edlMixWts4?.toString() ?? "0.25",
-      readout: "right", verticalAlign: false, textAlign: false,
-      handler: (slider) => {
-        const scale = Number.parseFloat(slider.value);
-        if (!Number.isNaN(scale))
-          updatePointCloud({ edlMixWts4: scale });
-      },
-    }).div;
-    edlMixWt4Slider.style.display = "";
+  const edlMixWt4Slider = createSlider({
+    name: " Mix Wt 4 ", id: "pcs_mixwt4", parent: element,
+    min: "0.0", max: "1", step: "0.01",
+    value: model.settings.pointCloud.edlMixWts4?.toString() ?? "0.25",
+    readout: "right", verticalAlign: false, textAlign: false,
+    handler: (slider) => {
+      const scale = Number.parseFloat(slider.value);
+      if (!Number.isNaN(scale))
+        updatePointCloud({ edlMixWts4: scale });
+    },
+  }).div;
+  edlMixWt4Slider.style.display = "";
 
-    setEDLMode(model.settings.pointCloud.edlMode);
-  }
+  setEDLMode(model.settings.pointCloud.edlMode);
 }
 
 const viewportIdsWithOpenWidgets = new Set<number>();
@@ -312,9 +310,7 @@ class RealityModelSettingsWidget extends Window {
     element.style.zIndex = "inherit";
     this.contentDiv.appendChild(element);
 
-    const sys = this._viewport.target.renderSystem as System;
-    const isEDL = sys.capabilities.isWebGL2;
-    createRealityModelSettingsPanel(model, element, isEDL);
+    createRealityModelSettingsPanel(model, element);
     this.container.style.display = "flex";
 
     const removals = [
@@ -472,9 +468,7 @@ export class RealityModelSettingsPanel extends ToolBarDropDown {
     if (undefined === realityModel)
       return;
 
-    const sys = this._vp.target.renderSystem as System;
-    const isEDL = sys.capabilities.isWebGL2;
-    createRealityModelSettingsPanel(realityModel, this._element, isEDL);
+    createRealityModelSettingsPanel(realityModel, this._element);
   }
 
   public get isOpen(): boolean { return "none" !== this._element.style.display; }
