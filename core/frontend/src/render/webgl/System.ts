@@ -396,11 +396,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     // set actual gl state to match desired state defaults
     context.depthFunc(GL.DepthFunc.Default);  // LessOrEqual
 
-    if (!capabilities.supportsTextureFilterAnisotropic) {
-      options.filterMapTextures = false;
-      options.filterMapDrapeTextures = false;
-    }
-
     return new this(canvas, context, capabilities, options);
   }
 

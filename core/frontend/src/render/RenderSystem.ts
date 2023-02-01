@@ -782,11 +782,6 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      */
     logarithmicDepthBuffer?: boolean;
 
-    /** ###TODO this appears to do nothing. @internal */
-    filterMapTextures?: boolean;
-    /** ###TODO this appears to do nothing. @internal */
-    filterMapDrapeTextures?: boolean;
-
     /** If true, [[ScreenViewport]]s will respect the DPI of the display.  See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
      * @see [[dpiAwareLOD]] to control whether device pixel ratio affects the level of detail for tile graphics and decorations.
      * @see [[Viewport.cssPixelsToDevicePixels]] to convert CSS pixels to device pixels.
