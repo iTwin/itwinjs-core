@@ -507,6 +507,9 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
   public occlusion?: AmbientOcclusionGeometry;
   public occlusionXBlur?: BlurGeometry;
   public occlusionYBlur?: BlurGeometry;
+  public copyPickBuffers?: CopyPickBufferGeometry;
+  public clearTranslucent?: ViewportQuadGeometry;
+  public clearPickAndColor?: ViewportQuadGeometry;
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     collectGeometryStatistics(this.composite, stats);
@@ -517,6 +520,9 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     collectGeometryStatistics(this.occlusion, stats);
     collectGeometryStatistics(this.occlusionXBlur, stats);
     collectGeometryStatistics(this.occlusionYBlur, stats);
+    collectGeometryStatistics(this.copyPickBuffers, stats);
+    collectGeometryStatistics(this.clearTranslucent, stats);
+    collectGeometryStatistics(this.clearPickAndColor, stats);
   }
 
   public init(textures: Textures): boolean {
@@ -525,7 +531,17 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       textures.color!.getHandle()!,
       textures.accumulation!.getHandle()!,
       textures.revealage!.getHandle()!, textures.hilite!.getHandle()!);
-    return undefined !== this.composite;
+
+    if (undefined === this.composite)
+      return false;
+
+    assert(undefined === this.copyPickBuffers);
+
+    this.copyPickBuffers = CopyPickBufferGeometry.createGeometry(textures.featureId!.getHandle()!, textures.depthAndOrder!.getHandle()!);
+    this.clearTranslucent = ViewportQuadGeometry.create(TechniqueId.OITClearTranslucent);
+    this.clearPickAndColor = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
+
+    return undefined !== this.copyPickBuffers && undefined !== this.clearTranslucent && undefined !== this.clearPickAndColor;
   }
 
   public enableOcclusion(textures: Textures, depth: DepthBuffer): void {
@@ -563,14 +579,10 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
   }
 
   public get isDisposed(): boolean {
-    return undefined === this.composite
-      && undefined === this.occlusion
-      && undefined === this.occlusionXBlur
-      && undefined === this.occlusionYBlur
-      && undefined === this.volClassColorStencil
-      && undefined === this.volClassCopyZ
-      && undefined === this.volClassSetBlend
-      && undefined === this.volClassBlend;
+    return undefined === this.composite && undefined === this.occlusion && undefined === this.occlusionXBlur
+      && undefined === this.occlusionYBlur && undefined === this.volClassColorStencil && undefined === this.volClassCopyZ
+      && undefined === this.volClassSetBlend && undefined === this.volClassBlend && undefined === this.copyPickBuffers
+      && undefined === this.clearTranslucent && undefined === this.clearPickAndColor;
   }
 
   public dispose() {
@@ -579,6 +591,9 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     this.occlusionXBlur = dispose(this.occlusionXBlur);
     this.occlusionYBlur = dispose(this.occlusionYBlur);
     this.disableVolumeClassifier();
+    this.copyPickBuffers = dispose(this.copyPickBuffers);
+    this.clearTranslucent = dispose(this.clearTranslucent);
+    this.clearPickAndColor = dispose(this.clearPickAndColor);
   }
 }
 
@@ -1961,57 +1976,17 @@ interface SinglePointCloudData {
   cmds: DrawCommands;
 }
 
-class MRTGeometry extends Geometry {
-  public copyPickBuffers?: CopyPickBufferGeometry;
-  public clearTranslucent?: ViewportQuadGeometry;
-  public clearPickAndColor?: ViewportQuadGeometry;
-
-  public override collectStatistics(stats: RenderMemory.Statistics): void {
-    super.collectStatistics(stats);
-    collectGeometryStatistics(this.copyPickBuffers, stats);
-    collectGeometryStatistics(this.clearTranslucent, stats);
-    collectGeometryStatistics(this.clearPickAndColor, stats);
-  }
-
-  public override init(textures: Textures): boolean {
-    if (!super.init(textures))
-      return false;
-
-    assert(undefined === this.copyPickBuffers);
-
-    this.copyPickBuffers = CopyPickBufferGeometry.createGeometry(textures.featureId!.getHandle()!, textures.depthAndOrder!.getHandle()!);
-    this.clearTranslucent = ViewportQuadGeometry.create(TechniqueId.OITClearTranslucent);
-    this.clearPickAndColor = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
-
-    return undefined !== this.copyPickBuffers && undefined !== this.clearTranslucent && undefined !== this.clearPickAndColor;
-  }
-
-  public override get isDisposed(): boolean {
-    return super.isDisposed
-      && undefined === this.copyPickBuffers
-      && undefined === this.clearTranslucent
-      && undefined === this.clearPickAndColor;
-  }
-
-  public override dispose() {
-    super.dispose();
-    this.copyPickBuffers = dispose(this.copyPickBuffers);
-    this.clearTranslucent = dispose(this.clearTranslucent);
-    this.clearPickAndColor = dispose(this.clearPickAndColor);
-  }
-}
-
 // SceneCompositor used when multiple render targets are supported (WEBGL_draw_buffers exists and supports at least 4 color attachments).
 class MRTCompositor extends Compositor {
   public constructor(target: Target) {
-    super(target, new FrameBuffers(), new MRTGeometry());
+    super(target, new FrameBuffers(), new Geometry());
   }
 
   public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
 
   private get _fbos(): FrameBuffers { return this._frameBuffers; }
-  private get _geometry(): MRTGeometry { return this._geom as MRTGeometry; }
+  private get _geometry(): Geometry { return this._geom; }
 
   protected override enableVolumeClassifierFbos(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
     this._fbos.enableVolumeClassifier(textures, depth, volClassDepth, depthMS, volClassDepthMS);
