@@ -9,7 +9,6 @@ import { ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import {
   ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType,
 } from "../../../render/webgl/ShaderBuilder";
-import { System } from "../../../render/webgl/System";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ShaderBuilder", () => {

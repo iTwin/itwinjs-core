@@ -10,10 +10,8 @@ import { assert } from "@itwin/core-bentley";
 import { AnalysisStyleDisplacement, AnalysisStyleThematic, ThematicGradientSettings } from "@itwin/core-common";
 import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
 import { DrawParams } from "../DrawCommand";
-import { System } from "../System";
 import { TextureUnit } from "../RenderFlags";
 import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
-import { IsThematic } from "../TechniqueFlags";
 import { octDecodeNormal } from "./Surface";
 import { unquantizePosition } from "./Vertex";
 

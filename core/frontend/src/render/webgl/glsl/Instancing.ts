@@ -8,7 +8,6 @@
 
 import { assert } from "@itwin/core-bentley";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
-import { System } from "../System";
 import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
 import { addExtractNthBit } from "./Common";

@@ -19,7 +19,6 @@ import { UniformHandle } from "./UniformHandle";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { RenderCommands } from "./RenderCommands";
 import { desync, sync, SyncToken } from "./Sync";
-import { System } from "./System";
 import { Target } from "./Target";
 import { ClipStack } from "./ClipStack";
 

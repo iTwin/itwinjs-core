@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { AttributeMap } from "../../../render/webgl/AttributeMap";
 import { CompileStatus } from "../../../render/webgl/ShaderProgram";
@@ -100,7 +99,7 @@ describe("Techniques", () => {
     await compileAllShaders();
   }).timeout(compileTimeout);
 
-    it("should successfully compile surface shader with clipping planes", () => {
+  it("should successfully compile surface shader with clipping planes", () => {
     const flags = new TechniqueFlags(true);
     flags.numClipPlanes = 6;
     flags.featureMode = FeatureMode.Overrides;

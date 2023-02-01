@@ -14,7 +14,7 @@ import { Matrix4 } from "../Matrix";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
-import { FeatureMode, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
+import { FeatureMode, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addVaryingColor } from "./Color";
@@ -283,9 +283,8 @@ export function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder 
   frag.addGlobal("featureIncrement", VariableType.Float, "0.0");
   frag.addGlobal("classifierId", VariableType.Vec4);
   frag.set(FragmentShaderComponent.OverrideFeatureId, overrideFeatureId);
-  let textureCount = System.instance.maxRealityImageryLayers;
-  let gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
-  const sys = System.instance;
+  const textureCount = System.instance.maxRealityImageryLayers;
+  const gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
 
   const feat = flags.featureMode;
   let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;

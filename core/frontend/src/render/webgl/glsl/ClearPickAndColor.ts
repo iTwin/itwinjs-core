@@ -8,7 +8,6 @@
 
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
-import { System } from "../System";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computeBaseColor = "return u_bgColor;";

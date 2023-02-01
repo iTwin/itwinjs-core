@@ -9,7 +9,6 @@
 import { ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
 import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
-import { unpackFloat } from "./Clipping";
 import { addRenderPass } from "./RenderPass";
 import { addInstancedRtcMatrix, addProjectionMatrix } from "./Vertex";
 import { TextureUnit } from "../RenderFlags";
@@ -20,22 +19,6 @@ vec4 getSensor(int index) {
   float x = 0.5;
   float y = (float(index) + 0.5) / float(u_numSensors);
   return TEXTURE(s_sensorSampler, vec2(x, y));
-}
-`;
-
-const unpackSensor = `
-vec4 getSensor(int index) {
-  float y = (float(index) + 0.5) / float(u_numSensors);
-  float sx = 0.25;
-  vec2 tc = vec2(0.125, y);
-  float posX = unpackFloat(TEXTURE(s_sensorSampler, tc));
-  tc.x += sx;
-  float posY = unpackFloat(TEXTURE(s_sensorSampler, tc));
-  tc.x += sx;
-  float posZ = unpackFloat(TEXTURE(s_sensorSampler, tc));
-  tc.x += sx;
-  float value = unpackFloat(TEXTURE(s_sensorSampler, tc));
-  return vec4(posX, posY, posZ, value);
 }
 `;
 

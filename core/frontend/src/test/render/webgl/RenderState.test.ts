@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { DepthType } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { GL } from "../../../render/webgl/GL";
 import { RenderState } from "../../../render/webgl/RenderState";

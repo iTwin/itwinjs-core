@@ -15,7 +15,6 @@ import { FloatRgba } from "./FloatRGBA";
 import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture";
 import { ClipVolume } from "./ClipVolume";
 import { GL } from "./GL";
-import { System } from "./System";
 
 interface Clip {
   readonly numRows: number;

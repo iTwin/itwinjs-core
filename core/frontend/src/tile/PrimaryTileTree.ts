@@ -7,13 +7,13 @@
  */
 
 import {
-  assert, compareBooleans, comparePossiblyUndefined, compareStrings, Id64String,
+  assert, comparePossiblyUndefined, compareStrings, Id64String,
 } from "@itwin/core-bentley";
 import {
   BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,
   PrimaryTileTreeId, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
-import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
+import { Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -22,7 +22,7 @@ import { AnimationNodeId, formatAnimationBranchId } from "../render/GraphicBranc
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SpatialViewState } from "../SpatialViewState";
 import { SceneContext } from "../ViewContext";
-import { ModelDisplayTransformProvider, ViewState, ViewState3d } from "../ViewState";
+import { ViewState, ViewState3d } from "../ViewState";
 import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,

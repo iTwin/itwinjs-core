@@ -11,10 +11,9 @@ import { DrawParams } from "../DrawCommand";
 import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
 import { Pass, TextureUnit } from "../RenderFlags";
-import { IsInstanced, PositionType } from "../TechniqueFlags";
+import { PositionType } from "../TechniqueFlags";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
-import { System } from "../System";
-import { decode3Float32, decodeUint16, decodeUint24 } from "./Decode";
+import { decodeUint16, decodeUint24 } from "./Decode";
 import { addInstanceOverrides } from "./Instancing";
 import { addLookupTable } from "./LookupTable";
 

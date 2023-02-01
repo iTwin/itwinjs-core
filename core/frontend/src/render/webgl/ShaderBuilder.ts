@@ -12,7 +12,6 @@ import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { volClassOpaqueColor } from "./glsl/PlanarClassification";
 import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } from "./glsl/Vertex";
 import { ShaderProgram } from "./ShaderProgram";
-import { System } from "./System";
 import { PositionType } from "./TechniqueFlags";
 
 /* eslint-disable no-restricted-syntax */

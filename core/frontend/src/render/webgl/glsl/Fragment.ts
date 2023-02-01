@@ -71,14 +71,6 @@ const assignPickBufferOutputsMRT = `
   FragColor2 = output2;
 `;
 
-const assignPickBufferOutputsMP = `
-  if (0 == u_renderTargetIndex)
-    FragColor = output0;
-  else if (1 == u_renderTargetIndex)
-    FragColor = output1;
-  else
-    FragColor = output2;
-`;
 const reassignFeatureId = "  output1 = overrideFeatureId(output1);";
 
 /** @internal */

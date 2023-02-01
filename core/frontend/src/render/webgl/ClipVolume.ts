@@ -11,7 +11,6 @@ import {
   ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets, Vector3d,
 } from "@itwin/core-geometry";
 import { RenderClipVolume } from "../RenderClipVolume";
-import { System } from "./System";
 
 const scratch = {
   normal: new Vector3d(),
