@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Added 'allowDataTransformDuringSchemaUpdate' to UpgradeOptions",
+      "comment": "Added 'schemaLockHeld' to UpgradeOptions",
       "type": "none"
     }
   ],

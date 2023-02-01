@@ -207,7 +207,7 @@ export interface UpgradeOptions {
   readonly profile?: ProfileOptions;
 
   /** Options that will allow data transform during Profile/Domain schema upgrade */
-  readonly schemaLockKept?: boolean;
+  readonly schemaLockHeld?: boolean;
 }
 
 /**
