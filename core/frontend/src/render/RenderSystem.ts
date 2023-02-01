@@ -861,7 +861,7 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
     debugShaders?: boolean;
 
     /** Initial antialias setting.
-     * If > 1, and a WebGL2 context is being used, will turn on antialiasing using that many samples.
+     * If antialiasing is supported, a value greater than 1 enables it using that many samples, and a value less than or equal to 1 disables antialiasing.
      * Default value: 1
      * @public
      */
