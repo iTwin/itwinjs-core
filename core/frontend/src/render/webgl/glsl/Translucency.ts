@@ -7,9 +7,8 @@
  */
 
 import { FragmentShaderComponent, ProgramBuilder } from "../ShaderBuilder";
-import { System } from "../System";
 import { addEyeSpace, addFrustum } from "./Common";
-import { addRenderTargetIndex, computeLinearDepth } from "./Fragment";
+import { computeLinearDepth } from "./Fragment";
 import { addModelViewMatrix } from "./Vertex";
 
 // See Weighted Blended Order-Independent Transparency for examples of different weighting functions:
@@ -42,10 +41,6 @@ const computeOutputs = `
 const assignFragData = `${computeOutputs}
   FragColor0 = output0;
   FragColor1 = output1;
-`;
-
-const assignFragColor = `${computeOutputs}
-  FragColor = (0 == u_renderTargetIndex) ? output0 : output1;
 `;
 
 /** @internal */

@@ -171,51 +171,6 @@ class ClassifierMRTFrameBuffers extends ClassifierFrameBuffers {
   }
 }
 
-class ClassifierMPFrameBuffers extends ClassifierFrameBuffers {
-  private readonly _color: FrameBuffer;
-  private readonly _feature: FrameBuffer;
-
-  private constructor(textures: ClassifierTextures, hilite: FrameBuffer, color: FrameBuffer, feature: FrameBuffer) {
-    super(textures, hilite);
-    this._color = color;
-    this._feature = feature;
-  }
-
-  public override get isDisposed(): boolean {
-    return super.isDisposed
-      && this._color.isDisposed
-      && this._feature.isDisposed;
-  }
-
-  public override dispose(): void {
-    dispose(this._color);
-    dispose(this._feature);
-    super.dispose();
-  }
-
-  public static createMP(textures: ClassifierTextures, hilite: FrameBuffer): ClassifierMPFrameBuffers | undefined {
-    const color = FrameBuffer.create([textures.color.texture]);
-    const feature = FrameBuffer.create([textures.feature.texture]);
-    return undefined !== color && undefined !== feature ? new ClassifierMPFrameBuffers(textures, hilite, color, feature) : undefined;
-  }
-
-  public draw(cmds: DrawCommands, target: Target): void {
-    const system = System.instance;
-    const gl = system.context;
-    const draw = (feature: boolean) => {
-      const fbo = feature ? this._feature : this._color;
-      system.frameBufferStack.execute(fbo, true, false, () => {
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(GL.BufferBit.Color);
-        target.compositor.currentRenderTargetIndex = feature ? 1 : 0;
-        target.techniques.execute(target, cmds, RenderPass.PlanarClassification);
-      });
-    };
-
-    draw(false);
-    draw(true);
-  }
-}
 
 interface TextureAndFbo {
   texture: Texture;
