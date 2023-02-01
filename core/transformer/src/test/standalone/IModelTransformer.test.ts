@@ -16,6 +16,7 @@ import {
   PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb, SpatialCategory, StandaloneDb,
   SubCategory, Subject,
 } from "@itwin/core-backend";
+import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
@@ -2060,32 +2061,40 @@ describe("IModelTransformer", () => {
     const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRefTarget1.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRefTarget1" } });
 
-    const transformer = new IModelTransformer(sourceDb, targetDb);
+    let exportedSchemaPaths: string[];
+    let outOfOrderExportedSchemas: string[];
 
-    let schemaExportDir!: string;
-    let exportedSchemas!: string[];
-    let outOfOrderExportedSchemas!: string[];
-
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    const unboundOriginalExportSchemas = transformer.exporter.exportSchemas;
-
-    try {
-      sinon.replace(transformer.exporter, "exportSchemas", async function (this: IModelExporter) {
-        await unboundOriginalExportSchemas.call(this);
+    class TrackSchemaExportsExporter extends IModelExporter {
+      public override async exportSchemas(): Promise<void> {
+        await super.exportSchemas();
+        assert(exportedSchemaPaths.length === 3);
         // eslint-disable-next-line @typescript-eslint/dot-notation
-        schemaExportDir = transformer["_schemaExportDir"];
-        exportedSchemas = fs.readdirSync(schemaExportDir);
-        assert(exportedSchemas.length === 3);
         const reffingSchemaFile = `${reffingSchemaName}.ecschema.xml`;
-        assert(exportedSchemas.includes(reffingSchemaFile));
+        assert(exportedSchemaPaths.includes(reffingSchemaFile));
         // make sure the referencing schema is first, so it is imported first, and the schema locator is forced
         // to look for its references (like the long name schema) that haven't been imported yet
-        outOfOrderExportedSchemas = [reffingSchemaFile, ...exportedSchemas.filter((s) => s !== reffingSchema)];
-      });
+        outOfOrderExportedSchemas = [reffingSchemaFile, ...exportedSchemaPaths.filter((s) => s !== reffingSchema)];
+      }
+    }
 
+    // using this class instead of sinon.replace provides some gurantees that subclasses can use the onExportSchema result as expected
+    class TrackSchemaExportsTransformer extends IModelTransformer {
+      public constructor(source: IModelDb, target: IModelDb, opts?: IModelTransformOptions) {
+        super(new TrackSchemaExportsExporter(source), target, opts);
+      }
+      public override async onExportSchema(schema: ECSchemaMetaData.Schema) {
+        const exportResult = await super.onExportSchema(schema);
+        assert(exportResult?.schemaPath); // IModelTransformer guarantees that it returns a valid schemaPath, the type is wide for subclasses
+        exportedSchemaPaths.push(exportResult.schemaPath);
+        return exportResult;
+      }
+    }
+
+    const transformer = new TrackSchemaExportsTransformer(sourceDb, targetDb);
+
+    try {
       // force import references out of order to make sure we hit an issue if schema locator can't find things
       sinon.replace(IModelJsFs, "readdirSync", () => outOfOrderExportedSchemas);
-
       await transformer.processSchemas();
     } finally {
       transformer.dispose();

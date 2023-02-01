@@ -26,7 +26,7 @@ import {
   ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel, IModelError, ModelProps,
   Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
-import { IModelExporter, IModelExporterState, IModelExportHandler } from "./IModelExporter";
+import { ExportSchemaResult, IModelExporter, IModelExporterState, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter, IModelImporterState, OptimizeGeometryOptions } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { PendingReference, PendingReferenceMap } from "./PendingReferenceMap";
@@ -1136,8 +1136,14 @@ export class IModelTransformer extends IModelExportHandler {
   private _longNamedSchemasMap = new Map<string, string>();
 
   /** Override of [IModelExportHandler.onExportSchema]($transformer) that serializes a schema to disk for [[processSchemas]] to import into
-   * the target iModel when it is exported from the source iModel. */
-  public override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
+   * the target iModel when it is exported from the source iModel.
+   * @returns {Promise<ExportSchemaResult>} Although the type is possibly void for backwards compatibility of subclasses,
+   *                                        `IModelTransformer.onExportSchema` always returns an[[IModelExportHandler.ExportSchemaResult]]
+   *                                        with a defined `schemaPath` property, for subclasses to know where the schema was written.
+   *                                        Schemas are *not* guaranteed to be written to [[IModelTransformer._schemaExportDir]] by a
+   *                                        known pattern derivable from the schema's name, so you must use this to find it.
+   */
+  public override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void | ExportSchemaResult> {
     const ext = ".ecschema.xml";
     let schemaFileName = schema.name + ext;
     // many file systems have a max file-name/path-segment size of 255, but not windows
@@ -1154,6 +1160,7 @@ export class IModelTransformer extends IModelExportHandler {
       this._longNamedSchemasMap.set(schema.name, schemaFileName);
     }
     this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir, schemaFileName);
+    return { schemaPath: path.join(this._schemaExportDir, schemaFileName) };
   }
 
   private _makeLongNameResolvingSchemaCtx(): ECSchemaXmlContext {
