@@ -25,6 +25,7 @@ describe("TxnManager", () => {
     const nativeDb = new IModelHost.platform.DgnDb();
     const upgradeOptions: UpgradeOptions = {
       domain: DomainOptions.Upgrade,
+      schemaLockHeld: true,
     };
     nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
     nativeDb.deleteAllTxns();
