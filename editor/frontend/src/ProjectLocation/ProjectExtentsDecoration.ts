@@ -964,7 +964,7 @@ export class ProjectLocationSaveTool extends Tool {
       return;
 
     try {
-      await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, deco.iModel.key);
+      await EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: deco.iModel.key });
 
       if (undefined !== extents)
         await basicManipulationIpc.updateProjectExtents(extents);

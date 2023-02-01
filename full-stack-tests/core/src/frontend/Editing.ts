@@ -12,7 +12,7 @@ import { basicManipulationIpc, EditTools } from "@itwin/editor-frontend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 
 async function startCommand(imodel: BriefcaseConnection): Promise<string> {
-  return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, imodel.key);
+  return EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: imodel.key });
 }
 
 function orderIds(elementIds: string[]): OrderedId64Array {

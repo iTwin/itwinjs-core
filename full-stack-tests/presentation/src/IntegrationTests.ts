@@ -10,6 +10,7 @@ import Backend from "i18next-http-backend";
 import * as path from "path";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
+import { IModelJsFs } from "@itwin/core-backend";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { EmptyLocalization, Localization } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
@@ -89,7 +90,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
 
   // prepare an empty, process-unique output directory
   const outputRoot = getOutputRoot();
-  fs.existsSync(outputRoot) && fs.rmSync(outputRoot, { recursive: true, force: true });
+  fs.existsSync(outputRoot) && IModelJsFs.removeSync(outputRoot);
   fs.mkdirSync(outputRoot, { recursive: true });
 
   const tempCachesDir = path.join(outputRoot, "caches");
