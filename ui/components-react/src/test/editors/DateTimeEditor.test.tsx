@@ -125,7 +125,7 @@ describe("<DateTimeEditor />", () => {
     const spyOnCommit = sinon.spy();
     const record = createDateProperty("Test", date, 0);  // 0 creates a long DateTime record
     const renderedComponent = render(<DateTimeEditor showTime={true} propertyRecord={record} onCommit={spyOnCommit} />);
-    expect(await waitFor(() => renderedComponent.getByText(date.toLocaleString()))).to.exist;
+    expect(await waitFor(() => renderedComponent.getByText(date.toLocaleString().replace("\u202f", " ")))).to.exist;
     const originalValue = (record.value as PrimitiveValue).value as Date;
     expect(originalValue.getTime()).to.be.equal(date.getTime());
     expect(renderedComponent).not.to.be.undefined;
@@ -254,7 +254,7 @@ describe("<DateTimeEditor />", () => {
   it("should receive focus", async () => {
     const record = createDateProperty("Test", date, 0);  // 0 creates a long DateTime record
     const renderedComponent = render(<DateTimeEditor showTime={true} propertyRecord={record} />);
-    expect(await waitFor(() => renderedComponent.getByText(date.toLocaleString()))).to.exist;
+    expect(await waitFor(() => renderedComponent.getByText(date.toLocaleString().replace("\u202f", " ")))).to.exist;
     const popupButton = await renderedComponent.findByTestId("components-popup-button");
     expect(popupButton).not.to.be.null;
     popupButton.focus();
