@@ -2026,10 +2026,10 @@ describe("IModelTransformer", () => {
     noSystemSchemasTransformer.dispose();
   });
 
-  it("handles long schema names and references to them (on linux)", async function () {
+  it("handles long schema names and references to them", async function () {
     const longSchema1Name = `ThisSchemaIs${"Long".repeat(100)}`;
     assert(Buffer.from(longSchema1Name).byteLength > 255);
-    // const longSchema2Name = `${longSchema1Name}ButEndsDifferently`;
+    const longSchema2Name = `${longSchema1Name}ButEndsDifferently`;
 
     if (process.platform !== "win32") {
       // windows has no bound on path segment (file name) length, (it does have a bound on total path length),
@@ -2046,20 +2046,21 @@ describe("IModelTransformer", () => {
       </ECSchema>
     `;
 
-    // const longSchema2 = `<?xml version="1.0" encoding="UTF-8"?>
-    //   <ECSchema schemaName="${longSchema2Name}" alias="ls2" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-    //     <ECSchemaReference name="units" version="01.00" alias="u"/>
-    //   </ECSchema>
-    // `;
+    const longSchema2 = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="${longSchema2Name}" alias="ls2" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="units" version="01.00" alias="u"/>
+      </ECSchema>
+    `;
 
     const reffingSchemaName = "Reffing";
     const reffingSchema = `<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="${reffingSchemaName}" alias="refg" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECSchemaReference name="${longSchema1Name}" version="01.00" alias="ls" />
+        <ECSchemaReference name="${longSchema2Name}" version="01.00" alias="ls2" />
       </ECSchema>
     `;
 
-    await sourceDb.importSchemaStrings([longSchema1, reffingSchema]);
+    await sourceDb.importSchemaStrings([longSchema1, longSchema2, reffingSchema]);
     sourceDb.saveChanges();
 
     const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "LongSchemaRefTarget.bim");
@@ -2071,7 +2072,7 @@ describe("IModelTransformer", () => {
     class TrackSchemaExportsExporter extends IModelExporter {
       public override async exportSchemas(): Promise<void> {
         await super.exportSchemas();
-        assert(exportedSchemaPaths.length === 3);
+        assert(exportedSchemaPaths.length === 4);
         // eslint-disable-next-line @typescript-eslint/dot-notation
         const reffingSchemaFile = path.join(transformer["_schemaExportDir"], `${reffingSchemaName}.ecschema.xml`);
         assert(exportedSchemaPaths.includes(reffingSchemaFile), `Expected ${reffingSchemaFile} in ${exportedSchemaPaths}`);
