@@ -333,8 +333,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return ext ?? this._capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
   }
 
-  /** Requires gl_VertexID (WebGL 2 only) and > 8 texture units (WebGL 1 only guarantees 8). */
-  public override get supportsIndexedEdges(): boolean { return true; }
   public override get isMobile(): boolean { return this._capabilities.isMobile; }
 
   public setDrawBuffers(attachments: GLenum[]): void {
