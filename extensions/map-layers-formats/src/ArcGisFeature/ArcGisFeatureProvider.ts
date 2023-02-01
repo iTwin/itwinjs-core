@@ -391,13 +391,11 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     const ctx = canvas.getContext("2d");
     if (ctx == null) {
       Logger.logError(loggerCategory, "No canvas context available for loading tile.");
-      assert(!"no canvas context");
       return undefined;
     }
 
     if (!this._symbologyRenderer) {
       Logger.logError(loggerCategory, "No symbology renderer available for loading tile.");
-      assert(!"No symbology renderer");
       return undefined;
     }
     try {
@@ -408,7 +406,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         transfo = this.computeTileWorld2CanvasTransform(row, column, zoomLevel);
         if (!transfo)  {
           Logger.logError(loggerCategory, `Could not compute data transformation for tile (${zoomLevel}/${row}/${column})`);
-          assert(!"Could not compute world to canvas transform");
         }
       }
 
