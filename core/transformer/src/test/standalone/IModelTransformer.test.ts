@@ -2026,21 +2026,28 @@ describe("IModelTransformer", () => {
     noSystemSchemasTransformer.dispose();
   });
 
-  it("handles long schema names and references to them (on linux)", async function () {
-    const longSchemaName = `ThisSchemaIs${"Long".repeat(100)}`;
-    assert(Buffer.from(longSchemaName).byteLength > 255);
+  it.only("handles long schema names and references to them (on linux)", async function () {
+    const longSchema1Name = `ThisSchemaIs${"Long".repeat(100)}`;
+    assert(Buffer.from(longSchema1Name).byteLength > 255);
+    const longSchema2Name = `${longSchema1Name}ButEndsDifferently`;
 
     if (process.platform !== "win32") {
       // windows has no bound on path segment (file name) length, (it does have a bound on total path length),
       // so we don't expect this to throw only on Mac/Linux where 255 byte limit is common
-      expect(() => fs.writeFileSync(longSchemaName, "")).to.throw(/too long/);
+      expect(() => fs.writeFileSync(longSchema1Name, "")).to.throw(/too long/);
     }
 
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "LongSchemaRef.bim");
     const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRef" } });
 
-    const longSchema = `<?xml version="1.0" encoding="UTF-8"?>
-      <ECSchema schemaName="${longSchemaName}" alias="ls" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    const longSchema1 = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="${longSchema1Name}" alias="ls" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="units" version="01.00" alias="u"/>
+      </ECSchema>
+    `;
+
+    const longSchema2 = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="${longSchema2Name}" alias="ls2" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECSchemaReference name="units" version="01.00" alias="u"/>
       </ECSchema>
     `;
@@ -2048,26 +2055,27 @@ describe("IModelTransformer", () => {
     const reffingSchemaName = "Reffing";
     const reffingSchema = `<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="${reffingSchemaName}" alias="refg" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-        <ECSchemaReference name="${longSchemaName}" version="01.00" alias="ls" />
+        <ECSchemaReference name="${longSchema1Name}" version="01.00" alias="ls" />
+        <ECSchemaReference name="${longSchema2Name}" version="01.00" alias="ls" />
       </ECSchema>
     `;
 
-    await sourceDb.importSchemaStrings([longSchema, reffingSchema]);
+    await sourceDb.importSchemaStrings([longSchema1, longSchema2, reffingSchema]);
     sourceDb.saveChanges();
 
-    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "UnknownBisCoreNewSchemaRefTarget1.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRefTarget1" } });
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "LongSchemaRefTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "LongSchemaRefTarget" } });
 
-    let exportedSchemaPaths: string[];
+    const exportedSchemaPaths: string[] = [];
     let outOfOrderExportedSchemas: string[];
 
     class TrackSchemaExportsExporter extends IModelExporter {
       public override async exportSchemas(): Promise<void> {
         await super.exportSchemas();
-        assert(exportedSchemaPaths.length === 3);
+        assert(exportedSchemaPaths.length === 4);
         // eslint-disable-next-line @typescript-eslint/dot-notation
-        const reffingSchemaFile = `${reffingSchemaName}.ecschema.xml`;
-        assert(exportedSchemaPaths.includes(reffingSchemaFile));
+        const reffingSchemaFile = path.join(transformer["_schemaExportDir"], `${reffingSchemaName}.ecschema.xml`);
+        assert(exportedSchemaPaths.includes(reffingSchemaFile), `Expected ${reffingSchemaFile} in ${exportedSchemaPaths}`);
         // make sure the referencing schema is first, so it is imported first, and the schema locator is forced
         // to look for its references (like the long name schema) that haven't been imported yet
         outOfOrderExportedSchemas = [reffingSchemaFile, ...exportedSchemaPaths.filter((s) => s !== reffingSchema)];
