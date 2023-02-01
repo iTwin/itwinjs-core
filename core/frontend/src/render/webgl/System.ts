@@ -728,7 +728,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   protected constructor(canvas: HTMLCanvasElement, context: WebGL2RenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);
     this.canvas = canvas;
-    this.context = context as WebGL2RenderingContext;
+    this.context = context;
     this._capabilities = capabilities;
     this.resourceCache = new Map<IModelConnection, IdMap>();
     this.glTimer = GLTimer.create(this);

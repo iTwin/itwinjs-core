@@ -79,7 +79,7 @@ export class BuffersContainer implements WebGLDisposable {
   private readonly _context: WebGL2RenderingContext;
 
   public static create(): BuffersContainer {
-    return new BuffersContainer(System.instance.context as WebGL2RenderingContext);
+    return new BuffersContainer(System.instance.context);
   }
 
   private constructor(context: WebGL2RenderingContext) {
