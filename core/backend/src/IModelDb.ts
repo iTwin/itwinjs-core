@@ -156,6 +156,7 @@ export interface ImportSchemasOptions {
   /**
    * An [[ECSchemaXmlContext]] to use instead of building a default one.
    * This can be useful in rare cases where custom schema location logic is necessary
+   * @internal
    */
   ecSchemaXmlContext?: ECSchemaXmlContext;
 }

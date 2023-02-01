@@ -18,7 +18,12 @@ import {
 
 const loggerCategory = TransformerLoggerCategory.IModelExporter;
 
+/**
+ * @beta
+ * The (optional) result of [[IModelExportHandler.onExportSchema]]
+ */
 export interface ExportSchemaResult {
+  /** set this property to notify subclasses where you wrote a schema for later import */
   schemaPath?: string;
 }
 

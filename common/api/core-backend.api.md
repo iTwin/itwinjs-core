@@ -3203,6 +3203,7 @@ export interface IModelNameArg extends TokenArg, ITwinIdArg {
 
 // @public
 export interface ImportSchemasOptions {
+    // @internal
     ecSchemaXmlContext?: ECSchemaXmlContext;
 }
 
