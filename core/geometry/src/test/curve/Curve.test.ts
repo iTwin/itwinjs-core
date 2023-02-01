@@ -738,15 +738,13 @@ describe("Curves", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Curves", "DistanceIndexClonePartial");
   });
-  it.only("Create and exercise distanceIndex", () => {
+  it("Create and exercise distanceIndex", () => {
     const ck = new Checker();
     const paths = Sample.createCurveChainWithDistanceIndex();
     let dx = 0.0;
     const dxGap = 1.0;
     const allGeometry: GeometryQuery[] = [];
     for (const p of paths) {
-      if (!curvePrimitiveHasInstanceOf (p, DirectSpiral3d))
-        continue;
       const q = p.clone()!;
       ck.testTrue(p.isAlmostEqual(q), "clone is same curve");
       GeometryCoreTestIO.captureGeometry(allGeometry, q, dx, 0.0);

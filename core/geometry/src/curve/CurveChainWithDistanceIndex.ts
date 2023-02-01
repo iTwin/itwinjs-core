@@ -548,7 +548,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     const fragment = this.chainDistanceToFragment(distanceAlongPath, true)!;
     const curveFraction = fragment.chainDistanceToAccurateChildFraction(distanceAlongPath, true);
     result = fragment.childCurve.fractionToPointAndDerivative(curveFraction, result);
-    result.direction.scaleInPlace(fragment.fractionScaleFactor(this._totalLength));
+    const a = this._totalLength / result.direction.magnitude();
+    result.direction.scaleInPlace(a);
     return result;
   }
 
@@ -579,7 +580,13 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     result = fragment.childCurve.fractionToPointAnd2Derivatives(curveFraction, result);
     if (!result)
       return undefined;
-    const scale = fragment.fractionScaleFactor(this._totalLength);
+
+    const magU = result.vectorU.magnitude();
+    const dotUU = magU * magU;
+    const dotUV = result.vectorU.dotProduct(result.vectorV);
+    result.vectorV.addScaledInPlace(result.vectorU, -dotUV / dotUU);  // Gram-Schmidt, but why?
+
+    const scale = this._totalLength / magU;
     result.vectorU.scaleInPlace(scale);
     result.vectorV.scaleInPlace(scale * scale);
     return result;

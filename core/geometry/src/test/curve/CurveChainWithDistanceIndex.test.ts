@@ -14,6 +14,7 @@ import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Arc3d } from "../../curve/Arc3d";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 
 /* eslint-disable no-console */
 const closestPointProblemFileFile = "./src/test/testInputs/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
@@ -134,17 +135,33 @@ describe("CurveChainWithDistanceIndex", () => {
 
   it("fractionToCurvature", () => {
     const ck = new Checker();
+    const frac = 0.3;
+
     const radius = 100.0;
-    const arc = Arc3d.createXY(Point3d.createZero(), radius);
-    let curvature = arc.fractionToCurvature(0.0)!;
-    ck.testCoordinate(curvature, 1.0 / radius);
+    const expectedCurvature = 1 / radius;
+    const arc = Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndRadians(0, Math.PI));
+    const curvature = arc.fractionToCurvature(frac)!;
+    ck.testCoordinate(curvature, expectedCurvature, "expected circle curvature");
 
     const path = new Path();
     path.children.push(arc);
-
     const indexed = CurveChainWithDistanceIndex.createCapture(path);
-    curvature = indexed.fractionToCurvature(0.0)!;
-    ck.testCoordinate(curvature, 1.0 / radius);
+    const pathFrac = frac;  // they have same parameterization
+    const pathCurvature = indexed.fractionToCurvature(pathFrac)!;
+    ck.testCoordinate(pathCurvature, expectedCurvature, "expected curvature of path consisting of a circle");
+
+    const radiusB = 37.0;
+    const arcB = Arc3d.createXYEllipse(Point3d.createZero(), radius, radiusB, AngleSweep.createStartEndRadians(Math.PI, 2 * Math.PI));
+    const curvatureB = arcB.fractionToCurvature(frac)!;
+    const distanceAlongArcB = arcB.curveLengthBetweenFractions(0, frac);
+
+    const pathB = new Path();
+    pathB.children.push(arc);
+    pathB.children.push(arcB);
+    const indexedB = CurveChainWithDistanceIndex.createCapture(pathB);
+    const pathFracB = indexedB.chainDistanceToChainFraction(arc.curveLength() + distanceAlongArcB);
+    const pathCurvatureB = indexedB.fractionToCurvature(pathFracB)!;
+    ck.testCoordinate(curvatureB, pathCurvatureB, "curvature of arc equals curvature of path containing arc at same point");
 
     expect(ck.getNumErrors()).equals(0);
   });
