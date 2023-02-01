@@ -2027,17 +2027,14 @@ describe("IModelTransformer", () => {
   });
 
   it("handles long schema names and references to them (on linux)", async function () {
-    if (process.platform === "win32") {
-      // windows has no bound on path segment (file name) length, it does have a bound on path sizes, which we
-      // do handle technically, but I'd rather not test. Even generated schema names should not be a 32kB string,
-      // that should be stopped at the connector
-      this.skip();
-    }
-
     const longSchemaName = `ThisSchemaIs${"Long".repeat(100)}`;
-    // most mac/linux file systems have a path-segment/file-name length limit of 255 bytes
     assert(Buffer.from(longSchemaName).byteLength > 255);
-    expect(() => fs.writeFileSync(longSchemaName, "")).to.throw(/too long/);
+
+    if (process.platform !== "win32") {
+      // windows has no bound on path segment (file name) length, (it does have a bound on total path length),
+      // so we don't expect this to throw only on Mac/Linux where 255 byte limit is common
+      expect(() => fs.writeFileSync(longSchemaName, "")).to.throw(/too long/);
+    }
 
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "LongSchemaRef.bim");
     const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRef" } });

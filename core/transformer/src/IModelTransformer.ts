@@ -1146,9 +1146,8 @@ export class IModelTransformer extends IModelExportHandler {
   public override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void | ExportSchemaResult> {
     const ext = ".ecschema.xml";
     let schemaFileName = schema.name + ext;
-    // many file systems have a max file-name/path-segment size of 255, but not windows
-    // for windows, see https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
-    const systemMaxPathSegmentSize = process.platform === "win32" ? 32767 : 255;
+    // many file systems have a max file-name/path-segment size of 255, so we workaround that on all systems
+    const systemMaxPathSegmentSize = 255;
     if (schemaFileName.length > systemMaxPathSegmentSize) {
       // this name should be well under 255 bytes
       // ( 100 + (Number.MAX_SAFE_INTEGER.toString().length = 16) + (ext.length = 13) ) = 129 which is less than 255
