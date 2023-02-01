@@ -321,23 +321,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override get maxTextureSize(): number { return this._capabilities.maxTextureSize; }
-  public override get supportsInstancing(): boolean { return this._capabilities.supportsInstancing; }
   public override get supportsCreateImageBitmap(): boolean { return this._capabilities.supportsCreateImageBitmap; }
-  public get supportsDrawBuffers() { return this._capabilities.supportsDrawBuffers; }
   public get maxRenderType() { return this._capabilities.maxRenderType; }
   public get canRenderDepthWithoutColor() { return this._capabilities.canRenderDepthWithoutColor; }
-  public get supportsTextureFloatLinear() { return this._capabilities.supportsTextureFloatLinear; }
-  public get supportsTextureHalfFloatLinear() { return this._capabilities.supportsTextureHalfFloatLinear; }
-  public get supportsTextureFloat() { return this._capabilities.supportsTextureFloat; }
   public get fragDepthDoesNotDisableEarlyZ() { return this._capabilities.driverBugs.fragDepthDoesNotDisableEarlyZ; }
-  public get supportsFragDepth() { return this._capabilities.supportsFragDepth; }
   public get maxAntialiasSamples() { return this._capabilities.maxAntialiasSamples; }
-  public get maxDepthType() { return this._capabilities.maxDepthType; }
-  public get supportsMRTPickShaders() { return this._capabilities.supportsMRTPickShaders; }
-  public get supportsMRTTransparency() { return this._capabilities.supportsMRTTransparency; }
-  public get maxColorAttachments() { return this._capabilities.maxColorAttachments; }
-  public get maxFragTextureUnits() { return this._capabilities.maxFragTextureUnits; }
-  public get maxVertTextureUnits() { return this._capabilities.maxVertTextureUnits; }
   public get supportsNonPowerOf2Textures() { return this._capabilities.supportsNonPowerOf2Textures; }
   public get maxTexSizeAllow() { return this._capabilities.maxTexSizeAllow; }
   public get disjointTimerQuery() {
@@ -410,14 +398,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     // set actual gl state to match desired state defaults
     context.depthFunc(GL.DepthFunc.Default);  // LessOrEqual
 
-    if (!capabilities.supportsShadowMaps)
-      options.displaySolarShadows = false;
-    if (!capabilities.supportsFragDepth)
-      options.logarithmicDepthBuffer = false;
     if (!capabilities.supportsTextureFilterAnisotropic) {
       options.filterMapTextures = false;
       options.filterMapDrapeTextures = false;
     }
+
     return new this(canvas, context, capabilities, options);
   }
 
@@ -568,26 +553,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public createDepthBuffer(width: number, height: number, numSamples: number = 1): DepthBuffer | undefined {
     // Note: The buffer/texture created here have ownership passed to the caller (system will not dispose of these)
-    switch (this._capabilities.maxDepthType) {
-      case DepthType.RenderBufferUnsignedShort16: {
-        return RenderBuffer.create(width, height);
-      }
-      case DepthType.TextureUnsignedInt32: {
-        return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
-      }
-      case DepthType.TextureUnsignedInt24Stencil8: {
-        if (numSamples > 1) {
-          return RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.DEPTH24_STENCIL8, numSamples);
-        } else {
-          const context2 = this.context as WebGL2RenderingContext;
-          return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, context2.UNSIGNED_INT_24_8);
-        }
-      }
-      default: {
-        assert(false);
-        return undefined;
-      }
-    }
+    if (numSamples > 1)
+      return RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.DEPTH24_STENCIL8, numSamples);
+    else
+      return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, this.context.UNSIGNED_INT_24_8);
   }
 
   /** Returns the corresponding IdMap for an IModelConnection. Creates a new one if it doesn't exist. */
@@ -803,7 +772,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {
     this.lineCodeTexture!.bindSampler(uniform, unit);
   }
-  public override get maxRealityImageryLayers() { return Math.min(this._capabilities.maxFragTextureUnits, this._capabilities.maxVertTextureUnits) < 16 ? 3 : 6; }
+
+  public override get maxRealityImageryLayers() {
+    return 6;
+  }
 
   public disposeTexture(texture: WebGLTexture) {
     System.instance.context.deleteTexture(texture);
