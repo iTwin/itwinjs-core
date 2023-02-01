@@ -2026,7 +2026,7 @@ describe("IModelTransformer", () => {
     noSystemSchemasTransformer.dispose();
   });
 
-  it.only("handles long schema names and references to them (on linux)", async function () {
+  it("handles long schema names and references to them (on linux)", async function () {
     const longSchema1Name = `ThisSchemaIs${"Long".repeat(100)}`;
     assert(Buffer.from(longSchema1Name).byteLength > 255);
     // const longSchema2Name = `${longSchema1Name}ButEndsDifferently`;
