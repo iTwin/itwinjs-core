@@ -7,6 +7,7 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
+import * as nodeAssert from "assert";
 import {
   AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired,
   OpenMode, YieldManager,
@@ -1143,10 +1144,13 @@ export class IModelTransformer extends IModelExportHandler {
     // for windows, see https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
     const systemMaxPathSegmentSize = process.platform === "win32" ? 32767 : 255;
     if (schemaFileName.length > systemMaxPathSegmentSize) {
-      // this name should be well under 255 bytes, you'd have to be past 2**53-1 (Number.MAX_SAFE_INTEGER) long named
-      // schemas in order to hit decimal formatting, which is scientific notation, so size bound and valid windows
-      // path chars anyway
-      schemaFileName = `SchemaNameWasTooLong_${this._longNamedSchemasMap.size}${ext}`;
+      // this name should be well under 255 bytes
+      // ( 100 + (Number.MAX_SAFE_INTEGER.toString().length = 16) + (ext.length = 13) ) = 129 which is less than 255
+      // You'd have to be past 2**53-1 (Number.MAX_SAFE_INTEGER) long named schemas in order to hit decimal formatting,
+      // and that's on the scale of petabytes. `Map.prototype.size` shouldn't return floating points, and even if they do
+      // they're in scientific notation, size bound and contain only valid windows path chars
+      schemaFileName = `${schema.name.slice(0, 100)}${this._longNamedSchemasMap.size}${ext}`;
+      nodeAssert(schemaFileName.length <= systemMaxPathSegmentSize, "Schema name was still long. This is a bug.");
       this._longNamedSchemasMap.set(schema.name, schemaFileName);
     }
     this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir, schemaFileName);
