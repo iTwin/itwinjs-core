@@ -8,7 +8,6 @@ import {
 import {
   ContextRealityModelState, IModelApp, ScreenViewport, SpatialModelState, Tool, Viewport,
 } from "@itwin/core-frontend";
-import { System } from "@itwin/core-frontend/lib/cjs/render/webgl/System";
 import {
   ComboBoxEntry,
   convertHexToRgb, createCheckBox, createColorInput, createComboBox, createRadioBox, createSlider,
