@@ -144,12 +144,7 @@ export function addClipping(prog: ProgramBuilder) {
 
   addModelViewMatrix(vert);
 
-  if (System.instance.supportsTextureFloat) {
-    frag.addFunction(getClipPlaneFloat);
-  } else {
-    frag.addFunction(unpackFloat);
-    frag.addFunction(unpackClipPlane);
-  }
+  frag.addFunction(getClipPlaneFloat);
 
   frag.addFunction(calcClipPlaneDist);
   frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {

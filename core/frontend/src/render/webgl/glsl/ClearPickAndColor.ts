@@ -31,13 +31,8 @@ export function createClearPickAndColorProgram(context: WebGL2RenderingContext):
 
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 
-  if (!System.instance.supportsMRTPickShaders) {
-    // NB: This shader is never used - we gl.clear() directly
-    frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");
-  } else {
-    frag.addDrawBuffersExtension(3);
-    frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
-  }
+  frag.addDrawBuffersExtension(3);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
 
   builder.vert.headerComment = "//!V! ClearPickAndColor";
   builder.frag.headerComment = "//!F! ClearPickAndColor";

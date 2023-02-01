@@ -286,10 +286,6 @@ export function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder 
   let textureCount = System.instance.maxRealityImageryLayers;
   let gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
   const sys = System.instance;
-  if (Math.min(sys.maxFragTextureUnits, sys.maxVertTextureUnits) < 16 && IsThematic.Yes === flags.isThematic) {
-    textureCount--; // steal the last bg map layer texture for thematic gradient (just when thematic display is applied)
-    gradientTextureUnit = -1; // is dependent on drawing mode so will set later
-  }
 
   const feat = flags.featureMode;
   let opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;

@@ -125,13 +125,8 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
   }
 
   addRenderPass(frag);
-  if (System.instance.supportsMRTPickShaders) {
-    frag.addDrawBuffersExtension(3);
-    frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
-  } else {
-    addRenderTargetIndex(frag);
-    frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMP);
-  }
+  frag.addDrawBuffersExtension(3);
+  frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
 }
 
 /** @internal */
@@ -146,13 +141,8 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
   }
 
   addRenderPass(frag);
-  if (System.instance.supportsMRTPickShaders) {
-    frag.addDrawBuffersExtension(3);
-    frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
-  } else {
-    addRenderTargetIndex(frag);
-    frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMP);
-  }
+  frag.addDrawBuffersExtension(3);
+  frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
 }
 
 /** @internal */

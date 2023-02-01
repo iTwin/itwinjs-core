@@ -128,10 +128,7 @@ abstract class ClassifierFrameBuffers implements WebGLDisposable {
     if (undefined === hiliteFbo)
       return undefined;
 
-    if (System.instance.supportsDrawBuffers)
-      return ClassifierMRTFrameBuffers.createMRT(textures, hiliteFbo);
-    else
-      return ClassifierMPFrameBuffers.createMP(textures, hiliteFbo);
+    return ClassifierMRTFrameBuffers.createMRT(textures, hiliteFbo);
   }
 }
 
@@ -266,8 +263,6 @@ class MaskFrameBuffer extends SingleTextureFrameBuffer {
     system.frameBufferStack.execute(this.fbo, true, false, () => {
       gl.clearColor(0, 0, 0, 0);
       gl.clear(GL.BufferBit.Color);
-      if (!System.instance.supportsDrawBuffers)
-        target.compositor.currentRenderTargetIndex = 0;
       target.techniques.execute(target, cmds, RenderPass.PlanarClassification);
     });
   }

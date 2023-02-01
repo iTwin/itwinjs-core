@@ -45,10 +45,6 @@ describe("FrameBuffer tests", () => {
     if (!IModelApp.hasRenderSystem)
       return;
 
-    if (System.instance.maxColorAttachments < 2) {
-      return;
-    }
-
     const texture0: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
     assert(undefined !== texture0);
     if (undefined === texture0) {
@@ -75,10 +71,6 @@ describe("FrameBuffer tests", () => {
   it("should produce and bind a valid framebuffer with two color attachments (if available) and one depth renderbuffer", () => {
     if (!IModelApp.hasRenderSystem)
       return;
-
-    if (System.instance.maxColorAttachments < 2) {
-      return;
-    }
 
     const texture0: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
     assert(undefined !== texture0);

@@ -24,13 +24,8 @@ export function createClearTranslucentProgram(context: WebGL2RenderingContext): 
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
-  if (System.instance.supportsMRTTransparency) {
-    frag.addDrawBuffersExtension(2);
-    frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
-  } else {
-    // NB: This shader is never used - we just gl.clear() directly
-    frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
-  }
+  frag.addDrawBuffersExtension(2);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
 
   builder.vert.headerComment = "//!V! ClearTranslucent";
   builder.frag.headerComment = "//!F! ClearTranslucent";

@@ -48,7 +48,6 @@ export class ClipStack {
   /** A view of the encoded buffer in the format expected by the GPU. */
   protected _gpuBuffer: Texture2DData;
   protected _texture?: Texture2DHandle;
-  protected readonly _isFloatTexture: boolean;
   /** The maximum number of rows we have ever required. Determines the texture height. Grows as needed, reallocating a larger texture, but never shrinks. */
   protected _numTotalRows: number;
   /** The number of rows in the texture actually required to encode the current contents of the stack. */
@@ -72,7 +71,6 @@ export class ClipStack {
     this._getTransform = getTransform;
     this._wantViewClip = wantViewClip;
 
-    this._isFloatTexture = System.instance.supportsTextureFloat;
     this._numTotalRows = this._numRowsInUse = 0;
     this._cpuBuffer = new Uint8Array(this._numTotalRows);
     this._gpuBuffer = this.allocateGpuBuffer();
@@ -243,16 +241,13 @@ export class ClipStack {
     if (this._texture)
       this._texture.replaceTextureData(this._gpuBuffer);
     else
-      this._texture = Texture2DHandle.createForData(this._isFloatTexture ? 1 : 4, this._numTotalRows, this._gpuBuffer, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+      this._texture = Texture2DHandle.createForData(1, this._numTotalRows, this._gpuBuffer, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
 
     assert(this._texture!.height === this._numTotalRows);
   }
 
   protected allocateGpuBuffer(): Texture2DData {
-    if (this._isFloatTexture)
-      return new Float32Array(this._cpuBuffer.buffer);
-
-    return this._cpuBuffer;
+    return new Float32Array(this._cpuBuffer.buffer);
   }
 
   protected updateColor(rgb: RgbColor | undefined, rgba: FloatRgba): void {

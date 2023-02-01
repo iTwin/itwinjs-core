@@ -976,11 +976,7 @@ export class Techniques implements WebGLDisposable {
     else
       this._list[TechniqueId.IndexedEdge] = unsupportedTechnique;
 
-    if (System.instance.supportsFragDepth)
-      this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
-    else
-      this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZUsingPointsProgram(gl));
-
+    this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     this._list[TechniqueId.VolClassSetBlend] = new SingularTechnique(createVolClassSetBlendProgram(gl));
     this._list[TechniqueId.VolClassBlend] = new SingularTechnique(createVolClassBlendProgram(gl));
     this._list[TechniqueId.VolClassColorUsingStencil] = new SingularTechnique(createVolClassColorUsingStencilProgram(gl));

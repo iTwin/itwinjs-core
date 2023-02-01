@@ -376,7 +376,6 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
   public composite?: CompositeGeometry;
   public volClassColorStencil?: ViewportQuadGeometry;
   public volClassCopyZ?: SingleTexturedViewportQuadGeometry;
-  public volClassCopyZWithPoints?: ScreenPointsGeometry;
   public volClassSetBlend?: VolumeClassifierGeometry;
   public volClassBlend?: SingleTexturedViewportQuadGeometry;
   public occlusion?: AmbientOcclusionGeometry;
@@ -387,7 +386,6 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     collectGeometryStatistics(this.composite, stats);
     collectGeometryStatistics(this.volClassColorStencil, stats);
     collectGeometryStatistics(this.volClassCopyZ, stats);
-    collectGeometryStatistics(this.volClassCopyZWithPoints, stats);
     collectGeometryStatistics(this.volClassSetBlend, stats);
     collectGeometryStatistics(this.volClassBlend, stats);
     collectGeometryStatistics(this.occlusion, stats);
@@ -420,16 +418,13 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     this.occlusionYBlur = dispose(this.occlusionYBlur);
   }
 
-  public enableVolumeClassifier(textures: Textures, depth: DepthBuffer, width: number, height: number): boolean {
+  public enableVolumeClassifier(textures: Textures, depth: DepthBuffer): boolean {
     assert(undefined === this.volClassColorStencil && undefined === this.volClassCopyZ && undefined === this.volClassSetBlend && undefined === this.volClassBlend);
     this.volClassColorStencil = ViewportQuadGeometry.create(TechniqueId.VolClassColorUsingStencil);
     this.volClassCopyZ = SingleTexturedViewportQuadGeometry.createGeometry(depth.getHandle()!, TechniqueId.VolClassCopyZ);
     this.volClassSetBlend = VolumeClassifierGeometry.createVCGeometry(depth.getHandle()!);
     this.volClassBlend = SingleTexturedViewportQuadGeometry.createGeometry(textures.volClassBlend!.getHandle()!, TechniqueId.VolClassBlend);
-    if (!System.instance.supportsFragDepth)
-      this.volClassCopyZWithPoints = ScreenPointsGeometry.createGeometry(width, height, depth.getHandle()!);
-    return undefined !== this.volClassColorStencil && undefined !== this.volClassCopyZ && undefined !== this.volClassSetBlend && undefined !== this.volClassBlend
-      && (System.instance.supportsFragDepth || undefined !== this.volClassCopyZWithPoints);
+    return undefined !== this.volClassColorStencil && undefined !== this.volClassCopyZ && undefined !== this.volClassSetBlend && undefined !== this.volClassBlend;
   }
 
   public disableVolumeClassifier(): void {
@@ -438,8 +433,6 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       this.volClassCopyZ = dispose(this.volClassCopyZ);
       this.volClassSetBlend = dispose(this.volClassSetBlend);
       this.volClassBlend = dispose(this.volClassBlend);
-      if (!System.instance.supportsFragDepth)
-        this.volClassCopyZWithPoints = dispose(this.volClassCopyZWithPoints);
     }
   }
 
@@ -451,8 +444,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.volClassColorStencil
       && undefined === this.volClassCopyZ
       && undefined === this.volClassSetBlend
-      && undefined === this.volClassBlend
-      && undefined === this.volClassCopyZWithPoints;
+      && undefined === this.volClassBlend;
   }
 
   public dispose() {
@@ -679,7 +671,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   }
 
   public static create(target: Target): SceneCompositor {
-    return System.instance.supportsDrawBuffers ? new MRTCompositor(target) : new MPCompositor(target);
+    return new MRTCompositor(target);
   }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
@@ -836,9 +828,10 @@ abstract class Compositor extends SceneCompositor {
     const height = rect.height;
     const includeOcclusion = this.target.wantAmbientOcclusion;
     const wantVolumeClassifier = (undefined !== this.target.activeVolumeClassifierProps);
-    let wantAntialiasSamples = this.target.antialiasSamples <= 1 || !System.instance.supportsDrawBuffers ? 1 : this.target.antialiasSamples;
+    let wantAntialiasSamples = this.target.antialiasSamples <= 1 ? 1 : this.target.antialiasSamples;
     if (wantAntialiasSamples > System.instance.maxAntialiasSamples)
       wantAntialiasSamples = System.instance.maxAntialiasSamples;
+
     const changeAntialiasSamples = (this._antialiasSamples > 1 && wantAntialiasSamples > 1 && this._antialiasSamples !== wantAntialiasSamples);
 
     // If not yet initialized, or dimensions changed, or antialiasing changed the number of samples, initialize.
@@ -909,24 +902,22 @@ abstract class Compositor extends SceneCompositor {
       }
     }
 
-    // Allocate or free volume classifier-related resources if necessary.  Make sure that we have depth/stencil.
+    // Allocate or free volume classifier-related resources if necessary.
     if (wantVolumeClassifier !== this._haveVolumeClassifier) {
-      if (wantVolumeClassifier && DepthType.TextureUnsignedInt24Stencil8 === System.instance.maxDepthType) {
+      if (wantVolumeClassifier) {
         this._vcAltDepthStencil = System.instance.createDepthBuffer(width, height) as TextureHandle;
         if (undefined !== this._depthMS)
           this._vcAltDepthStencilMS = System.instance.createDepthBuffer(width, height, this._antialiasSamples) as TextureHandle;
-        if (undefined === this._vcAltDepthStencil || (undefined !== this._depthMS && undefined === this._vcAltDepthStencilMS)) {
-          assert(false, "Failed to initialize volume classifier depth buffer");
+
+        if (undefined === this._vcAltDepthStencil || (undefined !== this._depthMS && undefined === this._vcAltDepthStencilMS))
           return false;
-        }
-        if (!this._textures.enableVolumeClassifier(width, height, this._antialiasSamples)) {
-          assert(false, "Failed to initialize volume classifier textures");
+
+        if (!this._textures.enableVolumeClassifier(width, height, this._antialiasSamples))
           return false;
-        }
-        if (!this._geom.enableVolumeClassifier(this._textures, this._depth!, width, height)) {
-          assert(false, "Failed to initialize volume classifier geometry");
+
+        if (!this._geom.enableVolumeClassifier(this._textures, this._depth!,))
           return false;
-        }
+
         this.enableVolumeClassifierFbos(this._textures, this._depth!, this._vcAltDepthStencil, this._depthMS, this._vcAltDepthStencilMS);
         this._haveVolumeClassifier = true;
       } else {
@@ -945,10 +936,8 @@ abstract class Compositor extends SceneCompositor {
   }
 
   public draw(commands: RenderCommands) {
-    if (!this.preDraw()) {
-      assert(false);
+    if (!this.preDraw())
       return;
-    }
 
     const compositeFlags = commands.compositeFlags;
     const needComposite = CompositeFlags.None !== compositeFlags;
@@ -1522,10 +1511,9 @@ abstract class Compositor extends SceneCompositor {
       fbStack.execute(volClassBlendFbo, true, this.useMsBuffers, () => {
         this.target.pushState(this.target.decorationsState);
         System.instance.applyRenderState(this._vcCopyZRenderState!);
-        if (System.instance.supportsFragDepth)
-          this.target.techniques.draw(getDrawParams(this.target, this._geom.volClassCopyZ!));  // This method uses the EXT_frag_depth extension
-        else
-          this.target.techniques.draw(getDrawParams(this.target, this._geom.volClassCopyZWithPoints!)); // This method draws GL_POINTS (1 per pixel) to set Z in vertex shader
+
+        this.target.techniques.draw(getDrawParams(this.target, this._geom.volClassCopyZ!));  // This method uses the EXT_frag_depth extension
+
         System.instance.bindTexture2d(TextureUnit.Zero, undefined);
         this.target.popBranch();
       });
