@@ -11,7 +11,7 @@ import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
   Feature, PackedFeatureTable, PointCloudDisplaySettings, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
-import { DepthType, RenderType } from "@itwin/webgl-compatibility";
+import { RenderType } from "@itwin/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";
 import { SceneContext } from "../../ViewContext";
 import { ViewRect } from "../../ViewRect";
@@ -22,12 +22,11 @@ import { BranchState } from "./BranchState";
 import { BatchState } from "./BatchState";
 import {
   AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry,
-  ScreenPointsGeometry, SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
+  SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
 } from "./CachedGeometry";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, extractFlashedVolumeClassifierCommands, extractHilitedVolumeClassifierCommands } from "./DrawCommand";
-import { FloatRgba } from "./FloatRGBA";
 import { DepthBuffer, FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
 import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
