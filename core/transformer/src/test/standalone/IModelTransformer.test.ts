@@ -2101,6 +2101,8 @@ describe("IModelTransformer", () => {
       // force import references out of order to make sure we hit an issue if schema locator can't find things
       sinon.replace(IModelJsFs, "readdirSync", () => outOfOrderExportedSchemas.map((s) => path.basename(s)));
       await transformer.processSchemas();
+      expect(targetDb.querySchemaVersion(longSchema1Name)).not.to.be.undefined;
+      expect(targetDb.querySchemaVersion(longSchema2Name)).not.to.be.undefined;
     } finally {
       sourceDb.close();
       targetDb.close();
