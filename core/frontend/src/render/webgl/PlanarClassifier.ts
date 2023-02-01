@@ -93,21 +93,31 @@ class ClassifierTextures implements WebGLDisposable {
   }
 }
 
-abstract class ClassifierFrameBuffers implements WebGLDisposable {
-  protected constructor(
+class ClassifierFrameBuffers implements WebGLDisposable {
+  private constructor(
     public readonly textures: ClassifierTextures,
-    private readonly _hilite: FrameBuffer) { }
+    private readonly _hilite: FrameBuffer,
+    private readonly _fbo: FrameBuffer,
+    private readonly _clearGeom: ViewportQuadGeometry) {
+  }
 
   public get isDisposed(): boolean {
-    return this.textures.isDisposed && this._hilite.isDisposed;
+    return this.textures.isDisposed && this._hilite.isDisposed && this._fbo.isDisposed && this._clearGeom.isDisposed;
   }
 
   public dispose(): void {
+    dispose(this._fbo);
+    dispose(this._clearGeom);
     dispose(this.textures);
     dispose(this._hilite);
   }
 
-  public abstract draw(cmds: DrawCommands, target: Target): void;
+  public draw(cmds: DrawCommands, target: Target): void {
+    System.instance.frameBufferStack.execute(this._fbo, true, false, () => {
+      target.techniques.draw(getDrawParams(target, this._clearGeom));
+      target.techniques.execute(target, cmds, RenderPass.PlanarClassification);
+    });
+  }
 
   public drawHilite(cmds: DrawCommands, target: Target): void {
     const system = System.instance;
@@ -128,49 +138,14 @@ abstract class ClassifierFrameBuffers implements WebGLDisposable {
     if (undefined === hiliteFbo)
       return undefined;
 
-    return ClassifierMRTFrameBuffers.createMRT(textures, hiliteFbo);
-  }
-}
-
-class ClassifierMRTFrameBuffers extends ClassifierFrameBuffers {
-  private readonly _fbo: FrameBuffer;
-  private readonly _clearGeom: ViewportQuadGeometry;
-
-  private constructor(textures: ClassifierTextures, hilite: FrameBuffer, fbo: FrameBuffer, geom: ViewportQuadGeometry) {
-    super(textures, hilite);
-    this._fbo = fbo;
-    this._clearGeom = geom;
-  }
-
-  public override get isDisposed(): boolean {
-    return super.isDisposed
-      && this._fbo.isDisposed
-      && this._clearGeom.isDisposed;
-  }
-
-  public override dispose(): void {
-    dispose(this._fbo);
-    dispose(this._clearGeom);
-    super.dispose();
-  }
-
-  public static createMRT(textures: ClassifierTextures, hilite: FrameBuffer): ClassifierMRTFrameBuffers | undefined {
     const fbo = FrameBuffer.create([textures.color.texture, textures.feature.texture]);
     if (undefined === fbo)
       return undefined;
 
     const geom = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
-    return undefined !== geom ? new ClassifierMRTFrameBuffers(textures, hilite, fbo, geom) : undefined;
-  }
-
-  public draw(cmds: DrawCommands, target: Target): void {
-    System.instance.frameBufferStack.execute(this._fbo, true, false, () => {
-      target.techniques.draw(getDrawParams(target, this._clearGeom));
-      target.techniques.execute(target, cmds, RenderPass.PlanarClassification);
-    });
+    return undefined !== geom ? new this(textures, hiliteFbo, fbo, geom) : undefined;
   }
 }
-
 
 interface TextureAndFbo {
   texture: Texture;
