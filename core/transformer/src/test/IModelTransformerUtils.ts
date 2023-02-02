@@ -1282,7 +1282,7 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     const element: Element = this.exporter.sourceDb.elements.getElement(aspect.element.id);
     return 1 + this.getIndentLevelForElement(element);
   }
-  public override async onExportSchema(schema: Schema): Promise<void> {
+  public override async onExportSchema(schema: Schema) {
     this.writeLine(`[Schema] ${schema.name}`);
     return super.onExportSchema(schema);
   }

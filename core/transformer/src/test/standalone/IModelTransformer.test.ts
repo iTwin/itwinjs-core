@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import * as fs from "fs";
 import * as path from "path";
 import * as Semver from "semver";
 import * as sinon from "sinon";
@@ -15,6 +16,7 @@ import {
   PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb, SpatialCategory, StandaloneDb,
   SubCategory, Subject,
 } from "@itwin/core-backend";
+import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
@@ -2022,6 +2024,91 @@ describe("IModelTransformer", () => {
     expect(noSystemSchemasTransformer.exporter.wantSystemSchemas).to.be.false;
     await noSystemSchemasTransformer.processSchemas();
     noSystemSchemasTransformer.dispose();
+  });
+
+  it("handles long schema names and references to them", async function () {
+    const longSchema1Name = `ThisSchemaIs${"Long".repeat(100)}`;
+    assert(Buffer.from(longSchema1Name).byteLength > 255);
+    const longSchema2Name = `${longSchema1Name}ButEndsDifferently`;
+
+    if (process.platform !== "win32") {
+      // windows has no bound on path segment (file name) length, (it does have a bound on total path length),
+      // so we don't expect this to throw only on Mac/Linux where 255 byte limit is common
+      expect(() => fs.writeFileSync(longSchema1Name, "")).to.throw(/too long/);
+    }
+
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "LongSchemaRef.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "UnknownBisCoreNewSchemaRef" } });
+
+    const longSchema1 = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="${longSchema1Name}" alias="ls" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="units" version="01.00" alias="u"/>
+      </ECSchema>
+    `;
+
+    const longSchema2 = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="${longSchema2Name}" alias="ls2" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="units" version="01.00" alias="u"/>
+      </ECSchema>
+    `;
+
+    const reffingSchemaName = "Reffing";
+    const reffingSchema = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="${reffingSchemaName}" alias="refg" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="${longSchema1Name}" version="01.00" alias="ls" />
+        <ECSchemaReference name="${longSchema2Name}" version="01.00" alias="ls2" />
+      </ECSchema>
+    `;
+
+    await sourceDb.importSchemaStrings([longSchema1, longSchema2, reffingSchema]);
+    sourceDb.saveChanges();
+
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "LongSchemaRefTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "LongSchemaRefTarget" } });
+
+    const exportedSchemaPaths: string[] = [];
+    let outOfOrderExportedSchemas: string[];
+
+    class TrackSchemaExportsExporter extends IModelExporter {
+      public override async exportSchemas(): Promise<void> {
+        await super.exportSchemas();
+        assert(exportedSchemaPaths.length === 4);
+        // eslint-disable-next-line @typescript-eslint/dot-notation
+        const reffingSchemaFile = path.join(transformer["_schemaExportDir"], `${reffingSchemaName}.ecschema.xml`);
+        assert(exportedSchemaPaths.includes(reffingSchemaFile), `Expected ${reffingSchemaFile} in ${exportedSchemaPaths}`);
+        // make sure the referencing schema is first, so it is imported first, and the schema locator is forced
+        // to look for its references (like the long name schema) that haven't been imported yet
+        outOfOrderExportedSchemas = [reffingSchemaFile, ...exportedSchemaPaths.filter((s) => s !== reffingSchemaFile)];
+      }
+    }
+
+    // using this class instead of sinon.replace provides some gurantees that subclasses can use the onExportSchema result as expected
+    class TrackSchemaExportsTransformer extends IModelTransformer {
+      public constructor(source: IModelDb, target: IModelDb, opts?: IModelTransformOptions) {
+        super(new TrackSchemaExportsExporter(source), target, opts);
+      }
+      public override async onExportSchema(schema: ECSchemaMetaData.Schema) {
+        const exportResult = await super.onExportSchema(schema);
+        assert(exportResult?.schemaPath); // IModelTransformer guarantees that it returns a valid schemaPath, the type is wide for subclasses
+        exportedSchemaPaths.push(exportResult.schemaPath);
+        return exportResult;
+      }
+    }
+
+    const transformer = new TrackSchemaExportsTransformer(sourceDb, targetDb);
+
+    try {
+      // force import references out of order to make sure we hit an issue if schema locator can't find things
+      sinon.replace(IModelJsFs, "readdirSync", () => outOfOrderExportedSchemas.map((s) => path.basename(s)));
+      await transformer.processSchemas();
+      expect(targetDb.querySchemaVersion(longSchema1Name)).not.to.be.undefined;
+      expect(targetDb.querySchemaVersion(longSchema2Name)).not.to.be.undefined;
+    } finally {
+      sourceDb.close();
+      targetDb.close();
+      transformer.dispose();
+      sinon.restore();
+    }
   });
 
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
