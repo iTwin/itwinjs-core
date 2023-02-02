@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
-import { assert, base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
+import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
 import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
@@ -332,7 +332,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
   private async fetchTile(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): Promise<ArcGisFeatureResponse | undefined> {
     if (!this.format) {
-      assert(!"No supported query format");
       return undefined;
     }
 
