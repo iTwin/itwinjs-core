@@ -25,7 +25,7 @@ export interface FrameworkBackstage {
   /**
    * State of the backstage.
    */
-  isOpen: boolean;
+  readonly isOpen: boolean;
   /**
    * Display the backstage.
    */

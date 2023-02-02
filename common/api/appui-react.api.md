@@ -2320,7 +2320,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 export interface FrameworkBackstage {
     close(): void;
     getBackstageToggleCommand(overrideIconSpec?: IconSpec): CommandItemDef;
-    isOpen: boolean;
+    readonly isOpen: boolean;
     readonly onToggled: BeEvent<(args: BackstageToggledArgs) => void>;
     open(): void;
     toggle(): void;
@@ -2333,8 +2333,7 @@ export interface FrameworkChildWindows {
     find(childWindowId: string | undefined): OpenChildWindowInfo | undefined;
     findId(contentWindow: Window | undefined | null): string | undefined;
     open(childWindowId: string, title: string, content: React.ReactNode, location: ChildWindowLocationProps, useDefaultPopoutUrl?: boolean): boolean;
-    // (undocumented)
-    openChildWindows: OpenChildWindowInfo[];
+    readonly openChildWindows: OpenChildWindowInfo[];
 }
 
 // @beta
@@ -2401,10 +2400,10 @@ export interface FrameworkDialog {
 
 // @beta
 export interface FrameworkDialogs {
-    modal: FrameworkDialog & {
+    readonly modal: FrameworkDialog & {
         readonly onModalDialogChangedEvent: ModalDialogChangedEvent;
     };
-    modeless: FrameworkStackedDialog<ModelessDialogInfo> & {
+    readonly modeless: FrameworkStackedDialog<ModelessDialogInfo> & {
         readonly onModelessDialogChangedEvent: ModelessDialogChangedEvent;
     };
 }
@@ -5032,7 +5031,7 @@ export enum SelectionScope {
 }
 
 // @public
-export const SelectionScopeField: ConnectedComponent<typeof SelectionScopeFieldComponent, Omit_3<React_2.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "activeSelectionScope" | "availableSelectionScopes">>;
+export const SelectionScopeField: ConnectedComponent<typeof SelectionScopeFieldComponent, Omit_3<React_2.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
 
 // @public @deprecated
 export class SeparatorBackstageItem extends React_2.PureComponent<BackstageItemProps> {
@@ -5254,6 +5253,11 @@ export const setPanelSize: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | ReactText | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | {
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: Key | null;
@@ -5270,11 +5274,6 @@ export const setPanelSize: (base: {
                 } | any | null | undefined;
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
-            } | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -7829,7 +7828,7 @@ export enum WidgetType {
 }
 
 // @public @deprecated
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
 
 // @public @deprecated
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React_2.JSXElementConstructor<P> & C) => {
@@ -7887,7 +7886,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public @deprecated
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget">>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
 
 // @internal @deprecated
 export class Workflow extends ItemDefBase {

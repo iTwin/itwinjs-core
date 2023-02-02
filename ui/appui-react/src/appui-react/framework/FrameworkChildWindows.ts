@@ -23,7 +23,10 @@ export interface ChildWindowLocationProps {
  * @beta
  */
 export interface FrameworkChildWindows {
-  openChildWindows: OpenChildWindowInfo[];
+  /**
+   * List of currently open child windows;
+   */
+  readonly openChildWindows: OpenChildWindowInfo[];
 
   /**
    * Returns the OpenChildWindowInfo for the related id.

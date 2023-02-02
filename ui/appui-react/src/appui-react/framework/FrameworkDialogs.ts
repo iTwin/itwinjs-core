@@ -74,7 +74,7 @@ export interface FrameworkDialogs {
    * Manage modal dialogs.
    * @beta
    */
-  modal: FrameworkDialog & {
+  readonly modal: FrameworkDialog & {
     /** Modal Dialog Changed Event */
     readonly onModalDialogChangedEvent: ModalDialogChangedEvent;
   };
@@ -83,7 +83,7 @@ export interface FrameworkDialogs {
    * Manage modeless dialogs.
    * @beta
    */
-  modeless: FrameworkStackedDialog<ModelessDialogInfo> & {
+  readonly modeless: FrameworkStackedDialog<ModelessDialogInfo> & {
     /** Modeless Dialog Changed Event */
     readonly onModelessDialogChangedEvent: ModelessDialogChangedEvent;
   };
