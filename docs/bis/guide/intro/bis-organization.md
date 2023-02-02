@@ -10,7 +10,7 @@ The layers are depicted below:
 ![A Family of Schemas](../media/a-family-of-schemas.png)
 &nbsp;
 
-Schemas in any layer may refer to (be dependent upon) schemas in the same layer or in any lower layer. The layers of the schema hierarchy are intended to avoid circular dependencies while still allowing different domains to interoperate.
+Schemas in any layer may refer to (be dependent upon) schemas in the same layer or in any lower layer. The layers of the schema hierarchy are intended to avoid circular dependencies while still allowing different domains to interoperate. BIS schemas developed by Bentley Systems are mantained and evolved in a public and open-source [GitHub repository](https://github.com/iTwin/bis-schemas), whose folder-structure reflects these layers in the BIS ecosystem.
 
 ### Core Layer
 
