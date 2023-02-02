@@ -227,7 +227,6 @@ public;IModelIdArg
 public;IModelJsFs
 public;IModelJsFsStats
 public;IModelNameArg 
-public;ImportSchemasOptions
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -321,6 +320,7 @@ public;class RoleElement
 public;RoleModel 
 public;RpcTrace
 public;Schema
+public;SchemaImportOptions
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
 public;Schemas

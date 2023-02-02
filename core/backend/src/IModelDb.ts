@@ -150,8 +150,7 @@ export interface LockControl {
 
 /**
  * Options for the importing of schemas
- * @public can't make this internal since it's a parameter in a public API,
- *         but all members are internal
+ * @public
  */
 export interface SchemaImportOptions {
   /**
