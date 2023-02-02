@@ -92,41 +92,41 @@ ruleTester.run(
         * @beta
         * @deprecated
         */`,
-        errors: [{ message: "@deprecated in Major.minor format followed by deprecation reason and/or alternative API usage required" }],
+        errors: [{ messageId: "requireVersionAndSentence" }],
       },
       {
         code: `// @deprecated`,
-        errors: [{ message: "@deprecated in Major.minor format followed by deprecation reason and/or alternative API usage required" }],
+        errors: [{ messageId: "requireVersionAndSentence" }],
       },
       {
         code: `// @deprecated in 3.x.`,
-        errors: [{ message: "@deprecated in Major.minor format followed by deprecation reason and/or alternative API usage required" }],
+        errors: [{ messageId: "requireVersionAndSentence" }],
       },
       {
         code: `/* @deprecated */`,
-        errors: [{ message: "@deprecated in Major.minor format followed by deprecation reason and/or alternative API usage required" }],
+        errors: [{ messageId: "requireVersionAndSentence" }],
       },
       {
         code: `/* @deprecated in 2.6.*/
         function shouldFailSinceNoSentence() {}`,
-        errors: [{ message: "@deprecated in Major.minor format followed by deprecation reason and/or alternative API usage required" }],
+        errors: [{ messageId: "requireVersionAndSentence" }],
       },
       {
         code: `// @deprecated in 3.x
         let shouldFailSinceNoSentenceGiven = () => {};`,
-        errors: [{ message: "@deprecated in Major.minor format followed by deprecation reason and/or alternative API usage required" }],
+        errors: [{ messageId: "requireVersionAndSentence" }],
       },
       {
         code: `// @deprecated
         class shouldFailSinceNoVersionOrSentenceGiven {};`,
-        errors: [{ message: "@deprecated in Major.minor format followed by deprecation reason and/or alternative API usage required" }],
+        errors: [{ messageId: "requireVersionAndSentence" }],
       },
       {
         code: `/** @deprecated in 3.6.
         * I am giving the description here.
         */
          `,
-        errors: [{ message: "@deprecated in Major.minor format followed by deprecation reason and/or alternative API usage required" }],
+        errors: [{ messageId: "requireVersionAndSentence" }],
       },
 
     ],

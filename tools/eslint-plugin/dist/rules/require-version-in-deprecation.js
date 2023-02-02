@@ -8,6 +8,11 @@
 "use strict";
 
 module.exports = {
+  meta: {
+    messages: {
+      requireVersionAndSentence: "@deprecated in Major.minor format followed by deprecation reason and/or alternative API usage required"
+    }
+  },
   create(context) {
     return {
       Program(node) {
@@ -15,7 +20,7 @@ module.exports = {
         for (const comment of node.comments) {
           if (match = /@deprecated(?<in> in \d+(\.(\d|x))+.{5,})?/.exec(comment.value)) {
             if (!match?.groups?.in) {
-              context.report(comment, "@deprecated in Major.minor format followed by deprecation reason and/or alternative API usage required");
+              context.report({ node: comment, messageId: "requireVersionAndSentence" });
             }
           }
         }
