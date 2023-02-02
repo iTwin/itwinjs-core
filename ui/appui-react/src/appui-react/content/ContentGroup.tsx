@@ -14,6 +14,7 @@ import { UiFramework } from "../UiFramework";
 import { ContentControl } from "./ContentControl";
 import { FrontstageProps } from "../frontstage/Frontstage";
 import { FrontstageConfig } from "../frontstage/FrontstageConfig";
+import { InternalConfigurableUiManager } from "../configurableui/InternalConfigurableUiManager";
 
 /** Properties for content displayed in a content view
  * @public
@@ -214,7 +215,7 @@ export class ContentGroup {
 
     contentGroupProps.contents.forEach((content: ContentProps, index: number) => {
       if (typeof content.classId !== "string") {
-        const classId = UiFramework.controls.getConstructorClassId(content.classId);
+        const classId = InternalConfigurableUiManager.getConstructorClassId(content.classId);
         if (classId !== undefined)
           content.classId = classId;
         else

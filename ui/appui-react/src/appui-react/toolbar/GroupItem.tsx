@@ -25,6 +25,7 @@ import { ItemList, ItemMap } from "../shared/ItemMap";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -236,14 +237,14 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
   public override componentDidMount() {
     UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     UiFramework.frontstages.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
-    UiFramework.frontstages.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
+    InternalFrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   public override componentWillUnmount() {
     this._componentUnmounting = true;
     UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
     UiFramework.frontstages.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
-    UiFramework.frontstages.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
+    InternalFrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }
 
   public override shouldComponentUpdate(nextProps: GroupItemComponentProps, nextState: GroupItemState) {
@@ -429,7 +430,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       isPressed: true,
     });
     this._closeOnPanelOpened = false;
-    UiFramework.frontstages.onToolPanelOpenedEvent.emit();
+    InternalFrontstageManager.onToolPanelOpenedEvent.emit();
     this._closeOnPanelOpened = true;
   };
 
@@ -452,7 +453,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       };
     }, () => {
       this._closeOnPanelOpened = false;
-      !!this.state.isPressed && UiFramework.frontstages.onToolPanelOpenedEvent.emit();
+      !!this.state.isPressed && InternalFrontstageManager.onToolPanelOpenedEvent.emit();
       this._closeOnPanelOpened = true;
     });
   };

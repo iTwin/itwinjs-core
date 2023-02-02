@@ -105,7 +105,7 @@ export function BasemapPanel(props: BasemapPanelProps) {
   }, [selectedBaseMap, baseMapOptions, baseIsMap]);
 
   const handleBackgroundColorDialogOk = React.useCallback((bgColorDef: ColorDef) => {
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
     if (activeViewport) {
       // change color and make sure previously set transparency is not lost.
       const curTransparency = activeViewport.displayStyle.backgroundMapBase instanceof ColorDef ? activeViewport.displayStyle.backgroundMapBase.getTransparency() : 0;
@@ -116,12 +116,12 @@ export function BasemapPanel(props: BasemapPanelProps) {
   }, [activeViewport]);
 
   const handleBackgroundColorDialogCancel = React.useCallback(() => {
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
   }, []);
 
   const handleBgColorClick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
-    UiFramework.dialogs.modal.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors} colorInputType={"rgb"}
+    UiFramework.dialogs.modal.open(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors} colorInputType={"rgb"}
       onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel} />);
   }, [presetColors, handleBackgroundColorDialogOk]); // eslint-disable-line react-hooks/exhaustive-deps
 

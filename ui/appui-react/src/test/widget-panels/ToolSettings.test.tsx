@@ -14,6 +14,7 @@ import {
   ConfigurableCreateInfo, FrontstageDef, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsEntry, ToolSettingsGrid,
   ToolUiProvider, UiFramework, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef,
 } from "../../appui-react";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 describe("WidgetPanelsToolSettings", () => {
   it("should not render w/o tool settings top center zone", () => {
@@ -48,7 +49,7 @@ describe("ToolSettingsDockedContent", () => {
 
   it("should render settings", () => {
     const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
-    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
+    sinon.stub(InternalFrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
     const horizontalToolSettingNodes: ToolSettingsEntry[] = [{ labelNode: "Date", editorNode: <input type="date" /> }];
     sinon.stub(activeToolSettingsProvider, "horizontalToolSettingNodes").get(() => horizontalToolSettingNodes);
     const { container } = render(
@@ -88,7 +89,7 @@ describe("ToolSettingsContent", () => {
 
   it("should render (Floating Widget mode)", () => {
     const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
-    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
+    sinon.stub(InternalFrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
     sinon.stub(activeToolSettingsProvider, "toolSettingsNode").get(() => <div>Hello World</div>);
     const state = createNineZoneState({
       toolSettings: {
@@ -157,11 +158,11 @@ describe("useHorizontalToolSettingNodes", () => {
       }
     }
 
-    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
+    sinon.stub(InternalFrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
     const sut = renderHook(() => useHorizontalToolSettingNodes());
 
     act(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
+      sinon.stub(InternalFrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
       UiFramework.frontstages.onToolActivatedEvent.emit({
         toolId: "",
       });
@@ -200,7 +201,7 @@ describe("useToolSettingsNode", () => {
 
   it("should update toolSettingsNode", () => {
     const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
-    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
+    sinon.stub(InternalFrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
     const sut = renderHook(() => useToolSettingsNode());
 
     const node = <div>Hello World</div>;
@@ -216,7 +217,7 @@ describe("useToolSettingsNode", () => {
   });
 
   it("should initialize to undefined w/o active activeToolSettingsProvider", () => {
-    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => undefined);
+    sinon.stub(InternalFrontstageManager, "activeToolSettingsProvider").get(() => undefined);
     const { result } = renderHook(() => useToolSettingsNode());
 
     (result.current === undefined).should.true;

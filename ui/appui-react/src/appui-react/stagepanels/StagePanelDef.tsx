@@ -15,6 +15,7 @@ import { WidgetHost } from "../widgets/WidgetHost";
 import { StagePanelMaxSizeSpec, StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel";
 import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
 import { UiFramework } from "../UiFramework";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 
 /** Enum for StagePanel state.
  * @public
@@ -110,7 +111,7 @@ export class StagePanelDef extends WidgetHost {
       }
     }
     this._size = size;
-    UiFramework.frontstages.onPanelSizeChangedEvent.emit({
+    InternalFrontstageManager.onPanelSizeChangedEvent.emit({
       panelDef: this,
       size,
     });

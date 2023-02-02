@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { DialogChangedEventArgs, ModelessDialog, ModelessDialogManager, ModelessDialogRenderer, UiFramework } from "../../appui-react";
+import { DialogChangedEventArgs, ModelessDialog, ModelessDialogManager, ModelessDialogRenderer } from "../../appui-react";
 import TestUtils, { createStaticInternalPassthroughValidators, userEvent } from "../TestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
@@ -28,7 +28,6 @@ describe("ModelessDialogManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework(true);
-    UiFramework.controls.initialize();
     await MockRender.App.startup();
 
     ModelessDialogManager.onModelessDialogChangedEvent.addListener(handleModelessDialogChanged);
@@ -221,15 +220,15 @@ describe("ModelessDialogManager", () => {
     const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(ModelessDialogManager, InternalModelessDialogManager);
 
     validateMethod("closeAll");
-    validateMethod("closeDialog", "id");
-    validateMethod("getDialogInfo", "id");
-    validateMethod("getDialogZIndex", "id");
+    validateMethod(["closeDialog", "close"], "id");
+    validateMethod(["getDialogInfo", "getInfo"], "id");
+    validateMethod(["getDialogZIndex", "getZIndex"], "id");
     validateMethod("handlePointerDownEvent", {} as any, "id", sinon.spy());
     validateMethod("initialize");
-    validateMethod("openDialog", "", "id", document);
+    validateMethod(["openDialog", "open"], "", "id", document);
     validateMethod("update");
-    validateProp("activeDialog");
-    validateProp("dialogCount");
+    validateProp(["activeDialog", "active"]);
+    validateProp(["dialogCount", "count"]);
     validateProp("dialogManager");
     validateProp("dialogs");
     validateProp("onModelessDialogChangedEvent");

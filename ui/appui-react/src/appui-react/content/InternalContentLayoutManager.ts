@@ -18,16 +18,16 @@ export class InternalContentLayoutManager {
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();
 
   /** build a layout key that is unique for group layout combination */
-  public static getLayoutKey(props: { contentGroupId: string, layoutId: string }): string {
+  public static getKey(props: { contentGroupId: string, layoutId: string }): string {
     return `${props.contentGroupId}-${props.layoutId}`;
   }
 
   /** Return a LayoutDef that is specific to a content group.
    * @returns the [[ContentLayoutDef]] if found, or undefined otherwise
    */
-  public static getLayoutForGroup(contentGroupProps: ContentGroupProps | ContentGroup, overrideContentLayout?: ContentLayoutProps): ContentLayoutDef {
+  public static getForGroup(contentGroupProps: ContentGroupProps | ContentGroup, overrideContentLayout?: ContentLayoutProps): ContentLayoutDef {
     const layoutId = overrideContentLayout?.id ?? contentGroupProps.layout.id;
-    const layoutKey = this.getLayoutKey({ contentGroupId: contentGroupProps.id, layoutId });
+    const layoutKey = this.getKey({ contentGroupId: contentGroupProps.id, layoutId });
 
     if (!overrideContentLayout && InternalContentLayoutManager._layoutDefs.has(layoutKey)) {
       return InternalContentLayoutManager._layoutDefs.get(layoutKey)!;
@@ -35,7 +35,7 @@ export class InternalContentLayoutManager {
 
     const newContentLayoutProps = { ...contentGroupProps.layout, ...overrideContentLayout };
     const newLayoutDef = new ContentLayoutDef(newContentLayoutProps);
-    this.addLayout(layoutKey, newLayoutDef);
+    this.add(layoutKey, newLayoutDef);
     return newLayoutDef;
   }
 
@@ -43,7 +43,7 @@ export class InternalContentLayoutManager {
    * @param layoutKey  group specific layout id, see `getLayoutKey`
    * @returns the [[ContentLayoutDef]] if found, or undefined otherwise
    */
-  public static findLayout(layoutKey: string): ContentLayoutDef | undefined {
+  public static find(layoutKey: string): ContentLayoutDef | undefined {
     return InternalContentLayoutManager._layoutDefs.get(layoutKey)!;
   }
 
@@ -51,7 +51,7 @@ export class InternalContentLayoutManager {
    * @param layoutId  the id of the Content Layout to add
    * @param layoutDef  the Content Layout definition to add
    */
-  public static addLayout(layoutId: string, layoutDef: ContentLayoutDef): void {
+  public static add(layoutId: string, layoutDef: ContentLayoutDef): void {
     InternalContentLayoutManager._layoutDefs.set(layoutId, layoutDef);
   }
 
@@ -81,7 +81,7 @@ export class InternalContentLayoutManager {
    * @param contentLayoutDef  Content layout to make active
    * @param contentGroup  Content Group to make active
    */
-  public static async setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void> {
+  public static async setActive(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void> {
     await UiFramework.frontstages.setActiveLayout(contentLayoutDef, contentGroup);
   }
 
@@ -94,7 +94,7 @@ export class InternalContentLayoutManager {
 
   /** Refreshes the active layout and content group.
    */
-  public static refreshActiveLayout(): void {
+  public static refreshActive(): void {
     // istanbul ignore else
     const activeFrontstageDef = UiFramework.frontstages.activeFrontstageDef;
     if (activeFrontstageDef && activeFrontstageDef.contentLayoutDef && activeFrontstageDef.contentGroup) {

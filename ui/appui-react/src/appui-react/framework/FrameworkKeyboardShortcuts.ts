@@ -93,16 +93,11 @@ export interface FrameworkKeyboardShortcutContainer {
  * @beta
  */
 export interface FrameworkKeyboardShortcuts {
-  /** Initialize the Keyboard Shortcut manager
-   * @internal
-  */
-  initialize(): void;
-
   /** Loads Keyboard Shortcuts into the managed list */
-  loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
+  loadShortcuts(shortcutList: KeyboardShortcutProps[]): void;
 
   /** Loads a Keyboard Shortcut into the managed list */
-  loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps): void;
+  loadShortcut(shortcutProps: KeyboardShortcutProps): void;
 
   /** Processes a keystroke and invokes a matching Keyboard Shortcut */
   processKey(keyboardKey: string, isAltKeyPressed?: boolean, isCtrlKeyPressed?: boolean, isShiftKeyPressed?: boolean): boolean;
@@ -120,10 +115,10 @@ export interface FrameworkKeyboardShortcuts {
   setFocusToHome(): void;
 
   /** Displays the Keyboard Shortcuts menu at the cursor */
-  displayShortcutsMenu(): void;
+  displayMenu(): void;
 
   /** Closes the Keyboard Shortcuts menu */
-  closeShortcutsMenu(): void;
+  closeMenu(): void;
 
   /** Returns the cursor X position, which is mouseEvent.pageX. */
   readonly cursorX: number;

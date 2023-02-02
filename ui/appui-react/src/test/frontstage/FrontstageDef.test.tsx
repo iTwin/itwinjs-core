@@ -14,6 +14,7 @@ import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsMana
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState } from "@itwin/appui-layout-react";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { StagePanelState } from "../../appui-react/stagepanels/StagePanelDef";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 describe("FrontstageDef", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
@@ -143,7 +144,7 @@ describe("FrontstageDef", () => {
 
   describe("restoreLayout", () => {
     it("should emit onFrontstageRestoreLayoutEvent", () => {
-      const spy = sinon.spy(UiFramework.frontstages.onFrontstageRestoreLayoutEvent, "emit");
+      const spy = sinon.spy(InternalFrontstageManager.onFrontstageRestoreLayoutEvent, "emit");
       const frontstageDef = new FrontstageDef();
       frontstageDef.restoreLayout();
       spy.calledOnceWithExactly(sinon.match({

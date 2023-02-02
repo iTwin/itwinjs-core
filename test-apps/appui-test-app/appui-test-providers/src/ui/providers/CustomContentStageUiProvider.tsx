@@ -88,7 +88,7 @@ export class CustomContentStageUiProvider implements UiItemsProvider {
         iconSpec: <SvgWindowAdd />,
         labelKey: "SampleApp:buttons.sampleModelessDialog",
         execute: () => {
-          UiFramework.dialogs.modeless.openDialog(
+          UiFramework.dialogs.modeless.open(
             <SampleModelessDialog
               opened={true}
               dialogId={dialogId}

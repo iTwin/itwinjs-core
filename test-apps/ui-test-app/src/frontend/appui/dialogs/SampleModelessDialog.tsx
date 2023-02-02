@@ -47,6 +47,6 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
 
   private _closeDialog = () => {
     this.props.onClose && this.props.onClose();
-    UiFramework.dialogs.modeless.closeDialog(this.props.dialogId);
+    UiFramework.dialogs.modeless.close(this.props.dialogId);
   };
 }

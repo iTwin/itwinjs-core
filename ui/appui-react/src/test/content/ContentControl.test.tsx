@@ -76,7 +76,7 @@ describe("ContentControl", () => {
 
         if (contentControl) {
           const activatedMethod = sinon.spy(contentControl, "onActivated");
-          UiFramework.content.setActiveContent(contentSet[1]);
+          UiFramework.content.setActive(contentSet[1]);
           expect(activatedMethod.calledOnce, `onActivated called ${activatedMethod.callCount} times`).to.be.true;
 
           expect(contentControl.isViewport).to.be.false;
@@ -132,11 +132,11 @@ describe("ContentControl", () => {
 
         if (contentControl) {
           const deactivatedMethod = sinon.spy(contentControl, "onDeactivated");
-          UiFramework.content.setActiveContent(contentSet[1]);
+          UiFramework.content.setActive(contentSet[1]);
           expect(deactivatedMethod.calledOnce).to.be.true;
 
           const activatedMethod = sinon.spy(contentControl, "onActivated");
-          UiFramework.content.refreshActiveContent(contentSet[0]);
+          UiFramework.content.refreshActive(contentSet[0]);
           expect(activatedMethod.calledOnce).to.be.true;
         }
       }

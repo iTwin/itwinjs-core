@@ -2,21 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { UiEvent, WidgetState } from "@itwin/appui-abstract";
-import { NineZoneManager } from "@itwin/appui-layout-react";
+import { UiEvent } from "@itwin/appui-abstract";
 import { IModelConnection, Tool } from "@itwin/core-frontend";
-import { Size } from "@itwin/core-react";
 import { ContentGroup } from "../content/ContentGroup";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
-import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
 import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout";
-import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
+import { FrontstageDef } from "../frontstage/FrontstageDef";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
-import { PanelSizeChangedEvent, PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
-import { WidgetChangedEventArgs, WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
+import { PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
+import { WidgetDef, WidgetStateChangedEvent } from "../widgets/WidgetDef";
+import { WidgetState } from "../widgets/WidgetState";
 
 /** Frontstage Activated Event Args interface.
  * @public
@@ -166,27 +164,8 @@ export interface ModalFrontstageItem {
  * @beta
  */
 export interface FrameworkFrontstages {
-  /** This should only be called within InternalFrontstageManager and its tests.
-   *  @internal
-   */
-  ensureToolInformationIsSet(toolId: string): void;
-
-  /** Initializes the InternalFrontstageManager
-   * @internal
-  */
-  initialize(): void;
-
-  /** @internal */
-  isInitialized: boolean;
-
   /** Returns true if Frontstage is loading its controls. If false the Frontstage content and controls have been created. */
   readonly isLoading: boolean;
-
-  /** @internal */
-  nineZoneSize: Size | undefined;
-
-  /** @internal */
-  readonly frontstageDefs: ReadonlyMap<string, FrontstageDef>;
 
   /** Get Frontstage Deactivated event. */
   readonly onFrontstageDeactivatedEvent: FrontstageDeactivatedEvent;
@@ -214,11 +193,6 @@ export interface FrameworkFrontstages {
   /** Get ToolSetting Reload event. */
   readonly onToolSettingsReloadEvent: UiEvent<void>;
 
-  /** Get Tool Panel Opened event.
-   * @internal
-   */
-  readonly onToolPanelOpenedEvent: UiEvent<void>;
-
   /** Get Tool Icon Changed event. */
   readonly onToolIconChangedEvent: ToolIconChangedEvent;
 
@@ -234,36 +208,10 @@ export interface FrameworkFrontstages {
   /** Get Widget State Changed event. */
   readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
 
-  /** @internal */
-  readonly onWidgetLabelChangedEvent: UiEvent<WidgetChangedEventArgs>;
-
-  /** @internal */
-  readonly onWidgetShowEvent: UiEvent<WidgetEventArgs>;
-
-  /** @internal */
-  readonly onWidgetExpandEvent: UiEvent<WidgetEventArgs>;
-
-  /** @internal */
-  readonly onWidgetDefsUpdatedEvent: UiEvent<void>;
-
-  /** @internal */
-  readonly onFrontstageNineZoneStateChangedEvent: UiEvent<FrontstageNineZoneStateChangedEventArgs>;
-
-  /** @internal */
-  readonly onFrontstageRestoreLayoutEvent: UiEvent<FrontstageEventArgs>;
-
   /** Get Widget State Changed event.
    * @alpha
    */
   readonly onPanelStateChangedEvent: PanelStateChangedEvent;
-
-  /** @internal */
-  readonly onPanelSizeChangedEvent: PanelSizeChangedEvent;
-
-  /** Get Nine-zone State Manager.
-   * @deprecated Used in UI1.0 only.
-   */
-  readonly NineZoneManager: NineZoneManager;
 
   /** Clears the Frontstage map.
    */
@@ -272,9 +220,6 @@ export interface FrameworkFrontstages {
   /** Clears the Frontstage Providers and the defs that may have been created from them.
    */
   clearFrontstageProviders(): void;
-
-  /** @internal */
-  clearFrontstageDefsForIModelId(iModelId: string | undefined): void;
 
   /** Add a Frontstage via a [[FrontstageProvider]].
    * @param frontstageProvider  FrontstageProvider representing the Frontstage to add
@@ -330,12 +275,6 @@ export interface FrameworkFrontstages {
 
   /** Gets the active tool's [[ToolInformation]] */
   readonly activeToolInformation: ToolInformation | undefined;
-
-  /** Gets the Tool Setting React node of the active tool.
-   * @return  Tool Setting React node of the active tool, or undefined if there is no active tool or Tool Settings for the active tool.
-   * @internal
-   */
-  readonly activeToolSettingsProvider: ToolUiProvider | undefined;
 
   /** Sets the active layout, content group and active content.
    * @param contentLayoutDef  Content layout to make active

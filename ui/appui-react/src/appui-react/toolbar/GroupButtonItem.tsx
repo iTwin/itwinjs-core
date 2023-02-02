@@ -25,6 +25,7 @@ import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { ToolbarHelper } from "./ToolbarHelper";
 
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -90,12 +91,12 @@ export class ToolbarGroupItemComponent extends React.Component<ToolbarGroupItemC
 
   public override componentDidMount() {
     UiFramework.frontstages.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
-    UiFramework.frontstages.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
+    InternalFrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   public override componentWillUnmount() {
     UiFramework.frontstages.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
-    UiFramework.frontstages.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
+    InternalFrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }
 
   private getGroupItemState(props: ToolbarGroupItemComponentProps) {
@@ -250,7 +251,7 @@ export class ToolbarGroupItemComponent extends React.Component<ToolbarGroupItemC
       isPressed: true,
     });
     this._closeOnPanelOpened = false;
-    UiFramework.frontstages.onToolPanelOpenedEvent.emit();
+    InternalFrontstageManager.onToolPanelOpenedEvent.emit();
     this._closeOnPanelOpened = true;
   };
 

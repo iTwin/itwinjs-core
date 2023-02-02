@@ -12,6 +12,7 @@ import TestUtils from "../TestUtils";
 import { StagePanelLocation } from "@itwin/appui-abstract";
 import { createNineZoneState } from "@itwin/appui-layout-react";
 import { FrontstageDef } from "../../appui-react/frontstage/FrontstageDef";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 describe("StagePanelDef", () => {
 
@@ -69,7 +70,7 @@ describe("StagePanelDef", () => {
 
   it("should emit onPanelSizeChangedEvent", () => {
     const spy = sinon.spy();
-    UiFramework.frontstages.onPanelSizeChangedEvent.addListener(spy);
+    InternalFrontstageManager.onPanelSizeChangedEvent.addListener(spy);
     const panelDef = new StagePanelDef();
     panelDef.size = 200;
     expect(spy).to.be.calledOnceWithExactly(sinon.match({ panelDef, size: 200 }));
@@ -96,7 +97,7 @@ describe("StagePanelDef", () => {
     panelDef.size = 200;
     panelDef.size.should.eq(200);
 
-    const spy = sinon.spy(UiFramework.frontstages.onPanelSizeChangedEvent, "emit");
+    const spy = sinon.spy(InternalFrontstageManager.onPanelSizeChangedEvent, "emit");
     panelDef.size = 150;
     panelDef.size.should.eq(200);
     sinon.assert.notCalled(spy);

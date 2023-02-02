@@ -18,6 +18,7 @@ import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
 import { IconHelper, IconSpec, Rectangle, SizeProps } from "@itwin/core-react";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -368,7 +369,7 @@ export class WidgetDef {
     if (this._label === v)
       return;
     this._label = v;
-    UiFramework.frontstages.onWidgetLabelChangedEvent.emit({ widgetDef: this });
+    InternalFrontstageManager.onWidgetLabelChangedEvent.emit({ widgetDef: this });
   }
 
   /** Get the tooltip string */
@@ -534,13 +535,13 @@ export class WidgetDef {
    * @alpha
    */
   public show() {
-    UiFramework.frontstages.onWidgetShowEvent.emit({ widgetDef: this });
+    InternalFrontstageManager.onWidgetShowEvent.emit({ widgetDef: this });
   }
 
   /** Opens the widget and expands it to fill full size of the stage panel.
    * @alpha
    */
   public expand() {
-    UiFramework.frontstages.onWidgetExpandEvent.emit({ widgetDef: this });
+    InternalFrontstageManager.onWidgetExpandEvent.emit({ widgetDef: this });
   }
 }

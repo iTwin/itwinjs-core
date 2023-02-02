@@ -62,7 +62,7 @@ describe("AppNotificationManager", () => {
     expect(spyMethod.calledOnce).to.be.true;
     expect(alertBoxMethod.calledOnce).to.be.true;
 
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
   });
 
   it("outputMessage with Alert & Balloon", () => {
@@ -103,14 +103,14 @@ describe("AppNotificationManager", () => {
     render(<ModalDialogRenderer />);
 
     const spyMethod = sinon.spy(MessageManager, "openMessageBox");
-    expect(UiFramework.dialogs.modal.dialogCount).to.eq(0);
+    expect(UiFramework.dialogs.modal.count).to.eq(0);
     const boxResult = notifications.openMessageBox(MessageBoxType.OkCancel, "Message string", MessageBoxIconType.Information);
 
     expect(spyMethod.calledOnce).to.be.true;
-    expect(UiFramework.dialogs.modal.dialogCount).to.eq(1);
+    expect(UiFramework.dialogs.modal.count).to.eq(1);
 
     await theUserTo.click(screen.getByRole("button", {name: "dialog.ok"}));
-    expect(UiFramework.dialogs.modal.dialogCount).to.eq(0);
+    expect(UiFramework.dialogs.modal.count).to.eq(0);
 
     const boxValue = await boxResult;
     expect(boxValue).to.eq(MessageBoxValue.Ok);

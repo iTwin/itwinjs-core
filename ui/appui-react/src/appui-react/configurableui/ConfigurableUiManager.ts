@@ -116,7 +116,7 @@ export class ConfigurableUiManager {
    * @deprecated in 3.6. Use `UiFramework.keyboardShortcuts.loadKeyboardShortcuts` method.
    */
   public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void {
-    UiFramework.keyboardShortcuts.loadKeyboardShortcuts(shortcutList);
+    UiFramework.keyboardShortcuts.loadShortcuts(shortcutList);
   }
 
   /** Gets the HTML wrapper element for Configurable UI */

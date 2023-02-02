@@ -462,7 +462,7 @@ export class InternalFrontstageManager {
    * @param contentGroup  Content Group to make active
    */
   public static async setActiveContentGroup(contentGroup: ContentGroup): Promise<void> {
-    const contentLayoutDef = UiFramework.content.layouts.getLayoutForGroup(contentGroup);
+    const contentLayoutDef = UiFramework.content.layouts.getForGroup(contentGroup);
     if (contentLayoutDef) {
       await InternalFrontstageManager.setActiveLayout(contentLayoutDef, contentGroup);
     }

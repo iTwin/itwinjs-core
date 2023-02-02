@@ -63,7 +63,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
 
       // We close any open dialogs that we might have opened
       // This was added because the modal dialog remained remained displayed after the session expired.
-      UiFramework.dialogs.modal.closeDialog();
+      UiFramework.dialogs.modal.close();
     };
   }, []);
 
@@ -100,7 +100,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
   const handleModalUrlDialogCancel = React.useCallback(() => {
     // close popup and refresh UI
     setLoading(false);
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
     resumeOutsideClick();
   }, [resumeOutsideClick]);
 
@@ -142,7 +142,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
                 }
 
               } else if (status === MapLayerSourceStatus.RequireAuth && isMounted.current) {
-                UiFramework.dialogs.modal.openDialog(
+                UiFramework.dialogs.modal.open(
                   <MapUrlDialog
                     activeViewport={activeViewport}
                     isOverlay={isOverlay}
@@ -195,7 +195,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
   }, [options, sourceFilterString]);
 
   const handleAddNewMapSource = React.useCallback(() => {
-    UiFramework.dialogs.modal.openDialog(<MapUrlDialog
+    UiFramework.dialogs.modal.open(<MapUrlDialog
       activeViewport={activeViewport}
       isOverlay={isOverlay}
       onOkResult={()=>handleModalUrlDialogOk(LayerAction.Attached)}
@@ -227,7 +227,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
   }, []);
 
   const handleNoConfirmation = React.useCallback((_layerName: string) => {
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
     resumeOutsideClick();
   }, [resumeOutsideClick]);
 
@@ -244,7 +244,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
       }
     }
 
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
     resumeOutsideClick();
   }, [iTwinId, iModelId, resumeOutsideClick]);
 
@@ -257,7 +257,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
     const layerName = source.name;
 
     const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefDialogMessage", { layerName });
-    UiFramework.dialogs.modal.openDialog(
+    UiFramework.dialogs.modal.open(
       <ConfirmMessageDialog
         className="map-sources-delete-confirmation"
         title={removeLayerDefDialogTitle}
@@ -287,7 +287,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
     if (matchingSource === undefined) {
       return;
     }
-    UiFramework.dialogs.modal.openDialog(<MapUrlDialog
+    UiFramework.dialogs.modal.open(<MapUrlDialog
       activeViewport={activeViewport}
       isOverlay={isOverlay}
       mapLayerSourceToEdit={matchingSource}

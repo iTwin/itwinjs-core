@@ -331,7 +331,7 @@ export class UiFramework {
     UiFramework._settingsManager = undefined;
 
     UiIModelComponents.terminate();
-    UiFramework.visibility.terminate();
+    InternalUiShowHideManager.terminate();
     UiFramework._initialized = false;
   }
 
@@ -502,7 +502,7 @@ export class UiFramework {
     const oldConnection = UiFramework.getIModelConnection();
     if (oldConnection !== iModelConnection) {
       if (oldConnection?.iModelId)
-        UiFramework.frontstages.clearFrontstageDefsForIModelId(oldConnection.iModelId);
+        InternalFrontstageManager.clearFrontstageDefsForIModelId(oldConnection.iModelId);
       oldConnection && undefined === iModelConnection && UiFramework.events.clearConnectionEvents(oldConnection);
       iModelConnection && UiFramework.events.initializeConnectionEvents(iModelConnection);
       UiFramework.dispatchActionToStore(SessionStateActionId.SetIModelConnection, iModelConnection, immediateSync);

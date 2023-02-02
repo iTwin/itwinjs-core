@@ -47,7 +47,7 @@ export class InternalContentViewManager {
   public static readonly onAvailableContentChangedEvent = new UiEvent<{ contentId: string }>();
 
   /** Gets the active content as a React.ReactNode. */
-  public static getActiveContent(): React.ReactNode | undefined {
+  public static getActive(): React.ReactNode | undefined {
     return this._activeContent;
   }
 
@@ -120,7 +120,7 @@ export class InternalContentViewManager {
   }
 
   /** Sets the active [[ContentControl]] */
-  public static setActiveContent(activeContent?: React.ReactNode, forceEventProcessing = false): void {
+  public static setActive(activeContent?: React.ReactNode, forceEventProcessing = false): void {
     // istanbul ignore else
     if (this._activeContent !== activeContent || forceEventProcessing) {
       const oldContent = this._activeContent;
@@ -160,9 +160,9 @@ export class InternalContentViewManager {
   }
 
   /** Refreshes the active [[ContentControl]] */
-  public static refreshActiveContent(activeContent: React.ReactNode) {
-    this.layouts.refreshActiveLayout();
-    this.setActiveContent(activeContent, true);
+  public static refreshActive(activeContent: React.ReactNode) {
+    this.layouts.refreshActive();
+    this.setActive(activeContent, true);
   }
 
   /**

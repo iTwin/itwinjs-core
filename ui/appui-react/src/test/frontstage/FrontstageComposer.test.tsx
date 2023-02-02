@@ -20,6 +20,7 @@ import TestUtils, { childStructure, userEvent } from "../TestUtils";
 import { TestFrontstage } from "./FrontstageTestUtils";
 import { render, screen } from "@testing-library/react";
 import { MockRender } from "@itwin/core-frontend";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";
@@ -52,7 +53,7 @@ describe("FrontstageComposer", () => {
   });
 
   beforeEach(() => {
-    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => undefined);
+    sinon.stub(InternalFrontstageManager, "activeToolSettingsProvider").get(() => undefined);
     theUserTo = userEvent.setup();
   });
 
@@ -90,7 +91,7 @@ describe("FrontstageComposer", () => {
         },
       },
     };
-    const handleTabClickStub = sinon.stub(UiFramework.frontstages.NineZoneManager, "handleWidgetTabClick").returns(nineZoneProps);
+    const handleTabClickStub = sinon.stub(InternalFrontstageManager.NineZoneManager, "handleWidgetTabClick").returns(nineZoneProps);
 
     ref.current?.handleTabClick(6, 0);
 
@@ -198,8 +199,8 @@ describe("FrontstageComposer", () => {
   it("should hide tool settings widget", async () => {
     render(<FrontstageComposer />);
 
-    sinon.stub(UiFramework.frontstages, "activeToolSettingsProvider").get(() => undefined);
-    const hideWidgetSpy = sinon.spy(UiFramework.frontstages.NineZoneManager, "hideWidget");
+    sinon.stub(InternalFrontstageManager, "activeToolSettingsProvider").get(() => undefined);
+    const hideWidgetSpy = sinon.spy(InternalFrontstageManager.NineZoneManager, "hideWidget");
 
     UiFramework.frontstages.onToolActivatedEvent.emit({ toolId: "" });
 
@@ -209,7 +210,7 @@ describe("FrontstageComposer", () => {
   it("should disallow pointer up selection on pointer down", async () => {
     const ref = React.createRef<FrontstageComposer>();
     const {container} = render(<FrontstageComposer ref={ref} />);
-    UiFramework.frontstages.onToolPanelOpenedEvent.emit();
+    InternalFrontstageManager.onToolPanelOpenedEvent.emit();
     expect(ref.current?.state.allowPointerUpSelection).to.be.true;
 
     await theUserTo.click(container.firstElementChild!);
@@ -222,7 +223,7 @@ describe("FrontstageComposer", () => {
     const {container} = render(<FrontstageComposer ref={ref} />);
     await theUserTo.pointer({target: container.firstElementChild!, keys:"[MouseLeft>]"});
 
-    UiFramework.frontstages.onToolPanelOpenedEvent.emit();
+    InternalFrontstageManager.onToolPanelOpenedEvent.emit();
     expect(ref.current?.state.allowPointerUpSelection).to.be.true;
 
     await theUserTo.pointer("[/MouseLeft]");
@@ -230,8 +231,8 @@ describe("FrontstageComposer", () => {
   });
 
   it("should set zone width based on initialWidth of the zone", async () => {
-    const nineZoneManager = UiFramework.frontstages.NineZoneManager;
-    sinon.stub(UiFramework.frontstages, "NineZoneManager").returns(nineZoneManager);
+    const nineZoneManager = InternalFrontstageManager.NineZoneManager;
+    sinon.stub(InternalFrontstageManager, "NineZoneManager").returns(nineZoneManager);
     const ref = React.createRef<FrontstageComposer>();
     render(<FrontstageComposer ref={ref} />);
     const frontstageProvider = new TestFrontstage();

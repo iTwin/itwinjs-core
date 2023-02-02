@@ -15,6 +15,7 @@ import {
   SyncToolSettingsPropertiesEventArgs, UiFramework, Widget, Zone,
 } from "../../../appui-react";
 import TestUtils from "../../TestUtils";
+import { InternalFrontstageManager } from "../../../appui-react/frontstage/InternalFrontstageManager";
 
 describe("DefaultToolUiSettingsProvider", () => {
 
@@ -179,7 +180,7 @@ describe("DefaultToolUiSettingsProvider", () => {
     if (frontstageDef) {
       await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
-      UiFramework.frontstages.ensureToolInformationIsSet(firstToolId);
+      InternalFrontstageManager.ensureToolInformationIsSet(firstToolId);
 
       // If a tool does not define toolSettingsProperties then useDefaultToolSettingsProvider should be false, but make sure we can gracefully handle
       // case where useDefaultToolSettingsProvider is true but toolSettingsProperties are not defined.
@@ -229,7 +230,7 @@ describe("DefaultToolUiSettingsProvider", () => {
 
       expect(UiFramework.toolSettings.useDefaultToolSettingsProvider).to.be.true;
       expect(UiFramework.toolSettings.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
-      UiFramework.frontstages.ensureToolInformationIsSet(testToolId);
+      InternalFrontstageManager.ensureToolInformationIsSet(testToolId);
       UiFramework.frontstages.setActiveToolId(testToolId);
       expect(UiFramework.frontstages.activeToolId).to.eq(testToolId);
 
@@ -246,7 +247,7 @@ describe("DefaultToolUiSettingsProvider", () => {
         }
       }
 
-      const toolSettingsNode = UiFramework.frontstages.activeToolSettingsProvider?.toolSettingsNode;
+      const toolSettingsNode = InternalFrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
       expect(toolSettingsNode).to.not.be.undefined;
 
       const renderedComponent = render(toolSettingsNode as React.ReactElement<any>);
@@ -283,8 +284,8 @@ describe("DefaultToolUiSettingsProvider", () => {
       const syncItem: DialogPropertySyncItem = { value: newUseLengthValue, propertyName: useLengthDescription.name, isDisabled: false };
       const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
       // UiFramework.toolSettings.onSyncToolSettingsProperties.emit(syncArgs);
-      UiFramework.frontstages.activeToolSettingsProvider?.syncToolSettingsProperties(syncArgs);
-      UiFramework.frontstages.activeToolSettingsProvider?.reloadPropertiesFromTool();
+      InternalFrontstageManager.activeToolSettingsProvider?.syncToolSettingsProperties(syncArgs);
+      InternalFrontstageManager.activeToolSettingsProvider?.reloadPropertiesFromTool();
       UiFramework.frontstages.onToolSettingsReloadEvent.emit();
       // restore the overriden property getter
       Object.defineProperty(UiFramework.toolSettings, "toolSettingsProperties", propertyDescriptorToRestore);
@@ -314,7 +315,7 @@ describe("DefaultToolUiSettingsProvider", () => {
 
       expect(UiFramework.toolSettings.useDefaultToolSettingsProvider).to.be.true;
       expect(UiFramework.toolSettings.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
-      UiFramework.frontstages.ensureToolInformationIsSet(testToolId);
+      InternalFrontstageManager.ensureToolInformationIsSet(testToolId);
       UiFramework.frontstages.setActiveToolId(testToolId);
       expect(UiFramework.frontstages.activeToolId).to.eq(testToolId);
 
@@ -341,7 +342,7 @@ describe("DefaultToolUiSettingsProvider", () => {
         }
       }
 
-      const toolSettingsNode = UiFramework.frontstages.activeToolSettingsProvider?.toolSettingsNode;
+      const toolSettingsNode = InternalFrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
       expect(toolSettingsNode).to.not.be.undefined;
 
       const renderedComponent = render(toolSettingsNode as React.ReactElement<any>);
@@ -362,8 +363,8 @@ describe("DefaultToolUiSettingsProvider", () => {
       const newUseLengthValue: DialogItemValue = { value: false };
       const syncItem: DialogPropertySyncItem = { value: newUseLengthValue, propertyName: useLengthDescription.name, isDisabled: false };
       const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
-      UiFramework.frontstages.activeToolSettingsProvider?.syncToolSettingsProperties(syncArgs);
-      UiFramework.frontstages.activeToolSettingsProvider?.reloadPropertiesFromTool();
+      InternalFrontstageManager.activeToolSettingsProvider?.syncToolSettingsProperties(syncArgs);
+      InternalFrontstageManager.activeToolSettingsProvider?.reloadPropertiesFromTool();
       UiFramework.frontstages.onToolSettingsReloadEvent.emit();
 
       // restore the overriden property getter

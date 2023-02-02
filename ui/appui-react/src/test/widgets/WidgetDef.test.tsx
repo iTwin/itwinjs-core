@@ -12,6 +12,7 @@ import {
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { SvgList } from "@itwin/itwinui-icons-react";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 // cSpell:ignore widgetstate
 
@@ -208,7 +209,7 @@ describe("WidgetDef", () => {
 
   describe("show", () => {
     it("should emit onWidgetShowEvent", () => {
-      const spy = sinon.spy(UiFramework.frontstages.onWidgetShowEvent, "emit");
+      const spy = sinon.spy(InternalFrontstageManager.onWidgetShowEvent, "emit");
       const widgetDef = new WidgetDef();
       widgetDef.show();
       spy.calledOnceWithExactly(sinon.match({
@@ -219,7 +220,7 @@ describe("WidgetDef", () => {
 
   describe("expand", () => {
     it("should emit onWidgetExpandEvent", () => {
-      const spy = sinon.spy(UiFramework.frontstages.onWidgetExpandEvent, "emit");
+      const spy = sinon.spy(InternalFrontstageManager.onWidgetExpandEvent, "emit");
       const widgetDef = new WidgetDef();
       widgetDef.expand();
       spy.calledOnceWithExactly(sinon.match({
@@ -238,7 +239,7 @@ describe("WidgetDef", () => {
 
     it("should emit onWidgetLabelChangedEvent", () => {
       const spy = sinon.stub<(args: WidgetChangedEventArgs) => void>();
-      UiFramework.frontstages.onWidgetLabelChangedEvent.addListener(spy);
+      InternalFrontstageManager.onWidgetLabelChangedEvent.addListener(spy);
       const sut = new WidgetDef();
       sut.setLabel("test");
 
@@ -250,7 +251,7 @@ describe("WidgetDef", () => {
       const sut = new WidgetDef();
       sut.setLabel("test");
 
-      UiFramework.frontstages.onWidgetLabelChangedEvent.addListener(spy);
+      InternalFrontstageManager.onWidgetLabelChangedEvent.addListener(spy);
       sut.setLabel("test");
 
       spy.notCalled.should.true;

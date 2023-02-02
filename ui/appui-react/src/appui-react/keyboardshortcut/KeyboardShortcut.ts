@@ -216,12 +216,12 @@ export class KeyboardShortcutManager {
 
   /** Loads Keyboard Shortcuts into the managed list */
   public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]) {
-    return internal.loadKeyboardShortcuts(shortcutList);
+    return internal.loadShortcuts(shortcutList);
   }
 
   /** Loads a Keyboard Shortcut into the managed list */
   public static loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps) {
-    return internal.loadKeyboardShortcut(shortcutProps);
+    return internal.loadShortcut(shortcutProps);
   }
 
   /** Processes a keystroke and invokes a matching Keyboard Shortcut */
@@ -251,12 +251,12 @@ export class KeyboardShortcutManager {
 
   /** Displays the Keyboard Shortcuts menu at the cursor */
   public static displayShortcutsMenu(): void {
-    return internal.displayShortcutsMenu();
+    return internal.displayMenu();
   }
 
   /** Closes the Keyboard Shortcuts menu */
   public static closeShortcutsMenu(): void {
-    return internal.closeShortcutsMenu();
+    return internal.closeMenu();
   }
 
   /** Returns the cursor X position, which is mouseEvent.pageX. */

@@ -6,7 +6,6 @@
  * @module ConfigurableUi
  */
 
-import { UiActivityEvent, UiIntervalEvent } from "../framework/FrameworkControls";
 import { UiError } from "@itwin/appui-abstract";
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
 import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
@@ -17,6 +16,38 @@ import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableU
 import { MessageManager } from "../messages/MessageManager";
 import { PopupManager } from "../popup/PopupManager";
 import { ActivityTracker } from "./ActivityTracker";
+import { BeUiEvent } from "@itwin/core-bentley";
+import { InternalSyncUiEventDispatcher } from "../syncui/InternalSyncUiEventDispatcher";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
+import { InternalToolSettingsManager } from "../zones/toolsettings/InternalToolSettingsManager";
+import { InternalModelessDialogManager } from "../dialog/InternalModelessDialogManager";
+import { InternalContentDialogManager } from "../dialog/InternalContentDialogManager";
+import { InternalKeyboardShortcutManager } from "../keyboardshortcut/InternalKeyboardShortcut";
+import { InternalModalDialogManager } from "../dialog/InternalModalDialogManager";
+
+/** Ui Activity Event Args interface.
+ * @internal
+ */
+export interface UiActivityEventArgs {
+  event: Event;
+}
+
+/** Ui Activity Event class.
+ * @internal
+ */
+export class UiActivityEvent extends BeUiEvent<UiActivityEventArgs> { }
+
+/** Ui Interval Event Args interface
+ * @internal
+ */
+export interface UiIntervalEventArgs {
+  idleTimeout?: number;
+}
+
+/** Ui Interval Event class.
+ * @internal
+ */
+export class UiIntervalEvent extends BeUiEvent<UiIntervalEventArgs> { }
 
 /** Configurable Ui Manager maintains controls, Frontstages, Content Groups, Content Layouts, Tasks and Workflows.
  * @internal
@@ -46,23 +77,23 @@ export class InternalConfigurableUiManager {
     InternalConfigurableUiManager.register(CubeNavigationAidControl.navigationAidId, CubeNavigationAidControl);
 
     // Initialize SyncUiEventDispatcher so it can register event callbacks.
-    UiFramework.events.initialize();
+    InternalSyncUiEventDispatcher.initialize();
 
     // Initialize the FrontstageManager
-    UiFramework.frontstages.initialize();
+    InternalFrontstageManager.initialize();
 
     // Initialize the ToolSettingsManager that manages Tool Settings properties.
-    UiFramework.toolSettings.initialize();
+    InternalToolSettingsManager.initialize();
 
     // Initialize dialog managers that allow one or more dialogs to be open at a time. These managers adjust the z-indexing
     // to ensure the most recently focused dialog of a specific type displays above its siblings.
-    UiFramework.dialogs.modeless.initialize();
+    InternalModelessDialogManager.initialize();
 
     // ContentDialog have a z-index just above the fixed content views and below all other UI elements.
-    UiFramework.content.dialogs.initialize();
+    InternalContentDialogManager.initialize();
 
     // Initialize the Keyboard Shortcut manager
-    UiFramework.keyboardShortcuts.initialize();
+    InternalKeyboardShortcutManager.initialize();
 
     this._initialized = true;
   }
@@ -143,10 +174,10 @@ export class InternalConfigurableUiManager {
   /** Closes all UI popups currently open */
   public static closeUi(): void {
     MessageManager.closeAllMessages();
-    UiFramework.dialogs.modeless.closeAll();
-    UiFramework.dialogs.modal.closeAll();
-    UiFramework.content.dialogs.closeAll();
-    UiFramework.keyboardShortcuts.closeShortcutsMenu();
+    InternalModelessDialogManager.closeAll();
+    InternalModalDialogManager.closeAll();
+    InternalContentDialogManager.closeAll();
+    UiFramework.keyboardShortcuts.closeMenu();
     UiFramework.closeCursorMenu();
     PopupManager.clearPopups();
   }

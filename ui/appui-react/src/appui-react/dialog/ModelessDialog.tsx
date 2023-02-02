@@ -36,7 +36,7 @@ export class ModelessDialog extends React.Component<ModelessDialogProps> {
         modal={false}
         modelessId={dialogId}
         onModelessPointerDown={(event) => UiFramework.dialogs.modeless.handlePointerDownEvent(event, dialogId, this._updateDialog)}
-        style={{ zIndex: UiFramework.dialogs.modeless.getDialogZIndex(dialogId), ...style }}
+        style={{ zIndex: UiFramework.dialogs.modeless.getZIndex(dialogId), ...style }}
       >
         {this.props.children}
       </Dialog >

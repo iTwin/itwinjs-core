@@ -115,7 +115,7 @@ export function QuantityFormatSettingsPage({ initialQuantityType, availableUnitS
       const formatProps = activeFormatterSpec.format.toJSON();
       const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)!.format.toJSON();
       if (formatPropsInUse && !formatAreEqual(formatProps, formatPropsInUse)) {
-        UiFramework.dialogs.modal.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={args} onDialogClose={afterSaveFunction} />, "saveQuantityFormat");
+        UiFramework.dialogs.modal.open(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={args} onDialogClose={afterSaveFunction} />, "saveQuantityFormat");
         return;
       }
     }
@@ -140,7 +140,7 @@ export function QuantityFormatSettingsPage({ initialQuantityType, availableUnitS
       const formatPropsInUse = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(activeQuantityType)!.format.toJSON();
       if (formatPropsInUse && !formatAreEqual(formatProps, formatPropsInUse)) {
         newQuantityTypeRef.current = newQuantityType;
-        UiFramework.dialogs.modal.openDialog(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={newQuantityType} onDialogClose={processListboxValueChange} />, "saveQuantityFormat");
+        UiFramework.dialogs.modal.open(<SaveFormatModalDialog formatProps={formatProps} quantityType={activeQuantityType} onDialogCloseArgs={newQuantityType} onDialogClose={processListboxValueChange} />, "saveQuantityFormat");
         return;
       }
     }
@@ -234,7 +234,7 @@ function SaveFormatModalDialog({ formatProps, quantityType, onDialogCloseArgs, o
 
   const handleClose = React.useCallback(() => {
     setIsOpen(false);
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
     onDialogClose && onDialogClose(onDialogCloseArgs);
   }, [onDialogClose, onDialogCloseArgs]);
 

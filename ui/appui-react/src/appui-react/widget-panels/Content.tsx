@@ -12,7 +12,7 @@ import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
 import { useTransientState } from "./useTransientState";
-import { UiFramework } from "../UiFramework";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 
 /** @internal */
 export function WidgetContent() {
@@ -51,7 +51,7 @@ export function useWidgetDef(): WidgetDef | undefined {
         return;
       setWidgetDef(frontstage.findWidgetDef(tabId));
     };
-    return UiFramework.frontstages.onFrontstageNineZoneStateChangedEvent.addListener(listener);
+    return InternalFrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
   }, [frontstage, tabId]);
 
   React.useEffect(() => {

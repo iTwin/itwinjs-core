@@ -25,6 +25,7 @@ import TestUtils, { mount, storageMock, stubRaf, UiStateStorageStub } from "../T
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { expect } from "chai";
 import { Provider } from "react-redux";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 /* eslint-disable @typescript-eslint/no-floating-promises, react/display-name, deprecation/deprecation */
 
@@ -516,7 +517,7 @@ describe("Frontstage local storage wrapper", () => {
       });
 
       beforeEach(() => {
-        sinon.stub(UiFramework.frontstages, "nineZoneSize").set(() => { });
+        sinon.stub(InternalFrontstageManager, "nineZoneSize").set(() => { });
       });
 
       it("should render", () => {
@@ -543,7 +544,7 @@ describe("Frontstage local storage wrapper", () => {
 
     describe("useNineZoneDispatch", () => {
       beforeEach(() => {
-        sinon.stub(UiFramework.frontstages, "nineZoneSize").set(() => { });
+        sinon.stub(InternalFrontstageManager, "nineZoneSize").set(() => { });
       });
 
       it("should modify nineZoneState with default NineZoneReducer", () => {
@@ -573,7 +574,7 @@ describe("Frontstage local storage wrapper", () => {
       });
 
       it("should set nineZoneSize when RESIZE is received", () => {
-        const spy = sinon.stub(UiFramework.frontstages, "nineZoneSize").set(() => { });
+        const spy = sinon.stub(InternalFrontstageManager, "nineZoneSize").set(() => { });
         const frontstageDef = new FrontstageDef();
         frontstageDef.nineZoneState = createNineZoneState();
         const { result } = renderHook(() => useNineZoneDispatch(frontstageDef));
@@ -1001,7 +1002,7 @@ describe("Frontstage local storage wrapper", () => {
         const widgetDef = new WidgetDef({
           id: "t1",
         });
-        UiFramework.frontstages.onWidgetShowEvent.emit({
+        InternalFrontstageManager.onWidgetShowEvent.emit({
           widgetDef,
         });
         frontstageDef.nineZoneState?.panels.left.collapsed.should.false;
@@ -1019,7 +1020,7 @@ describe("Frontstage local storage wrapper", () => {
         const widgetDef = new WidgetDef({
           id: "t1",
         });
-        UiFramework.frontstages.onWidgetExpandEvent.emit({
+        InternalFrontstageManager.onWidgetExpandEvent.emit({
           widgetDef,
         });
         frontstageDef.nineZoneState?.widgets.w1.minimized.should.false;
@@ -1036,7 +1037,7 @@ describe("Frontstage local storage wrapper", () => {
           renderHook(() => useFrontstageManager(frontstageDef), {
             wrapper: (props) => <UiStateStorageHandler {...props} />,
           });
-          UiFramework.frontstages.onFrontstageRestoreLayoutEvent.emit({
+          InternalFrontstageManager.onFrontstageRestoreLayoutEvent.emit({
             frontstageDef,
           });
           spy.calledOnce.should.true;
@@ -1054,7 +1055,7 @@ describe("Frontstage local storage wrapper", () => {
           const frontstageDef1 = new FrontstageDef();
           sinon.stub(frontstageDef1, "id").get(() => "f1");
           frontstageDef1.nineZoneState = createNineZoneState();
-          UiFramework.frontstages.onFrontstageRestoreLayoutEvent.emit({
+          InternalFrontstageManager.onFrontstageRestoreLayoutEvent.emit({
             frontstageDef: frontstageDef1,
           });
           (frontstageDef1.nineZoneState === undefined).should.true;
@@ -1072,7 +1073,7 @@ describe("Frontstage local storage wrapper", () => {
           renderHook(() => useFrontstageManager(frontstageDef));
 
           sinon.stub(widgetDef, "label").get(() => "test");
-          UiFramework.frontstages.onWidgetLabelChangedEvent.emit({
+          InternalFrontstageManager.onWidgetLabelChangedEvent.emit({
             widgetDef,
           });
 
@@ -1088,7 +1089,7 @@ describe("Frontstage local storage wrapper", () => {
           sinon.stub(widgetDef, "label").get(() => "test");
 
           (() => {
-            UiFramework.frontstages.onWidgetLabelChangedEvent.emit({ widgetDef });
+            InternalFrontstageManager.onWidgetLabelChangedEvent.emit({ widgetDef });
           }).should.not.throw();
         });
       });
@@ -1170,7 +1171,7 @@ describe("Frontstage local storage wrapper", () => {
       });
 
       it("should initialize size", () => {
-        sinon.stub(UiFramework.frontstages, "nineZoneSize").get(() => new Size(10, 20));
+        sinon.stub(InternalFrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
         const frontstageDef = new FrontstageDef();
         const sut = initializeNineZoneState(frontstageDef);
         sut.size.should.eql({ width: 10, height: 20 });
@@ -1765,7 +1766,7 @@ describe("Frontstage local storage wrapper", () => {
       });
 
       it("should RESIZE", () => {
-        sinon.stub(UiFramework.frontstages, "nineZoneSize").get(() => new Size(10, 20));
+        sinon.stub(InternalFrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
         const frontstageDef = new FrontstageDef();
         const savedState = {
           ...createSavedNineZoneState({
@@ -1831,15 +1832,15 @@ describe("Frontstage local storage wrapper", () => {
         const newFrontstageDef = new FrontstageDef();
         newFrontstageDef.nineZoneState = createNineZoneState();
 
-        sinon.stub(UiFramework.frontstages, "nineZoneSize").get(() => new Size(10, 20));
+        sinon.stub(InternalFrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
         rerender(newFrontstageDef);
 
         newFrontstageDef.nineZoneState?.size.should.eql({ width: 10, height: 20 });
       });
 
-      it("should not update size if UiFramework.frontstages.nineZoneSize is not initialized", () => {
+      it("should not update size if InternalFrontstageManager.nineZoneSize is not initialized", () => {
         const { rerender } = renderHook((props) => useUpdateNineZoneSize(props), { initialProps: new FrontstageDef() });
-        UiFramework.frontstages.nineZoneSize = undefined;
+        InternalFrontstageManager.nineZoneSize = undefined;
 
         const newFrontstageDef = new FrontstageDef();
         newFrontstageDef.nineZoneState = createNineZoneState({ size: { height: 1, width: 2 } });
@@ -2196,7 +2197,7 @@ describe("Frontstage local storage wrapper", () => {
         UiItemsManager.clearAllProviders();
         UiFramework.frontstages.clearFrontstageProviders();
         UiFramework.frontstages.setActiveFrontstageDef(undefined);
-        UiFramework.frontstages.nineZoneSize = undefined;
+        InternalFrontstageManager.nineZoneSize = undefined;
         TestUtils.terminateUiFramework();
         IModelApp.shutdown();
       });

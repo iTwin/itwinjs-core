@@ -42,7 +42,7 @@ export class InternalModelessDialogManager {
    * @param dialog The Dialog to open
    * @param id The id of the Dialog to open
    */
-  public static openDialog(dialog: React.ReactNode, id: string, parentDocument = document): void {
+  public static open(dialog: React.ReactNode, id: string, parentDocument = document): void {
     const dialogInfo = InternalModelessDialogManager._dialogMap.get(id);
     if (dialogInfo) {
       const message = `Dialog with id of '${id}' already opened`;
@@ -58,7 +58,7 @@ export class InternalModelessDialogManager {
   /** Close a modeless dialog
    * @param id The id of the Dialog to close.
    */
-  public static closeDialog(id: string): void {
+  public static close(id: string): void {
     const dialogInfo = InternalModelessDialogManager._dialogMap.get(id);
     if (dialogInfo) {
       InternalModelessDialogManager.dialogManager.removeDialog(dialogInfo.reactNode);
@@ -68,7 +68,7 @@ export class InternalModelessDialogManager {
       if (index >= 0)
         InternalModelessDialogManager._idArray.splice(index, 1);
 
-      if (InternalModelessDialogManager.activeDialog === undefined)
+      if (InternalModelessDialogManager.active === undefined)
         DialogManagerBase.topZIndex = DialogManagerBase.getDialogZIndexDefault();
 
       this.update();
@@ -88,7 +88,7 @@ export class InternalModelessDialogManager {
   }
 
   /** Get the active modeless dialog */
-  public static get activeDialog(): React.ReactNode | undefined {
+  public static get active(): React.ReactNode | undefined {
     if (InternalModelessDialogManager._idArray.length > 0) {
       const id = InternalModelessDialogManager._idArray[InternalModelessDialogManager._idArray.length - 1];
       const dialogInfo = InternalModelessDialogManager._dialogMap.get(id);
@@ -101,14 +101,14 @@ export class InternalModelessDialogManager {
   }
 
   /** Get the count of modeless dialogs */
-  public static get dialogCount(): number {
+  public static get count(): number {
     return InternalModelessDialogManager.dialogManager.dialogCount;
   }
 
   /** Handle a pointer down event on a modeless dialog */
   public static handlePointerDownEvent(_event: React.PointerEvent, id: string, updateFunc: () => void): void {
     const dialogInfo = InternalModelessDialogManager._dialogMap.get(id);
-    if (dialogInfo && dialogInfo.reactNode !== InternalModelessDialogManager.activeDialog) {
+    if (dialogInfo && dialogInfo.reactNode !== InternalModelessDialogManager.active) {
       DialogManagerBase.topZIndex += 1;
       dialogInfo.zIndex = DialogManagerBase.topZIndex;
 
@@ -121,7 +121,7 @@ export class InternalModelessDialogManager {
   }
 
   /** Get the z-index for a modeless dialog */
-  public static getDialogZIndex(id: string): number {
+  public static getZIndex(id: string): number {
     let zIndex = DialogManagerBase.getDialogZIndexDefault();
     const dialogInfo = InternalModelessDialogManager._dialogMap.get(id);
     // istanbul ignore else
@@ -130,7 +130,7 @@ export class InternalModelessDialogManager {
     return zIndex;
   }
 
-  public static getDialogInfo(id: string): ModelessDialogInfo | undefined {
+  public static getInfo(id: string): ModelessDialogInfo | undefined {
     return InternalModelessDialogManager._dialogMap.get(id);
   }
 }

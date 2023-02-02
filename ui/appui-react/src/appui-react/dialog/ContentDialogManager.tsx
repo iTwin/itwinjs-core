@@ -9,7 +9,6 @@
 import { CommonProps } from "@itwin/core-react";
 import * as React from "react";
 import { ContentDialogInfo } from "../framework/FrameworkContent";
-import { UiFramework } from "../UiFramework";
 import { DialogRendererBase } from "./DialogManagerBase";
 import { InternalContentDialogManager as internal } from "./InternalContentDialogManager";
 
@@ -41,14 +40,14 @@ export class ContentDialogManager {
    * @param id The id of the Dialog to open
    */
   public static openDialog(dialog: React.ReactNode, id: string, parentDocument = document): void {
-    return internal.openDialog(dialog, id, parentDocument);
+    return internal.open(dialog, id, parentDocument);
   }
 
   /** Close a modeless dialog
    * @param id The id of the Dialog to close.
    */
   public static closeDialog(id: string): void {
-    return internal.closeDialog(id);
+    return internal.close(id);
   }
 
   /** @internal */
@@ -63,12 +62,12 @@ export class ContentDialogManager {
 
   /** Get the active modeless dialog */
   public static get activeDialog(): React.ReactNode | undefined {
-    return internal.activeDialog;
+    return internal.active;
   }
 
   /** Get the count of modeless dialogs */
   public static get dialogCount(): number {
-    return internal.dialogCount;
+    return internal.count;
   }
 
   /** Handle a pointer down event on a modeless dialog */
@@ -78,11 +77,11 @@ export class ContentDialogManager {
 
   /** Get the z-index for a modeless dialog */
   public static getDialogZIndex(id: string): number {
-    return internal.getDialogZIndex(id);
+    return internal.getZIndex(id);
   }
 
   public static getDialogInfo(id: string): ContentDialogInfo | undefined {
-    return internal.getDialogInfo(id);
+    return internal.getInfo(id);
   }
 }
 
@@ -97,7 +96,7 @@ export class ContentDialogRenderer extends React.PureComponent<CommonProps> {
 
   public override render(): React.ReactNode {
     return (
-      <DialogRendererBase {...this.props} dialogManager={UiFramework.content.dialogs.dialogManager} />
+      <DialogRendererBase {...this.props} dialogManager={internal.dialogManager} />
     );
   }
 }

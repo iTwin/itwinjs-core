@@ -10,15 +10,6 @@ export interface FrameworkVisibility {
   /** Determines if the Ui is visible */
   isUiVisible: boolean;
 
-  /** @internal */
-  setAutoHideUi(value: boolean): void;
-
-  /** @internal */
-  setUseProximityOpacity(value: boolean): void;
-
-  /** @internal */
-  setSnapWidgetOpacity(value: boolean): void;
-
   /** Determines whether the `auto-hide Ui` feature is on. Defaults to false.
    * When true, the Ui automatically hides after a few seconds of inactivity.
    */
@@ -53,7 +44,4 @@ export interface FrameworkVisibility {
 
   /** Shows the Ui and cancels the inactivity timer */
   showUiAndCancelTimer(): void;
-
-  /** @internal */
-  terminate(): void;
 }

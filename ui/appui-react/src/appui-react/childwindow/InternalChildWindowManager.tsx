@@ -21,7 +21,7 @@ import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
 import { FrameworkVersion } from "../hooks/useFrameworkVersion";
 import { ThemeManager } from "../theme/ThemeManager";
 import { UiFramework } from "../UiFramework";
-import { ChildWindowLocationProps, OpenChildWindowInfo } from "../framework/FrameworkChildWindows";
+import { ChildWindowLocationProps, FrameworkChildWindows, OpenChildWindowInfo } from "../framework/FrameworkChildWindows";
 
 const childHtml = `<!DOCTYPE html>
 <html>
@@ -51,7 +51,7 @@ const childHtml = `<!DOCTYPE html>
  * See also: [Child Window Manager]($docs/learning/ui/appui-react/ChildWindows.md)
  * @internal
  * */
-export class InternalChildWindowManager {
+export class InternalChildWindowManager implements FrameworkChildWindows {
   private _openChildWindows: OpenChildWindowInfo[] = [];
 
   public get openChildWindows() {

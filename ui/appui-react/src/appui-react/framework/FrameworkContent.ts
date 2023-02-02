@@ -71,7 +71,7 @@ export interface FrameworkContent {
   readonly onAvailableContentChangedEvent: UiEvent<{ contentId: string }>;
 
   /** Gets the active content as a React.ReactNode. */
-  getActiveContent(): React.ReactNode | undefined;
+  getActive(): React.ReactNode | undefined;
 
   /** Return the active ContentControl. */
   getActiveContentControl(): ContentControl | undefined;
@@ -81,10 +81,10 @@ export interface FrameworkContent {
   dropFloatingContentControl(contentControl?: ContentControl): void;
 
   /** Sets the active [[ContentControl]] */
-  setActiveContent(activeContent?: React.ReactNode, forceEventProcessing?: boolean): void;
+  setActive(activeContent?: React.ReactNode, forceEventProcessing?: boolean): void;
 
   /** Refreshes the active [[ContentControl]] */
-  refreshActiveContent(activeContent: React.ReactNode): void;
+  refreshActive(activeContent: React.ReactNode): void;
 
   /**
    * Determines if content displays a Sheet view.
@@ -128,24 +128,24 @@ export interface FrameworkContent {
    */
   readonly layouts: {
     /** build a layout key that is unique for group layout combination */
-    getLayoutKey(props: { contentGroupId: string, layoutId: string }): string;
+    getKey(props: { contentGroupId: string, layoutId: string }): string;
 
     /** Return a LayoutDef that is specific to a content group.
      * @returns the [[ContentLayoutDef]] if found, or undefined otherwise
      */
-    getLayoutForGroup(contentGroupProps: ContentGroupProps | ContentGroup, overrideContentLayout?: ContentLayoutProps): ContentLayoutDef;
+    getForGroup(contentGroupProps: ContentGroupProps | ContentGroup, overrideContentLayout?: ContentLayoutProps): ContentLayoutDef;
 
     /** Finds a Content Layout with a given id.
      * @param layoutKey  group specific layout id, see `getLayoutKey`
      * @returns the [[ContentLayoutDef]] if found, or undefined otherwise
      */
-    findLayout(layoutKey: string): ContentLayoutDef | undefined;
+    find(layoutKey: string): ContentLayoutDef | undefined;
 
     /** Adds a Content Layout.
      * @param layoutId  the id of the Content Layout to add
      * @param layoutDef  the Content Layout definition to add
      */
-    addLayout(layoutId: string, layoutDef: ContentLayoutDef): void;
+    add(layoutId: string, layoutDef: ContentLayoutDef): void;
 
     /** Gets the active Content Layout */
     readonly activeLayout: ContentLayoutDef | undefined;
@@ -157,7 +157,7 @@ export interface FrameworkContent {
      * @param contentLayoutDef  Content layout to make active
      * @param contentGroup  Content Group to make active
      */
-    setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
+    setActive(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
 
     /** Sets the active Content Group.
      * @param contentGroup  Content Group to make active
@@ -166,7 +166,7 @@ export interface FrameworkContent {
 
     /** Refreshes the active layout and content group.
      */
-    refreshActiveLayout(): void;
+    refreshActive(): void;
   };
   /**
    * Manage dialogs displaying managed content.

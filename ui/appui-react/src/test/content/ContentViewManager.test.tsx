@@ -105,15 +105,15 @@ describe("ContentViewManager", () => {
     validateMethod("addFloatingContentControl", cc);
     validateMethod("contentSupportsCamera", cc);
     validateMethod("dropFloatingContentControl", cc);
-    validateMethod("getActiveContent");
+    validateMethod(["getActiveContent", "getActive"]);
     validateMethod("getActiveContentControl");
     validateMethod("isContent3dView", cc);
     validateMethod("isContentDrawingView", cc);
     validateMethod("isContentOrthographicView", cc);
     validateMethod("isContentSheetView", cc);
     validateMethod("isContentSpatialView", cc);
-    validateMethod("refreshActiveContent", "");
-    validateMethod("setActiveContent", "", true);
+    validateMethod(["refreshActiveContent", "refreshActive"], "");
+    validateMethod(["setActiveContent", "setActive"], "", true);
     validateMethod("setMouseDown", true);
     validateProp("isMouseDown");
     validateProp("onActiveContentChangedEvent");

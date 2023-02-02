@@ -2,50 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeUiEvent } from "@itwin/core-bentley";
-import { ActivityTracker } from "../configurableui/ActivityTracker";
 import { ConfigurableUiControlConstructor, ConfigurableUiElement } from "../configurableui/ConfigurableUiControl";
-
-/** Ui Activity Event Args interface.
- * @internal
- */
-export interface UiActivityEventArgs {
-  event: Event;
-}
-
-/** Ui Activity Event class.
- * @internal
- */
-export class UiActivityEvent extends BeUiEvent<UiActivityEventArgs> { }
-
-/** Ui Interval Event Args interface
- * @internal
- */
-export interface UiIntervalEventArgs {
-  idleTimeout?: number;
-}
-
-/** Ui Interval Event class.
- * @internal
- */
-export class UiIntervalEvent extends BeUiEvent<UiIntervalEventArgs> { }
 
 /**
  * [[UiFramework.controls]] interface
  * @beta
  */
 export interface FrameworkControls {
-  /** @internal */
-  readonly activityTracker: ActivityTracker;
-  /** @internal */
-  readonly onUiActivityEvent: UiActivityEvent;
-  /** @internal */
-  readonly onUiIntervalEvent: UiIntervalEvent;
-
-  /** Initializes the InternalConfigurableUiManager and registers core controls.
-   * @internal
-  */
-  initialize(): void;
 
   /** Registers a control implementing the [[ConfigurableUiElement]] interface.
    * These controls can be a
@@ -64,11 +27,6 @@ export interface FrameworkControls {
    * @returns  true if the control is registered or false if not
    */
   isRegistered(classId: string): boolean;
-
-  /** Determines if a control has been registered.
-   * @internal
-   */
-  getConstructorClassId(constructor: ConfigurableUiControlConstructor): string | undefined;
 
   /** Unregisters a control that has been registered.
    * @param classId   the class id of the control to unregister

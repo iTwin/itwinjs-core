@@ -54,9 +54,9 @@ export function UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogPro
   const onCancel = React.useRef<() => void>();
   const closeDialog = () => {
     if (dialogIsModal.current)
-      UiFramework.dialogs.modal.closeDialog();
+      UiFramework.dialogs.modal.close();
     else
-      UiFramework.dialogs.modeless.closeDialog(dialogId.current);
+      UiFramework.dialogs.modeless.close(dialogId.current);
   };
 
   const handleOk = React.useCallback(() => {

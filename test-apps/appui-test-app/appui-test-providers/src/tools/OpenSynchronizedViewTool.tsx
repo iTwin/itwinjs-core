@@ -38,7 +38,7 @@ export class OpenSynchronizedViewTool extends Tool {
         y = (.3 * stage.nineZoneState.size.height) + (40 * (floatingContentCount - 1));
       }
     }
-    UiFramework.content.dialogs.openDialog(<IModelViewDialog x={x} y={y} id={OpenSynchronizedViewTool.dialogId}
+    UiFramework.content.dialogs.open(<IModelViewDialog x={x} y={y} id={OpenSynchronizedViewTool.dialogId}
       title={`IModel View (${OpenSynchronizedViewTool._counter})`} />, OpenSynchronizedViewTool.dialogId);
   }
 
@@ -66,7 +66,7 @@ export class OpenSynchronizedViewTool extends Tool {
 
 export function IModelViewDialog({ x, y, id, title }: { x?: number, y?: number, id: string, title: string }) {
   const handleClose = React.useCallback(() => {
-    UiFramework.content.dialogs.closeDialog(id);
+    UiFramework.content.dialogs.close(id);
   }, [id]);
 
   return (

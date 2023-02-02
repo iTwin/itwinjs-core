@@ -45,6 +45,7 @@ import { useSelector } from "react-redux";
 import { useUiVisibility } from "../hooks/useUiVisibility";
 import { IModelApp } from "@itwin/core-frontend";
 import { FloatingWidget } from "./FloatingWidget";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 
 const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "end"];
 
@@ -98,7 +99,7 @@ export function useNineZoneState(frontstageDef: FrontstageDef) {
         return;
       setNineZone(args.state);
     };
-    return UiFramework.frontstages.onFrontstageNineZoneStateChangedEvent.addListener(listener);
+    return InternalFrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
   }, [frontstageDef]);
   return lastFrontstageDef.current === frontstageDef ? nineZone : frontstageDef.nineZoneState;
 }
@@ -120,7 +121,7 @@ function useCachedNineZoneState(nineZone: NineZoneState | undefined): NineZoneSt
  */
 export function useUpdateNineZoneSize(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
-    const size = UiFramework.frontstages.nineZoneSize;
+    const size = InternalFrontstageManager.nineZoneSize;
     let state = frontstageDef.nineZoneState;
     if (!size || !state)
       return;
@@ -160,7 +161,7 @@ export function FrameworkStateReducer(state: NineZoneState, action: NineZoneActi
 export function useNineZoneDispatch(frontstageDef: FrontstageDef) {
   const dispatch = React.useCallback<NineZoneDispatch>((action) => {
     if (action.type === "RESIZE") {
-      UiFramework.frontstages.nineZoneSize = Size.create(action.size);
+      InternalFrontstageManager.nineZoneSize = Size.create(action.size);
     }
     // istanbul ignore if
     if (action.type === "TOOL_SETTINGS_DRAG_START") {
@@ -676,11 +677,11 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
   let nineZone = defaultNineZone;
   nineZone = produce(nineZone, (stateDraft) => {
     // istanbul ignore next
-    if (!UiFramework.frontstages.nineZoneSize)
+    if (!InternalFrontstageManager.nineZoneSize)
       return;
     stateDraft.size = {
-      height: UiFramework.frontstages.nineZoneSize.height,
-      width: UiFramework.frontstages.nineZoneSize.width,
+      height: InternalFrontstageManager.nineZoneSize.height,
+      width: InternalFrontstageManager.nineZoneSize.width,
     };
   });
 
@@ -793,12 +794,12 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
     return;
   });
 
-  if (UiFramework.frontstages.nineZoneSize && (0 !== UiFramework.frontstages.nineZoneSize.height || 0 !== UiFramework.frontstages.nineZoneSize.width)) {
+  if (InternalFrontstageManager.nineZoneSize && (0 !== InternalFrontstageManager.nineZoneSize.height || 0 !== InternalFrontstageManager.nineZoneSize.width)) {
     restored = FrameworkStateReducer(restored, {
       type: "RESIZE",
       size: {
-        height: UiFramework.frontstages.nineZoneSize.height,
-        width: UiFramework.frontstages.nineZoneSize.width,
+        height: InternalFrontstageManager.nineZoneSize.height,
+        width: InternalFrontstageManager.nineZoneSize.width,
       },
     }, frontstageDef);
   }
@@ -1257,9 +1258,9 @@ export function useFrontstageManager(frontstageDef: FrontstageDef, useToolAsTool
       assert(!!frontstageDef.nineZoneState);
       frontstageDef.nineZoneState = showWidget(frontstageDef.nineZoneState, widgetDef.id);
     });
-    UiFramework.frontstages.onWidgetShowEvent.addListener(listener);
+    InternalFrontstageManager.onWidgetShowEvent.addListener(listener);
     return () => {
-      UiFramework.frontstages.onWidgetShowEvent.removeListener(listener);
+      InternalFrontstageManager.onWidgetShowEvent.removeListener(listener);
     };
   }, [frontstageDef]);
   React.useEffect(() => {
@@ -1269,9 +1270,9 @@ export function useFrontstageManager(frontstageDef: FrontstageDef, useToolAsTool
       nineZoneState = expandWidget(nineZoneState, widgetDef.id);
       frontstageDef.nineZoneState = nineZoneState;
     });
-    UiFramework.frontstages.onWidgetExpandEvent.addListener(listener);
+    InternalFrontstageManager.onWidgetExpandEvent.addListener(listener);
     return () => {
-      UiFramework.frontstages.onWidgetExpandEvent.removeListener(listener);
+      InternalFrontstageManager.onWidgetExpandEvent.removeListener(listener);
     };
   }, [frontstageDef]);
   const uiSettingsStorage = useUiStateStorageHandler();
@@ -1285,9 +1286,9 @@ export function useFrontstageManager(frontstageDef: FrontstageDef, useToolAsTool
         args.frontstageDef.nineZoneState = undefined;
       }
     };
-    UiFramework.frontstages.onFrontstageRestoreLayoutEvent.addListener(listener);
+    InternalFrontstageManager.onFrontstageRestoreLayoutEvent.addListener(listener);
     return () => {
-      UiFramework.frontstages.onFrontstageRestoreLayoutEvent.removeListener(listener);
+      InternalFrontstageManager.onFrontstageRestoreLayoutEvent.removeListener(listener);
     };
   }, [uiSettingsStorage, frontstageDef]);
   React.useEffect(() => {
@@ -1296,9 +1297,9 @@ export function useFrontstageManager(frontstageDef: FrontstageDef, useToolAsTool
       const label = widgetDef.label;
       frontstageDef.nineZoneState = setWidgetLabel(frontstageDef.nineZoneState, widgetDef.id, label);
     });
-    UiFramework.frontstages.onWidgetLabelChangedEvent.addListener(listener);
+    InternalFrontstageManager.onWidgetLabelChangedEvent.addListener(listener);
     return () => {
-      UiFramework.frontstages.onWidgetLabelChangedEvent.removeListener(listener);
+      InternalFrontstageManager.onWidgetLabelChangedEvent.removeListener(listener);
     };
   }, [frontstageDef]);
 
@@ -1318,14 +1319,14 @@ export function useFrontstageManager(frontstageDef: FrontstageDef, useToolAsTool
     // If useTool... is true, listen for events to keep up the label up to date.
     if (useToolAsToolSettingsLabel) {
       UiFramework.frontstages.onFrontstageReadyEvent.addListener(updateLabel);
-      UiFramework.frontstages.onFrontstageRestoreLayoutEvent.addListener(updateLabel);
+      InternalFrontstageManager.onFrontstageRestoreLayoutEvent.addListener(updateLabel);
       UiFramework.frontstages.onToolActivatedEvent.addListener(updateLabel);
       UiFramework.frontstages.onToolSettingsReloadEvent.addListener(updateLabel);
     }
     return () => {
       if (useToolAsToolSettingsLabel) {
         UiFramework.frontstages.onFrontstageReadyEvent.removeListener(updateLabel);
-        UiFramework.frontstages.onFrontstageRestoreLayoutEvent.removeListener(updateLabel);
+        InternalFrontstageManager.onFrontstageRestoreLayoutEvent.removeListener(updateLabel);
         UiFramework.frontstages.onToolActivatedEvent.removeListener(updateLabel);
         UiFramework.frontstages.onToolSettingsReloadEvent.removeListener(updateLabel);
       }

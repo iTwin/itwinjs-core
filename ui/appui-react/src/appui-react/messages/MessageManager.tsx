@@ -487,7 +487,7 @@ export class MessageManager {
     return new Promise((onFulfilled: (result: MessageBoxValue) => void, onRejected: (reason: any) => void) => {
       const messageBoxCallbacks = new MessageBoxCallbacks(onFulfilled, onRejected);
       const messageElement = <MessageSpan message={message} />;
-      UiFramework.dialogs.modal.openDialog(this.standardMessageBox(mbType, icon, title, messageElement, messageBoxCallbacks));
+      UiFramework.dialogs.modal.open(this.standardMessageBox(mbType, icon, title, messageElement, messageBoxCallbacks));
     });
   }
 
@@ -507,7 +507,7 @@ export class MessageManager {
         }
       </>
     );
-    UiFramework.dialogs.modal.openDialog(this.standardMessageBox(MessageBoxType.Ok, iconType, title, content));
+    UiFramework.dialogs.modal.open(this.standardMessageBox(MessageBoxType.Ok, iconType, title, content));
   }
 
   private static standardMessageBox(mbType: MessageBoxType, iconType: MessageBoxIconType, title: string, messageElement: React.ReactNode, callbacks?: MessageBoxCallbacks): React.ReactNode {

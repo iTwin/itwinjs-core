@@ -7,6 +7,7 @@
  */
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
 import { FrontstageDef } from "../frontstage/FrontstageDef";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 import { UiFramework } from "../UiFramework";
 
 /**
@@ -53,7 +54,7 @@ export class RestoreAllFrontstagesTool extends Tool {
   public static override iconSpec = "icon-view-layouts";
 
   public override async run() {
-    const frontstages = UiFramework.frontstages.frontstageDefs;
+    const frontstages = InternalFrontstageManager.frontstageDefs;
     for (const [, frontstage] of frontstages) {
       frontstage.restoreLayout();
     }

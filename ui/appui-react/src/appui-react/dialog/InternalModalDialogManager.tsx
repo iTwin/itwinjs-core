@@ -28,14 +28,14 @@ export class InternalModalDialogManager {
    * @param id The id of the Dialog. If one is not provided, an id is generated.
    * @param parentDocument The Document used to determine the owning window.
    */
-  public static openDialog(dialog: React.ReactNode, id?: string, parentDocument = document): void {
+  public static open(dialog: React.ReactNode, id?: string, parentDocument = document): void {
     InternalModalDialogManager.dialogManager.openDialog(dialog, id, parentDocument);
   }
 
   /** Close a modal dialog
    * @param dialog The Dialog to open. If one is not specified, the active dialog will be closed.
    */
-  public static closeDialog(dialog?: React.ReactNode): void {
+  public static close(dialog?: React.ReactNode): void {
     InternalModalDialogManager.dialogManager.closeDialog(dialog);
   }
 
@@ -50,12 +50,12 @@ export class InternalModalDialogManager {
   }
 
   /** Get the active modal dialog */
-  public static get activeDialog(): React.ReactNode | undefined {
+  public static get active(): React.ReactNode | undefined {
     return InternalModalDialogManager.dialogManager.activeDialog;
   }
 
   /** Get the count of modal dialogs */
-  public static get dialogCount(): number {
+  public static get count(): number {
     return InternalModalDialogManager.dialogManager.dialogCount;
   }
 }

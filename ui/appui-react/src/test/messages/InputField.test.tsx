@@ -12,7 +12,7 @@ import { render, screen } from "@testing-library/react";
 describe("InputFieldMessage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
-    UiFramework.keyboardShortcuts.closeShortcutsMenu();
+    UiFramework.keyboardShortcuts.closeMenu();
   });
 
   after(() => {

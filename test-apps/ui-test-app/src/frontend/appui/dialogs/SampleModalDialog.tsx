@@ -52,6 +52,6 @@ export class SampleModalDialog extends React.Component<SampleModalDialogProps> {
 
   private _closeDialog = (followUp: () => void) => {
     followUp && followUp();
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
   };
 }

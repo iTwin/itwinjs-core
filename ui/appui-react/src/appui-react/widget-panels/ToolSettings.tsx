@@ -12,6 +12,7 @@ import { IModelApp } from "@itwin/core-frontend";
 import { DockedToolSetting, DockedToolSettings, ScrollableWidgetContent, ToolSettingsStateContext } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { UiFramework } from "../UiFramework";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 
 /** Defines a ToolSettings property entry.
  * @public
@@ -53,7 +54,7 @@ export function ToolSettingsDockedContent() {
   const settings = useHorizontalToolSettingNodes();
   // for the overflow to work properly each setting in the DockedToolSettings should be wrapped by a DockedToolSetting component
   return (
-    <DockedToolSettings itemId={UiFramework.frontstages.activeToolSettingsProvider?.uniqueId ?? "none"} key={Date.now()}>
+    <DockedToolSettings itemId={InternalFrontstageManager.activeToolSettingsProvider?.uniqueId ?? "none"} key={Date.now()}>
       {settings && settings.map((entry, index) => <DockedToolSetting key={index}><TsLabel>{entry.labelNode}</TsLabel>{entry.editorNode}</DockedToolSetting>)}
     </DockedToolSettings>
   );
@@ -61,10 +62,10 @@ export function ToolSettingsDockedContent() {
 
 /** @internal */
 export function useHorizontalToolSettingNodes() {
-  const [settings, setSettings] = React.useState(UiFramework.frontstages.activeToolSettingsProvider?.horizontalToolSettingNodes);
+  const [settings, setSettings] = React.useState(InternalFrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes);
   React.useEffect(() => {
     const handleToolActivatedEvent = () => {
-      const nodes = UiFramework.frontstages.activeToolSettingsProvider?.horizontalToolSettingNodes;
+      const nodes = InternalFrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
       if (!nodes || nodes.length === 0)
         setSettings ([EmptyToolSettingsEntry()]);
       else
@@ -78,7 +79,7 @@ export function useHorizontalToolSettingNodes() {
 
   React.useEffect(() => {
     const handleToolSettingsReloadEvent = () => {
-      const nodes = UiFramework.frontstages.activeToolSettingsProvider?.horizontalToolSettingNodes;
+      const nodes = InternalFrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
       if (!nodes || nodes.length === 0)
         setSettings ([EmptyToolSettingsEntry()]);
       else
@@ -124,10 +125,10 @@ export function ToolSettingsGrid({ settings }: ToolSettingsGridProps) {
 
 /** @internal */
 export function useToolSettingsNode() {
-  const [settings, setSettings] = React.useState(UiFramework.frontstages.activeToolSettingsProvider?.toolSettingsNode);
+  const [settings, setSettings] = React.useState(InternalFrontstageManager.activeToolSettingsProvider?.toolSettingsNode);
   React.useEffect(() => {
     const handleToolActivatedEvent = () => {
-      const nodes = UiFramework.frontstages.activeToolSettingsProvider?.toolSettingsNode;
+      const nodes = InternalFrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
       setSettings(nodes);
     };
     UiFramework.frontstages.onToolActivatedEvent.addListener(handleToolActivatedEvent);
@@ -138,7 +139,7 @@ export function useToolSettingsNode() {
 
   React.useEffect(() => {
     const handleToolSettingsReloadEvent = () => {
-      const nodes = UiFramework.frontstages.activeToolSettingsProvider?.toolSettingsNode;
+      const nodes = InternalFrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
       setSettings(nodes);
     };
     UiFramework.frontstages.onToolSettingsReloadEvent.addListener(handleToolSettingsReloadEvent);
@@ -176,7 +177,7 @@ export function ToolSettingsWidgetContent() {
   }, [node]);
 
   // istanbul ignore next
-  const providerId = UiFramework.frontstages.activeToolSettingsProvider?.uniqueId ?? "none";
+  const providerId = InternalFrontstageManager.activeToolSettingsProvider?.uniqueId ?? "none";
 
   return (
     <div data-toolsettings-provider={providerId} className="uifw-floating-toolsettings-container" ref={floatingToolSettingsContainerRef} >

@@ -29,7 +29,7 @@ export class OpenTraceDialogTool extends Tool {
   public static override get maxArgs() { return 0; }
 
   public override async run(): Promise<boolean> {
-    UiFramework.dialogs.modal.openDialog(<SampleModalDialog />);
+    UiFramework.dialogs.modal.open(<SampleModalDialog />);
     return true;
   }
 

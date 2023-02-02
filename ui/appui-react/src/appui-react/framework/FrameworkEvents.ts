@@ -73,10 +73,6 @@ export enum SyncUiEventId {
  * @beta
  */
 export interface FrameworkEvents {
-  /** @internal - used for testing only */
-  /* istanbul ignore next */
-  setTimeoutPeriod(period: number): void;
-
   /** Return set of event ids that will be sent to listeners/. */
   readonly syncEventIds: Set<string>;
 
@@ -94,11 +90,6 @@ export interface FrameworkEvents {
 
   /** Checks to see if an eventId of interest is contained in the set of eventIds */
   hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]): boolean;
-
-  /** Initializes the Monitoring of Events that trigger dispatching sync events.
-   * @internal
-  */
-  initialize(): void;
 
   /** This should be called by IModelApp when the active IModelConnection is closed. */
   clearConnectionEvents(iModelConnection: IModelConnection): void;

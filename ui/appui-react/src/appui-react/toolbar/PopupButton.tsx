@@ -18,6 +18,7 @@ import { SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
+import { InternalFrontstageManager } from "../frontstage/InternalFrontstageManager";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -125,14 +126,14 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
   public override componentDidMount() {
     this._isMounted = true;
     UiFramework.events.onSyncUiEvent.addListener(this._handleSyncUiEvent);
-    UiFramework.frontstages.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
+    InternalFrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   public override componentWillUnmount() {
     this._isMounted = false;
     this._componentUnmounting = true;
     UiFramework.events.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
-    UiFramework.frontstages.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
+    InternalFrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
   private _handleToolPanelOpenedEvent = () => {
@@ -218,7 +219,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
         const expand = !!this.state.isPressed;
 
         this._closeOnPanelOpened = false;
-        expand && UiFramework.frontstages.onToolPanelOpenedEvent.emit();
+        expand && InternalFrontstageManager.onToolPanelOpenedEvent.emit();
         this._closeOnPanelOpened = true;
 
         this.props.onExpanded && this.props.onExpanded(expand);

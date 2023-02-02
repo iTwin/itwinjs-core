@@ -23,11 +23,6 @@ export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPro
  * @beta
  */
 export interface FrameworkToolSettings {
-  /** Initializes the ToolSettingsManager
-   * @internal
-   */
-  initialize(): void;
-
   /** clear cached Tool Settings properties. */
   clearToolSettingsData(): void;
 

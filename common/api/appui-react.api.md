@@ -2347,7 +2347,7 @@ export interface FrameworkContent {
     };
     // (undocumented)
     dropFloatingContentControl(contentControl?: ContentControl): void;
-    getActiveContent(): React.ReactNode | undefined;
+    getActive(): React.ReactNode | undefined;
     getActiveContentControl(): ContentControl | undefined;
     isContent3dView(content: ContentControl | undefined): boolean;
     isContentDrawingView(content: ContentControl | undefined): boolean;
@@ -2356,60 +2356,46 @@ export interface FrameworkContent {
     isContentSpatialView(content: ContentControl | undefined): boolean;
     readonly isMouseDown: boolean;
     readonly layouts: {
-        getLayoutKey(props: {
+        getKey(props: {
             contentGroupId: string;
             layoutId: string;
         }): string;
-        getLayoutForGroup(contentGroupProps: ContentGroupProps | ContentGroup, overrideContentLayout?: ContentLayoutProps): ContentLayoutDef;
-        findLayout(layoutKey: string): ContentLayoutDef | undefined;
-        addLayout(layoutId: string, layoutDef: ContentLayoutDef): void;
+        getForGroup(contentGroupProps: ContentGroupProps | ContentGroup, overrideContentLayout?: ContentLayoutProps): ContentLayoutDef;
+        find(layoutKey: string): ContentLayoutDef | undefined;
+        add(layoutId: string, layoutDef: ContentLayoutDef): void;
         readonly activeLayout: ContentLayoutDef | undefined;
         readonly activeContentGroup: ContentGroup | undefined;
-        setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
+        setActive(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
         setActiveContentGroup(contentGroup: ContentGroup): Promise<void>;
-        refreshActiveLayout(): void;
+        refreshActive(): void;
     };
     readonly onActiveContentChangedEvent: ActiveContentChangedEvent;
     readonly onAvailableContentChangedEvent: UiEvent<{
         contentId: string;
     }>;
     readonly onMouseDownChangedEvent: MouseDownChangedEvent;
-    refreshActiveContent(activeContent: React.ReactNode): void;
-    setActiveContent(activeContent?: React.ReactNode, forceEventProcessing?: boolean): void;
+    refreshActive(activeContent: React.ReactNode): void;
+    setActive(activeContent?: React.ReactNode, forceEventProcessing?: boolean): void;
     setMouseDown(mouseDown: boolean): void;
 }
 
 // @beta
 export interface FrameworkControls {
-    // @internal (undocumented)
-    readonly activityTracker: ActivityTracker;
     closeUi(): void;
     create(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined;
-    // @internal
-    getConstructorClassId(constructor: ConfigurableUiControlConstructor): string | undefined;
     getWrapperElement(): HTMLElement;
-    // @internal
-    initialize(): void;
     isRegistered(classId: string): boolean;
-    // @internal (undocumented)
-    readonly onUiActivityEvent: UiActivityEvent;
-    // @internal (undocumented)
-    readonly onUiIntervalEvent: UiIntervalEvent;
     register(classId: string, constructor: ConfigurableUiControlConstructor): void;
     unregister(classId: string): void;
 }
 
 // @beta
 export interface FrameworkDialog {
-    readonly activeDialog: React.ReactNode | undefined;
-    // @internal (undocumented)
-    closeAll(): void;
-    closeDialog(dialog?: React.ReactNode): void;
-    readonly dialogCount: number;
-    // @internal (undocumented)
-    readonly dialogManager: DialogManagerBase;
+    readonly active: React.ReactNode | undefined;
+    close(dialog?: React.ReactNode): void;
+    readonly count: number;
     readonly dialogs: DialogInfo[];
-    openDialog(dialog: React.ReactNode, id?: string, parentDocument?: Document): void;
+    open(dialog: React.ReactNode, id?: string, parentDocument?: Document): void;
     update(): void;
 }
 
@@ -2430,12 +2416,8 @@ export interface FrameworkEvents {
     dispatchSyncUiEvent(eventId: string): void;
     dispatchSyncUiEvents(eventIds: string[]): void;
     hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]): boolean;
-    // @internal
-    initialize(): void;
     initializeConnectionEvents(iModelConnection: IModelConnection): void;
     readonly onSyncUiEvent: UiSyncEvent;
-    // @internal
-    setTimeoutPeriod(period: number): void;
     readonly syncEventIds: Set<string>;
 }
 
@@ -2447,66 +2429,34 @@ export interface FrameworkFrontstages {
     readonly activeNestedFrontstage: FrontstageDef | undefined;
     readonly activeToolId: string;
     readonly activeToolInformation: ToolInformation | undefined;
-    // @internal
-    readonly activeToolSettingsProvider: ToolUiProvider | undefined;
     addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
     clearFrontstageDefs(): void;
-    // @internal (undocumented)
-    clearFrontstageDefsForIModelId(iModelId: string | undefined): void;
     clearFrontstageProviders(): void;
     closeModalFrontstage(): void;
     closeNestedFrontstage(): Promise<void>;
     deactivateFrontstageDef(): Promise<void>;
-    // @internal
-    ensureToolInformationIsSet(toolId: string): void;
     findWidget(widgetId: string): WidgetDef | undefined;
-    // @internal (undocumented)
-    readonly frontstageDefs: ReadonlyMap<string, FrontstageDef>;
     getFrontstageDef(id?: string): Promise<FrontstageDef | undefined>;
     // (undocumented)
     hasFrontstage(frontstageId: string): boolean;
-    // @internal
-    initialize(): void;
-    // @internal (undocumented)
-    isInitialized: boolean;
     readonly isLoading: boolean;
     readonly modalFrontstageCount: number;
     readonly nestedFrontstageCount: number;
-    // @deprecated
-    readonly NineZoneManager: NineZoneManager;
-    // @internal (undocumented)
-    nineZoneSize: Size | undefined;
     // @alpha
     readonly onCloseModalFrontstageRequestedEvent: ModalFrontstageRequestedCloseEvent;
     readonly onContentControlActivatedEvent: ContentControlActivatedEvent;
     readonly onContentLayoutActivatedEvent: ContentLayoutActivatedEvent;
     readonly onFrontstageActivatedEvent: FrontstageActivatedEvent;
     readonly onFrontstageDeactivatedEvent: FrontstageDeactivatedEvent;
-    // @internal (undocumented)
-    readonly onFrontstageNineZoneStateChangedEvent: UiEvent<FrontstageNineZoneStateChangedEventArgs>;
     readonly onFrontstageReadyEvent: FrontstageReadyEvent;
-    // @internal (undocumented)
-    readonly onFrontstageRestoreLayoutEvent: UiEvent<FrontstageEventArgs>;
     readonly onModalFrontstageChangedEvent: ModalFrontstageChangedEvent;
     readonly onModalFrontstageClosedEvent: ModalFrontstageClosedEvent;
     readonly onNavigationAidActivatedEvent: NavigationAidActivatedEvent;
-    // @internal (undocumented)
-    readonly onPanelSizeChangedEvent: PanelSizeChangedEvent;
     // @alpha
     readonly onPanelStateChangedEvent: PanelStateChangedEvent;
     readonly onToolActivatedEvent: ToolActivatedEvent;
     readonly onToolIconChangedEvent: ToolIconChangedEvent;
-    // @internal
-    readonly onToolPanelOpenedEvent: UiEvent<void>;
     readonly onToolSettingsReloadEvent: UiEvent<void>;
-    // @internal (undocumented)
-    readonly onWidgetDefsUpdatedEvent: UiEvent<void>;
-    // @internal (undocumented)
-    readonly onWidgetExpandEvent: UiEvent<WidgetEventArgs>;
-    // @internal (undocumented)
-    readonly onWidgetLabelChangedEvent: UiEvent<WidgetChangedEventArgs>;
-    // @internal (undocumented)
-    readonly onWidgetShowEvent: UiEvent<WidgetEventArgs>;
     readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
     openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void;
     openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
@@ -2517,7 +2467,7 @@ export interface FrameworkFrontstages {
     setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection): void;
     setActiveTool(tool: Tool): void;
     setActiveToolId(toolId: string): void;
-    setWidgetState(widgetId: string, state: WidgetState_2): boolean;
+    setWidgetState(widgetId: string, state: WidgetState): boolean;
     updateModalFrontstage(): void;
 }
 
@@ -2550,16 +2500,14 @@ export interface FrameworkKeyboardShortcutContainer {
 
 // @beta
 export interface FrameworkKeyboardShortcuts {
-    closeShortcutsMenu(): void;
+    closeMenu(): void;
     readonly cursorX: number;
     readonly cursorY: number;
-    displayShortcutsMenu(): void;
+    displayMenu(): void;
     getShortcut(keyMapKey: string): FrameworkKeyboardShortcut | undefined;
-    // @internal
-    initialize(): void;
     readonly isFocusOnHome: boolean;
-    loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps): void;
-    loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
+    loadShortcut(shortcutProps: KeyboardShortcutProps): void;
+    loadShortcuts(shortcutList: KeyboardShortcutProps[]): void;
     processKey(keyboardKey: string, isAltKeyPressed?: boolean, isCtrlKeyPressed?: boolean, isShiftKeyPressed?: boolean): boolean;
     setFocusToHome(): void;
     readonly shortcutContainer: FrameworkKeyboardShortcutContainer;
@@ -2583,11 +2531,9 @@ export interface FrameworkRootState {
 // @beta
 export interface FrameworkStackedDialog<DialogInfoType> extends FrameworkDialog {
     // (undocumented)
-    getDialogInfo(id: string): DialogInfoType | undefined;
-    getDialogZIndex(id: string): number;
+    getInfo(id: string): DialogInfoType | undefined;
+    getZIndex(id: string): number;
     handlePointerDownEvent(_event: React.PointerEvent, id: string, updateFunc: () => void): void;
-    // @internal
-    initialize(): void;
 }
 
 // @internal
@@ -2664,8 +2610,6 @@ export interface FrameworkToolSettings {
     activeToolLabel: string;
     clearToolSettingsData(): void;
     focusIntoToolSettings(): boolean;
-    // @internal
-    initialize(): void;
     initializeDataForTool(tool: InteractiveTool): void;
     initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
     // (undocumented)
@@ -2759,19 +2703,11 @@ export interface FrameworkVisibility {
     handleWidgetMouseEnter(_event?: React.MouseEvent<HTMLElement, MouseEvent>): void;
     inactivityTime: number;
     isUiVisible: boolean;
-    // @internal (undocumented)
-    setAutoHideUi(value: boolean): void;
-    // @internal (undocumented)
-    setSnapWidgetOpacity(value: boolean): void;
-    // @internal (undocumented)
-    setUseProximityOpacity(value: boolean): void;
     showHideFooter: boolean;
     showHidePanels: boolean;
     showUiAndCancelTimer(): void;
     showUiAndResetTimer(): void;
     snapWidgetOpacity: boolean;
-    // @internal (undocumented)
-    terminate(): void;
     useProximityOpacity: boolean;
 }
 
@@ -5096,7 +5032,7 @@ export enum SelectionScope {
 }
 
 // @public
-export const SelectionScopeField: ConnectedComponent<typeof SelectionScopeFieldComponent, Omit_3<React_2.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
+export const SelectionScopeField: ConnectedComponent<typeof SelectionScopeFieldComponent, Omit_3<React_2.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "activeSelectionScope" | "availableSelectionScopes">>;
 
 // @public @deprecated
 export class SeparatorBackstageItem extends React_2.PureComponent<BackstageItemProps> {
@@ -5318,11 +5254,6 @@ export const setPanelSize: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | ReactText | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
-            } | {
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: Key | null;
@@ -5339,6 +5270,11 @@ export const setPanelSize: (base: {
                 } | any | null | undefined;
                 readonly type: string | JSXElementConstructor<any>;
                 readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -6796,16 +6732,6 @@ export interface TrackingTime {
     startTime: Date;
 }
 
-// @internal
-export class UiActivityEvent extends BeUiEvent<UiActivityEventArgs> {
-}
-
-// @internal
-export interface UiActivityEventArgs {
-    // (undocumented)
-    event: Event;
-}
-
 // @public
 export function UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogProps }: UiDataProvidedDialogProps): JSX.Element;
 
@@ -6971,16 +6897,6 @@ export class UiFramework {
     static get visibility(): FrameworkVisibility;
     // @alpha (undocumented)
     static get widgetManager(): WidgetManager;
-}
-
-// @internal
-export class UiIntervalEvent extends BeUiEvent<UiIntervalEventArgs> {
-}
-
-// @internal
-export interface UiIntervalEventArgs {
-    // (undocumented)
-    idleTimeout?: number;
 }
 
 // @beta
@@ -7913,7 +7829,7 @@ export enum WidgetType {
 }
 
 // @public @deprecated
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>) => JSX.Element;
 
 // @public @deprecated
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React_2.JSXElementConstructor<P> & C) => {
@@ -7971,7 +7887,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public @deprecated
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React_2.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget">>) => JSX.Element;
 
 // @internal @deprecated
 export class Workflow extends ItemDefBase {

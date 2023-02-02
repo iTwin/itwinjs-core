@@ -84,7 +84,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
               if (indexInDisplayStyle !== undefined && indexInDisplayStyle >= 0) {
                 const layerSettings = props.activeViewport.displayStyle.mapLayerAtIndex(indexInDisplayStyle, activeLayer.isOverlay);
                 if (layerSettings instanceof ImageMapLayerSettings) {
-                  UiFramework.dialogs.modal.openDialog(<MapUrlDialog activeViewport={props.activeViewport}
+                  UiFramework.dialogs.modal.open(<MapUrlDialog activeViewport={props.activeViewport}
                     isOverlay={props.isOverlay}
                     layerRequiringCredentials={layerSettings?.toJSON()}
                     onOkResult={props.onItemEdited}

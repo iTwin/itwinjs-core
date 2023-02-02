@@ -29,7 +29,7 @@ interface ContentWrapperProps extends CommonProps {
  */
 export function ContentWrapper(props: ContentWrapperProps) {
   const { content } = props;
-  const [isActive, setIsActive] = React.useState(content === UiFramework.content.getActiveContent());
+  const [isActive, setIsActive] = React.useState(content === UiFramework.content.getActive());
   const activeFrontstageDef = useActiveFrontstageDef();
 
   const contentControlKey = (contentControl: React.ReactNode): string | undefined => {
@@ -49,7 +49,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
   );
 
   React.useEffect(() => {
-    setIsActive(content === UiFramework.content.getActiveContent());
+    setIsActive(content === UiFramework.content.getActive());
   }, [content]);
 
   React.useEffect(() => {
@@ -70,7 +70,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
   }, [activeFrontstageDef, content]);
 
   const handleMouseDown = React.useCallback(() => {
-    UiFramework.content.setActiveContent(content);
+    UiFramework.content.setActive(content);
     setIsActive(true);
   }, [content]);
 

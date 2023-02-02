@@ -313,7 +313,7 @@ describe("StageContentLayout", () => {
       expect(contentGroup.propsId).to.eq("MyContentGroup");
 
       // activate the layout
-      await UiFramework.content.layouts.setActiveLayout(contentLayoutDef, contentGroup);
+      await UiFramework.content.layouts.setActive(contentLayoutDef, contentGroup);
 
       // emphasize the elements
       expect(StageContentLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps)).to.be.true;

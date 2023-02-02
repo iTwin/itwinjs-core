@@ -397,10 +397,10 @@ export class FrameworkUiAdmin extends UiAdmin {
   */
   public override openDialog(uiDataProvider: DialogLayoutDataProvider, title: string, isModal: boolean, id: string, optionalProps?: DialogProps): boolean {
     if (isModal) {
-      UiFramework.dialogs.modal.openDialog(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id} {...optionalProps} />, id);
+      UiFramework.dialogs.modal.open(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id} {...optionalProps} />, id);
       return true;
     } else {
-      UiFramework.dialogs.modeless.openDialog(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id}  {...optionalProps} />, id);
+      UiFramework.dialogs.modeless.open(<UiDataProvidedDialog uiDataProvider={uiDataProvider} title={title} isModal={isModal} id={id}  {...optionalProps} />, id);
       return true;
     }
   }
@@ -408,14 +408,14 @@ export class FrameworkUiAdmin extends UiAdmin {
   /** Closes the Tool Settings Ui popup. */
   public override closeDialog(dialogId: string): boolean {
     // istanbul ignore else
-    if (UiFramework.dialogs.modeless.dialogManager.dialogs.findIndex((info) => info.id === dialogId)) {
-      UiFramework.dialogs.modeless.closeDialog(dialogId);
+    if (UiFramework.dialogs.modeless.dialogs.findIndex((info) => info.id === dialogId)) {
+      UiFramework.dialogs.modeless.close(dialogId);
       return true;
     }
 
     // istanbul ignore else
-    if (UiFramework.dialogs.modal.dialogManager.dialogs.findIndex((info) => info.id === dialogId)) {
-      UiFramework.dialogs.modal.closeDialog();
+    if (UiFramework.dialogs.modal.dialogs.findIndex((info) => info.id === dialogId)) {
+      UiFramework.dialogs.modal.close();
       return true;
     }
 

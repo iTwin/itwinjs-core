@@ -27,15 +27,15 @@ export class UiShowHideSettingsProvider implements UserSettingsProvider {
   public async loadUserSettings(storage: UiStateStorage): Promise<void> {
     let result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._autoHideUiKey);
     if (result.status === UiStateStorageStatus.Success)
-      UiFramework.visibility.setAutoHideUi(result.setting);
+      InternalUiShowHideManager.setAutoHideUi(result.setting);
 
     result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._useProximityOpacityKey);
     if (result.status === UiStateStorageStatus.Success)
-      UiFramework.visibility.setUseProximityOpacity(result.setting);
+      InternalUiShowHideManager.setUseProximityOpacity(result.setting);
 
     result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._snapWidgetOpacityKey);
     if (result.status === UiStateStorageStatus.Success)
-      UiFramework.visibility.setSnapWidgetOpacity(result.setting);
+      InternalUiShowHideManager.setSnapWidgetOpacity(result.setting);
   }
 
   public static async storeAutoHideUi(v: boolean, storage?: UiStateStorage) {

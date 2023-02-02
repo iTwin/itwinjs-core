@@ -5,7 +5,7 @@
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import {
-  FrontstageDef, StagePanelLocation, StagePanelState, UiFramework, useActiveFrontstageDef, WidgetState,
+  FrontstageDef, FrontstageManager, StagePanelLocation, StagePanelState, UiFramework, useActiveFrontstageDef, WidgetState,
 } from "@itwin/appui-react";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { NumberInput, RectangleProps } from "@itwin/core-react";
@@ -24,7 +24,8 @@ function usePanelSize(location: StagePanelLocation) {
     setSize(panelDef?.size);
   }, [panelDef]);
   React.useEffect(() => {
-    const remove = UiFramework.frontstages.onPanelSizeChangedEvent.addListener((e) => {
+    // eslint-disable-next-line deprecation/deprecation
+    const remove = FrontstageManager.onPanelSizeChangedEvent.addListener((e) => {
       if (e.panelDef.location === location)
         setSize(e.size);
     });
@@ -204,7 +205,8 @@ function WidgetInfo({
     setIsFloating(frontstageDef ? frontstageDef.isFloatingWidget(id) : false);
     setIsPopout(frontstageDef ? frontstageDef.isPopoutWidget(id) : false);
 
-    return UiFramework.frontstages.onFrontstageNineZoneStateChangedEvent.addListener((e) => {
+    // eslint-disable-next-line deprecation/deprecation
+    return FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener((e) => {
       if (e.frontstageDef === frontstageDef) {
         setIsFloating(frontstageDef ? frontstageDef.isFloatingWidget(id) : false);
         setIsPopout(frontstageDef ? frontstageDef.isPopoutWidget(id) : false);
@@ -560,7 +562,8 @@ export function FloatingLayoutInfo() {
   const [floatingWidgetId, setFloatingWidgetId] = React.useState<string | undefined>(floatingIds?.length ? floatingIds[0] : undefined);
   const [bounds, setBounds] = React.useState<RectangleProps>(() => getFloatingWidgetContainerBounds(frontstageDef, floatingWidgetId));
   React.useEffect(() => {
-    return UiFramework.frontstages.onFrontstageNineZoneStateChangedEvent.addListener((e) => {
+    // eslint-disable-next-line deprecation/deprecation
+    return FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener((e) => {
       if (e.frontstageDef === frontstageDef) {
         const allIds = frontstageDef ? frontstageDef.getFloatingWidgetContainerIds() : [];
         setFloatingIds(allIds);

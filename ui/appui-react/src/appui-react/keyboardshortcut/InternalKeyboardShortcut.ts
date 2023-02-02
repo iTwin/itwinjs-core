@@ -30,14 +30,14 @@ export class InternalKeyboardShortcutManager {
   }
 
   /** Loads Keyboard Shortcuts into the managed list */
-  public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]) {
+  public static loadShortcuts(shortcutList: KeyboardShortcutProps[]) {
     shortcutList.forEach((shortcutProps: KeyboardShortcutProps) => {
-      this.loadKeyboardShortcut(shortcutProps);
+      this.loadShortcut(shortcutProps);
     });
   }
 
   /** Loads a Keyboard Shortcut into the managed list */
-  public static loadKeyboardShortcut(shortcutProps: KeyboardShortcutProps) {
+  public static loadShortcut(shortcutProps: KeyboardShortcutProps) {
     const shortcut = new KeyboardShortcut(shortcutProps);
     this._shortcuts.registerKey(shortcut.keyMapKey, shortcut);
   }
@@ -81,14 +81,14 @@ export class InternalKeyboardShortcutManager {
   }
 
   /** Displays the Keyboard Shortcuts menu at the cursor */
-  public static displayShortcutsMenu(): void {
+  public static displayMenu(): void {
     if (this._shortcuts.areKeyboardShortcutsAvailable()) {
       this._shortcuts.showShortcutsMenu();
     }
   }
 
   /** Closes the Keyboard Shortcuts menu */
-  public static closeShortcutsMenu(): void {
+  public static closeMenu(): void {
     KeyboardShortcutMenu.onKeyboardShortcutMenuEvent.emit({
       menuVisible: false,
       menuX: 0,

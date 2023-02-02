@@ -808,13 +808,9 @@ public;ToolWidgetPropsEx
 deprecated;ToolWidgetPropsEx 
 internal;toPanelSide(location: StagePanelLocation_2): PanelSide
 internal;TrackingTime
-internal;UiActivityEvent 
-internal;UiActivityEventArgs
 public;UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogProps }: UiDataProvidedDialogProps): JSX.Element
 public;UiDataProvidedDialogProps
 public;UiFramework
-internal;UiIntervalEvent 
-internal;UiIntervalEventArgs
 beta;UiItemsManager 
 beta;UiItemsProvider = UiItemsProvider_2
 beta;UiItemsProviderOverrides = UiItemProviderOverrides

@@ -18,14 +18,14 @@ import { InternalContentLayoutManager as internal } from "./InternalContentLayou
 export class ContentLayoutManager {
   /** build a layout key that is unique for group layout combination */
   public static getLayoutKey(props: { contentGroupId: string, layoutId: string }): string {
-    return internal.getLayoutKey(props);
+    return internal.getKey(props);
   }
 
   /** Return a LayoutDef that is specific to a content group.
    * @returns the [[ContentLayoutDef]] if found, or undefined otherwise
    */
   public static getLayoutForGroup(contentGroupProps: ContentGroupProps | ContentGroup, overrideContentLayout?: ContentLayoutProps): ContentLayoutDef {
-    return internal.getLayoutForGroup(contentGroupProps, overrideContentLayout);
+    return internal.getForGroup(contentGroupProps, overrideContentLayout);
   }
 
   /** Finds a Content Layout with a given id.
@@ -33,7 +33,7 @@ export class ContentLayoutManager {
    * @returns the [[ContentLayoutDef]] if found, or undefined otherwise
    */
   public static findLayout(layoutKey: string): ContentLayoutDef | undefined {
-    return internal.findLayout(layoutKey);
+    return internal.find(layoutKey);
   }
 
   /** Adds a Content Layout.
@@ -41,7 +41,7 @@ export class ContentLayoutManager {
    * @param layoutDef  the Content Layout definition to add
    */
   public static addLayout(layoutId: string, layoutDef: ContentLayoutDef): void {
-    return internal.addLayout(layoutId, layoutDef);
+    return internal.add(layoutId, layoutDef);
   }
 
   /** Gets the active Content Layout */
@@ -59,7 +59,7 @@ export class ContentLayoutManager {
    * @param contentGroup  Content Group to make active
    */
   public static async setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void> {
-    return internal.setActiveLayout(contentLayoutDef, contentGroup);
+    return internal.setActive(contentLayoutDef, contentGroup);
   }
 
   /** Sets the active Content Group.
@@ -72,7 +72,7 @@ export class ContentLayoutManager {
   /** Refreshes the active layout and content group.
    */
   public static refreshActiveLayout(): void {
-    return internal.refreshActiveLayout();
+    return internal.refreshActive();
   }
 }
 

@@ -41,6 +41,8 @@ import { WidgetConfig } from "../widgets/WidgetConfig";
 import { StagePanel, StagePanelProps, StagePanelZonesProps } from "../stagepanels/StagePanel";
 import { StagePanelConfig } from "../stagepanels/StagePanelConfig";
 import { WidgetProps } from "../widgets/WidgetProps";
+import { InternalFrontstageManager } from "./InternalFrontstageManager";
+import { InternalContentDialogManager } from "../dialog/InternalContentDialogManager";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -259,7 +261,7 @@ export class FrontstageDef {
 
     // istanbul ignore next - don't trigger any side effects until stage "isReady"
     if (!(this._isStageClosing || this._isApplicationClosing) || this.isReady) {
-      UiFramework.frontstages.onFrontstageNineZoneStateChangedEvent.emit({
+      InternalFrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
         frontstageDef: this,
         state,
       });
@@ -312,7 +314,7 @@ export class FrontstageDef {
     if (!this._contentGroup)
       throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group not defined`);
 
-    this._contentLayoutDef = UiFramework.content.layouts.getLayoutForGroup(this._contentGroup);
+    this._contentLayoutDef = UiFramework.content.layouts.getForGroup(this._contentGroup);
     UiFramework.frontstages.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
 
     this._timeTracker.startTiming();
@@ -345,7 +347,7 @@ export class FrontstageDef {
     UiFramework.childWindows.closeAll();
 
     if (this._floatingContentControls) {
-      UiFramework.content.dialogs.closeAll();
+      InternalContentDialogManager.closeAll();
       this._floatingContentControls = undefined;
     }
 
@@ -439,7 +441,7 @@ export class FrontstageDef {
     }
 
     if (contentControl) {
-      UiFramework.content.setActiveContent(contentControl.reactNode, true);
+      UiFramework.content.setActive(contentControl.reactNode, true);
       if (contentControl.viewport) {
         const status = await IModelApp.viewManager.setSelectedView(contentControl.viewport);
         activated = status === BentleyStatus.SUCCESS;
@@ -462,7 +464,7 @@ export class FrontstageDef {
     const contentControl = this.contentControls.find((control: ContentControl) => control.viewport === viewport);
     // istanbul ignore else
     if (contentControl) {
-      UiFramework.content.setActiveContent(contentControl.reactNode, true);
+      UiFramework.content.setActive(contentControl.reactNode, true);
       return true;
     }
 
@@ -735,7 +737,7 @@ export class FrontstageDef {
     for (const widgetDef of this.widgetDefs) {
       widgetDef.setWidgetState(widgetDef.defaultState);
     }
-    UiFramework.frontstages.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
+    InternalFrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
   }
 
   /** Used only in UI 2.0 to determine WidgetState from NinezoneState

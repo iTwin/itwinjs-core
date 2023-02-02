@@ -24,6 +24,7 @@ import { PopupRenderer } from "../popup/PopupManager";
 import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
 import { ContentDialogRenderer } from "../dialog/ContentDialogManager";
 import { UiFramework } from "../UiFramework";
+import { InternalConfigurableUiManager } from "./InternalConfigurableUiManager";
 
 // cSpell:ignore cursormenu cursorpopup
 
@@ -49,9 +50,9 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
     UiFramework.keyboardShortcuts.setFocusToHome();
   }, []);
   React.useEffect(() => {
-    UiFramework.controls.activityTracker.initialize({ idleTimeout: props.idleTimeout, intervalTimeout: props.intervalTimeout });
+    InternalConfigurableUiManager.activityTracker.initialize({ idleTimeout: props.idleTimeout, intervalTimeout: props.intervalTimeout });
     return () => {
-      UiFramework.controls.activityTracker.terminate();
+      InternalConfigurableUiManager.activityTracker.terminate();
     };
   }, [props.idleTimeout, props.intervalTimeout]);
 

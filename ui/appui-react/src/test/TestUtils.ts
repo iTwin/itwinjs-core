@@ -17,6 +17,7 @@ import {
 } from "../appui-react";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 import userEvent from "@testing-library/user-event";
+import { InternalSyncUiEventDispatcher } from "../appui-react/syncui/InternalSyncUiEventDispatcher";
 export {userEvent};
 
 /* eslint-disable deprecation/deprecation */
@@ -89,7 +90,7 @@ export class TestUtils {
       TestUtils._uiFrameworkInitialized = true;
     }
     UiFramework.toolSettings.clearToolSettingsData();
-    UiFramework.events.setTimeoutPeriod(0); // disables non-immediate event processing.
+    InternalSyncUiEventDispatcher.setTimeoutPeriod(0); // disables non-immediate event processing.
   }
 
   public static terminateUiFramework() {
@@ -461,6 +462,12 @@ export function createStaticInternalPassthroughValidators<P extends Object>(test
    * sinon.stub(internal, prop).get(() => returned);
    * expect(tested[prop]).to.eq(returned);
    * ```
+   * When a tuple `prop` is provided, the first one will be used on the tested class, the second one on the internal.
+   * ```
+   * const returned = Symbol();
+   * sinon.stub(internal, prop[1]).get(() => returned);
+   * expect(tested[prop[0]]).to.eq(returned);
+   * ```
    * When `readWrite` is `true`, will also stub the setter and validate that passing a different
    * `Symbol` to the tested will be also passed to the setter
    * ```
@@ -473,16 +480,17 @@ export function createStaticInternalPassthroughValidators<P extends Object>(test
    * @param prop Name of the property to test (only non callable member will show up)
    * @param readWrite Type of property defaults to onlyGet (getter, getter and setter, or direct property)
    */
-  function getterValidator<T extends keyof G>(prop: T, readWrite = false) {
+  function getterValidator<T extends keyof G>(prop: T | [T, string], readWrite = false) {
+    const [tProp, iProp] = Array.isArray(prop) ? prop : [prop, prop];
     const returned = Symbol("returnedValue");
     const setValue = Symbol("setValue") as any;
     const setter = sinon.spy();
-    sinon.stub(internal, prop).get(() => returned).set(setter);
-    expect((tested as any)[prop]).to.eq(returned);
+    sinon.stub(internal, iProp).get(() => returned).set(setter);
+    expect((tested as any)[tProp]).to.eq(returned);
 
     if (readWrite) {
-      (tested as any)[prop] = setValue;
-      expect(setter, `Internal setter ${String(prop)} was not called.`).to.have.been.calledOnceWithExactly(setValue);
+      (tested as any)[tProp] = setValue;
+      expect(setter, `Internal setter ${String(iProp)} was not called.`).to.have.been.calledOnceWithExactly(setValue);
     }
   }
 

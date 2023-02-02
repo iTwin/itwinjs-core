@@ -18,6 +18,7 @@ import {
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 describe("Frontstage", () => {
   before(async () => {
@@ -109,9 +110,9 @@ describe("Frontstage", () => {
     const saveTransientStateSpy = sinon.spy(widget!.widgetControl!, "saveTransientState");
     const restoreTransientStateSpy = sinon.spy(widget!.widgetControl!, "restoreTransientState");
 
-    let zones = UiFramework.frontstages.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-    zones = UiFramework.frontstages.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
-    zones = UiFramework.frontstages.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
+    let zones = InternalFrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
+    zones = InternalFrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = InternalFrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
     wrapper.setState({
       nineZone: {
         ...wrapper.state().nineZone,
@@ -141,9 +142,9 @@ describe("Frontstage", () => {
     await TestUtils.flushAsyncOperations();
     wrapper.update();
 
-    let zones = UiFramework.frontstages.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-    zones = UiFramework.frontstages.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
-    zones = UiFramework.frontstages.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
+    let zones = InternalFrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
+    zones = InternalFrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = InternalFrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
     wrapper.setState({
       nineZone: {
         ...wrapper.state().nineZone,
@@ -172,9 +173,9 @@ describe("Frontstage", () => {
     const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
     const widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
 
-    let zones = UiFramework.frontstages.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-    zones = UiFramework.frontstages.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
-    zones = UiFramework.frontstages.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
+    let zones = InternalFrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
+    zones = InternalFrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = InternalFrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
     wrapper.setState({
       nineZone: {
         ...wrapper.state().nineZone,
@@ -205,9 +206,9 @@ describe("Frontstage", () => {
     const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
     const widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
 
-    let zones = UiFramework.frontstages.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-    zones = UiFramework.frontstages.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
-    zones = UiFramework.frontstages.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
+    let zones = InternalFrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
+    zones = InternalFrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = InternalFrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
     wrapper.setState({
       nineZone: {
         ...wrapper.state().nineZone,

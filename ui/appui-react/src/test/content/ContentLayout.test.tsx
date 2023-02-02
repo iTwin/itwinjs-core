@@ -263,10 +263,10 @@ describe("ContentLayout", () => {
 
     const emptyContentGroup = new ContentGroup({contents: [], id: "empty-cg", layout: contentLayout.toJSON()});
 
-    await UiFramework.content.layouts.setActiveLayout(contentLayout, emptyContentGroup);
+    await UiFramework.content.layouts.setActive(contentLayout, emptyContentGroup);
     spyMethod.calledOnce.should.true;
 
-    UiFramework.content.layouts.refreshActiveLayout();
+    UiFramework.content.layouts.refreshActive();
     spyMethod.calledTwice.should.true;
 
     remove();
@@ -360,7 +360,7 @@ describe("SingleContentLayout", () => {
     render(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
     expect(screen.getByText("Test").parentElement).to.satisfy(childStructure("div+.uifw-contentlayout-overlay-active"));
 
-    UiFramework.content.setActiveContent(floatingControl.reactNode, true);
+    UiFramework.content.setActive(floatingControl.reactNode, true);
 
     expect(screen.getByText("Test").parentElement).to.satisfy(childStructure("div+.uifw-contentlayout-overlay-inactive"));
 

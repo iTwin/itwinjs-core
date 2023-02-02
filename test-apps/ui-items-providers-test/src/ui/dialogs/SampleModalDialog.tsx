@@ -17,7 +17,7 @@ export function SampleModalDialog() {
   const title = React.useRef(UiItemsProvidersTest.translate("Dialogs.SampleModal.title"));
 
   const closeDialog = React.useCallback(() => {
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
   }, []);
 
   const handleOK = React.useCallback(() => {

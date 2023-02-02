@@ -16,6 +16,7 @@ import {
 } from "../../../appui-react";
 import TestUtils, { mount, ReactWrapper } from "../../TestUtils";
 import { Tool1 } from "../../tools/Tool1";
+import { InternalFrontstageManager } from "../../../appui-react/frontstage/InternalFrontstageManager";
 
 describe("ToolSettingsZone", () => {
   const widgetChangeHandler: ToolSettingsZoneProps["widgetChangeHandler"] = {
@@ -149,7 +150,7 @@ describe("ToolSettingsZone", () => {
     if (frontstageDef) {
       await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
-      UiFramework.frontstages.ensureToolInformationIsSet(testToolId);
+      InternalFrontstageManager.ensureToolInformationIsSet(testToolId);
       UiFramework.frontstages.setActiveToolId(testToolId);
       expect(UiFramework.frontstages.activeToolId).to.eq(testToolId);
 
@@ -188,7 +189,7 @@ describe("ToolSettingsZone", () => {
     if (frontstageDef) {
       await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
-      UiFramework.frontstages.ensureToolInformationIsSet(testToolId);
+      InternalFrontstageManager.ensureToolInformationIsSet(testToolId);
       UiFramework.frontstages.setActiveToolId(testToolId);
       expect(UiFramework.frontstages.activeToolId).to.eq(testToolId);
 

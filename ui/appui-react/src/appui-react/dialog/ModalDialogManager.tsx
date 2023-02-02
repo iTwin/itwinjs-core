@@ -9,7 +9,6 @@
 import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 import { DialogRendererBase } from "./DialogManagerBase";
-import { UiFramework } from "../UiFramework";
 import { InternalModalDialogManager as internal } from "./InternalModalDialogManager";
 
 /** ModalDialogRenderer React component renders modal dialogs
@@ -23,7 +22,7 @@ export class ModalDialogRenderer extends React.PureComponent<CommonProps> {
 
   public override render(): React.ReactNode {
     return (
-      <DialogRendererBase {...this.props} dialogManager={UiFramework.dialogs.modal.dialogManager} />
+      <DialogRendererBase {...this.props} dialogManager={internal.dialogManager} />
     );
   }
 }
@@ -48,14 +47,14 @@ export class ModalDialogManager {
    * @param parentDocument The Document used to determine the owning window.
    */
   public static openDialog(dialog: React.ReactNode, id?: string, parentDocument = document): void {
-    internal.openDialog(dialog, id, parentDocument);
+    internal.open(dialog, id, parentDocument);
   }
 
   /** Close a modal dialog
    * @param dialog The Dialog to open. If one is not specified, the active dialog will be closed.
    */
   public static closeDialog(dialog?: React.ReactNode): void {
-    internal.closeDialog(dialog);
+    internal.close(dialog);
   }
 
   /** @internal */
@@ -70,11 +69,11 @@ export class ModalDialogManager {
 
   /** Get the active modal dialog */
   public static get activeDialog(): React.ReactNode | undefined {
-    return internal.activeDialog;
+    return internal.active;
   }
 
   /** Get the count of modal dialogs */
   public static get dialogCount(): number {
-    return internal.dialogCount;
+    return internal.count;
   }
 }

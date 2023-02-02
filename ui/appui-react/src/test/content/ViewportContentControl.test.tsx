@@ -18,6 +18,7 @@ import {
 import TestUtils, { storageMock } from "../TestUtils";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 const mySessionStorage = storageMock();
 
@@ -36,9 +37,8 @@ describe("ViewportContentControl", () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
 
-    UiFramework.controls.initialize();
-    UiFramework.frontstages.isInitialized = false;
-    UiFramework.frontstages.initialize();
+    InternalFrontstageManager.isInitialized = false;
+    InternalFrontstageManager.initialize();
   });
 
   after(async () => {
@@ -241,7 +241,7 @@ describe("ViewportContentControl", () => {
       const floatingControl = new TestFloatingContentControl();
 
       UiFramework.content.addFloatingContentControl(floatingControl);
-      UiFramework.content.setActiveContent(floatingControl.reactNode);
+      UiFramework.content.setActive(floatingControl.reactNode);
 
       let activeControl = UiFramework.content.getActiveContentControl();
       expect(activeControl).to.be.eql(floatingControl);
@@ -252,7 +252,7 @@ describe("ViewportContentControl", () => {
       UiFramework.content.addFloatingContentControl(floatingViewportControl);
       floatingViewportControl.reactNode = floatingViewportNode;
 
-      UiFramework.content.setActiveContent(floatingViewportControl.reactNode);
+      UiFramework.content.setActive(floatingViewportControl.reactNode);
 
       activeControl = UiFramework.content.getActiveContentControl();
       expect(activeControl).to.be.eql(floatingViewportControl);

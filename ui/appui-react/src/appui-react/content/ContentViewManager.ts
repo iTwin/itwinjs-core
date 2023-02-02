@@ -36,7 +36,7 @@ export class ContentViewManager {
 
   /** Gets the active content as a React.ReactNode. */
   public static getActiveContent(): React.ReactNode | undefined {
-    return internal.getActiveContent();
+    return internal.getActive();
   }
 
   /** Return the active ContentControl. */
@@ -54,12 +54,12 @@ export class ContentViewManager {
 
   /** Sets the active [[ContentControl]] */
   public static setActiveContent(activeContent?: React.ReactNode, forceEventProcessing = false): void {
-    return internal.setActiveContent(activeContent, forceEventProcessing);
+    return internal.setActive(activeContent, forceEventProcessing);
   }
 
   /** Refreshes the active [[ContentControl]] */
   public static refreshActiveContent(activeContent: React.ReactNode) {
-    return internal.refreshActiveContent(activeContent);
+    return internal.refreshActive(activeContent);
   }
 
   /**

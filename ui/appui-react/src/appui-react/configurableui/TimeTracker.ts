@@ -6,8 +6,7 @@
  * @module ConfigurableUi
  */
 
-import { UiFramework } from "../UiFramework";
-import { UiActivityEventArgs, UiIntervalEventArgs } from "../framework/FrameworkControls";
+import { InternalConfigurableUiManager, UiActivityEventArgs, UiIntervalEventArgs } from "./InternalConfigurableUiManager";
 
 /** Time Tracker utility class
  * @internal
@@ -34,15 +33,15 @@ export class TimeTracker {
     this._firstActiveTimestamp = Date.now();
     this._lastActiveTimestamp = this._firstActiveTimestamp;
 
-    UiFramework.controls.onUiIntervalEvent.addListener(this._idleTimeCounter);
-    UiFramework.controls.onUiActivityEvent.addListener(this._trackActivity);
+    InternalConfigurableUiManager.onUiIntervalEvent.addListener(this._idleTimeCounter);
+    InternalConfigurableUiManager.onUiActivityEvent.addListener(this._trackActivity);
   }
 
   /** Stops time tracking
    */
   public stopTiming(): void {
-    UiFramework.controls.onUiIntervalEvent.removeListener(this._idleTimeCounter);
-    UiFramework.controls.onUiActivityEvent.removeListener(this._trackActivity);
+    InternalConfigurableUiManager.onUiIntervalEvent.removeListener(this._idleTimeCounter);
+    InternalConfigurableUiManager.onUiActivityEvent.removeListener(this._trackActivity);
 
     this._totalTime = Date.now() - this._firstActiveTimestamp;
     this._idleTime = this._totalIdleTime + this._idleCount * this._idleTimeout;

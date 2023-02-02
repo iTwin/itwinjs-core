@@ -120,7 +120,7 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
     } else {
       this.reactNode = this.getReactElementForViewSelectorChange(iModel, viewDefinitionId, viewState, name);
     }
-    UiFramework.content.refreshActiveContent(this.reactNode);
+    UiFramework.content.refreshActive(this.reactNode);
   }
 
   /** Get the React.Element for a ViewSelector change. */

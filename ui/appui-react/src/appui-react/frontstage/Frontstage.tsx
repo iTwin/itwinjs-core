@@ -29,6 +29,7 @@ import { isToolSettingsWidgetManagerProps, Zone, ZoneLocation, ZoneProps, ZoneRu
 import { ZoneDef } from "../zones/ZoneDef";
 import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
 import { FrontstageActivatedEventArgs } from "../framework/FrameworkFrontstages";
+import { InternalFrontstageManager } from "./InternalFrontstageManager";
 
 /** Properties for a [[Frontstage]] component.
  * @deprecated in 3.5. Props of a deprecated component.
@@ -202,7 +203,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     {
       const frontstageDef = this.props.runtimeProps.frontstageDef;
       frontstageDef.updateWidgetDefs();
-      UiFramework.frontstages.onWidgetDefsUpdatedEvent.emit();
+      InternalFrontstageManager.onWidgetDefsUpdatedEvent.emit();
       if (this._isMounted)
         this.forceUpdate();
     }
@@ -384,14 +385,14 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       if (!zoneDef)
         return null;
 
-      const nestedPanelsManager = UiFramework.frontstages.NineZoneManager.getNestedPanelsManager();
+      const nestedPanelsManager = InternalFrontstageManager.NineZoneManager.getNestedPanelsManager();
       const panelsManager = nestedPanelsManager.getPanelsManager("inner");
       const type = panelsManager.findWidget(zoneId, runtimeProps.nineZone.nested.panels.inner);
       // istanbul ignore if
       if (type !== undefined)
         return null;
 
-      const zonesManager = UiFramework.frontstages.NineZoneManager.getZonesManager();
+      const zonesManager = InternalFrontstageManager.NineZoneManager.getZonesManager();
       const zones = runtimeProps.nineZone.zones;
       const ghostOutline = zonesManager.getGhostOutlineBounds(zoneId, zones);
       const dropTarget = zonesManager.getDropTarget(zoneId, zones);
@@ -596,7 +597,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
           key={this.state.widgetKey}
           mode={this.props.toolSettingsMode}
         >
-          {UiFramework.frontstages.activeToolSettingsProvider && UiFramework.frontstages.activeToolSettingsProvider.toolSettingsNode}
+          {InternalFrontstageManager.activeToolSettingsProvider && InternalFrontstageManager.activeToolSettingsProvider.toolSettingsNode}
         </ToolSettingsContent>
       ), this._content);
     }
@@ -632,7 +633,7 @@ export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, 
   const zone = zones.zones[zoneId];
   if (zoneId === 1 || zoneId === 3) {
     let extendOverId: WidgetZoneId = zoneId; // eslint-disable-line deprecation/deprecation
-    const zonesManager = UiFramework.frontstages.NineZoneManager.getZonesManager();
+    const zonesManager = InternalFrontstageManager.NineZoneManager.getZonesManager();
     let bottomZoneId = zonesManager.bottomZones.getInitial(extendOverId);
     while (bottomZoneId !== undefined) {
       const bottomZoneDef = defProvider.getZoneDef(bottomZoneId);

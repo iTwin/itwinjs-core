@@ -71,9 +71,9 @@ export function ContentDialog(props: ContentDialogProps) {
   const dialogClassName = React.useMemo(() => classnames(activeContentControlId === dialogId ? "active-content-dialog" : "inactive-content-dialog", className),
     [activeContentControlId, className, dialogId]);
 
-  const [zIndex, setZIndex] = React.useState(UiFramework.content.dialogs.getDialogZIndex(dialogId));
+  const [zIndex, setZIndex] = React.useState(UiFramework.content.dialogs.getZIndex(dialogId));
   const updateZIndex = React.useCallback(() => {
-    const newZ = UiFramework.content.dialogs.getDialogZIndex(dialogId);
+    const newZ = UiFramework.content.dialogs.getZIndex(dialogId);
     // istanbul ignore else
     if (newZ !== zIndex) {
       setZIndex(newZ);

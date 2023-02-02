@@ -14,6 +14,7 @@ import { ToolInformation } from "../../../appui-react/zones/toolsettings/ToolInf
 import TestUtils from "../../TestUtils";
 import { DialogItemValue, DialogPropertySyncItem, UiLayoutDataProvider } from "@itwin/appui-abstract";
 import { Input, Slider } from "@itwin/itwinui-react";
+import { InternalFrontstageManager } from "../../../appui-react/frontstage/InternalFrontstageManager";
 
 describe("ToolUiProvider", () => {
 
@@ -110,7 +111,7 @@ describe("ToolUiProvider", () => {
     if (frontstageDef) {
       await UiFramework.frontstages.setActiveFrontstageDef(frontstageDef);
 
-      UiFramework.frontstages.ensureToolInformationIsSet(testToolId);
+      InternalFrontstageManager.ensureToolInformationIsSet(testToolId);
       UiFramework.frontstages.setActiveToolId(testToolId);
       expect(UiFramework.frontstages.activeToolId).to.eq(testToolId);
 
@@ -132,13 +133,13 @@ describe("ToolUiProvider", () => {
         }
       }
 
-      const toolSettingsProvider = UiFramework.frontstages.activeToolSettingsProvider;
+      const toolSettingsProvider = InternalFrontstageManager.activeToolSettingsProvider;
       expect(toolSettingsProvider).to.not.be.undefined;
 
-      const toolSettingsNode = UiFramework.frontstages.activeToolSettingsProvider?.toolSettingsNode;
+      const toolSettingsNode = InternalFrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
       expect(toolSettingsNode).to.not.be.undefined;
 
-      const horizontalToolSettingsNode = UiFramework.frontstages.activeToolSettingsProvider?.horizontalToolSettingNodes;
+      const horizontalToolSettingsNode = InternalFrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
       expect(horizontalToolSettingsNode).to.not.be.undefined;
       expect(horizontalToolSettingsNode!.length).to.eq(5);
     }

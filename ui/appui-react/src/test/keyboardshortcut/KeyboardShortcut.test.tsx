@@ -222,7 +222,7 @@ describe("KeyboardShortcut", () => {
       KeyboardShortcutManager.displayShortcutsMenu();   // No shortcuts to display yet
       expect(menuSpyMethod.calledOnce).to.be.false;
 
-      UiFramework.keyboardShortcuts.loadKeyboardShortcuts(keyboardShortcutList);
+      UiFramework.keyboardShortcuts.loadShortcuts(keyboardShortcutList);
 
       expect(KeyboardShortcutManager.shortcutContainer.areKeyboardShortcutsAvailable()).to.be.true;
       expect(KeyboardShortcutManager.shortcutContainer.getAvailableKeyboardShortcuts().length).to.eq(4);
@@ -329,12 +329,12 @@ describe("KeyboardShortcut", () => {
     it("calls Internal static for everything", () => {
       const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(KeyboardShortcutManager, InternalKeyboardShortcutManager);
 
-      validateMethod("closeShortcutsMenu");
-      validateMethod("displayShortcutsMenu");
+      validateMethod(["closeShortcutsMenu", "closeMenu"]);
+      validateMethod(["displayShortcutsMenu", "displayMenu"]);
       validateMethod("getShortcut", "key");
       validateMethod("initialize");
-      validateMethod("loadKeyboardShortcut", {} as any);
-      validateMethod("loadKeyboardShortcuts", []);
+      validateMethod(["loadKeyboardShortcut", "loadShortcut"], {} as any);
+      validateMethod(["loadKeyboardShortcuts", "loadShortcuts"], []);
       validateMethod("processKey", "key", false, true, false);
       validateMethod("setFocusToHome");
       validateProp("cursorX");

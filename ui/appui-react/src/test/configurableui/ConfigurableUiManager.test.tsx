@@ -181,8 +181,8 @@ describe("ConfigurableUiManager", () => {
     ConfigurableUiManager.closeUi();
 
     expect(MessageManager.messages.length).to.eq(0);
-    expect(UiFramework.dialogs.modeless.dialogCount).to.eq(0);
-    expect(UiFramework.dialogs.modal.dialogCount).to.eq(0);
+    expect(UiFramework.dialogs.modeless.count).to.eq(0);
+    expect(UiFramework.dialogs.modal.count).to.eq(0);
     expect(PopupManager.popupCount).to.eq(0);
   });
 

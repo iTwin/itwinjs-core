@@ -149,7 +149,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       props.onCancelResult();
       return;
     }
-    UiFramework.dialogs.modal.closeDialog();
+    UiFramework.dialogs.modal.close();
   }, [props]);
 
   const onUsernameChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -341,7 +341,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     const source = createSource();
     if (source === undefined || props.mapLayerSourceToEdit) {
 
-      UiFramework.dialogs.modal.closeDialog();
+      UiFramework.dialogs.modal.close();
       onOkResult();
 
       if (source === undefined) {
@@ -383,12 +383,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         // In theory the modal dialog should always get closed by the parent
         // AttachLayerPanel's 'onOkResult' handler.  We close it here just in case.
         if (closeDialog) {
-          UiFramework.dialogs.modal.closeDialog();
+          UiFramework.dialogs.modal.close();
           onOkResult();
         }
       } catch (_error) {
         onOkResult();
-        UiFramework.dialogs.modal.closeDialog();
+        UiFramework.dialogs.modal.close();
       }
     })();
 

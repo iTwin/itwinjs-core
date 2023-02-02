@@ -117,11 +117,11 @@ describe("ModalDialogManager", () => {
     const [validateMethod, validateProp] = createStaticInternalPassthroughValidators(ModalDialogManager, InternalModalDialogManager);
 
     validateMethod("closeAll");
-    validateMethod("closeDialog", "id");
-    validateMethod("openDialog", "", "id", document);
+    validateMethod(["closeDialog", "close"], "id");
+    validateMethod(["openDialog", "open"], "", "id", document);
     validateMethod("update");
-    validateProp("activeDialog");
-    validateProp("dialogCount");
+    validateProp(["activeDialog", "active"]);
+    validateProp(["dialogCount", "count"]);
     validateProp("dialogManager");
     validateProp("dialogs");
     validateProp("onModalDialogChangedEvent");

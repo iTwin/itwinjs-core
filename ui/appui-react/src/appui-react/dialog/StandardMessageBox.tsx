@@ -131,7 +131,7 @@ export class StandardMessageBox extends React.PureComponent<StandardMessageBoxPr
     this.setState((_prevState) => ({
       opened: false,
     }), () => {
-      UiFramework.dialogs.modal.closeDialog();
+      UiFramework.dialogs.modal.close();
       followUp();
     });
   };

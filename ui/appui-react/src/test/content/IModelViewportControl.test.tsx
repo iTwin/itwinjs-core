@@ -15,6 +15,7 @@ import {
 } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
+import { InternalFrontstageManager } from "../../appui-react/frontstage/InternalFrontstageManager";
 
 const mySessionStorage = storageMock();
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;
@@ -32,9 +33,8 @@ describe("IModelViewportControl", () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
 
-    UiFramework.controls.initialize();
-    UiFramework.frontstages.isInitialized = false;
-    UiFramework.frontstages.initialize();
+    InternalFrontstageManager.isInitialized = false;
+    InternalFrontstageManager.initialize();
   });
 
   after(async () => {

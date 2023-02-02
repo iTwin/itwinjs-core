@@ -19,7 +19,6 @@ describe("Backstage", () => {
     await TestUtils.initializeUiFramework();
 
     await UiFramework.frontstages.setActiveFrontstageDef(undefined);
-    UiFramework.events.initialize();   // To process Backstage events
     await MockRender.App.startup();
   });
 
