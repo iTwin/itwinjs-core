@@ -195,7 +195,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   protected async startCommand(): Promise<string> {
     if (undefined !== this._startedCmd)
       return this._startedCmd;
-    return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdSolidModeling, this.iModel.key);
+    return EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdSolidModeling, iModelKey: this.iModel.key });
   }
 
   protected agendaAppearance(isDynamics: boolean): FeatureAppearance {

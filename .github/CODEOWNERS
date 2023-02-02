@@ -91,7 +91,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/webgl-compatibility/               @iTwin/itwinjs-core-display @Ellord207
 /common/**/core-webpack-tools/                @aruniverse @calebmshafer @wgoehrig
 
-/common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
+/common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr @aruniverse
 
 /core/backend                   @iTwin/itwinjs-core-admins
 /core/bentley                   @iTwin/itwinjs-core-admins

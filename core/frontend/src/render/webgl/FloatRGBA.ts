@@ -6,17 +6,14 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
 import { ColorDef, RgbColor } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 
 function clamp(norm: number): number {
-  assert(() => norm >= 0 && norm <= 1);
   return Math.max(0, Math.min(1, norm));
 }
 
 function scale(norm: number): number {
-  assert(() => norm >= 0 && norm <= 1);
   return Math.floor(norm * 255 + 0.5);
 }
 
@@ -63,7 +60,6 @@ export abstract class FloatColor {
   }
 
   protected setRgbaComponents(r: number, g: number, b: number, a: number): void {
-    assert(() => r >= 0 && r <= 1 && g >= 0 && g <= 1 && b >= 0 && b <= 1 && a >= 0 && a <= 1);
     r = clamp(r);
     g = clamp(g);
     b = clamp(b);

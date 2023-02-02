@@ -56,6 +56,12 @@ describe("RealityMeshParamsBuilder", () => {
         initialVertexCapacity,
       });
 
+      const uv = { x: 0, y: 0 };
+      builder.addQuantizedVertex({ x: 0, y: 0, z: 0 }, uv);
+      builder.addQuantizedVertex({ x: 100, y: 0, z: 0 }, uv);
+      builder.addQuantizedVertex({ x: 100, y: 200, z: 0 }, uv);
+      builder.addIndices([0, 1, 2]);
+
       expect(builder.finish().indices).instanceof(expectedType);
     }
 
@@ -65,5 +71,50 @@ describe("RealityMeshParamsBuilder", () => {
     expectIndices(65535, Uint16Array);
     expectIndices(65536, Uint32Array);
     expectIndices(12345678, Uint32Array);
+  });
+
+  it("finish throws if mesh is empty", () => {
+    function test(addVerts: boolean, addIndices: boolean): void {
+      const builder = new RealityMeshParamsBuilder({ positionRange: Range3d.createNull() });
+      if (addVerts) {
+        const uv = { x: 0, y: 0 };
+        builder.addQuantizedVertex({ x: 0, y: 0, z: 0 }, uv);
+        builder.addQuantizedVertex({ x: 100, y: 0, z: 0 }, uv);
+        builder.addQuantizedVertex({ x: 100, y: 200, z: 0 }, uv);
+      }
+
+      if (addIndices)
+        builder.addIndices([0, 1, 2]);
+
+      if (!addVerts || !addIndices)
+        expect(() => builder.finish()).to.throw("Logic Error");
+      else
+        expect(builder.finish()).not.to.throw;
+    }
+
+    test(true, true);
+    test(false, true);
+    test(true, false);
+    test(false, false);
+  });
+
+  it("throws on inconsistent normals", () => {
+    function test(wantNormals: boolean, supplyNormals: boolean, expectThrow: boolean): void {
+      const builder = new RealityMeshParamsBuilder({
+        positionRange: Range3d.createNull(),
+        wantNormals,
+      });
+
+      const addVertex = () => builder.addQuantizedVertex({ x: 0, y: 0, z: 0 }, { x: 0, y: 0}, supplyNormals ? 100 : undefined);
+      if (expectThrow)
+        expect(addVertex).to.throw("Logic Error");
+      else
+        expect(addVertex).not.to.throw;
+    }
+
+    test(false, false, false);
+    test(true, false, true);
+    test(false, true, true);
+    test(true, true, false);
   });
 });

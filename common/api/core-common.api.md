@@ -7754,7 +7754,7 @@ export class RpcControlChannel {
     static obtain(configuration: RpcConfiguration): RpcControlChannel;
 }
 
-// @public @deprecated
+// @public
 export abstract class RpcControlResponse {
     // (undocumented)
     message: string;
@@ -7903,7 +7903,7 @@ export class RpcMultipart {
     static writeValueToForm(form: FormDataCommon, value: RpcSerializedValue): void;
 }
 
-// @public @deprecated
+// @public
 export class RpcNotFoundResponse extends RpcControlResponse {
     // (undocumented)
     message: string;
@@ -7971,7 +7971,7 @@ export class RpcPendingQueue {
     static instance: RpcPendingQueue;
 }
 
-// @public @deprecated
+// @public
 export class RpcPendingResponse extends RpcControlResponse {
     constructor(message?: string);
     message: string;

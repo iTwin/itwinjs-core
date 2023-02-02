@@ -761,11 +761,11 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
       // currently the only way to create a workspaceDb in a cloud container is to create a temporary workspaceDb and upload it.
       const tempDbFile = join(KnownLocations.tmpdir, `empty.${ITwinWorkspaceDb.fileExt}`);
       if (fs.existsSync(tempDbFile))
-        fs.rmSync(tempDbFile);
+        IModelJsFs.removeSync(tempDbFile);
       EditableWorkspaceDb.createEmpty(tempDbFile);
       this.dbFileName = ITwinWorkspaceContainer.makeDbFileName(this.dbName, version);
       await CloudSqlite.uploadDb(this.container.cloudContainer, { localFileName: tempDbFile, dbName: this.dbFileName });
-      fs.rmSync(tempDbFile);
+      IModelJsFs.removeSync(tempDbFile);
     }
     this.open();
   }
