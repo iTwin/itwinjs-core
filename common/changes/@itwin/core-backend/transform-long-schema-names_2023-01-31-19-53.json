@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "allow passing a custom schema read context to IModelDb.importSchemas",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

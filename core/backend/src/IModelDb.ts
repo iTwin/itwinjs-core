@@ -51,6 +51,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
 
 // spell:ignore fontid fontmap
 
@@ -145,6 +146,19 @@ export interface LockControl {
    * Release all locks currently held by this Briefcase from the lock server.
    */
   releaseAllLocks(): Promise<void>;
+}
+
+/**
+ * Options for the importing of schemas
+ * @public
+ */
+export interface SchemaImportOptions {
+  /**
+   * An [[ECSchemaXmlContext]] to use instead of building a default one.
+   * This can be useful in rare cases where custom schema location logic is necessary
+   * @internal
+   */
+  ecSchemaXmlContext?: ECSchemaXmlContext;
 }
 
 /** A null-implementation of LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
@@ -783,22 +797,22 @@ export abstract class IModelDb extends IModel {
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param schemaFileName  array of Full paths to ECSchema.xml files to be imported.
+   * @param {SchemaImportOptions} options - options during schema import.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * @see querySchemaVersion
    */
-  public async importSchemas(schemaFileNames: LocalFileName[]): Promise<void> {
-    if (this.isSnapshot || this.isStandalone) {
-      const status = this.nativeDb.importSchemas(schemaFileNames);
-      if (DbResult.BE_SQLITE_OK !== status)
-        throw new IModelError(status, "Error importing schema");
-      this.clearCaches();
-      return;
-    }
+  public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
+    if (this.nativeDb.getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+      await this.acquireSchemaLock();
 
-    await this.acquireSchemaLock();
+    const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
+    const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
+      schemaLockHeld: true,
+      ecSchemaXmlContext: maybeCustomNativeContext,
+    };
 
-    const stat = this.nativeDb.importSchemas(schemaFileNames);
+    const stat = this.nativeDb.importSchemas(schemaFileNames, nativeImportOptions);
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema");
     }
@@ -816,18 +830,10 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
-    if (this.isSnapshot || this.isStandalone) {
-      const status = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
-      if (DbResult.BE_SQLITE_OK !== status) {
-        throw new IModelError(status, "Error importing schema");
-      }
-      this.clearCaches();
-      return;
-    }
+    if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+      await this.acquireSchemaLock();
 
-    await this.acquireSchemaLock();
-
-    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
+    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Error importing schema");
 
@@ -2388,8 +2394,8 @@ export class BriefcaseDb extends IModelDb {
     // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
     await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
     try {
-      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
-      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
+      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade, schemaLockHeld: true }, "Upgraded profile");
+      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade, schemaLockHeld: true }, "Upgraded domain schemas");
     } finally {
       await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
     }
@@ -2730,9 +2736,9 @@ export class StandaloneDb extends BriefcaseDb {
    * @see [[StandaloneDb.validateSchemas]]
    */
   public static upgradeStandaloneSchemas(filePath: LocalFileName) {
-    let nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade });
+    let nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade, schemaLockHeld: true });
     nativeDb.closeIModel();
-    nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
+    nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade, schemaLockHeld: true });
     nativeDb.closeIModel();
   }
 

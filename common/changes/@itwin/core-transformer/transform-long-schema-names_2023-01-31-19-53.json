@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "handle long named schemas on linux",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}
