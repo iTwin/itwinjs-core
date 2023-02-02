@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
+import { expect } from "chai";
 import * as Rules from "../../../Validation/ECRules";
 
 describe("ECRules Tests", () => {
@@ -11,8 +11,7 @@ describe("ECRules Tests", () => {
   it("DiagnosticCodes must be unique.", () => {
     const seenCodes: string[] = [];
     for (const [, value] of Object.entries(Rules.DiagnosticCodes)) {
-      if (seenCodes.includes(value))
-        assert(false, `Diagnostic code ${value} already exists. Codes must be unique`);
+      expect(seenCodes.includes(value)).to.be.false;
       seenCodes.push(value);
     }
   });
@@ -91,9 +90,6 @@ describe("ECRules Tests", () => {
       missingRules.push(key);
     }
 
-    if (missingRules.length === 0)
-      return;
-
-    assert(false, `Rules not found in rule set: ${missingRules.toString()}`);
+    expect(missingRules).to.deep.equal([]);
   });
 });
