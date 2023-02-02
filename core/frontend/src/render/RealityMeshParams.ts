@@ -16,6 +16,16 @@ import {
 import { GltfMeshData } from "../tile/internal";
 import { Mesh } from "./primitives/mesh/MeshPrimitives";
 
+function precondition(condition: boolean, message: string | (() => string)): asserts condition {
+  if (condition)
+    return;
+
+  if ("string" !== typeof message)
+    message = message();
+
+  throw new Error(`Logic Error: ${message}`);
+}
+
 /** Geometry for a reality mesh to be submitted to the [[RenderSystem]] for conversion to a [[RenderGraphic]].
  * A reality mesh is a simple triangle mesh to which a [RenderTexture]($common) image can be mapped. Sources of reality meshes
  * include [[TerrainMeshProvider]]s to which background map imagery is applied, and [ContextRealityModel]($common)s captured using
@@ -223,12 +233,12 @@ export class RealityMeshParamsBuilder {
    * @returns the index of the new vertex in [[positions]].
    */
   public addQuantizedVertex(position: XYAndZ, uv: XAndY, normal?: number): number {
-    assert((undefined === normal) === (undefined === this.normals), "RealityMeshParams requires all vertices to have normals, or none.");
+    precondition((undefined === normal) === (undefined === this.normals), "RealityMeshParams requires all vertices to have normals, or none.");
 
     this.positions.push(position);
     this.uvs.push(uv);
     if (undefined !== normal) {
-      assert(undefined !== this.normals, "Set RealityMeshParamsBuilderOptions.wantNormals");
+      assert(undefined !== this.normals);
       this.normals.push(normal);
     }
 
@@ -260,7 +270,7 @@ export class RealityMeshParamsBuilder {
 
   /** Extract the finished [[RealityMeshParams]]. */
   public finish(): RealityMeshParams {
-    assert(this.positions.length >= 3 && this.indices.length >= 3, "RealityMeshParams requires at least one triangle");
+    precondition(this.positions.length >= 3 && this.indices.length >= 3, "RealityMeshParams requires at least one triangle");
     return {
       positions: this.positions.finish(),
       uvs: this.uvs.finish(),
