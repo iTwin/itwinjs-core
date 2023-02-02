@@ -832,7 +832,7 @@ export class OffsetMeshContext {
           }
         }
         nodeP = nodeP.vertexSuccessor;
-      } while (nodeP !== vertexSeed);
+      } while (nodeP !== nodeAStart);
 
     }
   }
