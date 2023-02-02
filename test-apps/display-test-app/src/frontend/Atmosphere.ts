@@ -17,7 +17,7 @@ export class AtmosphereEditor {
   private readonly _outScatteringIntensity: LabeledNumericInput;
 
   private readonly _atmosphereHeightAboveEarth: LabeledNumericInput;
-  private readonly _minDensityHeightBellowEarth: LabeledNumericInput;
+  private readonly _depthBelowEarthForMaxDensity: LabeledNumericInput;
   private readonly _densityFalloff: LabeledNumericInput;
   private readonly _scatteringStrength: LabeledNumericInput;
   private readonly _wavelengthR: LabeledNumericInput;
@@ -132,20 +132,20 @@ export class AtmosphereEditor {
       parseAsFloat: true,
       name: "Atmosphere Height Above Earth: ",
     });
-    this._minDensityHeightBellowEarth = createLabeledNumericInput({
-      id: "atmosphere_minDensityHeightBellowEarth",
+    this._depthBelowEarthForMaxDensity = createLabeledNumericInput({
+      id: "atmosphere_depthBelowEarthForMaxDensity",
       parent: spanAtmosphereScale,
       value: 0.0,
       handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
         const props = this.getAtmosphereSettingsProps(view);
-        props.minDensityHeightBelowEarth = value;
+        props.depthBelowEarthForMaxDensity = value;
         return props;
       }),
       min: 0.0,
       max: 1000.0,
       step: 1.0,
       parseAsFloat: true,
-      name: "Min Density Height Below Earth ",
+      name: "Depth Below Earth For Max Density",
     });
 
     const spanScattering = document.createElement("span");
@@ -315,7 +315,7 @@ export class AtmosphereEditor {
     this._outScatteringIntensity.input.value = settings.outScatteringIntensity.toString();
 
     this._atmosphereHeightAboveEarth.input.value = settings.atmosphereHeightAboveEarth.toString();
-    this._minDensityHeightBellowEarth.input.value = settings.minDensityHeightBelowEarth.toString();
+    this._depthBelowEarthForMaxDensity.input.value = settings.depthBelowEarthForMaxDensity.toString();
     this._densityFalloff.input.value = settings.densityFalloff.toString();
     this._scatteringStrength.input.value = settings.scatteringStrength.toString();
     this._wavelengthR.input.value = settings.wavelengths.r.toString();
