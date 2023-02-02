@@ -812,26 +812,6 @@ export interface ECValueSetBinding extends BasePresentationQueryBinding {
     valueType: string;
 }
 
-// @alpha (undocumented)
-export interface ECValueBinding extends BasePresentationQueryBinding {
-    // (undocumented)
-    type: "ECValue";
-    // (undocumented)
-    value: any;
-    // (undocumented)
-    valueType: string;
-}
-
-// @alpha (undocumented)
-export interface ECValueSetBinding extends BasePresentationQueryBinding {
-    // (undocumented)
-    type: "ValueSet";
-    // (undocumented)
-    value: any[];
-    // (undocumented)
-    valueType: string;
-}
-
 // @public
 export interface EditorDescription {
     name: string;
