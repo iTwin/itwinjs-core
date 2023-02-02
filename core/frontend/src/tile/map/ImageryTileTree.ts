@@ -234,12 +234,12 @@ export class ImageryMapTileTree extends RealityTileTree {
   private static _scratchDrapeRectangle = MapCartoRectangle.createZero();
   private static _drapeIntersectionScale = 1.0 - 1.0E-5;
 
-  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], leafDrapeTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus {
+  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus {
     const drapeRectangle = tileToDrape.rectangle.clone(ImageryMapTileTree._scratchDrapeRectangle);
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     const drapePixelSize = 1.05 * tileToDrape.rectangle.xLength() / tileToDrape.maximumSize;
     drapeRectangle.scaleAboutCenterInPlace(ImageryMapTileTree._drapeIntersectionScale);    // Contract slightly to avoid draping adjacent or slivers.
-    return (this.rootTile as ImageryMapTile).selectCartoDrapeTiles(drapeTiles, leafDrapeTiles, drapeRectangle, drapePixelSize, args);
+    return (this.rootTile as ImageryMapTile).selectCartoDrapeTiles(drapeTiles, highResolutionReplacementTiles, drapeRectangle, drapePixelSize, args);
   }
   public cartoRectangleFromQuadId(quadId: QuadId): MapCartoRectangle { return this.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level); }
 }
