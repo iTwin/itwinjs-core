@@ -231,6 +231,7 @@ export class RealityMeshParamsBuilder {
    * [[RealityMeshParamsBuilderOptions.wantNormals]] was `true` when the builder was constructed.
    * @see [[addUnquantizedVertex]] if your vertex data is not already quantized.
    * @returns the index of the new vertex in [[positions]].
+   * @throws Error if `normal` is `undefined` but `wantNormals` was specified at construction of the builder, or vice-versa.
    */
   public addQuantizedVertex(position: XYAndZ, uv: XAndY, normal?: number): number {
     precondition((undefined === normal) === (undefined === this.normals), "RealityMeshParams requires all vertices to have normals, or none.");
@@ -268,7 +269,9 @@ export class RealityMeshParamsBuilder {
     this.indices.push(index);
   }
 
-  /** Extract the finished [[RealityMeshParams]]. */
+  /** Extract the finished [[RealityMeshParams]].
+   * @throws Error if the mesh contains no triangles.
+   */
   public finish(): RealityMeshParams {
     precondition(this.positions.length >= 3 && this.indices.length >= 3, "RealityMeshParams requires at least one triangle");
     return {
