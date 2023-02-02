@@ -54,16 +54,14 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   // Figure out the internal format.  For all but WebGL2 float/half-float datatypes it is just same as format.
   // TODO: probably need to just support internal format types in Texture2DCreateParams.
   let internalFormat = params.format;
-  if (System.instance.capabilities.isWebGL2) {
-    const context2 = System.instance.context as WebGL2RenderingContext;
-    if (GL.Texture.Format.Rgba === params.format) {
-      if (GL.Texture.DataType.Float === params.dataType)
-        internalFormat = context2.RGBA32F;
-      else if (context2.HALF_FLOAT === params.dataType)
-        internalFormat = context2.RGBA16F;
-    } else if (GL.Texture.Format.DepthStencil === params.format)
-      internalFormat = context2.DEPTH24_STENCIL8;
-  }
+  const context2 = System.instance.context;
+  if (GL.Texture.Format.Rgba === params.format) {
+    if (GL.Texture.DataType.Float === params.dataType)
+      internalFormat = context2.RGBA32F;
+    else if (context2.HALF_FLOAT === params.dataType)
+      internalFormat = context2.RGBA16F;
+  } else if (GL.Texture.Format.DepthStencil === params.format)
+    internalFormat = context2.DEPTH24_STENCIL8;
 
   // send the texture data
   if (undefined !== source) {
@@ -217,11 +215,10 @@ class Texture2DCreateParams {
     let targetWidth = image.naturalWidth;
     let targetHeight = image.naturalHeight;
 
-    const caps = System.instance.capabilities;
     if (RenderTexture.Type.Glyph === type) {
       targetWidth = nextHighestPowerOfTwo(targetWidth);
       targetHeight = nextHighestPowerOfTwo(targetHeight);
-    } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
+    } else if (!System.instance.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
       if (GL.Texture.WrapMode.ClampToEdge === props.wrapMode) {
         // NPOT are supported but not mipmaps
         // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
@@ -234,7 +231,7 @@ class Texture2DCreateParams {
     }
 
     // Cap texture dimensions to system WebGL capabilities
-    const maxTexSize = System.instance.capabilities.maxTextureSize;
+    const maxTexSize = System.instance.maxTextureSize;
     targetWidth = Math.min(targetWidth, maxTexSize);
     targetHeight = Math.min(targetHeight, maxTexSize);
 
@@ -261,11 +258,10 @@ class Texture2DCreateParams {
     let targetWidth = image.width;
     let targetHeight = image.height;
 
-    const caps = System.instance.capabilities;
     if (RenderTexture.Type.Glyph === type) {
       targetWidth = nextHighestPowerOfTwo(targetWidth);
       targetHeight = nextHighestPowerOfTwo(targetHeight);
-    } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
+    } else if (!System.instance.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
       if (GL.Texture.WrapMode.ClampToEdge === props.wrapMode) {
         // NPOT are supported but not mipmaps
         // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
@@ -636,7 +632,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
 
     try {
       if (!req.imodel.isClosed) {
-        const maxTextureSize = System.instance.capabilities.maxTexSizeAllow;
+        const maxTextureSize = System.instance.maxTexSizeAllow;
         const texData = await req.imodel.queryTextureData({ name: req.name, maxTextureSize });
         if (undefined !== texData) {
           const cnvReq = { req, texData };
@@ -665,7 +661,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
       const cnvReq = this._convertRequests.shift();
       if (undefined !== cnvReq) {
         const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.texData.format);
-        if (System.instance.capabilities.supportsCreateImageBitmap) {
+        if (System.instance.supportsCreateImageBitmap) {
           const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
           const image = await createImageBitmap(blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
           if (!cnvReq.req.imodel.isClosed) {

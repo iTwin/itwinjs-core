@@ -551,6 +551,7 @@ importers:
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.4.0
       '@itwin/object-storage-core': 1.4.0
+      '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@loaders.gl/core': 3.2.13
       '@loaders.gl/draco': 3.2.13
       deep-assign: 2.0.0
@@ -571,7 +572,6 @@ importers:
       '@itwin/core-orbitgt': link:../orbitgt
       '@itwin/core-quantity': link:../quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/deep-assign': 0.1.1

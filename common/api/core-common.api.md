@@ -1703,6 +1703,7 @@ export namespace ContextRealityModelProps {
 // @public
 export class ContextRealityModels {
     constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel);
+    constructor(args: ContextRealityModelsArgs);
     add(props: ContextRealityModelProps): ContextRealityModel;
     clear(): void;
     delete(model: ContextRealityModel): boolean;
@@ -1712,12 +1713,22 @@ export class ContextRealityModels {
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
+    populate(): void;
     replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
     update(toUpdate: ContextRealityModel, updateProps: Partial<ContextRealityModelProps>): ContextRealityModel;
 }
 
 // @public
+export interface ContextRealityModelsArgs {
+    container: ContextRealityModelsContainer;
+    createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+    deferPopulating?: boolean;
+}
+
+// @public
 export interface ContextRealityModelsContainer {
+    // @internal
+    container?: never;
     contextRealityModels?: ContextRealityModelProps[];
 }
 
@@ -2228,6 +2239,8 @@ export class DisplayStyleSettings {
 // @public
 export interface DisplayStyleSettingsOptions {
     createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+    // @internal
+    deferContextRealityModels?: boolean;
 }
 
 // @public
@@ -7741,7 +7754,7 @@ export class RpcControlChannel {
     static obtain(configuration: RpcConfiguration): RpcControlChannel;
 }
 
-// @public @deprecated
+// @public
 export abstract class RpcControlResponse {
     // (undocumented)
     message: string;
@@ -7890,7 +7903,7 @@ export class RpcMultipart {
     static writeValueToForm(form: FormDataCommon, value: RpcSerializedValue): void;
 }
 
-// @public @deprecated
+// @public
 export class RpcNotFoundResponse extends RpcControlResponse {
     // (undocumented)
     message: string;
@@ -7958,7 +7971,7 @@ export class RpcPendingQueue {
     static instance: RpcPendingQueue;
 }
 
-// @public @deprecated
+// @public
 export class RpcPendingResponse extends RpcControlResponse {
     constructor(message?: string);
     message: string;

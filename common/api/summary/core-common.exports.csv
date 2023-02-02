@@ -147,6 +147,7 @@ public;ContextRealityModel
 public;ContextRealityModelProps
 public;ContextRealityModelProps
 public;ContextRealityModels
+public;ContextRealityModelsArgs
 public;ContextRealityModelsContainer
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
 internal;CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps
@@ -645,7 +646,6 @@ public;RpcContentType
 deprecated;RpcContentType
 internal;RpcControlChannel
 public;class RpcControlResponse
-deprecated;class RpcControlResponse
 internal;RpcDefaultConfiguration 
 internal;RpcDirectProtocol 
 internal;RpcDirectRequest 
@@ -661,7 +661,6 @@ internal;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
 public;RpcNotFoundResponse 
-deprecated;RpcNotFoundResponse 
 internal;RpcOpenAPIDescription
 internal;RpcOperation
 internal;RpcOperation
@@ -670,7 +669,6 @@ internal;RpcOperationPolicyProps = Partial
 internal;RpcOperationsProfile
 internal;RpcPendingQueue
 public;RpcPendingResponse 
-deprecated;RpcPendingResponse 
 internal;class RpcProtocol
 public;RpcProtocolEvent
 deprecated;RpcProtocolEvent

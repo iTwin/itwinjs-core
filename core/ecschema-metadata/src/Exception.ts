@@ -6,7 +6,7 @@
  * @module Metadata
  */
 
-import { assert, BentleyError } from "@itwin/core-bentley";
+import { BentleyError } from "@itwin/core-bentley";
 
 /** @beta */
 export enum ECObjectsStatus {
@@ -45,7 +45,6 @@ export enum ECObjectsStatus {
 export class ECObjectsError extends BentleyError {
   public constructor(public override readonly errorNumber: number, message?: string) {
     super(errorNumber, message);
-    assert(errorNumber !== ECObjectsStatus.Success, message);
   }
 
   public toDebugString(): string {
@@ -73,7 +72,6 @@ export class ECObjectsError extends BentleyError {
       case ECObjectsStatus.SchemaContextUndefined: return this._appendMessage("ECObjectsStatus.SchemaContextUndefined");
       case ECObjectsStatus.DifferentSchemaContexts: return this._appendMessage("ECObjectsStatus.DifferentSchemaContexts");
       default:
-        assert(false, "Invalid ECObjectsStatus for ECObjectsError");
         /* istanbul ignore next */
         return this._appendMessage(`Error ${this.errorNumber.toString()}`);
     }
