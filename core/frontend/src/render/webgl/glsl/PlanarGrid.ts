@@ -6,7 +6,6 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { PlanarGridTransparency } from "../../RenderSystem";
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
@@ -48,12 +47,11 @@ const drawGridLine = `
    }
 `;
 
-const fwidth2dWhenAvailable =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return fwidth(screenXY); }\n`;
-const fwidth2dWhenNotAvailable =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return vec2(0.25, 0.25); }\n`;
+const fwidth2d =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return fwidth(screenXY); }\n`;
 
 const defaultTransparency = new PlanarGridTransparency();
 /** @internal */
-export default function createPlanarGridProgram(context: WebGLContext): ShaderProgram {
+export default function createPlanarGridProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.PlanarGrid, false));
   const vert = builder.vert;
   const frag = builder.frag;
@@ -62,14 +60,7 @@ export default function createPlanarGridProgram(context: WebGLContext): ShaderPr
   addShaderFlags(builder);
 
   addTranslucency(builder);
-  if (System.instance.capabilities.isWebGL2) {
-    frag.addFunction(fwidth2dWhenAvailable);
-  } else if (System.instance.capabilities.supportsStandardDerivatives) {
-    frag.addExtension("GL_OES_standard_derivatives");
-    frag.addFunction(fwidth2dWhenAvailable);
-  } else {
-    frag.addFunction(fwidth2dWhenNotAvailable);
-  }
+  frag.addFunction(fwidth2d);
 
   if (System.instance.supportsLogZBuffer)
     addLogDepth(builder);
