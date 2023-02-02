@@ -3,18 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Checker } from "../Checker";
 import * as fs from "fs";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Path } from "../../curve/Path";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Sample } from "../../serialization/GeometrySamples";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Path } from "../../curve/Path";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /* eslint-disable no-console */
 const closestPointProblemFileFile = "./src/test/testInputs/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
@@ -135,18 +137,21 @@ describe("CurveChainWithDistanceIndex", () => {
 
   it("fractionToCurvature", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     const frac = 0.3;
 
     const radius = 100.0;
     const expectedCurvature = 1 / radius;
     const arc = Arc3d.createXY(Point3d.createZero(), radius, AngleSweep.createStartEndRadians(0, Math.PI));
     const curvature = arc.fractionToCurvature(frac)!;
+    const distanceAlongArc = arc.curveLengthBetweenFractions(0, frac);
     ck.testCoordinate(curvature, expectedCurvature, "expected circle curvature");
 
     const path = new Path();
     path.children.push(arc);
     const indexed = CurveChainWithDistanceIndex.createCapture(path);
-    const pathFrac = frac;  // they have same parameterization
+    const pathFrac = indexed.chainDistanceToChainFraction(distanceAlongArc);
+    ck.testCoordinate(pathFrac, frac, "arc and path consisting of arc have same (arc length) parameterization");
     const pathCurvature = indexed.fractionToCurvature(pathFrac)!;
     ck.testCoordinate(pathCurvature, expectedCurvature, "expected curvature of path consisting of a circle");
 
@@ -163,6 +168,25 @@ describe("CurveChainWithDistanceIndex", () => {
     const pathCurvatureB = indexedB.fractionToCurvature(pathFracB)!;
     ck.testCoordinate(curvatureB, pathCurvatureB, "curvature of arc equals curvature of path containing arc at same point");
 
+    const arcC = arcB.clone();
+    const distanceAlongArcC = distanceAlongArcB;
+    const planeC = arcC.fractionToPointAnd2Derivatives(frac);
+    const arcDerivC = LineSegment3d.create(planeC.origin, Point3d.createAdd2Scaled(planeC.origin, 1, planeC.vectorU, 1));
+    const arcDeriv2C = LineSegment3d.create(planeC.origin, Point3d.createAdd2Scaled(planeC.origin, 1, planeC.vectorV, 1));
+    const pathC = new Path();
+    pathC.children.push(arcC);  // ellipse, not arc length parameterized
+    const indexedC = CurveChainWithDistanceIndex.createCapture(pathC);
+    const pathFracC = indexedC.chainDistanceToChainFraction(distanceAlongArcC);
+    const pathPlaneC = indexedC.fractionToPointAnd2Derivatives(pathFracC)!;
+    const pathDerivC = LineSegment3d.create(pathPlaneC.origin, Point3d.createAdd2Scaled(pathPlaneC.origin, 1, pathPlaneC.vectorU, 1));
+    const pathDeriv2C = LineSegment3d.create(pathPlaneC.origin, Point3d.createAdd2Scaled(pathPlaneC.origin, 1, pathPlaneC.vectorV, 1));
+    ck.testPoint3d(planeC.origin, pathPlaneC?.origin, "comparing same points along arc and path containing the arc");
+    ck.testAngleNoShift(Angle.createRadians(0), planeC.vectorU.angleTo(pathPlaneC.vectorU), "arc and path containing the arc have same 1st derivative direction");
+    ck.testFalse(planeC.vectorV.angleTo(pathPlaneC.vectorV).isAlmostZero, "arc and path containing the arc have different 2nd derivative directions");
+
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcC, arcDerivC, arcDeriv2C]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [indexedC, pathDerivC, pathDeriv2C], 0, 0, 10);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "fractionToCurvature");
     expect(ck.getNumErrors()).equals(0);
   });
 });

@@ -7,6 +7,7 @@ import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
+import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
@@ -20,9 +21,10 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Path } from "../../curve/Path";
 import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
 import { StrokeCountMap } from "../../curve/Query/StrokeCountMap";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
+import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -42,10 +44,8 @@ import { RuledSweep } from "../../solid/RuledSweep";
 import { Sphere } from "../../solid/Sphere";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
-import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
-import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
+import { prettyPrint } from "../testFunctions";
 
 /* eslint-disable no-console */
 
@@ -100,19 +100,19 @@ class StrokeCountSearch extends NullGeometryHandler {
 }
 
 function curvePrimitiveHasInstanceOf<T extends Function>(cp: CurvePrimitive, classType: T): boolean {
-    if (cp instanceof classType)
-      return true;
-      if (cp instanceof CurveChainWithDistanceIndex){
-        const children = cp.path.children;
-      if (children){
-        for (const child of children){
-          if (child instanceof classType && curvePrimitiveHasInstanceOf (child, classType))
-            return true;
-        }
+  if (cp instanceof classType)
+    return true;
+  if (cp instanceof CurveChainWithDistanceIndex) {
+    const children = cp.path.children;
+    if (children) {
+      for (const child of children) {
+        if (child instanceof classType && curvePrimitiveHasInstanceOf(child, classType))
+          return true;
       }
     }
-    return false;
-    }
+  }
+  return false;
+}
 class ExerciseCurve {
   public static exerciseStrokeData(ck: Checker, curve: CurvePrimitive) {
 
@@ -169,43 +169,43 @@ class ExerciseCurve {
     }
     const upperFractions = [0.3, 0.5, 0.912312, 1.0];  // do NOT include 0.0 ...
     let fraction0 = 0;
-    const totalLength = curveA.curveLength ();
-    const totalRange = curveA.range ();
-    const totalRange1 = totalRange.clone ();
-    totalRange1.expandInPlace (0.02 * totalLength);
+    const totalLength = curveA.curveLength();
+    const totalRange = curveA.range();
+    const totalRange1 = totalRange.clone();
+    totalRange1.expandInPlace(0.02 * totalLength);
     let summedLength = 0;
-    const summedRange = Range3d.createNull ();
+    const summedRange = Range3d.createNull();
     const testFractions = [0.0, 0.25, 0.4, 0.6, 0.92, 0.99, 1.0];
-    for (const fraction1 of upperFractions){
-      const d01 = curveA.curveLengthBetweenFractions (fraction0, fraction1);
-      const range01 = curveA.rangeBetweenFractions (fraction0, fraction1);
-      range01.expandInPlace (1.0e-8);
-      const curveA01 = curveA.clonePartialCurve (fraction0, fraction1)!;
-      if (curveA01 !== undefined){
-          for (const f of testFractions){
-            const xyz = curveA01.fractionToPoint (f);
-            ck.testTrue (range01.containsPoint (xyz), "rangeBetweenFractions contains test point", f);
-          }
+    for (const fraction1 of upperFractions) {
+      const d01 = curveA.curveLengthBetweenFractions(fraction0, fraction1);
+      const range01 = curveA.rangeBetweenFractions(fraction0, fraction1);
+      range01.expandInPlace(1.0e-8);
+      const curveA01 = curveA.clonePartialCurve(fraction0, fraction1)!;
+      if (curveA01 !== undefined) {
+        for (const f of testFractions) {
+          const xyz = curveA01.fractionToPoint(f);
+          ck.testTrue(range01.containsPoint(xyz), "rangeBetweenFractions contains test point", f);
         }
+      }
       summedLength += d01;
       if (range01)
-        summedRange.extendRange (range01);
+        summedRange.extendRange(range01);
       fraction0 = fraction1;
     }
 
-    if (curvePrimitiveHasInstanceOf (curveA, InterpolationCurve3d)){
+    if (curvePrimitiveHasInstanceOf(curveA, InterpolationCurve3d)) {
       // just skip it -- ranges are wonky.
       // bug in interpolation curve? distance index confused by proxy?
-    } else if (curvePrimitiveHasInstanceOf (curveA, BSplineCurve3dBase)
-         ||curvePrimitiveHasInstanceOf (curveA, TransitionSpiral3d)) {
+    } else if (curvePrimitiveHasInstanceOf(curveA, BSplineCurve3dBase)
+      || curvePrimitiveHasInstanceOf(curveA, TransitionSpiral3d)) {
       // ugh.  bspline are pole boundaries that are not tight
-      ck.testTrue (totalRange1.containsPoint (summedRange.low), "range low by parts");
-      ck.testTrue (totalRange1.containsPoint (summedRange.high), "range high by parts");
-      } else {
-      ck.testPoint3d (totalRange.low, summedRange.low, "range low by parts");
-      ck.testPoint3d (totalRange.high, summedRange.high, "range high by parts");
-      }
-    ck.testCoordinate (totalLength, summedLength, "length by parts");
+      ck.testTrue(totalRange1.containsPoint(summedRange.low), "range low by parts");
+      ck.testTrue(totalRange1.containsPoint(summedRange.high), "range high by parts");
+    } else {
+      ck.testPoint3d(totalRange.low, summedRange.low, "range low by parts");
+      ck.testPoint3d(totalRange.high, summedRange.high, "range high by parts");
+    }
+    ck.testCoordinate(totalLength, summedLength, "length by parts");
   }
 
   public static exerciseReverseInPlace(ck: Checker, curve: CurvePrimitive) {
@@ -345,7 +345,9 @@ class ExerciseCurve {
             const radians = approximateDerivative2.angleTo(plane1.vectorV).radians;
             if (!ck.testLE(radians, 0.001))
               curve.fractionToPointAnd2Derivatives(fraction);
-            if (!ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude()))) {
+            const q = approximateDerivative2.distance(plane1.vectorV);
+            if (!ck.testTrue(q < derivative2Tolerance * (1 + plane1.vectorV.magnitude()))) {
+              curve.fractionToPointAnd2Derivatives(fraction);   // for debug
               const magU = plane1.vectorU.magnitude();
               const magV = plane1.vectorV.magnitude();
               const magV2 = approximateDerivative2.magnitude();
@@ -402,7 +404,7 @@ class ExerciseCurve {
     return succeeded;
   }
 
-  public static exerciseClosestPoint(ck: Checker, curve: CurvePrimitive, fractionA: number, allGeometry?: GeometryQuery[], x0: number=0, y0: number=0, z0: number=0): boolean {
+  public static exerciseClosestPoint(ck: Checker, curve: CurvePrimitive, fractionA: number, allGeometry?: GeometryQuery[], x0: number = 0, y0: number = 0, z0: number = 0): boolean {
     // test point on curve projects to itself
     const pointA = curve.fractionToPoint(fractionA);
     let detail = curve.closestPoint(pointA, false);
@@ -503,7 +505,7 @@ class ExerciseCurve {
         ExerciseCurve.exerciseCloneAndTransform(ck, arc);
         GeometryCoreTestIO.captureGeometry(allGeometry, arc, dx);
         dx += arc.range().xLength() + dxGap;
-        }
+      }
     }
 
     {
@@ -549,13 +551,13 @@ class ExerciseCurve {
     }
 
     {
-      const poles = [Point3d.create(0,0,0), Point3d.create(5,0,0), Point3d.create(5,5,0), Point3d.create(0,5,0)];
+      const poles = [Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)];
       for (let order = 2; order <= poles.length; ++order) {
         const bcurve = BSplineCurve3d.createPeriodicUniformKnots(poles, order);
-        GeometryCoreTestIO.captureCloneGeometry (allGeometry, bcurve, dx);
-        GeometryCoreTestIO.captureGeometry (allGeometry, bcurve?.clonePartialCurve (0.0, 0.3), dx, 5.0);
-        GeometryCoreTestIO.captureGeometry (allGeometry, bcurve?.clonePartialCurve (0.3, 0.4), dx, 5.0);
-        GeometryCoreTestIO.captureGeometry (allGeometry, bcurve?.clonePartialCurve (0.4, 1.0), dx, 5.0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, bcurve, dx);
+        GeometryCoreTestIO.captureGeometry(allGeometry, bcurve?.clonePartialCurve(0.0, 0.3), dx, 5.0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, bcurve?.clonePartialCurve(0.3, 0.4), dx, 5.0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, bcurve?.clonePartialCurve(0.4, 1.0), dx, 5.0);
         dx += 10.0;
 
         if (ck.testPointer(bcurve)) {
@@ -579,10 +581,10 @@ class ExerciseCurve {
         ExerciseCurve.exerciseClosestPoint(ck, bcurveH1, 0.1);
         GeometryCoreTestIO.captureGeometry(allGeometry, bcurveH1, dx);
         dx += bcurveH1.range().xLength() + dxGap;
-        }
+      }
     }
 
-  {
+    {
       const poles4d = [
         Point4d.create(0, 0, 0, 1),
         Point4d.create(5, 0, 0, 0.8),
@@ -591,10 +593,10 @@ class ExerciseCurve {
         Point4d.create(20, 0, 0, 1)];
       for (let order = 3; order <= poles4d.length; order++) {
         const bcurveH = BSplineCurve3dH.createUniformKnots(poles4d, order);
-        GeometryCoreTestIO.captureCloneGeometry (allGeometry, bcurveH, dx);
-        GeometryCoreTestIO.captureGeometry (allGeometry, bcurveH?.clonePartialCurve (0.0, 0.3), dx, 5.0);
-        GeometryCoreTestIO.captureGeometry (allGeometry, bcurveH?.clonePartialCurve (0.3, 0.4), dx, 5.0);
-        GeometryCoreTestIO.captureGeometry (allGeometry, bcurveH?.clonePartialCurve (0.4, 1.0), dx, 5.0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, bcurveH, dx);
+        GeometryCoreTestIO.captureGeometry(allGeometry, bcurveH?.clonePartialCurve(0.0, 0.3), dx, 5.0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, bcurveH?.clonePartialCurve(0.3, 0.4), dx, 5.0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, bcurveH?.clonePartialCurve(0.4, 1.0), dx, 5.0);
         if (ck.testPointer(bcurveH)) {
           ExerciseCurve.exerciseFractionToPoint(ck, bcurveH, false, false);
           ExerciseCurve.exerciseStroke(ck, bcurveH);
@@ -610,7 +612,7 @@ class ExerciseCurve {
     {
       const radius = 2;
       const points = Sample.createArcStrokes(4, Point3d.create(radius, 0, 0), radius, Angle.createDegrees(0), Angle.createDegrees(225), false);
-      const interpolationCurve = InterpolationCurve3d.create({fitPoints: points});
+      const interpolationCurve = InterpolationCurve3d.create({ fitPoints: points });
       if (ck.testPointer(interpolationCurve)) {
         ExerciseCurve.exerciseFractionToPoint(ck, interpolationCurve, false, false);
         ExerciseCurve.exerciseStroke(ck, interpolationCurve);
@@ -673,7 +675,7 @@ class ExerciseCurve {
           DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createArema(Transform.createIdentity(), 100, 300, undefined),
-          ]) {
+        ]) {
           if (ck.testPointer(spiral)) {
             ExerciseCurve.exerciseCurvePlaneIntersections(ck, spiral);
             ExerciseCurve.exerciseFractionToPoint(ck, spiral, (spiral instanceof IntegratedSpiral3d), false);
@@ -685,7 +687,7 @@ class ExerciseCurve {
         }
       }
     }
-  GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "Evaluations");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "Evaluations");
   }
 }
 
@@ -705,36 +707,36 @@ describe("Curves", () => {
     let x0 = 0;
     const splitFractions = [0, 0.1, 0.25, 0.51, 0.75, 1.0];
     for (const p of paths) {
-      if (curvePrimitiveHasInstanceOf (p, InterpolationCurve3d))
+      if (curvePrimitiveHasInstanceOf(p, InterpolationCurve3d))
         continue;
-      const range = p.range ();
+      const range = p.range();
       const y0 = 0;
       const y1 = range.yLength() + 1;
       const y2 = 2 * y1;
-      GeometryCoreTestIO.captureCloneGeometry (allGeometry, p, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, p, x0, y0);
       let summedLength = 0;
       const fullLength = p.curveLength();
       for (let k = 0; k + 1 < splitFractions.length; k++) {
         const f0 = splitFractions[k];
-        const f1 = splitFractions[k+1];
-        const p1 = p.clonePartialCurve (f0, f1)!;
-        if (ck.testDefined (p1, {p, f0, f1})){
+        const f1 = splitFractions[k + 1];
+        const p1 = p.clonePartialCurve(f0, f1)!;
+        if (ck.testDefined(p1, { p, f0, f1 })) {
           summedLength += p1.curveLength();
-          GeometryCoreTestIO.captureCloneGeometry (allGeometry, p1, x0, y1);
-          const r1 = p1.range ();
-          if (ck.testDefined (r1))
-            GeometryCoreTestIO.captureRangeEdges (allGeometry, r1, x0, y1);
-          const r2 = p.rangeBetweenFractions (f0, f1);
-          GeometryCoreTestIO.captureCloneGeometry (allGeometry, p1, x0, y2);
-          if (ck.testDefined (r2))
-            GeometryCoreTestIO.captureRangeEdges (allGeometry, r2, x0, y2);
-          } else {
-            console.log (prettyPrint (p));
-            break;
-          }
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, p1, x0, y1);
+          const r1 = p1.range();
+          if (ck.testDefined(r1))
+            GeometryCoreTestIO.captureRangeEdges(allGeometry, r1, x0, y1);
+          const r2 = p.rangeBetweenFractions(f0, f1);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, p1, x0, y2);
+          if (ck.testDefined(r2))
+            GeometryCoreTestIO.captureRangeEdges(allGeometry, r2, x0, y2);
+        } else {
+          console.log(prettyPrint(p));
+          break;
+        }
       }
-      ck.testCoordinate (fullLength, summedLength);
-      x0 += 2.0 * range.xLength ();
+      ck.testCoordinate(fullLength, summedLength);
+      x0 += 2.0 * range.xLength();
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Curves", "DistanceIndexClonePartial");
   });
