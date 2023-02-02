@@ -10,7 +10,7 @@ import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/a
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
-import { assert, Logger } from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
 
 const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;

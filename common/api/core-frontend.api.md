@@ -264,6 +264,7 @@ import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
+import { RenderType } from '@itwin/webgl-compatibility';
 import { RgbColor } from '@itwin/core-common';
 import { RgbColorProps } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
@@ -9210,13 +9211,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     get supportsCreateImageBitmap(): boolean;
     // @internal (undocumented)
-    get supportsIndexedEdges(): boolean;
-    // @internal (undocumented)
-    get supportsInstancing(): boolean;
-    // @internal (undocumented)
     get supportsLogZBuffer(): boolean;
-    // @internal (undocumented)
-    get supportsNonuniformScaledInstancing(): boolean;
     waitForAllExternalTextures(): Promise<void>;
 }
 
@@ -9237,13 +9232,10 @@ export namespace RenderSystem {
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
         errorOnMissingUniform?: boolean;
-        // @internal
-        filterMapDrapeTextures?: boolean;
-        // @internal
-        filterMapTextures?: boolean;
         logarithmicDepthBuffer?: boolean;
         planProjections?: boolean;
         preserveShaderSourceCode?: boolean;
+        // @deprecated
         useWebGL2?: boolean;
     }
 }
@@ -9535,6 +9527,7 @@ export interface ScreenSpaceEffectBuilder {
     addUniformArray: (params: UniformArrayParams) => void;
     addVarying: (name: string, type: VaryingType) => void;
     finish: () => void;
+    // @deprecated
     readonly isWebGL2: boolean;
     shouldApply?: (context: ScreenSpaceEffectContext) => boolean;
 }

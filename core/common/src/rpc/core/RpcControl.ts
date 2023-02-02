@@ -19,7 +19,6 @@ import { RpcRegistry } from "./RpcRegistry";
 
 /** An RPC operation control response.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export abstract class RpcControlResponse {
   public message = "RpcControlResponse";
@@ -27,7 +26,6 @@ export abstract class RpcControlResponse {
 
 /** A pending RPC operation response.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export class RpcPendingResponse extends RpcControlResponse {
   /** Extended status regarding the pending operation. */
@@ -42,7 +40,6 @@ export class RpcPendingResponse extends RpcControlResponse {
 
 /** A RPC operation response.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
  */
 export class RpcNotFoundResponse extends RpcControlResponse {
   public override message = "Not found";
