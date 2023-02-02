@@ -42,29 +42,39 @@ steps:
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/backend"
+    env:
+      NODE_ENV: development
     displayName: "Run Backend Tests"
     condition: succeededOrFailed()
 
   # Linux agents do not have a real display so use the virtual framebuffer
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
     workingDirectory: "full-stack-tests/core"
+    env:
+      NODE_ENV: development
     displayName: "Run Core Full Stack Tests"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/core"
+    env:
+      NODE_ENV: development
     displayName: "Run Core Full Stack Tests"
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/ecschema-rpc-interface"
+    env:
+      NODE_ENV: development
     displayName: "Run ECSchema RPC Interface Tests"
     condition: succeededOrFailed()
 
   # By default linux agents do not have a real display so use the virtual framebuffer
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test
     workingDirectory: "full-stack-tests/rpc"
+    env:
+      NODE_ENV: development
     displayName: "Run RPC Full Stack Tests"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
@@ -76,17 +86,23 @@ steps:
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/rpc-interface"
+    env:
+      NODE_ENV: development
     displayName: "Run RPC Interface Full Stack Tests"
     condition: succeededOrFailed()
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/presentation"
+    env:
+      NODE_ENV: development
     displayName: "Run Presentation Full Stack Tests"
     condition: succeededOrFailed()
 
   # By default linux agents do not have a real display so use the virtual framebuffer
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:frontend:ci
     workingDirectory: "core/electron"
+    env:
+      NODE_ENV: development
     displayName: "Run Electron Frontend Tests"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
@@ -99,6 +115,8 @@ steps:
   # By default linux agents do not have a real display so use the virtual framebuffer
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:backend
     workingDirectory: "core/electron"
+    env:
+      NODE_ENV: development
     displayName: "Run Electron Backend Tests"
     condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
