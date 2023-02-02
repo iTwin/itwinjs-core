@@ -320,6 +320,7 @@ public;class RoleElement
 public;RoleModel 
 public;RpcTrace
 public;Schema
+public;SchemaImportOptions
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
 public;Schemas
