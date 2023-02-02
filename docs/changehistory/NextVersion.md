@@ -5,12 +5,19 @@ publish: false
 
 Table of contents:
 
-- [Display system](#display-system)
-  - [Dropped WebGL 1 support](#dropped-webgl-1-support)
+- [Updated minimum requirements](#updated-minimum-requirements)
+  - [Node.js](#node-js)
+  - [WebGL](#webgl)
 
-## Display system
+## Updated minimum requirements
 
-### Dropped WebGL 1 support
+A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and featureful libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
+
+### Node.js
+
+Node 12 reached [end-of-life](https://github.com/nodejs/release#end-of-life-releases) in 2020, and Node 14 will do so shortly. iTwin.js 4.0 requires a minimum of Node 16.13.0, though we recommend using the latest long-term-support version.
+
+### WebGL
 
 Web browsers display 3d graphics using an API called [WebGL](https://en.wikipedia.org/wiki/WebGL), which comes in 2 versions: WebGL 1, released 11 years ago; and WebGL 2, released 6 years ago. WebGL 2 provides many more capabilities than WebGL 1. Because some browsers (chiefly Safari) did not provide support for WebGL 2, iTwin.js has maintained support for both versions, which imposed some limitations on the features and efficiency of its rendering system.
 

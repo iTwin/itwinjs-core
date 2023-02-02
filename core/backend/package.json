@@ -6,7 +6,7 @@
   "typings": "lib/cjs/core-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 < 19.0"
+    "node": ">=16.13.0 < 19.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s copy:assets && npm run -s copy:test-assets",
