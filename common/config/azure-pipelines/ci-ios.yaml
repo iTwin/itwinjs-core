@@ -22,7 +22,7 @@ variables:
 
 jobs:
   - job:
-    timeoutInMinutes: 120
+    timeoutInMinutes: 240
     pool:
       vmImage: macos-latest
     workspace:

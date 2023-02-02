@@ -31,9 +31,7 @@ steps:
         --locale "en_US" \
         --build-dir ${{ parameters.iosDirectory }}/core-test-runner/DerivedData/Build/Products/Release-iphoneos/ \
         --token "$(AppCenterToken)" \
-        --debug \
-        --quiet
-    # --output json > "${{ parameters.libDirectory }}/run_output.json"
+        --output json | tee "${{ parameters.libDirectory }}/run_output.json"
     failOnStderr: true
     displayName: 'Run App Center tests of suite ${{ parameters.testSuiteName }}'
     condition: succeeded()
