@@ -139,8 +139,7 @@ export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
 }
 
 /** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures.
- * WebGL 1 guarantees a minimum of 8 vertex texture units, and iOS provides no more than that.
- * WebGL 2 guarantees a minimum of 15 vertex texture units.
+ * WebGL 2 guarantees a minimum of 16 vertex texture units.
  * @internal
  */
 export enum TextureUnit {
@@ -152,7 +151,7 @@ export enum TextureUnit {
   Four = WebGLRenderingContext.TEXTURE4,
   Five = WebGLRenderingContext.TEXTURE5,
   Six = WebGLRenderingContext.TEXTURE6,
-  Seven = WebGLRenderingContext.TEXTURE7, // Last one guaranteed available for WebGL 1
+  Seven = WebGLRenderingContext.TEXTURE7,
 
   ClipVolume = Zero,
   FeatureSymbology = One,
@@ -173,22 +172,20 @@ export enum TextureUnit {
   ShadowMap = Seven,
   ThematicSensors = Seven,
 
-  // Textures used for up to 3 background or overlay map layers.
+  // Textures used for up to 6 background or overlay map layers.
   RealityMesh0 = Two,
   RealityMesh1 = VertexLUT, // Reality meshes do not use VertexLUT.
   RealityMesh2 = ShadowMap, //  Shadow map when picking -- PickDepthAndOrder otherwise....
-
-  // If more than 8 texture units are available, 3 additional background or overlay map layers.
   RealityMesh3 = WebGLRenderingContext.TEXTURE8,
   RealityMesh4 = WebGLRenderingContext.TEXTURE9,
   RealityMesh5 = WebGLRenderingContext.TEXTURE10,
 
   RealityMeshThematicGradient = WebGLRenderingContext.TEXTURE11,
 
-  // Lookup table for indexed edges - used only if WebGL 2 is available.
+  // Lookup table for indexed edges.
   EdgeLUT = WebGLRenderingContext.TEXTURE12,
 
-  // Normal map texture - used only if WebGL 2 is available.
+  // Normal map texture.
   NormalMap = WebGLRenderingContext.TEXTURE13,
 }
 
