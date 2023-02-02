@@ -862,7 +862,12 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
-    this._settings = new DisplayStyleSettings(this.jsonProperties, { createContextRealityModel: (modelProps) => this.createRealityModel(modelProps) });
+    this._settings = new DisplayStyleSettings(this.jsonProperties, {
+      createContextRealityModel: (modelProps) => this.createRealityModel(modelProps),
+      deferContextRealityModels: true,
+    });
+
+    this._settings.contextRealityModels.populate();
     this.registerSettingsEventListeners();
   }
 }
@@ -880,7 +885,12 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
   public constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState) {
     super(props, iModel, source);
-    this._settings = new DisplayStyle3dSettings(this.jsonProperties, { createContextRealityModel: (modelProps) => this.createRealityModel(modelProps) });
+    this._settings = new DisplayStyle3dSettings(this.jsonProperties, {
+      createContextRealityModel: (modelProps) => this.createRealityModel(modelProps),
+      deferContextRealityModels: true,
+    });
+
+    this._settings.contextRealityModels.populate();
     this.registerSettingsEventListeners();
   }
 

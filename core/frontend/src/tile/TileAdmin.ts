@@ -331,9 +331,9 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
+  public get enableInstancing() { return this._enableInstancing; }
   /** @internal */
-  public get enableIndexedEdges() { return this._enableIndexedEdges && IModelApp.renderSystem.supportsIndexedEdges; }
+  public get enableIndexedEdges() { return this._enableIndexedEdges; }
   /** @internal */
   public get generateAllPolyfaceEdges() { return this._generateAllPolyfaceEdges; }
   public set generateAllPolyfaceEdges(val: boolean) { this._generateAllPolyfaceEdges = val; }
@@ -953,7 +953,7 @@ export class TileAdmin {
 
     const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
-    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
+    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable; // eslint-disable-line deprecation/deprecation
   }
 }
 

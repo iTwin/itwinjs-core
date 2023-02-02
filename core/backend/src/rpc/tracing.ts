@@ -14,6 +14,8 @@ import { AsyncLocalStorage } from "async_hooks";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost } from "../IModelHost";
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * Utility for tracing Rpc activity processing. When multiple Rpc requests are being processed asynchronously, this
  * class can be used to correlate the current calltrace with the originating RpcActivity. This is used for automatic appending

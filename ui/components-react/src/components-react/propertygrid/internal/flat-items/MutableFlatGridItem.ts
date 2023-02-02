@@ -14,7 +14,7 @@ import { PropertyCategory } from "../../PropertyDataProvider";
  * Types of FlatGridItems for differentiating what property FlatGridItem is wrapping.
  * Category for PropertyCategory
  * (Primitive, Array, Struct) for PropertyRecord with valueFormats: (Primitive, Array, Struct)
- * @beta
+ * @public
  */
 export enum FlatGridItemType {
   Category,
@@ -25,13 +25,13 @@ export enum FlatGridItemType {
 
 /**
  * Type which extracts FlatGridItemTypes relevant for working with CategorizedProperties
- * @beta
+ * @public
  */
 export type CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct;
 
 /**
  * Base mutable data structure defining common methods and properties for both CategorizedProperties and GridCategoryItems
- * @beta
+ * @public
  */
 export interface IMutableFlatPropertyGridItem {
   readonly type: FlatGridItemType;
@@ -52,7 +52,7 @@ export interface IMutableFlatPropertyGridItem {
 
 /**
  * Base class for all FlatPropertyGrid items
- * @beta
+ * @public
  */
 export abstract class MutableFlatPropertyGridItem implements IMutableFlatPropertyGridItem {
   public [immerable] = true;
@@ -182,7 +182,7 @@ export abstract class MutableFlatPropertyGridItem implements IMutableFlatPropert
 
 /**
  * Data structure which describes methods and properties to be held by Mutable GridCategoryItems
- * @beta
+ * @public
  */
 export interface IMutableGridCategoryItem extends IMutableFlatPropertyGridItem {
   type: FlatGridItemType.Category;
@@ -202,7 +202,7 @@ export interface IMutableGridCategoryItem extends IMutableFlatPropertyGridItem {
 
 /**
  * Data structure which describes methods and properties to be held by Mutable CategorizedPropertyItems
- * @beta
+ * @public
  */
 export interface IMutableCategorizedPropertyItem extends IMutableFlatPropertyGridItem {
   readonly type: CategorizedPropertyTypes;
@@ -215,13 +215,13 @@ export interface IMutableCategorizedPropertyItem extends IMutableFlatPropertyGri
 
 /**
  * Type which describes mutable GridCategoryItem or CategorizedProperty
- * @beta
+ * @public
  */
 export type IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem;
 
 /**
  * Base class for all Mutable CategorizedProperties
- * @beta
+ * @public
  */
 export abstract class MutableCategorizedProperty extends MutableFlatPropertyGridItem implements Partial<IMutableCategorizedPropertyItem> {
   private _derivedRecord: PropertyRecord;

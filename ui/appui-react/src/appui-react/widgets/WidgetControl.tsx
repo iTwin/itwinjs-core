@@ -34,7 +34,7 @@ export class WidgetControl extends ConfigurableUiControl {
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.Widget; }
 
   /** Sets the [[WidgetState]] for this control */
-  public setWidgetState(state: WidgetState): void {
+  public setWidgetState(state: WidgetState): void { // eslint-disable-line deprecation/deprecation
     this.widgetDef.setWidgetState(state);
   }
 

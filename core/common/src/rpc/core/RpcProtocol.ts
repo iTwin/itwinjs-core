@@ -17,6 +17,8 @@ import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRequest } from "./RpcRequest";
 
+/* eslint-disable deprecation/deprecation */
+
 /** A serialized RPC operation descriptor.
  * @internal
  */

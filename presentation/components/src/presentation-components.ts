@@ -110,13 +110,10 @@ export * from "./presentation-components/unified-selection/UnifiedSelectionConte
  * @docs-group-description InstancesFilter
  * Utilities for creating filters for filtering presentation data.
  */
-export * from "./presentation-components/instance-filter-builder/InstanceFilterBuilder";
 export * from "./presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 export * from "./presentation-components/instance-filter-builder/PresentationInstanceFilterDialog";
-export * from "./presentation-components/instance-filter-builder/PresentationInstanceFilterProperty";
 export * from "./presentation-components/instance-filter-builder/InstanceFilterConverter";
 export * from "./presentation-components/instance-filter-builder/Types";
-export * from "./presentation-components/instance-filter-builder/Utils";
 
 Presentation.registerInitializationHandler(initializeLocalization);
 Presentation.registerInitializationHandler(initializePropertyValueRenderers);

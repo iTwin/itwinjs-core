@@ -7,11 +7,11 @@ trigger: none
 pr: none
 
 schedules:
-- cron: "0 0 * * Sun"
-  displayName: Weekly Sunday build
-  branches:
-    include:
-    - master
+  - cron: "0 0 * * Sun"
+    displayName: Weekly Sunday build
+    branches:
+      include:
+        - master
 
 variables:
   - group: iTwin.js non-secret config variables
@@ -20,11 +20,7 @@ variables:
 jobs:
   - job: Integration_Tests_Full
     strategy:
-      maxParallel: 3
       matrix:
-        Linux_node_12_7:
-          imageName: ubuntu-latest
-          nodeVersion: 12.17.0
         Linux_node_12_x:
           imageName: ubuntu-latest
           nodeVersion: 12.x
@@ -34,9 +30,6 @@ jobs:
         linux_node_16_x:
           imageName: ubuntu-latest
           nodeVersion: 16.x
-        Windows_node_12_7:
-          imageName: windows-latest
-          nodeVersion: 12.17.0
         Windows_node_12_x:
           imageName: windows-latest
           nodeVersion: 12.x
@@ -46,9 +39,6 @@ jobs:
         Windows_node_16_x:
           imageName: windows-latest
           nodeVersion: 16.x
-        MacOS_node_12_7:
-          imageName: macos-latest
-          nodeVersion: 12.17.0
         MacOS_node_12_x:
           imageName: macos-latest
           nodeVersion: 12.x
@@ -63,4 +53,4 @@ jobs:
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          Node_Version: $(nodeVersion)
+          nodeVersion: $(nodeVersion)

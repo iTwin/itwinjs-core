@@ -16,7 +16,8 @@ import { ButtonGroup, IconButton } from "@itwin/itwinui-react";
 import { isPresentationInfoTreeNodeItem, isPresentationTreeNodeItem, PresentationTreeNodeItem } from "../PresentationTreeNodeItem";
 
 /**
- * @alpha
+ * Props for [[PresentationTreeNodeRenderer]] component.
+ * @beta
  */
 export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps {
   onFilterClick: (node: PresentationTreeNodeItem) => void;
@@ -24,7 +25,10 @@ export interface PresentationTreeNodeRendererProps extends TreeNodeRendererProps
 }
 
 /**
- * @alpha
+ * Component for rendering tree nodes produced by [[PresentationTreeDataProvider]]. Additionally to the default
+ * tree node renderer, it renders action buttons for filterable hierarchy levels and also correctly renders
+ * nodes that carry info messages.
+ * @beta
  */
 export function PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps) {
   const { onFilterClick, onClearFilterClick, ...restProps } = props;

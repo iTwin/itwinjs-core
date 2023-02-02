@@ -2,11 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable react/display-name */
 
-import {
-  BackstageItem, BackstageItemUtilities, UiItemsManager, UiItemsProvider,
-} from "@itwin/appui-abstract";
+import { BackstageItem, BackstageItemUtilities, UiItemsManager, UiItemsProvider } from "@itwin/appui-react";
 import { WidgetApiStage } from "../frontstages/WidgetApiStage";
 import { SetWidgetStateTool } from "../../tools/UiLayoutTools";
 import { CustomFrontstageProvider } from "../frontstages/CustomFrontstageProvider";

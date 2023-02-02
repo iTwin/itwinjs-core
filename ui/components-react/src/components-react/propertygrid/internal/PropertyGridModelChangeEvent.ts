@@ -10,12 +10,12 @@ import { BeEvent } from "@itwin/core-bentley";
 
 /**
  * A signature for property grid model change listeners
- * @beta
+ * @public
  */
 export type PropertyGridModelChangeListener = () => void;
 
 /**
  * An event broadcasted on property grid model changes
- * @beta
+ * @public
  */
 export class PropertyGridModelChangeEvent extends BeEvent<PropertyGridModelChangeListener> { }

@@ -23,6 +23,8 @@ import { isStatusBarItem } from "./StatusBarItem";
 import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems";
 import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems";
 
+/* eslint-disable deprecation/deprecation */
+
 /** Private  function to generate a value that will allow the proper order to be maintained when items are placed in overflow panel */
 function getCombinedSectionItemPriority(item: CommonStatusBarItem) {
   let sectionValue = 0;

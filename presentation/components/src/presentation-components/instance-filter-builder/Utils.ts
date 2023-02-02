@@ -9,16 +9,25 @@
 import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
 import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule, PropertyFilterRuleGroup } from "@itwin/components-react";
 import {
-  CategoryDescription, ClassInfo, combineFieldNames, Descriptor, Field, NestedContentField, PropertiesField,
+  CategoryDescription, ClassId, ClassInfo, combineFieldNames, Descriptor, Field, NestedContentField, PropertiesField,
 } from "@itwin/presentation-common";
 import { createPropertyDescriptionFromFieldInfo } from "../common/ContentBuilder";
 import { findField } from "../common/Utils";
 import {
-  InstanceFilterPropertyInfo, isPresentationInstanceFilterConditionGroup, PresentationInstanceFilter, PresentationInstanceFilterCondition,
+  isPresentationInstanceFilterConditionGroup, PresentationInstanceFilter, PresentationInstanceFilterCondition,
   PresentationInstanceFilterConditionGroup,
 } from "./Types";
 
-/** @alpha */
+/** @internal */
+export interface InstanceFilterPropertyInfo {
+  sourceClassId: ClassId;
+  field: PropertiesField;
+  propertyDescription: PropertyDescription;
+  className: string;
+  categoryLabel?: string;
+}
+
+/** @internal */
 export function createInstanceFilterPropertyInfos(descriptor: Descriptor): InstanceFilterPropertyInfo[] {
   const propertyInfos = new Array<InstanceFilterPropertyInfo>();
   for (const field of descriptor.fields) {
@@ -139,7 +148,7 @@ function createPropertyInfoFromPropertiesField(field: PropertiesField): Instance
   };
 }
 
-/** @alpha */
+/** @internal */
 export const INSTANCE_FILTER_FIELD_SEPARATOR = "#";
 function getCategorizedFieldName(fieldName: string, categoryName?: string) {
   return `${categoryName ?? ""}${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`;
@@ -170,7 +179,7 @@ function convertPresentationInstanceFilterConditionGroup(filter: PresentationIns
   };
 }
 
-/** @alpha */
+/** @internal */
 export function convertPresentationFilterToPropertyFilter(descriptor: Descriptor, filter: PresentationInstanceFilter): PropertyFilter | undefined {
   if (isPresentationInstanceFilterConditionGroup(filter))
     return convertPresentationInstanceFilterConditionGroup(filter, descriptor);

@@ -8,7 +8,6 @@
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AmbientOcclusionGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
@@ -200,11 +199,11 @@ const unfinalizeLinearDepthDB = `
 `;
 
 function _shouldUseDB() {
-  return System.instance.supportsLogZBuffer && System.instance.capabilities.supportsTextureFloat;
+  return System.instance.supportsLogZBuffer;
 }
 
 /** @internal */
-export function createAmbientOcclusionProgram(context: WebGLContext): ShaderProgram {
+export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
   const shouldUseDB = _shouldUseDB();
