@@ -132,7 +132,7 @@ export class MapTile extends RealityTile {
   private static _maxParentHeightDepth = 4;
   private _imageryTiles?: ImageryMapTile[];
   private _hiddenTiles?: ImageryMapTile[];
-  private _replacementLeafTiles?: ImageryMapTile[];
+  private _highResolutionReplacementTiles?: ImageryMapTile[];
   /** @internal */
   public everLoaded = false;                    // If the tile is only required for availability metadata, load it once and then allow it to be unloaded.
   /** @internal */
@@ -165,7 +165,14 @@ export class MapTile extends RealityTile {
    * @internal
    */
   public get hiddenImageryTiles(): ImageryMapTile[] | undefined { return this._hiddenTiles; }
-  public get replacementLeafTiles(): ImageryMapTile[] | undefined { return this._replacementLeafTiles; }
+
+  /** List of leafs tiles that have been selected as a replacement for missing high resolution tiles.
+   * When this list is non-empty this means we are past the maximum LOD available of the tile tree.
+   * By using those tiles, you are likely to get a display where tiles looks pixelated..
+   * in some cases this is preferred to have no tile at all.
+   * @internal
+   */
+  public get highResolutionReplacementTiles(): ImageryMapTile[] | undefined { return this._highResolutionReplacementTiles; }
 
   /** The [[MapTileTree]] to which this tile belongs. */
   public readonly mapTree: MapTileTree;
@@ -508,8 +515,8 @@ export class MapTile extends RealityTile {
     if (this._hiddenTiles) {
       this._hiddenTiles = undefined;
     }
-    if (this._replacementLeafTiles) {
-      this._replacementLeafTiles = undefined;
+    if (this._highResolutionReplacementTiles) {
+      this._highResolutionReplacementTiles = undefined;
     }
   }
 
@@ -624,7 +631,7 @@ export class MapTile extends RealityTile {
     this.clearImageryTiles();
     this._imageryTiles = new Array<ImageryMapTile>();
     this._hiddenTiles = new Array<ImageryMapTile>();
-    this._replacementLeafTiles = new Array<ImageryMapTile>();
+    this._highResolutionReplacementTiles = new Array<ImageryMapTile>();
     for (const layerImageryTree of this.mapTree.layerImageryTrees) {
       let tmpTiles = new Array<ImageryMapTile>();
       const tmpLeafTiles = new Array<ImageryMapTile>();
@@ -642,7 +649,7 @@ export class MapTile extends RealityTile {
       if (layerImageryTree.baseImageryLayer) {
         tmpTiles = [...tmpTiles, ...tmpLeafTiles];
       } else {
-        this._replacementLeafTiles = [...this._replacementLeafTiles, ...tmpLeafTiles];
+        this._highResolutionReplacementTiles = [...this._highResolutionReplacementTiles, ...tmpLeafTiles];
       }
 
       // MapTileTree might include a non-visible imagery tree, we need to check for that.

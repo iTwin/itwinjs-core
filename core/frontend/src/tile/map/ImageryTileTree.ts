@@ -51,7 +51,7 @@ export class ImageryMapTile extends RealityTile {
     this.setIsReady();
   }
 
-  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], replacementLeafTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
+  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     const isSmallerThanDrape = (this.rectangle.xLength() / this.maximumSize) < drapePixelSize;
     if (  (this.isLeaf )           // Include leaves so tiles get stretched past max LOD levels. (Only for base imagery layer)
@@ -63,7 +63,7 @@ export class ImageryMapTile extends RealityTile {
       } else if (this.isLeaf && !isSmallerThanDrape && !this._anyChildNotFound) {
         // These tiles are selected because we are beyond the max LOD of the tile tree,
         // might be used to display "stretched" tiles instead of having blank.
-        replacementLeafTiles.push(this);
+        highResolutionReplacementTiles.push(this);
       } else {
         drapeTiles.push(this);
       }
@@ -78,7 +78,7 @@ export class ImageryMapTile extends RealityTile {
         for (const child of this.children) {
           const mapChild = child as ImageryMapTile;
           if (mapChild.rectangle.intersectsRange(rectangleToDrape))
-            status = mapChild.selectCartoDrapeTiles(drapeTiles, replacementLeafTiles, rectangleToDrape, drapePixelSize, args);
+            status = mapChild.selectCartoDrapeTiles(drapeTiles, highResolutionReplacementTiles, rectangleToDrape, drapePixelSize, args);
           if (TileTreeLoadStatus.Loaded !== status)
             break;
         }

@@ -485,7 +485,6 @@ export class MapTileTree extends RealityTileTree {
       }
     }
 
-    let allTilesRead = true;
     for (const selectedTile of selected) {
       if (selectedTile instanceof MapTile) {
         let selectedImageryTiles = selectedTile.imageryTiles;
@@ -493,7 +492,7 @@ export class MapTileTree extends RealityTileTree {
           selectedImageryTiles = selectedImageryTiles ? [...selectedImageryTiles, ...selectedTile.hiddenImageryTiles] : selectedTile.hiddenImageryTiles;
         }
 
-        const leafTiles = selectedTile.replacementLeafTiles;
+        const leafTiles = selectedTile.highResolutionReplacementTiles;
         if (leafTiles) {
           for (const tile of leafTiles) {
             const treeState = this.getImageryTreeState(tile.tree.id);

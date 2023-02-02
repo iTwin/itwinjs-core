@@ -458,7 +458,6 @@ export class RealityTileTree extends TileTree {
         this.logTiles("Imagery:", imageryTiles.values());
     }
 
-    // if (context.missing.length === 0)
     this.reportTileVisibility(args, selected);
 
     IModelApp.tileAdmin.addTilesForUser(args.context.viewport, selected, args.readyTiles);
