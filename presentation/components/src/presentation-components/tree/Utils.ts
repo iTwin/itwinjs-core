@@ -6,15 +6,13 @@
  * @module Tree
  */
 
-import { LabelDefinition, Node, NodeKey, PartialNode, PageOptions as PresentationPageOptions } from "@itwin/presentation-common";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@itwin/components-react";
 import { CheckBoxState } from "@itwin/core-react";
+import { LabelDefinition, Node, NodeKey, PartialNode, PageOptions as PresentationPageOptions } from "@itwin/presentation-common";
 import { StyleHelper } from "../common/StyleHelper";
 import { createLabelRecord } from "../common/Utils";
-
-/** @internal */
-export const PRESENTATION_TREE_NODE_KEY = "__presentation-components/key";
+import { PresentationTreeNodeItem } from "./PresentationTreeNodeItem";
 
 /** @internal */
 export interface CreateTreeNodeItemProps {
@@ -27,8 +25,8 @@ export function createTreeNodeItems(
   nodes: ReadonlyArray<Readonly<Node>>,
   parentId?: string,
   props?: CreateTreeNodeItemProps,
-): DelayLoadedTreeNodeItem[] {
-  const list = new Array<DelayLoadedTreeNodeItem>();
+): PresentationTreeNodeItem[] {
+  const list = new Array<PresentationTreeNodeItem>();
   for (const node of nodes)
     list.push(createTreeNodeItem(node, parentId, props));
   return list;
@@ -39,10 +37,11 @@ export function createTreeNodeItem(
   node: Readonly<Node>,
   parentId?: string,
   props?: CreateTreeNodeItemProps,
-): DelayLoadedTreeNodeItem {
-  const item: DelayLoadedTreeNodeItem = {
+): PresentationTreeNodeItem {
+  const item: PresentationTreeNodeItem = {
     id: createTreeNodeId(node.key),
     label: createNodeLabelRecord(node, !!props?.appendChildrenCountForGroupingNodes),
+    key: node.key,
   };
   assignOptionalTreeNodeItemFields(item, node, parentId);
   const customizeItemCallback = props?.customizeTreeNodeItem ?? customizeTreeNodeItem; // eslint-disable-line deprecation/deprecation
@@ -55,8 +54,8 @@ export function createPartialTreeNodeItem(
   node: PartialNode,
   parentId: string | undefined,
   props: CreateTreeNodeItemProps,
-): Partial<DelayLoadedTreeNodeItem> {
-  const item: Partial<DelayLoadedTreeNodeItem> = {};
+): Partial<PresentationTreeNodeItem> {
+  const item: Partial<PresentationTreeNodeItem> = {};
   if (node.key !== undefined) {
     item.id = createTreeNodeId(node.key);
     item.label = createNodeLabelRecord(node, !!props.appendChildrenCountForGroupingNodes);
@@ -74,12 +73,12 @@ export function createTreeNodeId(key: NodeKey): string {
 }
 
 function assignOptionalTreeNodeItemFields(
-  item: Partial<DelayLoadedTreeNodeItem>,
+  item: Partial<PresentationTreeNodeItem>,
   node: Partial<Node>,
   parentId?: string,
 ): void {
   if (node.key !== undefined) {
-    (item as any)[PRESENTATION_TREE_NODE_KEY] = node.key;
+    item.key = node.key;
   }
 
   if (parentId) {

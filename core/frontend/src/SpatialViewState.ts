@@ -113,34 +113,52 @@ export class SpatialViewState extends ViewState3d {
     this._treeRefs.update();
   }
 
-  /** Get world-space viewed extents based on the iModel's project extents. */
+  /** Get world-space viewed extents based on the iModel's project extents.
+   * @deprecated in 3.6. These extents are based on [[IModelConnection.displayedExtents]], which is deprecated. Consider using [[computeFitRange]] or [[getViewedExtents]] instead.
+   */
   protected getDisplayedExtents(): AxisAlignedBox3d {
+    /* eslint-disable-next-line deprecation/deprecation */
     const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.displayedExtents);
     extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
     extents.extendRange(this.getGroundExtents());
     return extents;
   }
 
+  private computeBaseExtents(): AxisAlignedBox3d {
+    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.projectExtents);
+
+    // Ensure geometry coincident with planes of the project extents is not clipped.
+    extents.scaleAboutCenterInPlace(1.0001);
+
+    // Ensure ground plane is not clipped, if it's being drawn.
+    extents.extendRange(this.getGroundExtents());
+
+    return extents;
+  }
+
   /** Compute world-space range appropriate for fitting the view. If that range is null, use the displayed extents. */
   public computeFitRange(): AxisAlignedBox3d {
-    // Loop over the current models in the model selector with loaded tile trees and union their ranges
+    // Fit to the union of the ranges of all loaded tile trees.
     const range = new Range3d();
     this.forEachTileTreeRef((ref) => {
       ref.unionFitRange(range);
     });
 
+    // Fall back to the project extents if necessary.
     if (range.isNull)
-      range.setFrom(this.getDisplayedExtents());
+      range.setFrom(this.computeBaseExtents());
 
+    // Avoid ridiculously small extents.
     range.ensureMinLengths(1.0);
 
     return range;
   }
 
   public getViewedExtents(): AxisAlignedBox3d {
-    const extents = this.getDisplayedExtents();
+    // Encompass the project extents and ground plane.
+    const extents = this.computeBaseExtents();
 
-    // Some displayed tile trees may have a transform applied that takes them outside of the displayed extents.
+    // Include any tile trees that extend outside the project extents.
     extents.extendRange(this.computeFitRange());
 
     return extents;

@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { FloatingViewportContent, UiFramework, useActiveIModelConnection, useSpecificWidgetDef } from "@itwin/appui-react";
-import { WidgetState } from "@itwin/appui-abstract";
+import { FloatingViewportContent, UiFramework, useActiveIModelConnection, useSpecificWidgetDef, WidgetState } from "@itwin/appui-react";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { useRefState } from "@itwin/core-react";
 import ViewDefinitionSelector from "../components/ViewDefinitionSelector";

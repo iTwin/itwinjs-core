@@ -20,6 +20,8 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
+/* eslint-disable deprecation/deprecation */
+
 /** The properties of an RpcActivity.
  * @public
  * @extensions

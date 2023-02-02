@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
-import { assert, base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
+import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
-import { ArcGisErrorCode, ArcGISImageryProvider, ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
+import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
@@ -51,14 +51,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   }
 
   public override async initialize(): Promise<void> {
-
-    let json;
-    try {
-      json = await ArcGisUtilities.getServiceJson(this._settings.url, this._settings.formatId, this._settings.userName, this._settings.password);
-
-    } catch (_e) {
-
-    }
+    const metadata = await this.getServiceJson();
+    const json = metadata?.content;
 
     if (json === undefined) {
       Logger.logError(loggerCategory, "Could not get service JSON");
@@ -200,15 +194,15 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   }
 
   protected async getLayerMetadata(layerId: number) {
-    let json;
+    let metadata: ArcGISServiceMetadata|undefined;
     try {
       const url = new URL(this._settings.url);
       url.pathname = `${url.pathname}/${layerId}`;
-      json = await ArcGisUtilities.getServiceJson(url.toString(), this._settings.formatId, this._settings.userName, this._settings.password);
+      metadata = await ArcGisUtilities.getServiceJson(url.toString(), this._settings.formatId, this._settings.userName, this._settings.password, this._accessTokenRequired);
     } catch {
 
     }
-    return json;
+    return metadata?.content;
   }
 
   public override get tileSize(): number { return 512; }
@@ -338,7 +332,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
   private async fetchTile(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): Promise<ArcGisFeatureResponse | undefined> {
     if (!this.format) {
-      assert(!"No supported query format");
       return undefined;
     }
 
@@ -397,13 +390,11 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     const ctx = canvas.getContext("2d");
     if (ctx == null) {
       Logger.logError(loggerCategory, "No canvas context available for loading tile.");
-      assert(!"no canvas context");
       return undefined;
     }
 
     if (!this._symbologyRenderer) {
       Logger.logError(loggerCategory, "No symbology renderer available for loading tile.");
-      assert(!"No symbology renderer");
       return undefined;
     }
     try {
@@ -414,7 +405,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         transfo = this.computeTileWorld2CanvasTransform(row, column, zoomLevel);
         if (!transfo)  {
           Logger.logError(loggerCategory, `Could not compute data transformation for tile (${zoomLevel}/${row}/${column})`);
-          assert(!"Could not compute world to canvas transform");
         }
       }
 

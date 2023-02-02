@@ -285,12 +285,21 @@ export class TileAdmin {
     // If unspecified skip one level before preloading  of parents of context tiles.
     this.contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
 
-    this._cleanup = this.addLoadListener(() => {
-      this._users.forEach((user) => {
-        if (user instanceof Viewport)
-          user.invalidateScene();
-      });
-    });
+    const removals = [
+      this.onTileLoad.addListener(() => this.invalidateAllScenes()),
+      this.onTileChildrenLoad.addListener(() => this.invalidateAllScenes()),
+      this.onTileTreeLoad.addListener(() => {
+        // A reality model tile tree's range may extend outside of the project extents - we'll want to recompute the extents
+        // of any spatial view's that may be displaying the reality model.
+        for (const user of this.tileUsers)
+          if (user instanceof Viewport && user.view.isSpatialView())
+            user.invalidateController();
+      }),
+    ];
+
+    this._cleanup = () => {
+      removals.forEach((removal) => removal());
+    };
   }
 
   private _tileStorage?: TileStorage;
@@ -322,9 +331,9 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
+  public get enableInstancing() { return this._enableInstancing; }
   /** @internal */
-  public get enableIndexedEdges() { return this._enableIndexedEdges && IModelApp.renderSystem.supportsIndexedEdges; }
+  public get enableIndexedEdges() { return this._enableIndexedEdges; }
   /** @internal */
   public get generateAllPolyfaceEdges() { return this._generateAllPolyfaceEdges; }
   public set generateAllPolyfaceEdges(val: boolean) { this._generateAllPolyfaceEdges = val; }
@@ -944,7 +953,7 @@ export class TileAdmin {
 
     const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
-    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
+    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable; // eslint-disable-line deprecation/deprecation
   }
 }
 

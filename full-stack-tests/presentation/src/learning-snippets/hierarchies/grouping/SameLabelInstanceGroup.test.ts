@@ -6,9 +6,7 @@ import { expect } from "chai";
 import deepEqual from "deep-equal";
 import { sort } from "fast-sort";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import {
-  ChildNodeSpecificationTypes, GroupingSpecificationTypes, InstanceKey, NodeKey, Ruleset, RuleTypes, SameLabelInstanceGroupApplicationStage,
-} from "@itwin/presentation-common";
+import { InstanceKey, NodeKey, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
@@ -38,18 +36,18 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: { schemaName: "BisCore", classNames: ["SubCategory"] },
               groupByClass: false,
             }],
             customizationRules: [{
-              ruleType: RuleTypes.Grouping,
+              ruleType: "Grouping",
               class: { schemaName: "BisCore", className: "SubCategory" },
               groups: [{
-                specType: GroupingSpecificationTypes.SameLabelInstance,
-                applicationStage: SameLabelInstanceGroupApplicationStage.Query,
+                specType: "SameLabelInstance",
+                applicationStage: "Query",
               }],
             }],
           }],
@@ -77,9 +75,9 @@ describe("Learning Snippets", () => {
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
-            ruleType: RuleTypes.RootNodes,
+            ruleType: "RootNodes",
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              specType: "InstanceNodesOfSpecificClasses",
               classes: {
                 schemaName: "BisCore",
                 classNames: ["InformationPartitionElement", "Model"],
@@ -89,18 +87,18 @@ describe("Learning Snippets", () => {
               groupByLabel: false,
             }],
             customizationRules: [{
-              ruleType: RuleTypes.Grouping,
+              ruleType: "Grouping",
               class: { schemaName: "BisCore", className: "InformationPartitionElement" },
               groups: [{
-                specType: GroupingSpecificationTypes.SameLabelInstance,
-                applicationStage: SameLabelInstanceGroupApplicationStage.PostProcess,
+                specType: "SameLabelInstance",
+                applicationStage: "PostProcess",
               }],
             }, {
-              ruleType: RuleTypes.Grouping,
+              ruleType: "Grouping",
               class: { schemaName: "BisCore", className: "Model" },
               groups: [{
-                specType: GroupingSpecificationTypes.SameLabelInstance,
-                applicationStage: SameLabelInstanceGroupApplicationStage.PostProcess,
+                specType: "SameLabelInstance",
+                applicationStage: "PostProcess",
               }],
             }],
           }],

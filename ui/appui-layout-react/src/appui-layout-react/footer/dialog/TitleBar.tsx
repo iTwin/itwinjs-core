@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[TitleBar]] component.
- * @deprecated Props of a deprecated component.
+ * @deprecated in 3.5. Props of a deprecated component.
  * @beta
  */
 export interface TitleBarProps extends CommonProps {
@@ -23,7 +23,7 @@ export interface TitleBarProps extends CommonProps {
 }
 
 /** Title bar of [[Dialog]] component.
- * @deprecated Use [StatusBarDialog.TitleBar]($appui-react) instead.
+ * @deprecated in 3.5. Use [StatusBarDialog.TitleBar]($appui-react) instead.
  * @beta
  */
 export class TitleBar extends React.PureComponent<TitleBarProps> {

@@ -7,13 +7,13 @@
  */
 
 import {
-  assert, compareBooleans, comparePossiblyUndefined, compareStrings, Id64String,
+  assert, comparePossiblyUndefined, compareStrings, Id64String,
 } from "@itwin/core-bentley";
 import {
   BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,
   PrimaryTileTreeId, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
-import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
+import { Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -22,7 +22,7 @@ import { AnimationNodeId, formatAnimationBranchId } from "../render/GraphicBranc
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SpatialViewState } from "../SpatialViewState";
 import { SceneContext } from "../ViewContext";
-import { ModelDisplayTransformProvider, ViewState, ViewState3d } from "../ViewState";
+import { ViewState, ViewState3d } from "../ViewState";
 import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
@@ -33,7 +33,6 @@ interface PrimaryTreeId {
   modelId: Id64String;
   is3d: boolean;
   isPlanProjection: boolean;
-  forceNoInstancing: boolean;
   timeline?: RenderSchedule.ModelTimeline;
 }
 
@@ -53,7 +52,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
     // NB: we don't compare isPlanProjection or is3d - they should always have the same value for a given modelId.
     return compareStrings(lhs.modelId, rhs.modelId) || compareIModelTileTreeIds(lhs.treeId, rhs.treeId)
-      || compareBooleans(lhs.forceNoInstancing, rhs.forceNoInstancing) || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
+      ||  comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
   }
 
   public async createTileTree(id: PrimaryTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
@@ -63,7 +62,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
 
     // ###TODO remove restriction that animated tile trees can't contained instanced geometry.
     const isAnimated = undefined !== treeId.animationId || undefined !== id.timeline;
-    const allowInstancing = !isAnimated && !treeId.enforceDisplayPriority && !treeId.sectionCut && !id.forceNoInstancing;
+    const allowInstancing = !isAnimated && !treeId.enforceDisplayPriority && !treeId.sectionCut;
     const options = {
       edges: treeId.edges,
       allowInstancing,
@@ -138,7 +137,6 @@ class PrimaryTreeReference extends TileTreeReference {
   private _owner: TileTreeOwner;
   private readonly _sectionClip?: StringifiedClipVector;
   private readonly _sectionCutAppearanceProvider?: FeatureAppearanceProvider;
-  private _forceNoInstancing: boolean;
   protected readonly _animationTransformNodeId?: number;
 
   public constructor(view: ViewState, model: GeometricModelState, planProjection: boolean, transformNodeId: number | undefined, sectionClip?: StringifiedClipVector) {
@@ -158,38 +156,16 @@ class PrimaryTreeReference extends TileTreeReference {
       });
     }
 
-    this._forceNoInstancing = false;
-    if (!IModelApp.renderSystem.supportsNonuniformScaledInstancing) {
-      this.checkForceNoInstancing(view.modelDisplayTransformProvider);
-      view.onModelDisplayTransformProviderChanged.addListener((provider: ModelDisplayTransformProvider | undefined) => this.checkForceNoInstancing(provider));
-    }
-
     const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(model.id, view.displayStyle.scheduleScriptReference); // eslint-disable-line deprecation/deprecation
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
       treeId: this.createTreeId(view, model.id),
       isPlanProjection: planProjection,
-      forceNoInstancing: this._forceNoInstancing,
       timeline: scriptInfo?.timeline,
     };
 
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
-  }
-
-  private checkForceNoInstancing(provider: ModelDisplayTransformProvider | undefined) {
-    // If this model has a display transform with a non-uniform scale then instancing needs to be forced off when using WebGL1.
-    this._forceNoInstancing = false;
-
-    const mat = provider?.getModelDisplayTransform(this.model.id)?.matrix;
-    if (!mat)
-      return;
-
-    const epsilon = Geometry.smallMetricDistance;
-    const sx = mat.getColumn(0).magnitudeSquared();
-    const sy = mat.getColumn(1).magnitudeSquared();
-    if (Math.abs(sx - sy) > epsilon || Math.abs(sx - mat.getColumn(2).magnitudeSquared()) > epsilon)
-      this._forceNoInstancing = true;
   }
 
   protected override getAnimationTransformNodeId() {
@@ -235,13 +211,12 @@ class PrimaryTreeReference extends TileTreeReference {
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this.view, this._id.modelId);
     const timeline = IModelApp.tileAdmin.getScriptInfoForTreeId(this._id.modelId, this.view.displayStyle.scheduleScriptReference)?.timeline; // eslint-disable-line deprecation/deprecation
-    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || this._forceNoInstancing !== this._id.forceNoInstancing || timeline !== this._id.timeline) {
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || timeline !== this._id.timeline) {
       this._id = {
         modelId: this._id.modelId,
         is3d: this._id.is3d,
         treeId: newId,
         isPlanProjection: this._id.isPlanProjection,
-        forceNoInstancing: this._forceNoInstancing,
         timeline,
       };
 
@@ -433,7 +408,6 @@ class MaskTreeReference extends TileTreeReference {
       is3d: model.is3d,
       treeId: this.createTreeId(),
       isPlanProjection: isPlanProjection(view, model),
-      forceNoInstancing: false,
     };
 
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
@@ -442,7 +416,7 @@ class MaskTreeReference extends TileTreeReference {
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId();
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
-      this._id = { modelId: this._id.modelId, is3d: this._id.is3d, treeId: newId, isPlanProjection: false, forceNoInstancing: false };
+      this._id = { modelId: this._id.modelId, is3d: this._id.is3d, treeId: newId, isPlanProjection: false };
       this._owner = primaryTreeSupplier.getOwner(this._id, this.model.iModel);
     }
 
@@ -471,7 +445,6 @@ export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
       is3d: true, // model.is3d,
       treeId: this.createTreeId(),
       isPlanProjection: false, // isPlanProjection(view, model),
-      forceNoInstancing: false,
     };
 
     this._owner = primaryTreeSupplier.getOwner(this._id, this.iModel);
@@ -484,7 +457,7 @@ export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId();
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
-      this._id = { modelId: this._id.modelId, is3d: this._id.is3d, treeId: newId, isPlanProjection: false, forceNoInstancing: false };
+      this._id = { modelId: this._id.modelId, is3d: this._id.is3d, treeId: newId, isPlanProjection: false };
       this._owner = primaryTreeSupplier.getOwner(this._id, this.iModel);
     }
 

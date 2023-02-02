@@ -35,7 +35,7 @@ export function usePropertyData(props: { dataProvider: IPropertyDataProvider }) 
 
 /**
  * Custom hook that creates a [[PropertyGridModelSource]] and subscribes it to data updates from the data provider.
- * @beta
+ * @public
  */
 export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataProvider }) {
   const { value: propertyData } = usePropertyData(props);
@@ -55,7 +55,7 @@ export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataP
 
 /**
  * Custom hook that creates memoized version of [[PropertyGridEventHandler]] that modifies given modelSource
- * @beta
+ * @public
  */
 export function usePropertyGridEventHandler(props: { modelSource: IPropertyGridModelSource }) {
   return useMemo(() => new PropertyGridEventHandler(props.modelSource), [props.modelSource]);
@@ -63,7 +63,7 @@ export function usePropertyGridEventHandler(props: { modelSource: IPropertyGridM
 
 /**
  * Custom hook that automatically listens and retrieves latest model from model source
- * @beta
+ * @public
  */
 export function usePropertyGridModel(props: { modelSource: IPropertyGridModelSource }) {
   const { modelSource } = { ...props };

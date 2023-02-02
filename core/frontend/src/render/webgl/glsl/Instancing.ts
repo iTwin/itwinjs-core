@@ -8,16 +8,12 @@
 
 import { assert } from "@itwin/core-bentley";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
-import { System } from "../System";
 import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
 import { addExtractNthBit } from "./Common";
 import { addOvrFlagConstants } from "./FeatureSymbology";
 
 const extractInstanceBit = `
-float extractInstanceBit(float flag) { return extractNthBit(a_instanceOverrides.r, flag); }
-`;
-const extractInstanceBit2 = `
 float extractInstanceBit(uint flag) { return extractNthBit(a_instanceOverrides.r, flag); }
 `;
 
@@ -98,7 +94,7 @@ export function addInstanceOverrides(vert: VertexShaderBuilder): void {
   addOvrFlagConstants(vert);
 
   addExtractNthBit(vert);
-  vert.addFunction(System.instance.capabilities.isWebGL2 ? extractInstanceBit2 : extractInstanceBit);
+  vert.addFunction(extractInstanceBit);
 }
 
 /** @internal */
