@@ -7,8 +7,6 @@
 // @internal
 export class Capabilities {
     // (undocumented)
-    get canRenderDepthWithoutColor(): boolean;
-    // (undocumented)
     static create(gl: WebGLContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined;
     // (undocumented)
     get driverBugs(): GraphicsDriverBugs;
@@ -164,7 +162,6 @@ export enum WebGLRenderCompatibilityStatus {
     MissingOptionalFeatures = 1,
     MissingRequiredFeatures = 3
 }
-
 
 // (No @packageDocumentation comment for this package)
 
