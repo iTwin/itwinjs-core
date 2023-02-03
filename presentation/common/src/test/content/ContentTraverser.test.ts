@@ -6,9 +6,9 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Content } from "../../presentation-common/content/Content";
 import {
-  addFieldHierarchy, createFieldHierarchies, FIELD_NAMES_SEPARATOR, FieldHierarchy, IContentVisitor, ProcessFieldHierarchiesProps,
-  ProcessMergedValueProps, ProcessPrimitiveValueProps, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps,
-  StartStructProps, traverseContent, traverseContentItem, traverseFieldHierarchy,
+  addFieldHierarchy, combineFieldNames, createFieldHierarchies, FIELD_NAMES_SEPARATOR, FieldHierarchy, IContentVisitor, parseCombinedFieldNames,
+  ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps, StartArrayProps, StartCategoryProps, StartContentProps,
+  StartFieldProps, StartItemProps, StartStructProps, traverseContent, traverseContentItem, traverseFieldHierarchy,
 } from "../../presentation-common/content/ContentTraverser";
 import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
 import {
@@ -377,7 +377,7 @@ describe("ContentTraverser", () => {
       expect(spy).to.be.calledOnceWith({
         requestedField: field,
         mergedField: field,
-        namePrefix: undefined,
+        parentFieldName: undefined,
       });
     });
 
@@ -391,7 +391,7 @@ describe("ContentTraverser", () => {
       expect(spy).to.be.calledOnceWith({
         requestedField: primitiveField,
         mergedField: parentField,
-        namePrefix: undefined,
+        parentFieldName: undefined,
       });
     });
 
@@ -463,7 +463,7 @@ describe("ContentTraverser", () => {
           typeName: `${primitiveField.type.typeName}[]`,
           memberType: primitiveField.type,
         },
-        namePrefix: parentField.name,
+        parentFieldName: parentField.name,
       });
       expect(processPrimitiveValueSpy).to.be.calledTwice;
       expect(processPrimitiveValueSpy.firstCall.firstArg).to.containSubset({
@@ -471,7 +471,7 @@ describe("ContentTraverser", () => {
           name: primitiveField.name,
         },
         valueType: primitiveField.type,
-        namePrefix: parentField.name,
+        parentFieldName: parentField.name,
         rawValue: "value1",
         displayValue: "display value 1",
       });
@@ -480,7 +480,7 @@ describe("ContentTraverser", () => {
           name: primitiveField.name,
         },
         valueType: primitiveField.type,
-        namePrefix: parentField.name,
+        parentFieldName: parentField.name,
         rawValue: "value2",
         displayValue: "display value 2",
       });
@@ -555,7 +555,7 @@ describe("ContentTraverser", () => {
             }],
           },
         },
-        namePrefix: undefined,
+        parentFieldName: undefined,
       });
       expect(startStructSpy).to.be.calledTwice;
       startStructSpy.getCalls().forEach((call) => expect(call.firstArg).to.containSubset({
@@ -578,7 +578,7 @@ describe("ContentTraverser", () => {
             name: primitiveField2.name,
           }],
         },
-        namePrefix: undefined,
+        parentFieldName: undefined,
       }));
       expect(processPrimitiveValueSpy.callCount).to.eq(4);
       expect(processPrimitiveValueSpy.getCall(0).firstArg).to.containSubset({
@@ -586,7 +586,7 @@ describe("ContentTraverser", () => {
           name: primitiveField1.name,
         },
         valueType: primitiveField1.type,
-        namePrefix: parentField.name,
+        parentFieldName: parentField.name,
         rawValue: "value11",
         displayValue: "display value 11",
       });
@@ -595,7 +595,7 @@ describe("ContentTraverser", () => {
           name: primitiveField2.name,
         },
         valueType: primitiveField2.type,
-        namePrefix: parentField.name,
+        parentFieldName: parentField.name,
         rawValue: "value12",
         displayValue: "display value 12",
       });
@@ -604,7 +604,7 @@ describe("ContentTraverser", () => {
           name: primitiveField1.name,
         },
         valueType: primitiveField1.type,
-        namePrefix: parentField.name,
+        parentFieldName: parentField.name,
         rawValue: "value21",
         displayValue: "display value 21",
       });
@@ -613,7 +613,7 @@ describe("ContentTraverser", () => {
           name: primitiveField2.name,
         },
         valueType: primitiveField2.type,
-        namePrefix: parentField.name,
+        parentFieldName: parentField.name,
         rawValue: "value22",
         displayValue: "display value 22",
       });
@@ -691,7 +691,7 @@ describe("ContentTraverser", () => {
             typeName: primitiveField.type.typeName,
           },
         },
-        namePrefix: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
+        parentFieldName: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
       });
       expect(processPrimitiveValueSpy.callCount).to.eq(2);
       expect(processPrimitiveValueSpy.getCall(0).firstArg).to.containSubset({
@@ -699,7 +699,7 @@ describe("ContentTraverser", () => {
           name: primitiveField.name,
         },
         valueType: primitiveField.type,
-        namePrefix: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
+        parentFieldName: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
         rawValue: "value1",
         displayValue: "display value 1",
       });
@@ -708,7 +708,7 @@ describe("ContentTraverser", () => {
           name: primitiveField.name,
         },
         valueType: primitiveField.type,
-        namePrefix: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
+        parentFieldName: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
         rawValue: "value2",
         displayValue: "display value 2",
       });
@@ -794,7 +794,7 @@ describe("ContentTraverser", () => {
             }],
           },
         },
-        namePrefix: parentField.name,
+        parentFieldName: parentField.name,
       });
       expect(startStructSpy).to.be.calledTwice;
       startStructSpy.getCalls().forEach((call) => expect(call.firstArg).to.containSubset({
@@ -813,7 +813,7 @@ describe("ContentTraverser", () => {
             type: primitiveField.type,
           }],
         },
-        namePrefix: parentField.name,
+        parentFieldName: parentField.name,
       }));
       expect(processPrimitiveValueSpy.callCount).to.eq(2);
       expect(processPrimitiveValueSpy.getCall(0).firstArg).to.containSubset({
@@ -821,7 +821,7 @@ describe("ContentTraverser", () => {
           name: primitiveField.name,
         },
         valueType: primitiveField.type,
-        namePrefix: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
+        parentFieldName: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
         rawValue: "value1",
         displayValue: "display value 1",
       });
@@ -830,7 +830,7 @@ describe("ContentTraverser", () => {
           name: primitiveField.name,
         },
         valueType: primitiveField.type,
-        namePrefix: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
+        parentFieldName: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
         rawValue: "value2",
         displayValue: "display value 2",
       });
@@ -931,7 +931,7 @@ describe("ContentTraverser", () => {
             }],
           },
         },
-        namePrefix: undefined,
+        parentFieldName: undefined,
       });
       [startArraySpy.secondCall, startArraySpy.thirdCall].forEach((call) => expect(call.firstArg).to.containSubset({
         hierarchy: {
@@ -953,7 +953,7 @@ describe("ContentTraverser", () => {
             }],
           },
         },
-        namePrefix: parentField.name,
+        parentFieldName: parentField.name,
       }));
       expect(startStructSpy.callCount).to.eq(4);
       [startStructSpy.getCall(0), startStructSpy.getCall(2)].forEach((call) => expect(call.firstArg).to.containSubset({
@@ -987,7 +987,7 @@ describe("ContentTraverser", () => {
             },
           }],
         },
-        namePrefix: undefined,
+        parentFieldName: undefined,
       }));
       [startStructSpy.getCall(1), startStructSpy.getCall(3)].forEach((call) => expect(call.firstArg).to.containSubset({
         hierarchy: {
@@ -1005,7 +1005,7 @@ describe("ContentTraverser", () => {
             type: primitiveField.type,
           }],
         },
-        namePrefix: parentField.name,
+        parentFieldName: parentField.name,
       }));
       expect(processPrimitiveValueSpy.callCount).to.eq(2);
       expect(processPrimitiveValueSpy.firstCall.firstArg).to.containSubset({
@@ -1013,7 +1013,7 @@ describe("ContentTraverser", () => {
           name: primitiveField.name,
         },
         valueType: primitiveField.type,
-        namePrefix: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
+        parentFieldName: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
         rawValue: "value1",
         displayValue: "display value 1",
       });
@@ -1022,7 +1022,7 @@ describe("ContentTraverser", () => {
           name: primitiveField.name,
         },
         valueType: primitiveField.type,
-        namePrefix: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
+        parentFieldName: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
         rawValue: "value2",
         displayValue: "display value 2",
       });
@@ -1165,7 +1165,7 @@ describe("ContentTraverser", () => {
       requestedField: {
         name: mergedNestedField.name,
       },
-      namePrefix: parentField.name,
+      parentFieldName: parentField.name,
     });
 
   });
@@ -1251,7 +1251,7 @@ describe("ContentTraverser", () => {
       requestedField: {
         name: primitiveField.name,
       },
-      namePrefix: parentField.name,
+      parentFieldName: parentField.name,
     });
 
   });
@@ -1450,6 +1450,30 @@ describe("createFieldHierarchies", () => {
         },
       ],
     }]);
+  });
+
+});
+
+describe("combineFieldNames", () => {
+
+  it("returns field name when no parent field name is provided", () => {
+    expect(combineFieldNames("x", undefined)).to.eq("x");
+  });
+
+  it("returns field name prefixed with parent field name", () => {
+    expect(combineFieldNames("x", "y")).to.eq(`y${FIELD_NAMES_SEPARATOR}x`);
+  });
+
+});
+
+describe("parseCombinedFieldNames", () => {
+
+  it("returns parsed field names", () => {
+    expect(parseCombinedFieldNames(`y${FIELD_NAMES_SEPARATOR}x`)).to.deep.eq(["y", "x"]);
+  });
+
+  it("returns empty array on empty string input", () => {
+    expect(parseCombinedFieldNames("")).to.deep.eq([]);
   });
 
 });

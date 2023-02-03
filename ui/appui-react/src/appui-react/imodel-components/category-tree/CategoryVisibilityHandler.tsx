@@ -57,7 +57,7 @@ export async function loadCategoriesFromViewport(iModel?: IModelConnection, vp?:
 /**
  * Data structure that describes category.
  * @alpha
- * @deprecated Was moved to `@itwin/tree-widget-react` package.
+ * @deprecated in 3.6. Was moved to `@itwin/tree-widget-react` package.
  */
 export interface Category {
   key: string;
@@ -66,7 +66,7 @@ export interface Category {
 
 /**
  * @alpha
- * @deprecated Was moved to `@itwin/tree-widget-react` package.
+ * @deprecated in 3.6. Was moved to `@itwin/tree-widget-react` package.
  */
 export interface CategoryVisibilityHandlerParams {
   viewManager: ViewManager;
@@ -78,7 +78,7 @@ export interface CategoryVisibilityHandlerParams {
 
 /**
  * @alpha
- * @deprecated Was moved to `@itwin/tree-widget-react` package.
+ * @deprecated in 3.6. Was moved to `@itwin/tree-widget-react` package.
  */
 export class CategoryVisibilityHandler implements IVisibilityHandler {
   private _viewManager: ViewManager;

@@ -95,8 +95,8 @@ export function BasicToolWidget(props: BasicToolWidgetProps) {
   return (
     <ToolWidgetComposer className={className}
       cornerItem={<BackstageAppButton icon={props.icon} />}
-      horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Horizontal} />}
-      verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Vertical} />}
+      horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Horizontal} />} // eslint-disable-line deprecation/deprecation
+      verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Vertical} />} // eslint-disable-line deprecation/deprecation
     />
   );
 }

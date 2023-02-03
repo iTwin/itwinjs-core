@@ -10,7 +10,7 @@ import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } fro
 const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" });
 
 /** Display Performance RPC interface. */
-export default class DisplayPerfRpcInterface extends RpcInterface {
+export default class DisplayPerfRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** The immutable name of the interface. */
   public static readonly interfaceName = "DisplayPerfRpcInterface";
 

@@ -18,7 +18,7 @@ import { CommonPropertyGridProps } from "./PropertyGridCommons";
 import { VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid";
 
 /** Properties for [[VirtualizedPropertyGridWithDataProvider]] React component
- * @beta
+ * @public
  */
 export interface VirtualizedPropertyGridWithDataProviderProps extends CommonPropertyGridProps {
   dataProvider: IPropertyDataProvider;
@@ -33,7 +33,7 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
 /**
  * VirtualizedPropertyGrid React Component which takes dataProvider and
  * sets up default implementations for IPropertyGridModelSource nad IPropertyGridEventHandler
- * @beta
+ * @public
  */
 export function VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps) {
   const modelSource = usePropertyGridModelSource({ dataProvider: props.dataProvider });

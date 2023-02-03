@@ -40,14 +40,6 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   private _status =  MapLayerImageryProviderStatus.Valid;
 
-  /** @internal */
-  protected setStatus(status: MapLayerImageryProviderStatus) {
-    if (this.status !== status) {
-      this._status = status;
-      this.onStatusChanged.raiseEvent(this);
-    }
-  }
-
   public get status() { return this._status;}
   public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid);}
 
@@ -147,6 +139,24 @@ export abstract class MapLayerImageryProvider {
 
     assert(false, "Invalid tile content type");
     return undefined;
+  }
+
+  /** Change the status of this provider.
+   * Sub-classes should override 'onStatusUpdated' instead of this method.
+   *  @internal */
+  public setStatus(status: MapLayerImageryProviderStatus) {
+    if (this._status !== status) {
+      this.onStatusUpdated (status);
+      this._status = status;
+      this.onStatusChanged.raiseEvent(this);
+    }
+  }
+
+  /** Method called whenever the status changes, giving the opportunity to sub-classes to have a custom behavior.
+   *  @internal
+   * */
+  protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus){
+
   }
 
   /** @internal */

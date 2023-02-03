@@ -79,8 +79,8 @@ export function BasicNavigationWidget(props: BasicNavigationWidgetProps) {
 
   return (
     <NavigationWidgetComposer className={className}
-      horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Horizontal} />}
-      verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />}
+      horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Horizontal} />} // eslint-disable-line deprecation/deprecation
+      verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />} // eslint-disable-line deprecation/deprecation
     />
   );
 }

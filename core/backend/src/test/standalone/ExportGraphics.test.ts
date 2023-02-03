@@ -38,22 +38,17 @@ describe("exportGraphics", () => {
   }
 
   function insertRenderMaterialWithTexture(name: string, textureId: Id64String): Id64String {
-    const matParams: RenderMaterialElement.Params = {
-      paletteName: "test-palette",
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      patternMap: { TextureId: textureId },
-    };
-    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, matParams);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, { paletteName: "test-palette", patternMap: { TextureId: textureId } });
   }
 
   function insertRenderMaterial(name: string, colorDef: ColorDef): Id64String {
     const colors = colorDef.colors;
-    const matParams: RenderMaterialElement.Params = {
+    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, {
       paletteName: "test-palette",
       color: [colors.r / 255, colors.g / 255, colors.b / 255],
       transmit: colors.t / 255,
-    };
-    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, matParams);
+    });
   }
 
   before(() => {

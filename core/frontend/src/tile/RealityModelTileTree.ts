@@ -7,7 +7,8 @@
  */
 
 import {
-  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
+  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStrings,
+  compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
@@ -41,39 +42,42 @@ interface RealityTreeId {
   maskModelIds?: string;
   deduplicateVertices: boolean;
   produceGeometry?: boolean;
-  toEcefTransform?: Transform;
 }
 
-function compareOrigins(lhs: XYZ, rhs: XYZ): number {
-  let cmp = compareNumbers(lhs.x, rhs.x);
-  if (0 === cmp) {
-    cmp = compareNumbers(lhs.y, rhs.y);
-    if (0 === cmp)
-      cmp = compareNumbers(lhs.z, rhs.z);
+namespace RealityTreeId {
+  function compareOrigins(lhs: XYZ, rhs: XYZ): number {
+    return compareNumbers(lhs.x, rhs.x) || compareNumbers(lhs.y, rhs.y) || compareNumbers(lhs.z, rhs.z);
   }
 
-  return cmp;
-}
+  function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
+    for (let i = 0; i < 9; i++) {
+      const cmp = compareNumbers(lhs.coffs[i], rhs.coffs[i]);
+      if (0 !== cmp)
+        return cmp;
+    }
 
-function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
-  for (let i = 0; i < 9; i++) {
-    const cmp = compareNumbers(lhs.coffs[i], rhs.coffs[i]);
-    if (0 !== cmp)
-      return cmp;
+    return 0;
   }
 
-  return 0;
-}
+  function compareTransforms(lhs: Transform, rhs: Transform) {
+    return compareOrigins(lhs.origin, rhs.origin) || compareMatrices(lhs.matrix, rhs.matrix);
+  }
 
-function compareTransforms(lhs?: Transform, rhs?: Transform) {
-  if (undefined === lhs)
-    return undefined !== rhs ? -1 : 0;
+  function compareRealityDataSourceKeys(lhs: RealityDataSourceKey, rhs: RealityDataSourceKey): number {
+    return compareStringsOrUndefined(lhs.id, rhs.id) || compareStringsOrUndefined(lhs.format, rhs.format) || compareStringsOrUndefined(lhs.iTwinId, rhs.iTwinId);
+  }
 
-  else if (undefined === rhs)
-    return 1;
+  export function compareWithoutModelId(lhs: RealityTreeId, rhs: RealityTreeId): number {
+    return compareRealityDataSourceKeys(lhs.rdSourceKey, rhs.rdSourceKey)
+      || compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices)
+      || compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry)
+      || compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds)
+      || comparePossiblyUndefined((ltf, rtf) => compareTransforms(ltf, rtf), lhs.transform, rhs.transform);
+  }
 
-  const cmp = compareOrigins(lhs.origin, rhs.origin);
-  return 0 !== cmp ? cmp : compareMatrices(lhs.matrix, rhs.matrix);
+  export function compare(lhs: RealityTreeId, rhs: RealityTreeId): number {
+    return compareStrings(lhs.modelId, rhs.modelId) || compareWithoutModelId(lhs, rhs);
+  }
 }
 
 class RealityTreeSupplier implements TileTreeSupplier {
@@ -92,35 +96,24 @@ class RealityTreeSupplier implements TileTreeSupplier {
   }
 
   public compareTileTreeIds(lhs: RealityTreeId, rhs: RealityTreeId): number {
-    let cmp = compareStringsOrUndefined(lhs.rdSourceKey.id, rhs.rdSourceKey.id);
-    if (0 === cmp) {
-      cmp = compareStringsOrUndefined(lhs.rdSourceKey.format, rhs.rdSourceKey.format);
-      if (0 === cmp) {
-        cmp = compareStringsOrUndefined(lhs.rdSourceKey.iTwinId, rhs.rdSourceKey.iTwinId);
-        if (0 === cmp) {
-          cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
-          if (0 === cmp)
-            cmp = compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices);
-        }
+    return RealityTreeId.compare(lhs, rhs);
+  }
+
+  public findCompatibleContextRealityModelId(id: RealityTreeId, style: DisplayStyleState): Id64String | undefined {
+    const owners = style.iModel.tiles.getTreeOwnersForSupplier(this);
+    for (const owner of owners) {
+      // Find an existing tree with the same Id, ignoring its model Id.
+      if (0 === RealityTreeId.compareWithoutModelId(id, owner.id)) {
+        const modelId = owner.id.modelId;
+        assert(undefined !== modelId);
+
+        // If the model Id is unused by any other context reality model in the view and does not identify a persistent reality model, use it.
+        if (Id64.isTransientId64(modelId) && !style.contextRealityModelStates.some((model) => model.modelId === modelId))
+          return modelId;
       }
     }
 
-    if (0 !== cmp)
-      return cmp;
-
-    cmp = compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds);
-    if (0 !== cmp)
-      return cmp;
-
-    cmp = compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry);
-    if (0 !== cmp)
-      return cmp;
-
-    cmp = compareTransforms(lhs.transform, rhs.transform);
-    if (0 !== cmp)
-      return cmp;
-
-    return compareTransforms(lhs.toEcefTransform, rhs.toEcefTransform);
+    return undefined;
   }
 }
 
@@ -545,6 +538,7 @@ export class RealityModelTileTree extends RealityTileTree {
     this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
     if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
       const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
+      /* eslint-disable-next-line deprecation/deprecation */
       this.iModel.expandDisplayedExtents(worldContentRange);
     }
   }
@@ -560,7 +554,6 @@ export namespace RealityModelTileTree {
     rdSourceKey: RealityDataSourceKey;
     modelId?: Id64String;
     tilesetToDbTransform?: TransformProps;
-    tilesetToEcefTransform?: TransformProps;
     name?: string;
     classifiers?: SpatialClassifiers;
     planarClipMask?: PlanarClipMaskSettings;
@@ -577,7 +570,6 @@ export namespace RealityModelTileTree {
     protected readonly _name: string;
     protected _transform?: Transform;
     protected _iModel: IModelConnection;
-    private _modelId: Id64String;
     private _isGlobal?: boolean;
     protected readonly _source: RealityModelSource;
     protected _planarClipMask?: PlanarClipMaskState;
@@ -585,7 +577,7 @@ export namespace RealityModelTileTree {
     protected _mapDrapeTree?: TileTreeReference;
     protected _getDisplaySettings: () => RealityModelDisplaySettings;
 
-    public get modelId() { return this._modelId; }
+    public abstract get modelId(): Id64String;
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
 
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
@@ -605,7 +597,6 @@ export namespace RealityModelTileTree {
     public constructor(props: RealityModelTileTree.ReferenceBaseProps) {
       super();
       this._name = undefined !== props.name ? props.name : "";
-      this._modelId = props.modelId ? props.modelId : props.iModel.transientIds.getNext();
       let transform;
       if (undefined !== props.tilesetToDbTransform) {
         const tf = Transform.fromJSON(props.tilesetToDbTransform);
@@ -785,6 +776,7 @@ export namespace RealityModelTileTree {
 export class RealityTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;
   private readonly _produceGeometry?: boolean;
+  private readonly _modelId: Id64String;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
@@ -798,19 +790,31 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
 
     if (this._produceGeometry)
       this.collectTileGeometry = (collector) => this._collectTileGeometry(collector);
+
+    let modelId = props.modelId;
+    if (undefined === modelId && this._source instanceof DisplayStyleState) {
+      const treeId = this.createTreeId(Id64.invalid);
+      modelId = realityTreeSupplier.findCompatibleContextRealityModelId(treeId, this._source);
+    }
+
+    this._modelId = modelId ?? props.iModel.transientIds.getNext();
   }
 
-  public get treeOwner(): TileTreeOwner {
-    const treeId: RealityTreeId = {
+  public override get modelId() { return this._modelId; }
+
+  private createTreeId(modelId: Id64String): RealityTreeId {
+    return {
       rdSourceKey: this._rdSourceKey,
       transform: this._transform,
-      modelId: this.modelId,
+      modelId,
       maskModelIds: this.maskModelIds,
       deduplicateVertices: this._wantWiremesh,
       produceGeometry: this._produceGeometry,
     };
+  }
 
-    return realityTreeSupplier.getOwner(treeId, this._iModel);
+  public get treeOwner(): TileTreeOwner {
+    return realityTreeSupplier.getOwner(this.createTreeId(this.modelId), this._iModel);
   }
 
   protected override _createGeometryTreeReference(): GeometryTileTreeReference {

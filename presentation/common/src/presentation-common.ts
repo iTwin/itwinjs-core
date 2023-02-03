@@ -68,6 +68,7 @@ export * from "./presentation-common/content/ContentTraverser";
  * @docs-group-description Hierarchies
  * Types related to presentation [hierarchies]($docs/presentation/hierarchies/index.md).
  */
+export * from "./presentation-common/hierarchy/HierarchyLevel";
 export * from "./presentation-common/hierarchy/Key";
 export * from "./presentation-common/hierarchy/Node";
 export * from "./presentation-common/hierarchy/NodePathElement";

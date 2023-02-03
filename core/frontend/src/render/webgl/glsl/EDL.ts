@@ -6,7 +6,6 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { EDLCalcBasicGeometry, EDLCalcFullGeometry, EDLFilterGeometry, EDLMixGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
@@ -48,7 +47,7 @@ const calcBasicEDL = `
 `;
 
 /** @internal */
-export function createEDLCalcBasicProgram(context: WebGLContext): ShaderProgram {
+export function createEDLCalcBasicProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
@@ -123,7 +122,7 @@ const calcFullEDL = `
 `;
 
 /** @internal */
-export function createEDLCalcFullProgram(context: WebGLContext): ShaderProgram {
+export function createEDLCalcFullProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
@@ -203,7 +202,7 @@ const filterEDL = `
 `;
 
 /** @internal */
-export function createEDLFilterProgram(context: WebGLContext): ShaderProgram {
+export function createEDLFilterProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
@@ -250,7 +249,7 @@ const mixEDL = `
 `;
 
 /** @internal */
-export function createEDLMixProgram(context: WebGLContext): ShaderProgram {
+export function createEDLMixProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 

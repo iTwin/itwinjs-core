@@ -22,10 +22,10 @@ global.WheelEvent = global.MouseEvent;
 // See https://github.com/jsdom/jsdom/pull/2926
 global.DOMRect = class DOMRect {
   constructor(x, y, width, height) {
-    this.x = x ?? 0;
-    this.y = y ?? 0;
-    this.width = width ?? 0;
-    this.height = height ?? 0;
+    this.x = x || 0;
+    this.y = y || 0;
+    this.width = width || 0;
+    this.height = height || 0;
     this.top = this.y;
     this.left = this.x;
     this.right = this.x + this.width;

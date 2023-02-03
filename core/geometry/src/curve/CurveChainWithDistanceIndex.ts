@@ -135,7 +135,7 @@ export class PathFragment {
     this.chainDistance0 = totalDistance - d1;
     this.chainDistance1 = totalDistance - d0;
   }
-  /** @deprecated Use childFractionToChainDistance */
+  /** @deprecated in 3.x. Use childFractionToChainDistance */
   public childFractionTChainDistance(fraction: number): number {
     return this.childFractionToChainDistance(fraction);
   }

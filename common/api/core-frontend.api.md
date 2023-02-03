@@ -264,6 +264,7 @@ import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
+import { RenderType } from '@itwin/webgl-compatibility';
 import { RgbColor } from '@itwin/core-common';
 import { RgbColorProps } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
@@ -1154,9 +1155,12 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean);
     // (undocumented)
     protected _accessClient: MapLayerAccessClient | undefined;
+    protected _accessTokenRequired: boolean;
     protected fetch(url: URL, options?: RequestInit): Promise<Response>;
+    protected getServiceJson(): Promise<ArcGISServiceMetadata | undefined>;
     // (undocumented)
     protected _lastAccessToken: MapLayerAccessToken | undefined;
+    protected onStatusUpdated(status: MapLayerImageryProviderStatus): void;
 }
 
 // @internal (undocumented)
@@ -1191,6 +1195,12 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
         type: "Buffer";
         data: number[];
     };
+}
+
+// @internal
+export interface ArcGISServiceMetadata {
+    accessTokenRequired: boolean;
+    content: any;
 }
 
 // @internal (undocumented)
@@ -1229,13 +1239,14 @@ export class ArcGisUtilities {
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
-    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<any>;
+    static getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean, requireToken?: boolean): Promise<ArcGISServiceMetadata | undefined>;
     // (undocumented)
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
         minLod?: number;
         maxLod?: number;
     };
+    static isEpsg3857Compatible(tileInfo: any): boolean;
     static validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
@@ -2589,8 +2600,15 @@ export type DownloadBriefcaseId = {
 // @public
 export type DownloadBriefcaseOptions = DownloadBriefcaseId & {
     fileName?: string;
+    progressCallback?: OnDownloadProgress;
     progressInterval?: number;
 };
+
+// @public
+export interface DownloadProgressInfo {
+    loaded: number;
+    total: number;
+}
 
 // @internal
 export interface DrawClipOptions {
@@ -3429,7 +3447,7 @@ export class FuzzySearchResults<T> implements Iterable<T> {
     results: any[];
 }
 
-// @alpha
+// @beta
 export interface GenericAbortSignal {
     addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
     removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
@@ -4622,6 +4640,15 @@ export interface ImageryTileContent extends TileContent {
 }
 
 // @internal
+export class ImageryTileTreeState {
+    constructor();
+    clone(): ImageryTileTreeState;
+    getScaleRangeVisibility(): MapTileTreeScaleRangeVisibility;
+    reset(): void;
+    setScaleRangeVisibility(visible: boolean): void;
+}
+
+// @internal
 export interface Imdl {
     // (undocumented)
     animationNodes?: ImdlAnimationNodes;
@@ -4842,8 +4869,10 @@ export abstract class IModelConnection extends IModel {
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // @internal (undocumented)
     disableGCS(disable: boolean): void;
+    // @deprecated
     readonly displayedExtents: AxisAlignedBox3d;
     readonly elements: IModelConnection.Elements;
+    // @deprecated
     expandDisplayedExtents(range: Range3d): void;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
     fontMap?: FontMap;
@@ -4881,8 +4910,6 @@ export abstract class IModelConnection extends IModel {
     static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
-    // @internal
-    readonly onDisplayedExtentsExpansion: BeEvent<() => void>;
     // @internal
     readonly onMapElevationLoaded: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
@@ -5851,12 +5878,12 @@ export abstract class MapLayerImageryProvider {
     get mutualExclusiveSubLayer(): boolean;
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
+    protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus): void;
     // (undocumented)
     resetStatus(): void;
     // (undocumented)
     protected setRequestAuthorization(headers: Headers): void;
-    // (undocumented)
-    protected setStatus(status: MapLayerImageryProviderStatus): void;
+    setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
     // (undocumented)
@@ -5885,12 +5912,25 @@ export enum MapLayerImageryProviderStatus {
     Valid = 0
 }
 
+// @internal
+export interface MapLayerIndex {
+    index: number;
+    isOverlay: boolean;
+}
+
 // @beta
 export interface MapLayerOptions {
     [format: string]: MapLayerKey | undefined;
     AzureMaps?: MapLayerKey;
     BingMaps?: MapLayerKey;
     MapboxImagery?: MapLayerKey;
+}
+
+// @beta
+export interface MapLayerScaleRangeVisibility {
+    index: number;
+    isOverlay: boolean;
+    visibility: MapTileTreeScaleRangeVisibility;
 }
 
 // @public
@@ -5948,6 +5988,7 @@ export class MapLayerSources {
 
 // @public
 export enum MapLayerSourceStatus {
+    InvalidCoordinateSystem = 6,
     InvalidCredentials = 1,
     InvalidFormat = 2,
     InvalidTileTree = 3,
@@ -6058,6 +6099,8 @@ export class MapTile extends RealityTile {
     get heightRange(): Range1d | undefined;
     // @internal (undocumented)
     protected _heightRange: Range1d | undefined;
+    // @internal
+    get hiddenImageryTiles(): ImageryMapTile[] | undefined;
     // @internal (undocumented)
     get imageryIsReady(): boolean;
     // @internal (undocumented)
@@ -6122,6 +6165,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
     // (undocumented)
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
     // (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
     // (undocumented)
@@ -6195,7 +6239,7 @@ export abstract class MapTileProjection {
 export class MapTileTree extends RealityTileTree {
     // @internal
     constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId, applyTerrain: boolean);
-    // @internal (undocumented)
+    // @internal
     addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number): void;
     // @internal (undocumented)
     addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext): void;
@@ -6209,6 +6253,8 @@ export class MapTileTree extends RealityTileTree {
     clearImageryTreesAndClassifiers(): void;
     // @internal (undocumented)
     clearLayers(): void;
+    // @internal
+    cloneImageryTreeState(): Map<string, ImageryTileTreeState>;
     // @internal (undocumented)
     protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]): void;
     // @internal (undocumented)
@@ -6235,6 +6281,8 @@ export class MapTileTree extends RealityTileTree {
     getCornerRays(rectangle: MapCartoRectangle): Ray3d[] | undefined;
     // @internal (undocumented)
     getFractionalTileCorners(quadId: QuadId): Point3d[];
+    // @internal
+    getImageryTreeState(imageryTreeId: string): ImageryTileTreeState | undefined;
     // @internal (undocumented)
     getLayerIndex(imageryTreeId: Id64String): number;
     // @internal (undocumented)
@@ -6247,13 +6295,13 @@ export class MapTileTree extends RealityTileTree {
     // @internal (undocumented)
     globeOrigin: Point3d;
     // @internal (undocumented)
-    imageryTrees: ImageryMapTileTree[];
-    // @internal (undocumented)
     isOverlay: boolean;
     // @internal (undocumented)
     get isTransparent(): boolean;
     // @internal (undocumented)
     layerClassifiers: Map<number, RenderPlanarClassifier>;
+    // @internal (undocumented)
+    layerImageryTrees: MapLayerTreeSetting[];
     // @internal
     loadReprojectionCache(tile: MapTile): Promise<void>;
     // @internal (undocumented)
@@ -6278,6 +6326,8 @@ export class MapTileTree extends RealityTileTree {
     pointAboveEllipsoid(point: Point3d): boolean;
     // @internal (undocumented)
     produceGeometry?: boolean;
+    // @internal
+    reportTileVisibility(args: TileDrawArgs, selected: RealityTile[]): void;
     // @internal (undocumented)
     sourceTilingScheme: MapTilingScheme;
     // @internal (undocumented)
@@ -6309,6 +6359,7 @@ export class MapTileTreeReference extends TileTreeReference {
     getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined;
     // (undocumented)
     getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
+    getMapLayerScaleRangeVisibility(index: number): MapTileTreeScaleRangeVisibility;
     // (undocumented)
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // (undocumented)
@@ -6343,6 +6394,14 @@ export class MapTileTreeReference extends TileTreeReference {
     unionFitRange(_range: Range3d): void;
     // (undocumented)
     get useDepthBuffer(): boolean;
+}
+
+// @beta
+export enum MapTileTreeScaleRangeVisibility {
+    Hidden = 2,
+    Partial = 3,
+    Unknown = 0,
+    Visible = 1
 }
 
 // @beta
@@ -7147,6 +7206,8 @@ export class NativeApp {
     // @internal (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
+    static requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion): Promise<BriefcaseDownloader>;
+    // @deprecated (undocumented)
     static requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // @internal (undocumented)
     static shutdown(): Promise<void>;
@@ -7366,6 +7427,9 @@ export interface OldTextureImage {
 }
 
 // @public
+export type OnDownloadProgress = (progress: DownloadProgressInfo) => void;
+
+// @public
 export type OnFlashedIdChangedEventArgs = {
     readonly current: Id64String;
     readonly previous: Id64String;
@@ -7469,6 +7533,21 @@ export namespace OrbitGtTileTree {
         // (undocumented)
         orbitGtBlob?: OrbitGtBlobProps;
     }
+}
+
+// @internal
+export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
+    constructor(props: OrbitGtTileTree.ReferenceProps);
+    // (undocumented)
+    get castsShadows(): boolean;
+    // (undocumented)
+    getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
+    // (undocumented)
+    get modelId(): string;
+    // (undocumented)
+    protected _rdSourceKey: RealityDataSourceKey;
+    // (undocumented)
+    readonly treeOwner: TileTreeOwner;
 }
 
 // @public
@@ -7886,8 +7965,10 @@ export interface PublisherProductInfo {
 
 // @public
 export interface PullChangesOptions {
-    // @alpha
+    // @beta
     abortSignal?: GenericAbortSignal;
+    downloadProgressCallback?: OnDownloadProgress;
+    // @deprecated
     progressCallback?: ProgressCallback;
     progressInterval?: number;
 }
@@ -8265,7 +8346,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         protected get maskModelIds(): string | undefined;
         // (undocumented)
-        get modelId(): string;
+        abstract get modelId(): Id64String;
         // (undocumented)
         protected readonly _name: string;
         // (undocumented)
@@ -8304,8 +8385,6 @@ export namespace RealityModelTileTree {
         source: RealityModelSource;
         // (undocumented)
         tilesetToDbTransform?: TransformProps;
-        // (undocumented)
-        tilesetToEcefTransform?: TransformProps;
     }
     // (undocumented)
     export interface ReferenceProps extends ReferenceBaseProps {
@@ -8601,6 +8680,8 @@ export class RealityTileTree extends TileTree {
     preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform): void;
     // @internal (undocumented)
     prune(): void;
+    // @internal
+    reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]): void;
     // @internal (undocumented)
     reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void;
     // @internal (undocumented)
@@ -8652,6 +8733,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     // (undocumented)
     protected get _isLoadingComplete(): boolean;
+    // (undocumented)
+    get modelId(): string;
     // (undocumented)
     protected _rdSourceKey: RealityDataSourceKey;
     // (undocumented)
@@ -9128,13 +9211,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     get supportsCreateImageBitmap(): boolean;
     // @internal (undocumented)
-    get supportsIndexedEdges(): boolean;
-    // @internal (undocumented)
-    get supportsInstancing(): boolean;
-    // @internal (undocumented)
     get supportsLogZBuffer(): boolean;
-    // @internal (undocumented)
-    get supportsNonuniformScaledInstancing(): boolean;
     waitForAllExternalTextures(): Promise<void>;
 }
 
@@ -9155,13 +9232,10 @@ export namespace RenderSystem {
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
         errorOnMissingUniform?: boolean;
-        // @internal
-        filterMapDrapeTextures?: boolean;
-        // @internal
-        filterMapTextures?: boolean;
         logarithmicDepthBuffer?: boolean;
         planProjections?: boolean;
         preserveShaderSourceCode?: boolean;
+        // @deprecated
         useWebGL2?: boolean;
     }
 }
@@ -9453,6 +9527,7 @@ export interface ScreenSpaceEffectBuilder {
     addUniformArray: (params: UniformArrayParams) => void;
     addVarying: (name: string, type: VaryingType) => void;
     finish: () => void;
+    // @deprecated
     readonly isWebGL2: boolean;
     shouldApply?: (context: ScreenSpaceEffectContext) => boolean;
 }
@@ -10162,6 +10237,7 @@ export class SpatialViewState extends ViewState3d {
     forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal (undocumented)
     forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
+    // @deprecated
     protected getDisplayedExtents(): AxisAlignedBox3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
@@ -13367,6 +13443,10 @@ export abstract class Viewport implements IDisposable, TileUser {
     getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo>;
     // @internal (undocumented)
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    // @internal
+    getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
+    // @beta
+    getMapLayerScaleRangeVisibility(index: number, isOverlay: boolean): MapTileTreeScaleRangeVisibility;
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
@@ -13379,6 +13459,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     // @internal (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     getWorldFrustum(box?: Frustum): Frustum;
+    // @internal
+    protected hasAdditionalTiles(): boolean;
     // @internal (undocumented)
     protected _hasMissingTiles: boolean;
     hasTiledGraphicsProvider(provider: TiledGraphicsProvider): boolean;
@@ -13436,6 +13518,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     readonly onFlashedIdChanged: BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>;
     // @alpha
     readonly onFrameStats: BeEvent<(frameStats: Readonly<FrameStats>) => void>;
+    // @beta
+    readonly onMapLayerScaleRangeVisibilityChanged: BeEvent<(layerIndexes: MapLayerScaleRangeVisibility[]) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onRender: BeEvent<(vp: Viewport) => void>;
     // @internal
@@ -14310,6 +14394,8 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     initialize(): Promise<void>;
+    // (undocumented)
+    get transparentBackgroundString(): string;
 }
 
 // @internal (undocumented)

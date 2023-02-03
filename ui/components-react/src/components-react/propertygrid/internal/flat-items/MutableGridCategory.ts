@@ -13,7 +13,7 @@ import { IMutableGridItemFactory } from "./MutableGridItemFactory";
 
 /**
  * Category name to PropertyRecord[] key pair interface used to describe which records belong to which category.
- * @beta
+ * @public
  */
 export interface CategoryRecordsDict {
   [categoryName: string]: PropertyRecord[];
@@ -21,7 +21,7 @@ export interface CategoryRecordsDict {
 
 /**
  * Mutable wrapper object for PropertyCategory which provides methods for working with and managing category and record children hierarchies
- * @beta
+ * @public
  */
 export class MutableGridCategory extends MutableFlatPropertyGridItem implements IMutableGridCategoryItem {
   private _children: IMutableFlatGridItem[];

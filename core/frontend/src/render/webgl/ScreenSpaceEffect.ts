@@ -58,7 +58,7 @@ class Builder {
   }
 
   public get isWebGL2(): boolean {
-    return System.instance.isWebGL2;
+    return true;
   }
 
   public addUniform(params: UniformParams): void {

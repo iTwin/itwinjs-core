@@ -332,6 +332,22 @@ export class ContextRealityModel {
 export interface ContextRealityModelsContainer {
   /** The list of reality models. */
   contextRealityModels?: ContextRealityModelProps[];
+  /** @internal used for type discrimination with ContextRealityModelsArgs. */
+  container?: never;
+}
+
+/** Arguments supplied to the constructor of [[ContextRealityModels]].
+ * @public
+ */
+export interface ContextRealityModelsArgs {
+  /** The object that holds the JSON representation of the list of context reality models. */
+  container: ContextRealityModelsContainer;
+  /** Optional function used to instantiate each [[ContextRealityModel]] in the list. */
+  createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+  /** If true, the list will not be populated by the constructor. Instead, the caller is responsible for calling [[ContextRealityModels.populate]] exactly once after construction.
+   * This is chiefly intended for use internally by the [DisplayStyleState]($frontend) constructor.
+   */
+  deferPopulating?: boolean;
 }
 
 /** A list of [[ContextRealityModel]]s attached to a [[DisplayStyleSettings]]. The list may be presented to the user with the name and description of each model.
@@ -355,17 +371,48 @@ export class ContextRealityModels {
   /** Event dispatched when a model is [[add]]ed, [[delete]]d, [[replace]]d, or [[update]]d. */
   public readonly onChanged = new BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>();
 
-  /** Construct a new list of reality models from its JSON representation. THe list will be initialized from `container.classifiers` and that JSON representation
-   * will be kept in sync with changes made to the list. The caller should not directly modify `container.classifiers` or its contents as that will cause the list
+  /** Construct a new list of reality models from its JSON representation. The list will be initialized from `container.contextRealityModels` and that JSON representation
+   * will be kept in sync with changes made to the list. The caller should not directly modify `container.contextRealityModels` or its contents as that will cause the list
    * to become out of sync with the JSON representation.
    * @param container The object that holds the JSON representation of the list.
-   * @param createContextRealityModel Optional function used to instantiate ContextRealityModels added to the list.
+   * @param createContextRealityModel Optional function used to instantiate each [[ContextRealityModel]] in the list.
    */
-  public constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel) {
+  public constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel);
+
+  /** Construct a new list of reality models from its JSON representation. The list will be initialized from `args.container.contextRealityModels` and that JSON representation
+   * will be kept in sync with changes made to the list. The caller should not directly modify `container.contextRealityModels` or its contents as that will cause the list
+   * to become out of sync with the JSON representation.
+   * @param args Specifies the container and optionally customizes how the list of models is populated.
+   */
+  public constructor(args: ContextRealityModelsArgs);
+
+  /** @internal */
+  public constructor(arg0: ContextRealityModelsContainer | ContextRealityModelsArgs, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel) {
+    let container: ContextRealityModelsContainer;
+    let defer = false;
+    if (arg0.container) {
+      container = arg0.container;
+      createContextRealityModel = arg0.createContextRealityModel;
+      defer = true === arg0.deferPopulating;
+    } else {
+      container = arg0;
+    }
+
     this._container = container;
     this._createModel = createContextRealityModel ?? ((props) => new ContextRealityModel(props));
 
-    const models = container.contextRealityModels;
+    if (!defer)
+      this.populate();
+  }
+
+  /** @internal needs to be invoked after DisplayStyleSettings constructor by DisplayStyleState constructor.*/
+  /** Populate the list of [[models]] from the container that was supplied to the constructor.
+   * This should only be invoked once, and only if [[ContextRealityModelsArgs.deferPopulating]] was specified as `true` when calling the constructor.
+   * @public
+   */
+  public populate(): void {
+    assert(this._models.length === 0, "do not call ContextRealityModels.populate more than once");
+    const models = this._container.contextRealityModels;
     if (models)
       for (const model of models)
         this._models.push(this.createModel(model));

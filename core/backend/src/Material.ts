@@ -7,7 +7,9 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
+import {
+  BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
+} from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -89,8 +91,45 @@ export class RenderMaterialElement extends DefinitionElement {
    * @returns The newly constructed RenderMaterial element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): RenderMaterialElement {
-    const map = undefined !== params.patternMap ? { Pattern: params.patternMap } : undefined;
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): RenderMaterialElement {
+    let maps: RenderMaterialAssetMapsProps | undefined;
+    const pbr_normal = params.normalMap?.scale;
+    if (params.patternMap || params.normalMap) {
+      // If both normal and pattern map are present, their texture mapping modes, angles, scales, etc are expected to match.
+      type TexMap = Omit<TextureMapProps, "TextureId">;
+      function choose<K extends keyof TexMap>(obj: TexMap, key: K): void {
+        const pat = params.patternMap;
+        if (pat && undefined !== pat[key])
+          obj[key] = pat[key];
+        else if (params.normalMap && undefined !== params.normalMap[key])
+          obj[key] = params.normalMap[key];
+      }
+
+      const baseProps: TexMap = { };
+      choose(baseProps, "pattern_angle");
+      choose(baseProps, "pattern_u_flip");
+      choose(baseProps, "pattern_flip");
+      choose(baseProps, "pattern_scale");
+      choose(baseProps, "pattern_offset");
+      choose(baseProps, "pattern_scalemode");
+      choose(baseProps, "pattern_mapping");
+      choose(baseProps, "pattern_weight");
+
+      maps = { };
+      if (params.patternMap)
+        maps.Pattern = { ...params.patternMap, ...baseProps };
+
+      if (params.normalMap) {
+        maps.Normal = {
+          ...params.normalMap,
+          ...baseProps,
+        };
+
+        delete (maps.Normal as any).scale;
+      }
+    }
+
+    // const map = undefined !== params.patternMap ? { Pattern: params.patternMap } : undefined;
     const renderMaterialProps: RenderMaterialProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, materialName),
@@ -115,15 +154,18 @@ export class RenderMaterialElement extends DefinitionElement {
             reflect: params.reflect,
             HasReflectColor: params.reflectColor !== undefined,
             reflect_color: params.reflectColor,
-            Map: map,
+            Map: maps,
+            pbr_normal,
           },
         },
       },
       model: definitionModelId,
       isPrivate: false,
     };
+
     return new RenderMaterialElement(renderMaterialProps, iModelDb);
   }
+
   /**
    * Insert a new RenderMaterial into a model.
    * @param iModelDb Insert into this iModel
@@ -133,44 +175,73 @@ export class RenderMaterialElement extends DefinitionElement {
    * @returns The Id of the newly inserted RenderMaterial element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): Id64String {
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String {
     const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
     return iModelDb.elements.insertElement(renderMaterial.toJSON());
   }
 }
 
-/** @public
- * @note color, specularColor and reflectColor are stored as [R,G,B] where each value is between 0 and 1
-*/
+/** @public */
 export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
-  /** Parameters used to construct a [[RenderMaterial]]. */
+  /** Parameters used to construct a [[RenderMaterial]].
+   * The persistent JSON representation - [RenderMaterialAssetProps]($common) - is quite verbose and unwieldy. This representation simplifies it somewhat.
+   * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
+   * @deprecated in 3.6 because it is not useful to use a `class` - just use [[RenderMaterialElementParams]] directly instead.
+   */
   export class Params {
-    /** The palette name which categorizes this RenderMaterial */
+    /** A required palette name that categorizes this RenderMaterial */
     public paletteName: string;
-    /** The optional description for this RenderMaterial */
+    /** An optional description of this RenderMaterial */
     public description?: string;
-    /** If defined, use this color for surface fill or diffuse illumination; if undefined, defaults to black */
-    public color?: number[];
-    /** If defined, use this color for surface specular illumination; if undefined, defaults to black */
-    public specularColor?: number[];
-    /** If defined, apply this specular exponent(surface shininess); range is 0 to 128; if undefined, defaults to 15.0 * 0.9  */
+    /** If defined, the color to use for surface fill or diffuse illumination, overriding the surface's own color. */
+    public color?: RgbFactorProps;
+    /** The color to use for specular illumination. Default: black. */
+    public specularColor?: RgbFactorProps;
+    /** The specular exponent describing the surface's shininess, in the range 0 through 128.
+     * Default: 0.
+     */
     public finish?: number;
-    /** If defined, apply this surface transparency; if undefined, defaults to 0.0 */
+    /** A transparency to be applied to the surface, ranging from 0 (fully opaque) to 1 (fully transparent).
+     * The surface's own transparency will be multiplied by `(1 - transmit)`. permitting the material to increase but not decrease the surface transparency.
+     * Default: 13.5.
+     */
     public transmit?: number;
-    /** If defined, apply this surface diffuse reflectivity; if undefined, defaults to 0.6 */
+    /** The surface's diffuse reflectivity from 0.0 to 1.0. Default: 0.6. */
     public diffuse?: number;
-    /** If defined, apply this surface specular reflectivity; if undefined, defaults to 0.0.  NOTE: The actual JSON allows a HasSpecular property to be true and the specular value itself undefined, in which case the value 0.4 would be used.  This API does not allow this case. */
+    /** The surface's specular reflectivity from 0.0 to 1.0. Default: 0.0. */
     public specular?: number;
-    /** If defined, apply this surface environmental reflectivity; stored as fraction of specular in V8 material settings; if undefined, defaults to 0.0 */
+    /** Currently unused. */
     public reflect?: number;
-    /** If defined, apply this surface reflectance color; if undefined, defaults to whatever the specularColor is */
+    /** Currently unused. */
     public reflectColor?: number[];
-    /** If defined, specifies the pattern mapping. */
+    /** Specifies a texture image to map onto the surface, replacing or mixing with the surface's own color and transparency.
+     * @note With the exception of `TextureId`, the [TextureMapProps]($common) of [[patternMap]] and [[normalMap]] are expected to be identical. If a property is defined in both
+     * [[patternMap]]] and [[normalMap]], the value in [[patternMap]] takes precedence.
+     */
     public patternMap?: TextureMapProps;
+    /** Specifies a [normal map](https://en.wikipedia.org/wiki/Normal_mapping) to apply to the surface to simulate more surface detail than is present in the
+     * surface's geometry.
+     * @note With the exception of `TextureId`, the [TextureMapProps]($common) of [[patternMap]] and [[normalMap]] are expected to be identical. If a property is defined in both
+     * [[patternMap]]] and [[normalMap]], the value in [[patternMap]] takes precedence.
+     */
+    public normalMap?: NormalMapProps & {
+      /** A factor by which to multiply the components of the normal vectors read from the texture.
+       * Default: 1.
+       */
+      scale?: number;
+    };
 
-    /** Construct a new RenderMaterial.Params object with the specified paletteName.  Alter the public members on that object to specify settings. */
+    /** Construct a new RenderMaterial.Params object with the specified paletteName. Alter the public members on that object to specify settings. */
     public constructor(paletteName: string) {
       this.paletteName = paletteName;
     }
   }
+}
+
+/** Parameters used to create a [[RenderMaterial]] element.
+ * The persistent JSON representation - [RenderMaterialAssetProps]($common) - is quite verbose and unwieldy. This representation simplifies it somewhat.
+ * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
+ * @public
+ */
+export interface RenderMaterialElementParams extends RenderMaterialElement.Params { // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-empty-interface
 }
