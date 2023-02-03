@@ -18,7 +18,7 @@ import {
   ChannelRootAspect, ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
   ElementRefersToElements, ElementUniqueAspect, Entity, EntityReferences, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
-  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
+  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, StandaloneDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
   ChangeOpCode, Code, CodeSpec, ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, EntityReferenceSet,
@@ -1151,7 +1151,7 @@ export class IModelTransformer extends IModelExportHandler {
      */
     doUpgrade = true,
   } = {}): Promise<void> {
-    if (doUpgrade && this.targetDb instanceof BriefcaseDb) {
+    if (doUpgrade && this.targetDb instanceof BriefcaseDb && !(this.targetDb instanceof StandaloneDb)) {
       this.targetDb.close();
       await BriefcaseDb.upgradeSchemas({ fileName: this.targetDb.pathName });
     }
