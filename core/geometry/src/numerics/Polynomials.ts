@@ -1676,6 +1676,17 @@ export class SmallSystem {
     }
     return undefined;
   }
+  /**
+   * Compute the intersection of three planes.
+   * @param xyzA point on the first plane
+   * @param normalA normal of the first plane
+   * @param xyzB point on the second plane
+   * @param normalB normal of the second plane
+   * @param xyzC point on the third plane
+   * @param normalC normal of the third plane
+   * @param result optional result
+   * @returns intersection point of the three planes (as a Vector3d), or undefined if at least two planes are parallel.
+   */
   public static intersect3Planes(
     xyzA: Point3d, normalA: Vector3d,
     xyzB: Point3d, normalB: Vector3d,
