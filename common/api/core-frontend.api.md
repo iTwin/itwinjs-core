@@ -264,6 +264,7 @@ import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
+import { RenderType } from '@itwin/webgl-compatibility';
 import { RgbColor } from '@itwin/core-common';
 import { RgbColorProps } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
@@ -4868,8 +4869,10 @@ export abstract class IModelConnection extends IModel {
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // @internal (undocumented)
     disableGCS(disable: boolean): void;
+    // @deprecated
     readonly displayedExtents: AxisAlignedBox3d;
     readonly elements: IModelConnection.Elements;
+    // @deprecated
     expandDisplayedExtents(range: Range3d): void;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
     fontMap?: FontMap;
@@ -4907,8 +4910,6 @@ export abstract class IModelConnection extends IModel {
     static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
-    // @internal
-    readonly onDisplayedExtentsExpansion: BeEvent<() => void>;
     // @internal
     readonly onMapElevationLoaded: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
@@ -7534,6 +7535,21 @@ export namespace OrbitGtTileTree {
     }
 }
 
+// @internal
+export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
+    constructor(props: OrbitGtTileTree.ReferenceProps);
+    // (undocumented)
+    get castsShadows(): boolean;
+    // (undocumented)
+    getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
+    // (undocumented)
+    get modelId(): string;
+    // (undocumented)
+    protected _rdSourceKey: RealityDataSourceKey;
+    // (undocumented)
+    readonly treeOwner: TileTreeOwner;
+}
+
 // @public
 export class OrthographicViewState extends SpatialViewState {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
@@ -8330,7 +8346,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         protected get maskModelIds(): string | undefined;
         // (undocumented)
-        get modelId(): string;
+        abstract get modelId(): Id64String;
         // (undocumented)
         protected readonly _name: string;
         // (undocumented)
@@ -8369,8 +8385,6 @@ export namespace RealityModelTileTree {
         source: RealityModelSource;
         // (undocumented)
         tilesetToDbTransform?: TransformProps;
-        // (undocumented)
-        tilesetToEcefTransform?: TransformProps;
     }
     // (undocumented)
     export interface ReferenceProps extends ReferenceBaseProps {
@@ -8719,6 +8733,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     // (undocumented)
     protected get _isLoadingComplete(): boolean;
+    // (undocumented)
+    get modelId(): string;
     // (undocumented)
     protected _rdSourceKey: RealityDataSourceKey;
     // (undocumented)
@@ -9195,13 +9211,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     get supportsCreateImageBitmap(): boolean;
     // @internal (undocumented)
-    get supportsIndexedEdges(): boolean;
-    // @internal (undocumented)
-    get supportsInstancing(): boolean;
-    // @internal (undocumented)
     get supportsLogZBuffer(): boolean;
-    // @internal (undocumented)
-    get supportsNonuniformScaledInstancing(): boolean;
     waitForAllExternalTextures(): Promise<void>;
 }
 
@@ -9222,13 +9232,10 @@ export namespace RenderSystem {
         dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
         errorOnMissingUniform?: boolean;
-        // @internal
-        filterMapDrapeTextures?: boolean;
-        // @internal
-        filterMapTextures?: boolean;
         logarithmicDepthBuffer?: boolean;
         planProjections?: boolean;
         preserveShaderSourceCode?: boolean;
+        // @deprecated
         useWebGL2?: boolean;
     }
 }
@@ -9520,6 +9527,7 @@ export interface ScreenSpaceEffectBuilder {
     addUniformArray: (params: UniformArrayParams) => void;
     addVarying: (name: string, type: VaryingType) => void;
     finish: () => void;
+    // @deprecated
     readonly isWebGL2: boolean;
     shouldApply?: (context: ScreenSpaceEffectContext) => boolean;
 }
@@ -10229,6 +10237,7 @@ export class SpatialViewState extends ViewState3d {
     forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal (undocumented)
     forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
+    // @deprecated
     protected getDisplayedExtents(): AxisAlignedBox3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
@@ -14385,6 +14394,8 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     initialize(): Promise<void>;
+    // (undocumented)
+    get transparentBackgroundString(): string;
 }
 
 // @internal (undocumented)

@@ -6,7 +6,6 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { SingleTexturedViewportQuadGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
@@ -28,7 +27,7 @@ const computeColorNoAlpha = `
 `;
 
 /** @internal */
-export function createCopyColorProgram(context: WebGLContext, copyAlpha: boolean = true): ShaderProgram {
+export function createCopyColorProgram(context: WebGL2RenderingContext, copyAlpha: boolean = true): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 

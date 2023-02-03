@@ -17,10 +17,12 @@ import { MobilePushConnection, MobilePushTransport } from "./MobilePush";
 import { MobileRpcConfiguration } from "./MobileRpcManager";
 import { MobileRpcRequest } from "./MobileRpcRequest";
 
-/** @beta */
+/* eslint-disable deprecation/deprecation */
+
+/** @internal */
 export type MobileRpcChunks = Array<string | Uint8Array>;
 
-/** @beta */
+/** @internal */
 export interface MobileRpcGateway {
   handler: (payload: ArrayBuffer | string, connectionId: number) => void;
   sendString: (message: string, connectionId: number) => void;
@@ -30,7 +32,7 @@ export interface MobileRpcGateway {
 }
 
 /** RPC interface protocol for an Mobile-based application.
- * @beta
+ * @internal
  */
 export class MobileRpcProtocol extends RpcProtocol {
   public socket: WebSocket = (undefined as any);

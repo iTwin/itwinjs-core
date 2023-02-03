@@ -23,17 +23,17 @@ Object {
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "Infrastructure",
-          "id": "0x114e90000003608",
+          "className": "data-warehouse",
+          "id": "0xeac00000034cf",
         },
         Object {
-          "className": "pink",
-          "id": "0xb29b000000c034",
+          "className": "Facilitator",
+          "id": "0x283e00000097bf",
         },
       ],
       "pathFromRoot": Array [
-        "5420fd61-9e00-4e93-b72c-0df8e5c6cd1a",
-        "1b99c1db-1774-4d7c-a453-fb2306df0849",
+        "9e00e933-72c0-4df8-a5c6-cd1a1b99c1db",
+        "1774d7ca-453f-4b23-86df-0849e82b3577",
       ],
       "type": "ECInstancesNode",
       "version": 2,
@@ -69,17 +69,17 @@ Object {
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "Chair",
-          "id": "0x101a10000005b91",
+          "className": "throughput",
+          "id": "0xc15a0000015831",
         },
         Object {
-          "className": "Mouse",
-          "id": "0xc831000000bfd2",
+          "className": "redundant",
+          "id": "0xfabd0000008446",
         },
       ],
       "pathFromRoot": Array [
-        "5fe7c75a-2781-41e4-9a84-e5a017d93c3d",
-        "35fbe933-627c-4856-9e2e-acbc14ddc316",
+        "27811e49-a84e-45a0-97d9-3c3d35fbe933",
+        "627c8565-e2ea-4cbc-94dd-c316203a2378",
       ],
       "type": "ECInstancesNode",
       "version": 2,
@@ -117,23 +117,23 @@ Array [
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "Seychelles Rupee",
-            "id": "0x13368000000d08b",
+            "className": "Incredible Plastic Chair",
+            "id": "0x104ce0000008d17",
           },
           Object {
-            "className": "North Dakota",
-            "id": "0x111de0000018031",
+            "className": "e-markets",
+            "id": "0x31290000016cb2",
           },
         ],
         "pathFromRoot": Array [
-          "04505a69-e21d-4351-a5c7-f920978feb8f",
-          "55981cb4-9872-4dc4-a9bf-aa6788c2a2d7",
+          "1d35125c-7f92-4097-8feb-8f55981cb498",
+          "72dc4a9b-faa6-4788-82a2-d7ab8c9afb04",
         ],
         "type": "ECInstancesNode",
         "version": 2,
       },
       "label": Object {
-        "displayValue": "Incredible Granite Mouse",
+        "displayValue": "Drive",
         "rawValue": "Home Loan Account",
         "typeName": "string",
       },
@@ -141,47 +141,44 @@ Array [
   },
   Object {
     "children": Array [],
-    "filteringData": Object {
-      "childMatchesCount": 55137,
-      "matchesCount": 85448,
-    },
-    "index": 665,
+    "index": 862,
+    "isMarked": true,
     "node": Object {
       "backColor": "rgb(
-    116,
-    175,
-    134
+    126,
+    186,
+    216
   )",
-      "description": "Qui nulla quam non veniam alias.",
-      "foreColor": "#8AD9D0",
+      "description": undefined,
+      "foreColor": undefined,
       "hasChildren": false,
       "isCheckboxEnabled": true,
       "isCheckboxVisible": true,
       "isChecked": false,
-      "isEditable": true,
-      "isExpanded": true,
+      "isEditable": false,
+      "isExpanded": false,
       "isSelectionDisabled": false,
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "Sleek Granite Computer",
-            "id": "0x533e0000008898",
+            "className": "Chile",
+            "id": "0x8141000000e0d8",
           },
           Object {
-            "className": "mobile",
-            "id": "0x3a78000000f703",
+            "className": "purple",
+            "id": "0xb7b70000002cfe",
           },
         ],
         "pathFromRoot": Array [
-          "82953217-85af-46df-b8fd-98ef6bb8799c",
-          "5bb37bcd-e2e3-4a80-95be-3e45bffd542a",
+          "85af6dff-8fd9-48ef-abb8-799c5bb37bcd",
+          "e2e3a809-5be3-4e45-bffd-542a088153cf",
         ],
         "type": "ECInstancesNode",
         "version": 2,
       },
       "label": Object {
-        "displayValue": "Forward",
-        "rawValue": "Timor-Leste",
+        "displayValue": "deposit",
+        "rawValue": "Forward",
         "typeName": "string",
       },
     },
@@ -216,17 +213,17 @@ Array [
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "compress",
-            "id": "0xace7000000266a",
+            "className": "infomediaries",
+            "id": "0x13706000000f833",
           },
           Object {
-            "className": "deposit",
-            "id": "0x8b8b0000011878",
+            "className": "XML",
+            "id": "0x6e770000001d8f",
           },
         ],
         "pathFromRoot": Array [
-          "7aacd814-57d2-46c1-a268-44b886bc4b70",
-          "df7f4363-4276-4e71-933f-e9e95dc28f6c",
+          "57d26c1a-2684-44b8-86bc-4b70df7f4363",
+          "4276e715-33fe-49e9-9dc2-8f6cc317a1b5",
         ],
         "type": "ECInstancesNode",
         "version": 2,
@@ -257,17 +254,17 @@ Array [
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "open-source",
-            "id": "0x345c000000a46e",
+            "className": "Buckinghamshire",
+            "id": "0x10401000001736d",
           },
           Object {
-            "className": "sensor",
-            "id": "0x11327000000960a",
+            "className": "invoice",
+            "id": "0x14a6400000078bb",
           },
         ],
         "pathFromRoot": Array [
-          "7cfaaf4d-16b1-47d8-9d24-b5b125e76533",
-          "d9bbd6f3-5fb5-4d9e-b170-f7c7ed87d78c",
+          "16b17d81-d24b-45b1-a5e7-6533d9bbd6f3",
+          "5fb5d9ef-170f-47c7-ad87-d78cc462b76b",
         ],
         "type": "ECInstancesNode",
         "version": 2,

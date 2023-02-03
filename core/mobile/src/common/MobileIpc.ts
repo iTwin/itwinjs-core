@@ -16,7 +16,7 @@ import { MobileRpcRequest } from "./MobileRpcRequest";
 
 const IPC = "__ipc__";
 
-class IpcInterface extends RpcInterface {
+class IpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   public static interfaceName = IPC;
   public static interfaceVersion = "0.0.0";
   public async send() { }

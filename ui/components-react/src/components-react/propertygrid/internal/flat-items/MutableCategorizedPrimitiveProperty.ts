@@ -11,7 +11,7 @@ import { FlatGridItemType, IMutableCategorizedPropertyItem, MutableCategorizedPr
 
 /**
  * Mutable wrapper object for PropertyRecord with primitive valueFormat.
- * @beta
+ * @public
  */
 export class MutableCategorizedPrimitiveProperty extends MutableCategorizedProperty implements IMutableCategorizedPropertyItem {
   public constructor(

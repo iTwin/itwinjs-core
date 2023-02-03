@@ -10,7 +10,7 @@ import { PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 import { PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { BeEvent } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ClassInfo, RelationshipPath } from "@itwin/presentation-common";
+import { ClassInfo, RelationshipPath, PropertyValueFormat as TypeValueFormat } from "@itwin/presentation-common";
 import { createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo } from "@itwin/presentation-common/lib/cjs/test";
 import { ECClassInfo, getIModelMetadataProvider } from "../../presentation-components/instance-filter-builder/ECMetadataProvider";
 import { convertToInstanceFilterDefinition } from "../../presentation-components/instance-filter-builder/InstanceFilterConverter";
@@ -33,7 +33,7 @@ describe("convertToInstanceFilterDefinition", () => {
           operator: PropertyFilterRuleOperator.IsNull,
         };
         const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-        expect(expression).to.be.eq(`${propertyAccessor} IS NULL`);
+        expect(expression).to.be.eq(`${propertyAccessor} = NULL`);
       });
 
       it("'IsNotNull'", async () => {
@@ -42,7 +42,7 @@ describe("convertToInstanceFilterDefinition", () => {
           operator: PropertyFilterRuleOperator.IsNotNull,
         };
         const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-        expect(expression).to.be.eq(`${propertyAccessor} IS NOT NULL`);
+        expect(expression).to.be.eq(`${propertyAccessor} <> NULL`);
       });
 
       it("'IsTrue'", async () => {
@@ -51,7 +51,7 @@ describe("convertToInstanceFilterDefinition", () => {
           operator: PropertyFilterRuleOperator.IsTrue,
         };
         const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-        expect(expression).to.be.eq(`${propertyAccessor} IS TRUE`);
+        expect(expression).to.be.eq(`${propertyAccessor} = TRUE`);
       });
 
       it("'IsFalse'", async () => {
@@ -60,7 +60,7 @@ describe("convertToInstanceFilterDefinition", () => {
           operator: PropertyFilterRuleOperator.IsFalse,
         };
         const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-        expect(expression).to.be.eq(`${propertyAccessor} IS FALSE`);
+        expect(expression).to.be.eq(`${propertyAccessor} = FALSE`);
       });
 
       it("'='", async () => {
@@ -145,9 +145,9 @@ describe("convertToInstanceFilterDefinition", () => {
     });
 
     it("instance key value", async () => {
-      const propertyInfo = createTestPropertyInfo({ type: "navigation" });
+      const propertyInfo = createTestPropertyInfo({ type: "long" });
       const filter: PresentationInstanceFilterCondition = {
-        field: createTestPropertiesContentField({ properties: [{ property: propertyInfo }] }),
+        field: createTestPropertiesContentField({ properties: [{ property: propertyInfo }], type: { valueFormat: TypeValueFormat.Primitive, typeName: "navigation" } }),
         operator: PropertyFilterRuleOperator.IsEqual,
         value: { ...value, value: { className: "TestSchema:TestClass", id: "0x1" } },
       };
@@ -158,7 +158,7 @@ describe("convertToInstanceFilterDefinition", () => {
     it("double value", async () => {
       const propertyInfo = createTestPropertyInfo({ type: "double" });
       const filter: PresentationInstanceFilterCondition = {
-        field: createTestPropertiesContentField({ properties: [{ property: propertyInfo }] }),
+        field: createTestPropertiesContentField({ properties: [{ property: propertyInfo }], type: { valueFormat: TypeValueFormat.Primitive, typeName: "double" } }),
         operator: PropertyFilterRuleOperator.IsEqual,
         value: { ...value, value: 1.5 },
       };
@@ -169,7 +169,7 @@ describe("convertToInstanceFilterDefinition", () => {
     it("dateTime value", async () => {
       const propertyInfo = createTestPropertyInfo({ type: "dateTime" });
       const filter: PresentationInstanceFilterCondition = {
-        field: createTestPropertiesContentField({ properties: [{ property: propertyInfo }] }),
+        field: createTestPropertiesContentField({ properties: [{ property: propertyInfo }], type: { valueFormat: TypeValueFormat.Primitive, typeName: "dateTime" } }),
         operator: PropertyFilterRuleOperator.IsEqual,
         value: { ...value, value: "2021-10-12T08:45:41" },
       };
@@ -204,7 +204,7 @@ describe("convertToInstanceFilterDefinition", () => {
         }],
       };
       const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`(${propertyAccessor} IS NULL AND ${propertyAccessor} IS NOT NULL)`);
+      expect(expression).to.be.eq(`(${propertyAccessor} = NULL AND ${propertyAccessor} <> NULL)`);
     });
 
     it("'OR' operator", async () => {
@@ -219,7 +219,7 @@ describe("convertToInstanceFilterDefinition", () => {
         }],
       };
       const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`(${propertyAccessor} IS NULL OR ${propertyAccessor} IS NOT NULL)`);
+      expect(expression).to.be.eq(`(${propertyAccessor} = NULL OR ${propertyAccessor} <> NULL)`);
     });
 
     it("nested condition group", async () => {
@@ -240,7 +240,7 @@ describe("convertToInstanceFilterDefinition", () => {
         }],
       };
       const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`(${propertyAccessor} IS NULL OR (${propertyAccessor} IS NULL AND ${propertyAccessor} IS NOT NULL))`);
+      expect(expression).to.be.eq(`(${propertyAccessor} = NULL OR (${propertyAccessor} = NULL AND ${propertyAccessor} <> NULL))`);
     });
 
     it("invalid operator", async () => {
@@ -303,7 +303,7 @@ describe("convertToInstanceFilterDefinition", () => {
         operator: PropertyFilterRuleOperator.IsNull,
       };
       const { expression, relatedInstances } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`${createAlias("C")}.${propertyInfo.name} IS NULL`);
+      expect(expression).to.be.eq(`${createAlias("C")}.${propertyInfo.name} = NULL`);
       expect(relatedInstances).to.be.lengthOf(1).and.containSubset([{
         pathFromSelectToPropertyClass: [{
           sourceClassName: classBInfo.name,
@@ -328,7 +328,7 @@ describe("convertToInstanceFilterDefinition", () => {
         }],
       };
       const { expression, relatedInstances } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`(${createAlias("C")}.${propertyInfo.name} IS NULL AND ${createAlias("C")}.${propertyInfo.name} IS NOT NULL)`);
+      expect(expression).to.be.eq(`(${createAlias("C")}.${propertyInfo.name} = NULL AND ${createAlias("C")}.${propertyInfo.name} <> NULL)`);
       expect(relatedInstances).to.be.lengthOf(1).and.containSubset([{
         pathFromSelectToPropertyClass: [{
           sourceClassName: classBInfo.name,
@@ -347,7 +347,7 @@ describe("convertToInstanceFilterDefinition", () => {
         operator: PropertyFilterRuleOperator.IsNull,
       };
       const { expression, relatedInstances } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`${createAlias("C")}.${propertyInfo.name} IS NULL`);
+      expect(expression).to.be.eq(`${createAlias("C")}.${propertyInfo.name} = NULL`);
       expect(relatedInstances).to.be.lengthOf(1).and.containSubset([{
         pathFromSelectToPropertyClass: [{
           sourceClassName: classAInfo.name,

@@ -2,19 +2,32 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module PropertyFilterBuilder
+ */
+
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { Select } from "@itwin/itwinui-react";
 import { getPropertyFilterOperatorLabel, getPropertyFilterOperators, PropertyFilterRuleOperator } from "./Operators";
 
-/** @alpha */
+/**
+ * Props for [[PropertyFilterBuilderRuleOperator]] component.
+ * @internal
+ */
 export interface PropertyFilterBuilderRuleOperatorProps {
+  /** Currently selected operator. */
   operator?: PropertyFilterRuleOperator;
+  /** Property used in rule for which this operator will be used. */
   property: PropertyDescription;
+  /** Callback that is invoked when selected operator changes. */
   onChange: (operator: PropertyFilterRuleOperator) => void;
 }
 
-/** @alpha */
+/**
+ * Component that renders [[PropertyFilterBuilderRuleRenderer]] operator selector.
+ * @internal
+ */
 export function PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRuleOperatorProps) {
   const { operator, property, onChange } = props;
 
@@ -31,6 +44,6 @@ export function PropertyFilterBuilderRuleOperator(props: PropertyFilterBuilderRu
   })), [availableOperators]);
 
   return <div className="rule-operator">
-    <Select options={availableOptions} value={selectedOperator} onChange={onChange} size="small"/>
+    <Select options={availableOptions} value={selectedOperator} onChange={onChange} size="small" />
   </div>;
 }
