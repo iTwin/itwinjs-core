@@ -38,4 +38,8 @@
   &:first-child {
     padding-top: 14px;
   }
+
+  &:only-child {
+    padding-top: 3px;
+  }
 }

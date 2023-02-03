@@ -10,7 +10,7 @@ import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import {
-  DiagnosticsScopeLogs, NodeKeyJSON, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
+  DiagnosticsScopeLogs, NodeKey, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { HierarchyCacheMode } from "./PresentationManager";
 
@@ -20,6 +20,7 @@ export enum NativePlatformRequestTypes {
   GetRootNodesCount = "GetRootNodesCount",
   GetChildren = "GetChildren",
   GetChildrenCount = "GetChildrenCount",
+  GetNodesDescriptor = "GetNodesDescriptor",
   GetNodePaths = "GetNodePaths",
   GetFilteredNodePaths = "GetFilteredNodePaths",
   GetContentSources = "GetContentSources",
@@ -53,7 +54,7 @@ export interface NativePresentationDefaultUnitFormats {
 /** @internal */
 export interface NativePresentationKeySetJSON {
   instanceKeys: Array<[string, string[]]>;
-  nodeKeys: NodeKeyJSON[];
+  nodeKeys: NodeKey[];
 }
 
 /** @internal */
@@ -83,7 +84,7 @@ export interface NativePlatformDefinition extends IDisposable {
   unsetRulesetVariableValue(rulesetId: string, variableId: string): NativePlatformResponse<void>;
 
   getUpdateInfo(): NativePlatformResponse<UpdateInfoJSON | undefined>;
-  updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKeyJSON, isExpanded?: boolean, instanceFilters?: string[] }>): NativePlatformResponse<void>;
+  updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKey, isExpanded?: boolean, instanceFilters?: string[] }>): NativePlatformResponse<void>;
 }
 
 /** @internal */
@@ -196,7 +197,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public getUpdateInfo() {
       return this.handleResult(this._nativeAddon.getUpdateInfo());
     }
-    public updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKeyJSON, isExpanded?: boolean, instanceFilter?: string }>) {
+    public updateHierarchyState(db: any, rulesetId: string, stateChanges: Array<{ nodeKey: undefined | NodeKey, isExpanded?: boolean, instanceFilter?: string }>) {
       return this.handleResult(this._nativeAddon.updateHierarchyState(db, rulesetId, stateChanges));
     }
   };

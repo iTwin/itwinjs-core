@@ -170,7 +170,7 @@ export class HubWrappers {
       try {
         return (await RpcBriefcaseUtility.open(openArgs)) as BriefcaseDb;
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse))
+        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line deprecation/deprecation
           throw error;
       }
     }
@@ -212,7 +212,7 @@ export class HubWrappers {
       try {
         return (await RpcBriefcaseUtility.open(openArgs));
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse))
+        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line deprecation/deprecation
           throw error;
       }
     }
@@ -771,7 +771,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(auxCoordSystemId));
     const textureId = IModelTestUtils.insertTextureElement(sourceDb, definitionModelId, "Texture");
     assert.isTrue(Id64.isValidId64(textureId));
-    const renderMaterialId = RenderMaterialElement.insert(sourceDb, definitionModelId, "RenderMaterial", new RenderMaterialElement.Params("PaletteName"));
+    const renderMaterialId = RenderMaterialElement.insert(sourceDb, definitionModelId, "RenderMaterial", { paletteName: "PaletteName" });
     assert.isTrue(Id64.isValidId64(renderMaterialId));
     const geometryPartProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,

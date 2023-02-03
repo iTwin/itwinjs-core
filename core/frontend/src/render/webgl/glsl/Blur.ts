@@ -6,7 +6,6 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
 import { BlurGeometry, BlurType } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
@@ -61,7 +60,7 @@ const testRenderOrder = `
 `;
 
 /** @internal */
-export function createBlurProgram(context: WebGLContext, type: BlurType): ShaderProgram {
+export function createBlurProgram(context: WebGL2RenderingContext, type: BlurType): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 

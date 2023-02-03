@@ -11,7 +11,7 @@ import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
-import { getClassName, UiItemsManager } from "@itwin/appui-abstract";
+import { getClassName } from "@itwin/appui-abstract";
 import { TargetOptions, TargetOptionsContext } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/target/TargetOptions";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, BackstageComposer, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
@@ -19,7 +19,7 @@ import {
   IModelViewportControl,
   InitialAppUiSettings,
   ModalFrontstageClosedEventArgs, SafeAreaContext, SafeAreaInsets, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
-  ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
+  ToolbarDragInteractionContext, UiFramework, UiItemsManager, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
@@ -45,7 +45,7 @@ import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 import {
   AbstractUiItemsProvider, AppUiTestProviders, ContentLayoutStage, CustomContentFrontstage,
-  FloatingWidgetsUiItemsProvider, InspectUiItemInfoToolProvider, WidgetApiStage,
+  FloatingWidgetsUiItemsProvider, InspectUiItemInfoToolProvider, SynchronizedFloatingViewportStage, WidgetApiStage,
 } from "@itwin/appui-test-providers";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
 
@@ -289,6 +289,7 @@ export class SampleAppIModelApp {
     CustomContentFrontstage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
     WidgetApiStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
     ContentLayoutStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
+    SynchronizedFloatingViewportStage.register(AppUiTestProviders.localizationNamespace); // Frontstage and item providers
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();

@@ -22,7 +22,7 @@ export class DeleteElementsTool extends ElementSetTool {
 
   public override async processAgendaImmediate(): Promise<void> {
     try {
-      await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
+      await EditTools.startCommand<string>({ commandId: editorBuiltInCmdIds.cmdBasicManipulation, iModelKey: this.iModel.key });
       if (IModelStatus.Success === await basicManipulationIpc.deleteElements(this.agenda.compressIds()))
         await this.saveChanges();
     } catch (err) {

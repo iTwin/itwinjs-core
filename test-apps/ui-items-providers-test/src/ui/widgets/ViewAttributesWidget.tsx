@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { useActiveFrontstageDef,useActiveViewport } from "@itwin/appui-react";
-import { WidgetState } from "@itwin/appui-abstract";
+import { useActiveFrontstageDef,useActiveViewport, WidgetState } from "@itwin/appui-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { ViewFlagProps, ViewFlags } from "@itwin/core-common";
 import * as React from "react";

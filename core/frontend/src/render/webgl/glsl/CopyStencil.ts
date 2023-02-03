@@ -7,15 +7,11 @@
  */
 
 import { ColorDef, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
-import { WebGLContext } from "@itwin/webgl-compatibility";
-import { AttributeMap } from "../AttributeMap";
-import { BoundaryType, ScreenPointsGeometry, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry";
+import { BoundaryType, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry";
 import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderComponent, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
-import { System } from "../System";
-import { TechniqueId } from "../TechniqueId";
 import { Texture2DHandle } from "../Texture";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
@@ -35,14 +31,6 @@ const checkDiscardBackgroundByZ = `
 `;
 
 const depthFromTexture = "return TEXTURE(u_depthTexture, v_texCoord).r;";
-
-const computePosition = `
-  gl_PointSize = 1.0; // Need to set the point size since we are drawing points with this.
-  float z = TEXTURE(u_depthTexture, (rawPos.xy + 1.0) * 0.5).r * 2.0 - 1.0;
-  return vec4(rawPos.x, rawPos.y, z, 1.0);
-`;
-
-const computeQuantizedPosition2d = `return vec3(a_pos.x, a_pos.y, 0.0);`;
 
 const scratchColor = FloatRgba.fromColorDef(ColorDef.white);
 
@@ -73,7 +61,7 @@ function setScratchColor(display: number, hilite: FloatRgb, hAlpha: number): voi
 }
 
 /** @internal */
-export function createVolClassColorUsingStencilProgram(context: WebGLContext): ShaderProgram {
+export function createVolClassColorUsingStencilProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computehiliteColor);
@@ -97,7 +85,7 @@ export function createVolClassColorUsingStencilProgram(context: WebGLContext): S
 }
 
 /** @internal */
-export function createVolClassCopyZProgram(context: WebGLContext): ShaderProgram {
+export function createVolClassCopyZProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord); // TODO: I think this is not necessary because it's already added from the create above
@@ -120,8 +108,7 @@ export function createVolClassCopyZProgram(context: WebGLContext): ShaderProgram
     });
   });
 
-  if (!System.instance.capabilities.isWebGL2)
-    frag.addExtension("GL_EXT_frag_depth");
+  frag.addExtension("GL_EXT_frag_depth");
   frag.set(FragmentShaderComponent.FinalizeDepth, depthFromTexture);
 
   builder.vert.headerComment = "//!V! VolClassCopyZ";
@@ -131,39 +118,7 @@ export function createVolClassCopyZProgram(context: WebGLContext): ShaderProgram
 }
 
 /** @internal */
-export function createVolClassCopyZUsingPointsProgram(context: WebGLContext): ShaderProgram {
-  const attrMap = AttributeMap.findAttributeMap(TechniqueId.VolClassCopyZ, false);
-  const builder = new ProgramBuilder(attrMap);
-
-  const vert = builder.vert;
-  vert.set(VertexShaderComponent.ComputeQuantizedPosition, computeQuantizedPosition2d);
-  vert.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
-      const geom = params.geometry as ScreenPointsGeometry;
-      Texture2DHandle.bindSampler(uniform, geom.zTexture, TextureUnit.Zero);
-    });
-  });
-  vert.set(VertexShaderComponent.ComputePosition, computePosition);
-
-  const frag = builder.frag;
-  frag.set(FragmentShaderComponent.ComputeBaseColor, computeSetBlendColor);
-  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
-
-  frag.addUniform("u_blend_color", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_blend_color", (uniform, _params) => {
-      scratchColor.set(0.0, 0.0, 0.0, 0.0);
-      scratchColor.bind(uniform);
-    });
-  });
-
-  builder.vert.headerComment = "//!V! VolClassCopyZUsingPoints";
-  builder.frag.headerComment = "//!F! VolClassCopyZUsingPoints";
-
-  return builder.buildProgram(context);
-}
-
-/** @internal */
-export function createVolClassSetBlendProgram(context: WebGLContext): ShaderProgram {
+export function createVolClassSetBlendProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
@@ -216,7 +171,7 @@ export function createVolClassSetBlendProgram(context: WebGLContext): ShaderProg
 }
 
 /** @internal */
-export function createVolClassBlendProgram(context: WebGLContext): ShaderProgram {
+export function createVolClassBlendProgram(context: WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);

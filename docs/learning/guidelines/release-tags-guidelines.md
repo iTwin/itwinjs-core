@@ -45,13 +45,15 @@ The release tag should be on its own line - preferably the last line in the docu
  */
 ```
 
-Likewise, *deprecated* API items should include documentation that indicates what third parties should use instead.
+Likewise, a *deprecated* API item should include documentation about when it became deprecated and what users should use instead.
+Use the format `@deprecated in <Major.Minor>. <What API to use instead>.`
+If relevant and helpful, you can also include a description of why the API became deprecated, e.g., poor performance.
 
 ```ts
 /** Original documentation comment is typically maintained here.
  * @see Other public API item that third parties should use instead.
  * @public
- * @deprecated Comment describing reason API item is deprecated and what should be used instead.
+ * @deprecated in 4.2. Comment describing reason API item is deprecated and what should be used instead.
  */
 ```
 

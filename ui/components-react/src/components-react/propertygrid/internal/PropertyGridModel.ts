@@ -13,7 +13,7 @@ import { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
 
 /**
  * PropertyGridModel interface for working with immutable FlatGridItems
- * @beta
+ * @public
  */
 export interface IPropertyGridModel {
   getItem: (selectionKey: string) => FlatGridItem;
@@ -24,7 +24,7 @@ export interface IPropertyGridModel {
 
 /**
  * PropertyGridModel interface for working with mutable FlatGridItems
- * @beta
+ * @public
  */
 export interface IMutablePropertyGridModel {
   getItem: (selectionKey: string) => IMutableFlatGridItem;
@@ -35,7 +35,7 @@ export interface IMutablePropertyGridModel {
 
 /**
  * Implementation of PropertyGridModel for working with and converting PropertyData to mutable FlatGridItems
- * @beta
+ * @public
  */
 export class MutablePropertyGridModel implements IPropertyGridModel, IMutablePropertyGridModel {
   public [immerable] = true;

@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
+import { ContentSpecificationBase } from "./ContentSpecification";
 
 /**
  * Returns content for selected (input) instances.
@@ -16,7 +16,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
  */
 export interface SelectedNodeInstancesSpecification extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
-  specType: ContentSpecificationTypes.SelectedNodeInstances;
+  specType: "SelectedNodeInstances";
 
   /**
    * Specifies ECSchema name which the input instances have to match for the specification to be used.

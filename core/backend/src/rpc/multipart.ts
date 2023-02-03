@@ -10,6 +10,8 @@ import { BentleyStatus, FormDataCommon, HttpServerRequest, IModelError, RpcMulti
 import * as FormData from "form-data";
 import * as multiparty from "multiparty";
 
+/* eslint-disable deprecation/deprecation */
+
 /** @internal */
 export function createMultipartStream(value: RpcSerializedValue) {
   const form = new FormData();
