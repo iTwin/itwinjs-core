@@ -59,38 +59,6 @@ jobs:
           platform: Darwin
           name: $(mac_pool)
           node_version: 16.x
-
-        "Windows_Node_14_x":
-          OS: windows-latest
-          platform: Windows_NT
-          name: $(win_pool)
-          node_version: 14.x
-        "Linux_Node_14_x":
-          OS: ubuntu-latest
-          platform: Linux
-          name: $(linux_pool)
-          node_version: 14.x
-        "MacOS_Node_14_x":
-          OS: macOS-latest
-          platform: Darwin
-          name: $(mac_pool)
-          node_version: 14.x
-
-        "Windows_Node_12":
-          OS: windows-latest
-          platform: Windows_NT
-          name: $(win_pool)
-          node_version: 12.x
-        "Linux_Node_12":
-          OS: ubuntu-latest
-          platform: Linux
-          name: $(linux_pool)
-          node_version: 12.x
-        "MacOS_Node_12":
-          OS: macOS-latest
-          platform: Darwin
-          name: $(mac_pool)
-          node_version: 12.x
       maxParallel: 3
 
     pool:
