@@ -5399,7 +5399,6 @@ export class SineCosinePolynomial {
 // @public
 export class SmallSystem {
     static eliminateFromPivot(rowA: Float64Array, pivotIndex: number, rowB: Float64Array, a: number): boolean;
-    // (undocumented)
     static intersect3Planes(xyzA: Point3d, normalA: Vector3d, xyzB: Point3d, normalB: Vector3d, xyzC: Point3d, normalC: Vector3d, result?: Vector3d): Vector3d | undefined;
     static linearSystem2d(ux: number, vx: number, // first row of matrix
     uy: number, vy: number, // second row of matrix
